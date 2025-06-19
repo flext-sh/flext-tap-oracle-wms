@@ -1,0 +1,12 @@
+{
+  "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+  "auth_method": "basic",
+  "username": "USER_WMS_INTEGRA",
+  "password": "jmCyS7BK94YvhS@",
+  "company_code": "RAIZEN",
+  "facility_code": "*",
+  "start_date": "2025-01-01T00:00:00Z",
+  "pagination_mode": "cursor",
+  "page_size": 5,
+  "entities": ["facility"]
+}

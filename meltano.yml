@@ -1,0 +1,325 @@
+# Meltano project configuration for tap-oracle-wms
+version: 1
+default_environment: dev
+project_id: tap-oracle-wms
+
+environments:
+  - name: dev
+    config:
+      # Development environment configuration
+      plugins:
+        extractors:
+          - name: tap-oracle-wms
+            config:
+              log_level: DEBUG
+              page_size: 100
+              max_pages_per_stream: 10
+
+  - name: staging
+    config:
+      # Staging environment configuration
+      plugins:
+        extractors:
+          - name: tap-oracle-wms
+            config:
+              log_level: INFO
+              page_size: 500
+              retry_limit: 5
+
+  - name: prod
+    config:
+      # Production environment configuration
+      plugins:
+        extractors:
+          - name: tap-oracle-wms
+            config:
+              log_level: WARNING
+              page_size: 1000
+              pagination_mode: cursor
+              retry_limit: 10
+              request_concurrency: 5
+
+plugins:
+  extractors:
+    - name: tap-oracle-wms
+      namespace: tap_oracle_wms
+      # Use pip_url for PyPI package or path for local development
+      pip_url: tap-oracle-wms
+      # For local development, use:
+      # pip_url: -e .
+      executable: tap-oracle-wms
+      capabilities:
+        - catalog
+        - discover
+        - state
+      docs: https://github.com/your-org/tap-oracle-wms
+      repo: https://github.com/your-org/tap-oracle-wms
+
+      # Define all available settings
+      settings:
+        # Required settings
+        - name: base_url
+          label: Base URL
+          kind: string
+          description: |
+            Oracle WMS instance URL.
+            Example: https://your-instance.wms.ocs.oraclecloud.com/your-tenant
+          placeholder: https://instance.wms.ocs.oraclecloud.com/tenant
+
+        - name: auth_method
+          label: Authentication Method
+          kind: options
+          description: Authentication method to use
+          options:
+            - label: Basic Authentication
+              value: basic
+            - label: OAuth2
+              value: oauth2
+          value: basic
+
+        - name: company_code
+          label: Company Code
+          kind: string
+          description: WMS company code
+          placeholder: DEMO
+
+        - name: facility_code
+          label: Facility Code
+          kind: string
+          description: WMS facility code
+          placeholder: DC01
+
+        - name: start_date
+          label: Start Date
+          kind: date_iso8601
+          description: Start date for data extraction
+          value: "2024-01-01T00:00:00Z"
+
+        # Authentication settings
+        - name: username
+          label: Username
+          kind: string
+          description: WMS username (for basic auth)
+
+        - name: password
+          label: Password
+          kind: password
+          description: WMS password (for basic auth)
+          sensitive: true
+
+        - name: oauth_client_id
+          label: OAuth Client ID
+          kind: string
+          description: OAuth2 client ID
+
+        - name: oauth_client_secret
+          label: OAuth Client Secret
+          kind: password
+          description: OAuth2 client secret
+          sensitive: true
+
+        - name: oauth_token_url
+          label: OAuth Token URL
+          kind: string
+          description: OAuth2 token endpoint URL
+
+        - name: oauth_scope
+          label: OAuth Scope
+          kind: string
+          description: OAuth2 scope (optional)
+
+        # Optional settings
+        - name: entities
+          label: Entities
+          kind: array
+          description: |
+            Specific entities to extract.
+            Leave empty to extract all discovered entities.
+
+        - name: excluded_entities
+          label: Excluded Entities
+          kind: array
+          description: Entities to exclude from extraction
+
+        - name: page_size
+          label: Page Size
+          kind: integer
+          description: Number of records per page (1-1000)
+          value: 100
+
+        - name: pagination_mode
+          label: Pagination Mode
+          kind: options
+          description: Pagination strategy to use
+          options:
+            - label: Offset-based
+              value: offset
+            - label: Cursor-based
+              value: cursor
+          value: offset
+
+        - name: max_pages_per_stream
+          label: Max Pages Per Stream
+          kind: integer
+          description: Maximum pages to extract per stream (null for unlimited)
+
+        - name: request_timeout
+          label: Request Timeout
+          kind: integer
+          description: Request timeout in seconds
+          value: 30
+
+        - name: retry_limit
+          label: Retry Limit
+          kind: integer
+          description: Number of retries for failed requests
+          value: 3
+
+        - name: request_concurrency
+          label: Request Concurrency
+          kind: integer
+          description: Number of concurrent requests
+          value: 1
+
+        - name: schema_discovery_method
+          label: Schema Discovery Method
+          kind: options
+          description: Method for discovering entity schemas
+          options:
+            - label: Automatic
+              value: auto
+            - label: Describe Endpoint
+              value: describe
+            - label: Sample Data
+              value: sample
+          value: auto
+
+        - name: log_level
+          label: Log Level
+          kind: options
+          description: Logging verbosity
+          options:
+            - label: Debug
+              value: DEBUG
+            - label: Info
+              value: INFO
+            - label: Warning
+              value: WARNING
+            - label: Error
+              value: ERROR
+          value: INFO
+
+        - name: global_filters
+          label: Global Filters
+          kind: object
+          description: Filters to apply to all entities
+
+        - name: entity_filters
+          label: Entity Filters
+          kind: object
+          description: Entity-specific filters
+
+        - name: entity_ordering
+          label: Entity Ordering
+          kind: object
+          description: Entity-specific ordering
+
+        - name: field_selection
+          label: Field Selection
+          kind: object
+          description: Specific fields to extract per entity
+
+      # Load settings from environment by default
+      config:
+        base_url: ${WMS_BASE_URL}
+        auth_method: ${WMS_AUTH_METHOD:basic}
+        company_code: ${WMS_COMPANY_CODE}
+        facility_code: ${WMS_FACILITY_CODE}
+        start_date: ${WMS_START_DATE:2024-01-01T00:00:00Z}
+        username: ${WMS_USERNAME}
+        password: ${WMS_PASSWORD}
+        oauth_client_id: ${WMS_OAUTH_CLIENT_ID}
+        oauth_client_secret: ${WMS_OAUTH_CLIENT_SECRET}
+        oauth_token_url: ${WMS_OAUTH_TOKEN_URL}
+        oauth_scope: ${WMS_OAUTH_SCOPE}
+
+      # Define common entity selections
+      select:
+        # Core inventory entities
+        - "item.*"
+        - "location.*"
+        - "inventory.*"
+        # Order management
+        - "order_hdr.*"
+        - "order_dtl.*"
+        # Shipping and receiving
+        - "shipment.*"
+        - "receipt.*"
+        # Configuration entities
+        - "company.*"
+        - "facility.*"
+
+      # Metadata for state management
+      metadata:
+        item:
+          replication-method: FULL_TABLE
+          forced-replication-method: FULL_TABLE
+        location:
+          replication-method: FULL_TABLE
+          forced-replication-method: FULL_TABLE
+        inventory:
+          replication-method: INCREMENTAL
+          replication-key: last_updated_ts
+        order_hdr:
+          replication-method: INCREMENTAL
+          replication-key: last_updated_ts
+        order_dtl:
+          replication-method: INCREMENTAL
+          replication-key: last_updated_ts
+
+  loaders:
+    # Example loader configurations
+    - name: target-postgres
+      variant: meltano
+      pip_url: target-postgres
+
+    - name: target-snowflake
+      variant: meltano
+      pip_url: target-snowflake
+
+    - name: target-bigquery
+      variant: meltano
+      pip_url: target-bigquery
+
+schedules:
+  - name: wms-daily-sync
+    interval: "@daily"
+    job: wms-to-warehouse
+
+  - name: wms-hourly-inventory
+    interval: "@hourly"
+    job: wms-inventory-sync
+
+jobs:
+  - name: wms-to-warehouse
+    tasks:
+      - "tap-oracle-wms target-postgres"
+
+  - name: wms-inventory-sync
+    tasks:
+      - "tap-oracle-wms target-postgres"
+    env:
+      TAP_ORACLE_WMS_ENTITIES: '["inventory", "item", "location"]'
+
+# Project-specific variables
+vars:
+  # Default WMS settings
+  default_page_size: 1000
+  default_retry_limit: 5
+  default_timeout: 30
+
+  # Entity groups for common use cases
+  inventory_entities: ["item", "location", "inventory", "cycle_count"]
+  order_entities: ["order_hdr", "order_dtl", "shipment", "shipment_dtl"]
+  receipt_entities: ["receipt", "receipt_dtl", "asn", "asn_dtl"]
+  config_entities: ["company", "facility", "user", "reason_code"]
