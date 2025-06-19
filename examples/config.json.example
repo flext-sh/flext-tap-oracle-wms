@@ -1,0 +1,38 @@
+{
+  "base_url": "https://your-instance.wms.ocs.oraclecloud.com/your-tenant",
+  "auth_method": "basic",
+  "username": "${WMS_USERNAME}",
+  "password": "${WMS_PASSWORD}",
+  "company_code": "DEMO",
+  "facility_code": "DC01",
+  "start_date": "2025-01-01T00:00:00Z",
+
+  "pagination_mode": "offset",
+  "page_size": 100,
+
+  "entities": [
+    "item",
+    "location",
+    "inventory",
+    "order_hdr",
+    "order_dtl"
+  ],
+
+  "field_selection": {
+    "item": ["id", "code", "description", "status", "item_type"],
+    "inventory": ["id", "item_id", "location_id", "on_hand_qty", "allocated_qty"],
+    "order_hdr": ["id", "order_nbr", "status", "order_date", "customer_id"]
+  },
+
+  "entity_filters": {
+    "inventory": {
+      "on_hand_qty__gt": 0
+    },
+    "order_hdr": {
+      "status__in": "PENDING,PROCESSING"
+    }
+  },
+
+  "schema_discovery_method": "auto",
+  "log_level": "INFO"
+}

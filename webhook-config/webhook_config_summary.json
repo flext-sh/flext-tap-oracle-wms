@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-06-15T10:15:07.520425",
+  "wms_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+  "webhook_url": "https://your-api.example.com/wms-webhook",
+  "supported_entities": {
+    "facility": false,
+    "item": false,
+    "inventory": false,
+    "location": false,
+    "order_hdr": false,
+    "order_dtl": false,
+    "receipt": false,
+    "receipt_dtl": false,
+    "shipment": false,
+    "allocation": false,
+    "putaway": false,
+    "pick": false,
+    "cycle_count": false,
+    "adjustment": false,
+    "move": false,
+    "wave": false
+  },
+  "existing_webhooks": {},
+  "next_steps": [
+    "Review wms_webhook_instructions.md",
+    "Configure webhook endpoint to receive notifications",
+    "Test webhook configuration with sample data",
+    "Set up monitoring and alerting"
+  ]
+}
