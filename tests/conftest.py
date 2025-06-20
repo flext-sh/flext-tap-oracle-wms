@@ -2,12 +2,11 @@
 
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 import pytest
 from dotenv import load_dotenv
-
 
 # Load environment variables for tests
 load_dotenv()
@@ -187,7 +186,6 @@ def mock_http_client() -> Any:
                     {"name": "mod_ts", "type": "datetime"},
                 ],
             }
-        else:
             # Data query
             response.json.return_value = {
                 "result_count": 1,
@@ -207,12 +205,11 @@ def mock_http_client() -> Any:
 @pytest.fixture
 def captured_messages() -> Any:
     """Capture Singer messages during test execution."""
-    messages = []
+    messages: list = []
 
     def capture_message(message) -> None:
         if hasattr(message, "to_dict"):
             messages.append(message.to_dict())
-        else:
             messages.append({"type": message.__class__.__name__, "value": str(message)})
 
     return messages, capture_message
@@ -234,7 +231,7 @@ class WMSTestHelper:
         results: list,
         page: int = 1,
         page_size: int = 10,
-        total_results: Optional[int] = None,
+        total_results: int | None = None,
     ) -> dict[str, Any]:
         """Create a paginated WMS API response."""
         if total_results is None:

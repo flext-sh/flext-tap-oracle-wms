@@ -9,24 +9,19 @@ This module implements the actual Oracle WMS entities discovered from the API:
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any
 from urllib.parse import parse_qs, urlparse
+from collections.abc import Iterable
 
+import httpx
 from singer_sdk.exceptions import FatalAPIError
 from singer_sdk.pagination import BaseOffsetPaginator
 from singer_sdk.streams import RESTStream
-
 
 # Context type alias for compatibility
 Context = dict[str, Any]
 
 from .auth import get_wms_authenticator, get_wms_headers
-
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    import httpx
 
 
 logger = logging.getLogger(__name__)
@@ -66,7 +61,7 @@ class WMSRealPaginator(BaseOffsetPaginator):
         except (ValueError, KeyError):
             return False
 
-    def get_next(self, response: httpx.Response) -> Optional[int]:
+    def get_next(self, response: httpx.Response) -> int | None:
         """Get next page token based on real API response."""
         if not self.has_more(response):
             return None
@@ -162,7 +157,7 @@ class WMSEntityStream(RESTStream):
         self, context: dict | None, next_page_token: Any | None
     ) -> dict[str, Any]:
         """Get URL parameters for real WMS API with advanced features."""
-        params = {}
+        params: dict = {}
 
         # Pagination mode from config
         pagination_mode = self.config.get("pagination_mode", "offset")
@@ -180,7 +175,6 @@ class WMSEntityStream(RESTStream):
                 cursor = self.get_new_paginator()._cursor
                 if cursor:
                     params["cursor"] = cursor
-        else:
             # Standard offset pagination
             params["page_size"] = page_size
             if next_page_token:
@@ -230,7 +224,6 @@ class WMSEntityStream(RESTStream):
                 for value in conditions.values():
                     # Support operators: __gte, __lte, __contains, __in, __range, etc.
                     params[f"{field}{operator}"] = value
-            else:
                 params[field] = conditions
 
         return params
@@ -276,12 +269,13 @@ class WMSEntityStream(RESTStream):
             elif isinstance(data, dict) and "data" in data:
                 # Alternative format
                 yield from data["data"]
-            else:
                 # Single record response
                 yield data
 
         except (ValueError, TypeError) as e:
-            self.logger.error("Failed to parse response for {self.entity_name}: %s", e)
+            self.logger.exception(
+                "Failed to parse response for {self.entity_name}: %s", e
+            )
             msg = f"Invalid JSON response from {self.entity_name}"
             raise FatalAPIError(msg) from e
 

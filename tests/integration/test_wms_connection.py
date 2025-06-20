@@ -2,7 +2,6 @@
 
 import httpx
 import pytest
-
 from tap_oracle_wms.tap import TapOracleWMS
 
 
@@ -34,7 +33,7 @@ class TestWMSConnection:
                 if response.status_code == 200:
                     # If successful, validate response structure
                     data = response.json()
-                    assert isinstance(data, (dict, list))
+                    assert isinstance(data, dict | list)
 
             except httpx.RequestError as e:
                 pytest.skip(f"Network connectivity issue: {e}")

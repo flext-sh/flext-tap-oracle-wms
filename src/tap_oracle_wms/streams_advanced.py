@@ -15,24 +15,19 @@ import json
 import logging
 import time
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any
 from urllib.parse import parse_qs, urlparse
+from collections.abc import Iterable
 
+import httpx
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 from singer_sdk.pagination import BaseOffsetPaginator
 from singer_sdk.streams import RESTStream
-
 
 # Context type alias for compatibility
 Context = dict[str, Any]
 
 from .auth import get_wms_authenticator, get_wms_headers
-
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    import httpx
 
 
 logger = logging.getLogger(__name__)
@@ -132,7 +127,7 @@ class WMSAdvancedPaginator(BaseOffsetPaginator):
         except (ValueError, KeyError):
             return False
 
-    def get_next(self, response: httpx.Response) -> Optional[int]:
+    def get_next(self, response: httpx.Response) -> int | None:
         """Get next page token."""
         if not self.has_more(response):
             return None
@@ -236,7 +231,7 @@ class WMSAdvancedStream(RESTStream):
         self, context: dict | None, next_page_token: Any | None
     ) -> dict[str, Any]:
         """Build URL parameters with all advanced features."""
-        params = {}
+        params: dict = {}
 
         # Always use sequenced pagination for sync efficiency
         params["page_mode"] = "sequenced"
@@ -290,7 +285,6 @@ class WMSAdvancedStream(RESTStream):
             if isinstance(conditions, dict):
                 for value in conditions.values():
                     params[f"{field}{operator}"] = value
-            else:
                 params[field] = conditions
 
         return params
@@ -342,7 +336,7 @@ class WMSAdvancedStream(RESTStream):
             msg = f"Rate limited. Retry after {retry_after} seconds"
             raise RetriableAPIError(msg)
 
-        if response.status_code in [500, 502, 503, 504]:
+        if response.status_code in {500, 502, 503, 504}:
             self._circuit_breaker.call_failed()
             msg = f"Server error {response.status_code} for {self.entity_name}"
             raise RetriableAPIError(msg)
@@ -370,8 +364,7 @@ class WMSAdvancedStream(RESTStream):
                 if isinstance(data, dict) and "results" in data:
                     for row in data["results"]:
                         if isinstance(row, list) and self._field_selection:
-                            yield dict(zip(self._field_selection, row))
-                        else:
+                            yield dict(zip(self._field_selection, row, strict=False))
                             yield {"values": row}
                 return
 
@@ -387,7 +380,6 @@ class WMSAdvancedStream(RESTStream):
                     for record in data["data"]:
                         self._records_extracted += 1
                         yield record
-                else:
                     # Single record
                     self._records_extracted += 1
                     yield data
@@ -396,19 +388,18 @@ class WMSAdvancedStream(RESTStream):
                 for record in data:
                     self._records_extracted += 1
                     yield record
-            else:
                 # Unknown format
                 logger.warning("Unexpected response format for %s", self.entity_name)
                 yield data
 
         except json.JSONDecodeError as e:
             self._errors["json_decode"] = self._errors.get("json_decode", 0) + 1
-            logger.error("JSON decode error for {self.entity_name}: %s", e)
+            logger.exception("JSON decode error for {self.entity_name}: %s", e)
             msg = f"Invalid JSON response from {self.entity_name}"
             raise FatalAPIError(msg) from e
         except Exception as e:
             self._errors["parse_error"] = self._errors.get("parse_error", 0) + 1
-            logger.error("Parse error for {self.entity_name}: %s", e)
+            logger.exception("Parse error for {self.entity_name}: %s", e)
             raise
 
     def post_process(self, row: dict, context: dict | None = None) -> dict | None:
@@ -500,8 +491,7 @@ class WMSAdvancedStream(RESTStream):
                             e,
                         )
                         time.sleep(delay)
-                    else:
-                        logger.error("Max retries reached for %s", self.entity_name)
+                        logger.exception("Max retries reached for %s", self.entity_name)
                         raise
                 except Exception:
                     # Don't retry on non-retriable errors

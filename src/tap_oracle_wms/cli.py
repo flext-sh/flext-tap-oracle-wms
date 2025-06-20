@@ -1,33 +1,15 @@
-"""Professional CLI for Oracle WMS Singer TAP.
-
-This module provides a comprehensive CLI that maintains 100% Singer SDK
-compatibility while offering advanced business-specific functionality through
-organized subcommands.
-
-Architecture:
-- Default behavior: Standard Singer TAP CLI (--discover, --catalog, etc.)
-- Extended functionality: Business-organized subcommands (extract, analyze)
-- Clean separation: Singer protocol vs operational/business commands
-- Best practices: Proper Click groups, help text, error handling
-
-Business Areas:
-- Inventory Management: Track lots, serials, expiry dates, cycle counts
-- Order Management: Orders, allocations, picks, shipments, returns
-- Warehouse Operations: Tasks, labor, equipment, dock management
-- Supply Chain Visibility: Real-time status, analytics
-- Compliance & Audit: Change tracking, validation reports
-"""
-
 from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import sys
 from pathlib import Path
+from typing import Self
 
 import click
 
-
+logger = logging.getLogger(__name__)
 try:
     from rich.console import Console
     from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -43,6 +25,7 @@ except ImportError:
 
         def print(self, *args, **kwargs) -> None:
             """Print to stdout as fallback."""
+            logger.info(*args, **kwargs)
 
         def log(self, *args, **kwargs) -> None:
             """Log to stdout as fallback."""
@@ -54,7 +37,7 @@ except ImportError:
         def __init__(self, *args, **kwargs) -> None:
             """Initialize progress."""
 
-        def __enter__(self) -> Progress:
+        def __enter__(self) -> Self:
             """Enter context."""
             return self
 
@@ -97,7 +80,6 @@ from .discovery import EntityDiscovery, SchemaGenerator
 from .monitoring import TAPMonitor
 from .tap import TapOracleWMS
 
-
 console = Console() if RICH_AVAILABLE else None
 
 
@@ -105,19 +87,15 @@ def safe_print(message: str, style: str | None = None) -> None:
     """Safe print function that works with or without rich."""
     if RICH_AVAILABLE and console:
         if style:
-            console.print(f"[{style}]{message}[/{style}]")
-        else:
-            console.print(message)
-    else:
+            logger.info("[%s]%s[/%s]", style, message, style)
+            logger.info("%s", message)
         # Strip rich markup for plain print
         import re
 
         re.sub(r"\[.*?\]", "", message)
 
 
-# ========================================
 # MAIN CLI GROUP
-# ========================================
 
 
 @click.group(invoke_without_command=True)
@@ -195,9 +173,7 @@ def _handle_singer_mode(
         sys.argv = original_argv
 
 
-# ========================================
 # DISCOVERY AND SCHEMA SUBCOMMANDS
-# ========================================
 
 
 @cli.group()
@@ -304,11 +280,10 @@ def discover_schemas(
         # Get entities to process
         if entities:
             entity_list = {name: f"/entity/{name}" for name in entities}
-        else:
             all_entities = await discovery.discover_entities()
             entity_list = discovery.filter_entities(all_entities)
 
-        schemas = {}
+        schemas: dict = {}
 
         with Progress(
             SpinnerColumn(),
@@ -322,7 +297,7 @@ def discover_schemas(
             for _i, entity_name in enumerate(entity_list.keys()):
                 try:
                     # Try describe method first
-                    if method in ["auto", "describe"]:
+                    if method in {"auto", "describe"}:
                         metadata = await discovery.describe_entity(entity_name)
                         if metadata:
                             schema = generator.generate_from_metadata(metadata)
@@ -331,7 +306,7 @@ def discover_schemas(
                             continue
 
                     # Try sample method
-                    if method in ["auto", "sample"]:
+                    if method in {"auto", "sample"}:
                         samples = await discovery.get_entity_sample(
                             entity_name, sample_size
                         )
@@ -365,18 +340,15 @@ def discover_schemas(
 
         for schema in schemas.values():
             schema_file = output_path / f"{entity_name}_schema.json"
-            with open(schema_file, "w") as f:
+            with open(schema_file, "w", encoding="utf-8") as f:
                 json.dump(schema, f, indent=2)
 
-        safe_print(f"Saved {len(schemas)} schemas to {output_dir}", "green")
-    else:
+        logger.info("Saved %s schemas to %s", len(schemas), output_dir, "green")
         # Output to stdout
         json.dump(schemas, sys.stdout, indent=2)
 
 
-# ========================================
 # INVENTORY MANAGEMENT SUBCOMMANDS
-# ========================================
 
 
 @cli.group()
@@ -420,7 +392,7 @@ def inventory_status(
     config_data["entities"] = inventory_entities
 
     # Add filters
-    filters = {}
+    filters: dict = {}
     if facility:
         filters["facility_code"] = facility
     if item_code:
@@ -434,10 +406,10 @@ def inventory_status(
     # Run extraction and analysis
     TapOracleWMS(config=config_data)
 
-    safe_print("Extracting inventory data...", "green")
+    logger.info("Extracting inventory data...", "green")
 
     # For demonstration, show what would be extracted
-    safe_print("\nInventory Analysis Configuration:", "blue")
+    logger.info("\nInventory Analysis Configuration:", "blue")
 
     if RICH_AVAILABLE:
         table = Table(show_header=True, header_style="bold magenta")
@@ -455,12 +427,9 @@ def inventory_status(
             str(low_stock_threshold) if low_stock_threshold else "None",
         )
 
-        (
-            console.print(table)
-            if RICH_AVAILABLE
-            else print("Table display requires rich library")
-        )
-    else:
+        if RICH_AVAILABLE:
+            logger.info("%s", table)
+            logger.info("Table display requires rich library")
         # Fallback table display
         pass
 
@@ -493,7 +462,7 @@ def inventory_cycle_count(
     config, location_pattern, abc_class, variance_only, export_format
 ) -> None:
     """Generate cycle count reports and variance analysis."""
-    safe_print("Generating cycle count analysis...", "blue")
+    logger.info("Generating cycle count analysis...", "blue")
 
     # Configuration for cycle count extraction
     json.load(config)
@@ -506,7 +475,7 @@ def inventory_cycle_count(
         "item",
     ]
 
-    filters = {}
+    filters: dict = {}
     if location_pattern:
         filters["location_code__like"] = location_pattern
     if abc_class:
@@ -516,12 +485,10 @@ def inventory_cycle_count(
         f"Configured for {len(cycle_count_entities)} cycle count entities",
         "green",
     )
-    safe_print(f"Export format: {export_format}", "yellow")
+    logger.info("Export format: %s", export_format, "yellow")
 
 
-# ========================================
 # ORDER MANAGEMENT SUBCOMMANDS
-# ========================================
 
 
 @cli.group()
@@ -557,7 +524,7 @@ def analyze_allocation(
     bottleneck_analysis,
 ) -> None:
     """Analyze order allocation patterns and efficiency."""
-    safe_print("Analyzing order allocation patterns...", "blue")
+    logger.info("Analyzing order allocation patterns...", "blue")
 
     config_data = json.load(config)
 
@@ -584,12 +551,12 @@ def analyze_allocation(
     if order_status:
         config_data["global_filters"] = {"order_status__in": list(order_status)}
 
-    safe_print(f"Configured analysis for {len(order_entities)} entities", "green")
+    logger.info("Configured analysis for %s entities", len(order_entities), "green")
 
     if allocation_efficiency:
-        safe_print("• Allocation efficiency metrics enabled", "yellow")
+        logger.info("• Allocation efficiency metrics enabled", "yellow")
     if bottleneck_analysis:
-        safe_print("• Bottleneck analysis enabled", "yellow")
+        logger.info("• Bottleneck analysis enabled", "yellow")
 
 
 @orders.command("fulfillment-metrics")
@@ -605,19 +572,17 @@ def analyze_allocation(
 @click.option("--include-kpis", is_flag=True, help="Include key performance indicators")
 def fulfillment_metrics(config: click.File, period: str, include_kpis: bool) -> None:
     """Generate order fulfillment performance metrics."""
-    safe_print(f"Generating {period} fulfillment metrics...", "blue")
+    logger.info("Generating %s fulfillment metrics...", period, "blue")
 
     if include_kpis:
-        safe_print("Including KPI calculations:", "yellow")
-        safe_print("• Order cycle time")
-        safe_print("• Pick accuracy")
-        safe_print("• On-time shipment rate")
-        safe_print("• Order fill rate")
+        logger.info("Including KPI calculations:", "yellow")
+        logger.info("• Order cycle time")
+        logger.info("• Pick accuracy")
+        logger.info("• On-time shipment rate")
+        logger.info("• Order fill rate")
 
 
-# ========================================
 # WAREHOUSE OPERATIONS SUBCOMMANDS
-# ========================================
 
 
 @cli.group()
@@ -645,13 +610,13 @@ def task_performance(
     config: click.File, task_type: str, worker_id: str, productivity_metrics: bool
 ) -> None:
     """Analyze warehouse task performance and productivity."""
-    safe_print(f"Analyzing {task_type} task performance...", "blue")
+    logger.info("Analyzing %s task performance...", task_type, "blue")
 
     config_data = json.load(config)
 
     # Configure task-related entities
 
-    filters = {}
+    filters: dict = {}
     if task_type != "all":
         filters["task_type"] = task_type
     if worker_id:
@@ -660,14 +625,14 @@ def task_performance(
     if filters:
         config_data["global_filters"] = filters
 
-    safe_print(f"Analyzing tasks with filters: {filters}", "green")
+    logger.info("Analyzing tasks with filters: %s", filters, "green")
 
     if productivity_metrics:
-        safe_print("Productivity metrics enabled:", "yellow")
-        safe_print("• Tasks per hour")
-        safe_print("• Time per task")
-        safe_print("• Error rates")
-        safe_print("• Utilization rates")
+        logger.info("Productivity metrics enabled:", "yellow")
+        logger.info("• Tasks per hour")
+        logger.info("• Time per task")
+        logger.info("• Error rates")
+        logger.info("• Utilization rates")
 
 
 @warehouse.command("equipment-utilization")
@@ -680,7 +645,7 @@ def equipment_utilization(
     config: click.File, equipment_type: str, downtime_analysis: bool
 ) -> None:
     """Analyze warehouse equipment utilization and performance."""
-    safe_print("Analyzing equipment utilization...", "blue")
+    logger.info("Analyzing equipment utilization...", "blue")
 
     equipment_entities = [
         "equipment",
@@ -696,12 +661,10 @@ def equipment_utilization(
     )
 
     if downtime_analysis:
-        safe_print("Downtime analysis enabled", "yellow")
+        logger.info("Downtime analysis enabled", "yellow")
 
 
-# ========================================
 # SYNC AND EXTRACTION SUBCOMMANDS
-# ========================================
 
 
 @cli.group()
@@ -748,9 +711,9 @@ def sync_incremental(
     if state:
         json.load(state)
 
-    safe_print("Starting incremental sync...", "blue")
-    safe_print(f"Entities: {entities or 'all configured'}", "green")
-    safe_print(f"Since: {since or 'last bookmark'}", "green")
+    logger.info("Starting incremental sync...", "blue")
+    logger.info("Entities: {entities or 'all configured'}", "green")
+    logger.info("Since: {since or 'last bookmark'}", "green")
 
     # Run sync with Singer protocol
     singer_args = ["tap-oracle-wms", "--config", config.name]
@@ -758,7 +721,7 @@ def sync_incremental(
         singer_args.extend(["--state", state.name])
 
     # For demonstration, show configuration
-    safe_print("Sync configuration ready", "yellow")
+    logger.info("Sync configuration ready", "yellow")
 
 
 @sync.command("full")
@@ -798,14 +761,12 @@ def sync_full(
         business_entities = _get_business_area_entities(business_area)
         config_data["entities"] = business_entities
 
-    safe_print(f"Starting full sync for {business_area}...", "blue")
-    safe_print(f"Parallel streams: {parallel_streams}", "green")
-    safe_print(f"Batch size: {batch_size}", "green")
+    logger.info("Starting full sync for %s...", business_area, "blue")
+    logger.info("Parallel streams: %s", parallel_streams, "green")
+    logger.info("Batch size: %s", batch_size, "green")
 
 
-# ========================================
 # ANALYSIS AND REPORTING SUBCOMMANDS
-# ========================================
 
 
 @cli.group()
@@ -829,7 +790,7 @@ def analyze_supply_chain(
     config: click.File, time_window: str, include_forecasting: bool
 ) -> None:
     """Analyze supply chain performance and visibility."""
-    safe_print("Analyzing supply chain performance...", "blue")
+    logger.info("Analyzing supply chain performance...", "blue")
 
     supply_chain_entities = [
         "order_header",
@@ -841,11 +802,11 @@ def analyze_supply_chain(
         "replenishment",
     ]
 
-    safe_print(f"Analyzing {time_window} days of supply chain data", "green")
-    safe_print(f"Entities: {len(supply_chain_entities)}", "green")
+    logger.info("Analyzing %s days of supply chain data", time_window, "green")
+    logger.info("Entities: %s", len(supply_chain_entities), "green")
 
     if include_forecasting:
-        safe_print("Demand forecasting analysis enabled", "yellow")
+        logger.info("Demand forecasting analysis enabled", "yellow")
 
 
 @analyze.command("compliance")
@@ -863,7 +824,7 @@ def analyze_supply_chain(
 @click.option("--date-range", help="Date range for audit (YYYY-MM-DD,YYYY-MM-DD)")
 def analyze_compliance(config: click.File, audit_type: str, date_range: str) -> None:
     """Run compliance and audit analysis."""
-    safe_print(f"Running {audit_type} compliance analysis...", "blue")
+    logger.info("Running %s compliance analysis...", audit_type, "blue")
 
     compliance_entities = [
         "audit_log",
@@ -879,12 +840,10 @@ def analyze_compliance(config: click.File, audit_type: str, date_range: str) -> 
     )
 
     if date_range:
-        safe_print(f"Date range: {date_range}", "green")
+        logger.info("Date range: %s", date_range, "green")
 
 
-# ========================================
 # UTILITY FUNCTIONS
-# ========================================
 
 
 def _prepare_discovery_config(
@@ -927,7 +886,7 @@ async def _run_discovery_with_progress(discovery, verify_access):
 
         if verify_access:
             progress.update(task, description="Verifying entity access...")
-            accessible = {}
+            accessible: dict = {}
             for url in filtered.values():
                 if await discovery.check_entity_access(name):
                     accessible[name] = url
@@ -943,16 +902,16 @@ async def _run_discovery_with_progress(discovery, verify_access):
 
 async def _run_discovery_simple(discovery, verify_access):
     """Run discovery with simple text output."""
-    safe_print("Discovering entities...", "blue")
+    logger.info("Discovering entities...", "blue")
     entities = await discovery.discover_entities()
-    safe_print(f"Found {len(entities)} entities, filtering...", "green")
+    logger.info("Found %s entities, filtering...", len(entities), "green")
 
     filtered = discovery.filter_entities(entities)
-    safe_print(f"Filtered to {len(filtered)} entities", "green")
+    logger.info("Filtered to %s entities", len(filtered), "green")
 
     if verify_access:
-        safe_print("Verifying entity access...", "yellow")
-        accessible = {}
+        logger.info("Verifying entity access...", "yellow")
+        accessible: dict = {}
         for i, (name, url) in enumerate(filtered.items()):
             if await discovery.check_entity_access(name):
                 accessible[name] = url
@@ -1062,7 +1021,7 @@ def _display_entities_table(categorized: dict[str, list[str]]) -> None:
         if not entity_list:
             continue
 
-        safe_print(f"\n[bold magenta]{category}[/bold magenta] ({len(entity_list)})")
+        logger.info("\n[bold magenta]%s[/bold magenta] (%s)", category, len(entity_list))
 
         table = Table(show_header=True, header_style="bold cyan")
         table.add_column("Entity Name", style="green")
@@ -1072,11 +1031,9 @@ def _display_entities_table(categorized: dict[str, list[str]]) -> None:
             context = _get_business_context(entity, category)
             table.add_row(entity, context)
 
-        (
-            console.print(table)
-            if RICH_AVAILABLE
-            else print("Table display requires rich library")
-        )
+        if RICH_AVAILABLE:
+            logger.info("%s", table)
+            logger.info("Table display requires rich library")
 
 
 def _get_business_context(entity_name: str, category: str) -> str:
@@ -1158,9 +1115,7 @@ def _get_business_area_entities(business_area: str) -> list[str]:
     return business_area_map.get(business_area, [])
 
 
-# ========================================
 # MONITORING AND METRICS SUBCOMMANDS
-# ========================================
 
 
 @cli.group()
@@ -1195,11 +1150,10 @@ def monitor_status(config: click.File, output_format: str) -> None:
 
     status = asyncio.run(_get_status())
 
-    if output_format in ("json", "prometheus"):
+    if output_format in {"json", "prometheus"}:
         pass
-    else:
-        safe_print("Oracle WMS TAP Monitoring Status", "bold blue")
-        safe_print(f"Timestamp: {status['timestamp']}", "green")
+        logger.info("Oracle WMS TAP Monitoring Status", "bold blue")
+        logger.info("Timestamp: {status['timestamp']}", "green")
         health = status.get("health", {})
         overall_health = health.get("overall_healthy", False)
         safe_print(

@@ -1,5 +1,6 @@
-from typing import Any
+"""Module test_e2e."""
 
+from typing import Any
 
 """End-to-end tests for tap-oracle-wms."""
 
@@ -10,7 +11,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from tap_oracle_wms.tap import TapOracleWMS
 
 
@@ -32,7 +32,7 @@ class TestE2EWithOptionalConfig:
     def live_config_data(self, config_file_path) -> Any:
         """Load live config if available."""
         if config_file_path:
-            with open(config_file_path) as f:
+            with open(config_file_path, encoding="utf-8") as f:
                 return json.load(f)
         return None
 
@@ -42,7 +42,7 @@ class TestE2EWithOptionalConfig:
 
         if config_path.exists():
             # Validate config structure
-            with open(config_path) as f:
+            with open(config_path, encoding="utf-8") as f:
                 config = json.load(f)
 
             # Check required fields
@@ -55,7 +55,6 @@ class TestE2EWithOptionalConfig:
                 assert "username" in config, "Missing username for basic auth"
                 assert "password" in config, "Missing password for basic auth"
 
-        else:
             pytest.skip("No config.json available for E2E testing")
 
     def test_e2e_discovery_with_config(self, live_config_data) -> None:
@@ -64,7 +63,9 @@ class TestE2EWithOptionalConfig:
             pytest.skip("No live config available")
 
         # Create temporary config file
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
             json.dump(live_config_data, f)
             temp_config_path = f.name
 
@@ -96,7 +97,6 @@ class TestE2EWithOptionalConfig:
                 except json.JSONDecodeError:
                     # Output might not be pure JSON if mixed with logs
                     assert "entities" in result.stdout or "Found" in result.stdout
-            else:
                 # Don't fail the test for external connectivity issues
                 pytest.skip(f"Discovery command failed: {result.stderr}")
 
@@ -110,7 +110,9 @@ class TestE2EWithOptionalConfig:
             pytest.skip("No live config available")
 
         # Create temporary config file
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
             json.dump(live_config_data, f)
             temp_config_path = f.name
 
@@ -133,7 +135,6 @@ class TestE2EWithOptionalConfig:
 
             if result.returncode == 0:
                 assert "successful" in result.stdout.lower() or "✅" in result.stdout
-            else:
                 # Don't fail the test for external connectivity issues
                 pytest.skip(f"Connection test failed: {result.stderr}")
 
@@ -147,7 +148,9 @@ class TestE2EWithOptionalConfig:
             pytest.skip("No live config available")
 
         # Create temporary config file
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
             json.dump(live_config_data, f)
             temp_config_path = f.name
 
@@ -183,7 +186,6 @@ class TestE2EWithOptionalConfig:
 
                 except json.JSONDecodeError:
                     pytest.fail("Invalid catalog JSON output")
-            else:
                 pytest.skip(f"Singer discovery failed: {result.stderr}")
 
         finally:
@@ -222,13 +224,13 @@ class TestE2EWithOptionalConfig:
 
         # Create temporary files
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
         ) as config_f:
             json.dump(live_config_data, config_f)
             temp_config_path = config_f.name
 
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
         ) as catalog_f:
             json.dump(minimal_catalog, catalog_f)
             temp_catalog_path = catalog_f.name
@@ -255,7 +257,7 @@ class TestE2EWithOptionalConfig:
             if result.returncode == 0:
                 # Check for Singer messages in output
                 lines = result.stdout.strip().split("\n")
-                message_types = set()
+                message_types: set = set()
 
                 for line in lines:
                     if line.strip():
@@ -276,7 +278,6 @@ class TestE2EWithOptionalConfig:
                 or "connection" in result.stderr.lower()
             ):
                 pytest.skip(f"Singer sync failed due to connectivity: {result.stderr}")
-            else:
                 pytest.fail(f"Singer sync failed: {result.stderr}")
 
         except subprocess.TimeoutExpired:
@@ -361,7 +362,9 @@ class TestE2EWithOptionalConfig:
         # Create invalid config file
         invalid_config = {"base_url": "invalid-url", "auth_method": "invalid"}
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
             json.dump(invalid_config, f)
             temp_config_path = f.name
 
@@ -524,9 +527,9 @@ class TestE2EPerformance:
             discovery_time = time.time() - start_time
 
             # Discovery should complete in reasonable time
-            assert discovery_time < 60, (
-                f"Discovery took too long: {discovery_time:.2f}s"
-            )
+            assert (
+                discovery_time < 60
+            ), f"Discovery took too long: {discovery_time:.2f}s"
 
         except Exception as e:
             pytest.skip(f"Discovery performance test failed: {e}")
@@ -543,7 +546,7 @@ class TestE2EPerformance:
         config_json = json.dumps(sample_config)
 
         # Create multiple tap instances
-        taps = []
+        taps: list = []
         for _i in range(5):
             tap = TapOracleWMS(config=config_json)
             taps.append(tap)
@@ -575,8 +578,8 @@ class TestE2ERobustness:
         import threading
 
         config_json = json.dumps(sample_config)
-        results = []
-        errors = []
+        results: list = []
+        errors: list = []
 
         def create_tap(index) -> None:
             try:
@@ -586,7 +589,7 @@ class TestE2ERobustness:
                 errors.append(f"Error {index}: {e}")
 
         # Create multiple threads
-        threads = []
+        threads: list = []
         for i in range(5):
             thread = threading.Thread(target=create_tap, args=(i,))
             threads.append(thread)

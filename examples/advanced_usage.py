@@ -1,3 +1,5 @@
+"""Module advanced_usage."""
+
 #!/usr/bin/env python3
 """Advanced usage examples for tap-oracle-wms."""
 
@@ -8,7 +10,7 @@ from typing import Any
 
 from tap_oracle_wms import TapOracleWMS
 from tap_oracle_wms.discovery import EntityDiscovery, SchemaGenerator
-
+from typing import List, Dict, Optional, Any
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -348,7 +350,6 @@ async def parallel_entity_extraction():
                 f"  {result['entity']}: {result['records']} records in {result['elapsed']:.2f}s"
             )
             total_records += result["records"]
-        else:
             logger.info("  %s", result['entity']: FAILED - %s", result['error']")
 
     logger.info("\nTotal: %s", total_records records")
@@ -372,7 +373,7 @@ def main() -> None:
         sys.exit(1)
 
     example = sys.argv[1]
-    logger.info("Running %s", example example...")
+    logger.info("Running %s example...", example)
 
     try:
         examples[example]()

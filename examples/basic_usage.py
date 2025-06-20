@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+"""Module basic_usage."""
+
+# !/usr/bin/env python3
 """Basic usage example for tap-oracle-wms."""
 
 import json
@@ -6,7 +8,7 @@ import logging
 import os
 import sys
 from datetime import UTC, datetime
-
+from typing import Any
 
 # Set up logging
 logging.basicConfig(
@@ -63,19 +65,19 @@ def discover_entities() -> Any:
         # This will discover all available streams
         catalog = tap.catalog
 
-        logger.info("Discovered %s", len(catalog.streams) entities:")
+        logger.info("Discovered %s entities:", len(catalog.streams))
         for stream in catalog.streams:
-            logger.info("  - %s", stream.tap_stream_id")
+            logger.info("  - %s", stream.tap_stream_id)
 
             # Show primary keys and replication key
             metadata = stream.metadata[0].metadata
             if metadata.get("table-key-properties"):
-                logger.info("    Primary keys: %s", metadata['table-key-properties']")
+                logger.info("    Primary keys: %s", metadata["table-key-properties"])
             if metadata.get("replication-key"):
-                logger.info("    Replication key: %s", metadata['replication-key']")
+                logger.info("    Replication key: %s", metadata["replication-key"])
 
         # Save catalog
-        with open("catalog.json", "w") as f:
+        with open("catalog.json", "w", encoding="utf-8") as f:
             json.dump(catalog.to_dict(), f, indent=2)
         logger.info("Catalog saved to catalog.json")
 
@@ -101,9 +103,9 @@ def extract_sample_data() -> None:
     logger.info("Extracting sample data from selected entities...")
 
     # Capture output
-    records = []
-    schemas = {}
-    states = {}
+    records: list = []
+    schemas: dict = {}
+    states: dict = {}
 
     def handle_record(message) -> None:
         if message["type"] == "RECORD":
@@ -118,7 +120,7 @@ def extract_sample_data() -> None:
 
     # Override the write_message method to capture output
     original_write_message = tap.write_message
-    tap.write_message = lambda message: handle_record(message)
+    tap.write_message = handle_record
 
     try:
         # Run sync
@@ -127,18 +129,18 @@ def extract_sample_data() -> None:
         # Display results
         logger.info("\nExtraction Summary:")
         for stream, stream_records in records.items():
-            logger.info("\n%s", stream: %s", len(stream_records) records")
+            logger.info("\n%s: %s records", stream, len(stream_records))
             if stream_records:
                 # Show first record as example
                 logger.info("  Sample record:")
                 sample = stream_records[0]
                 for key, value in list(sample.items())[:5]:  # Show first 5 fields
-                    logger.info("    %s", key: %s", value")
-                if len(sample) > MAX_RETRY_COUNT:
-                    logger.info("    ... and %s", len(sample) - 5 more fields")
+                    logger.info("    %s: %s", key, value)
+                if len(sample) > 5:
+                    logger.info("    ... and %s more fields", len(sample) - 5)
 
         # Save sample data
-        with open("sample_data.json", "w") as f:
+        with open("sample_data.json", "w", encoding="utf-8") as f:
             json.dump(
                 {
                     "extraction_time": datetime.now(UTC).isoformat(),
@@ -172,18 +174,18 @@ def incremental_sync_example() -> None:
     tap = TapOracleWMS(config=config)
 
     # Load previous state if exists
-    state = {}
+    state: dict = {}
     if os.path.exists("state.json"):
-        with open("state.json") as f:
+        with open("state.json", encoding="utf-8") as f:
             state = json.load(f)
-        logger.info("Loaded previous state: %s", state")
+        logger.info("Loaded previous state: %s", state)
 
     tap.state = state
 
     logger.info("Running incremental sync...")
 
     # Capture new state
-    new_state = {}
+    new_state: dict = {}
 
     def handle_state(message) -> None:
         if message["type"] == "STATE":
@@ -200,9 +202,9 @@ def incremental_sync_example() -> None:
 
         # Save new state
         if new_state:
-            with open("state.json", "w") as f:
+            with open("state.json", "w", encoding="utf-8") as f:
                 json.dump(new_state, f, indent=2)
-            logger.info("Saved new state: %s", new_state")
+            logger.info("Saved new state: %s", new_state)
 
     except Exception:
         logger.exception("Incremental sync failed")
@@ -224,7 +226,6 @@ def main() -> None:
         extract_sample_data()
     elif command == "incremental":
         incremental_sync_example()
-    else:
         sys.exit(1)
 
 

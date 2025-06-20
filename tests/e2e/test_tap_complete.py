@@ -3,7 +3,6 @@
 import json
 
 import pytest
-
 from tap_oracle_wms.tap import TapOracleWMS
 
 

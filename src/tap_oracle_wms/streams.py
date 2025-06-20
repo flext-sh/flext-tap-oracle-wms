@@ -1,8 +1,9 @@
 """Dynamic streams for Oracle WMS entities."""
 
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import parse_qs, urlparse
+import logging
 
 import backoff
 import httpx
@@ -11,6 +12,7 @@ from singer_sdk.pagination import BaseOffsetPaginator
 from singer_sdk.streams import RESTStream
 
 from .auth import get_wms_authenticator, get_wms_headers
+from .tap import TapOracleWMS
 
 
 class WMSPaginator(BaseOffsetPaginator):
@@ -66,7 +68,7 @@ class WMSPaginator(BaseOffsetPaginator):
         except (ValueError, KeyError):
             return False
 
-    def get_next(self, response: httpx.Response) -> Optional[int]:
+    def get_next(self, response: httpx.Response) -> int | None:
         """Get next page token.
 
         Args:
@@ -161,11 +163,6 @@ class WMSDynamicStream(RESTStream):
 
         # Handle testing scenario where tap might be None
         if tap is None:
-            # Create a minimal tap context for testing with proper attributes
-            import logging
-
-            from .tap import TapOracleWMS
-
             # Create a minimal tap instance with default config for testing
             test_tap = TapOracleWMS(config={})
             test_tap.logger = logging.getLogger("tap_oracle_wms")
@@ -232,12 +229,12 @@ class WMSDynamicStream(RESTStream):
         return ["id"]
 
     @property
-    def replication_key(self) -> Optional[str]:
+    def replication_key(self) -> str | None:
         """Replication key for incremental sync."""
         return self._replication_key
 
     @replication_key.setter
-    def replication_key(self, value: Optional[str]) -> None:
+    def replication_key(self, value: str | None) -> None:
         """Set replication key for the entity."""
         self._replication_key = value
 
@@ -254,23 +251,23 @@ class WMSDynamicStream(RESTStream):
         if self.replication_key:
             # Configure for incremental replication
             metadata.get_property_metadata(".", "replication-method").selected = False
-            metadata.get_property_metadata(
-                ".", "replication-method"
-            ).value = "INCREMENTAL"
+            metadata.get_property_metadata(".", "replication-method").value = (
+                "INCREMENTAL"
+            )
             metadata.get_property_metadata(".", "replication-key").selected = False
-            metadata.get_property_metadata(
-                ".", "replication-key"
-            ).value = self.replication_key
+            metadata.get_property_metadata(".", "replication-key").value = (
+                self.replication_key
+            )
         else:
             # Configure for full table replication
             metadata.get_property_metadata(".", "replication-method").selected = False
-            metadata.get_property_metadata(
-                ".", "replication-method"
-            ).value = "FULL_TABLE"
+            metadata.get_property_metadata(".", "replication-method").value = (
+                "FULL_TABLE"
+            )
 
         return metadata
 
-    def _determine_replication_key(self) -> Optional[str]:
+    def _determine_replication_key(self) -> str | None:
         """Determine replication key for incremental sync."""
         # Look for timestamp fields
         if not self._entity_schema:
@@ -290,14 +287,14 @@ class WMSDynamicStream(RESTStream):
                 # Check if it's a datetime field
                 if isinstance(prop, dict):
                     # Direct format check
-                    if prop.get("format") in ["date-time", "date"]:
+                    if prop.get("format") in {"date-time", "date"}:
                         return key
                     # Check anyOf structure for datetime fields
                     if "anyOf" in prop:
                         for any_type in prop["anyOf"]:
                             if isinstance(any_type, dict) and any_type.get(
                                 "format"
-                            ) in ["date-time", "date"]:
+                            ) in {"date-time", "date"}:
                                 return key
                     # Check for string types with time-related names
                     if prop.get("type") == "string" and "time" in key.lower():
@@ -342,8 +339,8 @@ class WMSDynamicStream(RESTStream):
         return WMSPaginator(start_value=start_value, page_size=page_size, mode=mode)
 
     def get_url_params(
-        self, context: Optional[dict[str, Any]], next_page_token: Optional[Any]
-    ) -> Optional[dict[str, Any]]:
+        self, context: dict[str, Any] | None, next_page_token: Any | None
+    ) -> dict[str, Any] | None:
         """Get URL parameters for the request.
 
         Args:
@@ -356,7 +353,7 @@ class WMSDynamicStream(RESTStream):
             Dictionary of URL parameters
 
         """
-        params = {}
+        params: dict = {}
 
         # Pagination parameters
         if self.config.get("pagination_mode") == "cursor":
@@ -394,7 +391,7 @@ class WMSDynamicStream(RESTStream):
 
         return params
 
-    def _get_selected_fields(self) -> Optional[list[str]]:
+    def _get_selected_fields(self) -> list[str] | None:
         """Get fields to select for this entity."""
         # Check entity-specific field selection
         field_selection = self.config.get("field_selection", {})
@@ -404,7 +401,7 @@ class WMSDynamicStream(RESTStream):
         # Use default fields if configured
         return self.config.get("default_fields")
 
-    def _get_ordering(self) -> Optional[str]:
+    def _get_ordering(self) -> str | None:
         """Get ordering for this entity."""
         # Check entity-specific ordering
         entity_ordering = self.config.get("entity_ordering", {})
@@ -416,7 +413,7 @@ class WMSDynamicStream(RESTStream):
 
     def _get_filters(self) -> dict[str, Any]:
         """Get filters for this entity."""
-        filters = {}
+        filters: dict = {}
 
         # Apply global filters
         global_filters = self.config.get("global_filters", {})
@@ -489,7 +486,7 @@ class WMSDynamicStream(RESTStream):
     def _request_with_backoff(
         self,
         prepared_request: httpx.Request,
-        context: Optional[dict[str, Any]],
+        context: dict[str, Any] | None,
     ) -> httpx.Response:
         """Make HTTP request with retry logic.
 
@@ -508,8 +505,8 @@ class WMSDynamicStream(RESTStream):
         return response
 
     def get_starting_replication_key_value(
-        self, context: Optional[dict] = None
-    ) -> Optional[str]:
+        self, context: dict | None = None
+    ) -> str | None:
         """Get the starting replication key value for incremental sync.
 
         Args:
@@ -546,9 +543,7 @@ class WMSDynamicStream(RESTStream):
 
         return None
 
-    def get_replication_key_signpost(
-        self, context: Optional[dict] = None
-    ) -> Optional[str]:
+    def get_replication_key_signpost(self, context: dict | None = None) -> str | None:
         """Get the current replication key signpost.
 
         Args:
@@ -611,7 +606,7 @@ class WMSDynamicStream(RESTStream):
     def update_sync_progress_markers(
         self,
         latest_record: dict,
-        latest_bookmark: Optional[str],
+        latest_bookmark: str | None,
         context: dict,
     ) -> None:
         """Update sync progress markers.
@@ -661,7 +656,7 @@ class WMSDynamicStream(RESTStream):
             )
 
     def post_process(
-        self, row: dict[str, Any], context: Optional[dict[str, Any]] = None
+        self, row: dict[str, Any], context: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         """Post-process each record.
 

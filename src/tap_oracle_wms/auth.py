@@ -1,8 +1,8 @@
 """Authentication for Oracle WMS REST API."""
 
 import base64
-from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import httpx
 from singer_sdk.authenticators import OAuthAuthenticator, SimpleAuthenticator
@@ -67,9 +67,9 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         self,
         stream: Any,
         auth_endpoint: str,
-        oauth_scopes: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
+        oauth_scopes: str | None = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
     ) -> None:
         """Initialize OAuth2 authenticator.
 
@@ -92,9 +92,9 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         oauth_scopes = oauth_scopes or default_scope
 
         # Token management
-        self._access_token: Optional[str] = None
-        self._token_expires: Optional[datetime] = None
-        self._refresh_token: Optional[str] = None
+        self._access_token: str | None = None
+        self._token_expires: datetime | None = None
+        self._refresh_token: str | None = None
         self._auth_headers: dict[str, str] = {}
 
         super().__init__(stream, auth_endpoint=auth_endpoint, oauth_scopes=oauth_scopes)
@@ -152,7 +152,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         if (
             self._access_token
             and self._token_expires
-            and datetime.now(timezone.utc) < self._token_expires
+            and datetime.now(UTC) < self._token_expires
         ):
             return self._access_token
 
@@ -184,9 +184,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
 
             # Calculate expiration (with 60 second buffer)
             expires_in = token_data.get("expires_in", 3600)
-            self._token_expires = datetime.now(timezone.utc) + timedelta(
-                seconds=expires_in - 60
-            )
+            self._token_expires = datetime.now(UTC) + timedelta(seconds=expires_in - 60)
 
             # Store refresh token if provided
             if "refresh_token" in token_data:
@@ -203,7 +201,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         if not self._access_token or not self._token_expires:
             return False
 
-        return datetime.now(timezone.utc) < self._token_expires
+        return datetime.now(UTC) < self._token_expires
 
 
 def get_wms_authenticator(stream: Any, config: dict[str, Any]) -> Any:
