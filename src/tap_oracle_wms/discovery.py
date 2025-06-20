@@ -3,13 +3,12 @@
 import fnmatch
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 
 from .auth import get_wms_authenticator, get_wms_headers
 from .config import HTTP_FORBIDDEN, HTTP_NOT_FOUND, HTTP_OK
-
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ class EntityDiscovery:
         self._setup_authentication()
 
         # Enhanced cache for discovered entities with comprehensive caching
-        self._entity_cache: Optional[dict[str, str]] = None
+        self._entity_cache: dict[str, str] | None = None
         self._schema_cache: dict[str, dict[str, Any]] = {}
         self._access_cache: dict[str, bool] = {}
         self._sample_cache: dict[str, list[dict[str, Any]]] = {}
@@ -51,8 +50,8 @@ class EntityDiscovery:
         )  # 30 minutes for access checks
 
         # Cache timestamps
-        self._last_cache_time: Optional[datetime] = None
-        self._last_entity_cache_time: Optional[datetime] = None
+        self._last_cache_time: datetime | None = None
+        self._last_entity_cache_time: datetime | None = None
         self._access_cache_times: dict[str, datetime] = {}
         self._sample_cache_times: dict[str, datetime] = {}
         self._metadata_cache_times: dict[str, datetime] = {}
@@ -161,7 +160,7 @@ class EntityDiscovery:
 
             except httpx.HTTPStatusError as e:
                 logger.exception("Failed to discover entities")
-                logger.error("Response: %s", e.response.text)
+                logger.exception("Response: %s", e.response.text)
                 raise
             except (
                 httpx.ConnectError,
@@ -268,7 +267,7 @@ class EntityDiscovery:
                 elif isinstance(data, list):
                     sample_data = data[:limit]
                 else:
-                    sample_data = []
+                    sample_data: list = []
 
                 # Cache the sample data
                 self._sample_cache[cache_key] = sample_data
@@ -409,7 +408,7 @@ class EntityDiscovery:
                 # Don't cache exceptions, allow retry
                 return False
 
-    async def estimate_entity_size(self, entity_name: str) -> Optional[int]:
+    async def estimate_entity_size(self, entity_name: str) -> int | None:
         """Estimate the number of records in an entity.
 
         Args:
@@ -478,22 +477,22 @@ class EntityDiscovery:
             cache_type: Type of cache to clear ("all", "entities", "metadata", "samples", "access")
 
         """
-        if cache_type in ("all", "entities"):
+        if cache_type in {"all", "entities"}:
             self._entity_cache = None
             self._last_entity_cache_time = None
             logger.info("Cleared entity cache")
 
-        if cache_type in ("all", "metadata"):
+        if cache_type in {"all", "metadata"}:
             self._metadata_cache.clear()
             self._metadata_cache_times.clear()
             logger.info("Cleared metadata cache")
 
-        if cache_type in ("all", "samples"):
+        if cache_type in {"all", "samples"}:
             self._sample_cache.clear()
             self._sample_cache_times.clear()
             logger.info("Cleared sample cache")
 
-        if cache_type in ("all", "access"):
+        if cache_type in {"all", "access"}:
             self._access_cache.clear()
             self._access_cache_times.clear()
             logger.info("Cleared access cache")
@@ -631,8 +630,8 @@ class SchemaGenerator:
             Singer-compatible schema
 
         """
-        properties = {}
-        required_fields = []
+        properties: dict = {}
+        required_fields: list = []
 
         # The describe endpoint returns field names in "parameters" and definitions in "fields"
         field_names = metadata.get("parameters", [])
@@ -680,10 +679,10 @@ class SchemaGenerator:
             return {"type": "object", "properties": {}}
 
         # Analyze all samples to build complete schema
-        properties = {}
+        properties: dict = {}
 
         for sample in samples:
-            for value in sample.values():
+            for field_name, value in sample.items():
                 if field_name not in properties:
                     properties[field_name] = self._infer_type(value)
                 else:
@@ -738,14 +737,14 @@ class SchemaGenerator:
                     prop["maxLength"] = field_def["max_length"]
 
             # Add format for date/time types
-            if field_type in ["datetime", "timestamp"]:
+            if field_type in {"datetime", "timestamp"}:
                 prop["format"] = "date-time"
             elif field_type == "date":
                 prop["format"] = "date"
             elif field_type == "time":
                 prop["format"] = "time"
 
-        elif base_type in ["number", "integer"]:
+        elif base_type in {"number", "integer"}:
             if field_def.get("min_value") is not None:
                 prop["minimum"] = field_def["min_value"]
             if field_def.get("max_value") is not None:
@@ -796,14 +795,14 @@ class SchemaGenerator:
                     prop["maxLength"] = param["max_length"]
 
             # Add format for date/time types
-            if field_type in ["datetime", "timestamp"]:
+            if field_type in {"datetime", "timestamp"}:
                 prop["format"] = "date-time"
             elif field_type == "date":
                 prop["format"] = "date"
             elif field_type == "time":
                 prop["format"] = "time"
 
-        elif base_type in ["number", "integer"]:
+        elif base_type in {"number", "integer"}:
             if param.get("min_value") is not None:
                 prop["minimum"] = param["min_value"]
             if param.get("max_value") is not None:

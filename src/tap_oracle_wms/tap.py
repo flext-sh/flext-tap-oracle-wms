@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from singer_sdk import Stream, Tap
 
@@ -10,7 +10,6 @@ from .config import config_schema, validate_auth_config, validate_pagination_con
 from .discovery import EntityDiscovery, SchemaGenerator
 from .monitoring import TAPMonitor
 from .streams_advanced import WMSAdvancedStream
-
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +81,6 @@ class TapOracleWMS(Tap):
                     self._monitor.metrics.record_gauge(
                         "connection.entities_discovered", len(entities)
                     )
-            else:
                 if self._monitor:
                     self._monitor.metrics.record_counter("connection.test.failure")
                 msg = "No entities discovered. Check permissions."
@@ -179,17 +177,16 @@ class TapOracleWMS(Tap):
         timeout = self.config.get("entity_access_timeout", 300)  # 5 minutes default
         try:
             results = await asyncio.wait_for(asyncio.gather(*tasks), timeout=timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Entity access check timed out after %s seconds", timeout)
             # Return all entities if timeout
             return entities
 
         # Filter accessible entities
-        accessible_entities = {}
+        accessible_entities: dict = {}
         for name, url, accessible in results:
             if accessible:
                 accessible_entities[name] = url
-            else:
                 logger.warning("No access to entity: %s", name)
 
         logger.info(
@@ -216,7 +213,7 @@ class TapOracleWMS(Tap):
 
         async def generate_single_schema(
             entity_name: str,
-        ) -> tuple[str, Optional[dict[str, Any]]]:
+        ) -> tuple[str, dict[str, Any] | None]:
             async with semaphore:
                 try:
                     schema = await self._generate_schema_for_entity(entity_name)
@@ -248,10 +245,10 @@ class TapOracleWMS(Tap):
         )  # 10 minutes default
         try:
             results = await asyncio.wait_for(asyncio.gather(*tasks), timeout=timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Schema generation timed out after %s seconds", timeout)
             # Try to generate schemas sequentially for remaining entities
-            results = []
+            results: list = []
             for entity_name in sorted(entities.keys()):
                 try:
                     schema = await self._generate_schema_for_entity(entity_name)
@@ -272,11 +269,10 @@ class TapOracleWMS(Tap):
                     results.append((entity_name, None))
 
         # Filter successful schemas
-        successful_schemas = {}
+        successful_schemas: dict = {}
         for entity_name, schema in results:
             if schema:
                 successful_schemas[entity_name] = schema
-            else:
                 logger.warning("Skipping entity %s: No schema generated", entity_name)
 
         logger.info(
@@ -288,7 +284,7 @@ class TapOracleWMS(Tap):
 
     async def _generate_schema_for_entity(
         self, entity_name: str
-    ) -> Optional[dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Generate schema for a single entity.
 
         Args:
@@ -303,13 +299,13 @@ class TapOracleWMS(Tap):
         method = self.config.get("schema_discovery_method", "auto")
 
         # Try describe endpoint first
-        if method in ["auto", "describe"]:
+        if method in {"auto", "describe"}:
             metadata = await self.entity_discovery.describe_entity(entity_name)
             if metadata:
                 return self.schema_generator.generate_from_metadata(metadata)
 
         # Try sample data inference
-        if method in ["auto", "sample"]:
+        if method in {"auto", "sample"}:
             samples = await self.entity_discovery.get_entity_sample(
                 entity_name, limit=self.config.get("schema_sample_size", 5)
             )
@@ -360,7 +356,7 @@ class TapOracleWMS(Tap):
             )
 
         # Create streams from successful schemas
-        streams = []
+        streams: list = []
         for schema in schemas.values():
             try:
                 # Store schema for later use
@@ -431,7 +427,7 @@ class TapOracleWMS(Tap):
             return self.discover_streams()
 
         # Otherwise recreate streams from cached data
-        streams = []
+        streams: list = []
         for schema in self._entity_schemas.values():
             stream = WMSAdvancedStream(tap=self, entity_name=entity_name, schema=schema)
             streams.append(stream)

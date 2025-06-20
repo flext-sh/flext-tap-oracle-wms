@@ -3,7 +3,6 @@
 import time
 
 import pytest
-
 from tap_oracle_wms.config import QUALITY_THRESHOLD, RATE_THRESHOLD
 from tap_oracle_wms.tap import TapOracleWMS
 
@@ -68,7 +67,6 @@ class TestComprehensiveLiveFlow:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -176,7 +174,7 @@ class TestComprehensiveLiveFlow:
         messages, capture_fn = captured_messages
 
         original_write = tap.write_message
-        page_requests = []
+        page_requests: list = []
         record_count = 0
         max_records = 20
 
@@ -186,7 +184,6 @@ class TestComprehensiveLiveFlow:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -218,12 +215,12 @@ class TestComprehensiveLiveFlow:
             actual_pages = len(page_requests)
 
             # Allow some variance in page detection
-            assert actual_pages >= expected_pages - 1, (
-                f"Too few pages: {actual_pages} vs {expected_pages}"
-            )
+            assert (
+                actual_pages >= expected_pages - 1
+            ), f"Too few pages: {actual_pages} vs {expected_pages}"
 
             # Check for duplicate records (pagination issue indicator)
-            record_ids = []
+            record_ids: list = []
             for msg in record_messages:
                 record = msg.get("record", {})
                 if "id" in record:
@@ -232,9 +229,9 @@ class TestComprehensiveLiveFlow:
             if len(record_ids) > 1:
                 unique_ids = set(record_ids)
                 duplicate_ratio = 1 - (len(unique_ids) / len(record_ids))
-                assert duplicate_ratio < 0.1, (
-                    f"Too many duplicates: {duplicate_ratio:.2%}"
-                )
+                assert (
+                    duplicate_ratio < 0.1
+                ), f"Too many duplicates: {duplicate_ratio:.2%}"
 
     def test_error_handling_comprehensive(self, live_config) -> None:
         """Test comprehensive error handling scenarios."""
@@ -304,7 +301,6 @@ class TestComprehensiveLiveFlow:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -346,9 +342,9 @@ class TestComprehensiveLiveFlow:
 
             # Performance assertions
             assert discovery_time < 30.0, f"Discovery too slow: {discovery_time:.2f}s"
-            assert records_per_second > 0.5, (
-                f"Extraction too slow: {records_per_second:.2f} records/s"
-            )
+            assert (
+                records_per_second > 0.5
+            ), f"Extraction too slow: {records_per_second:.2f} records/s"
 
     def test_data_quality_comprehensive(self, live_config, captured_messages) -> None:
         """Test comprehensive data quality validation."""
@@ -362,7 +358,7 @@ class TestComprehensiveLiveFlow:
         original_write = tap.write_message
         record_count = 0
         max_records = 30
-        quality_issues = []
+        quality_issues: list = []
 
         def quality_capture(message) -> None:
             nonlocal record_count, quality_issues
@@ -370,7 +366,6 @@ class TestComprehensiveLiveFlow:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -381,7 +376,6 @@ class TestComprehensiveLiveFlow:
                     quality_issues.append(f"Record {record_count}: Not a dictionary")
                 elif len(record) == 0:
                     quality_issues.append(f"Record {record_count}: Empty record")
-                else:
                     # Check field types and values
                     for value in record.values():
                         if not isinstance(field, str):
@@ -394,7 +388,7 @@ class TestComprehensiveLiveFlow:
                             )
 
                         # Check for problematic values
-                        if isinstance(value, (type, function)):
+                        if isinstance(value, type | function):
                             quality_issues.append(
                                 f"Record {record_count}: Invalid value type in {field}"
                             )
@@ -426,9 +420,9 @@ class TestComprehensiveLiveFlow:
 
         # Quality assertions
         quality_ratio = len(quality_issues) / max(len(record_messages), 1)
-        assert quality_ratio < QUALITY_THRESHOLD, (
-            f"Too many quality issues: {quality_ratio:.2%}"
-        )
+        assert (
+            quality_ratio < QUALITY_THRESHOLD
+        ), f"Too many quality issues: {quality_ratio:.2%}"
 
         if len(record_messages) > 0:
             # Schema compliance check
@@ -543,7 +537,7 @@ class TestLiveStressTests:
         config["page_size"] = 5
 
         # Create multiple tap instances rapidly
-        taps = []
+        taps: list = []
         start_time = time.time()
 
         for _i in range(5):
@@ -579,7 +573,6 @@ class TestLiveStressTests:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":

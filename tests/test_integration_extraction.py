@@ -1,7 +1,6 @@
 """Integration tests for data extraction with live WMS API."""
 
 import pytest
-
 from tap_oracle_wms.tap import TapOracleWMS
 
 
@@ -90,9 +89,9 @@ class TestLiveDataExtraction:
 
             # At least some expected fields should be present
             common_fields = found_fields.intersection(expected_fields)
-            assert len(common_fields) > 0, (
-                f"Expected {expected_fields}, found {list(found_fields)[:10]}"
-            )
+            assert (
+                len(common_fields) > 0
+            ), f"Expected {expected_fields}, found {list(found_fields)[:10]}"
 
     @pytest.mark.live
     def test_live_pagination_behavior(self, live_config, captured_messages) -> None:
@@ -120,7 +119,6 @@ class TestLiveDataExtraction:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -146,7 +144,7 @@ class TestLiveDataExtraction:
             assert len(record_messages) > 3, "Pagination may not be working correctly"
 
             # Verify records are unique (no duplicates from pagination issues)
-            record_ids = []
+            record_ids: list = []
             for msg in record_messages:
                 record = msg.get("record", {})
                 if "id" in record:
@@ -154,9 +152,9 @@ class TestLiveDataExtraction:
 
             if len(record_ids) > 1:
                 unique_ids = set(record_ids)
-                assert len(unique_ids) == len(record_ids), (
-                    "Duplicate records found - pagination issue"
-                )
+                assert len(unique_ids) == len(
+                    record_ids
+                ), "Duplicate records found - pagination issue"
 
     @pytest.mark.live
     def test_live_incremental_sync_setup(self, live_config, captured_messages) -> None:
@@ -183,7 +181,6 @@ class TestLiveDataExtraction:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -257,7 +254,6 @@ class TestLiveDataExtraction:
                 or "authentication" in error_msg
             ):
                 pytest.fail("Authentication failed - check WMS credentials")
-            else:
                 # Other error - re-raise
                 raise
 
@@ -285,7 +281,6 @@ class TestLiveDataExtraction:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -321,7 +316,7 @@ class TestLiveDataExtraction:
                 # Check for data type consistency
                 for value in record.values():
                     # Values should not be unexpected types
-                    assert not isinstance(value, (type, function, complex))
+                    assert not isinstance(value, type | function | complex)
 
 
 @pytest.mark.integration
@@ -352,7 +347,6 @@ class TestExtractionConfiguration:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -506,7 +500,6 @@ class TestExtractionPerformance:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -530,9 +523,9 @@ class TestExtractionPerformance:
         # Performance should be reasonable
         if record_count > 0:
             records_per_second = record_count / extraction_time
-            assert records_per_second > 0.5, (
-                f"Too slow: {records_per_second:.2f} records/second"
-            )
+            assert (
+                records_per_second > 0.5
+            ), f"Too slow: {records_per_second:.2f} records/second"
 
     @pytest.mark.live
     def test_connection_timeout_handling(self, live_config) -> None:
@@ -553,7 +546,6 @@ class TestExtractionPerformance:
             if "timeout" in error_msg:
                 # Expected timeout behavior
                 pass
-            else:
                 # Re-raise non-timeout errors
                 raise
 
@@ -638,7 +630,6 @@ class TestExtractionEdgeCases:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":
@@ -693,7 +684,6 @@ class TestExtractionEdgeCases:
 
             if hasattr(message, "to_dict"):
                 msg_dict = message.to_dict()
-            else:
                 msg_dict = {"type": message.__class__.__name__}
 
             if msg_dict.get("type") == "RECORD":

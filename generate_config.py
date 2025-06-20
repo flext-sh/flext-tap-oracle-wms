@@ -1,6 +1,7 @@
-#!/usr/bin/env python3
-from typing import Any
+"""Module generate_config."""
 
+# !/usr/bin/env python3
+from typing import Any
 
 """Generate config.json from .env file for tap-oracle-wms."""
 
@@ -9,7 +10,6 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-
 
 # Load environment variables
 load_dotenv()
@@ -46,7 +46,7 @@ def main() -> None:
 
     config = generate_tap_config()
 
-    with open("config.json", "w") as f:
+    with open("config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
 
 

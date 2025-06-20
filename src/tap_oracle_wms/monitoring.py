@@ -15,7 +15,10 @@ import time
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any, Self
+
+import psutil
 
 
 logger = logging.getLogger(__name__)
@@ -138,8 +141,6 @@ class MetricsCollector:
         """Collect system-level metrics."""
         try:
             # Memory usage
-            import psutil
-
             process = psutil.Process()
             memory_info = process.memory_info()
 
@@ -159,7 +160,7 @@ class MetricsCollector:
             logger.warning("Error collecting system metrics: %s", e)
 
     def record_counter(
-        self, name: str, value: int = 1, tags: Optional[dict[str, str]] = None
+        self, name: str, value: int = 1, tags: dict[str, str] | None = None
     ) -> None:
         """Record a counter metric.
 
@@ -185,7 +186,7 @@ class MetricsCollector:
         self._metrics[name].append(point)
 
     def record_gauge(
-        self, name: str, value: float, tags: Optional[dict[str, str]] = None
+        self, name: str, value: float, tags: dict[str, str] | None = None
     ) -> None:
         """Record a gauge metric.
 
@@ -214,7 +215,7 @@ class MetricsCollector:
         self,
         name: str,
         duration_ms: float,
-        tags: Optional[dict[str, str]] = None,
+        tags: dict[str, str] | None = None,
     ) -> None:
         """Record a timer metric.
 
@@ -338,7 +339,7 @@ class TimerContext:
         self.name = name
         self.start_time: float | None = None
 
-    def __enter__(self) -> TimerContext:
+    def __enter__(self) -> Self:
         self.start_time: float = time.time()
         return self
 
@@ -464,7 +465,7 @@ class HealthMonitor:
             Dictionary with check results
 
         """
-        results = {}
+        results: dict = {}
         overall_healthy = True
 
         for check in self._health_checks.values():
@@ -479,7 +480,6 @@ class HealthMonitor:
 
                 if result:
                     check.consecutive_failures = 0
-                else:
                     check.consecutive_failures += 1
                     overall_healthy = False
 
@@ -551,15 +551,11 @@ class HealthMonitor:
     def _check_memory_usage(self) -> bool:
         """Check memory usage is within acceptable limits."""
         try:
-            import psutil
-
             process = psutil.Process()
             memory_mb = process.memory_info().rss / 1024 / 1024
 
             # Alert if memory usage > 512MB
             return memory_mb < 512
-        except ImportError:
-            return True  # Can't check without psutil
         except Exception:
             return False
 
@@ -699,7 +695,7 @@ class AlertManager:
             List of triggered alert names
 
         """
-        triggered = []
+        triggered: list = []
 
         for alert in self._alerts.values():
             if not alert.enabled:
@@ -807,8 +803,8 @@ class PerformanceProfiler:
     def end_profile(
         self,
         profile_id: str,
-        entity_name: Optional[str] = None,
-        record_count: Optional[int] = None,
+        entity_name: str | None = None,
+        record_count: int | None = None,
     ) -> float:
         """End profiling and record metrics.
 
@@ -928,7 +924,7 @@ class TAPMonitor:
 
     def _export_prometheus_format(self) -> str:
         """Export metrics in Prometheus format."""
-        lines = []
+        lines: list = []
         snapshot = self.metrics.get_metrics_snapshot()
 
         # Export counters

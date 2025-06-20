@@ -1,9 +1,6 @@
 """Configuration schema for tap-oracle-wms."""
 
-from typing import Optional
-
 from singer_sdk import typing as th
-
 
 # Constants
 WMS_MAX_PAGE_SIZE = 1250
@@ -619,9 +616,7 @@ config_schema = th.PropertiesList(
         default=True,
         description="Test WMS connection on startup",
     ),
-    # ========================================
     # BUSINESS-SPECIFIC CONFIGURATION
-    # ========================================
     # Business area configuration
     th.Property(
         "business_areas",
@@ -960,7 +955,7 @@ config_schema = th.PropertiesList(
 ).to_dict()
 
 
-def validate_auth_config(config: dict) -> Optional[str]:
+def validate_auth_config(config: dict) -> str | None:
     """Validate authentication configuration.
 
     Args:
@@ -988,13 +983,12 @@ def validate_auth_config(config: dict) -> Optional[str]:
         if missing:
             return f"OAuth2 authentication requires: {', '.join(missing)}"
 
-    else:
         return f"Unknown authentication method: {auth_method}"
 
     return None
 
 
-def validate_pagination_config(config: dict) -> Optional[str]:
+def validate_pagination_config(config: dict) -> str | None:
     """Validate pagination configuration.
 
     Args:

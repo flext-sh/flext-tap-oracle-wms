@@ -1,3 +1,5 @@
+"""Module wms_webhook_setup."""
+
 #!/usr/bin/env python3
 """Oracle WMS Webhook Configuration Script.
 
@@ -10,14 +12,12 @@ import logging
 import os
 from datetime import UTC, datetime
 
-
 # Constants
 HTTP_OK = 200
 HTTP_NOT_FOUND = 404
 
 import httpx
 from dotenv import load_dotenv
-
 
 # Setup logging
 logging.basicConfig(
@@ -103,7 +103,7 @@ class WMSWebhookConfig:
         """Check which entities support webhook configuration."""
         logger.info("Checking webhook support for WMS entities...")
 
-        supported_entities = {}
+        supported_entities: dict = {}
         entities = self.get_webhook_entities()
 
         for entity in entities:
@@ -114,11 +114,10 @@ class WMSWebhookConfig:
 
                 if response.status_code == HTTP_OK:
                     supported_entities[entity] = True
-                    logger.info("✅ %s", entity: Webhook support available")
+                    logger.info("✅ %s: Webhook support available", entity)
                 elif response.status_code == HTTP_NOT_FOUND:
                     supported_entities[entity] = False
-                    logger.info("❌ %s", entity: No webhook support")
-                else:
+                    logger.info("❌ %s: No webhook support", entity)
                     supported_entities[entity] = False
                     logger.warning(
                         f"⚠️ {entity}: Unknown status ({response.status_code})"
@@ -132,7 +131,7 @@ class WMSWebhookConfig:
 
     def configure_entity_webhook(self, entity: str, webhook_url: str) -> bool:
         """Configure webhook for a specific entity."""
-        logger.info("Configuring webhook for entity: %s", entity")
+        logger.info("Configuring webhook for entity: %s", entity)
 
         webhook_config = {
             "url": webhook_url,
@@ -154,12 +153,12 @@ class WMSWebhookConfig:
             response = self.client.post(url, json=webhook_config)
 
             if response.status_code in [200, 201]:
-                logger.info("✅ Webhook configured for %s", entity")
+                logger.info("✅ Webhook configured for %s", entity)
                 return True
             logger.error(
                 f"❌ Failed to configure webhook for {entity}: {response.status_code}"
             )
-            logger.error("Response: %s", response.text")
+            logger.error("Response: %s", response.text)
             return False
 
         except Exception:
@@ -170,7 +169,7 @@ class WMSWebhookConfig:
         """List all existing webhook configurations."""
         logger.info("Listing existing webhook configurations...")
 
-        webhooks = {}
+        webhooks: dict = {}
         entities = self.get_webhook_entities()
 
         for entity in entities:
@@ -289,9 +288,9 @@ def main() -> None:
         logger.error("❌ WMS_USERNAME and WMS_PASSWORD must be set in environment")
         return
 
-    logger.info("WMS URL: %s", base_url")
-    logger.info("Username: %s", username")
-    logger.info("Webhook URL: %s", webhook_url")
+    logger.info("WMS URL: %s", base_url)
+    logger.info("Username: %s", username)
+    logger.info("Webhook URL: %s", webhook_url)
 
     # Initialize webhook manager
     webhook_manager = WMSWebhookConfig(base_url, username, password)
@@ -305,15 +304,14 @@ def main() -> None:
         total_count = len(supported)
 
         logger.info("\n📊 Webhook Support Summary:")
-        logger.info("✅ Supported: %s", supported_count/%s", total_count entities")
+        logger.info("✅ Supported: %s/%s entities", supported_count, total_count)
 
         # List existing webhooks
         logger.info("\n📋 Checking existing webhooks...")
         existing = webhook_manager.list_existing_webhooks()
 
         if existing:
-            logger.info("Found webhooks configured for: %s", ', '.join(existing.keys())")
-        else:
+            logger.info("Found webhooks configured for: %s", ", ".join(existing.keys()))
             logger.info("No existing webhooks found")
 
         # Generate manual instructions

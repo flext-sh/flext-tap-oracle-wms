@@ -109,6 +109,6 @@ class TestEntityDiscovery:
         common_entities = ["facility", "item", "company"]
 
         for entity in common_entities:
-            assert entity in entity_names, (
-                f"Common entity '{entity}' should be supported"
-            )
+            assert (
+                entity in entity_names
+            ), f"Common entity '{entity}' should be supported"
