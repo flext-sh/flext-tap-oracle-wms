@@ -1,9 +1,10 @@
 """Dynamic streams for Oracle WMS entities."""
 
-from collections.abc import Iterable
-from typing import Any
-from urllib.parse import parse_qs, urlparse
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING, Any
+from urllib.parse import parse_qs, urlparse
 
 import backoff
 import httpx
@@ -13,6 +14,11 @@ from singer_sdk.streams import RESTStream
 
 from .auth import get_wms_authenticator, get_wms_headers
 from .tap import TapOracleWMS
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from requests import Response
 
 
 class WMSPaginator(BaseOffsetPaginator):
@@ -30,9 +36,9 @@ class WMSPaginator(BaseOffsetPaginator):
         """
         super().__init__(start_value=start_value, page_size=page_size)
         self.mode = mode
-        self._cursor = None
+        self._cursor: str | None = None
 
-    def has_more(self, response: httpx.Response) -> bool:
+    def has_more(self, response: Response) -> bool:
         """Check if there are more pages.
 
         Args:
@@ -68,7 +74,7 @@ class WMSPaginator(BaseOffsetPaginator):
         except (ValueError, KeyError):
             return False
 
-    def get_next(self, response: httpx.Response) -> int | None:
+    def get_next(self, response: Response) -> int | None:
         """Get next page token.
 
         Args:
@@ -111,13 +117,13 @@ class WMSPaginator(BaseOffsetPaginator):
             return None
 
 
-class WMSDynamicStream(RESTStream):
+class WMSDynamicStream(RESTStream[dict[str, Any]]):
     """Dynamic stream for any Oracle WMS entity."""
 
     # Class attributes that will be set dynamically
-    _entity_name: str = None
-    _entity_schema: dict[str, Any] = None
-    _tap_config: dict[str, Any] = None
+    _entity_name: str
+    _entity_schema: dict[str, Any]
+    _tap_config: dict[str, Any]
 
     # Enable incremental replication by default
     forced_replication_method = None  # Let the catalog decide based on replication_key
@@ -125,7 +131,7 @@ class WMSDynamicStream(RESTStream):
     @classmethod
     def create_for_testing(
         cls, entity_name: str, schema: dict[str, Any]
-    ) -> "WMSDynamicStream":
+    ) -> WMSDynamicStream:
         """Create a stream instance for testing without a tap.
 
         Args:
@@ -140,7 +146,7 @@ class WMSDynamicStream(RESTStream):
         """
         return cls(tap=None, entity_name=entity_name, schema=schema)
 
-    def __init__(self, tap, entity_name: str, schema: dict[str, Any]) -> None:
+    def __init__(self, tap: Any, entity_name: str, schema: dict[str, Any]) -> None:
         """Initialize dynamic stream.
 
         Args:
@@ -156,10 +162,10 @@ class WMSDynamicStream(RESTStream):
         self._tap_config = getattr(tap, "config", {}) if tap else {}
 
         # Initialize primary keys
-        self._primary_keys = self._determine_primary_keys()
+        self._primary_keys: list[str] = self._determine_primary_keys()
 
         # Initialize replication key
-        self._replication_key = self._determine_replication_key()
+        self._replication_key: str | None = self._determine_replication_key()
 
         # Handle testing scenario where tap might be None
         if tap is None:
@@ -174,16 +180,16 @@ class WMSDynamicStream(RESTStream):
             self._replication_key = self._determine_replication_key()
             return
 
-        # Debug logging
+        # Call parent constructor
+        super().__init__(tap)
+
+        # Debug logging - do after super().__init__ to ensure logger exists
         if hasattr(self, "logger"):
             self.logger.info(
                 "Initialized %s with replication_key: %s",
                 entity_name,
                 self._replication_key,
             )
-
-        # Call parent constructor
-        super().__init__(tap)
 
         # Force replication key after parent initialization
         # This ensures it's set even if parent constructor overrides it
@@ -194,32 +200,43 @@ class WMSDynamicStream(RESTStream):
     def name(self) -> str:
         """Stream name."""
         # Return the Singer SDK name if set, otherwise use entity name
-        return getattr(self, "_name", None) or self._entity_name
+        return (
+            getattr(self, "_name", None)
+            or getattr(self, "_entity_name", "unknown")
+            or "unknown"
+        )
 
     @name.setter
     def name(self, value: str) -> None:
         """Set stream name (for Singer SDK compatibility)."""
-        self._name = value
+        # Singer SDK uses read-only name property, store in alternate attribute
+        object.__setattr__(self, "_name", value)
 
     @property
     def path(self) -> str:
         """API path for entity."""
-        return f"/wms/lgfapi/v10/entity/{self._entity_name}"
+        entity_name = getattr(self, "_entity_name", "unknown")
+        return f"/wms/lgfapi/v10/entity/{entity_name}"
 
     @property
     def primary_keys(self) -> list[str]:
         """Primary keys for the entity."""
-        return self._primary_keys
+        return getattr(self, "_primary_keys", ["id"])
 
     @primary_keys.setter
     def primary_keys(self, value: list[str]) -> None:
         """Set primary keys for the entity."""
-        self._primary_keys = value
+        # Singer SDK uses read-only primary_keys property, store in alternate attribute
+        object.__setattr__(self, "_primary_keys", value)
 
     def _determine_primary_keys(self) -> list[str]:
         """Determine primary keys for the entity."""
         # Check if schema has required fields that could be PKs
-        if "required" in self._entity_schema:
+        if (
+            hasattr(self, "_entity_schema")
+            and self._entity_schema
+            and "required" in self._entity_schema
+        ):
             # Look for 'id' or similar fields
             for field in ["id", f"{self._entity_name}_id", "code"]:
                 if field in self._entity_schema.get("properties", {}):
@@ -236,7 +253,8 @@ class WMSDynamicStream(RESTStream):
     @replication_key.setter
     def replication_key(self, value: str | None) -> None:
         """Set replication key for the entity."""
-        self._replication_key = value
+        # Singer SDK uses read-only replication_key property, store in alternate attribute
+        object.__setattr__(self, "_replication_key", value)
 
     @property
     def is_timestamp_replicable(self) -> bool:
@@ -251,26 +269,26 @@ class WMSDynamicStream(RESTStream):
         if self.replication_key:
             # Configure for incremental replication
             metadata.get_property_metadata(".", "replication-method").selected = False
-            metadata.get_property_metadata(".", "replication-method").value = (
-                "INCREMENTAL"
-            )
+            metadata.get_property_metadata(
+                ".", "replication-method"
+            ).value = "INCREMENTAL"
             metadata.get_property_metadata(".", "replication-key").selected = False
-            metadata.get_property_metadata(".", "replication-key").value = (
-                self.replication_key
-            )
+            metadata.get_property_metadata(
+                ".", "replication-key"
+            ).value = self.replication_key
         else:
             # Configure for full table replication
             metadata.get_property_metadata(".", "replication-method").selected = False
-            metadata.get_property_metadata(".", "replication-method").value = (
-                "FULL_TABLE"
-            )
+            metadata.get_property_metadata(
+                ".", "replication-method"
+            ).value = "FULL_TABLE"
 
         return metadata
 
     def _determine_replication_key(self) -> str | None:
         """Determine replication key for incremental sync."""
         # Look for timestamp fields
-        if not self._entity_schema:
+        if not hasattr(self, "_entity_schema") or not self._entity_schema:
             return None
         properties = self._entity_schema.get("properties", {})
 
@@ -305,7 +323,7 @@ class WMSDynamicStream(RESTStream):
     @property
     def schema(self) -> dict[str, Any]:
         """JSON schema for the stream."""
-        return self._entity_schema
+        return getattr(self, "_entity_schema", {})
 
     @property
     def authenticator(self) -> Any:
@@ -326,7 +344,8 @@ class WMSDynamicStream(RESTStream):
     @property
     def url_base(self) -> str:
         """Base URL for API requests."""
-        return self.config["base_url"].rstrip("/")
+        base_url = self.config.get("base_url", "")
+        return str(base_url).rstrip("/")
 
     def get_new_paginator(self) -> WMSPaginator:
         """Get a new paginator instance."""
@@ -353,7 +372,7 @@ class WMSDynamicStream(RESTStream):
             Dictionary of URL parameters
 
         """
-        params: dict = {}
+        params: dict[str, Any] = {}
 
         # Pagination parameters
         if self.config.get("pagination_mode") == "cursor":
@@ -395,25 +414,29 @@ class WMSDynamicStream(RESTStream):
         """Get fields to select for this entity."""
         # Check entity-specific field selection
         field_selection = self.config.get("field_selection", {})
-        if self._entity_name in field_selection:
-            return field_selection[self._entity_name]
+        entity_name = getattr(self, "_entity_name", "unknown")
+        if entity_name in field_selection:
+            return field_selection[entity_name]
 
         # Use default fields if configured
-        return self.config.get("default_fields")
+        default_fields = self.config.get("default_fields")
+        return default_fields if isinstance(default_fields, list) else None
 
     def _get_ordering(self) -> str | None:
         """Get ordering for this entity."""
         # Check entity-specific ordering
         entity_ordering = self.config.get("entity_ordering", {})
-        if self._entity_name in entity_ordering:
-            return entity_ordering[self._entity_name]
+        entity_name = getattr(self, "_entity_name", "unknown")
+        if entity_name in entity_ordering:
+            return entity_ordering[entity_name]
 
         # Use default ordering
-        return self.config.get("default_ordering", "id")
+        default_ordering = self.config.get("default_ordering", "id")
+        return str(default_ordering) if default_ordering else None
 
     def _get_filters(self) -> dict[str, Any]:
         """Get filters for this entity."""
-        filters: dict = {}
+        filters: dict[str, Any] = {}
 
         # Apply global filters
         global_filters = self.config.get("global_filters", {})
@@ -421,12 +444,13 @@ class WMSDynamicStream(RESTStream):
 
         # Apply entity-specific filters
         entity_filters = self.config.get("entity_filters", {})
-        if self._entity_name in entity_filters:
-            filters.update(entity_filters[self._entity_name])
+        entity_name = getattr(self, "_entity_name", "unknown")
+        if entity_name in entity_filters:
+            filters.update(entity_filters[entity_name])
 
         return filters
 
-    def parse_response(self, response: httpx.Response) -> Iterable[dict[str, Any]]:
+    def parse_response(self, response: Response) -> Iterable[dict[str, Any]]:
         """Parse API response and yield records.
 
         Args:
@@ -450,7 +474,7 @@ class WMSDynamicStream(RESTStream):
         elif isinstance(data, dict):
             yield data
 
-    def validate_response(self, response: httpx.Response) -> None:
+    def validate_response(self, response: Response) -> None:
         """Validate HTTP response.
 
         Args:
@@ -505,8 +529,8 @@ class WMSDynamicStream(RESTStream):
         return response
 
     def get_starting_replication_key_value(
-        self, context: dict | None = None
-    ) -> str | None:
+        self, context: dict[str, Any] | None = None
+    ) -> Any:
         """Get the starting replication key value for incremental sync.
 
         Args:
@@ -526,7 +550,9 @@ class WMSDynamicStream(RESTStream):
 
         # Check for bookmark in state
         bookmark_value = (
-            state.get("bookmarks", {}).get(self.name, {}).get("replication_key_value")
+            state.get("bookmarks", {})
+            .get(self.name, {})
+            .get("replication_key_value", None)
         )
 
         if bookmark_value:
@@ -543,7 +569,9 @@ class WMSDynamicStream(RESTStream):
 
         return None
 
-    def get_replication_key_signpost(self, context: dict | None = None) -> str | None:
+    def get_replication_key_signpost(
+        self, context: dict[str, Any] | None = None
+    ) -> Any:
         """Get the current replication key signpost.
 
         Args:
@@ -560,7 +588,9 @@ class WMSDynamicStream(RESTStream):
 
         state = self.get_context_state(context or {})
         return (
-            state.get("bookmarks", {}).get(self.name, {}).get("replication_key_value")
+            state.get("bookmarks", {})
+            .get(self.name, {})
+            .get("replication_key_value", None)
         )
 
     def compare_replication_key_value(self, value1: str, value2: str) -> int:
@@ -605,9 +635,9 @@ class WMSDynamicStream(RESTStream):
 
     def update_sync_progress_markers(
         self,
-        latest_record: dict,
+        latest_record: dict[str, Any],
         latest_bookmark: str | None,
-        context: dict,
+        context: dict[str, Any],
     ) -> None:
         """Update sync progress markers.
 
@@ -657,7 +687,7 @@ class WMSDynamicStream(RESTStream):
 
     def post_process(
         self, row: dict[str, Any], context: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
         """Post-process each record.
 
         Args:
@@ -671,8 +701,9 @@ class WMSDynamicStream(RESTStream):
 
         """
         # Ensure all schema properties exist (with None for missing)
-        if "properties" in self._entity_schema:
-            for prop in self._entity_schema["properties"]:
+        entity_schema = getattr(self, "_entity_schema", {})
+        if "properties" in entity_schema:
+            for prop in entity_schema["properties"]:
                 if prop not in row:
                     row[prop] = None
 

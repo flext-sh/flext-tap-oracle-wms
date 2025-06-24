@@ -1,6 +1,7 @@
 """Integration tests for data extraction with live WMS API."""
 
 import pytest
+
 from tap_oracle_wms.tap import TapOracleWMS
 
 
@@ -545,7 +546,6 @@ class TestExtractionPerformance:
             error_msg = str(e).lower()
             if "timeout" in error_msg:
                 # Expected timeout behavior
-                pass
                 # Re-raise non-timeout errors
                 raise
 

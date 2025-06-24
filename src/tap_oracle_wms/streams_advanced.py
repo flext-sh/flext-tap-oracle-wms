@@ -15,11 +15,9 @@ import json
 import logging
 import time
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs, urlparse
-from collections.abc import Iterable
 
-import httpx
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 from singer_sdk.pagination import BaseOffsetPaginator
 from singer_sdk.streams import RESTStream
@@ -28,6 +26,11 @@ from singer_sdk.streams import RESTStream
 Context = dict[str, Any]
 
 from .auth import get_wms_authenticator, get_wms_headers
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    import httpx
 
 
 logger = logging.getLogger(__name__)

@@ -38,7 +38,7 @@ async def analyze_entity_relationships():
 
     # Discover all entities
     entities = await discovery.discover_entities()
-    logger.info("Found %s", len(entities) entities")
+    logger.info("Found %s", len(entities), "entities")
 
     # Analyze relationships
     relationships = {}

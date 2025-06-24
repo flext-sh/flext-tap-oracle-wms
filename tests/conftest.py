@@ -1,4 +1,5 @@
 """Pytest configuration and shared fixtures for tap-oracle-wms tests."""
+from __future__ import annotations
 
 import os
 from pathlib import Path

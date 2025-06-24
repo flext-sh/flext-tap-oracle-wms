@@ -1,7 +1,9 @@
 """Authentication for Oracle WMS REST API."""
 
+from __future__ import annotations
+
 import base64
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
@@ -23,7 +25,7 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
         """
         self.username = username
         self.password = password
-        self._auth_headers = None
+        self._auth_headers: dict[str, str] | None = None
         super().__init__(stream)
 
     @property
@@ -152,12 +154,15 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         if (
             self._access_token
             and self._token_expires
-            and datetime.now(UTC) < self._token_expires
+            and datetime.now(timezone.utc) < self._token_expires
         ):
             return self._access_token
 
         # Need to get a new token
         self._refresh_access_token()
+        if not self._access_token:
+            msg = "Failed to obtain access token"
+            raise ValueError(msg)
         return self._access_token
 
     def _refresh_access_token(self) -> None:
@@ -169,6 +174,10 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         }
 
         # Make token request
+        if not self._auth_endpoint:
+            msg = "Auth endpoint not configured"
+            raise ValueError(msg)
+
         with httpx.Client() as client:
             response = client.post(
                 self._auth_endpoint,
@@ -184,7 +193,9 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
 
             # Calculate expiration (with 60 second buffer)
             expires_in = token_data.get("expires_in", 3600)
-            self._token_expires = datetime.now(UTC) + timedelta(seconds=expires_in - 60)
+            self._token_expires = datetime.now(timezone.utc) + timedelta(
+                seconds=expires_in - 60
+            )
 
             # Store refresh token if provided
             if "refresh_token" in token_data:
@@ -201,7 +212,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         if not self._access_token or not self._token_expires:
             return False
 
-        return datetime.now(UTC) < self._token_expires
+        return datetime.now(timezone.utc) < self._token_expires
 
 
 def get_wms_authenticator(stream: Any, config: dict[str, Any]) -> Any:
@@ -241,6 +252,11 @@ def get_wms_authenticator(stream: Any, config: dict[str, Any]) -> Any:
 
         if not all([client_id, client_secret, token_url]):
             msg = "OAuth2 auth requires client_id, client_secret, token_url"
+            raise ValueError(msg)
+
+        # Ensure token_url is a string (mypy satisfaction)
+        if not isinstance(token_url, str):
+            msg = "OAuth token URL must be a string"
             raise ValueError(msg)
 
         return WMSOAuth2Authenticator(

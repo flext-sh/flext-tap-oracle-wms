@@ -1,32 +1,28 @@
+# Pre-commit configuration - PyAuto Enterprise Standards
+# See https://pre-commit.com for more information
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+      - id: check-json
       - id: check-added-large-files
+      - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-toml
-      - id: check-json
-      - id: check-ast
       - id: debug-statements
       - id: mixed-line-ending
-        args: [--fix=lf]
 
   - repo: https://github.com/psf/black
     rev: 24.10.0
     hooks:
       - id: black
-        args: [--line-length=88]
+        language_version: python3.9
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: [--profile=black, --line-length=88]
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.8.6
     hooks:
       - id: ruff
@@ -37,62 +33,19 @@ repos:
     rev: v1.16.0
     hooks:
       - id: mypy
-        additional_dependencies:
-          [types-python-dateutil, types-requests, types-PyYAML]
+        additional_dependencies: [types-python-dateutil]
         args: [--strict, --ignore-missing-imports]
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.10
+    rev: 1.8.3
     hooks:
       - id: bandit
-        args: [-c, pyproject.toml]
+        args: [-r, src/]
+        exclude: tests/
 
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.3.0
+  - repo: https://github.com/python-poetry/poetry
+    rev: 1.8.4
     hooks:
-      - id: pydocstyle
-        args: [--convention=google]
-
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
-    hooks:
-      - id: codespell
-        args: [--write-changes]
-        exclude: ^(.*\.lock|.*\.min\.js|.*\.svg)$
-
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.11.0
-    hooks:
-      - id: python-no-log-warn
-      - id: python-check-blanket-noqa
-      - id: python-check-mock-methods
-
-  - repo: local
-    hooks:
-      - id: pytest-check
-        name: pytest-check
-        entry: poetry run pytest
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [commit]
-
-      - id: safety-check
-        name: safety-check
-        entry: poetry run safety check
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [commit]
-
-ci:
-  autofix_commit_msg: |
-    [pre-commit.ci] auto fixes from pre-commit.com hooks
-
-    for more information, see https://pre-commit.ci
-  autofix_prs: true
-  autoupdate_branch: ""
-  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
-  autoupdate_schedule: weekly
-  skip: []
-  submodules: false
+      - id: poetry-check
+      - id: poetry-lock
+        args: [--no-update]

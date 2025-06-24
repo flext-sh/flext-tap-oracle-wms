@@ -1,7 +1,9 @@
 """Oracle WMS tap class."""
+from __future__ import annotations
 
 import asyncio
 import logging
+from itertools import starmap
 from typing import Any
 
 from singer_sdk import Stream, Tap
@@ -20,14 +22,14 @@ class TapOracleWMS(Tap):
     name = "tap-oracle-wms"
     config_jsonschema = config_schema
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize tap."""
         # CRITICAL: Singer SDK requires tap_name BEFORE super().__init__
         self.tap_name = "tap-oracle-wms"  # Required by Singer SDK
-        self._entity_discovery = None
-        self._schema_generator = None
+        self._entity_discovery: EntityDiscovery | None = None
+        self._schema_generator: SchemaGenerator | None = None
         self._discovered_entities = None
-        self._entity_schemas = {}
+        self._entity_schemas: dict[str, dict[str, Any]] = {}
         self._monitor = None
         super().__init__(*args, **kwargs)
 
@@ -99,14 +101,14 @@ class TapOracleWMS(Tap):
     @property
     def entity_discovery(self) -> EntityDiscovery:
         """Get entity discovery instance."""
-        if not self._entity_discovery:
+        if self._entity_discovery is None:
             self._entity_discovery = EntityDiscovery(dict(self.config))
         return self._entity_discovery
 
     @property
     def schema_generator(self) -> SchemaGenerator:
         """Get schema generator instance."""
-        if not self._schema_generator:
+        if self._schema_generator is None:
             self._schema_generator = SchemaGenerator()
         return self._schema_generator
 
@@ -171,7 +173,7 @@ class TapOracleWMS(Tap):
                     return name, url, False
 
         # Create tasks for all entities
-        tasks = [check_single_entity(name, url) for name, url in entities.items()]
+        tasks = list(starmap(check_single_entity, entities.items()))
 
         # Execute with timeout
         timeout = self.config.get("entity_access_timeout", 300)  # 5 minutes default
@@ -183,7 +185,7 @@ class TapOracleWMS(Tap):
             return entities
 
         # Filter accessible entities
-        accessible_entities: dict = {}
+        accessible_entities: dict[str, str] = {}
         for name, url, accessible in results:
             if accessible:
                 accessible_entities[name] = url
@@ -248,29 +250,31 @@ class TapOracleWMS(Tap):
         except TimeoutError:
             logger.warning("Schema generation timed out after %s seconds", timeout)
             # Try to generate schemas sequentially for remaining entities
-            results: list = []
+            sequential_results: list[tuple[str, dict[str, Any] | None]] = []
             for entity_name in sorted(entities.keys()):
                 try:
                     schema = await self._generate_schema_for_entity(entity_name)
-                    results.append((entity_name, schema))
+                    sequential_results.append((entity_name, schema))
                 except (ValueError, TypeError, AttributeError) as e:
                     logger.warning(
                         "Configuration error generating schema for entity %s: %s",
                         entity_name,
                         e,
                     )
-                    results.append((entity_name, None))
+                    sequential_results.append((entity_name, None))
                 except Exception as e:
                     logger.warning(
                         "Unexpected error generating schema for entity %s: %s",
                         entity_name,
                         e,
                     )
-                    results.append((entity_name, None))
+                    sequential_results.append((entity_name, None))
 
         # Filter successful schemas
-        successful_schemas: dict = {}
-        for entity_name, schema in results:
+        successful_schemas: dict[str, dict[str, Any]] = {}
+        # Use sequential_results if we hit timeout, otherwise use original results
+        final_results = sequential_results if "sequential_results" in locals() else results
+        for entity_name, schema in final_results:
             if schema:
                 successful_schemas[entity_name] = schema
                 logger.warning("Skipping entity %s: No schema generated", entity_name)
@@ -336,8 +340,18 @@ class TapOracleWMS(Tap):
         if self._monitor:
             profile_id = self._monitor.profiler.start_profile("discovery")
 
-        # Run async discovery
-        entities = asyncio.run(self._discover_and_filter_entities())
+        # Run async discovery - Fix asyncio.run() in running loop
+        try:
+            asyncio.get_running_loop()
+            # We're in an existing event loop, run in thread pool
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                entities_future = executor.submit(asyncio.run, self._discover_and_filter_entities())
+                entities = entities_future.result()
+        except RuntimeError:
+            # No running loop, safe to use asyncio.run()
+            entities = asyncio.run(self._discover_and_filter_entities())
+
         logger.info("Discovered %s accessible entities", len(entities))
 
         # Record discovery metrics
@@ -346,8 +360,17 @@ class TapOracleWMS(Tap):
                 "discovery.entities_found", len(entities)
             )
 
-        # Generate schemas for entities in parallel
-        schemas = asyncio.run(self._generate_schemas_parallel(entities))
+        # Generate schemas for entities in parallel - Fix asyncio.run() in running loop
+        try:
+            asyncio.get_running_loop()
+            # We're in an existing event loop, run in thread pool
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                schemas_future = executor.submit(asyncio.run, self._generate_schemas_parallel(entities))
+                schemas = schemas_future.result()
+        except RuntimeError:
+            # No running loop, safe to use asyncio.run()
+            schemas = asyncio.run(self._generate_schemas_parallel(entities))
 
         # Record schema generation metrics
         if self._monitor:
@@ -356,8 +379,8 @@ class TapOracleWMS(Tap):
             )
 
         # Create streams from successful schemas
-        streams: list = []
-        for schema in schemas.values():
+        streams: list[Stream] = []
+        for entity_name, schema in schemas.items():
             try:
                 # Store schema for later use
                 self._entity_schemas[entity_name] = schema
@@ -414,7 +437,7 @@ class TapOracleWMS(Tap):
 
         return streams
 
-    def load_streams(self) -> list[Stream]:
+    def _load_streams(self) -> list[Stream]:
         """Load streams (required by Singer SDK).
 
         Returns
@@ -427,8 +450,8 @@ class TapOracleWMS(Tap):
             return self.discover_streams()
 
         # Otherwise recreate streams from cached data
-        streams: list = []
-        for schema in self._entity_schemas.values():
+        streams: list[Stream] = []
+        for entity_name, schema in self._entity_schemas.items():
             stream = WMSAdvancedStream(tap=self, entity_name=entity_name, schema=schema)
             streams.append(stream)
 
