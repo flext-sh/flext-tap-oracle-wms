@@ -1,32 +1,98 @@
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "tap-oracle-wms"
 version = "0.5.0"
-description = "Enterprise Python component"
+description = "PyAuto Enterprise - Singer Tap for Oracle WMS"
 authors = ["DataCosmos Team <team@datacosmos.com>"]
+license = "MIT"
 readme = "README.md"
-packages = [{include = "tap_oracle_wms", from = "src"}]
+repository = "https://github.com/datacosmos-br/tap-oracle-wms"
+documentation = "https://github.com/datacosmos-br/tap-oracle-wms/blob/main/README.md"
+keywords = ["pyauto", "enterprise", "singer", "tap", "oracle", "wms"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database",
+    "Topic :: System :: Integration",
+    "Typing :: Typed",
+]
+packages = [
+    {include = "tap_oracle_wms", from = "src"},
+]
 
 [tool.poetry.dependencies]
 python = "^3.9,<4.0"
+singer-sdk = {extras = ["testing"], version = "^0.44.0"}
+jsonschema = "^4.17.3"
+sqlalchemy = "^2.0.0"
+oracledb = "^2.0.0"
+pydantic = "^2.11.0"
+typing-extensions = "^4.12.0"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/datacosmos-br/tap-oracle-wms/issues"
+Changelog = "https://github.com/datacosmos-br/tap-oracle-wms/blob/main/CHANGELOG.md"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
-ruff = "^0.8.0"
-black = "^24.0.0"
-isort = "^5.13.0"
+pytest = "^8.3.0"
+pytest-cov = "^6.0.0"
+pytest-xdist = "^3.6.0"
+pytest-mock = "^3.14.0"
+pytest-asyncio = "^0.24.0"
+ruff = "^0.8.4"
 mypy = "^1.13.0"
+black = "^24.10.0"
+isort = "^5.13.0"
+types-requests = "^2.32.0"
+types-setuptools = "^75.6.0"
+types-jsonschema = "^4.17.0.10"
+pre-commit = "^4.0.0"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.group.security.dependencies]
+bandit = {extras = ["toml"], version = "^1.7.0"}
+safety = "^3.2.0"
+
+[tool.poetry.group.build.dependencies]
+build = "^1.2.0"
+twine = "^6.0.0"
 
 [tool.ruff]
 line-length = 88
 target-version = "py39"
-
+fix = true
 
 [tool.ruff.lint]
-ignore = ["F821", "E402"]
+select = ["ALL"]
+ignore = [
+    "E501",    # line-too-long (handled by formatter)
+    "PLR0913", # too-many-arguments (Singer taps need flexibility)
+    "PLR2004", # magic-value-comparison (sometimes practical)
+    "TRY003",  # avoid-specifying-long-messages-outside-exception-class
+    "D203",    # one-blank-line-before-class (conflicts with D211)
+    "D213",    # multi-line-docstring-summary-second-line (conflicts with D212)
+    "COM812",  # trailing-comma-missing (handled by formatter)
+    "ISC001",  # implicit-str-concat (conflicts with formatter)
+    "E402",    # module-level-import-not-at-top-of-file (Singer pattern tolerance)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLR2004", "D"]
+"examples/*" = ["T201", "D", "ERA001"]
+"__init__.py" = ["D104"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
 [tool.black]
 line-length = 88
 target-version = ["py39"]
@@ -34,7 +100,124 @@ target-version = ["py39"]
 [tool.isort]
 profile = "black"
 line_length = 88
+known_first_party = ["tap_oracle_wms"]
 
 [tool.mypy]
 python_version = "3.9"
 strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "singer.*",
+    "singer_sdk.*",
+    "oracledb.*",
+    "sqlalchemy.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+    "--cov=src",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html:reports/coverage",
+    "--cov-report=xml:reports/coverage.xml",
+    "--cov-fail-under=85",
+    "--junitxml=reports/pytest.xml",
+    "--maxfail=10",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "e2e: marks tests as end-to-end tests",
+    "smoke: marks tests as smoke tests",
+    "regression: marks tests as regression tests",
+    "security: marks tests as security tests",
+    "performance: marks tests as performance tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+log_cli = false
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/*_test.py",
+    "*/conftest.py",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "*/.venv/*",
+    "*/venv/*",
+    "*/build/*",
+    "*/dist/*",
+    "*/.eggs/*",
+]
+data_file = "reports/.coverage"
+
+[tool.coverage.report]
+skip_empty = true
+skip_covered = false
+show_missing = true
+sort = "Cover"
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+    "TYPE_CHECKING",
+]
+
+[tool.coverage.html]
+directory = "reports/coverage"
+title = "tap-oracle-wms Coverage Report"
+
+[tool.coverage.xml]
+output = "reports/coverage.xml"
+
+[tool.bandit]
+targets = ["src"]
+exclude_dirs = ["tests", "build", "dist"]
+skips = ["B101", "B601"]
+
+[tool.bandit.assert_used]
+skips = ["*/tests/*", "*/test_*.py"]

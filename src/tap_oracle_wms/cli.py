@@ -431,7 +431,6 @@ def inventory_status(
             logger.info("%s", table)
             logger.info("Table display requires rich library")
         # Fallback table display
-        pass
 
 
 @inventory.command("cycle-count")
@@ -1151,7 +1150,6 @@ def monitor_status(config: click.File, output_format: str) -> None:
     status = asyncio.run(_get_status())
 
     if output_format in {"json", "prometheus"}:
-        pass
         logger.info("Oracle WMS TAP Monitoring Status", "bold blue")
         logger.info("Timestamp: {status['timestamp']}", "green")
         health = status.get("health", {})

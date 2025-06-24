@@ -3,6 +3,7 @@
 import time
 
 import pytest
+
 from tap_oracle_wms.config import QUALITY_THRESHOLD, RATE_THRESHOLD
 from tap_oracle_wms.tap import TapOracleWMS
 
@@ -256,7 +257,7 @@ class TestComprehensiveLiveFlow:
             {**live_config, "pagination_mode": "invalid"},  # Invalid mode
         ]
 
-        for _i, config in enumerate(invalid_configs):
+        for config in invalid_configs:
             try:
                 tap = TapOracleWMS(config=config)
                 streams = tap.discover_streams()

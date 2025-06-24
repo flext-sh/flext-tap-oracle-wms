@@ -9,11 +9,9 @@ This module implements the actual Oracle WMS entities discovered from the API:
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs, urlparse
-from collections.abc import Iterable
 
-import httpx
 from singer_sdk.exceptions import FatalAPIError
 from singer_sdk.pagination import BaseOffsetPaginator
 from singer_sdk.streams import RESTStream
@@ -22,6 +20,11 @@ from singer_sdk.streams import RESTStream
 Context = dict[str, Any]
 
 from .auth import get_wms_authenticator, get_wms_headers
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping
+
+    from requests import Response
 
 
 logger = logging.getLogger(__name__)
@@ -42,9 +45,9 @@ class WMSRealPaginator(BaseOffsetPaginator):
         """
         super().__init__(start_value=start_value, page_size=page_size)
         self.mode = mode
-        self._cursor = None
+        self._cursor: str | None = None
 
-    def has_more(self, response: httpx.Response) -> bool:
+    def has_more(self, response: Response) -> bool:
         """Check if more pages exist based on real API response."""
         try:
             data = response.json()
@@ -56,12 +59,12 @@ class WMSRealPaginator(BaseOffsetPaginator):
             # Offset-based pagination (default)
             current_page = data.get("page_nbr", 1)
             total_pages = data.get("page_count", 1)
-            return current_page < total_pages
+            return bool(current_page < total_pages)
 
         except (ValueError, KeyError):
             return False
 
-    def get_next(self, response: httpx.Response) -> int | None:
+    def get_next(self, response: Response) -> int | None:
         """Get next page token based on real API response."""
         if not self.has_more(response):
             return None
@@ -87,7 +90,7 @@ class WMSRealPaginator(BaseOffsetPaginator):
             return None
 
 
-class WMSEntityStream(RESTStream):
+class WMSEntityStream(RESTStream[dict[str, Any]]):
     """Base stream for all WMS entities with real API implementation."""
 
     # Real WMS API configuration from validated testing
@@ -106,7 +109,7 @@ class WMSEntityStream(RESTStream):
     BACKOFF_FACTOR = 2.0
 
     def __init__(
-        self, tap, entity_name: str, schema: dict | None = None, **kwargs
+        self, tap: Any, entity_name: str, schema: dict[str, Any] | None = None, **kwargs: Any
     ) -> None:
         """Initialize TOTALLY DYNAMIC WMS entity stream.
 
@@ -120,6 +123,10 @@ class WMSEntityStream(RESTStream):
         """
         self.entity_name = entity_name
         self._dynamic_schema = schema
+
+        # Set as attributes to avoid property override issues
+        self.name = entity_name
+        self.path = f"/wms/lgfapi/v10/entity/{entity_name}"
         self._monitor = None
         self._field_selection = None
         self._values_list = False
@@ -139,25 +146,15 @@ class WMSEntityStream(RESTStream):
         super().__init__(tap=tap, **kwargs)
 
     @property
-    def name(self) -> str:
-        """Stream name based on entity."""
-        return self.entity_name
-
-    @property
-    def path(self) -> str:
-        """API path for entity."""
-        return f"/wms/lgfapi/v10/entity/{self.entity_name}"
-
-    @property
     def url(self) -> str:
         """Full URL for entity."""
         return f"{self.url_base}{self.path}"
 
     def get_url_params(
-        self, context: dict | None, next_page_token: Any | None
+        self, context: Mapping[str, Any] | None, next_page_token: Any | None = None
     ) -> dict[str, Any]:
         """Get URL parameters for real WMS API with advanced features."""
-        params: dict = {}
+        params: dict[str, Any] = {}
 
         # Pagination mode from config
         pagination_mode = self.config.get("pagination_mode", "offset")
@@ -219,12 +216,13 @@ class WMSEntityStream(RESTStream):
         advanced_filters = self.config.get("advanced_filters", {}).get(
             self.entity_name, {}
         )
-        for conditions in advanced_filters.values():
+        for field_name, conditions in advanced_filters.items():
             if isinstance(conditions, dict):
-                for value in conditions.values():
+                for operator, value in conditions.items():
                     # Support operators: __gte, __lte, __contains, __in, __range, etc.
-                    params[f"{field}{operator}"] = value
-                params[field] = conditions
+                    params[f"{field_name}{operator}"] = value
+            else:
+                params[field_name] = conditions
 
         return params
 
@@ -243,18 +241,20 @@ class WMSEntityStream(RESTStream):
     @property
     def authenticator(self) -> Any:
         """Get authenticator for real WMS API."""
-        return get_wms_authenticator(self, self.config)
+        return get_wms_authenticator(self, dict(self.config))
 
-    def get_http_headers(self) -> dict:
+    @property
+    def http_headers(self) -> dict[str, Any]:
         """Get HTTP headers for real WMS API."""
-        headers = get_wms_headers(self.config)
+        headers = get_wms_headers(dict(self.config))
 
         # Add Singer SDK headers
-        headers.update(super().get_http_headers())
+        if hasattr(super(), "http_headers"):
+            headers.update(super().http_headers)
 
         return headers
 
-    def parse_response(self, response: httpx.Response) -> Iterable[dict]:
+    def parse_response(self, response: Response) -> Iterable[dict[str, Any]]:
         """Parse real WMS API response."""
         try:
             data = response.json()
@@ -279,7 +279,7 @@ class WMSEntityStream(RESTStream):
             msg = f"Invalid JSON response from {self.entity_name}"
             raise FatalAPIError(msg) from e
 
-    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+    def post_process(self, row: dict[str, Any], context: Mapping[str, Any] | None = None) -> dict[str, Any] | None:
         """Post-process real WMS record."""
         # Ensure required fields exist
         if not row.get("id"):
@@ -295,12 +295,13 @@ class WMSEntityStream(RESTStream):
 
         # Add metadata
         row["_entity_name"] = self.entity_name
-        row["_extracted_at"] = self.get_starting_timestamp(context).isoformat()
+        starting_timestamp = self.get_starting_timestamp(context)
+        row["_extracted_at"] = starting_timestamp.isoformat() if starting_timestamp else None
 
         return row
 
     @property
-    def schema(self) -> dict:
+    def schema(self) -> dict[str, Any]:
         """TOTALLY DYNAMIC schema based on real API discovery."""
         # Use dynamically discovered schema if available
         if self._dynamic_schema:

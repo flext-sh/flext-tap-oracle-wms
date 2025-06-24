@@ -14,11 +14,14 @@ import logging
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from collections.abc import Callable
-from typing import Any, Self
+from datetime import datetime, timedelta, timezone
+from typing import TYPE_CHECKING, Any
 
 import psutil
+from typing_extensions import Self
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 logger = logging.getLogger(__name__)
@@ -60,6 +63,33 @@ class Alert:
     last_triggered: datetime | None = None
     active: bool = False
     enabled: bool = True
+
+
+class TimerContext:
+    """Context manager for timing operations."""
+
+    def __init__(self, collector: MetricsCollector, name: str) -> None:
+        """Initialize timer context.
+
+        Args:
+        ----
+            collector: Metrics collector instance
+            name: Timer metric name
+
+        """
+        self.collector = collector
+        self.name = name
+        self.start_time: float = 0
+
+    def __enter__(self) -> Self:
+        """Start timing."""
+        self.start_time = time.time()
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Stop timing and record metric."""
+        duration_ms = (time.time() - self.start_time) * 1000
+        self.collector.record_timer(self.name, duration_ms)
 
 
 class MetricsCollector:
@@ -149,8 +179,8 @@ class MetricsCollector:
             self.record_gauge("system.cpu.percent", process.cpu_percent())
 
             # Async tasks
-            loop = asyncio.get_event_loop()
-            tasks = [task for task in asyncio.all_tasks(loop) if not task.done()]
+            asyncio.get_event_loop()
+            tasks = [task for task in asyncio.all_tasks() if not task.done()]
             self.record_gauge("system.async.active_tasks", len(tasks))
 
         except ImportError:
@@ -178,7 +208,7 @@ class MetricsCollector:
 
         # Store metric point
         point = MetricPoint(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             value=float(value),
             tags=tags or {},
             metadata={"type": "counter"},
@@ -204,7 +234,7 @@ class MetricsCollector:
 
         # Store metric point
         point = MetricPoint(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             value=value,
             tags=tags or {},
             metadata={"type": "gauge"},
@@ -237,7 +267,7 @@ class MetricsCollector:
 
         # Store metric point
         point = MetricPoint(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             value=duration_ms,
             tags=tags or {},
             metadata={"type": "timer"},
@@ -298,7 +328,7 @@ class MetricsCollector:
 
         """
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "counters": dict(self._counters),
             "gauges": dict(self._gauges),
             "timers": {name: self.get_timer_stats(name) for name in self._timers},
@@ -317,7 +347,7 @@ class MetricsCollector:
             List of metric points
 
         """
-        cutoff_time = datetime.utcnow() - timedelta(minutes=minutes)
+        cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=minutes)
 
         points = self._metrics.get(name, deque())
         return [point for point in points if point.timestamp >= cutoff_time]
@@ -340,7 +370,7 @@ class TimerContext:
         self.start_time: float | None = None
 
     def __enter__(self) -> Self:
-        self.start_time: float = time.time()
+        self.start_time = time.time()
         return self
 
     def __exit__(
@@ -380,7 +410,7 @@ class HealthMonitor:
 
         # Configuration
         self.check_interval = 60  # seconds
-        self._check_task: asyncio.Task | None = None
+        self._check_task: asyncio.Task[None] | None = None
         self._running = False
 
         # Register default health checks
@@ -465,7 +495,7 @@ class HealthMonitor:
             Dictionary with check results
 
         """
-        results: dict = {}
+        results: dict[str, bool] = {}
         overall_healthy = True
 
         for check in self._health_checks.values():
@@ -475,37 +505,38 @@ class HealthMonitor:
             try:
                 # Run health check
                 result = check.check_function()
-                check.last_check = datetime.utcnow()
+                check.last_check = datetime.now(timezone.utc)
                 check.last_result = result
 
                 if result:
                     check.consecutive_failures = 0
+                else:
                     check.consecutive_failures += 1
                     overall_healthy = False
 
-                results[name] = result
+                results[check.name] = result
 
                 # Record metrics
                 self.metrics.record_gauge(
-                    f"health.{name}",
+                    f"health.{check.name}",
                     1.0 if result else 0.0,
-                    tags={"check": name},
+                    tags={"check": check.name},
                 )
 
             except Exception as e:
-                logger.exception("Error running health check %s: %s", name, e)
+                logger.exception("Error running health check %s: %s", check.name, e)
                 check.consecutive_failures += 1
-                results[name] = False
+                results[check.name] = False
                 overall_healthy = False
 
                 self.metrics.record_gauge(
-                    f"health.{name}",
+                    f"health.{check.name}",
                     0.0,
-                    tags={"check": name, "error": "exception"},
+                    tags={"check": check.name, "error": "exception"},
                 )
 
         self._overall_health = overall_healthy
-        self._last_health_check = datetime.utcnow()
+        self._last_health_check = datetime.now(timezone.utc)
 
         # Record overall health
         self.metrics.record_gauge("health.overall", 1.0 if overall_healthy else 0.0)
@@ -520,7 +551,7 @@ class HealthMonitor:
             Dictionary with health status
 
         """
-        status = {
+        status: dict[str, Any] = {
             "overall_healthy": self._overall_health,
             "last_check": (
                 self._last_health_check.isoformat() if self._last_health_check else None
@@ -529,7 +560,7 @@ class HealthMonitor:
         }
 
         for check in self._health_checks.values():
-            status["checks"][name] = {
+            status["checks"][check.name] = {
                 "name": check.name,
                 "description": check.description,
                 "enabled": check.enabled,
@@ -562,9 +593,9 @@ class HealthMonitor:
     def _check_async_tasks(self) -> bool:
         """Check async task count is reasonable."""
         try:
-            loop = asyncio.get_event_loop()
+            asyncio.get_event_loop()
             active_tasks = len(
-                [task for task in asyncio.all_tasks(loop) if not task.done()]
+                [task for task in asyncio.all_tasks() if not task.done()]
             )
 
             # Alert if more than 50 active tasks
@@ -595,7 +626,7 @@ class AlertManager:
 
         # Alert configuration
         self.check_interval = 30  # seconds
-        self._alert_task: asyncio.Task | None = None
+        self._alert_task: asyncio.Task[None] | None = None
         self._running = False
 
         # Register default alerts
@@ -695,7 +726,7 @@ class AlertManager:
             List of triggered alert names
 
         """
-        triggered: list = []
+        triggered: list[str] = []
 
         for alert in self._alerts.values():
             if not alert.enabled:
@@ -711,8 +742,8 @@ class AlertManager:
                 if should_trigger and not alert.active:
                     # Trigger alert
                     alert.active = True
-                    alert.last_triggered = datetime.utcnow()
-                    triggered.append(name)
+                    alert.last_triggered = datetime.now(timezone.utc)
+                    triggered.append(alert.name)
 
                     logger.warning(
                         "ALERT TRIGGERED: %s - %s (value: %s, threshold: %s)",
@@ -725,24 +756,24 @@ class AlertManager:
                     # Record alert metric
                     self.metrics.record_counter(
                         "alerts.triggered",
-                        tags={"alert": name, "severity": alert.severity},
+                        tags={"alert": alert.name, "severity": alert.severity},
                     )
 
                 elif not should_trigger and alert.active:
                     # Clear alert
                     alert.active = False
                     logger.info(
-                        "ALERT CLEARED: {alert.name} (value: %s)", current_value
+                        "ALERT CLEARED: %s (value: %s)", alert.name, current_value
                     )
 
                     # Record alert cleared metric
                     self.metrics.record_counter(
                         "alerts.cleared",
-                        tags={"alert": name, "severity": alert.severity},
+                        tags={"alert": alert.name, "severity": alert.severity},
                     )
 
             except Exception as e:
-                logger.exception("Error checking alert %s: %s", name, e)
+                logger.exception("Error checking alert %s: %s", alert.name, e)
 
         return triggered
 
@@ -896,7 +927,7 @@ class TAPMonitor:
 
         """
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "metrics": self.metrics.get_metrics_snapshot(),
             "health": self.health.get_health_status(),
             "active_alerts": self.alerts.get_active_alerts(),
@@ -924,26 +955,22 @@ class TAPMonitor:
 
     def _export_prometheus_format(self) -> str:
         """Export metrics in Prometheus format."""
-        lines: list = []
+        lines: list[str] = []
         snapshot = self.metrics.get_metrics_snapshot()
 
         # Export counters
-        for value in snapshot["counters"].values():
+        for name, value in snapshot["counters"].items():
             safe_name = name.replace(".", "_").replace("-", "_")
-            lines.append(f"# TYPE {safe_name} counter")
-            lines.append(f"{safe_name} {value}")
+            lines.extend((f"# TYPE {safe_name} counter", f"{safe_name} {value}"))
 
         # Export gauges
-        for value in snapshot["gauges"].values():
+        for name, value in snapshot["gauges"].items():
             safe_name = name.replace(".", "_").replace("-", "_")
-            lines.append(f"# TYPE {safe_name} gauge")
-            lines.append(f"{safe_name} {value}")
+            lines.extend((f"# TYPE {safe_name} gauge", f"{safe_name} {value}"))
 
         # Export timer summaries
-        for stats in snapshot["timers"].values():
+        for name, stats in snapshot["timers"].items():
             safe_name = name.replace(".", "_").replace("-", "_")
-            lines.append(f"# TYPE {safe_name} summary")
-            lines.append(f"{safe_name}_count {stats['count']}")
-            lines.append(f"{safe_name}_sum {stats['avg'] * stats['count']}")
+            lines.extend((f"# TYPE {safe_name} summary", f"{safe_name}_count {stats['count']}", f"{safe_name}_sum {stats['avg'] * stats['count']}"))
 
         return "\n".join(lines)

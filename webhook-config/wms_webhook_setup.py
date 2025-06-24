@@ -1,6 +1,6 @@
 """Module wms_webhook_setup."""
 
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 """Oracle WMS Webhook Configuration Script.
 
 This script helps configure webhooks in Oracle WMS for real-time data synchronization.
@@ -152,7 +152,7 @@ class WMSWebhookConfig:
             )
             response = self.client.post(url, json=webhook_config)
 
-            if response.status_code in [200, 201]:
+            if response.status_code in {200, 201}:
                 logger.info("✅ Webhook configured for %s", entity)
                 return True
             logger.error(

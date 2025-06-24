@@ -1,5 +1,7 @@
 """Configuration schema for tap-oracle-wms."""
 
+from __future__ import annotations
+
 from singer_sdk import typing as th
 
 # Constants

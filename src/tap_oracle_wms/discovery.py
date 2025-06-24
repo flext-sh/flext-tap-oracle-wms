@@ -1,8 +1,10 @@
 """Dynamic entity discovery for Oracle WMS."""
 
+from __future__ import annotations
+
 import fnmatch
 import logging
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
@@ -110,7 +112,7 @@ class EntityDiscovery:
         if (
             self._entity_cache
             and self._last_entity_cache_time
-            and datetime.now(UTC) - self._last_entity_cache_time
+            and datetime.now(timezone.utc) - self._last_entity_cache_time
             < timedelta(seconds=self._entity_cache_ttl)
         ):
             logger.debug("Using cached entity list")
@@ -149,11 +151,22 @@ class EntityDiscovery:
                 )
                 response.raise_for_status()
 
-                entities = response.json()
+                entity_list = response.json()
+
+                # Convert list of entity names to dictionary mapping names to URLs
+                entities: dict[str, str] = {}
+                if isinstance(entity_list, list):
+                    base_url = f"{self.base_url}/wms/lgfapi/{self.api_version}/entity"
+                    for entity_name in entity_list:
+                        if isinstance(entity_name, str):
+                            entities[entity_name] = f"{base_url}/{entity_name}"
+                elif isinstance(entity_list, dict):
+                    # If API returns dict directly, use it
+                    entities = entity_list
 
                 # Cache the results with enhanced caching
                 self._entity_cache = entities
-                self._last_entity_cache_time = datetime.now(UTC)
+                self._last_entity_cache_time = datetime.now(timezone.utc)
 
                 logger.info("Discovered %s entities", len(entities))
                 return entities
@@ -173,7 +186,7 @@ class EntityDiscovery:
                 logger.exception("Data parsing error discovering entities")
                 raise
 
-    async def describe_entity(self, entity_name: str) -> dict[str, Any]:
+    async def describe_entity(self, entity_name: str) -> dict[str, Any] | None:
         """Get entity metadata from describe endpoint.
 
         Args:
@@ -188,7 +201,7 @@ class EntityDiscovery:
         # Check enhanced metadata cache
         if entity_name in self._metadata_cache:
             cache_time = self._metadata_cache_times.get(entity_name)
-            if cache_time and datetime.now(UTC) - cache_time < timedelta(
+            if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
                 seconds=self._cache_ttl
             ):
                 logger.debug("Using cached metadata for entity: %s", entity_name)
@@ -201,11 +214,11 @@ class EntityDiscovery:
                 response = await client.get(url, headers=self.headers)
                 response.raise_for_status()
 
-                metadata = response.json()
+                metadata: dict[str, Any] = response.json()
 
                 # Cache the result with enhanced caching
                 self._metadata_cache[entity_name] = metadata
-                self._metadata_cache_times[entity_name] = datetime.now(UTC)
+                self._metadata_cache_times[entity_name] = datetime.now(timezone.utc)
 
                 return metadata
 
@@ -242,7 +255,7 @@ class EntityDiscovery:
         cache_key = f"{entity_name}_{limit}"
         if cache_key in self._sample_cache:
             cache_time = self._sample_cache_times.get(cache_key)
-            if cache_time and datetime.now(UTC) - cache_time < timedelta(
+            if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
                 seconds=self._cache_ttl
             ):
                 logger.debug("Using cached sample data for entity: %s", entity_name)
@@ -262,16 +275,17 @@ class EntityDiscovery:
                 data = response.json()
 
                 # Handle different response formats
+                sample_data: list[dict[str, Any]]
                 if isinstance(data, dict) and "results" in data:
                     sample_data = data["results"]
                 elif isinstance(data, list):
                     sample_data = data[:limit]
                 else:
-                    sample_data: list = []
+                    sample_data = []
 
                 # Cache the sample data
                 self._sample_cache[cache_key] = sample_data
-                self._sample_cache_times[cache_key] = datetime.now(UTC)
+                self._sample_cache_times[cache_key] = datetime.now(timezone.utc)
 
                 return sample_data
 
@@ -369,7 +383,7 @@ class EntityDiscovery:
         # Check enhanced access cache
         if entity_name in self._access_cache:
             cache_time = self._access_cache_times.get(entity_name)
-            if cache_time and datetime.now(UTC) - cache_time < timedelta(
+            if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
                 seconds=self._access_cache_ttl
             ):
                 logger.debug("Using cached access result for entity: %s", entity_name)
@@ -388,7 +402,7 @@ class EntityDiscovery:
 
                 # Cache the access result
                 self._access_cache[entity_name] = access_result
-                self._access_cache_times[entity_name] = datetime.now(UTC)
+                self._access_cache_times[entity_name] = datetime.now(timezone.utc)
 
                 return access_result
 
@@ -401,7 +415,7 @@ class EntityDiscovery:
 
                 # Cache negative results too
                 self._access_cache[entity_name] = access_result
-                self._access_cache_times[entity_name] = datetime.now(UTC)
+                self._access_cache_times[entity_name] = datetime.now(timezone.utc)
 
                 return access_result
             except Exception:
@@ -505,7 +519,7 @@ class EntityDiscovery:
             Dictionary with cache statistics
 
         """
-        current_time = datetime.now(UTC)
+        current_time = datetime.now(timezone.utc)
 
         # Calculate cache hit ratios and sizes
         return {
@@ -556,7 +570,7 @@ class EntityDiscovery:
 
     def cleanup_expired_cache(self) -> None:
         """Clean up expired cache entries to prevent memory bloat."""
-        current_time = datetime.now(UTC)
+        current_time = datetime.now(timezone.utc)
 
         # Clean expired metadata cache
         expired_metadata = [
@@ -630,8 +644,8 @@ class SchemaGenerator:
             Singer-compatible schema
 
         """
-        properties: dict = {}
-        required_fields: list = []
+        properties: dict[str, Any] = {}
+        required_fields: list[str] = []
 
         # The describe endpoint returns field names in "parameters" and definitions in "fields"
         field_names = metadata.get("parameters", [])
@@ -679,7 +693,7 @@ class SchemaGenerator:
             return {"type": "object", "properties": {}}
 
         # Analyze all samples to build complete schema
-        properties: dict = {}
+        properties: dict[str, Any] = {}
 
         for sample in samples:
             for field_name, value in sample.items():
@@ -715,50 +729,44 @@ class SchemaGenerator:
         field_type = field_def.get("type", "string").lower()
         base_type = self.TYPE_MAPPING.get(field_type, "string")
 
-        prop = {"type": base_type}
+        base_prop = {"type": base_type}
 
         # Add description if available
         if field_def.get("description"):
-            prop["description"] = field_def["description"]
+            base_prop["description"] = field_def["description"]
 
-        # Handle nullable fields
-        if not field_def.get("required"):
-            prop = {"anyOf": [prop, {"type": "null"}]}
-
-        # Add constraints
+        # Add constraints for base type
         if base_type == "string":
             if field_def.get("max_length"):
-                prop.setdefault("type", {})
-                if (
-                    isinstance(prop, dict)
-                    and "type" in prop
-                    and prop["type"] == "string"
-                ):
-                    prop["maxLength"] = field_def["max_length"]
+                base_prop["maxLength"] = field_def["max_length"]
 
             # Add format for date/time types
             if field_type in {"datetime", "timestamp"}:
-                prop["format"] = "date-time"
+                base_prop["format"] = "date-time"
             elif field_type == "date":
-                prop["format"] = "date"
+                base_prop["format"] = "date"
             elif field_type == "time":
-                prop["format"] = "time"
+                base_prop["format"] = "time"
 
         elif base_type in {"number", "integer"}:
             if field_def.get("min_value") is not None:
-                prop["minimum"] = field_def["min_value"]
+                base_prop["minimum"] = field_def["min_value"]
             if field_def.get("max_value") is not None:
-                prop["maximum"] = field_def["max_value"]
+                base_prop["maximum"] = field_def["max_value"]
 
         # Handle enums
         if field_def.get("choices"):
-            prop["enum"] = field_def["choices"]
+            base_prop["enum"] = field_def["choices"]
 
         # Handle default values
         if field_def.get("default") is not None:
-            prop["default"] = field_def["default"]
+            base_prop["default"] = field_def["default"]
 
-        return prop
+        # Handle nullable fields by wrapping in anyOf
+        if not field_def.get("required", True):
+            return {"anyOf": [base_prop, {"type": "null"}]}
+
+        return base_prop
 
     def _create_property(self, param: dict[str, Any]) -> dict[str, Any]:
         """Create a property definition from parameter metadata.
@@ -775,48 +783,46 @@ class SchemaGenerator:
         field_type = param.get("type", "string").lower()
         base_type = self.TYPE_MAPPING.get(field_type, "string")
 
-        prop = {"type": base_type}
+        base_prop = {"type": base_type}
 
         # Add description if available
         if param.get("help_text"):
-            prop["description"] = param["help_text"]
+            base_prop["description"] = param["help_text"]
         elif param.get("description"):
-            prop["description"] = param["description"]
-
-        # Handle nullable fields
-        if param.get("allow_blank") or param.get("required") == "N":
-            prop = {"anyOf": [prop, {"type": "null"}]}
+            base_prop["description"] = param["description"]
 
         # Add constraints
         if base_type == "string":
             if param.get("max_length"):
-                prop.setdefault("type", {})
-                if isinstance(prop, dict) and "type" in prop:
-                    prop["maxLength"] = param["max_length"]
+                base_prop["maxLength"] = param["max_length"]
 
             # Add format for date/time types
             if field_type in {"datetime", "timestamp"}:
-                prop["format"] = "date-time"
+                base_prop["format"] = "date-time"
             elif field_type == "date":
-                prop["format"] = "date"
+                base_prop["format"] = "date"
             elif field_type == "time":
-                prop["format"] = "time"
+                base_prop["format"] = "time"
 
         elif base_type in {"number", "integer"}:
             if param.get("min_value") is not None:
-                prop["minimum"] = param["min_value"]
+                base_prop["minimum"] = param["min_value"]
             if param.get("max_value") is not None:
-                prop["maximum"] = param["max_value"]
+                base_prop["maximum"] = param["max_value"]
 
         # Handle enums
         if param.get("choices"):
-            prop["enum"] = param["choices"]
+            base_prop["enum"] = param["choices"]
 
         # Handle default values
         if param.get("default") is not None:
-            prop["default"] = param["default"]
+            base_prop["default"] = param["default"]
 
-        return prop
+        # Handle nullable fields by wrapping in anyOf
+        if param.get("allow_blank") or param.get("required") == "N":
+            return {"anyOf": [base_prop, {"type": "null"}]}
+
+        return base_prop
 
     def _infer_type(self, value: Any) -> dict[str, Any]:
         """Infer JSON schema type from a value.
@@ -904,7 +910,7 @@ class SchemaGenerator:
                 dt = datetime.strptime(value, fmt)
                 if dt.tzinfo is None:
                     # If no timezone info, assume UTC
-                    dt = dt.replace(tzinfo=UTC)
+                    dt = dt.replace(tzinfo=timezone.utc)
                 return True
         except ValueError:
             pass

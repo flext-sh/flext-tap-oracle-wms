@@ -2,6 +2,7 @@
 
 import pytest
 from singer_sdk.authenticators import BasicAuthenticator
+
 from tap_oracle_wms.auth import get_wms_authenticator, get_wms_headers
 from tap_oracle_wms.config import BASIC_AUTH_PREFIX_LENGTH
 
