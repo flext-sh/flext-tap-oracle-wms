@@ -87,14 +87,14 @@ config_schema = th.PropertiesList(
         th.StringType,
         required=False,
         default="*",
-        description="WMS company code for context headers (default: * for all companies)",
+        description="WMS company code for context headers (required: * for all companies, or specific company code)",
     ),
     th.Property(
         "facility_code",
         th.StringType,
         required=False,
         default="*",
-        description="WMS facility code for context headers (default: * for all facilities)",
+        description="WMS facility code for context headers (required: * for all facilities, or specific facility code)",
     ),
     # Data selection configuration
     th.Property(
@@ -130,15 +130,15 @@ config_schema = th.PropertiesList(
     th.Property(
         "pagination_mode",
         th.StringType,
-        default="offset",
-        allowed_values=["offset", "cursor"],
-        description="Pagination mode to use (offset or cursor)",
+        default="sequenced",
+        allowed_values=["offset", "cursor", "sequenced", "paged"],
+        description="Pagination mode: sequenced (cursor-based, recommended), paged (offset-based), offset (legacy), cursor (legacy)",
     ),
     th.Property(
         "page_size",
         th.IntegerType,
-        default=100,
-        description="Number of records per page (max 1250)",
+        default=1000,
+        description="Number of records per page (recommended: 1000, max 1250)",
     ),
     th.Property(
         "max_parallel_streams",
@@ -149,8 +149,8 @@ config_schema = th.PropertiesList(
     th.Property(
         "request_timeout",
         th.IntegerType,
-        default=300,
-        description="Request timeout in seconds",
+        default=7200,
+        description="Request timeout in seconds - 2 hours for massive data extractions",
     ),
     th.Property(
         "connect_timeout",

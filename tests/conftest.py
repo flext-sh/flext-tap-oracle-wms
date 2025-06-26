@@ -1,4 +1,5 @@
 """Pytest configuration and shared fixtures for tap-oracle-wms tests."""
+
 from __future__ import annotations
 
 import os
@@ -193,7 +194,7 @@ def mock_http_client() -> Any:
                 "page_count": 1,
                 "page_nbr": 1,
                 "results": [
-                    {"id": 1, "code": "TEST", "mod_ts": "2024-01-01T10:00:00Z"}
+                    {"id": 1, "code": "TEST", "mod_ts": "2024-01-01T10:00:00Z"},
                 ],
             }
 

@@ -1,7 +1,6 @@
 """Integration tests for data extraction with live WMS API."""
 
 import pytest
-
 from tap_oracle_wms.tap import TapOracleWMS
 
 
@@ -154,7 +153,7 @@ class TestLiveDataExtraction:
             if len(record_ids) > 1:
                 unique_ids = set(record_ids)
                 assert len(unique_ids) == len(
-                    record_ids
+                    record_ids,
                 ), "Duplicate records found - pagination issue"
 
     @pytest.mark.live
@@ -327,7 +326,9 @@ class TestExtractionConfiguration:
 
     @pytest.mark.live
     def test_extraction_with_field_selection(
-        self, live_config, captured_messages
+        self,
+        live_config,
+        captured_messages,
     ) -> None:
         """Test extraction with field selection configuration."""
         field_config = live_config.copy()
@@ -379,7 +380,7 @@ class TestExtractionConfiguration:
         filter_config = live_config.copy()
         filter_config["entities"] = ["facility"]
         filter_config["global_filters"] = {
-            "active": True
+            "active": True,
         }  # May or may not be supported
         filter_config["page_size"] = 5
 
@@ -665,7 +666,9 @@ class TestExtractionEdgeCases:
 
     @pytest.mark.live
     def test_extraction_with_large_field_values(
-        self, live_config, captured_messages
+        self,
+        live_config,
+        captured_messages,
     ) -> None:
         """Test extraction with large field values."""
         large_field_config = live_config.copy()

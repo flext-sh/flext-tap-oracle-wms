@@ -21,7 +21,8 @@ from dotenv import load_dotenv
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,9 @@ class WMSWebhookConfig:
         ]
 
     def create_webhook_endpoint_config(
-        self, webhook_url: str, entities: list[str]
+        self,
+        webhook_url: str,
+        entities: list[str],
     ) -> dict:
         """Create webhook endpoint configuration."""
         return {
@@ -120,7 +123,7 @@ class WMSWebhookConfig:
                     logger.info("❌ %s: No webhook support", entity)
                     supported_entities[entity] = False
                     logger.warning(
-                        f"⚠️ {entity}: Unknown status ({response.status_code})"
+                        f"⚠️ {entity}: Unknown status ({response.status_code})",
                     )
 
             except Exception:
@@ -156,7 +159,7 @@ class WMSWebhookConfig:
                 logger.info("✅ Webhook configured for %s", entity)
                 return True
             logger.error(
-                f"❌ Failed to configure webhook for {entity}: {response.status_code}"
+                f"❌ Failed to configure webhook for {entity}: {response.status_code}",
             )
             logger.error("Response: %s", response.text)
             return False
@@ -182,7 +185,7 @@ class WMSWebhookConfig:
                     if webhook_data:
                         webhooks[entity] = webhook_data
                         logger.info(
-                            f"📋 {entity}: {len(webhook_data)} webhook(s) configured"
+                            f"📋 {entity}: {len(webhook_data)} webhook(s) configured",
                         )
 
             except Exception:
@@ -279,7 +282,10 @@ def main() -> None:
     logger.info("=" * 50)
 
     # Get configuration
-    base_url = os.getenv("WMS_URL", "https://ta29.wms.ocs.oraclecloud.com/raizen_test")
+    base_url = os.getenv("WMS_URL")
+    if not base_url:
+        msg = "WMS_URL environment variable MUST be configured - NO hardcode allowed"
+        raise ValueError(msg)
     username = os.getenv("WMS_USERNAME")
     password = os.getenv("WMS_PASSWORD")
     webhook_url = os.getenv("WEBHOOK_URL", "https://your-api.example.com/wms-webhook")

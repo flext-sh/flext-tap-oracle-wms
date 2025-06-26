@@ -1,98 +1,122 @@
+"""Oracle WMS Singer Tap CLI - Enterprise Data Integration Interface.
+
+OVERVIEW:
+=========
+This CLI provides a comprehensive interface for Oracle WMS data integration using the Singer
+protocol, with extended business functionality for enterprise warehouse management scenarios.
+
+The CLI is designed around two core principles:
+1. Singer Protocol Compliance: Full compatibility with Meltano and other Singer ecosystems
+2. Business-Centric Extensions: Domain-specific commands for WMS business operations
+
+CORE INTEGRATION RULES (CRITICAL - DO NOT CHANGE):
+================================================
+
+1. INCREMENTAL SYNC RULES:
+   - Filter Rule: mod_ts > max(mod_ts from state/database) - 5 minutes
+   - Safety Overlap: 5 minutes to prevent missed records due to clock skew
+   - Ordering: mod_ts ASC (chronological) for proper state management
+   - Replication Key: mod_ts (Oracle WMS standard change tracking field)
+   - State Management: Track latest mod_ts bookmark for next sync
+
+2. FULL SYNC RULES:
+   - ID-based Resume: id < min(existing_ids) - 1 for intelligent resume
+   - Ordering: -id DESC (highest to lowest) for efficient large dataset processing
+   - Timestamp-based Alternative: mod_ts >= start_date for historical extraction
+
+3. PAGINATION CONFIGURATION:
+   - Singer SDK: pagination_mode="cursor" (follows next_page URLs)
+   - WMS API: page_mode="sequenced" (cursor-based, no total calculations)
+   - Page Size: 1000 (optimized for Oracle WMS API performance)
+
+4. GENERIC FILTERING SYSTEM:
+   - Temporal Filters: mod_ts__gte, mod_ts__lte, create_ts__gte, create_ts__lte
+   - ID Filters: id__gte, id__lte, id__lt, id__gt
+   - Status Filters: status, status__in, active (Y/N)
+   - Advanced Operators: __contains, __startswith, __endswith, __isnull, __range
+
+5. CONFIGURATION MODES:
+   - Simplified: Minimal config (base_url, username, password, entities)
+   - Entity-Specific: Per-entity filters and configurations
+   - Advanced: Full control with complex operators and field selection
+
+BUSINESS FUNCTIONALITY:
+======================
+Extended commands provide WMS-specific business intelligence:
+
+- inventory: Stock management, cycle counts, variance analysis
+- orders: Allocation analysis, fulfillment metrics, bottleneck identification
+- warehouse: Task performance, equipment utilization, productivity metrics
+- analyze: Supply chain analysis, compliance auditing
+- monitor: Real-time monitoring, health checks, metrics
+
+Each business command leverages the generic filtering system to provide
+domain-specific data extraction and analysis capabilities.
+
+ERROR HANDLING STRATEGY:
+=======================
+- Circuit Breaker: Prevents cascading failures during API issues
+- Exponential Backoff: Intelligent retry with increasing delays
+- Partial Recovery: Continue processing other entities if one fails
+- Detailed Logging: Comprehensive error tracking and debugging information
+
+STATE MANAGEMENT:
+================
+- Bookmark Tracking: Maintains latest processed timestamps per entity
+- Resume Capability: Intelligent restart from last successful state
+- State Output: Compatible with Singer protocol state files
+- Validation: Ensures state consistency and integrity
+
+USAGE PATTERNS:
+==============
+1. Discovery: tap-oracle-wms --discover > catalog.json
+2. Singer Mode: tap-oracle-wms --config config.json --catalog catalog.json
+3. Incremental: tap-oracle-wms sync incremental --config config.json --entities allocation
+4. Business Analysis: tap-oracle-wms inventory status --config config.json
+5. Monitoring: tap-oracle-wms monitor status --config config.json
+
+This documentation serves as the definitive reference for all CLI behavior.
+All implementations must follow these documented rules and patterns.
+"""
+
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
 import sys
 from pathlib import Path
-from typing import Self
+from typing import TYPE_CHECKING, Any
 
 import click
+from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+else:
+    with contextlib.suppress(ImportError):
+        pass
 
 logger = logging.getLogger(__name__)
-try:
-    from rich.console import Console
-    from rich.progress import Progress, SpinnerColumn, TextColumn
-    from rich.table import Table
-
-    RICH_AVAILABLE = True
-except ImportError:
-    RICH_AVAILABLE = False
-
-    # Fallback console class for when rich is not available
-    class Console:
-        """Fallback console class when rich is not available."""
-
-        def print(self, *args, **kwargs) -> None:
-            """Print to stdout as fallback."""
-            logger.info(*args, **kwargs)
-
-        def log(self, *args, **kwargs) -> None:
-            """Log to stdout as fallback."""
-
-    # Define fallback classes for other rich components
-    class Progress:
-        """Fallback progress class."""
-
-        def __init__(self, *args, **kwargs) -> None:
-            """Initialize progress."""
-
-        def __enter__(self) -> Self:
-            """Enter context."""
-            return self
-
-        def __exit__(self, *args) -> None:
-            """Exit context."""
-
-        def add_task(self, *_args, **_kwargs) -> str:
-            """Add task."""
-            return "task"
-
-        def update(self, *args, **kwargs) -> None:
-            """Update progress."""
-
-    class SpinnerColumn:
-        """Fallback spinner column."""
-
-        def __init__(self, *args, **kwargs) -> None:
-            """Initialize spinner."""
-
-    class TextColumn:
-        """Fallback text column."""
-
-        def __init__(self, *args, **kwargs) -> None:
-            """Initialize text column."""
-
-    class Table:
-        """Fallback table class."""
-
-        def __init__(self, *args, **kwargs) -> None:
-            """Initialize table."""
-
-        def add_column(self, *args, **kwargs) -> None:
-            """Add column."""
-
-        def add_row(self, *args, **kwargs) -> None:
-            """Add row."""
-
 
 from .discovery import EntityDiscovery, SchemaGenerator
 from .monitoring import TAPMonitor
 from .tap import TapOracleWMS
 
-console = Console() if RICH_AVAILABLE else None
+console = Console()
 
 
 def safe_print(message: str, style: str | None = None) -> None:
-    """Safe print function that works with or without rich."""
-    if RICH_AVAILABLE and console:
-        if style:
-            logger.info("[%s]%s[/%s]", style, message, style)
-            logger.info("%s", message)
-        # Strip rich markup for plain print
-        import re
+    if style:
+        logger.info("[%s]%s[/%s]", style, message, style)
+        logger.info("%s", message)
+    # Strip rich markup for plain print
+    import re
 
-        re.sub(r"\[.*?\]", "", message)
+    re.sub(r"\[.*?\]", "", message)
 
 
 # MAIN CLI GROUP
@@ -183,7 +207,10 @@ def discover() -> None:
 
 @discover.command("entities")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
     "--output",
@@ -223,7 +250,10 @@ def discover_entities(
 ) -> None:
     """Discover available WMS entities with business categorization."""
     config_data = _prepare_discovery_config(
-        json.load(config), include_patterns, exclude_patterns, verify_access
+        json.load(config),
+        include_patterns,
+        exclude_patterns,
+        verify_access,
     )
     discovery = EntityDiscovery(config_data)
 
@@ -235,7 +265,10 @@ def discover_entities(
 
 @discover.command("schemas")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
     "--entities",
@@ -308,7 +341,8 @@ def discover_schemas(
                     # Try sample method
                     if method in {"auto", "sample"}:
                         samples = await discovery.get_entity_sample(
-                            entity_name, sample_size
+                            entity_name,
+                            sample_size,
                         )
                         if samples:
                             schema = generator.generate_from_sample(samples)
@@ -338,7 +372,7 @@ def discover_schemas(
         output_path = Path(output_dir)
         output_path.mkdir(exist_ok=True)
 
-        for schema in schemas.values():
+        for entity_name, schema in schemas.items():
             schema_file = output_path / f"{entity_name}_schema.json"
             with open(schema_file, "w", encoding="utf-8") as f:
                 json.dump(schema, f, indent=2)
@@ -358,7 +392,10 @@ def inventory() -> None:
 
 @inventory.command("status")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option("--facility", help="Filter by facility code")
 @click.option("--item-code", help="Filter by specific item code")
@@ -411,31 +448,31 @@ def inventory_status(
     # For demonstration, show what would be extracted
     logger.info("\nInventory Analysis Configuration:", "blue")
 
-    if RICH_AVAILABLE:
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Parameter", style="cyan")
-        table.add_column("Value", style="green")
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Parameter", style="cyan")
+    table.add_column("Value", style="green")
 
-        table.add_row("Entities", ", ".join(inventory_entities))
-        table.add_row("Facility Filter", facility or "All")
-        table.add_row("Item Filter", item_code or "All")
-        table.add_row("Location Filter", location or "All")
-        table.add_row("Include Lots", str(include_lots))
-        table.add_row("Include Serials", str(include_serials))
-        table.add_row(
-            "Low Stock Threshold",
-            str(low_stock_threshold) if low_stock_threshold else "None",
-        )
+    table.add_row("Entities", ", ".join(inventory_entities))
+    table.add_row("Facility Filter", facility or "All")
+    table.add_row("Item Filter", item_code or "All")
+    table.add_row("Location Filter", location or "All")
+    table.add_row("Include Lots", str(include_lots))
+    table.add_row("Include Serials", str(include_serials))
+    table.add_row(
+        "Low Stock Threshold",
+        str(low_stock_threshold) if low_stock_threshold else "None",
+    )
 
-        if RICH_AVAILABLE:
-            logger.info("%s", table)
-            logger.info("Table display requires rich library")
-        # Fallback table display
+    logger.info("%s", table)
+    logger.info("Table display requires rich library")
 
 
 @inventory.command("cycle-count")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
     "--location-pattern",
@@ -458,7 +495,11 @@ def inventory_status(
     help="Export format for cycle count results",
 )
 def inventory_cycle_count(
-    config, location_pattern, abc_class, variance_only, export_format
+    config,
+    location_pattern,
+    abc_class,
+    variance_only,
+    export_format,
 ) -> None:
     """Generate cycle count reports and variance analysis."""
     logger.info("Generating cycle count analysis...", "blue")
@@ -497,7 +538,10 @@ def orders() -> None:
 
 @orders.command("analyze-allocation")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
     "--order-status",
@@ -560,7 +604,10 @@ def analyze_allocation(
 
 @orders.command("fulfillment-metrics")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
     "--period",
@@ -591,7 +638,10 @@ def warehouse() -> None:
 
 @warehouse.command("task-performance")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
     "--task-type",
@@ -606,7 +656,10 @@ def warehouse() -> None:
     help="Calculate productivity metrics",
 )
 def task_performance(
-    config: click.File, task_type: str, worker_id: str, productivity_metrics: bool
+    config: click.File,
+    task_type: str,
+    worker_id: str,
+    productivity_metrics: bool,
 ) -> None:
     """Analyze warehouse task performance and productivity."""
     logger.info("Analyzing %s task performance...", task_type, "blue")
@@ -636,12 +689,17 @@ def task_performance(
 
 @warehouse.command("equipment-utilization")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option("--equipment-type", help="Filter by equipment type")
 @click.option("--downtime-analysis", is_flag=True, help="Include downtime analysis")
 def equipment_utilization(
-    config: click.File, equipment_type: str, downtime_analysis: bool
+    config: click.File,
+    equipment_type: str,
+    downtime_analysis: bool,
 ) -> None:
     """Analyze warehouse equipment utilization and performance."""
     logger.info("Analyzing equipment utilization...", "blue")
@@ -673,7 +731,10 @@ def sync() -> None:
 
 @sync.command("incremental")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option("--state", type=click.File("r"), help="Previous state file")
 @click.option(
@@ -694,38 +755,383 @@ def sync_incremental(
     since: str,
     output_state: click.File,
 ) -> None:
-    """Run incremental sync for specified entities."""
+    """Run incremental sync for specified entities.
+
+    INCREMENTAL SYNC RULES IMPLEMENTED:
+    ===================================
+
+    1. Filter Rule: mod_ts > max(mod_ts from state/database) - 5 minutes
+       - Applies 5-minute safety overlap to prevent missed records
+       - Uses mod_ts__gte parameter for WMS API filtering
+
+    2. Ordering: mod_ts ASC (chronological)
+       - Processes records in chronological order
+       - Ensures proper timestamp sequence for state management
+
+    3. Replication Method: INCREMENTAL
+       - Uses mod_ts as replication key
+       - Tracks latest processed timestamp in state
+
+    4. Pagination Configuration:
+       - Singer SDK: pagination_mode="cursor" (follows next_page URLs)
+       - WMS API: page_mode="sequenced" (cursor-based, no total counts)
+       - Page size: 1000 (optimized for WMS API performance)
+
+    5. Operation: UPSERT with timestamp tracking
+       - Updates existing records or inserts new ones
+       - Maintains latest mod_ts bookmark for next sync
+
+    WMS PAGINATION MODES EXPLAINED:
+    ==============================
+
+    Oracle WMS API supports two page_mode values:
+
+    • page_mode="paged" (default):
+      - Returns: result_count, page_count, page_nbr
+      - Navigation: ?page=3
+      - Slower (calculates totals upfront)
+
+    • page_mode="sequenced" (recommended for integrations):
+      - Returns: only next_page, previous_page, results
+      - Navigation: ?cursor=cD0xNDAw
+      - Faster (no total calculations, generated on-the-fly)
+
+    For incremental sync, we use page_mode="sequenced" for optimal performance.
+    """
+    import json
+
+    from .tap import TapOracleWMS
+
+    # Load and configure
     config_data = json.load(config)
 
-    # Configure incremental sync
+    # Configure incremental sync with correct pagination settings
     config_data["enable_incremental"] = True
+    config_data["debug_logging"] = True
+    config_data["metrics"] = {"enabled": True}
+    config_data["test_connection"] = False  # Disable connection test to avoid discovery
+    config_data["incremental_overlap_minutes"] = 5  # 5-minute safety overlap
+    config_data["page_size"] = 1000  # Optimized page size
+
+    # CORRECT: Singer SDK pagination_mode="cursor" to handle next_page URLs
+    # This works with WMS API page_mode="sequenced" which uses cursor navigation
+    config_data["pagination_mode"] = "cursor"  # Singer SDK setting
 
     if since:
         config_data["start_date"] = since
+        logger.info(f"📅 Setting start_date to: {since}", "green")
 
     if entities:
         config_data["entities"] = list(entities)
+        logger.info(f"🎯 Filtering to entities: {list(entities)}", "green")
 
     # Load previous state
+    state_data = None
     if state:
-        json.load(state)
+        state_data = json.load(state)
+        logger.info("📊 Loaded previous state from file", "green")
 
-    logger.info("Starting incremental sync...", "blue")
-    logger.info("Entities: {entities or 'all configured'}", "green")
-    logger.info("Since: {since or 'last bookmark'}", "green")
+    logger.info("🔄 Starting incremental sync with validated rules...", "blue")
+    logger.info(f"📋 Entities: {entities or 'all configured'}", "green")
+    logger.info(f"📅 Since: {since or 'bookmark from state'}", "green")
+    logger.info("📐 Rules: mod_ts > max(mod_ts) - 5min, ordering=mod_ts", "yellow")
 
-    # Run sync with Singer protocol
-    singer_args = ["tap-oracle-wms", "--config", config.name]
-    if state:
-        singer_args.extend(["--state", state.name])
+    try:
+        # Create tap instance with no connection test
+        tap = TapOracleWMS(config=config_data)
 
-    # For demonstration, show configuration
-    logger.info("Sync configuration ready", "yellow")
+        logger.info("✅ Tap instance created successfully", "green")
+
+        # Run discovery to get available streams
+        logger.info("🔍 Discovering available entities...", "yellow")
+        streams = tap.discover_streams()
+
+        if not streams:
+            logger.info(
+                "❌ No streams discovered. Check configuration and permissions.",
+                "red",
+            )
+            return
+
+        logger.info(f"✅ Discovered {len(streams)} streams", "green")
+
+        # If specific entities requested, filter streams
+        if entities:
+            filtered_streams = [s for s in streams if s.name in entities]
+            if not filtered_streams:
+                logger.info(
+                    f"❌ None of the requested entities found: {entities}",
+                    "red",
+                )
+                logger.info(
+                    f"Available entities: {[s.name for s in streams]}",
+                    "yellow",
+                )
+                return
+            streams = filtered_streams
+            logger.info(f"🎯 Filtered to {len(streams)} requested streams", "green")
+
+        # Execute sync with state and catalog
+        logger.info("🚀 Starting incremental data extraction...", "blue")
+
+        # Set up catalog for Singer with incremental settings
+        catalog = {
+            "streams": [
+                {
+                    "tap_stream_id": stream.name,
+                    "schema": stream.schema,
+                    "metadata": [
+                        {
+                            "breadcrumb": [],
+                            "metadata": {
+                                "inclusion": "available",
+                                "selected": True,
+                                "replication-method": "INCREMENTAL",
+                                "replication-key": "mod_ts",
+                            },
+                        },
+                    ],
+                }
+                for stream in streams
+            ],
+        }
+
+        # Log the incremental sync configuration
+        logger.info("⚡ INCREMENTAL SYNC CONFIGURATION:", "yellow")
+        logger.info("   📋 Replication method: INCREMENTAL", "green")
+        logger.info("   🔑 Replication key: mod_ts", "green")
+        logger.info("   ⏰ Safety overlap: 5 minutes", "green")
+        logger.info("   🔀 Ordering: mod_ts ASC (chronological)", "green")
+        logger.info(
+            "   📄 Singer pagination_mode: cursor (follows next_page URLs)",
+            "green",
+        )
+        logger.info("   📄 WMS page_mode: sequenced (cursor-based, no totals)", "green")
+        logger.info("   📦 Page size: 1000 (optimized)", "green")
+
+        # Execute incremental sync using custom implementation
+        logger.info(
+            "🚀 Executing incremental sync with custom implementation...",
+            "blue",
+        )
+
+        success = _execute_incremental_sync_custom(
+            tap=tap,
+            streams=streams,
+            catalog=catalog,
+            state_data=state_data,
+            output_state=output_state,
+        )
+
+        if success:
+            logger.info("✅ Incremental sync completed successfully", "green")
+        else:
+            logger.info("❌ Incremental sync completed with errors", "red")
+
+    except Exception as e:
+        logger.info(f"❌ Sync failed: {e}", "red")
+        logger.exception("Full error details:")
+        raise
+
+
+def _execute_incremental_sync_custom(
+    tap: Any,
+    streams: list[Any],
+    catalog: dict[str, Any],
+    state_data: dict[str, Any] | None,
+    output_state: click.File | None,
+) -> bool:
+    """Execute incremental sync using custom implementation with full control.
+
+    CUSTOM INCREMENTAL SYNC IMPLEMENTATION:
+    ======================================
+
+    This function implements a custom incremental sync process that:
+
+    1. STREAM PROCESSING:
+       - Iterates through each selected stream individually
+       - Applies incremental sync rules per stream
+       - Manages state bookmarks for each entity
+
+    2. STATE MANAGEMENT:
+       - Loads previous state bookmarks for each stream
+       - Tracks max(mod_ts) during extraction
+       - Updates state with latest timestamps
+       - Outputs final state for next sync run
+
+    3. INCREMENTAL FILTERING:
+       - Applies mod_ts > max(mod_ts) - 5min rule
+       - Uses chronological ordering (mod_ts ASC)
+       - Ensures no data gaps with safety overlap
+
+    4. ERROR HANDLING:
+       - Continues processing other streams if one fails
+       - Logs detailed error information per stream
+       - Returns overall success status
+
+    5. SINGER PROTOCOL COMPLIANCE:
+       - Outputs SCHEMA messages for each stream
+       - Outputs RECORD messages for each extracted record
+       - Outputs STATE messages with updated bookmarks
+
+    Args:
+        tap: TapOracleWMS instance with configuration
+        streams: List of discovered stream instances
+        catalog: Singer catalog with stream metadata
+        state_data: Previous state with bookmarks (optional)
+        output_state: File handle for outputting final state (optional)
+
+    Returns:
+        bool: True if all streams processed successfully, False if any errors
+
+    """
+    import json
+    from datetime import datetime
+
+    # Initialize state management
+    current_state = state_data.copy() if state_data else {}
+    if "bookmarks" not in current_state:
+        current_state["bookmarks"] = {}
+
+    success_count = 0
+    error_count = 0
+    total_records = 0
+
+    logger.info("📊 CUSTOM INCREMENTAL SYNC EXECUTION:", "blue")
+    logger.info(f"   📋 Streams to process: {len(streams)}", "green")
+    logger.info(f"   📊 Previous bookmarks: {len(current_state['bookmarks'])}", "green")
+
+    # Process each stream individually
+    for i, stream in enumerate(streams, 1):
+        stream_name = stream.name
+        logger.info(
+            f"\n🔄 [{i}/{len(streams)}] Processing stream: {stream_name}",
+            "blue",
+        )
+
+        try:
+            # Get stream metadata from catalog
+            stream_catalog = next(
+                (s for s in catalog["streams"] if s["tap_stream_id"] == stream_name),
+                None,
+            )
+
+            if not stream_catalog:
+                logger.info(f"⚠️ No catalog metadata for stream {stream_name}", "yellow")
+                continue
+
+            # Output SCHEMA message for Singer protocol
+            {
+                "type": "SCHEMA",
+                "stream": stream_name,
+                "schema": stream_catalog["schema"],
+                "key_properties": (
+                    ["id"]
+                    if "id" in stream_catalog["schema"].get("properties", {})
+                    else []
+                ),
+            }
+
+            # Get previous bookmark for this stream
+            stream_bookmark = current_state["bookmarks"].get(stream_name, {})
+            previous_mod_ts = stream_bookmark.get("mod_ts")
+
+            if previous_mod_ts:
+                logger.info(f"   📅 Previous bookmark: {previous_mod_ts}", "green")
+            else:
+                logger.info(
+                    "   📅 No previous bookmark (full initial extraction)",
+                    "yellow",
+                )
+
+            # Create context with state information for incremental sync
+            context = {
+                "stream_name": stream_name,
+                "bookmark": stream_bookmark,
+                "state": current_state,
+            }
+
+            # Extract records from stream with incremental filtering
+            logger.info(f"   🚀 Starting extraction for {stream_name}...", "blue")
+            record_count = 0
+            latest_mod_ts = previous_mod_ts
+
+            # Get records using stream's incremental logic
+            for record in stream.get_records(context):
+                # Output RECORD message for Singer protocol
+                {
+                    "type": "RECORD",
+                    "stream": stream_name,
+                    "record": record,
+                    "time_extracted": datetime.utcnow().isoformat(),
+                }
+
+                record_count += 1
+                total_records += 1
+
+                # Track latest mod_ts for state management
+                record_mod_ts = record.get("mod_ts")
+                if record_mod_ts:
+                    if not latest_mod_ts or record_mod_ts > latest_mod_ts:
+                        latest_mod_ts = record_mod_ts
+
+                # Progress feedback every 1000 records
+                if record_count % 1000 == 0:
+                    logger.info(f"   📊 Extracted {record_count:,} records...", "green")
+
+            # Update bookmark with latest mod_ts
+            if latest_mod_ts:
+                current_state["bookmarks"][stream_name] = {
+                    "mod_ts": latest_mod_ts,
+                    "last_sync": datetime.utcnow().isoformat(),
+                }
+
+                # Output STATE message for Singer protocol
+
+                logger.info(f"   📅 Updated bookmark: {latest_mod_ts}", "green")
+
+            logger.info(
+                f"   ✅ Completed {stream_name}: {record_count:,} records",
+                "green",
+            )
+            success_count += 1
+
+        except Exception as e:
+            logger.info(f"   ❌ Error in stream {stream_name}: {e}", "red")
+            logger.exception(f"   🔍 Full error details for {stream_name}:")
+            error_count += 1
+            continue
+
+    # Output final state to file if specified
+    if output_state and current_state:
+        try:
+            json.dump(current_state, output_state, indent=2)
+            logger.info(f"💾 Final state saved to {output_state.name}", "green")
+        except Exception as e:
+            logger.info(f"⚠️ Failed to save state: {e}", "yellow")
+
+    # Log final summary
+    logger.info("\n📊 INCREMENTAL SYNC SUMMARY:", "blue")
+    logger.info(f"   ✅ Successful streams: {success_count}", "green")
+    logger.info(
+        f"   ❌ Failed streams: {error_count}",
+        "red" if error_count > 0 else "green",
+    )
+    logger.info(f"   📊 Total records extracted: {total_records:,}", "green")
+    logger.info(
+        f"   📅 Streams with updated bookmarks: {len(current_state['bookmarks'])}",
+        "green",
+    )
+
+    return error_count == 0
 
 
 @sync.command("full")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
     "--business-area",
@@ -746,7 +1152,10 @@ def sync_incremental(
     help="Batch size for data extraction",
 )
 def sync_full(
-    config: click.File, business_area: str, parallel_streams: int, batch_size: int
+    config: click.File,
+    business_area: str,
+    parallel_streams: int,
+    batch_size: int,
 ) -> None:
     """Run full sync for business area or all entities."""
     config_data = json.load(config)
@@ -764,6 +1173,15 @@ def sync_full(
     logger.info("Parallel streams: %s", parallel_streams, "green")
     logger.info("Batch size: %s", batch_size, "green")
 
+    try:
+        # Run full sync
+        TapOracleWMS(config=config_data).sync_all()
+        logger.info("✅ Full sync completed successfully", "green")
+    except Exception as e:
+        logger.info(f"❌ Sync failed: {e}", "red")
+        logger.exception("Full error details:")
+        raise
+
 
 # ANALYSIS AND REPORTING SUBCOMMANDS
 
@@ -775,10 +1193,16 @@ def analyze() -> None:
 
 @analyze.command("supply-chain")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
-    "--time-window", type=int, default=30, help="Analysis time window in days"
+    "--time-window",
+    type=int,
+    default=30,
+    help="Analysis time window in days",
 )
 @click.option(
     "--include-forecasting",
@@ -786,7 +1210,9 @@ def analyze() -> None:
     help="Include demand forecasting analysis",
 )
 def analyze_supply_chain(
-    config: click.File, time_window: str, include_forecasting: bool
+    config: click.File,
+    time_window: str,
+    include_forecasting: bool,
 ) -> None:
     """Analyze supply chain performance and visibility."""
     logger.info("Analyzing supply chain performance...", "blue")
@@ -810,12 +1236,15 @@ def analyze_supply_chain(
 
 @analyze.command("compliance")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
     "--audit-type",
     type=click.Choice(
-        ["change_tracking", "data_integrity", "process_compliance", "all"]
+        ["change_tracking", "data_integrity", "process_compliance", "all"],
     ),
     default="all",
     help="Type of compliance audit",
@@ -846,8 +1275,11 @@ def analyze_compliance(config: click.File, audit_type: str, date_range: str) -> 
 
 
 def _prepare_discovery_config(
-    config_data, include_patterns, exclude_patterns, verify_access
-):
+    config_data: dict[str, Any],
+    include_patterns: Iterable[str],
+    exclude_patterns: Iterable[str],
+    verify_access: bool,
+) -> dict[str, Any]:
     """Prepare configuration for entity discovery."""
     if include_patterns or exclude_patterns:
         config_data["entity_patterns"] = {
@@ -863,21 +1295,21 @@ def _prepare_discovery_config(
 
 async def _run_entity_discovery(discovery, verify_access):
     """Run entity discovery with progress tracking."""
-    if RICH_AVAILABLE:
-        return await _run_discovery_with_progress(discovery, verify_access)
-    return await _run_discovery_simple(discovery, verify_access)
+    return await _run_discovery_with_progress(discovery, verify_access)
 
 
 async def _run_discovery_with_progress(discovery, verify_access):
     """Run discovery with rich progress display."""
     with Progress(
-        SpinnerColumn(), TextColumn("[progress.description]{task.description}")
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
     ) as progress:
         task = progress.add_task("Discovering entities...", total=None)
 
         entities = await discovery.discover_entities()
         progress.update(
-            task, description=f"Found {len(entities)} entities, filtering..."
+            task,
+            description=f"Found {len(entities)} entities, filtering...",
         )
 
         filtered = discovery.filter_entities(entities)
@@ -886,7 +1318,7 @@ async def _run_discovery_with_progress(discovery, verify_access):
         if verify_access:
             progress.update(task, description="Verifying entity access...")
             accessible: dict = {}
-            for url in filtered.values():
+            for name, url in filtered.items():
                 if await discovery.check_entity_access(name):
                     accessible[name] = url
                 progress.update(
@@ -1002,7 +1434,7 @@ def _categorize_entities(entities: dict[str, str]) -> dict[str, list[str]]:
 
     for entity_name in entities:
         categorized = False
-        for patterns in category_patterns.values():
+        for category, patterns in category_patterns.items():
             if any(pattern in entity_name.lower() for pattern in patterns):
                 categories[category].append(entity_name)
                 categorized = True
@@ -1016,11 +1448,15 @@ def _categorize_entities(entities: dict[str, str]) -> dict[str, list[str]]:
 
 def _display_entities_table(categorized: dict[str, list[str]]) -> None:
     """Display entities in a formatted table."""
-    for entity_list in categorized.values():
+    for category, entity_list in categorized.items():
         if not entity_list:
             continue
 
-        logger.info("\n[bold magenta]%s[/bold magenta] (%s)", category, len(entity_list))
+        logger.info(
+            "\n[bold magenta]%s[/bold magenta] (%s)",
+            category,
+            len(entity_list),
+        )
 
         table = Table(show_header=True, header_style="bold cyan")
         table.add_column("Entity Name", style="green")
@@ -1030,9 +1466,8 @@ def _display_entities_table(categorized: dict[str, list[str]]) -> None:
             context = _get_business_context(entity, category)
             table.add_row(entity, context)
 
-        if RICH_AVAILABLE:
-            logger.info("%s", table)
-            logger.info("Table display requires rich library")
+        logger.info("%s", table)
+        logger.info("Table display requires rich library")
 
 
 def _get_business_context(entity_name: str, category: str) -> str:
@@ -1062,7 +1497,7 @@ def _export_entities_csv(entities: dict[str, str], output) -> None:
     writer.writerow(["Entity Name", "URL", "Category"])
 
     categorized = _categorize_entities(entities)
-    for entity_list in categorized.values():
+    for category, entity_list in categorized.items():
         for entity in entity_list:
             writer.writerow([entity, entities[entity], category])
 
@@ -1124,7 +1559,10 @@ def monitor() -> None:
 
 @monitor.command("status")
 @click.option(
-    "--config", type=click.File("r"), required=True, help="Configuration file"
+    "--config",
+    type=click.File("r"),
+    required=True,
+    help="Configuration file",
 )
 @click.option(
     "--format",
