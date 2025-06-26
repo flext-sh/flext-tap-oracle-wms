@@ -59,13 +59,15 @@ poetry install
 
 ```json
 {
-  "base_url": "https://wms.company.com",
+  "base_url": "https://wms.company.com/tenant",
   "username": "data_extract_user",
   "password": "secure_password",
-  "facility_id": "DC001",
+  "company_code": "*",
+  "facility_code": "*",
   "start_date": "2024-01-01T00:00:00Z",
+  "pagination_mode": "sequenced",
   "page_size": 1000,
-  "request_timeout": 60
+  "request_timeout": 7200
 }
 ```
 
@@ -212,11 +214,12 @@ Built-in performance features:
 ```json
 {
   "performance": {
+    "pagination_mode": "sequenced",
     "page_size": 1000,
     "max_parallel_streams": 4,
-    "enable_caching": true,
-    "cache_ttl": 300,
-    "request_timeout": 60,
+    "company_code": "*",
+    "facility_code": "*",
+    "request_timeout": 7200,
     "retry_count": 3,
     "backoff_factor": 2
   }
@@ -521,12 +524,13 @@ tap-oracle-wms --version
 
 | Setting           | Type    | Description               | Default    |
 | ----------------- | ------- | ------------------------- | ---------- |
+| `company_code`    | string  | WMS company code          | *          |
+| `facility_code`   | string  | WMS facility code         | *          |
 | `start_date`      | string  | Sync start date           | 2020-01-01 |
+| `pagination_mode` | string  | Pagination: sequenced/paged | sequenced |
 | `page_size`       | integer | Records per page          | 1000       |
-| `request_timeout` | integer | Request timeout (seconds) | 60         |
+| `request_timeout` | integer | Request timeout (seconds) | 7200       |
 | `retry_count`     | integer | Retry attempts            | 3          |
-| `facility_id`     | string  | Default facility          | -          |
-| `api_version`     | string  | API version               | v1         |
 
 ---
 

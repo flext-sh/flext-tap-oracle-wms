@@ -93,8 +93,8 @@ class WMSRealPaginator(BaseOffsetPaginator):
 class WMSEntityStream(RESTStream[dict[str, Any]]):
     """Base stream for all WMS entities with real API implementation."""
 
-    # Real WMS API configuration from validated testing
-    url_base = "https://ta29.wms.ocs.oraclecloud.com/raizen_test"
+    # Real WMS API configuration - Class attribute for Singer SDK compatibility
+    url_base = ""  # Will be overridden by url property
     rest_method = "GET"
     records_jsonpath = "$.results[*]"
     next_page_token_jsonpath = "$.next_page"
@@ -109,7 +109,11 @@ class WMSEntityStream(RESTStream[dict[str, Any]]):
     BACKOFF_FACTOR = 2.0
 
     def __init__(
-        self, tap: Any, entity_name: str, schema: dict[str, Any] | None = None, **kwargs: Any
+        self,
+        tap: Any,
+        entity_name: str,
+        schema: dict[str, Any] | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize TOTALLY DYNAMIC WMS entity stream.
 
@@ -123,6 +127,12 @@ class WMSEntityStream(RESTStream[dict[str, Any]]):
         """
         self.entity_name = entity_name
         self._dynamic_schema = schema
+
+        # Store config for dynamic URL construction
+        self._base_url = tap.config.get("base_url")
+        if not self._base_url:
+            msg = "base_url MUST be configured - NO hardcode allowed"
+            raise ValueError(msg)
 
         # Set as attributes to avoid property override issues
         self.name = entity_name
@@ -145,13 +155,18 @@ class WMSEntityStream(RESTStream[dict[str, Any]]):
 
         super().__init__(tap=tap, **kwargs)
 
+        # CRITICAL: Override url_base after super().__init__ for Singer SDK
+        self.url_base = self._base_url.rstrip("/")
+
     @property
     def url(self) -> str:
-        """Full URL for entity."""
-        return f"{self.url_base}{self.path}"
+        """Full URL using config base_url."""
+        return f"{self._base_url.rstrip('/')}{self.path}"
 
     def get_url_params(
-        self, context: Mapping[str, Any] | None, next_page_token: Any | None = None
+        self,
+        context: Mapping[str, Any] | None,
+        next_page_token: Any | None = None,
     ) -> dict[str, Any]:
         """Get URL parameters for real WMS API with advanced features."""
         params: dict[str, Any] = {}
@@ -192,14 +207,14 @@ class WMSEntityStream(RESTStream[dict[str, Any]]):
         # Field selection for performance
         if self.config.get("field_selection", {}).get(self.entity_name):
             params["fields"] = ",".join(
-                self.config["field_selection"][self.entity_name]
+                self.config["field_selection"][self.entity_name],
             )
             self._field_selection = self.config["field_selection"][self.entity_name]
 
         # Values list mode for minimal data transfer
         if self.config.get("values_list_mode", {}).get(self.entity_name):
             params["values_list"] = ",".join(
-                self.config["values_list_mode"][self.entity_name]
+                self.config["values_list_mode"][self.entity_name],
             )
             self._values_list = True
 
@@ -214,7 +229,8 @@ class WMSEntityStream(RESTStream[dict[str, Any]]):
 
         # Advanced filtering operators
         advanced_filters = self.config.get("advanced_filters", {}).get(
-            self.entity_name, {}
+            self.entity_name,
+            {},
         )
         for field_name, conditions in advanced_filters.items():
             if isinstance(conditions, dict):
@@ -235,7 +251,9 @@ class WMSEntityStream(RESTStream[dict[str, Any]]):
         pagination_mode = self.config.get("pagination_mode", "offset")
 
         return WMSRealPaginator(
-            start_value=1, page_size=page_size, mode=pagination_mode
+            start_value=1,
+            page_size=page_size,
+            mode=pagination_mode,
         )
 
     @property
@@ -274,12 +292,17 @@ class WMSEntityStream(RESTStream[dict[str, Any]]):
 
         except (ValueError, TypeError) as e:
             self.logger.exception(
-                "Failed to parse response for {self.entity_name}: %s", e
+                "Failed to parse response for {self.entity_name}: %s",
+                e,
             )
             msg = f"Invalid JSON response from {self.entity_name}"
             raise FatalAPIError(msg) from e
 
-    def post_process(self, row: dict[str, Any], context: Mapping[str, Any] | None = None) -> dict[str, Any] | None:
+    def post_process(
+        self,
+        row: dict[str, Any],
+        context: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         """Post-process real WMS record."""
         # Ensure required fields exist
         if not row.get("id"):
@@ -296,7 +319,9 @@ class WMSEntityStream(RESTStream[dict[str, Any]]):
         # Add metadata
         row["_entity_name"] = self.entity_name
         starting_timestamp = self.get_starting_timestamp(context)
-        row["_extracted_at"] = starting_timestamp.isoformat() if starting_timestamp else None
+        row["_extracted_at"] = (
+            starting_timestamp.isoformat() if starting_timestamp else None
+        )
 
         return row
 

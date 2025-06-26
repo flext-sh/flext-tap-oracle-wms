@@ -108,7 +108,7 @@ class MetricsCollector:
 
         # Metrics storage
         self._metrics: dict[str, deque[MetricPoint]] = defaultdict(
-            lambda: deque(maxlen=1000)
+            lambda: deque(maxlen=1000),
         )
         self._counters: dict[str, int] = defaultdict(int)
         self._gauges: dict[str, float] = defaultdict(float)
@@ -118,10 +118,12 @@ class MetricsCollector:
         self.enabled = self.metrics_config.get("enabled", False)
         self.collection_interval = self.metrics_config.get("interval_seconds", 60)
         self.include_entity_metrics = self.metrics_config.get(
-            "include_entity_metrics", True
+            "include_entity_metrics",
+            True,
         )
         self.include_performance_metrics = self.metrics_config.get(
-            "include_performance_metrics", True
+            "include_performance_metrics",
+            True,
         )
 
         # Background collection task
@@ -190,7 +192,10 @@ class MetricsCollector:
             logger.warning("Error collecting system metrics: %s", e)
 
     def record_counter(
-        self, name: str, value: int = 1, tags: dict[str, str] | None = None
+        self,
+        name: str,
+        value: int = 1,
+        tags: dict[str, str] | None = None,
     ) -> None:
         """Record a counter metric.
 
@@ -216,7 +221,10 @@ class MetricsCollector:
         self._metrics[name].append(point)
 
     def record_gauge(
-        self, name: str, value: float, tags: dict[str, str] | None = None
+        self,
+        name: str,
+        value: float,
+        tags: dict[str, str] | None = None,
     ) -> None:
         """Record a gauge metric.
 
@@ -388,7 +396,9 @@ class HealthMonitor:
     """Monitors system health and performs health checks."""
 
     def __init__(
-        self, config: dict[str, Any], metrics_collector: MetricsCollector
+        self,
+        config: dict[str, Any],
+        metrics_collector: MetricsCollector,
     ) -> None:
         """Initialize health monitor.
 
@@ -434,11 +444,16 @@ class HealthMonitor:
 
         # Active tasks check
         self.register_check(
-            "async_tasks", "Async tasks within limits", self._check_async_tasks
+            "async_tasks",
+            "Async tasks within limits",
+            self._check_async_tasks,
         )
 
     def register_check(
-        self, name: str, description: str, check_function: Callable[[], bool]
+        self,
+        name: str,
+        description: str,
+        check_function: Callable[[], bool],
     ) -> None:
         """Register a new health check.
 
@@ -450,7 +465,9 @@ class HealthMonitor:
 
         """
         self._health_checks[name] = HealthCheck(
-            name=name, description=description, check_function=check_function
+            name=name,
+            description=description,
+            check_function=check_function,
         )
         logger.debug("Registered health check: %s", name)
 
@@ -595,7 +612,7 @@ class HealthMonitor:
         try:
             asyncio.get_event_loop()
             active_tasks = len(
-                [task for task in asyncio.all_tasks() if not task.done()]
+                [task for task in asyncio.all_tasks() if not task.done()],
             )
 
             # Alert if more than 50 active tasks
@@ -608,7 +625,9 @@ class AlertManager:
     """Manages alerts and notifications."""
 
     def __init__(
-        self, config: dict[str, Any], metrics_collector: MetricsCollector
+        self,
+        config: dict[str, Any],
+        metrics_collector: MetricsCollector,
     ) -> None:
         """Initialize alert manager.
 
@@ -763,7 +782,9 @@ class AlertManager:
                     # Clear alert
                     alert.active = False
                     logger.info(
-                        "ALERT CLEARED: %s (value: %s)", alert.name, current_value
+                        "ALERT CLEARED: %s (value: %s)",
+                        alert.name,
+                        current_value,
                     )
 
                     # Record alert cleared metric
@@ -866,7 +887,9 @@ class PerformanceProfiler:
             tags["entity"] = entity_name
 
         self.metrics.record_timer(
-            f"performance.{operation}.duration_ms", duration_ms, tags
+            f"performance.{operation}.duration_ms",
+            duration_ms,
+            tags,
         )
 
         # Record rate metrics if record count provided
@@ -971,6 +994,12 @@ class TAPMonitor:
         # Export timer summaries
         for name, stats in snapshot["timers"].items():
             safe_name = name.replace(".", "_").replace("-", "_")
-            lines.extend((f"# TYPE {safe_name} summary", f"{safe_name}_count {stats['count']}", f"{safe_name}_sum {stats['avg'] * stats['count']}"))
+            lines.extend(
+                (
+                    f"# TYPE {safe_name} summary",
+                    f"{safe_name}_count {stats['count']}",
+                    f"{safe_name}_sum {stats['avg'] * stats['count']}",
+                )
+            )
 
         return "\n".join(lines)

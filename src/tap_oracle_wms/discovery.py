@@ -45,10 +45,12 @@ class EntityDiscovery:
         # Cache configuration
         self._cache_ttl = config.get("schema_cache_ttl", 3600)
         self._entity_cache_ttl = config.get(
-            "entity_cache_ttl", 7200
+            "entity_cache_ttl",
+            7200,
         )  # 2 hours for entity discovery
         self._access_cache_ttl = config.get(
-            "access_cache_ttl", 1800
+            "access_cache_ttl",
+            1800,
         )  # 30 minutes for access checks
 
         # Cache timestamps
@@ -202,7 +204,7 @@ class EntityDiscovery:
         if entity_name in self._metadata_cache:
             cache_time = self._metadata_cache_times.get(entity_name)
             if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
-                seconds=self._cache_ttl
+                seconds=self._cache_ttl,
             ):
                 logger.debug("Using cached metadata for entity: %s", entity_name)
                 return self._metadata_cache[entity_name]
@@ -237,7 +239,9 @@ class EntityDiscovery:
                 return None
 
     async def get_entity_sample(
-        self, entity_name: str, limit: int = 5
+        self,
+        entity_name: str,
+        limit: int = 5,
     ) -> list[dict[str, Any]]:
         """Get sample records from entity for schema inference with caching.
 
@@ -256,7 +260,7 @@ class EntityDiscovery:
         if cache_key in self._sample_cache:
             cache_time = self._sample_cache_times.get(cache_key)
             if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
-                seconds=self._cache_ttl
+                seconds=self._cache_ttl,
             ):
                 logger.debug("Using cached sample data for entity: %s", entity_name)
                 return self._sample_cache[cache_key]
@@ -294,7 +298,9 @@ class EntityDiscovery:
                     logger.debug("Entity %s not found for sampling", entity_name)
                 else:
                     logger.warning(
-                        "HTTP error getting sample for %s: %s", entity_name, e
+                        "HTTP error getting sample for %s: %s",
+                        entity_name,
+                        e,
                     )
                 return []
             except (
@@ -303,7 +309,9 @@ class EntityDiscovery:
                 httpx.RequestError,
             ) as e:
                 logger.warning(
-                    "Network error getting sample for entity %s: %s", entity_name, e
+                    "Network error getting sample for entity %s: %s",
+                    entity_name,
+                    e,
                 )
                 return []
             except (ValueError, KeyError, TypeError) as e:
@@ -384,7 +392,7 @@ class EntityDiscovery:
         if entity_name in self._access_cache:
             cache_time = self._access_cache_times.get(entity_name)
             if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
-                seconds=self._access_cache_ttl
+                seconds=self._access_cache_ttl,
             ):
                 logger.debug("Using cached access result for entity: %s", entity_name)
                 return self._access_cache[entity_name]
@@ -463,7 +471,9 @@ class EntityDiscovery:
                     logger.debug("Entity %s size estimation not supported", entity_name)
                 else:
                     logger.warning(
-                        "HTTP error estimating size for entity %s: %s", entity_name, e
+                        "HTTP error estimating size for entity %s: %s",
+                        entity_name,
+                        e,
                     )
                 return None
             except (
@@ -472,7 +482,9 @@ class EntityDiscovery:
                 httpx.RequestError,
             ) as e:
                 logger.warning(
-                    "Network error estimating size for entity %s: %s", entity_name, e
+                    "Network error estimating size for entity %s: %s",
+                    entity_name,
+                    e,
                 )
                 return None
             except (ValueError, KeyError, TypeError) as e:
@@ -535,7 +547,7 @@ class EntityDiscovery:
                     self._entity_cache
                     and self._last_entity_cache_time
                     and current_time - self._last_entity_cache_time
-                    < timedelta(seconds=self._entity_cache_ttl)
+                    < timedelta(seconds=self._entity_cache_ttl),
                 ),
             },
             "metadata_cache": {
@@ -712,7 +724,9 @@ class SchemaGenerator:
         }
 
     def _create_property_from_field(
-        self, field_name: str, field_def: dict[str, Any]
+        self,
+        field_name: str,
+        field_def: dict[str, Any],
     ) -> dict[str, Any]:
         """Create a property definition from field definition.
 
@@ -870,7 +884,9 @@ class SchemaGenerator:
         return {"type": "string"}
 
     def _merge_types(
-        self, type1: dict[str, Any], type2: dict[str, Any]
+        self,
+        type1: dict[str, Any],
+        type2: dict[str, Any],
     ) -> dict[str, Any]:
         """Merge two type definitions.
 

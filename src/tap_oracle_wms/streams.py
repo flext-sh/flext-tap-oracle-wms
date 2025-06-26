@@ -130,7 +130,9 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
 
     @classmethod
     def create_for_testing(
-        cls, entity_name: str, schema: dict[str, Any]
+        cls,
+        entity_name: str,
+        schema: dict[str, Any],
     ) -> WMSDynamicStream:
         """Create a stream instance for testing without a tap.
 
@@ -195,6 +197,27 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
         # This ensures it's set even if parent constructor overrides it
         if self._replication_key:
             self._replication_key = self._determine_replication_key()
+
+    @property
+    def requests_session(self):
+        """Create requests session with configured timeout.
+
+        Override Singer SDK default to use our configured request_timeout
+        instead of the hardcoded 300-second timeout.
+        """
+        import requests
+
+        session = requests.Session()
+        # Get timeout from config, default to 7200 seconds (2 hours)
+        timeout = self._tap_config.get("request_timeout", 7200)
+
+        # Apply timeout to all requests made by this session
+        session.request = lambda *args, **kwargs: (
+            kwargs.setdefault("timeout", timeout),
+            super(requests.Session, session).request(*args, **kwargs),
+        )[1]
+
+        return session
 
     @property
     def name(self) -> str:
@@ -270,17 +293,20 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
             # Configure for incremental replication
             metadata.get_property_metadata(".", "replication-method").selected = False
             metadata.get_property_metadata(
-                ".", "replication-method"
+                ".",
+                "replication-method",
             ).value = "INCREMENTAL"
             metadata.get_property_metadata(".", "replication-key").selected = False
             metadata.get_property_metadata(
-                ".", "replication-key"
+                ".",
+                "replication-key",
             ).value = self.replication_key
         else:
             # Configure for full table replication
             metadata.get_property_metadata(".", "replication-method").selected = False
             metadata.get_property_metadata(
-                ".", "replication-method"
+                ".",
+                "replication-method",
             ).value = "FULL_TABLE"
 
         return metadata
@@ -311,7 +337,7 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
                     if "anyOf" in prop:
                         for any_type in prop["anyOf"]:
                             if isinstance(any_type, dict) and any_type.get(
-                                "format"
+                                "format",
                             ) in {"date-time", "date"}:
                                 return key
                     # Check for string types with time-related names
@@ -358,7 +384,9 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
         return WMSPaginator(start_value=start_value, page_size=page_size, mode=mode)
 
     def get_url_params(
-        self, context: dict[str, Any] | None, next_page_token: Any | None
+        self,
+        context: dict[str, Any] | None,
+        next_page_token: Any | None,
     ) -> dict[str, Any] | None:
         """Get URL parameters for the request.
 
@@ -529,7 +557,8 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
         return response
 
     def get_starting_replication_key_value(
-        self, context: dict[str, Any] | None = None
+        self,
+        context: dict[str, Any] | None = None,
     ) -> Any:
         """Get the starting replication key value for incremental sync.
 
@@ -557,7 +586,9 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
 
         if bookmark_value:
             self.logger.info(
-                "Using bookmark value for %s: %s", self.name, bookmark_value
+                "Using bookmark value for %s: %s",
+                self.name,
+                bookmark_value,
             )
             return bookmark_value
 
@@ -570,7 +601,8 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
         return None
 
     def get_replication_key_signpost(
-        self, context: dict[str, Any] | None = None
+        self,
+        context: dict[str, Any] | None = None,
     ) -> Any:
         """Get the current replication key signpost.
 
@@ -686,7 +718,9 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
             )
 
     def post_process(
-        self, row: dict[str, Any], context: dict[str, Any] | None = None
+        self,
+        row: dict[str, Any],
+        context: dict[str, Any] | None = None,
     ) -> dict[str, Any] | None:
         """Post-process each record.
 
@@ -715,7 +749,8 @@ class WMSDynamicStream(RESTStream[dict[str, Any]]):
 
 
 def create_dynamic_stream_class(
-    entity_name: str, schema: dict[str, Any]
+    entity_name: str,
+    schema: dict[str, Any],
 ) -> type[WMSDynamicStream]:
     """Create a dynamic stream class for an entity.
 

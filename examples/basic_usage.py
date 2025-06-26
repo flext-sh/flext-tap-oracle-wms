@@ -12,7 +12,8 @@ from typing import Any
 
 # Set up logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,8 @@ def create_config() -> Any:
     """Create configuration from environment variables."""
     config = {
         "base_url": os.environ.get(
-            "WMS_BASE_URL", "https://your-instance.wms.ocs.oraclecloud.com/your-tenant"
+            "WMS_BASE_URL",
+            "https://your-instance.wms.ocs.oraclecloud.com/your-tenant",
         ),
         "auth_method": os.environ.get("WMS_AUTH_METHOD", "basic"),
         "username": os.environ.get("WMS_USERNAME"),
@@ -45,7 +47,7 @@ def create_config() -> Any:
         not config["username"] or not config["password"]
     ):
         logger.error(
-            "Basic auth requires WMS_USERNAME and WMS_PASSWORD environment variables"
+            "Basic auth requires WMS_USERNAME and WMS_PASSWORD environment variables",
         )
         sys.exit(1)
 

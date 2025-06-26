@@ -11,7 +11,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from tap_oracle_wms.tap import TapOracleWMS
 
 
@@ -65,7 +64,10 @@ class TestE2EWithOptionalConfig:
 
         # Create temporary config file
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
+            mode="w",
+            suffix=".json",
+            delete=False,
+            encoding="utf-8",
         ) as f:
             json.dump(live_config_data, f)
             temp_config_path = f.name
@@ -112,7 +114,10 @@ class TestE2EWithOptionalConfig:
 
         # Create temporary config file
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
+            mode="w",
+            suffix=".json",
+            delete=False,
+            encoding="utf-8",
         ) as f:
             json.dump(live_config_data, f)
             temp_config_path = f.name
@@ -150,7 +155,10 @@ class TestE2EWithOptionalConfig:
 
         # Create temporary config file
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
+            mode="w",
+            suffix=".json",
+            delete=False,
+            encoding="utf-8",
         ) as f:
             json.dump(live_config_data, f)
             temp_config_path = f.name
@@ -217,21 +225,27 @@ class TestE2EWithOptionalConfig:
                                 "selected": True,
                                 "replication-method": "FULL_TABLE",
                             },
-                        }
+                        },
                     ],
-                }
-            ]
+                },
+            ],
         }
 
         # Create temporary files
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
+            mode="w",
+            suffix=".json",
+            delete=False,
+            encoding="utf-8",
         ) as config_f:
             json.dump(live_config_data, config_f)
             temp_config_path = config_f.name
 
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
+            mode="w",
+            suffix=".json",
+            delete=False,
+            encoding="utf-8",
         ) as catalog_f:
             json.dump(minimal_catalog, catalog_f)
             temp_catalog_path = catalog_f.name
@@ -364,7 +378,10 @@ class TestE2EWithOptionalConfig:
         invalid_config = {"base_url": "invalid-url", "auth_method": "invalid"}
 
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
+            mode="w",
+            suffix=".json",
+            delete=False,
+            encoding="utf-8",
         ) as f:
             json.dump(invalid_config, f)
             temp_config_path = f.name

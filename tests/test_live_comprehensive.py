@@ -3,7 +3,6 @@
 import time
 
 import pytest
-
 from tap_oracle_wms.config import QUALITY_THRESHOLD, RATE_THRESHOLD
 from tap_oracle_wms.tap import TapOracleWMS
 
@@ -381,17 +380,17 @@ class TestComprehensiveLiveFlow:
                     for value in record.values():
                         if not isinstance(field, str):
                             quality_issues.append(
-                                f"Record {record_count}: Non-string field name: {field}"
+                                f"Record {record_count}: Non-string field name: {field}",
                             )
                         elif len(field) == 0:
                             quality_issues.append(
-                                f"Record {record_count}: Empty field name"
+                                f"Record {record_count}: Empty field name",
                             )
 
                         # Check for problematic values
                         if isinstance(value, type | function):
                             quality_issues.append(
-                                f"Record {record_count}: Invalid value type in {field}"
+                                f"Record {record_count}: Invalid value type in {field}",
                             )
 
                 record_count += 1

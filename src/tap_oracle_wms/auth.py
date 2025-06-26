@@ -194,7 +194,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
             # Calculate expiration (with 60 second buffer)
             expires_in = token_data.get("expires_in", 3600)
             self._token_expires = datetime.now(timezone.utc) + timedelta(
-                seconds=expires_in - 60
+                seconds=expires_in - 60,
             )
 
             # Store refresh token if provided
