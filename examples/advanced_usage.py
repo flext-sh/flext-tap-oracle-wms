@@ -1,16 +1,15 @@
-"""Module advanced_usage."""
-
 #!/usr/bin/env python3
 """Advanced usage examples for tap-oracle-wms."""
 
-import asyncio
-import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
+import asyncio
+import logging
+import operator
 
 from tap_oracle_wms import TapOracleWMS
 from tap_oracle_wms.discovery import EntityDiscovery, SchemaGenerator
-from typing import List, Dict, Optional, Any
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ HIGH_PRIORITY_THRESHOLD = 5
 GRACE_RETRIES = 2
 
 
-async def analyze_entity_relationships():
+async def analyze_entity_relationships() -> dict[str, list[dict[str, Any]]]:
     """Analyze relationships between WMS entities."""
     config = {
         "base_url": "https://your-instance.wms.ocs.oraclecloud.com/your-tenant",
@@ -38,13 +37,13 @@ async def analyze_entity_relationships():
 
     # Discover all entities
     entities = await discovery.discover_entities()
-    logger.info("Found %s", len(entities), "entities")
+    logger.info("Found %s entities", len(entities))
 
     # Analyze relationships
     relationships = {}
 
     for entity_name in sorted(entities.keys())[:10]:  # Analyze first 10 for demo
-        logger.info("Analyzing %s", entity_name...")
+        logger.info("Analyzing %s", entity_name)
 
         # Get entity metadata
         metadata = await discovery.describe_entity(entity_name)
@@ -66,7 +65,7 @@ async def analyze_entity_relationships():
                             "field": param_name,
                             "related_entity": related_entity,
                             "type": "foreign_key",
-                        }
+                        },
                     )
 
         if entity_relationships:
@@ -75,14 +74,14 @@ async def analyze_entity_relationships():
     # Display relationship graph
     logger.info("\nEntity Relationship Summary:")
     for entity, rels in relationships.items():
-        logger.info("\n%s", entity:")
+        logger.info("\n%s:", entity)
         for rel in rels:
-            logger.info("  -> %s", rel['related_entity'] (via %s", rel['field'])")
+            logger.info("  -> %s (via %s)", rel["related_entity"], rel["field"])
 
     return relationships
 
 
-async def performance_optimization_demo():
+async def performance_optimization_demo() -> list[dict[str, Any]]:
     """Demonstrate performance optimization techniques."""
     config = {
         "base_url": "https://your-instance.wms.ocs.oraclecloud.com/your-tenant",
@@ -112,7 +111,7 @@ async def performance_optimization_demo():
     results = []
 
     for test_config in test_configs:
-        logger.info("\nTesting: %s", test_config['name']")
+        logger.info("\nTesting: %s", test_config["name"])
 
         # Update config
         config.update(
@@ -120,7 +119,7 @@ async def performance_optimization_demo():
                 "pagination_mode": test_config["pagination_mode"],
                 "page_size": test_config["page_size"],
                 "entities": ["inventory"],  # Test with inventory entity
-            }
+            },
         )
 
         tap = TapOracleWMS(config=config)
@@ -129,7 +128,8 @@ async def performance_optimization_demo():
         start_time = datetime.now(UTC)
         record_count = 0
 
-        def count_records(message) -> None:
+        def count_records(message: dict[str, Any]) -> None:
+            """Function for count_records operations."""
             nonlocal record_count
             if message["type"] == "RECORD":
                 record_count += 1
@@ -150,20 +150,24 @@ async def performance_optimization_demo():
                     "records": record_count,
                     "elapsed_seconds": elapsed,
                     "records_per_second": throughput,
-                }
+                },
             )
 
-            logger.info("  Records: %s", record_count")
-            logger.info("  Time: %s", elapsed:.2fs")
-            logger.info("  Throughput: %s", throughput:.0f records/sec")
+            logger.info("  Records: %s", record_count)
+            logger.info("  Time: %.2fs", elapsed)
+            logger.info("  Throughput: %.0f records/sec", throughput)
 
         except Exception:
             logger.exception("  Failed")
 
     # Compare results
     logger.info("\nPerformance Comparison:")
-    for result in sorted(results, key=lambda x: x["records_per_second"], reverse=True):
-        logger.info("  %s", result['strategy']: %s", result['records_per_second']:.0f rec/s")
+    for result in sorted(
+        results, key=operator.itemgetter("records_per_second"), reverse=True
+    ):
+        logger.info(
+            "  %s: %.0f rec/s", result["strategy"], result["records_per_second"]
+        )
 
     return results
 
@@ -229,7 +233,8 @@ def custom_filtering_example() -> None:
     # Track filtered records
     filtered_records = {"inventory": [], "order_hdr": []}
 
-    def capture_records(message) -> None:
+        """Function for capture_records operations."""
+    def capture_records(message: dict[str, Any]) -> None:
         if message["type"] == "RECORD":
             stream = message["stream"]
             if stream in filtered_records:
@@ -243,7 +248,7 @@ def custom_filtering_example() -> None:
         # Analyze results
         logger.info("\nFiltered Results:")
         for stream, records in filtered_records.items():
-            logger.info("\n%s", stream: %s", len(records) records")
+            logger.info("\n%s: %s records", stream, len(records))
 
             if records and stream == "inventory":
                 # Verify filters worked
@@ -252,9 +257,10 @@ def custom_filtering_example() -> None:
                 )
                 positive_qty = sum(1 for r in records if r.get("on_hand_qty", 0) > 0)
                 logger.info(
-                    f"  Locations starting with 'A': {locations_starting_with_a}"
+                    "  Locations starting with 'A': %s",
+                    locations_starting_with_a,
                 )
-                logger.info("  Positive quantities: %s", positive_qty")
+                logger.info("  Positive quantities: %s", positive_qty)
 
             elif records and stream == "order_hdr":
                 # Check date range
@@ -269,14 +275,14 @@ def custom_filtering_example() -> None:
                     for r in records
                     if r.get("priority", 0) >= HIGH_PRIORITY_THRESHOLD
                 )
-                logger.info("  Recent orders (last 7 days): %s", recent_orders")
-                logger.info("  High priority orders: %s", high_priority")
+                logger.info("  Recent orders (last 7 days): %s", recent_orders)
+                logger.info("  High priority orders: %s", high_priority)
 
     except Exception:
         logger.exception("Filtering example failed")
 
 
-async def parallel_entity_extraction():
+async def parallel_entity_extraction() -> list[dict[str, Any]]:
     """Extract multiple entities in parallel for better performance."""
     config = {
         "base_url": "https://your-instance.wms.ocs.oraclecloud.com/your-tenant",
@@ -303,7 +309,8 @@ async def parallel_entity_extraction():
         records = []
         start_time = datetime.now(UTC)
 
-        def capture_records(message) -> None:
+        def capture_records(message: dict[str, Any]) -> None:
+            """Function for capture_records operations."""
             if message["type"] == "RECORD":
                 records.append(message["record"])
 
@@ -321,7 +328,7 @@ async def parallel_entity_extraction():
                 "elapsed": elapsed,
                 "success": True,
             }
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return {
                 "entity": entity_name,
                 "records": 0,
@@ -340,20 +347,24 @@ async def parallel_entity_extraction():
     total_elapsed = (datetime.now(UTC) - start_time).total_seconds()
 
     # Display results
-    logger.info("\nParallel Extraction Complete in %s", total_elapsed:.2fs")
+    logger.info("\nParallel Extraction Complete in %.2fs", total_elapsed)
     logger.info("\nResults by Entity:")
 
     total_records = 0
     for result in results:
         if result["success"]:
             logger.info(
-                f"  {result['entity']}: {result['records']} records in {result['elapsed']:.2f}s"
+                "  %s: %s records in %.2fs",
+                result["entity"],
+                result["records"],
+                result["elapsed"],
             )
             total_records += result["records"]
-            logger.info("  %s", result['entity']: FAILED - %s", result['error']")
+        else:
+            logger.info("  %s: FAILED - %s", result["entity"], result["error"])
 
-    logger.info("\nTotal: %s", total_records records")
-    logger.info("Throughput: %s", total_records / total_elapsed:.0f records/sec")
+    logger.info("\nTotal: %s records", total_records)
+    logger.info("Throughput: %.0f records/sec", total_records / total_elapsed)
 
     return results
 
@@ -369,7 +380,7 @@ def main() -> None:
         "parallel": lambda: asyncio.run(parallel_entity_extraction()),
     }
 
-    if len(sys.argv) < GRACE_RETRIES or sys.argv[1] not in examples:
+    if len(sys.argv) < 2 or sys.argv[1] not in examples:
         sys.exit(1)
 
     example = sys.argv[1]

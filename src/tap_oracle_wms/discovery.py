@@ -1,16 +1,16 @@
 """Dynamic entity discovery for Oracle WMS."""
-
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 import fnmatch
 import logging
-from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
 
 from .auth import get_wms_authenticator, get_wms_headers
 from .config import HTTP_FORBIDDEN, HTTP_NOT_FOUND, HTTP_OK
+
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ class EntityDiscovery:
     def entity_endpoint(self) -> str:
         """Get the entity discovery endpoint.
 
-        Returns
+        Returns:
         -------
             Full URL for entity endpoint
 
@@ -101,11 +101,11 @@ class EntityDiscovery:
     async def discover_entities(self) -> dict[str, str]:
         """Discover all available entities from WMS API.
 
-        Returns
+        Returns:
         -------
             Dictionary mapping entity names to their URLs
 
-        Raises
+        Raises:
         ------
             HTTPError: If API request fails
 
@@ -500,7 +500,8 @@ class EntityDiscovery:
 
         Args:
         ----
-            cache_type: Type of cache to clear ("all", "entities", "metadata", "samples", "access")
+            cache_type: Type of cache to clear
+                ("all", "entities", "metadata", "samples", "access")
 
         """
         if cache_type in {"all", "entities"}:
@@ -526,7 +527,7 @@ class EntityDiscovery:
     def get_cache_stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
-        Returns
+        Returns:
         -------
             Dictionary with cache statistics
 
@@ -659,7 +660,8 @@ class SchemaGenerator:
         properties: dict[str, Any] = {}
         required_fields: list[str] = []
 
-        # The describe endpoint returns field names in "parameters" and definitions in "fields"
+        # The describe endpoint returns field names in "parameters"
+        # and definitions in "fields"
         field_names = metadata.get("parameters", [])
         field_definitions = metadata.get("fields", {})
 

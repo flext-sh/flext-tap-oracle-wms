@@ -1,9 +1,11 @@
 import sys
 
+
 sys.path.append("/home/marlonsc/pyauto/gruponos-poc-oic-wms/src")
 
 from gruponos_poc_oic_wms.client import Client
 from gruponos_poc_oic_wms.core.config import Config
+
 
 # Load config
 config = Config()

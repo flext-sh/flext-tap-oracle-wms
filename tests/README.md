@@ -1,26 +1,38 @@
 # tap-oracle-wms Test Suite
 
-Comprehensive test suite for the Oracle WMS tap implementation.
+Comprehensive test suite for the Oracle WMS tap implementation with exhaustive coverage of unit, integration, e2e, and performance tests.
 
 ## 📁 Test Structure
 
 ```
 tests/
-├── conftest.py                    # Shared fixtures and configuration
-├── pytest.ini                    # Pytest configuration
-├── README.md                      # This file
+├── conftest.py                              # Shared fixtures and configuration
+├── pytest.ini                              # Pytest configuration
+├── README.md                                # This file
 │
-├── test_unit_auth.py             # Unit tests for authentication
-├── test_unit_discovery.py        # Unit tests for entity discovery
-├── test_unit_pagination.py       # Unit tests for pagination
-├── test_unit_state.py            # Unit tests for state management
-├── test_unit_streams.py          # Unit tests for stream functionality
+├── unit/                                    # Unit tests (NEW)
+│   ├── test_config_validation.py           # Configuration validation
+│   ├── test_pagination_hateoas.py          # HATEOAS pagination
+│   ├── test_streams_advanced.py            # Advanced stream functionality
+│   ├── test_tap_capabilities.py            # Tap capabilities and initialization
+│   └── test_tap_core.py                    # Core tap functionality
 │
-├── test_integration_discovery.py # Integration tests for discovery
-├── test_integration_extraction.py # Integration tests for data extraction
-├── test_integration_state.py     # Integration tests for state management
+├── integration/                             # Integration tests (NEW)
+│   ├── test_tap_integration.py             # Tap-Stream integration
+│   ├── test_auth_monitoring_integration.py # Auth + Monitoring integration
+│   └── test_wms_connection.py              # WMS connection integration
 │
-└── test_live_comprehensive.py    # Comprehensive live API tests
+├── e2e/                                     # End-to-End tests (NEW)
+│   ├── test_tap_e2e.py                     # Complete E2E workflows
+│   └── test_tap_complete.py                # Full tap lifecycle
+│
+├── performance/                             # Performance tests (NEW)
+│   └── test_performance.py                 # Benchmarks and scaling
+│
+├── test_unit_auth.py                       # Unit tests for authentication
+├── test_unit_discovery.py                  # Unit tests for entity discovery
+├── test_integration_extraction.py          # Integration tests for data extraction
+└── test_live_comprehensive.py              # Comprehensive live API tests
 ```
 
 ## 🏷️ Test Categories
@@ -32,12 +44,51 @@ tests/
 - **High coverage** of individual components
 - **Run by default** in CI/CD pipelines
 
+**NEW ENHANCED UNIT TESTS:**
+- ✅ **Configuration Validation**: Auth methods, pagination limits, schema validation
+- ✅ **HATEOAS Pagination**: Modern Singer SDK pagination with URL extraction
+- ✅ **Advanced Streams**: URL parameters, replication methods, optimization
+- ✅ **Tap Capabilities**: Singer SDK capabilities, initialization, validation
+
 ### Integration Tests (`@pytest.mark.integration`)
 
 - **Medium execution time** (1-30 seconds per test)
 - **May use external services** (but typically mocked)
 - **Test component interactions**
 - **Run in staging environments**
+
+**NEW ENHANCED INTEGRATION TESTS:**
+- ✅ **Tap-Stream Integration**: Complete discovery and stream creation workflows
+- ✅ **Auth-Monitoring Integration**: Authentication with metrics collection
+- ✅ **HTTP Client Integration**: Request/response handling with auth headers
+- ✅ **Error Recovery Integration**: Graceful handling of failures
+
+### End-to-End Tests (`@pytest.mark.e2e`) **NEW**
+
+- **Complete workflow testing** (30-120 seconds per test)
+- **Multiple component interaction**
+- **Real-world scenario simulation**
+- **CLI command simulation**
+
+**E2E TEST COVERAGE:**
+- ✅ **Complete Discovery Flow**: Entity discovery → Schema generation → Stream creation
+- ✅ **Full Extraction Pipeline**: Pagination → Data processing → State management
+- ✅ **CLI Interface Testing**: Discover/sync command simulation
+- ✅ **Oracle WMS Scenarios**: Real-world data patterns and edge cases
+- ✅ **Error Recovery Flows**: Failure scenarios and continuation
+
+### Performance Tests (`@pytest.mark.performance`) **NEW**
+
+- **Benchmark execution** (variable time)
+- **Scalability validation**
+- **Memory and throughput testing**
+- **Run before releases**
+
+**PERFORMANCE TEST COVERAGE:**
+- ✅ **Initialization Benchmarks**: Tap creation, stream discovery scaling
+- ✅ **Memory Efficiency**: Memory usage, leak detection, large dataset handling
+- ✅ **Throughput Testing**: Pagination processing, URL parameter generation
+- ✅ **Concurrency Testing**: Thread safety, parallel operations
 
 ### Live Tests (`@pytest.mark.live`)
 
@@ -57,14 +108,20 @@ tests/
 ### Quick Start - Unit Tests Only
 
 ```bash
-# Run all unit tests (default)
-pytest
+# Run all unit tests (default, fastest)
+pytest -m "unit"
 
-# Run specific unit test module
-pytest tests/test_unit_auth.py
+# Run specific unit test modules (NEW)
+pytest tests/unit/test_config_validation.py
+pytest tests/unit/test_pagination_hateoas.py
+pytest tests/unit/test_streams_advanced.py
+pytest tests/unit/test_tap_capabilities.py
 
 # Run specific test
-pytest tests/test_unit_auth.py::TestWMSAuthentication::test_get_wms_headers_basic_auth
+pytest tests/unit/test_config_validation.py::TestConfigValidation::test_validate_auth_config_basic_valid
+
+# Run legacy unit tests
+pytest tests/test_unit_auth.py
 ```
 
 ### Integration Tests
@@ -73,8 +130,41 @@ pytest tests/test_unit_auth.py::TestWMSAuthentication::test_get_wms_headers_basi
 # Run all integration tests
 pytest -m integration
 
+# Run new enhanced integration tests (NEW)
+pytest tests/integration/test_tap_integration.py
+pytest tests/integration/test_auth_monitoring_integration.py
+
 # Run specific integration test
 pytest tests/test_integration_discovery.py
+```
+
+### End-to-End Tests (NEW)
+
+```bash
+# Run all E2E tests
+pytest -m e2e
+
+# Run specific E2E test suites
+pytest tests/e2e/test_tap_e2e.py
+pytest tests/e2e/test_tap_complete.py
+
+# Run specific E2E scenario
+pytest tests/e2e/test_tap_e2e.py::TestTapE2EDiscovery::test_complete_discovery_flow
+```
+
+### Performance Tests (NEW)
+
+```bash
+# Run all performance tests
+pytest -m performance
+
+# Run specific performance categories
+pytest tests/performance/test_performance.py::TestPerformanceBasic
+pytest tests/performance/test_performance.py::TestPerformanceMemory
+pytest tests/performance/test_performance.py::TestPerformanceConcurrency
+
+# Run benchmarks only
+pytest -m "performance" --benchmark-only
 ```
 
 ### Live Tests (Requires WMS Credentials)
@@ -91,29 +181,43 @@ pytest -m live
 pytest tests/test_live_comprehensive.py::TestComprehensiveLiveFlow::test_complete_tap_workflow
 ```
 
-### Custom Test Selection
+### Enhanced Custom Test Selection
 
 ```bash
-# Run only authentication tests
-pytest -m auth
+# Run by functional area (NEW)
+pytest -m auth                    # Authentication tests
+pytest -m pagination             # Pagination tests  
+pytest -m discovery              # Discovery tests
+pytest -m monitoring             # Monitoring tests
+pytest -m config                 # Configuration tests
+pytest -m error                  # Error handling tests
 
-# Run pagination tests across all categories
-pytest -m pagination
+# Run by complexity (NEW)
+pytest -m "unit"                 # Fast unit tests only
+pytest -m "integration"          # Medium complexity tests  
+pytest -m "e2e"                  # Complete workflow tests
+pytest -m "performance"          # Performance and benchmarks
 
-# Run state management tests
-pytest -m state
+# Advanced combinations (NEW)
+pytest -m "unit or integration"  # Skip E2E and live tests
+pytest -m "not live and not slow" # CI/CD friendly (DEFAULT)
+pytest -m "auth and unit"        # Only unit auth tests
+pytest -m "oracle_wms and e2e"   # Oracle WMS specific E2E tests
 
-# Exclude slow tests
-pytest -m "not slow"
+# Exclude categories
+pytest -m "not slow"             # Exclude slow tests
+pytest -m "not live"             # Exclude live tests (default)
+pytest -m "not performance"      # Exclude performance tests
 
-# Run unit and integration but not live
-pytest -m "not live"
+# Development workflow
+pytest -m "unit" --maxfail=1     # Fast feedback, stop on first failure
+pytest -m "integration" -v       # Verbose integration testing
+pytest -m "e2e" --tb=short       # E2E with short tracebacks
 
-# Run with verbose output
-pytest -v
-
-# Run with coverage report
-pytest --cov=tap_oracle_wms --cov-report=html
+# Coverage and reporting (ENHANCED)
+pytest --cov=src/tap_oracle_wms --cov-report=html --cov-fail-under=85
+pytest --cov=src/tap_oracle_wms --cov-report=term-missing
+pytest --junitxml=test-results.xml --cov=src/tap_oracle_wms --cov-report=xml
 ```
 
 ## 📊 Test Coverage
