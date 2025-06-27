@@ -1,9 +1,11 @@
 import sys
 
+
 sys.path.append("/home/marlonsc/pyauto/client-b-poc-oic-wms/src")
 
 from client-b_poc_oic_wms.client import Client
 from client-b_poc_oic_wms.core.config import Config
+
 
 # Load config
 config = Config()

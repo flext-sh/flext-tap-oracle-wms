@@ -1,8 +1,10 @@
-"""Configuration schema for tap-oracle-wms."""
-
+"""Modern configuration schema for tap-oracle-wms using Singer SDK 0.46.4+ patterns."""
 from __future__ import annotations
 
+from typing import Any
+
 from singer_sdk import typing as th
+
 
 # Constants
 WMS_MAX_PAGE_SIZE = 1250
@@ -21,14 +23,20 @@ RATE_THRESHOLD = 0.1
 BASIC_AUTH_PREFIX_LENGTH = 6
 
 
-# Configuration schema for tap-oracle-wms
+# Modern Singer SDK 0.46.4+ Configuration Schema
+# ===================================================================
+# ENHANCED CONFIGURATION WITH JSON SCHEMA VALIDATION
+# ===================================================================
+
 config_schema = th.PropertiesList(
-    # Core configuration
+    # === CORE CONNECTION CONFIGURATION ===
     th.Property(
         "base_url",
         th.StringType,
         required=True,
-        description="Base URL for Oracle WMS instance",
+        description="Base URL for Oracle WMS instance (e.g., https://wms.company.com)",
+        examples=["https://wms.example.com", "https://prod-wms.company.com"],
+        pattern=r"^https?://[a-zA-Z0-9.-]+",  # JSON Schema pattern validation
     ),
     # Authentication configuration
     th.Property(
@@ -87,14 +95,16 @@ config_schema = th.PropertiesList(
         th.StringType,
         required=False,
         default="*",
-        description="WMS company code for context headers (required: * for all companies, or specific company code)",
+        description="WMS company code for context headers "
+        "(required: * for all companies, or specific company code)",
     ),
     th.Property(
         "facility_code",
         th.StringType,
         required=False,
         default="*",
-        description="WMS facility code for context headers (required: * for all facilities, or specific facility code)",
+        description="WMS facility code for context headers "
+        "(required: * for all facilities, or specific facility code)",
     ),
     # Data selection configuration
     th.Property(
@@ -132,7 +142,8 @@ config_schema = th.PropertiesList(
         th.StringType,
         default="sequenced",
         allowed_values=["offset", "cursor", "sequenced", "paged"],
-        description="Pagination mode: sequenced (cursor-based, recommended), paged (offset-based), offset (legacy), cursor (legacy)",
+        description="Pagination mode: sequenced (cursor-based, recommended), "
+        "paged (offset-based), offset (legacy), cursor (legacy)",
     ),
     th.Property(
         "page_size",
@@ -250,7 +261,8 @@ config_schema = th.PropertiesList(
         "field_selection",
         th.ObjectType(),
         required=False,
-        description="Field selection per entity (e.g., {'item': ['id', 'code', 'description']})",
+        description="Field selection per entity "
+        "(e.g., {'item': ['id', 'code', 'description']})",
     ),
     th.Property(
         "values_list_mode",
@@ -957,7 +969,7 @@ config_schema = th.PropertiesList(
 ).to_dict()
 
 
-def validate_auth_config(config: dict) -> str | None:
+def validate_auth_config(config: dict[str, Any]) -> str | None:
     """Validate authentication configuration.
 
     Args:
@@ -984,13 +996,13 @@ def validate_auth_config(config: dict) -> str | None:
         missing = [field for field in required if not config.get(field)]
         if missing:
             return f"OAuth2 authentication requires: {', '.join(missing)}"
-
+    else:
         return f"Unknown authentication method: {auth_method}"
 
     return None
 
 
-def validate_pagination_config(config: dict) -> str | None:
+def validate_pagination_config(config: dict[str, Any]) -> str | None:
     """Validate pagination configuration.
 
     Args:

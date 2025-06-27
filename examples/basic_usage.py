@@ -1,14 +1,14 @@
-"""Module basic_usage."""
-
-# !/usr/bin/env python3
+#!/usr/bin/env python3
 """Basic usage example for tap-oracle-wms."""
 
+from datetime import UTC, datetime
 import json
 import logging
 import os
+from pathlib import Path
 import sys
-from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Callable
+
 
 # Set up logging
 logging.basicConfig(
@@ -23,7 +23,7 @@ MAX_RETRY_COUNT = 5
 MIN_REQUIRED_ARGS = 2
 
 
-def create_config() -> Any:
+def create_config() -> dict[str, Any]:
     """Create configuration from environment variables."""
     config = {
         "base_url": os.environ.get(
@@ -54,7 +54,7 @@ def create_config() -> Any:
     return config
 
 
-def discover_entities() -> Any:
+def discover_entities() -> dict[str, Any]:
     """Discover available entities from WMS."""
     from tap_oracle_wms import TapOracleWMS
 
@@ -79,37 +79,37 @@ def discover_entities() -> Any:
                 logger.info("    Replication key: %s", metadata["replication-key"])
 
         # Save catalog
-        with open("catalog.json", "w", encoding="utf-8") as f:
+        catalog_path = Path("catalog.json")
+        with catalog_path.open("w", encoding="utf-8") as f:
             json.dump(catalog.to_dict(), f, indent=2)
-        logger.info("Catalog saved to catalog.json")
 
         return catalog
 
     except Exception:
         logger.exception("Discovery failed")
         sys.exit(1)
+    else:
+        logger.info("Catalog saved to catalog.json")
 
 
-def extract_sample_data() -> None:
-    """Extract sample data from selected entities."""
-    from tap_oracle_wms import TapOracleWMS
-
+def _setup_extraction_config() -> dict[str, Any]:
+    """Set up configuration for sample data extraction."""
     config = create_config()
-
-    # Select specific entities to extract
     config["entities"] = ["item", "location", "inventory"]
     config["page_size"] = 10  # Small sample
+    return config
 
-    tap = TapOracleWMS(config=config)
 
-    logger.info("Extracting sample data from selected entities...")
-
-    # Capture output
-    records: list = []
+def _create_message_handler() -> tuple[
+    dict, dict, dict, Callable[[dict[str, Any]], None]
+]:
+    """Create message handler and containers for extraction data."""
+    records: dict = {}
     schemas: dict = {}
     states: dict = {}
 
-    def handle_record(message) -> None:
+    def handle_record(message: dict[str, Any]) -> None:
+        """Handle incoming Singer messages and sort into containers."""
         if message["type"] == "RECORD":
             stream = message["stream"]
             if stream not in records:
@@ -120,6 +120,52 @@ def extract_sample_data() -> None:
         elif message["type"] == "STATE":
             states[message["stream"]] = message["value"]
 
+    return records, schemas, states, handle_record
+
+
+def _display_extraction_summary(records: dict) -> None:
+    """Display summary of extracted records."""
+    logger.info("\nExtraction Summary:")
+    for stream, stream_records in records.items():
+        logger.info("\n%s: %s records", stream, len(stream_records))
+        if stream_records:
+            # Show first record as example
+            logger.info("  Sample record:")
+            sample = stream_records[0]
+            for key, value in list(sample.items())[:5]:  # Show first 5 fields
+                logger.info("    %s: %s", key, value)
+            if len(sample) > 5:
+                logger.info("    ... and %s more fields", len(sample) - 5)
+
+
+def _save_extraction_results(records: dict, schemas: dict, states: dict) -> None:
+    """Save extracted data to file."""
+    sample_path = Path("sample_data.json")
+    with sample_path.open("w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "extraction_time": datetime.now(UTC).isoformat(),
+                "records": records,
+                "schemas": schemas,
+                "states": states,
+            },
+            f,
+            indent=2,
+        )
+    logger.info("\nSample data saved to sample_data.json")
+
+
+def extract_sample_data() -> None:
+    """Extract sample data from selected entities."""
+    from tap_oracle_wms import TapOracleWMS
+
+    config = _setup_extraction_config()
+    tap = TapOracleWMS(config=config)
+
+    logger.info("Extracting sample data from selected entities...")
+
+    records, schemas, states, handle_record = _create_message_handler()
+
     # Override the write_message method to capture output
     original_write_message = tap.write_message
     tap.write_message = handle_record
@@ -129,31 +175,10 @@ def extract_sample_data() -> None:
         tap.sync_all_streams()
 
         # Display results
-        logger.info("\nExtraction Summary:")
-        for stream, stream_records in records.items():
-            logger.info("\n%s: %s records", stream, len(stream_records))
-            if stream_records:
-                # Show first record as example
-                logger.info("  Sample record:")
-                sample = stream_records[0]
-                for key, value in list(sample.items())[:5]:  # Show first 5 fields
-                    logger.info("    %s: %s", key, value)
-                if len(sample) > 5:
-                    logger.info("    ... and %s more fields", len(sample) - 5)
+        _display_extraction_summary(records)
 
         # Save sample data
-        with open("sample_data.json", "w", encoding="utf-8") as f:
-            json.dump(
-                {
-                    "extraction_time": datetime.now(UTC).isoformat(),
-                    "records": records,
-                    "schemas": schemas,
-                    "states": states,
-                },
-                f,
-                indent=2,
-            )
-        logger.info("\nSample data saved to sample_data.json")
+        _save_extraction_results(records, schemas, states)
 
     except Exception:
         logger.exception("Extraction failed")
@@ -177,8 +202,9 @@ def incremental_sync_example() -> None:
 
     # Load previous state if exists
     state: dict = {}
-    if os.path.exists("state.json"):
-        with open("state.json", encoding="utf-8") as f:
+    state_path = Path("state.json")
+    if state_path.exists():
+        with state_path.open(encoding="utf-8") as f:
             state = json.load(f)
         logger.info("Loaded previous state: %s", state)
 
@@ -189,7 +215,8 @@ def incremental_sync_example() -> None:
     # Capture new state
     new_state: dict = {}
 
-    def handle_state(message) -> None:
+    def handle_state(message: dict[str, Any]) -> None:
+        """Handle state messages and update tracking dictionary."""
         if message["type"] == "STATE":
             new_state.update(message["value"])
 
@@ -204,7 +231,8 @@ def incremental_sync_example() -> None:
 
         # Save new state
         if new_state:
-            with open("state.json", "w", encoding="utf-8") as f:
+            state_path = Path("state.json")
+            with state_path.open("w", encoding="utf-8") as f:
                 json.dump(new_state, f, indent=2)
             logger.info("Saved new state: %s", new_state)
 

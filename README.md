@@ -522,15 +522,15 @@ tap-oracle-wms --version
 
 ### **Optional Settings**
 
-| Setting           | Type    | Description               | Default    |
-| ----------------- | ------- | ------------------------- | ---------- |
-| `company_code`    | string  | WMS company code          | *          |
-| `facility_code`   | string  | WMS facility code         | *          |
-| `start_date`      | string  | Sync start date           | 2020-01-01 |
-| `pagination_mode` | string  | Pagination: sequenced/paged | sequenced |
-| `page_size`       | integer | Records per page          | 1000       |
-| `request_timeout` | integer | Request timeout (seconds) | 7200       |
-| `retry_count`     | integer | Retry attempts            | 3          |
+| Setting           | Type    | Description                 | Default    |
+| ----------------- | ------- | --------------------------- | ---------- |
+| `company_code`    | string  | WMS company code            | \*         |
+| `facility_code`   | string  | WMS facility code           | \*         |
+| `start_date`      | string  | Sync start date             | 2020-01-01 |
+| `pagination_mode` | string  | Pagination: sequenced/paged | sequenced  |
+| `page_size`       | integer | Records per page            | 1000       |
+| `request_timeout` | integer | Request timeout (seconds)   | 7200       |
+| `retry_count`     | integer | Retry attempts              | 3          |
 
 ---
 

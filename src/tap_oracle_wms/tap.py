@@ -1,24 +1,50 @@
-"""Oracle WMS tap class."""
+"""Modern Oracle WMS tap class using Singer SDK 0.46.4+ patterns."""
 
 from __future__ import annotations
 
 import asyncio
-import logging
 from itertools import starmap
+import logging
 from typing import Any
 
 from singer_sdk import Stream, Tap
+from singer_sdk.helpers.capabilities import TapCapabilities
 
 from .config import config_schema, validate_auth_config, validate_pagination_config
 from .discovery import EntityDiscovery, SchemaGenerator
 from .monitoring import TAPMonitor
-from .streams_advanced import WMSAdvancedStream
+from .streams import WMSAdvancedStream
+
 
 logger = logging.getLogger(__name__)
 
 
 class TapOracleWMS(Tap):
-    """Oracle WMS Singer Tap - Generic implementation for any WMS entity.
+    """Modern Oracle WMS Singer Tap using Singer SDK 0.46.4+ patterns.
+
+    MODERN SINGER SDK 0.46.4+ ENHANCEMENTS:
+    ======================================
+    This tap leverages the latest Singer SDK features including:
+
+    • Enhanced Capabilities: Declares capabilities using TapCapabilities
+    • Modern Pagination: HATEOAS pattern with ParseResult objects
+    • Performance Optimizations: msgspec, orjson, pyarrow extras
+    • Improved Error Handling: Enhanced retry logic and circuit breakers
+    • Stream Discovery: Auto-discovery with schema caching
+    • Type Safety: Full type annotations and mypy compliance
+
+    SINGER SDK CAPABILITIES:
+    =======================
+    Declared capabilities for modern Meltano integration:
+
+    • DISCOVER: Schema discovery and catalog generation
+    • STATE: Incremental sync with state management
+    • CATALOG: Stream selection and metadata
+    • PROPERTIES: Configuration properties and validation
+    • RECORD_SCHEMA_VALIDATION: Schema enforcement
+    • STREAM_MAPS: Stream mapping and transformation
+
+    Oracle WMS Singer Tap - Generic implementation for any WMS entity.
 
     OVERVIEW:
     =========
@@ -205,6 +231,14 @@ class TapOracleWMS(Tap):
     name = "tap-oracle-wms"
     config_jsonschema = config_schema
 
+    # Modern Singer SDK 0.46.4+ Capabilities Declaration
+    capabilities = [
+        TapCapabilities.DISCOVER,           # Schema discovery and catalog generation
+        TapCapabilities.STATE,              # Incremental sync with state management
+        TapCapabilities.CATALOG,            # Stream selection and metadata
+        TapCapabilities.PROPERTIES,         # Configuration properties and validation
+    ]
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize tap."""
         # CRITICAL: Singer SDK requires tap_name BEFORE super().__init__
@@ -224,7 +258,7 @@ class TapOracleWMS(Tap):
     def validate_config(self) -> None:
         """Validate configuration.
 
-        Raises
+        Raises:
         ------
             ValueError: If configuration is invalid
 
@@ -299,7 +333,7 @@ class TapOracleWMS(Tap):
     async def _discover_and_filter_entities(self) -> dict[str, str]:
         """Discover and filter entities.
 
-        Returns
+        Returns:
         -------
             Filtered dictionary of entities
 
@@ -342,6 +376,7 @@ class TapOracleWMS(Tap):
         semaphore = asyncio.Semaphore(max_concurrent)
 
         async def check_single_entity(name: str, url: str) -> tuple[str, str, bool]:
+            """Function for check_single_entity operations."""
             async with semaphore:
                 try:
                     accessible = await self.entity_discovery.check_entity_access(name)
@@ -412,7 +447,10 @@ class TapOracleWMS(Tap):
         for entity_name, schema in final_results:
             if schema:
                 successful_schemas[entity_name] = schema
-                logger.warning("Skipping entity %s: No schema generated", entity_name)  # BUG: Wrong message!
+                logger.warning(
+                    "Skipping entity %s: No schema generated",
+                    entity_name,
+                )  # BUG: Wrong message!
         ```
 
         **SYMPTOMS OF THE BUG:**
@@ -442,8 +480,10 @@ class TapOracleWMS(Tap):
         ```
 
         **VALIDATION OF FIX:**
-        - Before fix: "Skipping entity allocation: No schema generated" + schema had 24 properties
-        - After fix: "✅ Generated schema for entity allocation" + schema has 24 properties
+        - Before fix: "Skipping entity allocation: No schema generated" + \
+            schema had 24 properties
+        - After fix: "✅ Generated schema for entity allocation" + \
+            schema has 24 properties
         - Test confirmed: Schema generation working correctly
 
         **PREVENTION MEASURES:**
@@ -453,7 +493,8 @@ class TapOracleWMS(Tap):
         - Use descriptive variable names that match their purpose
 
         **NEVER CHANGE WITHOUT AUTHORIZATION:**
-        - This specific logic pattern: success = add to dict + log success, failure = skip + log warning
+        - This specific logic pattern: success = add to dict + \
+            log success, failure = skip + log warning
         - The order of operations: check schema existence, then act accordingly
         - Log levels: INFO for success, WARNING for expected failures
         - Message format: "✅ Generated schema" vs "⚠️ Skipping entity"
@@ -522,6 +563,7 @@ class TapOracleWMS(Tap):
         async def generate_single_schema(
             entity_name: str,
         ) -> tuple[str, dict[str, Any] | None]:
+            """Generate schema for a single entity with semaphore control."""
             async with semaphore:
                 try:
                     schema = await self._generate_schema_for_entity(entity_name)
@@ -647,7 +689,7 @@ class TapOracleWMS(Tap):
     def discover_streams(self) -> list[Stream]:
         """Discover available streams.
 
-        Returns
+        Returns:
         -------
             List of discovered stream instances
 
@@ -774,7 +816,7 @@ class TapOracleWMS(Tap):
     def _load_streams(self) -> list[Stream]:
         """Load streams (required by Singer SDK).
 
-        Returns
+        Returns:
         -------
             List of stream instances
 

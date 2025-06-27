@@ -1,13 +1,16 @@
-"""Oracle WMS Singer Tap CLI - Enterprise Data Integration Interface.
+r"""Modern Oracle WMS Singer Tap CLI using Singer SDK 0.46.4+ patterns.
 
 OVERVIEW:
 =========
-This CLI provides a comprehensive interface for Oracle WMS data integration using the Singer
-protocol, with extended business functionality for enterprise warehouse management scenarios.
+This CLI provides a comprehensive interface for Oracle WMS data integration using
+the Singer protocol, with extended business functionality for enterprise warehouse
+management scenarios.
 
 The CLI is designed around two core principles:
-1. Singer Protocol Compliance: Full compatibility with Meltano and other Singer ecosystems
-2. Business-Centric Extensions: Domain-specific commands for WMS business operations
+1. Singer Protocol Compliance: Full compatibility with Meltano and other Singer
+   ecosystems
+2. Business-Centric Extensions: Domain-specific commands for WMS business
+   operations
 
 CORE INTEGRATION RULES (CRITICAL - DO NOT CHANGE):
 ================================================
@@ -21,8 +24,10 @@ CORE INTEGRATION RULES (CRITICAL - DO NOT CHANGE):
 
 2. FULL SYNC RULES:
    - ID-based Resume: id < min(existing_ids) - 1 for intelligent resume
-   - Ordering: -id DESC (highest to lowest) for efficient large dataset processing
-   - Timestamp-based Alternative: mod_ts >= start_date for historical extraction
+   - Ordering: -id DESC (highest to lowest) for efficient large dataset
+     processing
+   - Timestamp-based Alternative: mod_ts >= start_date for historical
+     extraction
 
 3. PAGINATION CONFIGURATION:
    - Singer SDK: pagination_mode="cursor" (follows next_page URLs)
@@ -71,22 +76,22 @@ USAGE PATTERNS:
 ==============
 1. Discovery: tap-oracle-wms --discover > catalog.json
 2. Singer Mode: tap-oracle-wms --config config.json --catalog catalog.json
-3. Incremental: tap-oracle-wms sync incremental --config config.json --entities allocation
+3. Incremental: tap-oracle-wms sync incremental --config config.json \\
+   --entities allocation
 4. Business Analysis: tap-oracle-wms inventory status --config config.json
 5. Monitoring: tap-oracle-wms monitor status --config config.json
 
 This documentation serves as the definitive reference for all CLI behavior.
 All implementations must follow these documented rules and patterns.
 """
-
 from __future__ import annotations
 
 import asyncio
 import contextlib
 import json
 import logging
-import sys
 from pathlib import Path
+import sys
 from typing import TYPE_CHECKING, Any
 
 import click
@@ -94,22 +99,28 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
+from .discovery import EntityDiscovery, SchemaGenerator
+from .monitoring import TAPMonitor
+from .tap import TapOracleWMS
+
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+
 else:
     with contextlib.suppress(ImportError):
         pass
 
+
 logger = logging.getLogger(__name__)
 
-from .discovery import EntityDiscovery, SchemaGenerator
-from .monitoring import TAPMonitor
-from .tap import TapOracleWMS
 
 console = Console()
 
 
 def safe_print(message: str, style: str | None = None) -> None:
+    """Safely print messages with optional styling."""
     if style:
         logger.info("[%s]%s[/%s]", style, message, style)
         logger.info("%s", message)
@@ -142,7 +153,7 @@ def cli(
     Default behavior follows Singer SDK protocol. Extended business
     available through organized subcommands for specific WMS business areas.
 
-    Examples
+    Examples:
     --------
     \\b
     # Singer protocol usage
@@ -306,7 +317,7 @@ def discover_schemas(
 
     TapOracleWMS(config=config_data)
 
-    async def _generate_schemas():
+    async def _generate_schemas() -> None:
         discovery = EntityDiscovery(config_data)
         generator = SchemaGenerator()
 
@@ -495,11 +506,11 @@ def inventory_status(
     help="Export format for cycle count results",
 )
 def inventory_cycle_count(
-    config,
-    location_pattern,
-    abc_class,
-    variance_only,
-    export_format,
+    config: Any,
+    location_pattern: str | None,
+    abc_class: str | None,
+    variance_only: bool,
+    export_format: str,
 ) -> None:
     """Generate cycle count reports and variance analysis."""
     logger.info("Generating cycle count analysis...", "blue")
@@ -560,11 +571,11 @@ def orders() -> None:
     help="Identify allocation bottlenecks",
 )
 def analyze_allocation(
-    config,
-    order_status,
-    date_range,
-    allocation_efficiency,
-    bottleneck_analysis,
+    config: Any,
+    order_status: tuple[str, ...],
+    date_range: str | None,
+    allocation_efficiency: bool,
+    bottleneck_analysis: bool,
 ) -> None:
     """Analyze order allocation patterns and efficiency."""
     logger.info("Analyzing order allocation patterns...", "blue")
@@ -985,8 +996,8 @@ def _execute_incremental_sync_custom(
         bool: True if all streams processed successfully, False if any errors
 
     """
+    from datetime import datetime, timezone
     import json
-    from datetime import datetime
 
     # Initialize state management
     current_state = state_data.copy() if state_data else {}
@@ -1017,7 +1028,9 @@ def _execute_incremental_sync_custom(
             )
 
             if not stream_catalog:
-                logger.info(f"⚠️ No catalog metadata for stream {stream_name}", "yellow")
+                logger.info(
+                    f"⚠️ No catalog metadata for stream {stream_name}", "yellow"
+                )
                 continue
 
             # Output SCHEMA message for Singer protocol
@@ -1063,7 +1076,7 @@ def _execute_incremental_sync_custom(
                     "type": "RECORD",
                     "stream": stream_name,
                     "record": record,
-                    "time_extracted": datetime.utcnow().isoformat(),
+                    "time_extracted": datetime.now(timezone.utc).isoformat(),
                 }
 
                 record_count += 1
@@ -1083,7 +1096,7 @@ def _execute_incremental_sync_custom(
             if latest_mod_ts:
                 current_state["bookmarks"][stream_name] = {
                     "mod_ts": latest_mod_ts,
-                    "last_sync": datetime.utcnow().isoformat(),
+                    "last_sync": datetime.now(timezone.utc).isoformat(),
                 }
 
                 # Output STATE message for Singer protocol
@@ -1293,12 +1306,12 @@ def _prepare_discovery_config(
     return config_data
 
 
-async def _run_entity_discovery(discovery, verify_access):
+async def _run_entity_discovery(discovery, verify_access) -> None:
     """Run entity discovery with progress tracking."""
     return await _run_discovery_with_progress(discovery, verify_access)
 
 
-async def _run_discovery_with_progress(discovery, verify_access):
+async def _run_discovery_with_progress(discovery, verify_access) -> None:
     """Run discovery with rich progress display."""
     with Progress(
         SpinnerColumn(),
@@ -1331,7 +1344,7 @@ async def _run_discovery_with_progress(discovery, verify_access):
         return filtered
 
 
-async def _run_discovery_simple(discovery, verify_access):
+async def _run_discovery_simple(discovery, verify_access) -> None:
     """Run discovery with simple text output."""
     logger.info("Discovering entities...", "blue")
     entities = await discovery.discover_entities()
@@ -1356,7 +1369,12 @@ async def _run_discovery_simple(discovery, verify_access):
     return filtered
 
 
-def _output_discovery_results(entities, categorized, output_format, output) -> None:
+def _output_discovery_results(
+    entities: list[str],
+    categorized: dict[str, list[str]],
+    output_format: str,
+    output: Any
+) -> None:
     """Output discovery results in the specified format."""
     if output_format == "json":
         json.dump(
@@ -1489,7 +1507,7 @@ def _get_business_context(entity_name: str, category: str) -> str:
     return context_map.get(entity_name, f"{category} related entity")
 
 
-def _export_entities_csv(entities: dict[str, str], output) -> None:
+def _export_entities_csv(entities: dict[str, str], output: Any) -> None:
     """Export entities to CSV format."""
     import csv
 
@@ -1578,7 +1596,7 @@ def monitor_status(config: click.File, output_format: str) -> None:
 
     monitor = TAPMonitor(config_data)
 
-    async def _get_status():
+    async def _get_status() -> None:
         await monitor.start_monitoring()
         await asyncio.sleep(2)
         status = monitor.get_monitoring_status()

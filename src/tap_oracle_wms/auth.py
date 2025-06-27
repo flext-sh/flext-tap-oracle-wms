@@ -1,19 +1,22 @@
 """Authentication for Oracle WMS REST API."""
-
 from __future__ import annotations
 
 import base64
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 from singer_sdk.authenticators import OAuthAuthenticator, SimpleAuthenticator
 
 
+if TYPE_CHECKING:
+    from singer_sdk.streams import RESTStream
+
+
 class WMSBasicAuthenticator(SimpleAuthenticator):
     """Basic authentication for Oracle WMS."""
 
-    def __init__(self, stream: Any, username: str, password: str) -> None:
+    def __init__(self, stream: RESTStream, username: str, password: str) -> None:
         """Initialize basic authenticator.
 
         Args:
@@ -32,11 +35,11 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
     def auth_headers(self) -> dict[str, str]:
         """Get authentication headers.
 
-        Returns
+        Returns:
         -------
             Dictionary with Authorization header
 
-        Raises
+        Raises:
         ------
             ValueError: If username or password are invalid
 
@@ -67,7 +70,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
 
     def __init__(
         self,
-        stream: Any,
+        stream: RESTStream,
         auth_endpoint: str,
         oauth_scopes: str | None = None,
         client_id: str | None = None,
@@ -105,7 +108,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
     def oauth_request_body(self) -> dict[str, Any]:
         """Get OAuth2 request body for token endpoint.
 
-        Returns
+        Returns:
         -------
             Dictionary with OAuth2 parameters
 
@@ -121,7 +124,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
     def auth_headers(self) -> dict[str, str]:
         """Get authentication headers.
 
-        Returns
+        Returns:
         -------
             Dictionary with Authorization header
 
@@ -145,7 +148,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
     def _get_access_token(self) -> str:
         """Get valid access token, refreshing if needed.
 
-        Returns
+        Returns:
         -------
             Valid access token
 
@@ -204,7 +207,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
     def is_token_valid(self) -> bool:
         """Check if current token is still valid.
 
-        Returns
+        Returns:
         -------
             True if token is valid, False otherwise
 
@@ -215,7 +218,9 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         return datetime.now(timezone.utc) < self._token_expires
 
 
-def get_wms_authenticator(stream: Any, config: dict[str, Any]) -> Any:
+def get_wms_authenticator(
+    stream: RESTStream, config: dict[str, Any]
+) -> WMSBasicAuthenticator | WMSOAuth2Authenticator:
     """Create appropriate authenticator based on configuration.
 
     Args:

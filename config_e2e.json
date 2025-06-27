@@ -1,0 +1,21 @@
+{
+  "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+  "auth_method": "basic",
+  "username": "USER_WMS_INTEGRA",
+  "password": "jmCyS7BK94YvhS@",
+  "api_version": "v10",
+  "start_date": "2025-06-01T00:00:00Z",
+  "test_mode": false,
+  "request_timeout": 600,
+  "max_retries": 1,
+  "retry_delay": 2,
+  "verify_ssl": true,
+  "page_size": 100,
+  "pagination_mode": "cursor",
+  "company_code": "*",
+  "facility_code": "*",
+  "entities": ["allocation"],
+  "debug_mode": true,
+  "stream_maps": {},
+  "stream_map_config": {}
+}

@@ -4,21 +4,21 @@ This module provides real-time monitoring, performance metrics collection,
 health checks, alerting capabilities, and operational insights for the
 Oracle WMS Singer TAP implementation.
 """
-
 from __future__ import annotations
 
 import asyncio
+from collections import defaultdict, deque
 import contextlib
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 import json
 import logging
 import time
-from collections import defaultdict, deque
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 
 import psutil
 from typing_extensions import Self
+
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -330,7 +330,7 @@ class MetricsCollector:
     def get_metrics_snapshot(self) -> dict[str, Any]:
         """Get current metrics snapshot.
 
-        Returns
+        Returns:
         -------
             Dictionary with all current metrics
 
@@ -507,7 +507,7 @@ class HealthMonitor:
     async def run_health_checks(self) -> dict[str, bool]:
         """Run all health checks.
 
-        Returns
+        Returns:
         -------
             Dictionary with check results
 
@@ -563,7 +563,7 @@ class HealthMonitor:
     def get_health_status(self) -> dict[str, Any]:
         """Get current health status.
 
-        Returns
+        Returns:
         -------
             Dictionary with health status
 
@@ -740,7 +740,7 @@ class AlertManager:
     async def check_alerts(self) -> list[str]:
         """Check all alerts and trigger as needed.
 
-        Returns
+        Returns:
         -------
             List of triggered alert names
 
@@ -801,7 +801,7 @@ class AlertManager:
     def get_active_alerts(self) -> list[dict[str, Any]]:
         """Get list of active alerts.
 
-        Returns
+        Returns:
         -------
             List of active alert dictionaries
 
@@ -944,7 +944,7 @@ class TAPMonitor:
     def get_monitoring_status(self) -> dict[str, Any]:
         """Get comprehensive monitoring status.
 
-        Returns
+        Returns:
         -------
             Dictionary with monitoring status
 
@@ -999,7 +999,7 @@ class TAPMonitor:
                     f"# TYPE {safe_name} summary",
                     f"{safe_name}_count {stats['count']}",
                     f"{safe_name}_sum {stats['avg'] * stats['count']}",
-                )
+                ),
             )
 
         return "\n".join(lines)

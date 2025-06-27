@@ -3,6 +3,7 @@
 # !/usr/bin/env python3
 from typing import Any
 
+
 """Generate config.json from .env file for tap-oracle-wms."""
 
 import json
@@ -10,6 +11,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+
 
 # Load environment variables
 load_dotenv()

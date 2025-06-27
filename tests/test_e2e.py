@@ -2,15 +2,17 @@
 
 from typing import Any
 
+
 """End-to-end tests for tap-oracle-wms."""
 
 import json
 import os
+from pathlib import Path
 import subprocess
 import tempfile
-from pathlib import Path
 
 import pytest
+
 from tap_oracle_wms.tap import TapOracleWMS
 
 
@@ -545,9 +547,9 @@ class TestE2EPerformance:
             discovery_time = time.time() - start_time
 
             # Discovery should complete in reasonable time
-            assert (
-                discovery_time < 60
-            ), f"Discovery took too long: {discovery_time:.2f}s"
+            assert discovery_time < 60, (
+                f"Discovery took too long: {discovery_time:.2f}s"
+            )
 
         except Exception as e:
             pytest.skip(f"Discovery performance test failed: {e}")
