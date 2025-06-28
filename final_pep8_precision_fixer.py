@@ -256,9 +256,9 @@ from urllib.parse import parse_qs, urlparse"""
                 # Fix the specific long line
                 (
                     '            f"(bookmark: {bookmark_value}, overlap: {overlap_minutes}min)",',
-                    '            f"(bookmark: {bookmark_value}, "\n            f"overlap: {overlap_minutes}min)",'
+                    '            f"(bookmark: {bookmark_value}, "\n            f"overlap: {overlap_minutes}min)",',
                 ),
-            ]
+            ],
         }
 
         for file_path, fixes in line_fixes.items():
@@ -310,7 +310,7 @@ from urllib.parse import parse_qs, urlparse"""
                 ["python", "strict_pep_validator.py"],
                 capture_output=True,
                 text=True,
-                timeout=30, check=False
+                timeout=30, check=False,
             )
             if result.stdout:
                 lines = result.stdout.split("\n")

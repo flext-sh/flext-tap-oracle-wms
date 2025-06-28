@@ -24,7 +24,7 @@ class TestTapStreamIntegration:
             "enable_incremental": True,
             "incremental_overlap_minutes": 5,
             "test_connection": False,
-            "metrics": {"enabled": True}
+            "metrics": {"enabled": True},
         }
 
     @pytest.fixture
@@ -41,9 +41,9 @@ class TestTapStreamIntegration:
                 "id": {"type": "integer"},
                 "code": {"type": "string"},
                 "name": {"type": "string"},
-                "mod_ts": {"type": "string", "format": "date-time"}
+                "mod_ts": {"type": "string", "format": "date-time"},
             },
-            "required": ["id", "code"]
+            "required": ["id", "code"],
         }
 
     @pytest.mark.integration
@@ -82,7 +82,7 @@ class TestTapStreamIntegration:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="facility",
-            schema={"type": "object", "properties": {"id": {"type": "integer"}}}
+            schema={"type": "object", "properties": {"id": {"type": "integer"}}},
         )
 
         # Verificar que stream cria paginator corretamente
@@ -140,8 +140,8 @@ class TestTapStreamIntegration:
             "properties": {
                 "id": {"type": "integer"},
                 "code": {"type": "string"},
-                "mod_ts": {"type": "string", "format": "date-time"}
-            }
+                "mod_ts": {"type": "string", "format": "date-time"},
+            },
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -179,7 +179,7 @@ class TestConfigValidationIntegration:
             "page_size": 1000,
             "enable_incremental": True,
             "company_code": "TEST",
-            "facility_code": "MAIN"
+            "facility_code": "MAIN",
         }
 
         # Testar todas as validações
@@ -210,8 +210,8 @@ class TestConfigValidationIntegration:
                 "auth_method": "basic",
                 "username": "test",
                 "password": "pass",
-                "page_size": 2000  # Acima do limite
-            }
+                "page_size": 2000,  # Acima do limite
+            },
         ]
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities"):
@@ -234,8 +234,8 @@ class TestHTTPIntegration:
                     {"name": "id", "type": "integer", "nullable": False},
                     {"name": "code", "type": "string", "nullable": False},
                     {"name": "name", "type": "string", "nullable": True},
-                    {"name": "mod_ts", "type": "datetime", "nullable": True}
-                ]
+                    {"name": "mod_ts", "type": "datetime", "nullable": True},
+                ],
             },
             "entity_data": {
                 "result_count": 1000,
@@ -247,10 +247,10 @@ class TestHTTPIntegration:
                         "id": 1,
                         "code": "FAC001",
                         "name": "Main Facility",
-                        "mod_ts": "2024-01-01T10:00:00Z"
-                    }
-                ]
-            }
+                        "mod_ts": "2024-01-01T10:00:00Z",
+                    },
+                ],
+            },
         }
 
     @pytest.mark.integration
@@ -296,7 +296,7 @@ class TestHTTPIntegration:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="facility",
-            schema={"type": "object", "properties": {"id": {"type": "integer"}}}
+            schema={"type": "object", "properties": {"id": {"type": "integer"}}},
         )
 
         paginator = stream.get_new_paginator()
@@ -327,7 +327,7 @@ class TestStateManagementIntegration:
             "username": "test",
             "password": "pass",
             "enable_incremental": True,
-            "start_date": "2024-01-01T00:00:00Z"
+            "start_date": "2024-01-01T00:00:00Z",
         }
 
     @pytest.mark.integration
@@ -363,9 +363,9 @@ class TestStateManagementIntegration:
                 "type": "object",
                 "properties": {
                     "id": {"type": "integer"},
-                    "mod_ts": {"type": "string", "format": "date-time"}
-                }
-            }
+                    "mod_ts": {"type": "string", "format": "date-time"},
+                },
+            },
         )
 
         # Mock bookmark value
@@ -392,7 +392,7 @@ class TestErrorHandlingIntegration:
             # Simular erro HTTP
             import httpx
             mock_client.get.side_effect = httpx.HTTPStatusError(
-                "Server error", request=Mock(), response=Mock(status_code=500)
+                "Server error", request=Mock(), response=Mock(status_code=500),
             )
 
             with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -428,7 +428,7 @@ class TestErrorHandlingIntegration:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="facility",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         # Stream deve lidar com erro em filtros
@@ -453,8 +453,8 @@ class TestEndToEndIntegration:
             "properties": {
                 "id": {"type": "integer"},
                 "code": {"type": "string"},
-                "mod_ts": {"type": "string", "format": "date-time"}
-            }
+                "mod_ts": {"type": "string", "format": "date-time"},
+            },
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:

@@ -43,7 +43,7 @@ def test_configuration_validation() -> bool:
             "auth_method": "basic",
             "username": "test",
             "password": "pass",
-            "page_size": 1000
+            "page_size": 1000,
         }
 
         auth_result = validate_auth_config(valid_config)
@@ -51,13 +51,11 @@ def test_configuration_validation() -> bool:
 
         if auth_result is None and page_result is None:
             pass
-        else:
-            pass
 
         # Configuração inválida
         invalid_config = {
             "auth_method": "basic",
-            "page_size": 2000  # Acima do limite
+            "page_size": 2000,  # Acima do limite
         }
 
         auth_result = validate_auth_config(invalid_config)
@@ -89,7 +87,7 @@ def test_paginator() -> bool:
         mock_response = Mock()
         mock_response.json.return_value = {
             "results": [{"id": 1}],
-            "next_page": "https://test.com/next?cursor=abc"
+            "next_page": "https://test.com/next?cursor=abc",
         }
 
         next_url = paginator.get_next_url(mock_response)
@@ -121,14 +119,14 @@ def test_stream_basic_functionality() -> bool:
         mock_tap = Mock()
         mock_tap.config = {
             "base_url": "https://test.com",
-            "enable_incremental": True
+            "enable_incremental": True,
         }
 
         # Cria stream
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         # Testa propriedades básicas
@@ -227,8 +225,6 @@ def main() -> None:
         try:
             if test_func():
                 passed += 1
-            else:
-                pass
         except Exception:
             pass
 

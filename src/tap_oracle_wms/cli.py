@@ -100,6 +100,12 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from .discovery import EntityDiscovery, SchemaGenerator
+from .logging_config import (
+    get_logger,
+    log_exception_context,
+    log_function_entry_exit,
+    performance_monitor,
+)
 from .monitoring import TAPMonitor
 from .tap import TapOracleWMS
 
@@ -113,21 +119,30 @@ else:
         pass
 
 
-logger = logging.getLogger(__name__)
+# Use enhanced logger with TRACE support
+logger = get_logger(__name__)
 
 
 console = Console()
 
 
+@log_function_entry_exit(log_args=False, log_result=False, level=logging.DEBUG)
+@log_exception_context(reraise=True)
 def safe_print(message: str, style: str | None = None) -> None:
     """Safely print messages with optional styling."""
-    if style:
-        logger.info("[%s]%s[/%s]", style, message, style)
-        logger.info("%s", message)
-    # Strip rich markup for plain print
-    import re
+    logger.debug("Safe print called for message display")
+    logger.trace("Printing message with style: %s", style or "none")
 
-    re.sub(r"\[.*?\]", "", message)
+    if style:
+        logger.info("Styled message output: %s", message)
+        logger.trace("Applied style: %s", style)
+        console.print(f"[{style}]{message}[/{style}]")
+    else:
+        logger.debug("Plain message output: %s", message)
+        logger.trace("No style applied to message")
+        console.print(message)
+
+    logger.trace("Message printed successfully")
 
 
 # MAIN CLI GROUP
@@ -140,6 +155,9 @@ def safe_print(message: str, style: str | None = None) -> None:
 @click.option("--config", type=click.File("r"), help="Singer config file")
 @click.option("--state", type=click.File("r"), help="Singer state file")
 @click.pass_context
+@log_function_entry_exit(log_args=False, log_result=False, level=logging.INFO)
+@log_exception_context(reraise=True)
+@performance_monitor("cli_main_command")
 def cli(
     ctx: click.Context,
     version: bool,
@@ -167,16 +185,30 @@ def cli(
     tap-oracle-wms warehouse task-performance --config config.json
 
     """
+    logger.info("Oracle WMS TAP CLI invoked")
+    logger.debug("CLI parameters: version=%s, discover=%s, catalog=%s, config=%s, state=%s",
+                version, discover, bool(catalog), bool(config), bool(state))
+    logger.trace("Context invoked subcommand: %s", ctx.invoked_subcommand)
+
     # Handle Singer SDK compatibility first
     if version or discover or catalog or config:
+        logger.info("Detected Singer SDK protocol usage")
+        logger.trace("Singer mode parameters: version=%s, discover=%s", version, discover)
+        logger.trace("File parameters: catalog=%s, config=%s, state=%s",
+                    bool(catalog), bool(config), bool(state))
         _handle_singer_mode(version, discover, catalog, config, state)
         return
 
     # If no command provided, show help
     if ctx.invoked_subcommand is None:
+        logger.debug("No subcommand provided, showing help")
+        logger.trace("Available commands: %s", list(ctx.command.commands.keys()))
         click.echo(ctx.get_help())
 
 
+@log_function_entry_exit(log_args=False, log_result=False, level=logging.DEBUG)
+@log_exception_context(reraise=True)
+@performance_monitor("singer_mode_handling")
 def _handle_singer_mode(
     version: bool,
     discover: bool,
@@ -185,35 +217,62 @@ def _handle_singer_mode(
     state: click.File | None,
 ) -> None:
     """Handle standard Singer SDK protocol commands."""
+    logger.info("Handling Singer SDK protocol mode")
+    logger.debug("Singer mode: version=%s, discover=%s", version, discover)
+    logger.trace("Building Singer CLI arguments")
+
     # Build Singer CLI arguments
     singer_args = ["tap-oracle-wms"]  # Program name
+    logger.trace("Base Singer args: %s", singer_args)
 
     if version:
         singer_args.append("--version")
+        logger.trace("Added --version flag")
     if discover:
         singer_args.append("--discover")
+        logger.trace("Added --discover flag")
     if catalog:
         singer_args.extend(["--catalog", catalog.name])
+        logger.trace("Added catalog file: %s", catalog.name)
     if config:
         singer_args.extend(["--config", config.name])
+        logger.trace("Added config file: %s", config.name)
     if state:
         singer_args.extend(["--state", state.name])
+        logger.trace("Added state file: %s", state.name)
+
+    logger.debug("Final Singer args: %s", singer_args)
+    logger.trace("Replacing sys.argv for Singer CLI execution")
 
     # Replace sys.argv and call Singer CLI
     original_argv = sys.argv
     try:
+        logger.trace("Original argv backup: %s", original_argv[:3])  # First 3 items only
         sys.argv = singer_args
+        logger.info("Executing Singer SDK CLI with TapOracleWMS")
+        logger.trace("Calling TapOracleWMS.cli()")
         TapOracleWMS.cli()
+        logger.info("Singer CLI execution completed successfully")
+    except Exception as e:
+        logger.exception("Singer CLI execution failed: %s", str(e))
+        logger.trace("Singer CLI exception details: %s", type(e).__name__)
+        raise
     finally:
+        logger.trace("Restoring original sys.argv")
         sys.argv = original_argv
+        logger.trace("sys.argv restored successfully")
 
 
 # DISCOVERY AND SCHEMA SUBCOMMANDS
 
 
 @cli.group()
+@log_function_entry_exit(log_args=False, log_result=False, level=logging.DEBUG)
+@log_exception_context(reraise=True)
 def discover() -> None:
     """Entity discovery and schema management commands."""
+    logger.info("Discovery command group accessed")
+    logger.trace("Entity discovery and schema management functionality activated")
 
 
 @discover.command("entities")
@@ -830,11 +889,11 @@ def sync_incremental(
 
     if since:
         config_data["start_date"] = since
-        logger.info(f"📅 Setting start_date to: {since}", "green")
+        safe_print(f"Setting start_date to: {since}", "green")
 
     if entities:
         config_data["entities"] = list(entities)
-        logger.info(f"🎯 Filtering to entities: {list(entities)}", "green")
+        safe_print(f"Filtering to entities: {list(entities)}", "green")
 
     # Load previous state
     state_data = None
@@ -842,10 +901,10 @@ def sync_incremental(
         state_data = json.load(state)
         logger.info("📊 Loaded previous state from file", "green")
 
-    logger.info("🔄 Starting incremental sync with validated rules...", "blue")
-    logger.info(f"📋 Entities: {entities or 'all configured'}", "green")
-    logger.info(f"📅 Since: {since or 'bookmark from state'}", "green")
-    logger.info("📐 Rules: mod_ts > max(mod_ts) - 5min, ordering=mod_ts", "yellow")
+    safe_print("Starting incremental sync with validated rules...", "blue")
+    safe_print("Entities: %s" % (entities or "all configured"), "green")
+    safe_print("Since: %s" % (since or "bookmark from state"), "green")
+    safe_print("Rules: mod_ts > max(mod_ts) - 5min, ordering=mod_ts", "yellow")
 
     try:
         # Create tap instance with no connection test
@@ -864,23 +923,23 @@ def sync_incremental(
             )
             return
 
-        logger.info(f"✅ Discovered {len(streams)} streams", "green")
+        safe_print("Discovered %d streams" % len(streams), "green")
 
         # If specific entities requested, filter streams
         if entities:
             filtered_streams = [s for s in streams if s.name in entities]
             if not filtered_streams:
-                logger.info(
-                    f"❌ None of the requested entities found: {entities}",
+                safe_print(
+                    f"None of the requested entities found: {entities!s}",
                     "red",
                 )
-                logger.info(
-                    f"Available entities: {[s.name for s in streams]}",
+                safe_print(
+                    "Available entities: %s" % [s.name for s in streams],
                     "yellow",
                 )
                 return
             streams = filtered_streams
-            logger.info(f"🎯 Filtered to {len(streams)} requested streams", "green")
+            safe_print("Filtered to %d requested streams" % len(streams), "green")
 
         # Execute sync with state and catalog
         logger.info("🚀 Starting incremental data extraction...", "blue")
@@ -940,7 +999,7 @@ def sync_incremental(
             logger.info("❌ Incremental sync completed with errors", "red")
 
     except Exception as e:
-        logger.info(f"❌ Sync failed: {e}", "red")
+        safe_print(f"Sync failed: {e!s}", "red")
         logger.exception("Full error details:")
         raise
 
@@ -1009,14 +1068,14 @@ def _execute_incremental_sync_custom(
     total_records = 0
 
     logger.info("📊 CUSTOM INCREMENTAL SYNC EXECUTION:", "blue")
-    logger.info(f"   📋 Streams to process: {len(streams)}", "green")
-    logger.info(f"   📊 Previous bookmarks: {len(current_state['bookmarks'])}", "green")
+    safe_print("   Streams to process: %d" % len(streams), "green")
+    safe_print("   Previous bookmarks: %d" % len(current_state["bookmarks"]), "green")
 
     # Process each stream individually
     for i, stream in enumerate(streams, 1):
         stream_name = stream.name
-        logger.info(
-            f"\n🔄 [{i}/{len(streams)}] Processing stream: {stream_name}",
+        safe_print(
+            "\n[%d/%d] Processing stream: %s" % (i, len(streams), stream_name),
             "blue",
         )
 
@@ -1028,8 +1087,8 @@ def _execute_incremental_sync_custom(
             )
 
             if not stream_catalog:
-                logger.info(
-                    f"⚠️ No catalog metadata for stream {stream_name}", "yellow"
+                safe_print(
+                    f"No catalog metadata for stream {stream_name}", "yellow",
                 )
                 continue
 
@@ -1050,7 +1109,7 @@ def _execute_incremental_sync_custom(
             previous_mod_ts = stream_bookmark.get("mod_ts")
 
             if previous_mod_ts:
-                logger.info(f"   📅 Previous bookmark: {previous_mod_ts}", "green")
+                safe_print(f"   Previous bookmark: {previous_mod_ts}", "green")
             else:
                 logger.info(
                     "   📅 No previous bookmark (full initial extraction)",
@@ -1065,7 +1124,7 @@ def _execute_incremental_sync_custom(
             }
 
             # Extract records from stream with incremental filtering
-            logger.info(f"   🚀 Starting extraction for {stream_name}...", "blue")
+            safe_print(f"   Starting extraction for {stream_name}...", "blue")
             record_count = 0
             latest_mod_ts = previous_mod_ts
 
@@ -1090,7 +1149,7 @@ def _execute_incremental_sync_custom(
 
                 # Progress feedback every 1000 records
                 if record_count % 1000 == 0:
-                    logger.info(f"   📊 Extracted {record_count:,} records...", "green")
+                    safe_print("   Extracted {} records...".format(f"{record_count:,}"), "green")
 
             # Update bookmark with latest mod_ts
             if latest_mod_ts:
@@ -1101,17 +1160,17 @@ def _execute_incremental_sync_custom(
 
                 # Output STATE message for Singer protocol
 
-                logger.info(f"   📅 Updated bookmark: {latest_mod_ts}", "green")
+                safe_print(f"   Updated bookmark: {latest_mod_ts}", "green")
 
-            logger.info(
-                f"   ✅ Completed {stream_name}: {record_count:,} records",
+            safe_print(
+                "   Completed {}: {} records".format(stream_name, f"{record_count:,}"),
                 "green",
             )
             success_count += 1
 
         except Exception as e:
-            logger.info(f"   ❌ Error in stream {stream_name}: {e}", "red")
-            logger.exception(f"   🔍 Full error details for {stream_name}:")
+            safe_print(f"   Error in stream {stream_name}: {e!s}", "red")
+            logger.exception("   Full error details for %s:", stream_name)
             error_count += 1
             continue
 
@@ -1119,20 +1178,20 @@ def _execute_incremental_sync_custom(
     if output_state and current_state:
         try:
             json.dump(current_state, output_state, indent=2)
-            logger.info(f"💾 Final state saved to {output_state.name}", "green")
+            safe_print(f"Final state saved to {output_state.name}", "green")
         except Exception as e:
-            logger.info(f"⚠️ Failed to save state: {e}", "yellow")
+            safe_print(f"Failed to save state: {e!s}", "yellow")
 
     # Log final summary
     logger.info("\n📊 INCREMENTAL SYNC SUMMARY:", "blue")
-    logger.info(f"   ✅ Successful streams: {success_count}", "green")
-    logger.info(
-        f"   ❌ Failed streams: {error_count}",
+    safe_print("   Successful streams: %d" % success_count, "green")
+    safe_print(
+        "   Failed streams: %d" % error_count,
         "red" if error_count > 0 else "green",
     )
-    logger.info(f"   📊 Total records extracted: {total_records:,}", "green")
-    logger.info(
-        f"   📅 Streams with updated bookmarks: {len(current_state['bookmarks'])}",
+    safe_print("   Total records extracted: {}".format(f"{total_records:,}"), "green")
+    safe_print(
+        "   Streams with updated bookmarks: %d" % len(current_state["bookmarks"]),
         "green",
     )
 
@@ -1191,7 +1250,7 @@ def sync_full(
         TapOracleWMS(config=config_data).sync_all()
         logger.info("✅ Full sync completed successfully", "green")
     except Exception as e:
-        logger.info(f"❌ Sync failed: {e}", "red")
+        safe_print(f"Sync failed: {e!s}", "red")
         logger.exception("Full error details:")
         raise
 
@@ -1373,7 +1432,7 @@ def _output_discovery_results(
     entities: list[str],
     categorized: dict[str, list[str]],
     output_format: str,
-    output: Any
+    output: Any,
 ) -> None:
     """Output discovery results in the specified format."""
     if output_format == "json":

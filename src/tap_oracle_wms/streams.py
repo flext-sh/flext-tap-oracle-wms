@@ -100,6 +100,12 @@ from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
 
 from .auth import get_wms_authenticator, get_wms_headers
+from .logging_config import (
+    get_logger,
+    log_exception_context,
+    log_function_entry_exit,
+    performance_monitor,
+)
 
 
 if TYPE_CHECKING:
@@ -112,12 +118,16 @@ if TYPE_CHECKING:
 Context = dict[str, Any]
 
 
-logger = logging.getLogger(__name__)
+# Use enhanced logger with TRACE support
+logger = get_logger(__name__)
 
 
 class CircuitBreaker:
     """Circuit breaker pattern for resilient API calls."""
 
+    @log_function_entry_exit(log_args=True, log_result=False, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
+    @performance_monitor("circuit_breaker_init")
     def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60) -> None:
         """Initialize circuit breaker.
 
@@ -127,42 +137,164 @@ class CircuitBreaker:
             recovery_timeout: Seconds before attempting recovery
 
         """
+        logger.info("Starting CircuitBreaker initialization")
+        logger.debug("Initializing CircuitBreaker with threshold=%d, timeout=%d",
+                    failure_threshold, recovery_timeout)
+        logger.trace("CircuitBreaker initialization entry point reached")
+        logger.trace("Setting up circuit breaker parameters")
+        logger.trace("Failure threshold: %d", failure_threshold)
+        logger.trace("Recovery timeout: %d seconds", recovery_timeout)
+
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.failure_count = 0
         self.last_failure_time = None
         self.state = "closed"  # closed, open, half-open
 
+        logger.debug("CircuitBreaker state initialized: %s", self.state)
+        logger.trace("Initial failure count: %d", self.failure_count)
+        logger.trace("Last failure time: %s", self.last_failure_time)
+        logger.trace("CircuitBreaker initialization complete")
+        logger.info("CircuitBreaker initialized successfully in %s state", self.state)
+
+    @log_function_entry_exit(log_args=False, log_result=False, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
     def call_succeeded(self) -> None:
         """Record successful call."""
+        logger.debug("Recording successful call in CircuitBreaker")
+        logger.trace("Call succeeded entry point reached")
+        logger.trace("Current state before success: %s", self.state)
+        logger.trace("Current failure count before success: %d", self.failure_count)
+
+        previous_state = self.state
+        logger.trace("Previous state stored: %s", previous_state)
+        previous_count = self.failure_count
+        logger.trace("Previous failure count stored: %d", previous_count)
+
+        logger.trace("Resetting failure count to 0")
         self.failure_count = 0
+        logger.trace("Setting state to closed")
         self.state = "closed"
 
+        if previous_state != "closed" or previous_count > 0:
+            logger.info("Circuit breaker: call succeeded, reset to closed state (was %s, %d failures)",
+                       previous_state, previous_count)
+            logger.debug("State transition: %s -> %s", previous_state, self.state)
+            logger.trace("Failure count reset: %d -> %d", previous_count, self.failure_count)
+        else:
+            logger.debug("Circuit breaker: successful call in already closed state")
+            logger.trace("Circuit breaker: successful call in closed state")
+
+        logger.trace("Call succeeded processing complete")
+
+    @log_function_entry_exit(log_args=False, log_result=False, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
     def call_failed(self) -> None:
         """Record failed call."""
+        logger.debug("Recording failed call in CircuitBreaker")
+        logger.trace("Call failed entry point reached")
+        logger.trace("Current state before failure: %s", self.state)
+        logger.trace("Current failure count before increment: %d", self.failure_count)
+
+        logger.trace("Incrementing failure count")
         self.failure_count += 1
+        logger.trace("Recording failure timestamp")
         self.last_failure_time = time.time()
+        logger.trace("Failure count incremented to: %d", self.failure_count)
+        logger.trace("Failure timestamp recorded: %f", self.last_failure_time)
 
+        logger.warning("Circuit breaker: call failed (%d/%d failures)",
+                      self.failure_count, self.failure_threshold)
+        logger.debug("Circuit breaker failure recorded at timestamp: %f", self.last_failure_time)
+        logger.trace("Circuit breaker: failure recorded at %f", self.last_failure_time)
+
+        logger.trace("Checking if failure threshold reached")
         if self.failure_count >= self.failure_threshold:
-            self.state = "open"
-            logger.warning(
-                "Circuit breaker opened after %d failures",
-                self.failure_count,
-            )
+            logger.trace("Failure threshold reached, opening circuit")
+            previous_state = self.state
+            logger.trace("Previous state before opening: %s", previous_state)
 
+            self.state = "open"
+            logger.trace("Circuit state changed to: %s", self.state)
+
+            logger.critical(
+                "Circuit breaker OPENED after %d failures (threshold: %d)",
+                self.failure_count, self.failure_threshold,
+            )
+            if previous_state != "open":
+                logger.error(
+                    "Circuit breaker state change: %s -> %s",
+                    previous_state, self.state,
+                )
+                logger.trace("State transition recorded: %s -> %s", previous_state, self.state)
+            else:
+                logger.trace("Circuit was already open, no state change")
+        else:
+            remaining = self.failure_threshold - self.failure_count
+            logger.debug("Circuit breaker: %d failures remaining before opening", remaining)
+            logger.trace("Threshold check: %d < %d (threshold not reached)",
+                        self.failure_count, self.failure_threshold)
+
+        logger.trace("Call failed processing complete")
+
+    @log_function_entry_exit(log_args=False, log_result=True, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
     def can_attempt_call(self) -> bool:
         """Check if call can be attempted."""
+        logger.debug("Checking if call can be attempted in CircuitBreaker")
+        logger.trace("Can attempt call entry point reached")
+        logger.trace("Circuit breaker check: state=%s, failures=%d",
+                    self.state, self.failure_count)
+        logger.trace("Last failure time: %s", self.last_failure_time)
+
         if self.state == "closed":
+            logger.debug("Circuit breaker in closed state, allowing call")
+            logger.trace("Circuit breaker: allowing call (closed state)")
+            logger.trace("Returning True for closed state")
             return True
 
         if self.state == "open":
-            if time.time() - self.last_failure_time > self.recovery_timeout:
-                self.state = "half-open"
-                logger.info("Circuit breaker entering half-open state")
+            logger.trace("Circuit breaker in open state, checking recovery")
+            if self.last_failure_time is None:
+                logger.error("Circuit breaker: open state with no failure time, allowing call")
+                logger.warning("Circuit breaker: open state with no failure time, allowing call")
+                logger.trace("No failure time recorded, returning True")
                 return True
+
+            logger.trace("Calculating time since last failure")
+            current_time = time.time()
+            time_since_failure = current_time - self.last_failure_time
+            logger.trace("Time since failure: %.1fs (recovery timeout: %ds)",
+                        time_since_failure, self.recovery_timeout)
+
+            if time_since_failure > self.recovery_timeout:
+                logger.trace("Recovery timeout exceeded, transitioning to half-open")
+                previous_state = self.state
+                self.state = "half-open"
+                logger.info(
+                    "Circuit breaker entering half-open state after %.1fs (timeout: %ds)",
+                    time_since_failure, self.recovery_timeout,
+                )
+                logger.debug("Circuit breaker: state change %s -> %s", previous_state, self.state)
+                logger.trace("State transition completed: %s -> %s", previous_state, self.state)
+                logger.trace("Returning True for half-open transition")
+                return True
+
+            remaining_time = self.recovery_timeout - time_since_failure
+            logger.debug(
+                "Circuit breaker: blocking call, %.1fs remaining until recovery",
+                remaining_time,
+            )
+            logger.trace("Recovery timeout not reached, blocking call")
+            logger.trace("Remaining time: %.1fs", remaining_time)
+            logger.trace("Returning False for blocked call")
             return False
 
         # half-open state
+        logger.debug("Circuit breaker in half-open state, allowing test call")
+        logger.info("Circuit breaker: allowing test call (half-open state)")
+        logger.trace("Half-open state detected")
+        logger.trace("Returning True for half-open test call")
         return True
 
 
@@ -193,6 +325,9 @@ class WMSAdvancedPaginator(BaseHATEOASPaginator):
     - Singer SDK handles URL parameter extraction via get_url_params()
     """
 
+    @log_function_entry_exit(log_args=False, log_result=True, level=logging.DEBUG)
+    @log_exception_context(reraise=False)
+    @performance_monitor("get_next_url")
     def get_next_url(self, response) -> str | None:
         """Extract next_page URL from Oracle WMS API response.
 
@@ -211,12 +346,53 @@ class WMSAdvancedPaginator(BaseHATEOASPaginator):
         Returns:
             Next page URL string or None if no more pages
         """
+        logger.debug("Starting next_page URL extraction from Oracle WMS response")
+        logger.trace("Get next URL entry point reached")
+        logger.trace("Response type: %s", type(response).__name__)
+        logger.trace("Response status: %s", getattr(response, "status_code", "unknown"))
+        logger.trace("Extracting next_page URL from response")
+
         try:
+            logger.trace("Parsing response JSON")
             data = response.json()
-            return data.get("next_page")
-        except (ValueError, KeyError, AttributeError):
+            logger.trace("Response JSON parsed successfully")
+            logger.trace("Response keys: %s", list(data.keys()) if isinstance(data, dict) else "not dict")
+
+            logger.trace("Extracting next_page field")
+            next_url = data.get("next_page")
+            logger.trace("Next page field extracted: %s", type(next_url).__name__)
+
+            if next_url:
+                url_preview = next_url[:100] + ("..." if len(next_url) > 100 else "")
+                logger.info("Next page URL found for pagination continuation")
+                logger.debug("Next page URL found: %s", url_preview)
+                logger.trace("Full next_page URL: %s", next_url)
+                logger.trace("Next URL length: %d characters", len(next_url))
+                logger.trace("URL contains cursor: %s", "cursor=" in next_url)
+            else:
+                logger.info("Pagination complete - no next_page URL found")
+                logger.debug("No next_page URL - pagination complete")
+                logger.trace("Next page field value: %s", next_url)
+
+            logger.trace("Next URL extraction completed successfully")
+            return next_url
+
+        except (ValueError, KeyError, AttributeError) as e:
+            logger.exception("JSON parsing error extracting next_page URL: %s", str(e))
+            logger.warning("Failed to extract next_page URL: %s: %s", type(e).__name__, e)
+            logger.trace("Response content type: %s", getattr(response, "content_type", "unknown"))
+            logger.trace("JSON parsing exception details: %s", str(e))
+            return None
+        except Exception as e:
+            logger.critical("Critical error in pagination URL extraction")
+            logger.exception("Unexpected error extracting next_page URL: %s: %s", type(e).__name__, e)
+            logger.trace("Unexpected exception type: %s", type(e).__name__)
+            logger.trace("Exception details: %s", str(e))
             return None
 
+    @log_function_entry_exit(log_args=False, log_result=True, level=logging.DEBUG)
+    @log_exception_context(reraise=False)
+    @performance_monitor("has_more_pages")
     def has_more(self, response) -> bool:
         """Check if more pages are available.
 
@@ -232,23 +408,62 @@ class WMSAdvancedPaginator(BaseHATEOASPaginator):
         Returns:
             True if more pages available, False otherwise
         """
+        logger.debug("Checking if more pages are available for pagination")
+        logger.trace("Has more pages entry point reached")
+        logger.trace("Current pagination count: %d", self.count)
+        logger.trace("Checking if more pages available (current count: %d)", self.count)
+
         try:
+            logger.trace("Parsing response for pagination check")
             data = response.json()
+            logger.trace("Response parsed for pagination analysis")
+            logger.trace("Response data type: %s", type(data).__name__)
 
             # Primary check: next_page URL presence
-            has_next_url = bool(data.get("next_page"))
+            logger.trace("Checking for next_page URL presence")
+            next_page_value = data.get("next_page")
+            has_next_url = bool(next_page_value)
+            logger.debug("Next page URL check: %s", has_next_url)
+            logger.trace("has_next_url: %s", has_next_url)
+            logger.trace("next_page value type: %s", type(next_page_value).__name__)
 
             # Secondary check: ensure we have results in current page
-            has_results = bool(data.get("results"))
+            logger.trace("Checking current page results")
+            results = data.get("results", [])
+            has_results = bool(results)
+            result_count = len(results) if isinstance(results, list) else 0
+            logger.debug("Current page results: %d items", result_count)
+            logger.trace("has_results: %s, result_count: %d", has_results, result_count)
+            logger.trace("Results data type: %s", type(results).__name__)
 
             # For first page, we need results to continue
             # For subsequent pages, next_page URL is sufficient
             if self.count == 0:
-                return has_next_url and has_results
+                more_pages = has_next_url and has_results
+                logger.debug(
+                    "First page pagination check: "
+                    "has_next_url=%s AND has_results=%s = %s",
+                    has_next_url, has_results, more_pages,
+                )
+            else:
+                more_pages = has_next_url
+                logger.debug(
+                    "Subsequent page pagination check: "
+                    "has_next_url=%s = %s",
+                    has_next_url, more_pages,
+                )
 
-            return has_next_url
+            if not more_pages:
+                logger.info("✅ Pagination complete - no more pages available")
 
-        except (ValueError, KeyError, AttributeError):
+            return more_pages
+
+        except (ValueError, KeyError, AttributeError) as e:
+            logger.warning("Failed to check pagination status: %s: %s", type(e).__name__, e)
+            logger.debug("Defaulting to False for pagination check")
+            return False
+        except Exception as e:
+            logger.exception("Unexpected error checking pagination: %s: %s", type(e).__name__, e)
             return False
 
 
@@ -302,6 +517,8 @@ class WMSAdvancedStream(RESTStream):
     replication_method = "INCREMENTAL"  # Default to incremental
     replication_keys = ["mod_ts"]  # MOD_TS is the change tracking field
 
+    @log_function_entry_exit(log_args=False, log_result=False, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
     def __init__(
         self,
         tap: Any,
@@ -319,13 +536,20 @@ class WMSAdvancedStream(RESTStream):
             **kwargs: Additional arguments
 
         """
+        logger.info("Initializing WMSAdvancedStream for entity: %s", entity_name)
+
         self.entity_name = entity_name
         self._dynamic_schema = schema
+
+        logger.debug("Creating circuit breaker for %s", entity_name)
         self._circuit_breaker = CircuitBreaker()
 
         # Store config for dynamic URL construction
         self._base_url = tap.config.get("base_url")
+        logger.debug("Base URL configured: %s", self._base_url)
+
         if not self._base_url:
+            logger.critical("💀 base_url MUST be configured - NO hardcode allowed")
             msg = "base_url MUST be configured - NO hardcode allowed"
             raise ValueError(msg)
 
@@ -333,39 +557,58 @@ class WMSAdvancedStream(RESTStream):
         self._enable_incremental = tap.config.get("enable_incremental", True)
         self._safety_overlap_minutes = tap.config.get("incremental_overlap_minutes", 5)
 
+        logger.debug(
+            f"🔧 Sync configuration for {entity_name}: "
+            f"incremental={self._enable_incremental}, overlap={self._safety_overlap_minutes}min",
+        )
+
         # Set replication method based on config
         if self._enable_incremental:
             self.replication_method = "INCREMENTAL"
             self.replication_keys = ["mod_ts"]
+            logger.info("%s configured for INCREMENTAL sync with mod_ts key", entity_name)
         else:
             self.replication_method = "FULL_TABLE"
             self.replication_keys = []
+            logger.info("%s configured for FULL_TABLE sync", entity_name)
 
         # Features state
         self._field_selection = None
         self._values_list = False
         self._distinct_values = False
         self._retry_count = 0
+        logger.trace("🔍 Features initialized for %s", entity_name)
 
         # Performance optimization
         self._connection_pool = None
         self._http2_enabled = tap.config.get("http2_enabled", False)
         self._compression_enabled = tap.config.get("compression_enabled", True)
 
+        logger.debug(
+            f"🔧 Performance settings for {entity_name}: "
+            f"http2={self._http2_enabled}, compression={self._compression_enabled}",
+        )
+
         # Monitoring
         self._start_time: float | None = None
         self._records_extracted = 0
         self._api_calls = 0
         self._errors: dict[str, int] = {}
+        logger.trace("🔍 Monitoring initialized for %s", entity_name)
 
+        logger.debug("🔧 Calling parent RESTStream.__init__ for %s", entity_name)
         super().__init__(tap=tap, **kwargs)
 
         # CRITICAL: Override url_base after super().__init__ for Singer SDK
         self.url_base = self._base_url.rstrip("/")
+        logger.debug("🔧 URL base set for %s: %s", entity_name, self.url_base)
+
+        logger.info("✅ WMSAdvancedStream initialized for %s", entity_name)
 
     @property
     def name(self) -> str:
         """Stream name."""
+        logger.trace("🔍 Getting stream name: %s", self.entity_name)
         return self.entity_name
 
     @property
@@ -393,12 +636,16 @@ class WMSAdvancedStream(RESTStream):
     @property
     def path(self) -> str:
         """Get the API path for this stream's entity endpoint."""
-        return f"/wms/lgfapi/v10/entity/{self.entity_name}"
+        path = f"/wms/lgfapi/v10/entity/{self.entity_name}"
+        logger.trace("🔍 API path for %s: %s", self.entity_name, path)
+        return path
 
     @property
     def url(self) -> str:
         """Full URL using config base_url."""
-        return f"{self._base_url.rstrip('/')}{self.path}"
+        full_url = f"{self._base_url.rstrip('/')}{self.path}"
+        logger.trace("🔍 Full URL for %s: %s", self.entity_name, full_url)
+        return full_url
 
     def get_url_params(
         self,
@@ -435,17 +682,46 @@ class WMSAdvancedStream(RESTStream):
                 # Parse query string from next_page URL
                 url_params = dict(parse_qsl(next_page_token.query))
 
+                # 🚨 CRITICAL ORDERING FIX: Preserve ordering parameter across pagination
+                # The WMS API next_page URLs don't include ordering parameter, but we need it
+                # to maintain consistent ordering throughout pagination
+
+                # Get original ordering parameter based on sync method
+                replication_method = self.replication_method
+                if replication_method == "FULL_TABLE":
+                    # For full sync, always preserve -id ordering
+                    full_sync_config = self.config.get("full_sync_config", {}).get(self.entity_name, {})
+                    strategy = full_sync_config.get("strategy", "id_based_resume")
+
+                    if strategy == "id_based_resume":
+                        url_params["ordering"] = "-id"  # CRITICAL: Preserve descending order
+                        logger.info(
+                            f"🔧 PAGINATION ORDERING FIX: Preserved -id ordering for {self.entity_name} pagination",
+                        )
+                    elif strategy == "timestamp_based":
+                        url_params["ordering"] = "mod_ts"
+                    else:
+                        # Default ordering
+                        url_params["ordering"] = self.config.get("default_ordering", "id")
+
+                elif replication_method == "INCREMENTAL":
+                    # For incremental sync, preserve mod_ts ordering
+                    url_params["ordering"] = "mod_ts"
+                    logger.info(
+                        f"🔧 PAGINATION ORDERING FIX: Preserved mod_ts ordering for {self.entity_name} pagination",
+                    )
+
                 # Log pagination continuation for debugging
                 logger.debug(
                     f"🔄 Continuing pagination for {self.entity_name} with cursor: "
-                    f"{url_params.get('cursor', 'unknown')[:20]}..."
+                    f"{url_params.get('cursor', 'unknown')[:20]}... and ordering: {url_params.get('ordering', 'none')}",
                 )
 
                 return url_params
 
             except (AttributeError, ValueError) as e:
                 logger.warning(
-                    f"Failed to parse HATEOAS next_page_token for {self.entity_name}: {e}"
+                    f"Failed to parse HATEOAS next_page_token for {self.entity_name}: {e}",
                 )
                 # Fall through to base parameters
 
@@ -481,7 +757,7 @@ class WMSAdvancedStream(RESTStream):
                     if isinstance(bookmark_value, str):
                         try:
                             bookmark_dt = datetime.fromisoformat(
-                                bookmark_value.replace("Z", "+00:00")
+                                bookmark_value.replace("Z", "+00:00"),
                             )
                         except ValueError:
                             bookmark_dt = datetime.now(timezone.utc)
@@ -512,7 +788,7 @@ class WMSAdvancedStream(RESTStream):
                 params["ordering"] = "-id"  # Descending order
 
         # Log first request parameters for debugging
-        logger.debug(f"🔧 Initial URL params for {self.entity_name}: {params}")
+        logger.debug("🔧 Initial URL params for %s: %s", self.entity_name, params)
 
         return params
 

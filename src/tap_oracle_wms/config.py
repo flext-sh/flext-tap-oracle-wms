@@ -1,13 +1,25 @@
 """Modern configuration schema for tap-oracle-wms using Singer SDK 0.46.4+ patterns."""
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from singer_sdk import typing as th
 
+from .logging_config import (
+    get_logger,
+    log_exception_context,
+    log_function_entry_exit,
+)
+
+
+# Use enhanced logger with TRACE support
+logger = get_logger(__name__)
+
 
 # Constants
 WMS_MAX_PAGE_SIZE = 1250
+OPTIMAL_PAGE_SIZE = 1000
 
 # HTTP Status Codes
 HTTP_OK = 200
@@ -969,6 +981,8 @@ config_schema = th.PropertiesList(
 ).to_dict()
 
 
+@log_function_entry_exit(log_args=False, log_result=True, level=logging.DEBUG)
+@log_exception_context(reraise=False)
 def validate_auth_config(config: dict[str, Any]) -> str | None:
     """Validate authentication configuration.
 
@@ -982,26 +996,46 @@ def validate_auth_config(config: dict[str, Any]) -> str | None:
 
     """
     auth_method = config.get("auth_method", "basic")
+    logger.debug("🔧 Validating auth config for method: %s", auth_method)
 
     if auth_method == "basic":
-        if not config.get("username") or not config.get("password"):
-            return "Basic authentication requires username and password"
+        logger.trace("🔍 Validating basic authentication credentials")
+        username_present = bool(config.get("username"))
+        password_present = bool(config.get("password"))
+
+        if not username_present or not password_present:
+            error_msg = "Basic authentication requires username and password"
+            logger.warning("⚠️ Auth validation failed: %s", error_msg)
+            return error_msg
+
+        logger.debug("✅ Basic authentication credentials validated")
 
     elif auth_method == "oauth2":
+        logger.trace("🔍 Validating OAuth2 authentication configuration")
         required = [
             "oauth_client_id",
             "oauth_client_secret",
             "oauth_token_url",
         ]
         missing = [field for field in required if not config.get(field)]
-        if missing:
-            return f"OAuth2 authentication requires: {', '.join(missing)}"
-    else:
-        return f"Unknown authentication method: {auth_method}"
 
+        if missing:
+            error_msg = "OAuth2 authentication requires: {}".format(", ".join(missing))
+            logger.warning("⚠️ OAuth2 validation failed: %s", error_msg)
+            return error_msg
+
+        logger.debug("✅ OAuth2 authentication configuration validated")
+    else:
+        error_msg = f"Unknown authentication method: {auth_method}"
+        logger.error("🚨 Invalid auth method: %s", error_msg)
+        return error_msg
+
+    logger.debug("✅ Authentication configuration validation successful")
     return None
 
 
+@log_function_entry_exit(log_args=False, log_result=True, level=logging.DEBUG)
+@log_exception_context(reraise=False)
 def validate_pagination_config(config: dict[str, Any]) -> str | None:
     """Validate pagination configuration.
 
@@ -1015,11 +1049,27 @@ def validate_pagination_config(config: dict[str, Any]) -> str | None:
 
     """
     page_size = config.get("page_size", 100)
+    logger.debug("🔧 Validating pagination config with page_size: %s", page_size)
+    logger.trace("🔍 Page size limits: min=1, max=%s", WMS_MAX_PAGE_SIZE)
 
     if page_size < 1:
-        return "Page size must be at least 1"
+        error_msg = "Page size must be at least 1"
+        logger.error("🚨 Invalid page size: %s (provided: %s)", error_msg, page_size)
+        return error_msg
 
     if page_size > WMS_MAX_PAGE_SIZE:
-        return "Page size cannot exceed 1250 (Oracle WMS limit)"
+        error_msg = f"Page size cannot exceed {WMS_MAX_PAGE_SIZE} (Oracle WMS limit)"
+        logger.error(
+            "🚨 Page size too large: %s (provided: %s)", error_msg, page_size,
+        )
+        return error_msg
 
+    if page_size > OPTIMAL_PAGE_SIZE:
+        logger.info(
+            "ℹ️ Large page size configured: %s (recommended: %s for optimal perf)",
+            page_size,
+            OPTIMAL_PAGE_SIZE,
+        )
+
+    logger.debug("✅ Pagination configuration validation successful")
     return None

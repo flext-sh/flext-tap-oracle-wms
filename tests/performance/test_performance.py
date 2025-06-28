@@ -25,7 +25,7 @@ class TestPerformanceBasic:
             "password": "perf_pass",
             "page_size": 1000,
             "enable_incremental": True,
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.fixture
@@ -43,7 +43,7 @@ class TestPerformanceBasic:
         return {
             "type": "object",
             "properties": properties,
-            "required": [f"field_{i:02d}" for i in range(10)]
+            "required": [f"field_{i:02d}" for i in range(10)],
         }
 
     @pytest.mark.performance
@@ -101,10 +101,10 @@ class TestPerformanceBasic:
                 {
                     "id": i,
                     "large_field": "A" * 1000,  # 1KB per record
-                    "mod_ts": f"2024-01-01T10:{i % 60:02d}:00Z"
+                    "mod_ts": f"2024-01-01T10:{i % 60:02d}:00Z",
                 }
                 for i in range(1000)  # 1MB total
-            ]
+            ],
         }
 
         paginator = WMSAdvancedPaginator()
@@ -137,7 +137,7 @@ class TestPerformanceBasic:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="performance_entity",
-            schema={"type": "object", "properties": {"id": {"type": "integer"}}}
+            schema={"type": "object", "properties": {"id": {"type": "integer"}}},
         )
 
         # Medir tempo de geração de parâmetros (múltiplas vezes)
@@ -167,7 +167,7 @@ class TestPerformanceMemory:
             "username": "memory_user",
             "password": "memory_pass",
             "page_size": 1000,
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.mark.performance
@@ -182,7 +182,7 @@ class TestPerformanceMemory:
                 mock_discovery.return_value = large_entities
                 mock_schema.return_value = {
                     "type": "object",
-                    "properties": {f"field_{i}": {"type": "string"} for i in range(20)}
+                    "properties": {f"field_{i}": {"type": "string"} for i in range(20)},
                 }
 
                 # Medir memória antes
@@ -247,7 +247,7 @@ class TestPerformanceMemory:
         for _i in range(100):
             large_response = {
                 "result_count": 1000,
-                "results": [{"id": j, "data": f"data_{j}"} for j in range(100)]
+                "results": [{"id": j, "data": f"data_{j}"} for j in range(100)],
             }
 
             mock_response = Mock()
@@ -275,7 +275,7 @@ class TestPerformanceConcurrency:
             "username": "concurrent_user",
             "password": "concurrent_pass",
             "page_size": 500,
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.mark.performance
@@ -298,7 +298,7 @@ class TestPerformanceConcurrency:
                     results.append({
                         "thread_id": thread_id,
                         "time": end_time - start_time,
-                        "streams_count": len(streams)
+                        "streams_count": len(streams),
                     })
                 except Exception as e:
                     errors.append({"thread_id": thread_id, "error": str(e)})
@@ -344,7 +344,7 @@ class TestPerformanceConcurrency:
                 for _i in range(10):
                     response_data = {
                         "result_count": 100,
-                        "results": [{"id": j} for j in range(10)]
+                        "results": [{"id": j} for j in range(10)],
                     }
 
                     mock_response = Mock()
@@ -388,7 +388,7 @@ class TestPerformanceConcurrency:
             stream = WMSAdvancedStream(
                 tap=mock_tap,
                 entity_name="thread_safe_entity",
-                schema={"type": "object", "properties": {"id": {"type": "integer"}}}
+                schema={"type": "object", "properties": {"id": {"type": "integer"}}},
             )
 
             results = []
@@ -441,7 +441,7 @@ class TestPerformanceBenchmarks:
                 "auth_method": "basic",
                 "username": "bench_user",
                 "password": "bench_pass",
-                "test_connection": False
+                "test_connection": False,
             }
 
             with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -459,7 +459,7 @@ class TestPerformanceBenchmarks:
                     times.append({
                         "entity_count": count,
                         "time": end_time - start_time,
-                        "streams_created": len(streams)
+                        "streams_created": len(streams),
                     })
 
         # Verificar que scaling é razoável (não exponencial)
@@ -485,7 +485,7 @@ class TestPerformanceBenchmarks:
         for _i in range(1000):
             response_data = {
                 "result_count": 100,
-                "results": [{"id": j, "value": f"value_{j}"} for j in range(10)]
+                "results": [{"id": j, "value": f"value_{j}"} for j in range(10)],
             }
 
             mock_response = Mock()
@@ -517,7 +517,7 @@ class TestPerformanceBenchmarks:
             "username": "bench_user",
             "password": "bench_pass",
             "page_size": 1000,
-            "enable_incremental": True
+            "enable_incremental": True,
         }
 
         mock_tap = Mock()
@@ -528,7 +528,7 @@ class TestPerformanceBenchmarks:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="benchmark_entity",
-            schema={"type": "object", "properties": {"id": {"type": "integer"}}}
+            schema={"type": "object", "properties": {"id": {"type": "integer"}}},
         )
 
         # Medir throughput de geração de parâmetros
@@ -562,7 +562,7 @@ class TestPerformanceBenchmarks:
                 "auth_method": "basic",
                 "username": "memory_user",
                 "password": "memory_pass",
-                "test_connection": False
+                "test_connection": False,
             }
 
             with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -584,7 +584,7 @@ class TestPerformanceBenchmarks:
                 memory_measurements.append({
                     "entity_count": count,
                     "memory_increase_mb": memory_increase,
-                    "memory_per_entity_kb": (memory_increase * 1024) / count if count > 0 else 0
+                    "memory_per_entity_kb": (memory_increase * 1024) / count if count > 0 else 0,
                 })
 
                 # Cleanup

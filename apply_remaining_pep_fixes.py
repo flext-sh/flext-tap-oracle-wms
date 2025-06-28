@@ -44,7 +44,7 @@ def fix_import_order_issues() -> None:
                                 parts = desc_text.split(" and ", 1)
                                 new_line = line.replace(
                                     f'description="{desc_text}"',
-                                    f'description="{parts[0]} "\n        "and {parts[1]}"'
+                                    f'description="{parts[0]} "\n        "and {parts[1]}"',
                                 )
                                 fixed_lines.append(new_line)
                                 continue
@@ -52,7 +52,7 @@ def fix_import_order_issues() -> None:
                                 parts = desc_text.split(" for ", 1)
                                 new_line = line.replace(
                                     f'description="{desc_text}"',
-                                    f'description="{parts[0]} "\n        "for {parts[1]}"'
+                                    f'description="{parts[0]} "\n        "for {parts[1]}"',
                                 )
                                 fixed_lines.append(new_line)
                                 continue

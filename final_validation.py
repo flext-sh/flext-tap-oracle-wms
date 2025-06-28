@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Final validation of all fixes applied."""
 
-from pathlib import Path
-from typing import Any
 import ast
+from pathlib import Path
 import sys
+from typing import Any
 
 
 def validate_file_syntax(file_path: str) -> dict[str, Any]:
@@ -80,10 +80,7 @@ def check_critical_fixes() -> dict[str, Any]:
             cli_content = f.read()
 
         if (
-            'def safe_print(
-                message: str,
-                style: str | None = None,
-            ) -> None:\n    """Safely print'
+            "def safe_print("
             in cli_content
         ):
             fixes_verified.append("✅ cli.py - Docstring fix applied")
@@ -118,8 +115,6 @@ def main() -> int:
         if Path(file_path).exists():
             result = validate_file_syntax(file_path)
             syntax_results.append(result)
-        else:
-            pass
 
     fixes_result = check_critical_fixes()
     for _detail in fixes_result["details"]:

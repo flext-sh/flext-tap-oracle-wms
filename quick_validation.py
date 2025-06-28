@@ -47,8 +47,6 @@ def main() -> int:
     for _name, test_func in tests:
         if test_func():
             passed += 1
-        else:
-            pass
 
     if passed == len(tests):
         return 0

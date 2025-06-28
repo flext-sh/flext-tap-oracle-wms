@@ -16,7 +16,7 @@ def run_command(cmd: list[str], capture_output: bool = True) -> tuple[int, str, 
             cmd,
             capture_output=capture_output,
             text=True,
-            cwd=Path(__file__).parent, check=False
+            cwd=Path(__file__).parent, check=False,
         )
         return result.returncode, result.stdout, result.stderr
     except Exception as e:
@@ -36,7 +36,7 @@ def count_tests() -> dict[str, int]:
         "unit": ["tests/unit/"],
         "integration": ["tests/integration/"],
         "e2e": ["tests/e2e/"],
-        "performance": ["tests/performance/"]
+        "performance": ["tests/performance/"],
     }
 
     counts = {"total": total_tests}
@@ -58,7 +58,7 @@ def analyze_test_files() -> dict[str, list[str]]:
         "integration": [],
         "e2e": [],
         "performance": [],
-        "legacy": []
+        "legacy": [],
     }
 
     # Unit tests
@@ -96,7 +96,7 @@ def validate_pytest_config() -> dict[str, bool]:
         "conftest_exists": (project_root / "tests" / "conftest.py").exists(),
         "src_directory_exists": (project_root / "src").exists(),
         "test_directories_exist": all((project_root / "tests" / dir_name).exists()
-            for dir_name in ["unit", "integration", "e2e", "performance"])
+            for dir_name in ["unit", "integration", "e2e", "performance"]),
     }
 
 
@@ -108,7 +108,7 @@ def run_sample_tests() -> dict[str, bool]:
     exit_code, _stdout, _stderr = run_command([
         "python", "-m", "pytest",
         "tests/unit/test_config_validation.py::TestConfigValidation::test_validate_auth_config_basic_valid",
-        "-q"
+        "-q",
     ])
     test_results["unit_sample"] = exit_code == 0
 
@@ -116,7 +116,7 @@ def run_sample_tests() -> dict[str, bool]:
     exit_code, _stdout, _stderr = run_command([
         "python", "-m", "pytest",
         "tests/unit/test_pagination_hateoas.py::TestWMSAdvancedPaginator::test_get_next_url_with_next_page",
-        "-q"
+        "-q",
     ])
     test_results["pagination_sample"] = exit_code == 0
 
@@ -158,7 +158,7 @@ def generate_comprehensive_summary() -> None:
         ("Pagination Tests", "HATEOAS pagination"),
         ("Monitoring Tests", "Metrics and observability"),
         ("Error Handling", "Failure scenarios and recovery"),
-        ("Oracle WMS Specific", "Real-world data patterns")
+        ("Oracle WMS Specific", "Real-world data patterns"),
     ]
 
     for _category, _description in capabilities:
@@ -173,7 +173,7 @@ def generate_comprehensive_summary() -> None:
         ("pytest -m auth", "Run authentication tests"),
         ("pytest -m pagination", "Run pagination tests"),
         ("pytest --cov=src/tap_oracle_wms", "Run with coverage"),
-        ("pytest -m 'not live and not slow'", "CI/CD friendly tests")
+        ("pytest -m 'not live and not slow'", "CI/CD friendly tests"),
     ]
 
     for _command, _description in examples:
@@ -192,7 +192,7 @@ def generate_comprehensive_summary() -> None:
         "📚 Documentation: Tests serve as living documentation",
         "🔄 Refactoring Safety: Changes can be made with confidence",
         "🐛 Bug Prevention: Issues caught early in development",
-        "🏗️  Architecture Validation: System design verified through tests"
+        "🏗️  Architecture Validation: System design verified through tests",
     ]
 
     for _benefit in benefits:

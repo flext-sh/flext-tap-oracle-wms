@@ -10,14 +10,23 @@ import httpx
 
 from .auth import get_wms_authenticator, get_wms_headers
 from .config import HTTP_FORBIDDEN, HTTP_NOT_FOUND, HTTP_OK
+from .logging_config import (
+    get_logger,
+    log_exception_context,
+    log_function_entry_exit,
+    performance_monitor,
+)
 
 
-logger = logging.getLogger(__name__)
+# Use enhanced logger with TRACE support
+logger = get_logger(__name__)
 
 
 class EntityDiscovery:
     """Handle dynamic entity discovery from Oracle WMS API."""
 
+    @log_function_entry_exit(log_args=False, log_result=False, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
     def __init__(self, config: dict[str, Any]) -> None:
         """Initialize entity discovery.
 
@@ -26,16 +35,28 @@ class EntityDiscovery:
             config: Configuration dictionary
 
         """
+        logger.info("Initializing Oracle WMS Entity Discovery")
+        logger.debug("Discovery config: base_url=%s", config.get("base_url", "None"))
+        logger.trace("Starting entity discovery setup")
+
         self.config = config
         self.base_url = config["base_url"].rstrip("/")
         self.api_version = "v10"  # Current stable version
+
+        logger.debug("Entity discovery URL: %s/wms/lgfapi/%s",
+                     self.base_url, self.api_version)
+        logger.trace("Setting up WMS headers")
+
         self.headers = get_wms_headers(config)
+        logger.debug("WMS headers configured: %d items", len(self.headers))
 
         # Add authentication
+        logger.trace("Setting up authentication for discovery")
         self._authenticator = None
         self._setup_authentication()
 
         # Enhanced cache for discovered entities with comprehensive caching
+        logger.trace("Initializing discovery caches")
         self._entity_cache: dict[str, str] | None = None
         self._schema_cache: dict[str, dict[str, Any]] = {}
         self._access_cache: dict[str, bool] = {}
@@ -48,6 +69,12 @@ class EntityDiscovery:
             "entity_cache_ttl",
             7200,
         )  # 2 hours for entity discovery
+
+        logger.debug("Cache configuration: schema_ttl=%ds, entity_ttl=%ds",
+                    self._cache_ttl, self._entity_cache_ttl)
+        logger.trace("Discovery caches initialized")
+
+        logger.info("Oracle WMS Entity Discovery initialized successfully")
         self._access_cache_ttl = config.get(
             "access_cache_ttl",
             1800,
@@ -60,10 +87,16 @@ class EntityDiscovery:
         self._sample_cache_times: dict[str, datetime] = {}
         self._metadata_cache_times: dict[str, datetime] = {}
 
+    @log_exception_context(reraise=True)
+    @performance_monitor("discovery_auth_setup")
     def _setup_authentication(self) -> None:
         """Set up authentication headers."""
+        logger.debug("Setting up authentication for entity discovery")
+        logger.trace("Creating stream context for authenticator")
+
         try:
             # Create a minimal stream context for authenticator
+            logger.trace("Building minimal stream context")
             stream_context = type(
                 "StreamContext",
                 (),
@@ -74,20 +107,35 @@ class EntityDiscovery:
                 },
             )()
 
+            logger.debug("Getting WMS authenticator")
+            logger.trace("Requesting authenticator with discovery context")
+
             auth = get_wms_authenticator(stream_context, self.config)
             if auth:
+                logger.debug("Authenticator created, extracting headers")
+                logger.trace("Getting auth_headers from authenticator")
+
                 auth_headers = getattr(auth, "auth_headers", {})
                 if auth_headers:
+                    logger.debug("Auth headers obtained: %d items", len(auth_headers))
+                    logger.trace("Auth header keys: %s", list(auth_headers.keys()))
                     self.headers.update(auth_headers)
+                    logger.debug("Authentication headers updated successfully")
                 else:
                     logger.debug("No auth headers returned from authenticator")
+                    logger.trace("Authenticator exists but returned empty headers")
             else:
                 logger.debug("No authenticator configured")
+                logger.trace("Proceeding without authentication")
+
         except (ImportError, AttributeError, ValueError, TypeError) as e:
-            logger.warning("Failed to setup authentication: %s", e)
+            logger.warning("Failed to setup authentication: %s", str(e))
+            logger.trace("Authentication setup failed, continuing without auth")
+            logger.exception("Full authentication setup error details")
             # Continue without auth - basic auth will be used via headers
 
     @property
+    @log_exception_context(reraise=True)
     def entity_endpoint(self) -> str:
         """Get the entity discovery endpoint.
 
@@ -96,8 +144,14 @@ class EntityDiscovery:
             Full URL for entity endpoint
 
         """
-        return f"{self.base_url}/wms/lgfapi/{self.api_version}/entity/"
+        logger.trace("Building entity discovery endpoint")
+        endpoint = f"{self.base_url}/wms/lgfapi/{self.api_version}/entity/"
+        logger.trace("Entity endpoint: %s", endpoint)
+        return endpoint
 
+    @log_function_entry_exit(log_args=False, log_result=True, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
+    @performance_monitor("discover_entities")
     async def discover_entities(self) -> dict[str, str]:
         """Discover all available entities from WMS API.
 
@@ -110,6 +164,9 @@ class EntityDiscovery:
             HTTPError: If API request fails
 
         """
+        logger.info("Starting Oracle WMS entity discovery")
+        logger.trace("Checking entity cache validity")
+
         # Check enhanced entity cache
         if (
             self._entity_cache
@@ -117,29 +174,49 @@ class EntityDiscovery:
             and datetime.now(timezone.utc) - self._last_entity_cache_time
             < timedelta(seconds=self._entity_cache_ttl)
         ):
-            logger.debug("Using cached entity list")
+            cache_age = datetime.now(timezone.utc) - self._last_entity_cache_time
+            logger.debug("Using cached entity list (age: %s seconds)",
+                         cache_age.total_seconds())
+            logger.trace("Cached entities: %d items", len(self._entity_cache))
             return self._entity_cache
 
-        logger.info("Discovering entities from Oracle WMS API")
+        logger.info("Cache miss or expired, discovering entities from Oracle WMS API")
+        logger.debug("Entity discovery endpoint: %s", self.entity_endpoint)
+        logger.trace("Setting up HTTP client configuration")
 
         # Setup timeouts
+        logger.debug("Configuring HTTP timeouts for entity discovery")
         timeout = httpx.Timeout(
             connect=self.config.get("connect_timeout", 30),
             read=self.config.get("read_timeout", 120),
             write=self.config.get("write_timeout", 30),
             pool=self.config.get("pool_timeout", 10),
         )
+        logger.trace("Timeouts: connect=%ds, read=%ds, write=%ds, pool=%ds",
+                    timeout.connect, timeout.read, timeout.write, timeout.pool)
 
         # SSL configuration
+        logger.debug("Configuring SSL verification")
         verify_ssl = self.config.get("verify_ssl", True)
         if not verify_ssl:
+            logger.warning("SSL verification disabled")
             verify_ssl = False
         elif self.config.get("ssl_ca_file"):
+            logger.debug("Using custom SSL CA file: %s", self.config["ssl_ca_file"])
+            logger.trace("Creating SSL context with custom CA")
             import ssl
 
             ssl_context = ssl.create_default_context()
             ssl_context.load_verify_locations(self.config["ssl_ca_file"])
             verify_ssl = ssl_context
+            logger.trace("SSL context configured successfully")
+        else:
+            logger.trace("Using default SSL verification")
+
+        logger.debug("Creating HTTP client for entity discovery")
+        logger.trace("Client config: SSL=%s, User-Agent=%s",
+                    bool(verify_ssl),
+                    self.config.get("user_agent", "tap-oracle-wms/1.0"))
 
         async with httpx.AsyncClient(
             timeout=timeout,
@@ -147,47 +224,89 @@ class EntityDiscovery:
             headers={"User-Agent": self.config.get("user_agent", "tap-oracle-wms/1.0")},
         ) as client:
             try:
+                logger.debug("Making GET request to entity discovery endpoint")
+                logger.trace("Request headers: %d items", len(self.headers))
+
                 response = await client.get(
                     self.entity_endpoint,
                     headers=self.headers,
                 )
+
+                logger.debug("Entity discovery response: %d %s",
+                            response.status_code, response.reason_phrase)
+                logger.trace("Response headers: %d items", len(response.headers))
+
                 response.raise_for_status()
 
+                logger.trace("Parsing entity discovery response JSON")
                 entity_list = response.json()
+                logger.debug("Entity list type: %s", type(entity_list).__name__)
 
                 # Convert list of entity names to dictionary mapping names to URLs
+                logger.trace("Converting entity list to URL mapping")
                 entities: dict[str, str] = {}
+
                 if isinstance(entity_list, list):
+                    logger.debug("Processing entity list with %d items",
+                                len(entity_list))
                     base_url = f"{self.base_url}/wms/lgfapi/{self.api_version}/entity"
+                    logger.trace("Base entity URL: %s", base_url)
+
                     for entity_name in entity_list:
                         if isinstance(entity_name, str):
                             entities[entity_name] = f"{base_url}/{entity_name}"
+                            logger.trace("Mapped entity: %s", entity_name)
+                        else:
+                            logger.warning("Skipping non-string entity: %s",
+                                           entity_name)
+
                 elif isinstance(entity_list, dict):
+                    logger.debug("Using entity dict directly with %d items",
+                                len(entity_list))
                     # If API returns dict directly, use it
                     entities = entity_list
+                else:
+                    logger.error("Unexpected entity list type: %s",
+                                type(entity_list).__name__)
+                    logger.trace("Entity list content: %s", str(entity_list)[:200])
 
                 # Cache the results with enhanced caching
+                logger.debug("Caching entity discovery results")
                 self._entity_cache = entities
                 self._last_entity_cache_time = datetime.now(timezone.utc)
+                logger.trace("Cache updated at: %s", self._last_entity_cache_time)
 
-                logger.info("Discovered %s entities", len(entities))
+                logger.info("Successfully discovered %d entities from Oracle WMS",
+                            len(entities))
+                logger.debug("Entities discovered: %s",
+                            list(entities.keys())[:10])  # First 10
                 return entities
 
             except httpx.HTTPStatusError as e:
-                logger.exception("Failed to discover entities")
-                logger.exception("Response: %s", e.response.text)
+                logger.exception("HTTP error during entity discovery: %d %s",
+                            e.response.status_code, e.response.reason_phrase)
+                logger.debug("Failed endpoint: %s", self.entity_endpoint)
+                logger.trace("Response content: %s", e.response.text[:500])
+                logger.exception("Full HTTP error details")
                 raise
             except (
                 httpx.ConnectError,
                 httpx.TimeoutException,
                 httpx.RequestError,
-            ):
-                logger.exception("Network error discovering entities")
+            ) as e:
+                logger.exception("Network error during entity discovery: %s", str(e))
+                logger.debug("Failed endpoint: %s", self.entity_endpoint)
+                logger.exception("Full network error details")
                 raise
-            except (ValueError, KeyError, TypeError):
-                logger.exception("Data parsing error discovering entities")
+            except (ValueError, KeyError, TypeError) as e:
+                logger.exception("Data parsing error during entity discovery: %s", str(e))
+                logger.debug("Response parsing failed for entity list")
+                logger.exception("Full parsing error details")
                 raise
 
+    @log_function_entry_exit(log_args=True, log_result=False, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
+    @performance_monitor("describe_entity")
     async def describe_entity(self, entity_name: str) -> dict[str, Any] | None:
         """Get entity metadata from describe endpoint.
 
@@ -200,44 +319,84 @@ class EntityDiscovery:
             Entity metadata including field definitions
 
         """
+        logger.info("Starting entity metadata description for: %s", entity_name)
+        logger.debug("Describe entity: checking metadata cache")
+        logger.trace("Entity describe entry point reached")
+        logger.trace("Metadata cache size: %d entries", len(self._metadata_cache))
+
         # Check enhanced metadata cache
+        logger.trace("Checking if entity exists in metadata cache")
         if entity_name in self._metadata_cache:
+            logger.trace("Entity found in cache, checking timestamp")
             cache_time = self._metadata_cache_times.get(entity_name)
+            logger.trace("Cache time for entity: %s", cache_time)
+
             if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
                 seconds=self._cache_ttl,
             ):
-                logger.debug("Using cached metadata for entity: %s", entity_name)
+                cache_age = datetime.now(timezone.utc) - cache_time
+                logger.debug("Using cached metadata for entity: %s (age: %ss)",
+                           entity_name, cache_age.total_seconds())
+                logger.trace("Returning cached metadata for entity: %s", entity_name)
                 return self._metadata_cache[entity_name]
+            logger.trace("Cached metadata expired for entity: %s", entity_name)
+        else:
+            logger.trace("Entity not found in metadata cache: %s", entity_name)
 
+        logger.debug("Making API request to describe entity: %s", entity_name)
         url = f"{self.entity_endpoint}/{entity_name}/describe/"
+        logger.trace("Describe endpoint URL: %s", url)
 
+        logger.trace("Creating HTTP client for describe request")
         async with httpx.AsyncClient(timeout=30) as client:
             try:
+                logger.trace("Sending GET request to describe endpoint")
+                logger.trace("Request headers count: %d", len(self.headers))
+
                 response = await client.get(url, headers=self.headers)
+                logger.debug("Describe response status: %d", response.status_code)
+                logger.trace("Response headers count: %d", len(response.headers))
+
                 response.raise_for_status()
 
+                logger.trace("Parsing describe response JSON")
                 metadata: dict[str, Any] = response.json()
+                logger.debug("Metadata retrieved for entity: %s", entity_name)
+                logger.trace("Metadata keys: %s", list(metadata.keys()) if metadata else [])
 
                 # Cache the result with enhanced caching
+                logger.trace("Caching metadata for entity: %s", entity_name)
                 self._metadata_cache[entity_name] = metadata
                 self._metadata_cache_times[entity_name] = datetime.now(timezone.utc)
+                logger.trace("Metadata cached successfully")
 
+                logger.info("Entity metadata description completed for: %s", entity_name)
                 return metadata
 
             except httpx.HTTPStatusError as e:
+                logger.exception("HTTP error describing entity %s: %d %s",
+                           entity_name, e.response.status_code, e.response.reason_phrase)
                 logger.warning("Failed to describe entity %s: %s", entity_name, e)
+                logger.trace("HTTP status error details: %s", str(e))
                 return None
             except (
                 httpx.ConnectError,
                 httpx.TimeoutException,
                 httpx.RequestError,
-            ):
+            ) as e:
+                logger.exception("Network error describing entity %s: %s", entity_name, str(e))
                 logger.exception("Network error describing entity")
+                logger.trace("Network error type: %s", type(e).__name__)
                 return None
-            except (ValueError, KeyError, TypeError):
+            except (ValueError, KeyError, TypeError) as e:
+                logger.exception("Data parsing error describing entity %s: %s", entity_name, str(e))
                 logger.exception("Data parsing error describing entity")
+                logger.trace("Parsing error type: %s", type(e).__name__)
                 return None
 
+    @log_function_entry_exit(log_args=True, log_result=False, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
+    @performance_monitor("get_entity_sample")
     async def get_entity_sample(
         self,
         entity_name: str,
@@ -255,73 +414,127 @@ class EntityDiscovery:
             List of sample records
 
         """
+        logger.info("Starting entity sample retrieval for: %s (limit: %d)", entity_name, limit)
+        logger.debug("Get entity sample: checking sample cache")
+        logger.trace("Entity sample entry point reached")
+        logger.trace("Sample cache size: %d entries", len(self._sample_cache))
+
         # Check enhanced sample cache
-        cache_key = f"{entity_name}_{limit}"
+        cache_key = "%s_%d" % (entity_name, limit)
+        logger.trace("Sample cache key: %s", cache_key)
+
         if cache_key in self._sample_cache:
+            logger.trace("Sample found in cache, checking timestamp")
             cache_time = self._sample_cache_times.get(cache_key)
+            logger.trace("Sample cache time: %s", cache_time)
+
             if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
                 seconds=self._cache_ttl,
             ):
-                logger.debug("Using cached sample data for entity: %s", entity_name)
+                cache_age = datetime.now(timezone.utc) - cache_time
+                logger.debug("Using cached sample data for entity: %s (age: %ss)",
+                           entity_name, cache_age.total_seconds())
+                logger.trace("Returning cached sample for entity: %s", entity_name)
                 return self._sample_cache[cache_key]
+            logger.trace("Cached sample expired for entity: %s", entity_name)
+        else:
+            logger.trace("Entity not found in sample cache: %s", entity_name)
+
+        logger.debug("Making API request to get sample for entity: %s", entity_name)
         url = f"{self.entity_endpoint}/{entity_name}"
         params = {"page_size": limit, "page": 1}
+        logger.trace("Sample endpoint URL: %s", url)
+        logger.trace("Sample request params: %s", params)
 
+        logger.trace("Creating HTTP client for sample request")
         async with httpx.AsyncClient(timeout=30) as client:
             try:
+                logger.trace("Sending GET request to sample endpoint")
+                logger.trace("Request headers count: %d", len(self.headers))
+
                 response = await client.get(
                     url,
                     headers=self.headers,
                     params=params,
                 )
+                logger.debug("Sample response status: %d", response.status_code)
+                logger.trace("Response headers count: %d", len(response.headers))
+
                 response.raise_for_status()
 
+                logger.trace("Parsing sample response JSON")
                 data = response.json()
+                logger.trace("Sample data type: %s", type(data).__name__)
 
                 # Handle different response formats
                 sample_data: list[dict[str, Any]]
+                logger.trace("Processing sample data format")
+
                 if isinstance(data, dict) and "results" in data:
+                    logger.trace("Sample data format: dict with results key")
                     sample_data = data["results"]
+                    logger.trace("Extracted %d records from results", len(sample_data))
                 elif isinstance(data, list):
+                    logger.trace("Sample data format: direct list")
                     sample_data = data[:limit]
+                    logger.trace("Using first %d records from list", len(sample_data))
                 else:
+                    logger.trace("Sample data format: unknown, returning empty list")
                     sample_data = []
 
+                logger.debug("Sample retrieved for entity %s: %d records", entity_name, len(sample_data))
+
                 # Cache the sample data
+                logger.trace("Caching sample data for entity: %s", entity_name)
                 self._sample_cache[cache_key] = sample_data
                 self._sample_cache_times[cache_key] = datetime.now(timezone.utc)
+                logger.trace("Sample data cached successfully")
 
+                logger.info("Entity sample retrieval completed for: %s (%d records)",
+                          entity_name, len(sample_data))
                 return sample_data
 
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == HTTP_NOT_FOUND:
+                    logger.warning("Entity %s not found for sampling", entity_name)
                     logger.debug("Entity %s not found for sampling", entity_name)
+                    logger.trace("404 Not Found for entity: %s", entity_name)
                 else:
+                    logger.exception("HTTP error getting sample for %s: %d %s",
+                               entity_name, e.response.status_code, e.response.reason_phrase)
                     logger.warning(
                         "HTTP error getting sample for %s: %s",
                         entity_name,
                         e,
                     )
+                    logger.trace("HTTP error details: %s", str(e))
                 return []
             except (
                 httpx.ConnectError,
                 httpx.TimeoutException,
                 httpx.RequestError,
             ) as e:
+                logger.exception("Network error getting sample for entity %s: %s", entity_name, str(e))
                 logger.warning(
                     "Network error getting sample for entity %s: %s",
                     entity_name,
                     e,
                 )
+                logger.trace("Network error type: %s", type(e).__name__)
                 return []
             except (ValueError, KeyError, TypeError) as e:
+                logger.exception("Data parsing error getting sample for entity %s: %s", entity_name, str(e))
                 logger.warning(
                     "Data parsing error getting sample for entity %s: %s",
                     entity_name,
                     e,
                 )
+                logger.trace("Parsing error type: %s", type(e).__name__)
                 return []
 
+    @log_function_entry_exit(log_args=True, log_result=False, level=logging.DEBUG)
+    @log_exception_context(reraise=True)
+    @performance_monitor("filter_entities")
     def filter_entities(self, entities: dict[str, str]) -> dict[str, str]:
         """Filter entities based on configuration.
 
@@ -334,47 +547,92 @@ class EntityDiscovery:
             Filtered dictionary of entities
 
         """
+        logger.info("Starting entity filtering process")
+        logger.debug("Filter entities: input count=%d", len(entities))
+        logger.trace("Entity filtering entry point reached")
+        logger.trace("Input entities: %s", list(entities.keys())[:10])  # First 10
+
         # If specific entities are configured, use only those
+        logger.trace("Checking for specific configured entities")
         if self.config.get("entities"):
             configured_entities = self.config["entities"]
-            return {
+            logger.debug("Applying specific entity filter: %d configured", len(configured_entities))
+            logger.trace("Configured entities: %s", configured_entities)
+
+            filtered_result = {
                 name: url
                 for name, url in entities.items()
                 if name in configured_entities
             }
+            logger.info("Entity filtering completed: %d -> %d (specific entities)",
+                       len(entities), len(filtered_result))
+            logger.trace("Filtered entities (specific): %s", list(filtered_result.keys()))
+            return filtered_result
+        logger.trace("No specific entities configured, proceeding with pattern filtering")
 
         # Apply pattern-based filtering
+        logger.debug("Applying pattern-based entity filtering")
+        logger.trace("Starting with all entities for pattern filtering")
         filtered = dict(entities)
 
         patterns = self.config.get("entity_patterns", {})
+        logger.trace("Entity patterns config: %s", patterns)
 
         # Apply include patterns
+        logger.trace("Checking for include patterns")
         if patterns.get("include"):
+            include_patterns = patterns["include"]
+            logger.debug("Applying include patterns: %s", include_patterns)
+            logger.trace("Include patterns count: %d", len(include_patterns))
+
             filtered = {
                 name: url
                 for name, url in filtered.items()
                 if any(
-                    fnmatch.fnmatch(name, pattern) for pattern in patterns["include"]
+                    fnmatch.fnmatch(name, pattern) for pattern in include_patterns
                 )
             }
+            logger.debug("After include patterns: %d entities remain", len(filtered))
+            logger.trace("Entities after include: %s", list(filtered.keys())[:10])
+        else:
+            logger.trace("No include patterns configured")
 
         # Apply exclude patterns
+        logger.trace("Checking for exclude patterns")
         if patterns.get("exclude"):
+            exclude_patterns = patterns["exclude"]
+            logger.debug("Applying exclude patterns: %s", exclude_patterns)
+            logger.trace("Exclude patterns count: %d", len(exclude_patterns))
+
+            pre_exclude_count = len(filtered)
             filtered = {
                 name: url
                 for name, url in filtered.items()
                 if not any(
-                    fnmatch.fnmatch(name, pattern) for pattern in patterns["exclude"]
+                    fnmatch.fnmatch(name, pattern) for pattern in exclude_patterns
                 )
             }
+            logger.debug("After exclude patterns: %d -> %d entities", pre_exclude_count, len(filtered))
+            logger.trace("Entities after exclude: %s", list(filtered.keys())[:10])
+        else:
+            logger.trace("No exclude patterns configured")
 
         # Always exclude system/internal entities
+        logger.debug("Applying system entity exclusion")
         system_prefixes = ["_", "sys_", "internal_"]
-        return {
+        logger.trace("System prefixes to exclude: %s", system_prefixes)
+
+        pre_system_count = len(filtered)
+        filtered_result = {
             name: url
             for name, url in filtered.items()
             if not any(name.startswith(prefix) for prefix in system_prefixes)
         }
+        logger.debug("After system exclusion: %d -> %d entities", pre_system_count, len(filtered_result))
+        logger.trace("Final filtered entities: %s", list(filtered_result.keys())[:10])
+
+        logger.info("Entity filtering completed: %d -> %d entities", len(entities), len(filtered_result))
+        return filtered_result
 
     async def check_entity_access(self, entity_name: str) -> bool:
         """Check if user has access to entity with caching.

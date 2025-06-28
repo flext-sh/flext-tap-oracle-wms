@@ -90,7 +90,7 @@ def validate_imports() -> tuple[bool, list[str]]:
 def validate_ruff() -> tuple[bool, str]:
     """Run ruff lint checks."""
     success, stdout, stderr = run_command(
-        ["python", "-m", "ruff", "check", ".", "--select", "ALL"]
+        ["python", "-m", "ruff", "check", ".", "--select", "ALL"],
     )
 
     if success:
@@ -177,11 +177,8 @@ def main() -> int:
 
     # Print specific failures
     for (success, details) in results.values():
-        if not success:
-            if isinstance(details, list):
-                for _detail in details:
-                    pass
-            else:
+        if not success and isinstance(details, list):
+            for _detail in details:
                 pass
 
     return 1

@@ -98,18 +98,18 @@ class E2ETestRunner:
             msg = f"Missing required configuration: {missing_fields}"
             raise ValueError(msg)
 
-        logger.info(f"✅ Configuration generated with base URL: {config['base_url']}")
+        logger.info("✅ Configuration generated with base URL: %s", config['base_url'])
         return config
 
     def save_config(self, config: dict[str, Any]) -> None:
         """Save configuration to file."""
         with open(self.config_file, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
-        logger.info(f"📝 Configuration saved to {self.config_file}")
+        logger.info("📝 Configuration saved to %s", self.config_file)
 
     def run_command(self, cmd: list[str], timeout: int = 120) -> dict[str, Any]:
         """Run command and capture output."""
-        logger.info(f"🔧 Running command: {' '.join(cmd)}")
+        logger.info("🔧 Running command: %s", ' '.join(cmd))
         start_time = time.time()
 
         try:
@@ -178,7 +178,7 @@ class E2ETestRunner:
             if test_result["success"]:
                 logger.info("✅ Basic import test passed")
             else:
-                logger.error(f"❌ Basic import test failed: {result['stderr']}")
+                logger.error("❌ Basic import test failed: %s", result['stderr'])
 
             return test_result
 
@@ -252,7 +252,7 @@ class E2ETestRunner:
                         json.dump(catalog_data, f, indent=2)
 
                 except json.JSONDecodeError as e:
-                    logger.warning(f"Could not parse catalog JSON: {e}")
+                    logger.warning("Could not parse catalog JSON: %s", e)
 
             test_result = {
                 "test_name": "discovery",
@@ -270,11 +270,11 @@ class E2ETestRunner:
 
             if test_result["success"]:
                 logger.info(
-                    f"✅ Discovery test passed - \
-                        found {test_result['details']['streams_discovered']} streams"
+                    "✅ Discovery test passed - found %s streams", 
+                    test_result['details']['streams_discovered']
                 )
             else:
-                logger.error(f"❌ Discovery test failed: {result['stderr']}")
+                logger.error("❌ Discovery test failed: %s", result['stderr'])
 
             return test_result
 
@@ -346,10 +346,10 @@ class E2ETestRunner:
 
             if test_result["success"]:
                 logger.info(
-                    f"✅ Data extraction test passed - extracted {records_count} records"
+                    f"✅ Data extraction test passed - extracted {records_count} records",
                 )
             else:
-                logger.error(f"❌ Data extraction test failed: {result['stderr']}")
+                logger.error("❌ Data extraction test failed: %s", result['stderr'])
 
             return test_result
 
@@ -392,7 +392,7 @@ class E2ETestRunner:
                         "stderr": result["stderr"][:200] + "..."
                         if len(result["stderr"]) > 200
                         else result["stderr"],
-                    }
+                    },
                 )
 
                 total_duration += result["elapsed_time"]
@@ -406,7 +406,7 @@ class E2ETestRunner:
                         "success": False,
                         "duration": 0,
                         "error": str(e),
-                    }
+                    },
                 )
                 overall_success = False
 
@@ -425,13 +425,13 @@ class E2ETestRunner:
 
         if test_result["success"]:
             logger.info(
-                f"✅ CLI subcommands test passed - \
-                    {test_result['details']['subcommands_passed']}/{test_result['details']['subcommands_tested']} passed"
+                "✅ CLI subcommands test passed - \
+                    %s/%s passed", test_result['details']['subcommands_passed'], test_result['details']['subcommands_tested']),
             )
         else:
             logger.error(
-                f"❌ CLI subcommands test failed - \
-                    {test_result['details']['subcommands_passed']}/{test_result['details']['subcommands_tested']} passed"
+                "❌ CLI subcommands test failed - \
+                    %s/%s passed", test_result['details']['subcommands_passed'], test_result['details']['subcommands_tested']),
             )
 
         return test_result
@@ -479,12 +479,12 @@ class E2ETestRunner:
 
             if test_result["success"]:
                 logger.info(
-                    "✅ Error handling test passed - properly handled invalid config"
+                    "✅ Error handling test passed - properly handled invalid config",
                 )
             else:
                 logger.error(
                     "❌ Error handling test failed - \
-                        should have failed with invalid config"
+                        should have failed with invalid config",
                 )
 
             return test_result
@@ -512,7 +512,7 @@ class E2ETestRunner:
             config = self.load_env_config()
             self.save_config(config)
         except Exception as e:
-            logger.exception(f"❌ Failed to generate configuration: {e}")
+            logger.exception("❌ Failed to generate configuration: %s", e)
             return {
                 "success": False,
                 "error": f"Configuration generation failed: {e}",
@@ -542,22 +542,22 @@ class E2ETestRunner:
 
         for test_func in tests:
             try:
-                logger.info(f"▶️ Running {test_func.__name__}")
+                logger.info("▶️ Running %s", test_func.__name__)
                 result = test_func()
                 test_results.append(result)
                 self.test_results.append(result)
 
                 if result["success"]:
                     logger.info(
-                        f"✅ {test_func.__name__} passed in {result['duration']:.2f}s"
+                        f"✅ {test_func.__name__} passed in {result['duration']:.2f}s",
                     )
                 else:
                     logger.error(
-                        f"❌ {test_func.__name__} failed in {result['duration']:.2f}s"
+                        f"❌ {test_func.__name__} failed in {result['duration']:.2f}s",
                     )
 
             except Exception as e:
-                logger.exception(f"❌ {test_func.__name__} crashed")
+                logger.exception("❌ %s crashed", test_func.__name__)
                 error_result = {
                     "test_name": test_func.__name__,
                     "success": False,
@@ -592,9 +592,9 @@ class E2ETestRunner:
             json.dump(summary, f, indent=2)
 
         logger.info(
-            f"📊 E2E Testing completed: {passed_tests}/{total_tests} tests passed in {total_duration:.2f}s"
+            f"📊 E2E Testing completed: {passed_tests}/{total_tests} tests passed in {total_duration:.2f}s",
         )
-        logger.info(f"📝 Detailed results saved to {results_file}")
+        logger.info("📝 Detailed results saved to %s", results_file)
 
         return summary
 
@@ -627,7 +627,7 @@ class E2ETestRunner:
                     "",
                     f"- **Duration**: {test['duration']:.2f}s",
                     "",
-                ]
+                ],
             )
 
             if "details" in test:
@@ -647,7 +647,7 @@ def main() -> None:
         env_file = Path(".env")
         if not env_file.exists():
             logger.error(
-                "❌ .env file not found. Please create one with required configuration."
+                "❌ .env file not found. Please create one with required configuration.",
             )
             sys.exit(1)
 

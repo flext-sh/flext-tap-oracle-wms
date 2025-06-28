@@ -37,7 +37,7 @@ class TestWMSAdvancedPaginator:
         mock_response = Mock()
         mock_response.json.return_value = {
             "results": [{"id": 1}, {"id": 2}],
-            "next_page": "https://wms.test.com/entity?cursor=abc123&page_size=1000"
+            "next_page": "https://wms.test.com/entity?cursor=abc123&page_size=1000",
         }
 
         next_url = paginator.get_next_url(mock_response)
@@ -54,7 +54,7 @@ class TestWMSAdvancedPaginator:
         mock_response.json.return_value = {
             "results": [{"id": 98}, {"id": 99}],
             "page_nbr": 5,
-            "page_count": 5
+            "page_count": 5,
         }
 
         next_url = paginator.get_next_url(mock_response)
@@ -70,7 +70,7 @@ class TestWMSAdvancedPaginator:
         mock_response = Mock()
         mock_response.json.return_value = {
             "results": [{"id": 99}],
-            "next_page": None
+            "next_page": None,
         }
 
         next_url = paginator.get_next_url(mock_response)
@@ -112,7 +112,7 @@ class TestWMSAdvancedPaginator:
         mock_response = Mock()
         mock_response.json.return_value = {
             "results": [{"id": 1}, {"id": 2}],
-            "next_page": "https://wms.test.com/entity?cursor=def456"
+            "next_page": "https://wms.test.com/entity?cursor=def456",
         }
 
         has_more = paginator.has_more(mock_response)
@@ -127,7 +127,7 @@ class TestWMSAdvancedPaginator:
         # Mock response sem next_page
         mock_response = Mock()
         mock_response.json.return_value = {
-            "results": [{"id": 99}]
+            "results": [{"id": 99}],
         }
 
         has_more = paginator.has_more(mock_response)
@@ -142,7 +142,7 @@ class TestWMSAdvancedPaginator:
         # Mock response vazio
         mock_response = Mock()
         mock_response.json.return_value = {
-            "results": []
+            "results": [],
         }
 
         has_more = paginator.has_more(mock_response)
@@ -158,7 +158,7 @@ class TestWMSAdvancedPaginator:
         mock_response = Mock()
         mock_response.json.return_value = {
             "results": [],
-            "next_page": "https://wms.test.com/entity?cursor=empty123"
+            "next_page": "https://wms.test.com/entity?cursor=empty123",
         }
 
         has_more = paginator.has_more(mock_response)
@@ -178,7 +178,7 @@ class TestWMSAdvancedPaginator:
         mock_response = Mock()
         mock_response.json.return_value = {
             "results": [],
-            "next_page": "https://wms.test.com/entity?cursor=empty123"
+            "next_page": "https://wms.test.com/entity?cursor=empty123",
         }
 
         has_more = paginator.has_more(mock_response)
@@ -225,13 +225,13 @@ class TestPaginatorIntegration:
         first_response = Mock()
         first_response.json.return_value = {
             "results": [{"id": 1}, {"id": 2}],
-            "next_page": "https://wms.test.com/entity?cursor=page2"
+            "next_page": "https://wms.test.com/entity?cursor=page2",
         }
 
         # Segunda resposta sem next_page
         second_response = Mock()
         second_response.json.return_value = {
-            "results": [{"id": 3}, {"id": 4}]
+            "results": [{"id": 3}, {"id": 4}],
         }
 
         # Testa primeira página
@@ -268,9 +268,9 @@ class TestPaginatorIntegration:
                     "item_id": "ITEM001",
                     "location_id": "A01-01-01",
                     "alloc_qty": 100.0,
-                    "mod_ts": "2024-01-01T12:00:00Z"
-                }
-            ]
+                    "mod_ts": "2024-01-01T12:00:00Z",
+                },
+            ],
         }
 
         # Testa extração de URL
@@ -293,7 +293,7 @@ class TestPaginatorIntegration:
         mock_response = Mock()
         mock_response.json.return_value = {
             "results": [{"id": 1}],
-            "next_page": cursor_url
+            "next_page": cursor_url,
         }
 
         next_url = paginator.get_next_url(mock_response)
@@ -311,44 +311,44 @@ class TestPaginatorIntegration:
         (
             {
                 "results": [{"id": 1}],
-                "next_page": "https://test.com/next"
+                "next_page": "https://test.com/next",
             },
             True,
-            "https://test.com/next"
+            "https://test.com/next",
         ),
         # Caso 2: Sem next_page
         (
             {
-                "results": [{"id": 1}]
+                "results": [{"id": 1}],
             },
             False,
-            None
+            None,
         ),
         # Caso 3: next_page None
         (
             {
                 "results": [{"id": 1}],
-                "next_page": None
+                "next_page": None,
             },
             False,
-            None
+            None,
         ),
         # Caso 4: next_page string vazia
         (
             {
                 "results": [{"id": 1}],
-                "next_page": ""
+                "next_page": "",
             },
             False,
-            None
+            None,
         ),
         # Caso 5: Resultados vazios sem next_page
         (
             {
-                "results": []
+                "results": [],
             },
             False,
-            None
+            None,
         ),
     ])
     def test_paginator_various_responses(self, response_data, expected_has_more, expected_next_url) -> None:

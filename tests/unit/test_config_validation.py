@@ -20,7 +20,7 @@ class TestConfigValidation:
         config = {
             "auth_method": "basic",
             "username": "test_user",
-            "password": "test_password"
+            "password": "test_password",
         }
 
         result = validate_auth_config(config)
@@ -31,7 +31,7 @@ class TestConfigValidation:
         """Testa validação de auth básica sem username."""
         config = {
             "auth_method": "basic",
-            "password": "test_password"
+            "password": "test_password",
         }
 
         result = validate_auth_config(config)
@@ -42,7 +42,7 @@ class TestConfigValidation:
         """Testa validação de auth básica sem password."""
         config = {
             "auth_method": "basic",
-            "username": "test_user"
+            "username": "test_user",
         }
 
         result = validate_auth_config(config)
@@ -55,7 +55,7 @@ class TestConfigValidation:
             "auth_method": "oauth2",
             "oauth_client_id": "client123",
             "oauth_client_secret": "secret456",
-            "oauth_token_url": "https://auth.example.com/token"
+            "oauth_token_url": "https://auth.example.com/token",
         }
 
         result = validate_auth_config(config)
@@ -66,7 +66,7 @@ class TestConfigValidation:
         """Testa validação de OAuth2 com campos faltando."""
         config = {
             "auth_method": "oauth2",
-            "oauth_client_id": "client123"
+            "oauth_client_id": "client123",
         }
 
         result = validate_auth_config(config)
@@ -78,7 +78,7 @@ class TestConfigValidation:
     def test_validate_auth_config_unknown_method(self) -> None:
         """Testa validação com método de auth desconhecido."""
         config = {
-            "auth_method": "unknown_method"
+            "auth_method": "unknown_method",
         }
 
         result = validate_auth_config(config)
@@ -88,7 +88,7 @@ class TestConfigValidation:
     def test_validate_pagination_config_valid(self) -> None:
         """Testa validação de paginação válida."""
         config = {
-            "page_size": 1000
+            "page_size": 1000,
         }
 
         result = validate_pagination_config(config)
@@ -98,7 +98,7 @@ class TestConfigValidation:
     def test_validate_pagination_config_min_boundary(self) -> None:
         """Testa validação de paginação no limite mínimo."""
         config = {
-            "page_size": 1
+            "page_size": 1,
         }
 
         result = validate_pagination_config(config)
@@ -108,7 +108,7 @@ class TestConfigValidation:
     def test_validate_pagination_config_max_boundary(self) -> None:
         """Testa validação de paginação no limite máximo."""
         config = {
-            "page_size": WMS_MAX_PAGE_SIZE
+            "page_size": WMS_MAX_PAGE_SIZE,
         }
 
         result = validate_pagination_config(config)
@@ -118,7 +118,7 @@ class TestConfigValidation:
     def test_validate_pagination_config_too_small(self) -> None:
         """Testa validação com page_size muito pequeno."""
         config = {
-            "page_size": 0
+            "page_size": 0,
         }
 
         result = validate_pagination_config(config)
@@ -128,7 +128,7 @@ class TestConfigValidation:
     def test_validate_pagination_config_too_large(self) -> None:
         """Testa validação com page_size muito grande."""
         config = {
-            "page_size": WMS_MAX_PAGE_SIZE + 1
+            "page_size": WMS_MAX_PAGE_SIZE + 1,
         }
 
         result = validate_pagination_config(config)
@@ -138,7 +138,7 @@ class TestConfigValidation:
     def test_validate_pagination_config_negative(self) -> None:
         """Testa validação com page_size negativo."""
         config = {
-            "page_size": -10
+            "page_size": -10,
         }
 
         result = validate_pagination_config(config)
@@ -242,7 +242,7 @@ class TestConfigValidationIntegration:
             "password": "test_password",
             "page_size": 1000,
             "company_code": "TEST",
-            "facility_code": "MAIN"
+            "facility_code": "MAIN",
         }
 
         auth_result = validate_auth_config(config)
@@ -260,7 +260,7 @@ class TestConfigValidationIntegration:
             "oauth_client_id": "client123",
             "oauth_client_secret": "secret456",
             "oauth_token_url": "https://auth.test.com/token",
-            "page_size": 500
+            "page_size": 500,
         }
 
         auth_result = validate_auth_config(config)
@@ -274,7 +274,7 @@ class TestConfigValidationIntegration:
         """Testa configuração com múltiplos erros."""
         config = {
             "auth_method": "basic",  # Faltam username/password
-            "page_size": 2000        # Acima do limite
+            "page_size": 2000,        # Acima do limite
         }
 
         auth_result = validate_auth_config(config)
@@ -309,7 +309,7 @@ class TestConfigValidationIntegration:
             "password": "test_password",
             "page_size": 1000,
             "extra_field": "should_be_ignored",
-            "another_extra": 12345
+            "another_extra": 12345,
         }
 
         auth_result = validate_auth_config(config)

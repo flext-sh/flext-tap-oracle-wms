@@ -26,8 +26,6 @@ def fix_missing_newlines() -> None:
 
     if files_fixed:
         pass
-    else:
-        pass
 
     return files_fixed
 

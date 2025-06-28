@@ -206,7 +206,7 @@ class TestQualityValidator:
             "file_issues": self.validate_test_files(),
             "marker_issues": self.validate_test_markers(),
             "fixture_issues": self.validate_fixture_usage(),
-            "summary": {}
+            "summary": {},
         }
 
         total_issues = sum(len(issues) for issues in report.values() if isinstance(issues, list))
@@ -218,7 +218,7 @@ class TestQualityValidator:
             "fixtures_ok": len(report["fixture_issues"]) == 0,
             "overall_quality": "EXCELLENT" if total_issues == 0 else
                               "GOOD" if total_issues < 5 else
-                              "NEEDS_IMPROVEMENT" if total_issues < 15 else "POOR"
+                              "NEEDS_IMPROVEMENT" if total_issues < 15 else "POOR",
         }
 
         return report
@@ -247,15 +247,12 @@ class TestCoverageAnalyzer:
             relative_path = src_module.relative_to(self.src_dir)
 
             # Find corresponding test files
-            corresponding_tests = []
-            for test_file in test_files:
-                if module_name in test_file.name or any(part in test_file.name for part in relative_path.parts):
-                    corresponding_tests.append(test_file.name)
+            corresponding_tests = [test_file.name for test_file in test_files if module_name in test_file.name or any(part in test_file.name for part in relative_path.parts)]
 
             coverage_data[str(relative_path)] = {
                 "has_tests": len(corresponding_tests) > 0,
                 "test_files": corresponding_tests,
-                "test_count": len(corresponding_tests)
+                "test_count": len(corresponding_tests),
             }
 
         return coverage_data
@@ -377,8 +374,6 @@ def run_quality_validation() -> bool:
             pass
         if len(untested) > 5:
             pass
-    else:
-        pass
 
     if report["summary"]["total_issues"] == 0 and not untested:
         return True
