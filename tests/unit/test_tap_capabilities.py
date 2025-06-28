@@ -117,7 +117,7 @@ class TestTapInitialization:
             "username": "test",
             "password": "pass",
             "test_connection": False,
-            "metrics": {"enabled": False}
+            "metrics": {"enabled": False},
         }
 
     @pytest.mark.unit
@@ -184,7 +184,7 @@ class TestTapValidation:
             "username": "test",
             "password": "pass",
             "page_size": 1000,
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.fixture
@@ -194,7 +194,7 @@ class TestTapValidation:
             "base_url": "https://wms.test.com",
             "auth_method": "basic",
             # Faltam username/password
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.fixture
@@ -206,7 +206,7 @@ class TestTapValidation:
             "username": "test",
             "password": "pass",
             "page_size": 2000,  # Acima do limite
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.mark.unit
@@ -279,7 +279,7 @@ class TestTapConnectionTest:
             "username": "test",
             "password": "pass",
             "test_connection": False,
-            "metrics": {"enabled": False}
+            "metrics": {"enabled": False},
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities"):
@@ -324,7 +324,7 @@ class TestTapConnectionTest:
             monitor = tap_instance._monitor
             assert monitor.metrics.record_counter.call_count >= 2  # test.success + entities_discovered
             monitor.metrics.record_gauge.assert_called_with(
-                "connection.entities_discovered", 2
+                "connection.entities_discovered", 2,
             )
 
     @pytest.mark.unit
@@ -355,7 +355,7 @@ class TestTapDiscoveryMethods:
             "auth_method": "basic",
             "username": "test",
             "password": "pass",
-            "test_connection": False
+            "test_connection": False,
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities"):

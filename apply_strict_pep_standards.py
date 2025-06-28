@@ -44,7 +44,7 @@ class StrictPEPFixer:
 
         standard_libs = {
             "os", "sys", "json", "re", "datetime", "pathlib", "typing", "asyncio",
-            "contextlib", "logging", "base64", "time", "subprocess", "ast"
+            "contextlib", "logging", "base64", "time", "subprocess", "ast",
         }
 
         for line in import_lines:

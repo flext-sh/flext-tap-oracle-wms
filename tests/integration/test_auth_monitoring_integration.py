@@ -19,7 +19,7 @@ class TestAuthenticationIntegration:
             "auth_method": "basic",
             "username": "auth_user",
             "password": "auth_pass",
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.fixture
@@ -31,7 +31,7 @@ class TestAuthenticationIntegration:
             "oauth_client_id": "client123",
             "oauth_client_secret": "secret456",
             "oauth_token_url": "https://auth.test.com/token",
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.mark.integration
@@ -189,9 +189,9 @@ class TestMonitoringIntegration:
             "metrics": {
                 "enabled": True,
                 "namespace": "tap_oracle_wms",
-                "labels": {"environment": "test"}
+                "labels": {"environment": "test"},
             },
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.fixture
@@ -203,7 +203,7 @@ class TestMonitoringIntegration:
             "username": "no_monitor_user",
             "password": "no_monitor_pass",
             "metrics": {"enabled": False},
-            "test_connection": False
+            "test_connection": False,
         }
 
     @pytest.mark.integration
@@ -342,7 +342,7 @@ class TestMonitoringIntegration:
                 mock_response = Mock()
                 mock_response.json.return_value = {
                     "result_count": 100,
-                    "results": [{"id": i} for i in range(10)]
+                    "results": [{"id": i} for i in range(10)],
                 }
 
                 # Simular processamento de dados
@@ -370,9 +370,9 @@ class TestAuthMonitoringIntegration:
             "password": "auth_monitor_pass",
             "metrics": {
                 "enabled": True,
-                "track_auth_events": True
+                "track_auth_events": True,
             },
-            "test_connection": True
+            "test_connection": True,
         }
 
     @pytest.mark.integration
@@ -452,9 +452,9 @@ class TestAuthMonitoringIntegration:
             "oauth_token_url": "https://auth.test.com/token",
             "metrics": {
                 "enabled": True,
-                "track_auth_events": True
+                "track_auth_events": True,
             },
-            "test_connection": False
+            "test_connection": False,
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -515,7 +515,7 @@ class TestAuthMonitoringIntegration:
                         mock_response = Mock()
                         mock_response.status_code = 200
                         mock_response.json.return_value = {
-                            "results": [{"id": 1, "code": "TEST"}]
+                            "results": [{"id": 1, "code": "TEST"}],
                         }
                         mock_client.get.return_value = mock_response
 

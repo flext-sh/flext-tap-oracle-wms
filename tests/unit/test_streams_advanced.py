@@ -20,7 +20,7 @@ class TestWMSAdvancedStream:
             "base_url": "https://wms.test.com",
             "enable_incremental": True,
             "incremental_overlap_minutes": 5,
-            "page_size": 1000
+            "page_size": 1000,
         }
         return mock_tap
 
@@ -34,9 +34,9 @@ class TestWMSAdvancedStream:
                 "type": "object",
                 "properties": {
                     "id": {"type": "integer"},
-                    "mod_ts": {"type": "string", "format": "date-time"}
-                }
-            }
+                    "mod_ts": {"type": "string", "format": "date-time"},
+                },
+            },
         )
 
     @pytest.mark.unit
@@ -76,7 +76,7 @@ class TestWMSAdvancedStream:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         expected_url = "https://wms.test.com/wms/lgfapi/v10/entity/test_entity"
@@ -96,7 +96,7 @@ class TestWMSAdvancedStream:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         assert stream.replication_method == "FULL_TABLE"
@@ -121,13 +121,13 @@ class TestWMSAdvancedStream:
     def test_get_optimal_page_size_entity_specific(self, mock_tap) -> None:
         """Testa page size específico para entidade."""
         mock_tap.config["pagination_config"] = {
-            "allocation_dtl": {"page_size": 500}
+            "allocation_dtl": {"page_size": 500},
         }
 
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="allocation_dtl",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         page_size = stream._get_optimal_page_size()
@@ -139,7 +139,7 @@ class TestWMSAdvancedStream:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="allocation_dtl",  # Entidade grande
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         page_size = stream._get_optimal_page_size()
@@ -152,7 +152,7 @@ class TestWMSAdvancedStream:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="facility",  # Entidade de lookup
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         page_size = stream._get_optimal_page_size()
@@ -167,7 +167,7 @@ class TestWMSAdvancedStream:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         page_size = stream._get_optimal_page_size()
@@ -184,7 +184,7 @@ class TestStreamURLParams:
         mock_tap.config = {
             "base_url": "https://wms.test.com",
             "enable_incremental": True,
-            "page_size": 1000
+            "page_size": 1000,
         }
         # Mock methods
         mock_tap.apply_entity_filters.return_value = {}
@@ -198,7 +198,7 @@ class TestStreamURLParams:
         return WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
     @pytest.mark.unit
@@ -221,7 +221,7 @@ class TestStreamURLParams:
             mock_parse.return_value = [
                 ("cursor", "abc123"),
                 ("page_size", "1000"),
-                ("page_mode", "sequenced")
+                ("page_mode", "sequenced"),
             ]
 
             params = stream_instance.get_url_params(context=None, next_page_token=mock_next_token)
@@ -267,7 +267,7 @@ class TestStreamURLParams:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         with patch.object(stream, "get_starting_replication_key_value") as mock_bookmark:
@@ -293,7 +293,7 @@ class TestStreamURLParams:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         # Mock resume context
@@ -316,7 +316,7 @@ class TestStreamURLParams:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         # Mock resume context
@@ -346,15 +346,15 @@ class TestStreamResumeContext:
                     "has_existing_data": True,
                     "min_id_in_target": 5000,
                     "total_records": 100000,
-                    "strategy": "id_based_resume"
-                }
-            }
+                    "strategy": "id_based_resume",
+                },
+            },
         }
 
         return WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
     @pytest.mark.unit
@@ -376,15 +376,15 @@ class TestStreamResumeContext:
             "base_url": "https://wms.test.com",
             "resume_config": {
                 "test_entity": {
-                    "enabled": False
-                }
-            }
+                    "enabled": False,
+                },
+            },
         }
 
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         context = stream._get_resume_context(None)
@@ -399,7 +399,7 @@ class TestStreamResumeContext:
         stream = WMSAdvancedStream(
             tap=mock_tap,
             entity_name="test_entity",
-            schema={"type": "object"}
+            schema={"type": "object"},
         )
 
         context = stream._get_resume_context(None)
@@ -419,7 +419,7 @@ class TestStreamError:
             WMSAdvancedStream(
                 tap=mock_tap,
                 entity_name="test_entity",
-                schema={"type": "object"}
+                schema={"type": "object"},
             )
 
     @pytest.mark.unit
@@ -432,7 +432,7 @@ class TestStreamError:
             WMSAdvancedStream(
                 tap=mock_tap,
                 entity_name="test_entity",
-                schema={"type": "object"}
+                schema={"type": "object"},
             )
 
     @pytest.mark.unit
@@ -445,5 +445,5 @@ class TestStreamError:
             WMSAdvancedStream(
                 tap=mock_tap,
                 entity_name="test_entity",
-                schema={"type": "object"}
+                schema={"type": "object"},
             )

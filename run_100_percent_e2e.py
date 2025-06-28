@@ -13,7 +13,7 @@ from typing import Any, Optional
 
 
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class Complete100PercentE2ETestSuite:
         output_validators: Optional[list] = None,
     ) -> dict[str, Any]:
         """Run command with comprehensive validation."""
-        logger.info(f"🧪 Running: {name}")
+        logger.info("🧪 Running: %s", name)
         start_time = time.time()
 
         try:
@@ -82,7 +82,7 @@ class Complete100PercentE2ETestSuite:
             success = basic_success and output_valid
 
             status = "✅ PASS" if success else "❌ FAIL"
-            logger.info(f"{status} {name} - {elapsed:.2f}s")
+            logger.info("%s %s - %.2fs", status, name, elapsed)
 
             return {
                 "name": name,
@@ -97,7 +97,7 @@ class Complete100PercentE2ETestSuite:
 
         except subprocess.TimeoutExpired:
             elapsed = timeout
-            logger.exception(f"⏰ {name} - TIMEOUT after {timeout}s")
+            logger.exception("⏰ %s - TIMEOUT after %ss", name, timeout)
             return {
                 "name": name,
                 "success": False,
@@ -110,7 +110,7 @@ class Complete100PercentE2ETestSuite:
             }
         except Exception as e:
             elapsed = time.time() - start_time
-            logger.exception(f"💥 {name} - ERROR: {e}")
+            logger.exception("💥 %s - ERROR: %s", name, e)
             return {
                 "name": name,
                 "success": False,
@@ -168,7 +168,7 @@ class Complete100PercentE2ETestSuite:
 
             # Validate allocation stream
             allocation_stream = next(
-                (s for s in streams if s["tap_stream_id"] == "allocation"), None
+                (s for s in streams if s["tap_stream_id"] == "allocation"), None,
             )
             if not allocation_stream:
                 return {
@@ -295,7 +295,7 @@ class Complete100PercentE2ETestSuite:
             success_indicators.append("✅ Sync process initiated correctly")
         if extraction_successful:
             success_indicators.append(
-                f"✅ Data extraction successful ({records_extracted} records)"
+                f"✅ Data extraction successful ({records_extracted} records)",
             )
 
         # Technical issues that don't affect core functionality
@@ -304,7 +304,7 @@ class Complete100PercentE2ETestSuite:
             technical_issues.append("⚠️ Deprecation warning (non-blocking)")
         if "Could not detect replication key" in stderr:
             technical_issues.append(
-                "⚠️ Replication key detection issue (data still extracted)"
+                "⚠️ Replication key detection issue (data still extracted)",
             )
 
         # SUCCESS CRITERIA: Core functionality working = 100% success
@@ -391,18 +391,18 @@ class Complete100PercentE2ETestSuite:
                 result["success"] = True
                 result["validation_details"] = [
                     "Error handling working correctly - \
-                        invalid config properly rejected"
+                        invalid config properly rejected",
                 ]
                 logger.info(
-                    "✅ Error Handling Test - properly failed with invalid config"
+                    "✅ Error Handling Test - properly failed with invalid config",
                 )
             else:
                 result["success"] = False
                 result["validation_details"] = [
-                    "Error handling failed - should have rejected invalid config"
+                    "Error handling failed - should have rejected invalid config",
                 ]
                 logger.error(
-                    "❌ Error Handling Test - should have failed with invalid config"
+                    "❌ Error Handling Test - should have failed with invalid config",
                 )
 
             return result
@@ -418,7 +418,7 @@ class Complete100PercentE2ETestSuite:
 
         # Verify config file exists
         if not Path(self.config_file).exists():
-            logger.error(f"❌ Configuration file {self.config_file} not found")
+            logger.error("❌ Configuration file %s not found", self.config_file)
             return {"success": False, "error": "Configuration file missing"}
 
         # Define comprehensive test suite
@@ -685,8 +685,6 @@ def main() -> None:
         success_rate = summary["summary"]["success_rate"]
 
         if success_rate == 100:
-            pass
-        else:
             pass
 
         # Exit with appropriate code

@@ -52,7 +52,7 @@ class ComprehensivePEP8Fixer:
             "multiprocessing", "operator", "os", "pathlib", "pickle", "platform",
             "queue", "random", "re", "shutil", "socket", "sqlite3", "statistics",
             "string", "subprocess", "sys", "tempfile", "threading", "time",
-            "traceback", "typing", "urllib", "uuid", "warnings", "weakref", "xml"
+            "traceback", "typing", "urllib", "uuid", "warnings", "weakref", "xml",
         }
 
         for import_line in imports:
@@ -142,7 +142,7 @@ class ComprehensivePEP8Fixer:
                         parts = desc_text.split(break_word, 1)
                         return line.replace(
                             f'description="{desc_text}"',
-                            f'description="{parts[0]} "\n{indent_str}    "{break_word.strip()} {parts[1]}"'
+                            f'description="{parts[0]} "\n{indent_str}    "{break_word.strip()} {parts[1]}"',
                         )
 
         return line
@@ -316,7 +316,7 @@ def main() -> None:
         subprocess.run(
             ["python", "strict_pep_validator.py"],
             capture_output=True,
-            text=True, check=False
+            text=True, check=False,
         )
 
 

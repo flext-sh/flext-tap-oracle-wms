@@ -30,7 +30,7 @@ class TapTestRunner:
                 cmd,
                 capture_output=True,
                 text=True,
-                cwd=Path(__file__).parent, check=False
+                cwd=Path(__file__).parent, check=False,
             )
             end_time = time.time()
 
@@ -39,14 +39,14 @@ class TapTestRunner:
                 "duration": end_time - start_time,
                 "stdout": result.stdout,
                 "stderr": result.stderr,
-                "returncode": result.returncode
+                "returncode": result.returncode,
             }
         except Exception as e:
             return {
                 "success": False,
                 "duration": time.time() - start_time,
                 "error": str(e),
-                "returncode": -1
+                "returncode": -1,
             }
 
     def unit_tests(self) -> dict[str, Any]:
@@ -96,7 +96,7 @@ class TapTestRunner:
             "integration": [],
             "e2e": [],
             "performance": [],
-            "coverage": []
+            "coverage": [],
         }
 
         # Discovery validation
@@ -162,8 +162,6 @@ class TapTestRunner:
 
         if overall_success:
             pass
-        else:
-            pass
 
         return overall_success
 
@@ -174,7 +172,7 @@ def main() -> None:
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument("--type", choices=[
         "unit", "integration", "e2e", "performance", "coverage",
-        "smoke", "ci", "comprehensive", "development"
+        "smoke", "ci", "comprehensive", "development",
     ], default="development", help="Type of tests to run")
 
     args = parser.parse_args()

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Advanced usage examples for tap-oracle-wms."""
 
-from datetime import UTC, datetime, timedelta
-from typing import Any
 import asyncio
+from datetime import UTC, datetime, timedelta
 import logging
 import operator
+from typing import Any
 
 from tap_oracle_wms import TapOracleWMS
 from tap_oracle_wms.discovery import EntityDiscovery, SchemaGenerator
@@ -163,10 +163,10 @@ async def performance_optimization_demo() -> list[dict[str, Any]]:
     # Compare results
     logger.info("\nPerformance Comparison:")
     for result in sorted(
-        results, key=operator.itemgetter("records_per_second"), reverse=True
+        results, key=operator.itemgetter("records_per_second"), reverse=True,
     ):
         logger.info(
-            "  %s: %.0f rec/s", result["strategy"], result["records_per_second"]
+            "  %s: %.0f rec/s", result["strategy"], result["records_per_second"],
         )
 
     return results
@@ -233,8 +233,8 @@ def custom_filtering_example() -> None:
     # Track filtered records
     filtered_records = {"inventory": [], "order_hdr": []}
 
-        """Function for capture_records operations."""
     def capture_records(message: dict[str, Any]) -> None:
+        """Function for capture_records operations."""
         if message["type"] == "RECORD":
             stream = message["stream"]
             if stream in filtered_records:

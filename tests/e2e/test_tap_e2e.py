@@ -23,7 +23,7 @@ class TestTapE2EDiscovery:
             "page_size": 100,
             "enable_incremental": True,
             "test_connection": False,
-            "metrics": {"enabled": True}
+            "metrics": {"enabled": True},
         }
 
     @pytest.fixture
@@ -32,7 +32,7 @@ class TestTapE2EDiscovery:
         return [
             "facility", "item", "location", "inventory",
             "order_hdr", "order_dtl", "allocation", "allocation_dtl",
-            "shipment", "receipt", "pick_task", "replenishment"
+            "shipment", "receipt", "pick_task", "replenishment",
         ]
 
     @pytest.fixture
@@ -43,15 +43,15 @@ class TestTapE2EDiscovery:
             "properties": {
                 "id": {"type": "integer"},
                 "create_ts": {"type": "string", "format": "date-time"},
-                "mod_ts": {"type": "string", "format": "date-time"}
+                "mod_ts": {"type": "string", "format": "date-time"},
             },
-            "required": ["id"]
+            "required": ["id"],
         }
 
         schemas = {}
         entities = [
             "facility", "item", "location", "inventory",
-            "order_hdr", "order_dtl", "allocation", "allocation_dtl"
+            "order_hdr", "order_dtl", "allocation", "allocation_dtl",
         ]
 
         for entity in entities:
@@ -59,7 +59,7 @@ class TestTapE2EDiscovery:
             entity_schema["properties"].update({
                 "code": {"type": "string"},
                 "name": {"type": "string"},
-                f"{entity}_specific_field": {"type": "string"}
+                f"{entity}_specific_field": {"type": "string"},
             })
             schemas[entity] = entity_schema
 
@@ -156,7 +156,7 @@ class TestTapE2EExecution:
             "page_size": 50,
             "enable_incremental": True,
             "entities": ["facility", "item"],
-            "start_date": "2024-01-01T00:00:00Z"
+            "start_date": "2024-01-01T00:00:00Z",
         }
 
     @pytest.fixture
@@ -173,10 +173,10 @@ class TestTapE2EExecution:
                         "id": i,
                         "code": f"FAC{i:03d}",
                         "name": f"Facility {i}",
-                        "mod_ts": f"2024-01-{(i % 30) + 1:02d}T10:00:00Z"
+                        "mod_ts": f"2024-01-{(i % 30) + 1:02d}T10:00:00Z",
                     }
                     for i in range(1, 51)
-                ]
+                ],
             },
             "facility_page2": {
                 "result_count": 150,
@@ -188,10 +188,10 @@ class TestTapE2EExecution:
                         "id": i,
                         "code": f"FAC{i:03d}",
                         "name": f"Facility {i}",
-                        "mod_ts": f"2024-01-{(i % 30) + 1:02d}T10:00:00Z"
+                        "mod_ts": f"2024-01-{(i % 30) + 1:02d}T10:00:00Z",
                     }
                     for i in range(51, 101)
-                ]
+                ],
             },
             "facility_page3": {
                 "result_count": 150,
@@ -203,10 +203,10 @@ class TestTapE2EExecution:
                         "id": i,
                         "code": f"FAC{i:03d}",
                         "name": f"Facility {i}",
-                        "mod_ts": f"2024-01-{(i % 30) + 1:02d}T10:00:00Z"
+                        "mod_ts": f"2024-01-{(i % 30) + 1:02d}T10:00:00Z",
                     }
                     for i in range(101, 151)
-                ]
+                ],
             },
             "item_page1": {
                 "result_count": 200,
@@ -218,11 +218,11 @@ class TestTapE2EExecution:
                         "id": i,
                         "code": f"ITEM{i:04d}",
                         "name": f"Item {i}",
-                        "mod_ts": f"2024-01-{(i % 30) + 1:02d}T12:00:00Z"
+                        "mod_ts": f"2024-01-{(i % 30) + 1:02d}T12:00:00Z",
                     }
                     for i in range(1, 51)
-                ]
-            }
+                ],
+            },
         }
 
     @pytest.mark.e2e
@@ -235,8 +235,8 @@ class TestTapE2EExecution:
                 "id": {"type": "integer"},
                 "code": {"type": "string"},
                 "name": {"type": "string"},
-                "mod_ts": {"type": "string", "format": "date-time"}
-            }
+                "mod_ts": {"type": "string", "format": "date-time"},
+            },
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -302,9 +302,9 @@ class TestTapE2EExecution:
             "bookmarks": {
                 "facility": {
                     "replication_key": "mod_ts",
-                    "replication_key_value": "2024-01-15T10:00:00Z"
-                }
-            }
+                    "replication_key_value": "2024-01-15T10:00:00Z",
+                },
+            },
         }
 
         {
@@ -317,10 +317,10 @@ class TestTapE2EExecution:
                     "id": i,
                     "code": f"FAC{i:03d}",
                     "name": f"Updated Facility {i}",
-                    "mod_ts": f"2024-01-{15 + i}T10:00:00Z"
+                    "mod_ts": f"2024-01-{15 + i}T10:00:00Z",
                 }
                 for i in range(1, 26)
-            ]
+            ],
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -330,8 +330,8 @@ class TestTapE2EExecution:
                     "type": "object",
                     "properties": {
                         "id": {"type": "integer"},
-                        "mod_ts": {"type": "string", "format": "date-time"}
-                    }
+                        "mod_ts": {"type": "string", "format": "date-time"},
+                    },
                 }
 
                 tap = TapOracleWMS(config=execution_config)
@@ -373,7 +373,7 @@ class TestTapE2EExecution:
                         raise httpx.HTTPStatusError(
                             msg,
                             request=Mock(),
-                            response=Mock(status_code=500)
+                            response=Mock(status_code=500),
                         )
 
                     # Terceira tentativa sucede
@@ -381,7 +381,7 @@ class TestTapE2EExecution:
                     response.status_code = 200
                     response.json.return_value = {
                         "result_count": 1,
-                        "results": [{"id": 1, "code": "TEST"}]
+                        "results": [{"id": 1, "code": "TEST"}],
                     }
                     return response
 
@@ -412,7 +412,7 @@ class TestTapE2ECommandLine:
             "username": "cli_user",
             "password": "cli_pass",
             "page_size": 100,
-            "entities": ["facility"]
+            "entities": ["facility"],
         }
 
         config_file = tmp_path / "config.json"
@@ -430,12 +430,12 @@ class TestTapE2ECommandLine:
                         "type": "object",
                         "properties": {
                             "id": {"type": "integer"},
-                            "code": {"type": "string"}
-                        }
+                            "code": {"type": "string"},
+                        },
                     },
-                    "metadata": []
-                }
-            ]
+                    "metadata": [],
+                },
+            ],
         }
 
         catalog_file = tmp_path / "catalog.json"
@@ -451,7 +451,7 @@ class TestTapE2ECommandLine:
                 mock_discovery.return_value = ["facility", "item"]
                 mock_schema.return_value = {
                     "type": "object",
-                    "properties": {"id": {"type": "integer"}}
+                    "properties": {"id": {"type": "integer"}},
                 }
 
                 # Executar comando discover
@@ -484,8 +484,8 @@ class TestTapE2ECommandLine:
                         "type": "object",
                         "properties": {
                             "id": {"type": "integer"},
-                            "code": {"type": "string"}
-                        }
+                            "code": {"type": "string"},
+                        },
                     }
 
                     # Mock HTTP responses
@@ -498,8 +498,8 @@ class TestTapE2ECommandLine:
                         "result_count": 2,
                         "results": [
                             {"id": 1, "code": "FAC001"},
-                            {"id": 2, "code": "FAC002"}
-                        ]
+                            {"id": 2, "code": "FAC002"},
+                        ],
                     }
                     mock_client.get.return_value = mock_response
 
@@ -532,7 +532,7 @@ class TestTapE2ECommandLine:
         # Teste com configuração inválida
         invalid_config = {
             "base_url": "invalid-url",
-            "auth_method": "unknown_method"
+            "auth_method": "unknown_method",
         }
 
         with pytest.raises(ValueError):
@@ -559,7 +559,7 @@ class TestTapE2EPerformance:
             "username": "perf_user",
             "password": "perf_pass",
             "page_size": 1000,
-            "enable_incremental": True
+            "enable_incremental": True,
         }
 
     @pytest.mark.e2e
@@ -577,10 +577,10 @@ class TestTapE2EPerformance:
                     "id": i,
                     "code": f"LARGE{i:05d}",
                     "name": f"Large Record {i}",
-                    "mod_ts": f"2024-01-01T10:{i % 60:02d}:00Z"
+                    "mod_ts": f"2024-01-01T10:{i % 60:02d}:00Z",
                 }
                 for i in range(1, 1001)  # 1000 records per page
-            ]
+            ],
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -592,15 +592,15 @@ class TestTapE2EPerformance:
                         "properties": {
                             "id": {"type": "integer"},
                             "code": {"type": "string"},
-                            "mod_ts": {"type": "string", "format": "date-time"}
-                        }
+                            "mod_ts": {"type": "string", "format": "date-time"},
+                        },
                     }
 
                     mock_client = Mock()
                     mock_client_class.return_value = mock_client
                     mock_client.get.return_value = Mock(
                         status_code=200,
-                        json=Mock(return_value=large_dataset)
+                        json=Mock(return_value=large_dataset),
                     )
 
                     tap = TapOracleWMS(config=performance_config)
@@ -639,10 +639,10 @@ class TestTapE2EPerformance:
                 {
                     "id": i,
                     "large_text_field": "A" * 1000,  # 1KB per record
-                    "mod_ts": f"2024-01-01T10:00:{i % 60:02d}Z"
+                    "mod_ts": f"2024-01-01T10:00:{i % 60:02d}Z",
                 }
                 for i in range(5000)  # 5MB total response
-            ]
+            ],
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -669,7 +669,7 @@ class TestTapE2ERealWorldScenarios:
             "password": "wms_pass",
             "company_code": "RAIZEN",
             "facility_code": "*",
-            "entities": ["allocation", "allocation_dtl", "order_hdr", "order_dtl"]
+            "entities": ["allocation", "allocation_dtl", "order_hdr", "order_dtl"],
         }
 
         # Mock respostas típicas do Oracle WMS
@@ -688,10 +688,10 @@ class TestTapE2ERealWorldScenarios:
                         "location_id": "W01-A01-B01-01",
                         "alloc_qty": 100.0,
                         "create_ts": "2024-01-01T12:00:00Z",
-                        "mod_ts": "2024-01-01T12:00:00Z"
-                    }
-                ]
-            }
+                        "mod_ts": "2024-01-01T12:00:00Z",
+                    },
+                ],
+            },
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -708,15 +708,15 @@ class TestTapE2ERealWorldScenarios:
                             "location_id": {"type": "string"},
                             "alloc_qty": {"type": "number"},
                             "create_ts": {"type": "string", "format": "date-time"},
-                            "mod_ts": {"type": "string", "format": "date-time"}
-                        }
+                            "mod_ts": {"type": "string", "format": "date-time"},
+                        },
                     }
 
                     mock_client = Mock()
                     mock_client_class.return_value = mock_client
                     mock_client.get.return_value = Mock(
                         status_code=200,
-                        json=Mock(return_value=oracle_responses["allocation"])
+                        json=Mock(return_value=oracle_responses["allocation"]),
                     )
 
                     tap = TapOracleWMS(config=oracle_config)
@@ -744,7 +744,7 @@ class TestTapE2ERealWorldScenarios:
             "password": "multi_pass",
             "company_code": "MULTI",
             "facility_code": "*",  # Todas as facilities
-            "entities": ["facility", "inventory"]
+            "entities": ["facility", "inventory"],
         }
 
         facilities_response = {
@@ -754,8 +754,8 @@ class TestTapE2ERealWorldScenarios:
                 {"id": 2, "code": "FAC002", "name": "Secondary Facility"},
                 {"id": 3, "code": "FAC003", "name": "Backup Facility"},
                 {"id": 4, "code": "FAC004", "name": "Remote Facility"},
-                {"id": 5, "code": "FAC005", "name": "Emergency Facility"}
-            ]
+                {"id": 5, "code": "FAC005", "name": "Emergency Facility"},
+            ],
         }
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
@@ -766,7 +766,7 @@ class TestTapE2ERealWorldScenarios:
                 mock_client_class.return_value = mock_client
                 mock_client.get.return_value = Mock(
                     status_code=200,
-                    json=Mock(return_value=facilities_response)
+                    json=Mock(return_value=facilities_response),
                 )
 
                 tap = TapOracleWMS(config=multi_facility_config)
@@ -789,7 +789,7 @@ class TestTapE2ERealWorldScenarios:
             "password": "inc_pass",
             "enable_incremental": True,
             "incremental_overlap_minutes": 5,
-            "start_date": "2024-01-01T00:00:00Z"
+            "start_date": "2024-01-01T00:00:00Z",
         }
 
         # Dados com timestamps realistas
@@ -802,8 +802,8 @@ class TestTapE2ERealWorldScenarios:
                     "properties": {
                         "id": {"type": "integer"},
                         "code": {"type": "string"},
-                        "mod_ts": {"type": "string", "format": "date-time"}
-                    }
+                        "mod_ts": {"type": "string", "format": "date-time"},
+                    },
                 }
 
                 tap = TapOracleWMS(config=incremental_config)

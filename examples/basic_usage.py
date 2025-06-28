@@ -101,7 +101,7 @@ def _setup_extraction_config() -> dict[str, Any]:
 
 
 def _create_message_handler() -> tuple[
-    dict, dict, dict, Callable[[dict[str, Any]], None]
+    dict, dict, dict, Callable[[dict[str, Any]], None],
 ]:
     """Create message handler and containers for extraction data."""
     records: dict = {}

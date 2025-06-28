@@ -88,7 +88,7 @@ def validate_configuration_schema() -> bool:
         properties = schema_dict.get("properties", {})
         required_properties = [
             "base_url", "auth_method", "username", "password",
-            "page_size", "pagination_mode", "start_date"
+            "page_size", "pagination_mode", "start_date",
         ]
 
         for prop in required_properties:
@@ -117,7 +117,7 @@ def validate_configuration_schema() -> bool:
                 "auth_method": "basic",
                 "username": "test_user",
                 "password": "test_pass",
-                "page_size": 1000
+                "page_size": 1000,
             },
             # Valid OAuth2 config
             {
@@ -126,13 +126,13 @@ def validate_configuration_schema() -> bool:
                 "oauth_client_id": "client123",
                 "oauth_client_secret": "secret456",
                 "oauth_token_url": "https://auth.test.com/token",
-                "page_size": 500
+                "page_size": 500,
             },
             # Invalid config (missing auth)
             {
                 "base_url": "https://wms.test.com",
                 "auth_method": "basic",
-                "page_size": 1000
+                "page_size": 1000,
             },
             # Invalid pagination
             {
@@ -140,8 +140,8 @@ def validate_configuration_schema() -> bool:
                 "auth_method": "basic",
                 "username": "test",
                 "password": "pass",
-                "page_size": 2000  # Above limit
-            }
+                "page_size": 2000,  # Above limit
+            },
         ]
 
         for i, config in enumerate(test_configs):
@@ -151,12 +151,8 @@ def validate_configuration_schema() -> bool:
             if i < 2:  # Valid configs
                 if auth_result is None:
                     pass
-                else:
-                    pass
 
                 if page_result is None:
-                    pass
-                else:
                     pass
             else:  # Invalid configs
                 if auth_result is not None:
@@ -183,7 +179,7 @@ def validate_stream_functionality() -> bool:
             "password": "pass",
             "page_size": 1000,
             "enable_incremental": True,
-            "incremental_overlap_minutes": 5
+            "incremental_overlap_minutes": 5,
         }
 
         # Create mock tap
@@ -195,7 +191,7 @@ def validate_stream_functionality() -> bool:
             stream = WMSAdvancedStream(
                 tap=mock_tap,
                 entity_name="test_entity",
-                schema={"type": "object", "properties": {"id": {"type": "integer"}}}
+                schema={"type": "object", "properties": {"id": {"type": "integer"}}},
             )
 
             # Test properties
@@ -249,7 +245,7 @@ def validate_hateoas_pagination() -> bool:
         mock_response_with_next = Mock()
         mock_response_with_next.json.return_value = {
             "results": [{"id": 1}, {"id": 2}],
-            "next_page": "https://wms.test.com/entity?cursor=xyz123&page_size=1000"
+            "next_page": "https://wms.test.com/entity?cursor=xyz123&page_size=1000",
         }
 
         next_url = paginator.get_next_url(mock_response_with_next)
@@ -258,7 +254,7 @@ def validate_hateoas_pagination() -> bool:
         # Test get_next_url without next page
         mock_response_without_next = Mock()
         mock_response_without_next.json.return_value = {
-            "results": [{"id": 1}]
+            "results": [{"id": 1}],
         }
 
         next_url = paginator.get_next_url(mock_response_without_next)
@@ -295,7 +291,7 @@ def validate_authentication_methods() -> bool:
             "username": "test_user",
             "password": "test_password",
             "company_code": "TEST",
-            "facility_code": "MAIN"
+            "facility_code": "MAIN",
         }
 
         # Test OAuth2 configuration
@@ -306,7 +302,7 @@ def validate_authentication_methods() -> bool:
             "oauth_token_url": "https://auth.test.com/token",
             "oauth_scope": "wms.read",
             "company_code": "TEST",
-            "facility_code": "MAIN"
+            "facility_code": "MAIN",
         }
 
         for _config_name, config in [("Basic", basic_config), ("OAuth2", oauth_config)]:
@@ -348,7 +344,7 @@ def validate_tap_capabilities() -> bool:
             "username": "test",
             "password": "pass",
             "test_connection": False,  # Skip connection test
-            "metrics": {"enabled": False}  # Skip monitoring
+            "metrics": {"enabled": False},  # Skip monitoring
         }
 
         with patch("tap_oracle_wms.tap.TapOracleWMS.config", mock_config):
@@ -392,7 +388,7 @@ def validate_discovery_functionality() -> bool:
             "base_url": "https://wms.test.com",
             "auth_method": "basic",
             "username": "test",
-            "password": "pass"
+            "password": "pass",
         }
 
         discovery = EntityDiscovery(mock_config)
@@ -417,7 +413,7 @@ def validate_discovery_functionality() -> bool:
             (True, "boolean"),
             (12.34, "number"),
             ({"key": "value"}, "object"),
-            ([1, 2, 3], "array")
+            ([1, 2, 3], "array"),
         ]
 
         for value, _expected_type in test_values:
