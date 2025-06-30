@@ -926,7 +926,7 @@ class SchemaGenerator:
                 "%Y-%m-%d %H:%M:%S",
                 "%Y-%m-%dT%H:%M:%S",
             ]:
-                dt = datetime.strptime(value, fmt)
+                dt = datetime.strptime(value, fmt)  # noqa: DTZ007
                 if dt.tzinfo is None:
                     # If no timezone info, assume UTC
                     dt = dt.replace(tzinfo=timezone.utc)
@@ -938,7 +938,7 @@ class SchemaGenerator:
     def _is_date(self, value: str) -> bool:
         """Check if string value is a date."""
         try:
-            datetime.strptime(value, "%Y-%m-%d")
+            datetime.strptime(value, "%Y-%m-%d")  # noqa: DTZ007
             return True
         except ValueError:
             return False

@@ -26,16 +26,18 @@ class StrictPEPFixer:
                 if import_start == -1:
                     import_start = i
                 import_end = i
-            elif import_start != -1 and line.strip() and not line.strip().startswith("#"):
+            elif (
+                import_start != -1 and line.strip() and not line.strip().startswith("#")
+            ):
                 break
 
         if import_start == -1:
             return content
 
         # Extract imports
-        import_lines = lines[import_start:import_end + 1]
+        import_lines = lines[import_start : import_end + 1]
         before_imports = lines[:import_start]
-        after_imports = lines[import_end + 1:]
+        after_imports = lines[import_end + 1 :]
 
         # Categorize imports
         standard_imports = []
@@ -43,8 +45,20 @@ class StrictPEPFixer:
         local_imports = []
 
         standard_libs = {
-            "os", "sys", "json", "re", "datetime", "pathlib", "typing", "asyncio",
-            "contextlib", "logging", "base64", "time", "subprocess", "ast",
+            "os",
+            "sys",
+            "json",
+            "re",
+            "datetime",
+            "pathlib",
+            "typing",
+            "asyncio",
+            "contextlib",
+            "logging",
+            "base64",
+            "time",
+            "subprocess",
+            "ast",
         }
 
         for line in import_lines:
@@ -118,22 +132,32 @@ class StrictPEPFixer:
             modifications = []
 
             for node in ast.walk(tree):
-                if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)):
+                if isinstance(
+                    node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)
+                ):
                     # Check if it's a public function/class
                     if not node.name.startswith("_"):
                         docstring = ast.get_docstring(node)
                         if not docstring:
                             # Add a basic docstring
                             if isinstance(node, ast.ClassDef):
-                                basic_docstring = f'"""Class for {node.name} operations."""'
+                                basic_docstring = (
+                                    f'"""Class for {node.name} operations."""'
+                                )
                             else:
-                                basic_docstring = f'"""Function for {node.name} operations."""'
+                                basic_docstring = (
+                                    f'"""Function for {node.name} operations."""'
+                                )
 
                             # Find insertion point (after def line)
-                            for i in range(node.lineno - 1, min(node.lineno + 3, len(lines))):
+                            for i in range(
+                                node.lineno - 1, min(node.lineno + 3, len(lines))
+                            ):
                                 if i < len(lines) and ":" in lines[i]:
                                     indent = len(lines[i]) - len(lines[i].lstrip()) + 4
-                                    modifications.append((i + 1, " " * indent + basic_docstring))
+                                    modifications.append(
+                                        (i + 1, " " * indent + basic_docstring)
+                                    )
                                     self.fixes_applied += 1
                                     break
 
@@ -154,7 +178,9 @@ class StrictPEPFixer:
             # Simple pattern matching for common missing annotations
             if "def " in line and "->" not in line and line.strip().endswith(":"):
                 # Add -> None for functions that don't return anything
-                if not any(keyword in line for keyword in ["return", "yield", "__init__"]):
+                if not any(
+                    keyword in line for keyword in ["return", "yield", "__init__"]
+                ):
                     lines[i] = line.replace(":", " -> None:")
                     self.fixes_applied += 1
 

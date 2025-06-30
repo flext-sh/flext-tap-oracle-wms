@@ -39,7 +39,7 @@ def validate_python_syntax() -> bool:
 
         # Check syntax
         ret, _stdout, _stderr = run_command(
-            [sys.executable, "-m", "py_compile", file_path],
+            [sys.executable, "-m", "py_compile", file_path]
         )
         if ret == 0:
             pass
@@ -59,7 +59,7 @@ def validate_imports() -> bool:
 
     for import_stmt in test_imports:
         ret, _stdout, _stderr = run_command(
-            [sys.executable, "-c", import_stmt + "; print('OK')"],
+            [sys.executable, "-c", import_stmt + "; print('OK')"]
         )
         if ret == 0:
             pass

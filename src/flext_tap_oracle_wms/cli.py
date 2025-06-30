@@ -92,6 +92,7 @@ import contextlib
 import json
 import logging
 from pathlib import Path
+import re
 import sys
 from typing import TYPE_CHECKING, Any
 
@@ -126,8 +127,6 @@ def safe_print(message: str, style: str | None = None) -> None:
         logger.info("[%s]%s[/%s]", style, message, style)
         logger.info("%s", message)
     # Strip rich markup for plain print
-    import re
-
     re.sub(r"\[.*?\]", "", message)
 
 
@@ -368,7 +367,7 @@ def discover_schemas(
                         "red",
                     )
                     progress.advance(task)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     safe_print(
                         f"Error generating schema for {entity_name}: {e}",
                         "red",
@@ -510,7 +509,7 @@ def inventory_cycle_count(
     config: Any,
     location_pattern: str | None,
     abc_class: str | None,
-    variance_only: bool,
+    variance_only: bool,  # noqa: ARG001
     export_format: str,
 ) -> None:
     """Generate cycle count reports and variance analysis."""
@@ -628,7 +627,7 @@ def analyze_allocation(
     help="Reporting period",
 )
 @click.option("--include-kpis", is_flag=True, help="Include key performance indicators")
-def fulfillment_metrics(config: click.File, period: str, include_kpis: bool) -> None:
+def fulfillment_metrics(config: click.File, period: str, include_kpis: bool) -> None:  # noqa: ARG001
     """Generate order fulfillment performance metrics."""
     logger.info("Generating %s fulfillment metrics...", period)
 
@@ -709,8 +708,8 @@ def task_performance(
 @click.option("--equipment-type", help="Filter by equipment type")
 @click.option("--downtime-analysis", is_flag=True, help="Include downtime analysis")
 def equipment_utilization(
-    config: click.File,
-    equipment_type: str,
+    config: click.File,  # noqa: ARG001
+    equipment_type: str,  # noqa: ARG001
     downtime_analysis: bool,
 ) -> None:
     """Analyze warehouse equipment utilization and performance."""
@@ -810,10 +809,6 @@ def sync_incremental(
 
     For incremental sync, we use page_mode="sequenced" for optimal performance.
     """
-    import json
-
-    from .tap import TapOracleWMS
-
     # Load and configure
     config_data = json.load(config)
 

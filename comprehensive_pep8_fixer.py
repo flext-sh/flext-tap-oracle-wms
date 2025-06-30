@@ -27,7 +27,11 @@ class ComprehensivePEP8Fixer:
                 if import_start is None:
                     import_start = i
                 import_end = i
-            elif import_start is not None and line.strip() and not line.strip().startswith("#"):
+            elif (
+                import_start is not None
+                and line.strip()
+                and not line.strip().startswith("#")
+            ):
                 break
 
         if import_start is None:
@@ -35,8 +39,8 @@ class ComprehensivePEP8Fixer:
 
         # Extract imports
         before_imports = lines[:import_start]
-        imports = lines[import_start:import_end + 1]
-        after_imports = lines[import_end + 1:]
+        imports = lines[import_start : import_end + 1]
+        after_imports = lines[import_end + 1 :]
 
         # Categorize imports
         future_imports = []
@@ -45,14 +49,60 @@ class ComprehensivePEP8Fixer:
         local_imports = []
 
         standard_modules = {
-            "abc", "argparse", "array", "ast", "asyncio", "base64", "collections",
-            "contextlib", "copy", "csv", "datetime", "decimal", "enum", "fnmatch",
-            "functools", "getpass", "glob", "hashlib", "heapq", "html", "http",
-            "importlib", "inspect", "io", "itertools", "json", "logging", "math",
-            "multiprocessing", "operator", "os", "pathlib", "pickle", "platform",
-            "queue", "random", "re", "shutil", "socket", "sqlite3", "statistics",
-            "string", "subprocess", "sys", "tempfile", "threading", "time",
-            "traceback", "typing", "urllib", "uuid", "warnings", "weakref", "xml",
+            "abc",
+            "argparse",
+            "array",
+            "ast",
+            "asyncio",
+            "base64",
+            "collections",
+            "contextlib",
+            "copy",
+            "csv",
+            "datetime",
+            "decimal",
+            "enum",
+            "fnmatch",
+            "functools",
+            "getpass",
+            "glob",
+            "hashlib",
+            "heapq",
+            "html",
+            "http",
+            "importlib",
+            "inspect",
+            "io",
+            "itertools",
+            "json",
+            "logging",
+            "math",
+            "multiprocessing",
+            "operator",
+            "os",
+            "pathlib",
+            "pickle",
+            "platform",
+            "queue",
+            "random",
+            "re",
+            "shutil",
+            "socket",
+            "sqlite3",
+            "statistics",
+            "string",
+            "subprocess",
+            "sys",
+            "tempfile",
+            "threading",
+            "time",
+            "traceback",
+            "typing",
+            "urllib",
+            "uuid",
+            "warnings",
+            "weakref",
+            "xml",
         }
 
         for import_line in imports:
@@ -62,8 +112,10 @@ class ComprehensivePEP8Fixer:
 
             if line.startswith("from __future__"):
                 future_imports.append(import_line)
-            elif any(f"from {mod}" in line or f"import {mod}" in line
-                    for mod in standard_modules):
+            elif any(
+                f"from {mod}" in line or f"import {mod}" in line
+                for mod in standard_modules
+            ):
                 standard_imports.append(import_line)
             elif "tap_oracle_wms" in line or line.startswith("from ."):
                 local_imports.append(import_line)
@@ -161,7 +213,7 @@ class ComprehensivePEP8Fixer:
                 space_pos = comment_text.rfind(" ", 0, break_point)
                 if space_pos > 0:
                     first_part = comment_text[:space_pos]
-                    second_part = comment_text[space_pos + 1:]
+                    second_part = comment_text[space_pos + 1 :]
                     return f"{indent_str}# {first_part}\n{indent_str}# {second_part}"
 
         return line
@@ -186,9 +238,9 @@ class ComprehensivePEP8Fixer:
                 # Find function start
                 func_start = line.find("(")
                 if func_start > 0:
-                    before_params = line[:func_start + 1]
-                    params_part = line[func_start + 1:line.rfind(")")]
-                    after_params = line[line.rfind(")"):]
+                    before_params = line[: func_start + 1]
+                    params_part = line[func_start + 1 : line.rfind(")")]
+                    after_params = line[line.rfind(")") :]
 
                     # Break parameters
                     params = [p.strip() for p in params_part.split(",")]
@@ -215,8 +267,8 @@ class ComprehensivePEP8Fixer:
                     if 40 < pos < 80:  # Good break position
                         indent = len(line) - len(line.lstrip())
                         indent_str = " " * (indent + 4)
-                        first_part = line[:pos + len(op.split()[0]) + 1]
-                        second_part = line[pos + len(op.split()[0]) + 1:]
+                        first_part = line[: pos + len(op.split()[0]) + 1]
+                        second_part = line[pos + len(op.split()[0]) + 1 :]
                         return f"{first_part} \\\n{indent_str}{second_part.lstrip()}"
 
         return line
@@ -255,12 +307,16 @@ class ComprehensivePEP8Fixer:
             fixed_lines.append(line)
 
             # Add blank lines after imports if missing
-            if (line.strip().startswith(("import ", "from ")) and
-                i + 1 < len(lines) and
-                lines[i + 1].strip() and
-                not lines[i + 1].strip().startswith(("import ", "from ", "#"))):
+            if (
+                line.strip().startswith(("import ", "from "))
+                and i + 1 < len(lines)
+                and lines[i + 1].strip()
+                and not lines[i + 1].strip().startswith(("import ", "from ", "#"))
+            ):
                 # Check if we need to add blank lines
-                if i + 1 < len(lines) and not lines[i + 1].strip().startswith("if TYPE_CHECKING"):
+                if i + 1 < len(lines) and not lines[i + 1].strip().startswith(
+                    "if TYPE_CHECKING"
+                ):
                     fixed_lines.extend(("", ""))
 
         return "\n".join(fixed_lines)
@@ -296,8 +352,11 @@ class ComprehensivePEP8Fixer:
         # Get all Python files
         src_files = list(Path("src").rglob("*.py"))
         example_files = list(Path("examples").glob("*.py"))
-        root_files = [f for f in Path().glob("*.py")
-                     if not f.name.startswith(("strict_pep", "comprehensive_pep", "apply_"))]
+        root_files = [
+            f
+            for f in Path().glob("*.py")
+            if not f.name.startswith(("strict_pep", "comprehensive_pep", "apply_"))
+        ]
 
         all_files = src_files + example_files + root_files
 
@@ -312,11 +371,13 @@ def main() -> None:
     fixer.fix_all_files()
 
     import subprocess
+
     with contextlib.suppress(Exception):
         subprocess.run(
             ["python", "strict_pep_validator.py"],
             capture_output=True,
-            text=True, check=False,
+            text=True,
+            check=False,
         )
 
 

@@ -44,6 +44,7 @@ def test_modern_paginator() -> bool:
 
         # Test that it inherits from BaseHATEOASPaginator
         from singer_sdk.pagination import BaseHATEOASPaginator
+
         assert isinstance(paginator, BaseHATEOASPaginator)
 
         # Test get_next_url method exists
@@ -95,7 +96,11 @@ def test_modern_config_schema() -> bool:
         assert config_schema is not None
 
         # Convert to dict to check structure
-        schema_dict = config_schema if isinstance(config_schema, dict) else config_schema.to_dict()
+        schema_dict = (
+            config_schema
+            if isinstance(config_schema, dict)
+            else config_schema.to_dict()
+        )
         assert isinstance(schema_dict, dict)
 
         # Check for required properties

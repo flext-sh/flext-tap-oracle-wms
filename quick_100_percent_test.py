@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Quick 100% functionality validation for tap-oracle-wms."""
 
+from __future__ import annotations
+
 from pathlib import Path
 import subprocess
 import sys
 import time
-from typing import Optional
 
 
-def run_test(name, command, timeout=30) -> Optional[bool]:
+def run_test(name, command, timeout=30) -> bool | None:
     """Run a single test with timeout."""
     start = time.time()
 

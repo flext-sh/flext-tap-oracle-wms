@@ -5,7 +5,7 @@
 **Status**: ✅ **APROVADO** - Todas as funcionalidades principais validadas  
 **Singer SDK**: 0.46.4+ com padrões modernos implementados  
 **Score de Validação**: 100% (6/6 testes principais aprovados)  
-**Data da Validação**: 2025-06-27  
+**Data da Validação**: 2025-06-27
 
 ---
 
@@ -14,6 +14,7 @@
 ### ✅ 1. IMPORTS E DEPENDÊNCIAS MODERNAS
 
 **Validado com Sucesso:**
+
 - ✅ Singer SDK 0.46.4+ com extras de performance (`msgspec`, `s3`, `parquet`, `faker`)
 - ✅ Paginação HATEOAS (`BaseHATEOASPaginator`)
 - ✅ Capabilities modernas (`TapCapabilities`)
@@ -21,9 +22,10 @@
 - ✅ Bibliotecas de performance (`httpx>=0.27.0`, `msgspec>=0.18.0`, `orjson>=3.10.0`)
 
 **Dependências Principais:**
+
 ```python
 singer-sdk[msgspec,s3,parquet,faker]>=0.46.4,<1.0.0
-httpx>=0.27.0          # Cliente HTTP moderno 
+httpx>=0.27.0          # Cliente HTTP moderno
 msgspec>=0.18.0        # JSON de alta performance
 orjson>=3.10.0         # Serialização JSON rápida
 pyarrow>=17.0.0        # Dados colunares
@@ -32,6 +34,7 @@ pyarrow>=17.0.0        # Dados colunares
 ### ✅ 2. CONFIGURAÇÃO E VALIDAÇÃO
 
 **Schema de Configuração Robusto:**
+
 - ✅ JSON Schema validation com `pattern`, `examples`, `allowed_values`
 - ✅ Validação de autenticação (Basic e OAuth2)
 - ✅ Validação de paginação (limites e tipos)
@@ -39,18 +42,19 @@ pyarrow>=17.0.0        # Dados colunares
 
 **Tipos de Parâmetros Validados:**
 
-| Parâmetro | Tipo | Validação | Exemplo |
-|-----------|------|-----------|---------|
-| `base_url` | `str` | Pattern regex | `https://wms.example.com` |
-| `auth_method` | `Literal["basic", "oauth2"]` | Enum values | `"basic"` |
-| `username` | `str \| None` | Required for basic | `"admin"` |
-| `password` | `str \| None` | Secret, required for basic | `"password"` |
-| `page_size` | `int` | Range 1-1250 | `1000` |
-| `oauth_client_id` | `str \| None` | Required for OAuth2 | `"client123"` |
-| `oauth_token_url` | `str \| None` | URL format | `"https://auth.com/token"` |
-| `enable_incremental` | `bool` | Boolean | `true` |
+| Parâmetro            | Tipo                         | Validação                  | Exemplo                    |
+| -------------------- | ---------------------------- | -------------------------- | -------------------------- |
+| `base_url`           | `str`                        | Pattern regex              | `https://wms.example.com`  |
+| `auth_method`        | `Literal["basic", "oauth2"]` | Enum values                | `"basic"`                  |
+| `username`           | `str \| None`                | Required for basic         | `"admin"`                  |
+| `password`           | `str \| None`                | Secret, required for basic | `"password"`               |
+| `page_size`          | `int`                        | Range 1-1250               | `1000`                     |
+| `oauth_client_id`    | `str \| None`                | Required for OAuth2        | `"client123"`              |
+| `oauth_token_url`    | `str \| None`                | URL format                 | `"https://auth.com/token"` |
+| `enable_incremental` | `bool`                       | Boolean                    | `true`                     |
 
 **Funções de Validação:**
+
 ```python
 def validate_auth_config(config: dict[str, Any]) -> str | None:
     """Valida configuração de autenticação."""
@@ -62,16 +66,18 @@ def validate_pagination_config(config: dict[str, Any]) -> str | None:
 ### ✅ 3. PAGINAÇÃO HATEOAS MODERNA
 
 **Implementação Singer SDK 0.46.4+:**
+
 ```python
 class WMSAdvancedPaginator(BaseHATEOASPaginator):
     def get_next_url(self, response) -> str | None:
         """Extrai next_page URL da resposta da API Oracle WMS."""
-        
+
     def has_more(self, response) -> bool:
         """Verifica se há mais páginas disponíveis."""
 ```
 
 **Funcionalidades Validadas:**
+
 - ✅ Herança correta de `BaseHATEOASPaginator`
 - ✅ Extração de URLs `next_page` da resposta API
 - ✅ Detecção automática de fim de paginação
@@ -79,6 +85,7 @@ class WMSAdvancedPaginator(BaseHATEOASPaginator):
 - ✅ Integração com `ParseResult` objects
 
 **Exemplo de Resposta Oracle WMS:**
+
 ```json
 {
   "results": [...],
@@ -89,12 +96,14 @@ class WMSAdvancedPaginator(BaseHATEOASPaginator):
 ### ✅ 4. STREAMS COM FUNCIONALIDADES AVANÇADAS
 
 **Stream Moderno:**
+
 ```python
 class WMSAdvancedStream(RESTStream):
     """Stream avançado com suporte completo ao Singer SDK 0.46.4+"""
 ```
 
 **Funcionalidades Validadas:**
+
 - ✅ Propriedades básicas (`name`, `path`, `url`)
 - ✅ Métodos de replicação (`INCREMENTAL`, `FULL_TABLE`)
 - ✅ Chaves de replicação (`mod_ts` para incremental)
@@ -103,12 +112,14 @@ class WMSAdvancedStream(RESTStream):
 - ✅ Schemas dinâmicos
 
 **Tipos de Replicação:**
+
 - **INCREMENTAL**: Baseado em `mod_ts` (timestamp de modificação)
 - **FULL_TABLE**: Extração completa com suporte a resume inteligente
 
 ### ✅ 5. CAPABILITIES SINGER SDK
 
 **Capabilities Declaradas:**
+
 ```python
 capabilities = [
     TapCapabilities.DISCOVER,     # Descoberta de schema e catálogo
@@ -119,6 +130,7 @@ capabilities = [
 ```
 
 **Integração Meltano:**
+
 - ✅ Compatibilidade total com Meltano
 - ✅ Descoberta automática de streams
 - ✅ Gestão de estado para sync incremental
@@ -127,6 +139,7 @@ capabilities = [
 ### ✅ 6. BUILD SYSTEM MODERNO
 
 **Hatch Build System:**
+
 ```toml
 [build-system]
 requires = ["hatchling>=1.27.0", "hatch-vcs>=0.4.0"]
@@ -138,6 +151,7 @@ requires-python = ">=3.9"
 ```
 
 **Características Modernas:**
+
 - ✅ PEP 621 compliant project configuration
 - ✅ Git-based versioning com `hatch-vcs`
 - ✅ Entry points modernos (`console_scripts`, `singer_sdk.taps`)
@@ -151,14 +165,16 @@ requires-python = ">=3.9"
 ### 📋 PARÂMETROS DE CONFIGURAÇÃO
 
 #### Conexão
+
 ```python
 base_url: str                    # URL base da API Oracle WMS
 company_code: str = "*"          # Código da empresa
-facility_code: str = "*"         # Código da facilidade  
+facility_code: str = "*"         # Código da facilidade
 user_agent: str = "tap-oracle-wms/1.0"  # User agent HTTP
 ```
 
 #### Autenticação
+
 ```python
 auth_method: Literal["basic", "oauth2"] = "basic"
 username: str | None = None      # Para autenticação básica
@@ -170,6 +186,7 @@ oauth_scope: str = "wms.read"           # Scopes OAuth2
 ```
 
 #### Paginação e Performance
+
 ```python
 page_size: int = 1000                   # Registros por página (1-1250)
 pagination_mode: str = "sequenced"      # Modo de paginação Oracle WMS
@@ -180,6 +197,7 @@ connection_pool_size: int = 20          # Tamanho do pool HTTP
 ```
 
 #### Sync e Replicação
+
 ```python
 enable_incremental: bool = True         # Habilita sync incremental
 start_date: datetime | None = None      # Data inicial para extração
@@ -188,6 +206,7 @@ incremental_lookback_hours: int = 24    # Buffer de segurança incremental
 ```
 
 #### Filtros e Seleção
+
 ```python
 entities: list[str] | None = None       # Entidades específicas
 entity_patterns: dict = {}              # Padrões de inclusão/exclusão
@@ -199,6 +218,7 @@ ordering: dict = {}                     # Ordenação por entidade
 ### 📡 PARÂMETROS DE API E RESPOSTA
 
 #### Tipos de Resposta
+
 ```python
 # Resposta padrão Oracle WMS
 WMSResponse = TypedDict('WMSResponse', {
@@ -217,6 +237,7 @@ Context = dict[str, Any] | None
 ```
 
 #### Tipos de Paginação
+
 ```python
 PageToken = ParseResult | str | int | None
 NextPageURL = str | None
@@ -269,20 +290,23 @@ Catalog = TypedDict('Catalog', {
 ## 📈 MÉTRICAS DE QUALIDADE
 
 ### Ruff Linting
+
 - **Total de Issues**: 5,858 (principalmente em código legado)
 - **Issues Críticos**: 0 (bloqueadores)
 - **Type Safety**: Implementado com mypy strict mode
 - **Code Style**: PEP 8 compliant com formatação automática
 
 ### Cobertura de Funcionalidades
+
 - ✅ **Imports**: 100% funcionais
-- ✅ **Configuração**: 100% validada 
+- ✅ **Configuração**: 100% validada
 - ✅ **Paginação**: 100% HATEOAS implementada
 - ✅ **Streams**: 100% funcionalidades básicas
 - ✅ **Capabilities**: 100% Singer SDK modernas
 - ✅ **Build System**: 100% hatch moderno
 
 ### Performance
+
 - ✅ **JSON Processing**: msgspec + orjson para alta performance
 - ✅ **HTTP Client**: httpx moderno com async support
 - ✅ **Data Format**: pyarrow para processamento columnar
@@ -306,6 +330,7 @@ O tap-oracle-wms foi **totalmente modernizado** com Singer SDK 0.46.4+ e todas a
 ### 📋 TIPOS DE PARÂMETROS VALIDADOS
 
 Todos os tipos de parâmetros foram validados e documentados:
+
 - **Configuração**: `dict[str, Any]` com validação rigorosa
 - **URLs**: `str` com pattern validation
 - **Autenticação**: Tipos específicos para Basic/OAuth2
@@ -317,6 +342,7 @@ Todos os tipos de parâmetros foram validados e documentados:
 ### 🎉 PROJETO PRONTO PARA PRODUÇÃO
 
 O tap-oracle-wms está agora:
+
 - ✅ **Moderno**: Singer SDK 0.46.4+ patterns
 - ✅ **Performático**: Bibliotecas de alta performance
 - ✅ **Type-Safe**: Anotações completas e mypy compliance

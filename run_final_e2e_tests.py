@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def run_test(name: str, command: list[str], timeout: int = 60) -> dict:
     """Run a single test and return results."""
-    logger.info("🧪 Running %s", name)
+    logger.info(f"🧪 Running {name}")
     start_time = time.time()
 
     try:
@@ -32,7 +32,7 @@ def run_test(name: str, command: list[str], timeout: int = 60) -> dict:
         elapsed = time.time() - start_time
         success = result.returncode == 0
 
-        logger.info("%s %s - %.2fs", "✅" if success else "❌", name, elapsed)
+        logger.info(f"{'✅' if success else '❌'} {name} - {elapsed:.2f}s")
 
         return {
             "name": name,
@@ -45,7 +45,7 @@ def run_test(name: str, command: list[str], timeout: int = 60) -> dict:
 
     except subprocess.TimeoutExpired:
         elapsed = timeout
-        logger.exception("⏰ %s - TIMEOUT after %ss", name, timeout)
+        logger.exception(f"⏰ {name} - TIMEOUT after {timeout}s")
         return {
             "name": name,
             "success": False,
@@ -56,7 +56,7 @@ def run_test(name: str, command: list[str], timeout: int = 60) -> dict:
         }
     except Exception as e:
         elapsed = time.time() - start_time
-        logger.exception("💥 %s - ERROR: %s", name, e)
+        logger.exception(f"💥 {name} - ERROR: {e}")
         return {
             "name": name,
             "success": False,

@@ -1,0 +1,16 @@
+{
+  "streams": [
+    {
+      "tap_stream_id": "facility",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "code": { "type": "string" },
+          "name": { "type": "string" }
+        }
+      },
+      "metadata": [{ "breadcrumb": [], "metadata": { "selected": true } }]
+    }
+  ]
+}

@@ -23,19 +23,19 @@ class StrictPEPValidator:
             # Check for camelCase function names (should be snake_case)
             if re.search(r"def [a-z]+[A-Z]", line):
                 self.violations.append(
-                    f"{file_path}:{i}: PEP8-N802 function name should be lowercase",
+                    f"{file_path}:{i}: PEP8-N802 function name should be lowercase"
                 )
 
             # Check for camelCase variable names
             if re.search(r"[a-z]+[A-Z][a-zA-Z]* =", line):
                 self.violations.append(
-                    f"{file_path}:{i}: PEP8-N806 variable should be lowercase",
+                    f"{file_path}:{i}: PEP8-N806 variable should be lowercase"
                 )
 
             # Check class names (should be PascalCase)
             if re.search(r"class [a-z]", line):
                 self.violations.append(
-                    f"{file_path}:{i}: PEP8-N801 class name should use CapWords",
+                    f"{file_path}:{i}: PEP8-N801 class name should use CapWords"
                 )
 
     def validate_pep257_docstrings(self, content: str, file_path: str) -> None:
@@ -44,17 +44,19 @@ class StrictPEPValidator:
             tree = ast.parse(content)
 
             for node in ast.walk(tree):
-                if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)):
+                if isinstance(
+                    node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)
+                ):
                     # Check if public function/class has docstring
                     if not node.name.startswith("_"):
                         docstring = ast.get_docstring(node)
                         if not docstring:
                             self.violations.append(
-                                f"{file_path}:{node.lineno}: PEP257-D100 missing docstring",
+                                f"{file_path}:{node.lineno}: PEP257-D100 missing docstring"
                             )
                         elif len(docstring.strip()) < 10:
                             self.violations.append(
-                                f"{file_path}:{node.lineno}: PEP257-D101 docstring too short",
+                                f"{file_path}:{node.lineno}: PEP257-D101 docstring too short"
                             )
         except SyntaxError:
             pass  # Skip files with syntax errors
@@ -70,13 +72,13 @@ class StrictPEPValidator:
                     for arg in node.args.args:
                         if not arg.annotation and arg.arg != "self":
                             self.violations.append(
-                                f"{file_path}:{node.lineno}: PEP484-ANN001 missing type annotation for {arg.arg}",
+                                f"{file_path}:{node.lineno}: PEP484-ANN001 missing type annotation for {arg.arg}"
                             )
 
                     # Check return annotation
                     if not node.returns and not node.name.startswith("_"):
                         self.violations.append(
-                            f"{file_path}:{node.lineno}: PEP484-ANN201 missing return type annotation",
+                            f"{file_path}:{node.lineno}: PEP484-ANN201 missing return type annotation"
                         )
         except SyntaxError:
             pass
@@ -95,7 +97,18 @@ class StrictPEPValidator:
                 import_started = True
 
                 # Determine import type
-                if any(mod in stripped for mod in ["os", "sys", "json", "re", "datetime", "pathlib", "typing"]):
+                if any(
+                    mod in stripped
+                    for mod in [
+                        "os",
+                        "sys",
+                        "json",
+                        "re",
+                        "datetime",
+                        "pathlib",
+                        "typing",
+                    ]
+                ):
                     current_type = 0  # standard library
                 elif "tap_oracle_wms" in stripped:
                     current_type = 2  # local
@@ -105,16 +118,18 @@ class StrictPEPValidator:
                 # Check import order
                 if current_type < last_import_type:
                     self.violations.append(
-                        f"{file_path}:{i}: PEP8-I001 import order violation",
+                        f"{file_path}:{i}: PEP8-I001 import order violation"
                     )
 
                 last_import_type = current_type
 
             elif import_started and stripped and not stripped.startswith("#"):
                 # Check for proper spacing after imports
-                if lines[i - 2:i - 1] and not any(l.strip() == "" for l in lines[i - 2:i - 1]):
+                if lines[i - 2 : i - 1] and not any(
+                    l.strip() == "" for l in lines[i - 2 : i - 1]
+                ):
                     self.violations.append(
-                        f"{file_path}:{i}: PEP8-E302 expected 2 blank lines after imports",
+                        f"{file_path}:{i}: PEP8-E302 expected 2 blank lines after imports"
                     )
                 break
 
@@ -126,19 +141,19 @@ class StrictPEPValidator:
             # Check line length (should be <= 88)
             if len(line) > 88:
                 self.violations.append(
-                    f"{file_path}:{i}: PEP8-E501 line too long ({len(line)} > 88)",
+                    f"{file_path}:{i}: PEP8-E501 line too long ({len(line)} > 88)"
                 )
 
             # Check trailing whitespace
             if line.rstrip() != line:
                 self.violations.append(
-                    f"{file_path}:{i}: PEP8-W291 trailing whitespace",
+                    f"{file_path}:{i}: PEP8-W291 trailing whitespace"
                 )
 
             # Check for proper spacing around operators
             if re.search(r"[a-zA-Z0-9)]\+[a-zA-Z0-9(]", line):
                 self.violations.append(
-                    f"{file_path}:{i}: PEP8-E226 missing whitespace around arithmetic operator",
+                    f"{file_path}:{i}: PEP8-E226 missing whitespace around arithmetic operator"
                 )
 
     def validate_file(self, file_path: Path) -> None:
@@ -266,7 +281,6 @@ def main() -> int:
     if success:
         result = 0
     else:
-
         # Show summary by type
         len([v for v in violations if "PEP8" in v])
         len([v for v in violations if "PEP257" in v])
