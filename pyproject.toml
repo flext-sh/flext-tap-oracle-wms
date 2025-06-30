@@ -196,37 +196,37 @@ output-format = "full"
 
 [tool.ruff.lint]
 select = ["ALL"]
-# ignore = [
-#     # === STRICT PEP COMPLIANCE CONFIGURATION ===
-#     # Formatter conflicts (handled by ruff format)
-#     "E501",   # line-too-long (handled by formatter)
-#     "COM812", # trailing-comma-missing (handled by formatter)
-#     "ISC001", # implicit-str-concat (conflicts with formatter)
-# 
-#     # Docstring style consistency (choose one style)
-#     "D203", # one-blank-line-before-class (conflicts with D211)
-#     "D213", # multi-line-docstring-summary-second-line (conflicts with D212)
-# 
-#     # Singer SDK framework compatibility (minimal exceptions)
-#     "ANN401", # any-type (Singer SDK patterns sometimes require Any)
-#     "E402",   # module-level-import-not-at-top-of-file (Singer pattern tolerance)
-# 
-#     # Click CLI framework patterns (minimal exceptions)
-#     "FBT001", # boolean-type-hint-positional-argument (click patterns)
-#     "FBT002", # boolean-default-value-positional-argument (click patterns)
-# 
-#     # Educational examples (preserve complex examples with documentation)
-#     "C901",    # complex-structure (some examples are intentionally complex)
-#     "PLR0913", # too-many-arguments (Singer taps need flexibility)
-#     "PLR2004", # magic-value-comparison (sometimes practical in config)
-# 
-#     # Practical exceptions (minimal, justified cases)
-#     "TRY003", # avoid-specifying-long-messages-outside-exception-class
-#     "TRY300", # try-consider-else (not always practical)
-#     "EXE001", # shebang-not-executable (examples are documentation)
-#     "PTH123", # builtin-open (backward compatibility in examples)
-#     "PTH110", # os-path-exists (backward compatibility in examples)
-# ]
+ignore = [
+    # === STRICT PEP COMPLIANCE CONFIGURATION ===
+    # Formatter conflicts (handled by ruff format)
+    "E501",   # line-too-long (handled by formatter)
+    "COM812", # trailing-comma-missing (handled by formatter)
+    "ISC001", # implicit-str-concat (conflicts with formatter)
+
+    # Docstring style consistency (choose one style)
+    "D203", # one-blank-line-before-class (conflicts with D211)
+    "D213", # multi-line-docstring-summary-second-line (conflicts with D212)
+
+    # Singer SDK framework compatibility (minimal exceptions)
+    "ANN401", # any-type (Singer SDK patterns sometimes require Any)
+    "E402",   # module-level-import-not-at-top-of-file (Singer pattern tolerance)
+
+    # Click CLI framework patterns (minimal exceptions)
+    "FBT001", # boolean-type-hint-positional-argument (click patterns)
+    "FBT002", # boolean-default-value-positional-argument (click patterns)
+
+    # Educational examples (preserve complex examples with documentation)
+    "C901",    # complex-structure (some examples are intentionally complex)
+    "PLR0913", # too-many-arguments (Singer taps need flexibility)
+    "PLR2004", # magic-value-comparison (sometimes practical in config)
+
+    # Practical exceptions (minimal, justified cases)
+    "TRY003", # avoid-specifying-long-messages-outside-exception-class
+    "TRY300", # try-consider-else (not always practical)
+    "EXE001", # shebang-not-executable (examples are documentation)
+    "PTH123", # builtin-open (backward compatibility in examples)
+    "PTH110", # os-path-exists (backward compatibility in examples)
+]
 
 # === STRICT PEP COMPLIANCE ENFORCEMENT ===
 [tool.ruff.lint.pep8-naming]

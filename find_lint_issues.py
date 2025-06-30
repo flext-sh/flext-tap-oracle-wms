@@ -22,7 +22,7 @@ def check_python_syntax(file_path: Path) -> list[str]:
             # Line too long (>88 chars for black compatibility)
             if len(line) > 88:
                 issues.append(
-                    f"{file_path}:{i}: E501 line too long ({len(line)} > 88 characters)",
+                    f"{file_path}:{i}: E501 line too long ({len(line)} > 88 characters)"
                 )
 
             # Trailing whitespace

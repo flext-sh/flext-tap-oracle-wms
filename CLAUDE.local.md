@@ -3,7 +3,7 @@
 **Hierarchy**: PROJECT-SPECIFIC
 **Project**: TAP Oracle WMS - Singer protocol data extraction from Oracle WMS systems
 **Status**: PRODUCTION
-**Last Updated**: 2025-06-27
+**Last Updated**: 2025-06-25
 
 **Reference**: `/home/marlonsc/CLAUDE.md` → Universal principles
 **Reference**: `/home/marlonsc/internal.invalid.md` → Cross-workspace issues

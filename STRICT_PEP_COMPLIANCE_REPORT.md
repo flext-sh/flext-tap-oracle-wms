@@ -7,11 +7,11 @@
 
 ## Summary
 
-| PEP Standard | Category | Status |
-|-------------|----------|--------|
-| **PEP 8** | Style Guide | ❌ FAIL |
-| **PEP 257** | Docstring Conventions | ✅ PASS |
-| **PEP 484** | Type Annotations | ✅ PASS |
+| PEP Standard | Category              | Status  |
+| ------------ | --------------------- | ------- |
+| **PEP 8**    | Style Guide           | ❌ FAIL |
+| **PEP 257**  | Docstring Conventions | ✅ PASS |
+| **PEP 484**  | Type Annotations      | ✅ PASS |
 
 ## Detailed Violations
 
@@ -31,19 +31,22 @@
 
 ## Compliance Recommendations
 
-### For PEP 8 Compliance:
+### For PEP 8 Compliance
+
 - Use snake_case for function and variable names
 - Use PascalCase for class names
 - Maintain line length ≤ 88 characters
 - Organize imports: standard library → third-party → local
 - Use proper spacing around operators
 
-### For PEP 257 Compliance:
+### For PEP 257 Compliance
+
 - Add docstrings to all public functions and classes
 - Use Google-style docstring format
 - Ensure docstrings are descriptive (≥10 characters)
 
-### For PEP 484 Compliance:
+### For PEP 484 Compliance
+
 - Add type annotations to all function parameters
 - Add return type annotations to all functions
 - Use modern type syntax (dict[str, Any] vs Dict[str, Any])

@@ -233,11 +233,13 @@ from urllib.parse import parse_qs, urlparse"""
             fixed_lines.append(line)
 
             # Add proper spacing after imports
-            if (line.strip() == "from typing import Any" and
-                i + 1 < len(lines) and
-                lines[i + 1].strip() == "" and
-                i + 2 < len(lines) and
-                lines[i + 2].strip() == "# Constants"):
+            if (
+                line.strip() == "from typing import Any"
+                and i + 1 < len(lines)
+                and lines[i + 1].strip() == ""
+                and i + 2 < len(lines)
+                and lines[i + 2].strip() == "# Constants"
+            ):
                 # Need one more blank line
                 fixed_lines.append("")
 
@@ -258,7 +260,7 @@ from urllib.parse import parse_qs, urlparse"""
                     '            f"(bookmark: {bookmark_value}, overlap: {overlap_minutes}min)",',
                     '            f"(bookmark: {bookmark_value}, "\n            f"overlap: {overlap_minutes}min)",',
                 ),
-            ],
+            ]
         }
 
         for file_path, fixes in line_fixes.items():
@@ -305,12 +307,14 @@ from urllib.parse import parse_qs, urlparse"""
 
         # Run validation
         import subprocess
+
         try:
             result = subprocess.run(
                 ["python", "strict_pep_validator.py"],
                 capture_output=True,
                 text=True,
-                timeout=30, check=False,
+                timeout=30,
+                check=False,
             )
             if result.stdout:
                 lines = result.stdout.split("\n")

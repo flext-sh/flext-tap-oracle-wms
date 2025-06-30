@@ -16,7 +16,8 @@ def run_command(cmd: list[str], capture_output: bool = True) -> tuple[int, str, 
             cmd,
             capture_output=capture_output,
             text=True,
-            cwd=Path(__file__).parent, check=False,
+            cwd=Path(__file__).parent,
+            check=False,
         )
         return result.returncode, result.stdout, result.stderr
     except Exception as e:
@@ -69,7 +70,9 @@ def analyze_test_files() -> dict[str, list[str]]:
     # Integration tests
     integration_dir = test_dir / "integration"
     if integration_dir.exists():
-        files_by_category["integration"] = [f.name for f in integration_dir.glob("test_*.py")]
+        files_by_category["integration"] = [
+            f.name for f in integration_dir.glob("test_*.py")
+        ]
 
     # E2E tests
     e2e_dir = test_dir / "e2e"
@@ -79,7 +82,9 @@ def analyze_test_files() -> dict[str, list[str]]:
     # Performance tests
     performance_dir = test_dir / "performance"
     if performance_dir.exists():
-        files_by_category["performance"] = [f.name for f in performance_dir.glob("test_*.py")]
+        files_by_category["performance"] = [
+            f.name for f in performance_dir.glob("test_*.py")
+        ]
 
     # Legacy tests (root level)
     files_by_category["legacy"] = [f.name for f in test_dir.glob("test_*.py")]
@@ -95,8 +100,10 @@ def validate_pytest_config() -> dict[str, bool]:
         "pytest_ini_exists": (project_root / "pytest.ini").exists(),
         "conftest_exists": (project_root / "tests" / "conftest.py").exists(),
         "src_directory_exists": (project_root / "src").exists(),
-        "test_directories_exist": all((project_root / "tests" / dir_name).exists()
-            for dir_name in ["unit", "integration", "e2e", "performance"]),
+        "test_directories_exist": all(
+            (project_root / "tests" / dir_name).exists()
+            for dir_name in ["unit", "integration", "e2e", "performance"]
+        ),
     }
 
 
@@ -105,19 +112,27 @@ def run_sample_tests() -> dict[str, bool]:
     test_results = {}
 
     # Sample unit test
-    exit_code, _stdout, _stderr = run_command([
-        "python", "-m", "pytest",
-        "tests/unit/test_config_validation.py::TestConfigValidation::test_validate_auth_config_basic_valid",
-        "-q",
-    ])
+    exit_code, _stdout, _stderr = run_command(
+        [
+            "python",
+            "-m",
+            "pytest",
+            "tests/unit/test_config_validation.py::TestConfigValidation::test_validate_auth_config_basic_valid",
+            "-q",
+        ]
+    )
     test_results["unit_sample"] = exit_code == 0
 
     # Sample pagination test
-    exit_code, _stdout, _stderr = run_command([
-        "python", "-m", "pytest",
-        "tests/unit/test_pagination_hateoas.py::TestWMSAdvancedPaginator::test_get_next_url_with_next_page",
-        "-q",
-    ])
+    exit_code, _stdout, _stderr = run_command(
+        [
+            "python",
+            "-m",
+            "pytest",
+            "tests/unit/test_pagination_hateoas.py::TestWMSAdvancedPaginator::test_get_next_url_with_next_page",
+            "-q",
+        ]
+    )
     test_results["pagination_sample"] = exit_code == 0
 
     return test_results

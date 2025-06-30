@@ -117,16 +117,11 @@ def test_stream_basic_functionality() -> bool:
 
         # Mock tap simples
         mock_tap = Mock()
-        mock_tap.config = {
-            "base_url": "https://test.com",
-            "enable_incremental": True,
-        }
+        mock_tap.config = {"base_url": "https://test.com", "enable_incremental": True}
 
         # Cria stream
         stream = WMSAdvancedStream(
-            tap=mock_tap,
-            entity_name="test_entity",
-            schema={"type": "object"},
+            tap=mock_tap, entity_name="test_entity", schema={"type": "object"}
         )
 
         # Testa propriedades básicas
@@ -229,7 +224,6 @@ def main() -> None:
             pass
 
     if passed == total:
-
         # Resumo dos tipos de parâmetros validados
 
         sys.exit(0)

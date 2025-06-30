@@ -30,7 +30,8 @@ class TapTestRunner:
                 cmd,
                 capture_output=True,
                 text=True,
-                cwd=Path(__file__).parent, check=False,
+                cwd=Path(__file__).parent,
+                check=False,
             )
             end_time = time.time()
 
@@ -51,27 +52,60 @@ class TapTestRunner:
 
     def unit_tests(self) -> dict[str, Any]:
         """Run unit tests."""
-        cmd = [*self.base_cmd, "-m", "unit", "--tb=short", "-v" if self.verbose else "-q"]
+        cmd = [
+            *self.base_cmd,
+            "-m",
+            "unit",
+            "--tb=short",
+            "-v" if self.verbose else "-q",
+        ]
         return self.run_command(cmd, "Running Unit Tests")
 
     def integration_tests(self) -> dict[str, Any]:
         """Run integration tests."""
-        cmd = [*self.base_cmd, "-m", "integration", "--tb=short", "-v" if self.verbose else "-q"]
+        cmd = [
+            *self.base_cmd,
+            "-m",
+            "integration",
+            "--tb=short",
+            "-v" if self.verbose else "-q",
+        ]
         return self.run_command(cmd, "Running Integration Tests")
 
     def e2e_tests(self) -> dict[str, Any]:
         """Run end-to-end tests."""
-        cmd = [*self.base_cmd, "-m", "e2e", "--tb=short", "-v" if self.verbose else "-q"]
+        cmd = [
+            *self.base_cmd,
+            "-m",
+            "e2e",
+            "--tb=short",
+            "-v" if self.verbose else "-q",
+        ]
         return self.run_command(cmd, "Running End-to-End Tests")
 
     def performance_tests(self) -> dict[str, Any]:
         """Run performance tests."""
-        cmd = [*self.base_cmd, "-m", "performance", "--tb=short", "-v" if self.verbose else "-q"]
+        cmd = [
+            *self.base_cmd,
+            "-m",
+            "performance",
+            "--tb=short",
+            "-v" if self.verbose else "-q",
+        ]
         return self.run_command(cmd, "Running Performance Tests")
 
     def coverage_tests(self) -> dict[str, Any]:
         """Run tests with coverage."""
-        cmd = [*self.base_cmd, "-m", "not live and not slow", "--cov=src/tap_oracle_wms", "--cov-report=term-missing", "--cov-report=html:htmlcov", "--cov-fail-under=85", "--tb=short"]
+        cmd = [
+            *self.base_cmd,
+            "-m",
+            "not live and not slow",
+            "--cov=src/tap_oracle_wms",
+            "--cov-report=term-missing",
+            "--cov-report=html:htmlcov",
+            "--cov-fail-under=85",
+            "--tb=short",
+        ]
         return self.run_command(cmd, "Running Tests with Coverage")
 
     def smoke_tests(self) -> dict[str, Any]:
@@ -81,7 +115,17 @@ class TapTestRunner:
 
     def ci_tests(self) -> dict[str, Any]:
         """Run CI/CD appropriate tests."""
-        cmd = [*self.base_cmd, "-m", "not live and not slow", "--tb=short", "--junitxml=test-results.xml", "--cov=src/tap_oracle_wms", "--cov-report=xml:coverage.xml", "--cov-fail-under=85", "-v" if self.verbose else "-q"]
+        cmd = [
+            *self.base_cmd,
+            "-m",
+            "not live and not slow",
+            "--tb=short",
+            "--junitxml=test-results.xml",
+            "--cov=src/tap_oracle_wms",
+            "--cov-report=xml:coverage.xml",
+            "--cov-fail-under=85",
+            "-v" if self.verbose else "-q",
+        ]
         return self.run_command(cmd, "Running CI/CD Tests")
 
     def discovery_validation(self) -> dict[str, Any]:
@@ -158,7 +202,11 @@ class TapTestRunner:
         integration_result = self.integration_tests()
         self._print_result("Integration Tests", integration_result)
 
-        overall_success = smoke_result["success"] and unit_result["success"] and integration_result["success"]
+        overall_success = (
+            smoke_result["success"]
+            and unit_result["success"]
+            and integration_result["success"]
+        )
 
         if overall_success:
             pass
@@ -168,12 +216,26 @@ class TapTestRunner:
 
 def main() -> None:
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Comprehensive test runner for tap-oracle-wms")
+    parser = argparse.ArgumentParser(
+        description="Comprehensive test runner for tap-oracle-wms"
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
-    parser.add_argument("--type", choices=[
-        "unit", "integration", "e2e", "performance", "coverage",
-        "smoke", "ci", "comprehensive", "development",
-    ], default="development", help="Type of tests to run")
+    parser.add_argument(
+        "--type",
+        choices=[
+            "unit",
+            "integration",
+            "e2e",
+            "performance",
+            "coverage",
+            "smoke",
+            "ci",
+            "comprehensive",
+            "development",
+        ],
+        default="development",
+        help="Type of tests to run",
+    )
 
     args = parser.parse_args()
 

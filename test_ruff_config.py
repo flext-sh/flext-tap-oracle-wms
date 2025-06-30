@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Test ruff configuration."""
 
+from __future__ import annotations
+
 from pathlib import Path
 import subprocess
 import sys
-from typing import Optional
 
 
-def test_ruff_config() -> Optional[bool]:
+def test_ruff_config() -> bool | None:
     """Test if ruff configuration is working."""
     try:
         # Test if ruff can read the config

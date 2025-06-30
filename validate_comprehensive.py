@@ -82,13 +82,22 @@ def validate_configuration_schema() -> bool:
         )
 
         # Test schema structure
-        schema_dict = config_schema if isinstance(config_schema, dict) else config_schema.to_dict()
+        schema_dict = (
+            config_schema
+            if isinstance(config_schema, dict)
+            else config_schema.to_dict()
+        )
 
         # Validate required properties
         properties = schema_dict.get("properties", {})
         required_properties = [
-            "base_url", "auth_method", "username", "password",
-            "page_size", "pagination_mode", "start_date",
+            "base_url",
+            "auth_method",
+            "username",
+            "password",
+            "page_size",
+            "pagination_mode",
+            "start_date",
         ]
 
         for prop in required_properties:
@@ -199,7 +208,9 @@ def validate_stream_functionality() -> bool:
 
             assert stream.path == "/wms/lgfapi/v10/entity/test_entity"
 
-            assert stream.url == "https://wms.test.com/wms/lgfapi/v10/entity/test_entity"
+            assert (
+                stream.url == "https://wms.test.com/wms/lgfapi/v10/entity/test_entity"
+            )
 
             # Test replication method
             assert stream.replication_method in {"INCREMENTAL", "FULL_TABLE"}
@@ -215,8 +226,13 @@ def validate_stream_functionality() -> bool:
 
             # Test with mock next_page_token (ParseResult simulation)
             from urllib.parse import urlparse
-            mock_next_url = urlparse("https://wms.test.com/entity?cursor=abc123&page_size=1000")
-            next_params = stream.get_url_params(context=None, next_page_token=mock_next_url)
+
+            mock_next_url = urlparse(
+                "https://wms.test.com/entity?cursor=abc123&page_size=1000"
+            )
+            next_params = stream.get_url_params(
+                context=None, next_page_token=mock_next_url
+            )
             assert isinstance(next_params, dict)
 
             # Test optimal page size calculation
@@ -253,9 +269,7 @@ def validate_hateoas_pagination() -> bool:
 
         # Test get_next_url without next page
         mock_response_without_next = Mock()
-        mock_response_without_next.json.return_value = {
-            "results": [{"id": 1}],
-        }
+        mock_response_without_next.json.return_value = {"results": [{"id": 1}]}
 
         next_url = paginator.get_next_url(mock_response_without_next)
         assert next_url is None

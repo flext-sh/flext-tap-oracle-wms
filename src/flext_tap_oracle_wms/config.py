@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import BaseModel
 from singer_sdk import typing as th
 
 
@@ -1024,3 +1025,30 @@ def validate_pagination_config(config: dict[str, Any]) -> str | None:
         return "Page size cannot exceed 1250 (Oracle WMS limit)"
 
     return None
+
+
+class WMSConfig(BaseModel):
+    """Pydantic configuration model for WMS TAP."""
+
+    base_url: str
+    auth_method: str = "basic"
+    username: str | None = None
+    password: str | None = None
+    oauth_client_id: str | None = None
+    oauth_client_secret: str | None = None
+    oauth_token_url: str | None = None
+    company_code: str = "*"
+    facility_code: str = "*"
+    page_size: int = 1000
+    request_timeout: int = 7200
+    connect_timeout: int = 30
+    verify_ssl: bool = True
+    entities: list[str] | None = None
+    enable_incremental: bool = True
+    circuit_breaker_enabled: bool = True
+    global_retry_limit: int = 10
+
+    class Config:
+        """Pydantic config."""
+
+        extra = "allow"  # Allow additional fields

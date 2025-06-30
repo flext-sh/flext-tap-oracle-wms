@@ -93,7 +93,7 @@ class PerformanceMonitor:
         self.data_quality_score = 0.0
         self.extraction_efficiency = 0.0
 
-        logger.info("Performance monitor initialized for %s", service_name)
+logger.info("Performance monitor initialized for %s", service_name)
 
     def record_metric(
         self,
@@ -228,7 +228,7 @@ class PerformanceMonitor:
         with self.lock:
             self.health_checks[health_check.name] = health_check
 
-        logger.info("Health check '%s': %s", health_check.name, health_check.status.value)
+logger.info("Health check '%s': %s", health_check.name, health_check.status.value)
 
     def get_health_summary(self) -> dict[str, Any]:
         """Get overall health summary."""
