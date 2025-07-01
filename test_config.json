@@ -1,7 +1,0 @@
-{
-  "base_url": "https://test.wms.com",
-  "auth_method": "basic",
-  "username": "test",
-  "password": "test",
-  "test_connection": false
-}

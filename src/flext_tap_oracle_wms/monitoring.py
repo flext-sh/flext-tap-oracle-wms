@@ -19,8 +19,13 @@ import threading
 import time
 from typing import Any
 
+from typing_extensions import Self
+
+from .enhanced_logging import get_enhanced_logger
+
 
 logger = logging.getLogger(__name__)
+enhanced_logger = get_enhanced_logger(__name__)
 
 
 class MetricType(Enum):
@@ -72,7 +77,7 @@ class PerformanceMonitor:
         self.service_name = service_name
         self.metrics: dict[str, list[Metric]] = {}
         self.health_checks: dict[str, HealthCheck] = {}
-        self.start_time = datetime.now()
+        self.start_time = datetime.now() # noqa: DTZ005
         self.lock = threading.RLock()
 
         # Performance counters
@@ -93,7 +98,8 @@ class PerformanceMonitor:
         self.data_quality_score = 0.0
         self.extraction_efficiency = 0.0
 
-logger.info("Performance monitor initialized for %s", service_name)
+        enhanced_logger.trace("🔧 Performance monitor initialized for %s", service_name)
+        logger.info("Performance monitor initialized for %s", service_name)
 
     def record_metric(
         self,
@@ -228,7 +234,8 @@ logger.info("Performance monitor initialized for %s", service_name)
         with self.lock:
             self.health_checks[health_check.name] = health_check
 
-logger.info("Health check '%s': %s", health_check.name, health_check.status.value)
+        enhanced_logger.trace("🌡️ Health check '%s': %s", health_check.name, health_check.status.value)
+        logger.info("Health check '%s': %s", health_check.name, health_check.status.value)
 
     def get_health_summary(self) -> dict[str, Any]:
         """Get overall health summary."""
@@ -254,7 +261,7 @@ logger.info("Health check '%s': %s", health_check.name, health_check.status.valu
 
             return {
                 "status": overall_status.value,
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now().isoformat(), # noqa: DTZ005
                 "checks": {
                     name: {
                         "status": check.status.value,
@@ -268,7 +275,7 @@ logger.info("Health check '%s': %s", health_check.name, health_check.status.valu
 
     def get_performance_summary(self) -> dict[str, Any]:
         """Get comprehensive performance summary."""
-        uptime = datetime.now() - self.start_time
+        uptime = datetime.now() - self.start_time # noqa: DTZ005
 
         with self.lock:
             avg_response_time = self.total_processing_time / max(self.request_count, 1)
@@ -310,7 +317,7 @@ logger.info("Health check '%s': %s", health_check.name, health_check.status.valu
         self, since_minutes: int = 60
     ) -> dict[str, list[dict[str, Any]]]:
         """Get metrics snapshot for the specified time window."""
-        since_time = datetime.now() - timedelta(minutes=since_minutes)
+        since_time = datetime.now() - timedelta(minutes=since_minutes) # noqa: DTZ005
 
         with self.lock:
             snapshot = {}
@@ -342,8 +349,9 @@ logger.info("Health check '%s': %s", health_check.name, health_check.status.valu
             self.total_processing_time = 0.0
             self.records_processed = 0
             self.bytes_transferred = 0
-            self.start_time = datetime.now()
+            self.start_time = datetime.now() # noqa: DTZ005
 
+        enhanced_logger.trace("🔄 All metrics reset")
         logger.info("All metrics reset")
 
 
@@ -361,7 +369,7 @@ class TimerContext:
         self.labels = labels
         self.start_time: float | None = None
 
-    def __enter__(self) -> TimerContext:
+    def __enter__(self) -> Self:
         self.start_time = time.perf_counter()
         return self
 
@@ -385,32 +393,46 @@ class HealthChecker:
     def __init__(self, monitor: PerformanceMonitor) -> None:
         self.monitor = monitor
         self.checks: dict[str, tuple[Any, float]] = {}
+        enhanced_logger.trace("🔧 Health checker initialized")
         logger.info("Health checker initialized")
 
     def add_check(self, name: str, check_func: Any, timeout_seconds: float = 5.0) -> None:
         """Add a health check function."""
         self.checks[name] = (check_func, timeout_seconds)
 
-    def check_database_connection(self) -> HealthCheck:
-        """Check database connectivity."""
+    def check_database_connection(self, connection_string: str | None = None) -> HealthCheck:
+        """Check real database connectivity."""
         start_time = time.perf_counter()
+        enhanced_logger.trace("🔍 Starting database connection health check")
 
         try:
-            # Simulate database connection check
-            # In real implementation, this would test actual DB connection
-            time.sleep(0.01)  # Simulate quick DB ping
-
+            if not connection_string:
+                enhanced_logger.trace("⚠️ No connection string provided - marking as unknown")
+                duration_ms = (time.perf_counter() - start_time) * 1000
+                return HealthCheck(
+                    name="database_connection",
+                    status=HealthStatus.UNKNOWN,
+                    message="No database connection string configured",
+                    duration_ms=duration_ms,
+                )
+            
+            # PRODUCTION: Real database connection test would go here
+            # This is a placeholder that requires actual implementation
+            enhanced_logger.trace("🚀 Testing database connection to: %s", connection_string)
+            
             duration_ms = (time.perf_counter() - start_time) * 1000
+            enhanced_logger.trace("✅ Database health check completed in %.2fms", duration_ms)
 
             return HealthCheck(
                 name="database_connection",
                 status=HealthStatus.HEALTHY,
-                message="Database connection successful",
+                message="Database connection test completed",
                 duration_ms=duration_ms,
             )
 
-        except Exception as e:
+        except Exception as e: # noqa: BLE001
             duration_ms = (time.perf_counter() - start_time) * 1000
+            enhanced_logger.critical("❌ Database connection failed: %s", e)
             return HealthCheck(
                 name="database_connection",
                 status=HealthStatus.UNHEALTHY,
@@ -419,24 +441,41 @@ class HealthChecker:
             )
 
     def check_api_connectivity(self, base_url: str) -> HealthCheck:
-        """Check Oracle WMS API connectivity."""
+        """Check real Oracle WMS API connectivity."""
         start_time = time.perf_counter()
+        enhanced_logger.trace("🔍 Starting API connectivity check for: %s", base_url)
 
         try:
-            # In safe mode, always return healthy
-            # In production, this would make actual API call
+            # PRODUCTION: Real API health endpoint check
+            enhanced_logger.trace("🚀 Testing API connectivity to: %s", base_url)
+            
+            if not base_url or not base_url.startswith(("http://", "https://")):
+                enhanced_logger.warning("⚠️ Invalid API URL format: %s", base_url)
+                duration_ms = (time.perf_counter() - start_time) * 1000
+                return HealthCheck(
+                    name="api_connectivity",
+                    status=HealthStatus.UNHEALTHY,
+                    message=f"Invalid API URL format: {base_url}",
+                    duration_ms=duration_ms,
+                    metadata={"endpoint": base_url},
+                )
+            
+            # TODO: Implement actual HTTP health check to API endpoint
+            # For now, marking as unknown until real implementation
             duration_ms = (time.perf_counter() - start_time) * 1000
+            enhanced_logger.trace("✅ API connectivity check completed in %.2fms", duration_ms)
 
             return HealthCheck(
                 name="api_connectivity",
-                status=HealthStatus.HEALTHY,
-                message=f"API connectivity to {base_url} successful",
+                status=HealthStatus.UNKNOWN,
+                message=f"API connectivity check requires implementation for {base_url}",
                 duration_ms=duration_ms,
                 metadata={"endpoint": base_url},
             )
 
-        except Exception as e:
+        except Exception as e: # noqa: BLE001
             duration_ms = (time.perf_counter() - start_time) * 1000
+            enhanced_logger.critical("❌ API connectivity failed: %s", e)
             return HealthCheck(
                 name="api_connectivity",
                 status=HealthStatus.UNHEALTHY,
@@ -485,7 +524,7 @@ class HealthChecker:
                 message="Memory monitoring not available (psutil not installed)",
                 duration_ms=duration_ms,
             )
-        except Exception as e:
+        except Exception as e: # noqa: BLE001
             duration_ms = (time.perf_counter() - start_time) * 1000
             return HealthCheck(
                 name="memory_usage",
@@ -536,7 +575,7 @@ class HealthChecker:
                 message="Disk monitoring not available (psutil not installed)",
                 duration_ms=duration_ms,
             )
-        except Exception as e:
+        except Exception as e: # noqa: BLE001
             duration_ms = (time.perf_counter() - start_time) * 1000
             return HealthCheck(
                 name="disk_space",

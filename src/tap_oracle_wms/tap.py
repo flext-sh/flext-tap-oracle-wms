@@ -14,11 +14,17 @@ from singer_sdk.helpers.capabilities import TapCapabilities
 
 from .config import config_schema, validate_auth_config, validate_pagination_config
 from .discovery import EntityDiscovery, SchemaGenerator
+from .enhanced_logging import (
+    get_enhanced_logger,
+    PerformanceTracer,
+    trace_performance,
+)
 from .monitoring import TAPMonitor
 from .streams import WMSAdvancedStream
 
 
 logger = logging.getLogger(__name__)
+enhanced_logger = get_enhanced_logger(__name__)
 
 
 class TapOracleWMS(Tap):
@@ -243,19 +249,32 @@ class TapOracleWMS(Tap):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize tap."""
+        enhanced_logger.trace("🔧 Initializing Oracle WMS TAP")
+        
         # CRITICAL: Singer SDK requires tap_name BEFORE super().__init__
         self.tap_name = "tap-oracle-wms"  # Required by Singer SDK
+        enhanced_logger.trace("📝 Set tap_name: %s", self.tap_name)
+        
         self._entity_discovery: EntityDiscovery | None = None
         self._schema_generator: SchemaGenerator | None = None
         self._discovered_entities = None
         self._entity_schemas: dict[str, dict[str, Any]] = {}
         self._monitor = None
+        
+        enhanced_logger.trace("🚀 Calling super().__init__")
         super().__init__(*args, **kwargs)
+        enhanced_logger.trace("✅ Super initialization complete")
 
         # Initialize monitoring if enabled
         if self.config.get("metrics", {}).get("enabled", False):
+            enhanced_logger.trace("📊 Initializing monitoring system")
             self._monitor = TAPMonitor(dict(self.config))
+            enhanced_logger.trace("✅ Monitoring system initialized")
             logger.info("Monitoring enabled for TAP")
+        else:
+            enhanced_logger.trace("⚠️ Monitoring disabled in configuration")
+            
+        enhanced_logger.trace("🎯 Oracle WMS TAP initialization complete")
 
     def validate_config(self) -> None:
         """Validate configuration.
@@ -329,7 +348,7 @@ class TapOracleWMS(Tap):
     def schema_generator(self) -> SchemaGenerator:
         """Get schema generator instance."""
         if self._schema_generator is None:
-            self._schema_generator = SchemaGenerator()
+            self._schema_generator = SchemaGenerator(dict(self.config))
         return self._schema_generator
 
     async def _discover_and_filter_entities(self) -> dict[str, str]:
@@ -688,6 +707,7 @@ class TapOracleWMS(Tap):
             "additionalProperties": True,
         }
 
+    @trace_performance("Stream Discovery")
     def discover_streams(self) -> list[Stream]:  # noqa: PLR0912
         """Discover available streams.
 
@@ -696,6 +716,7 @@ class TapOracleWMS(Tap):
             List of discovered stream instances
 
         """
+        enhanced_logger.trace("🔍 Starting comprehensive stream discovery")
         logger.info("Discovering Oracle WMS streams")
 
         # Start profiling discovery
@@ -717,6 +738,7 @@ class TapOracleWMS(Tap):
             # No running loop, safe to use asyncio.run()
             entities = asyncio.run(self._discover_and_filter_entities())
 
+        enhanced_logger.trace("📅 Discovery found %d accessible entities", len(entities))
         logger.info("Discovered %s accessible entities", len(entities))
 
         # Record discovery metrics

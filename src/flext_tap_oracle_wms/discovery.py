@@ -1,4 +1,4 @@
-"""Dynamic entity discovery for Oracle WMS."""
+"""Dynamic entity discovery for Oracle WMS with Enterprise TRACE Logging."""
 
 from __future__ import annotations
 
@@ -12,9 +12,14 @@ import httpx
 
 from .auth import get_wms_authenticator, get_wms_headers
 from .config import HTTP_FORBIDDEN, HTTP_NOT_FOUND, HTTP_OK
+from .logging import (
+    get_singer_logger,
+    trace_discovery_operation,
+    trace_wms_api_call,
+)
 
-
-logger = logging.getLogger(__name__)
+# Enterprise logger with TRACE emphasis
+logger = get_singer_logger(__name__)
 
 
 class EntityDiscovery:
@@ -32,6 +37,17 @@ class EntityDiscovery:
         self.base_url = config["base_url"].rstrip("/")
         self.api_version = "v10"  # Current stable version
         self.headers = get_wms_headers(config)
+
+        # Enterprise TRACE logging for discovery initialization
+        trace_discovery_operation(
+            logger,
+            operation="discovery_initialization",
+            timing_ms=0.0,
+            base_url=self.base_url,
+            api_version=self.api_version,
+            config_items=len(config),
+        )
+        logger.trace("🔍 Enterprise entity discovery system initialized")
 
         # Add authentication
         self._authenticator = None
@@ -112,6 +128,18 @@ class EntityDiscovery:
             HTTPError: If API request fails
 
         """
+        import time
+        discovery_start = time.perf_counter()
+        
+        # Enterprise TRACE logging for entity discovery start
+        trace_discovery_operation(
+            logger,
+            operation="entity_discovery_start",
+            timing_ms=0.0,
+            endpoint=self.entity_endpoint,
+            cache_available=self._entity_cache is not None,
+        )
+        
         # Check enhanced entity cache
         if (
             self._entity_cache
@@ -120,9 +148,16 @@ class EntityDiscovery:
             < timedelta(seconds=self._entity_cache_ttl)
         ):
             logger.debug("Using cached entity list")
+            trace_discovery_operation(
+                logger,
+                operation="cache_hit",
+                entity_count=len(self._entity_cache),
+                timing_ms=(time.perf_counter() - discovery_start) * 1000,
+            )
             return self._entity_cache
 
         logger.info("Discovering entities from Oracle WMS API")
+        logger.trace("🔍 Starting fresh entity discovery from API")
 
         # Setup timeouts
         timeout = httpx.Timeout(
@@ -148,13 +183,34 @@ class EntityDiscovery:
             headers={"User-Agent": self.config.get("user_agent", "tap-oracle-wms/1.0")},
         ) as client:
             try:
+                # Enterprise TRACE logging for API call
+                trace_wms_api_call(
+                    logger,
+                    method="GET",
+                    endpoint=self.entity_endpoint,
+                    operation="entity_discovery",
+                )
+                
+                request_start = time.perf_counter()
                 response = await client.get(
                     self.entity_endpoint,
                     headers=self.headers,
                 )
                 response.raise_for_status()
+                api_duration = (time.perf_counter() - request_start) * 1000
 
                 entity_list = response.json()
+                
+                # Enterprise TRACE logging for successful API response
+                trace_wms_api_call(
+                    logger,
+                    method="GET",
+                    endpoint=self.entity_endpoint,
+                    status_code=response.status_code,
+                    timing_ms=api_duration,
+                    response_size=len(str(entity_list)) if entity_list else 0,
+                    operation="entity_discovery_response",
+                )
 
                 # Convert list of entity names to dictionary mapping names to URLs
                 entities: dict[str, str] = {}
@@ -171,7 +227,19 @@ class EntityDiscovery:
                 self._entity_cache = entities
                 self._last_entity_cache_time = datetime.now(timezone.utc)
 
+                # Enterprise TRACE logging for discovery completion
+                total_duration = (time.perf_counter() - discovery_start) * 1000
+                trace_discovery_operation(
+                    logger,
+                    operation="entity_discovery_complete",
+                    entity_count=len(entities),
+                    timing_ms=total_duration,
+                    api_duration_ms=api_duration,
+                    cache_updated=True,
+                )
+
                 logger.info("Discovered %s entities", len(entities))
+                logger.trace(f"🎯 Enterprise entity discovery complete: {len(entities)} entities in {total_duration:.2f}ms")
                 return entities
 
             except httpx.HTTPStatusError as e:

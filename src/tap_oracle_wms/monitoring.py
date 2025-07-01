@@ -24,8 +24,11 @@ from typing_extensions import Self
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+from .enhanced_logging import get_enhanced_logger, trace_performance
+
 
 logger = logging.getLogger(__name__)
+enhanced_logger = get_enhanced_logger(__name__)
 
 
 @dataclass
@@ -386,7 +389,7 @@ class HealthMonitor:
 
         # Health status
         self._overall_health = True
-        self._last_health_check = None
+        self._last_health_check: datetime | None = None
 
         # Configuration
         self.check_interval = 60  # seconds
