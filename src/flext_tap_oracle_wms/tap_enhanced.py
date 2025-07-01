@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, timezone
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Mapping
 
 import httpx
 from singer_sdk import Stream, Tap
@@ -100,7 +100,14 @@ class EnhancedWMSTap(Tap):
             )
             streams.append(stream)
 
-        return streams
+        return list(streams)
+
+    def _safe_int(self, value: Any) -> int:
+        """Safely convert value to int."""
+        try:
+            return int(value) if isinstance(value, (int, float, str)) else 0
+        except (ValueError, TypeError):
+            return 0
 
     def _get_entity_schema(self, entity_name: str) -> dict[str, Any]:
         """Get JSON schema for an entity.
@@ -167,20 +174,23 @@ class EnhancedWMSTap(Tap):
             Response data
 
         """
-        self.metrics["requests_made"] += 1
+        requests_made = self.metrics.get("requests_made", 0)
+        self.metrics["requests_made"] = int(requests_made) + 1 if isinstance(requests_made, (int, float, str)) else 1
 
-        async def request_operation():
+        async def request_operation() -> dict[str, Any]:
             response = await self.client.get(url, params=params)
             response.raise_for_status()
-            return response.json()
+            result = response.json()
+            return dict(result) if result else {}
 
         try:
             result = await self.error_manager.handle_error(
                 Exception("Initial request"),  # Placeholder for first call
                 request_operation,
             )
-            self.metrics["requests_successful"] += 1
-            return result
+            successful = self.metrics.get("requests_successful", 0)
+            self.metrics["requests_successful"] = int(successful) + 1 if isinstance(successful, (int, float, str)) else 1
+            return dict(result) if result else {}
 
         except Exception:
             # If error recovery also fails, try direct request once
@@ -188,10 +198,12 @@ class EnhancedWMSTap(Tap):
                 response = await self.client.get(url, params=params)
                 response.raise_for_status()
                 result = response.json()
-                self.metrics["requests_successful"] += 1
-                return result
+                successful = self.metrics.get("requests_successful", 0)
+                self.metrics["requests_successful"] = int(successful) + 1 if isinstance(successful, (int, float, str)) else 1
+                return dict(result) if result else {}
             except Exception as final_error:
-                self.metrics["requests_failed"] += 1
+                failed = self.metrics.get("requests_failed", 0)
+                self.metrics["requests_failed"] = int(failed) + 1 if isinstance(failed, (int, float, str)) else 1
                 logger.exception(
                     f"Request failed after recovery attempts: {final_error}"
                 )
@@ -205,45 +217,49 @@ class EnhancedWMSTap(Tap):
             Dictionary of performance metrics
 
         """
-        runtime = datetime.now(timezone.utc) - self.metrics["start_time"]
+        start_time = self.metrics.get("start_time", datetime.now(timezone.utc))
+        if isinstance(start_time, datetime):
+            runtime = datetime.now(timezone.utc) - start_time
+        else:
+            runtime = datetime.now(timezone.utc) - datetime.now(timezone.utc)
         error_summary = self.error_manager.get_error_summary()
 
         return {
             "runtime_seconds": runtime.total_seconds(),
             "requests": {
-                "made": self.metrics["requests_made"],
-                "successful": self.metrics["requests_successful"],
-                "failed": self.metrics["requests_failed"],
+                "made": self._safe_int(self.metrics.get("requests_made", 0)),
+                "successful": self._safe_int(self.metrics.get("requests_successful", 0)),
+                "failed": self._safe_int(self.metrics.get("requests_failed", 0)),
                 "success_rate": (
-                    self.metrics["requests_successful"]
-                    / max(self.metrics["requests_made"], 1)
+                    self._safe_int(self.metrics.get("requests_successful", 0))
+                    / max(self._safe_int(self.metrics.get("requests_made", 0)), 1)
                 )
                 * 100,
             },
             "extraction": {
-                "records_extracted": self.metrics["records_extracted"],
+                "records_extracted": self._safe_int(self.metrics.get("records_extracted", 0)),
                 "rate_per_minute": (
-                    self.metrics["records_extracted"]
+                    self._safe_int(self.metrics.get("records_extracted", 0))
                     / max(runtime.total_seconds() / 60, 1)
                 ),
             },
             "errors": error_summary,
-            "recovery": {"errors_recovered": self.metrics["errors_recovered"]},
+            "recovery": {"errors_recovered": self._safe_int(self.metrics.get("errors_recovered", 0))},
         }
 
-    def __enter__(self):
+    def __enter__(self) -> EnhancedWMSTap:
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Context manager exit."""
         # For sync context, we'll handle cleanup differently
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> EnhancedWMSTap:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         await self.client.aclose()
 
@@ -255,7 +271,7 @@ class EnhancedWMSTap(Tap):
 class WMSStream(Stream):
     """Enhanced WMS stream with error recovery."""
 
-    def __init__(self, tap: EnhancedWMSTap, name: str, schema: dict, path: str) -> None:
+    def __init__(self, tap: EnhancedWMSTap, name: str, schema: dict[str, Any], path: str) -> None:
         """Initialize WMS stream.
 
         Args:
@@ -270,7 +286,7 @@ class WMSStream(Stream):
         self.path = path
         self.wms_tap = tap
 
-    def get_records(self, context: dict | None = None) -> Generator[dict, None, None]:
+    def get_records(self, context: Mapping[str, Any] | None = None) -> Generator[dict[str, Any], None, None]:
         """Extract records from WMS API.
 
         Args:
@@ -287,12 +303,12 @@ class WMSStream(Stream):
         asyncio.set_event_loop(loop)
 
         try:
-            records = loop.run_until_complete(self._extract_records_async(context))
+            records = loop.run_until_complete(self._extract_records_async(dict(context) if context else None))
             yield from records
         finally:
             loop.close()
 
-    async def _extract_records_async(self, context: dict | None = None) -> list[dict]:
+    async def _extract_records_async(self, context: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         """Async record extraction with pagination and error recovery.
 
         Args:
@@ -337,9 +353,9 @@ class WMSStream(Stream):
                 for record in records:
                     try:
                         # Basic data validation and transformation
-                        processed_record = self._process_record(record)
+                        processed_record = self._validate_and_transform_record(record)
                         processed_records.append(processed_record)
-                        self.wms_tap.metrics["records_extracted"] += 1
+                        self.wms_tap.metrics["records_extracted"] = self.wms_tap._safe_int(self.wms_tap.metrics.get("records_extracted", 0)) + 1
 
                     except Exception as record_error:
                         # Handle individual record errors
@@ -356,7 +372,7 @@ class WMSStream(Stream):
                                 record,
                                 error_context=error_context,
                             )
-                        except:
+                        except Exception:
                             # Skip invalid records
                             logger.warning(
                                 f"Skipping invalid record in {self.name}: {record_error}"
@@ -381,19 +397,19 @@ class WMSStream(Stream):
                     await self.wms_tap.error_manager.handle_error(
                         page_error, self._extract_page, page, page_size, context
                     )
-                    self.wms_tap.metrics["errors_recovered"] += 1
-                except:
+                    self.wms_tap.metrics["errors_recovered"] = self.wms_tap._safe_int(self.wms_tap.metrics.get("errors_recovered", 0)) + 1
+                except Exception:
                     # If recovery fails, stop extraction
                     logger.exception(
                         f"Failed to recover from error in {self.name}, stopping extraction"
                     )
                     break
 
-logger.info("Extracted %s records from %s", len(all_records), self.name)
+                logger.info("Extracted %s records from %s", len(all_records), self.name)
         return all_records
 
-    def _process_record(self, record: dict) -> dict:
-        """Process and validate individual record.
+    def _validate_and_transform_record(self, record: dict[str, Any]) -> dict[str, Any]:
+        """Validate and transform individual record.
 
         Args:
         ----
@@ -417,9 +433,14 @@ logger.info("Extracted %s records from %s", len(all_records), self.name)
 
         return processed
 
+    def _process_record(self, record: dict[str, Any], child_context: Mapping[str, Any] | None = None, partition_context: Mapping[str, Any] | None = None) -> None:
+        """Process record for Singer SDK compatibility - required signature."""
+        # This method is required by Singer SDK but we handle processing in _validate_and_transform_record
+        pass
+
     async def _extract_page(
-        self, page: int, page_size: int, context: dict | None = None
-    ):
+        self, page: int, page_size: int, context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Extract a specific page (for error recovery).
 
         Args:

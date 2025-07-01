@@ -101,6 +101,11 @@ from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
 
 from .auth import get_wms_authenticator, get_wms_headers
+from .enhanced_logging import (
+    get_enhanced_logger,
+    PerformanceTracer,
+    trace_performance,
+)
 
 
 if TYPE_CHECKING:
@@ -114,6 +119,7 @@ Context = dict[str, Any]
 
 
 logger = logging.getLogger(__name__)
+enhanced_logger = get_enhanced_logger(__name__)
 
 
 class CircuitBreaker:
@@ -131,7 +137,7 @@ class CircuitBreaker:
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.failure_count = 0
-        self.last_failure_time = None
+        self.last_failure_time: float | None = None
         self.state = "closed"  # closed, open, half-open
 
     def call_succeeded(self) -> None:
@@ -157,7 +163,7 @@ class CircuitBreaker:
             return True
 
         if self.state == "open":
-            if time.time() - self.last_failure_time > self.recovery_timeout:
+            if self.last_failure_time is not None and time.time() - self.last_failure_time > self.recovery_timeout:
                 self.state = "half-open"
                 logger.info("Circuit breaker entering half-open state")
                 return True
@@ -364,13 +370,15 @@ class WMSAdvancedStream(RESTStream):
         # CRITICAL: Override url_base after super().__init__ for Singer SDK
         self.url_base = self._base_url.rstrip("/")
 
-    @property
-    def name(self) -> str:
+    def get_name(self) -> str:  # type: ignore
         """Stream name."""
         return self.entity_name
+    
+    # Compatibility property with type ignore
+    name = property(lambda self: self.get_name())  # type: ignore
 
-    @property
-    def requests_session(self) -> None:
+    @property  # type: ignore[override]
+    def requests_session(self):  # type: ignore[override]
         """Create requests session with configured timeout.
 
         Override Singer SDK default to use our configured request_timeout
@@ -383,25 +391,28 @@ class WMSAdvancedStream(RESTStream):
         # massive historical extractions
         timeout = self.config.get("request_timeout", 7200)
 
-        # Apply timeout to all requests made by this session
-        session.request = lambda *args, **kwargs: (
-            kwargs.setdefault("timeout", timeout),
-            super(requests.Session, session).request(*args, **kwargs),
-        )[1]
-
+        # Apply timeout using adapter pattern instead of method assignment
+        original_request = session.request
+        def request_with_timeout(*args, **kwargs):  # type: ignore[no-untyped-def]
+            kwargs.setdefault("timeout", timeout)
+            return original_request(*args, **kwargs)
+        
+        session.request = request_with_timeout  # type: ignore[method-assign]
         return session
 
-    @property
-    def path(self) -> str:
+    def get_path(self) -> str:  # type: ignore
         """Get the API path for this stream's entity endpoint."""
         return f"/wms/lgfapi/v10/entity/{self.entity_name}"
+    
+    # Compatibility property with type ignore
+    path = property(lambda self: self.get_path())  # type: ignore
 
     @property
     def url(self) -> str:
         """Full URL using config base_url."""
         return f"{self._base_url.rstrip('/')}{self.path}"
 
-    def get_url_params(
+    def get_url_params(  # type: ignore[override]
         self,
         context: dict | None,
         next_page_token: Any | None,
@@ -427,6 +438,10 @@ class WMSAdvancedStream(RESTStream):
 
         This method handles both first requests and continuation requests seamlessly.
         """
+        enhanced_logger.info("🔗🔗🔗 EXTREME TRACE: get_url_params called for entity=%s", self.entity_name)
+        enhanced_logger.trace("🔬 EXTREME TRACE: Context=%s", context)
+        enhanced_logger.trace("🔬 EXTREME TRACE: next_page_token=%s", next_page_token)
+        enhanced_logger.trace("🔬 EXTREME TRACE: next_page_token type=%s", type(next_page_token))
         # For subsequent pages, extract parameters from next_page URL
         if next_page_token and hasattr(next_page_token, "query"):
             # Modern HATEOAS pattern: Extract URL parameters from ParseResult
@@ -513,7 +528,12 @@ class WMSAdvancedStream(RESTStream):
                 params["ordering"] = "-id"  # Descending order
 
         # Log first request parameters for debugging
-logger.debug("🔧 Initial URL params for %s: %s", self.entity_name, params)
+        logger.debug("🔧 Initial URL params for %s: %s", self.entity_name, params)
+        
+        enhanced_logger.info("🎯🎯🎯 EXTREME TRACE: Final URL params for %s: %s", self.entity_name, params)
+        enhanced_logger.trace("🔬 EXTREME TRACE: Params count: %d", len(params))
+        for key, value in params.items():
+            enhanced_logger.trace("🔬 EXTREME TRACE: Param %s = %s", key, value)
 
         return params
 
@@ -543,13 +563,26 @@ logger.debug("🔧 Initial URL params for %s: %s", self.entity_name, params)
             Resume context dictionary or None if no resume needed
 
         """
-        # TODO: This can be enhanced to query the target system (database, warehouse)
-        # to get actual statistics about existing data. For now, we provide a
-        # basic implementation that checks for configuration hints.
-
+        enhanced_logger.trace("🔍 Getting incremental context for: %s", self.entity_name)
+        
+        # PRIORITY 1: Check for direct resume_context in tap configuration (new approach)
+        resume_context_config = self.config.get("resume_context")
+        if resume_context_config and resume_context_config.get("min_id_in_target"):
+            enhanced_logger.info("🎯 RESUME CONTEXT FOUND: Using direct resume_context configuration")
+            enhanced_logger.info("🎯 RESUME DATA: %s", resume_context_config)
+            return resume_context_config
+        
+        # PRIORITY 2: Check for stream instance context (set by client)
+        if hasattr(self, 'context') and self.context:
+            enhanced_logger.info("🎯 STREAM CONTEXT FOUND: Using stream instance context")
+            enhanced_logger.info("🎯 STREAM CONTEXT DATA: %s", self.context)
+            if self.context.get("min_id_in_target"):
+                return self.context
+        
+        # PRIORITY 3: Check for legacy resume_config pattern
         resume_config = self.config.get("resume_config", {}).get(self.entity_name, {})
-
         if resume_config.get("enabled", False):
+            enhanced_logger.info("🎯 LEGACY RESUME CONFIG: Using resume_config pattern")
             return {
                 "has_existing_data": resume_config.get("has_existing_data", False),
                 "min_id_in_target": resume_config.get("min_id_in_target"),
@@ -557,6 +590,7 @@ logger.debug("🔧 Initial URL params for %s: %s", self.entity_name, params)
                 "sync_strategy": resume_config.get("strategy", "id_based_resume"),
             }
 
+        enhanced_logger.info("🎯 NO RESUME CONTEXT: No resume configuration found")
         return None
 
     def get_new_paginator(self) -> WMSAdvancedPaginator:
@@ -582,12 +616,12 @@ logger.debug("🔧 Initial URL params for %s: %s", self.entity_name, params)
     @property
     def authenticator(self) -> Any:
         """Get authenticator."""
-        return get_wms_authenticator(self, self.config)
+        return get_wms_authenticator(self, dict(self.config))
 
     @property
     def http_headers(self) -> dict:
         """Get HTTP headers with compression and authentication support."""
-        headers = get_wms_headers(self.config)
+        headers = get_wms_headers(dict(self.config))
 
         # Add compression
         if self._compression_enabled:
@@ -599,7 +633,7 @@ logger.debug("🔧 Initial URL params for %s: %s", self.entity_name, params)
 
         return headers
 
-    def validate_response(self, response: httpx.Response) -> None:
+    def validate_response(self, response: httpx.Response) -> None:  # type: ignore[override]
         """Validate HTTP response with circuit breaker."""
         if 200 <= response.status_code < 300:
             self._circuit_breaker.call_succeeded()
@@ -631,49 +665,105 @@ logger.debug("🔧 Initial URL params for %s: %s", self.entity_name, params)
             raise FatalAPIError(msg)
 
         # Default validation
-        super().validate_response(response)
+        super().validate_response(response)  # type: ignore[arg-type]
 
-    def parse_response(self, response: httpx.Response) -> Iterable[dict[str, Any]]:
-        """Parse response with advanced error handling."""
+    def parse_response(self, response: httpx.Response) -> Iterable[dict[str, Any]]:  # type: ignore[override]
+        """Parse response with EXTREME TRACE monitoring."""
         self._api_calls += 1
+        
+        enhanced_logger.info("🌐🌐🌐 EXTREME TRACE: parse_response called for entity=%s", self.entity_name)
+        enhanced_logger.trace("🔬 EXTREME TRACE: API call #%d", self._api_calls)
+        enhanced_logger.trace("🔬 EXTREME TRACE: Response status=%d", response.status_code)
+        enhanced_logger.trace("🔬 EXTREME TRACE: Response headers=%s", dict(response.headers))
+        enhanced_logger.info("📏 EXTREME TRACE: Response content length=%d bytes", len(response.content))
 
         try:
+            enhanced_logger.trace("🔬 EXTREME TRACE: About to parse JSON from response")
             data = response.json()
+            enhanced_logger.info("✅✅✅ EXTREME TRACE: JSON parsed successfully")
+            enhanced_logger.trace("🔬 EXTREME TRACE: Data type=%s", type(data))
+            
+            if isinstance(data, dict):
+                enhanced_logger.trace("🔬 EXTREME TRACE: Dict keys=%s", list(data.keys()))
+                if "results" in data:
+                    results = data["results"]
+                    enhanced_logger.info("📊📊📊 EXTREME TRACE: Found 'results' key with %d items", len(results) if isinstance(results, list) else "non-list")
+                else:
+                    enhanced_logger.warning("⚠️⚠️⚠️ EXTREME TRACE: NO 'results' key found in response!")
+                    enhanced_logger.trace("🔬 EXTREME TRACE: Available keys: %s", list(data.keys()))
+            elif isinstance(data, list):
+                enhanced_logger.info("📊📊📊 EXTREME TRACE: Direct list response with %d items", len(data))
+            else:
+                enhanced_logger.warning("⚠️⚠️⚠️ EXTREME TRACE: Unexpected data type: %s", type(data))
 
             # Handle values list mode
             if self._values_list:
+                enhanced_logger.trace("🔬 EXTREME TRACE: Processing in values_list mode")
                 if isinstance(data, dict) and "results" in data:
                     for row in data["results"]:
                         if isinstance(row, list) and self._field_selection:
                             yield dict(zip(self._field_selection, row, strict=False))
+                        else:
                             yield {"values": row}
                 return
 
+            records_yielded = 0
+            
             # Standard response formats
             if isinstance(data, dict):
                 if "results" in data:
                     # Paginated response
-                    for record in data["results"]:
+                    enhanced_logger.info("📄📄📄 EXTREME TRACE: Processing paginated response")
+                    for i, record in enumerate(data["results"]):
+                        enhanced_logger.trace("🔬 EXTREME TRACE: Processing result #%d", i + 1)
+                        if i == 0:
+                            enhanced_logger.info("📥📥📥 EXTREME TRACE: First result type=%s", type(record))
+                            if isinstance(record, dict):
+                                enhanced_logger.trace("🔬 EXTREME TRACE: First result keys=%s", list(record.keys()))
+                                enhanced_logger.trace("🔬 EXTREME TRACE: First result sample=%s", str(record)[:200])
+                        
                         self._records_extracted += 1
+                        records_yielded += 1
                         yield record
+                        
                 elif "data" in data:
                     # Alternative format
+                    enhanced_logger.info("📄📄📄 EXTREME TRACE: Processing 'data' format response")
                     for record in data["data"]:
                         self._records_extracted += 1
+                        records_yielded += 1
                         yield record
+                else:
                     # Single record
+                    enhanced_logger.info("📄📄📄 EXTREME TRACE: Processing single record format")
                     self._records_extracted += 1
+                    records_yielded += 1
                     yield data
+                    
             elif isinstance(data, list):
                 # Direct list
+                enhanced_logger.info("📄📄📄 EXTREME TRACE: Processing direct list format")
                 for record in data:
                     self._records_extracted += 1
+                    records_yielded += 1
                     yield record
+            else:
                 # Unknown format
-                logger.warning("Unexpected response format for %s", self.entity_name)
-                yield data
+                enhanced_logger.warning("⚠️⚠️⚠️ EXTREME TRACE: Unexpected response format for %s", self.entity_name)
+                enhanced_logger.critical("🚨🚨🚨 EXTREME TRACE: Data type=%s, content=%s", type(data), str(data)[:500])
+                # Wrap unknown format in dict to maintain type consistency
+                yield {"_raw_data": data, "_entity_name": self.entity_name}
+                records_yielded += 1
+                
+            enhanced_logger.info("🏁🏁🏁 EXTREME TRACE: parse_response completed - yielded %d records", records_yielded)
+            
+            if records_yielded == 0:
+                enhanced_logger.critical("🚨🚨🚨 EXTREME TRACE: ZERO RECORDS YIELDED FROM RESPONSE!")
+                enhanced_logger.critical("🚨 Raw response data: %s", str(data)[:1000])
 
         except json.JSONDecodeError as e:
+            enhanced_logger.critical("🚨🚨🚨 EXTREME TRACE: JSON decode error: %s", str(e))
+            enhanced_logger.critical("🚨 Raw response content: %s", response.text[:1000])
             self._errors["json_decode"] = self._errors.get("json_decode", 0) + 1
             logger.exception("JSON decode error for {self.entity_name}: %s", e)
             msg = f"Invalid JSON response from {self.entity_name}"
@@ -683,73 +773,286 @@ logger.debug("🔧 Initial URL params for %s: %s", self.entity_name, params)
             logger.exception("Parse error for {self.entity_name}: %s", e)
             raise
 
-    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
-        """Post-process records with validation."""
+    def post_process(self, row: dict, context: dict | None = None) -> dict | None:  # type: ignore[override]
+        """Post-process records with validation, flattening, and JSON field handling."""
         # Skip invalid records
         if not isinstance(row, dict):
-            logger.warning("Invalid record type in {self.entity_name}: %s", type(row))
+            logger.warning("Invalid record type in %s: %s", self.entity_name, type(row))
             return None
 
+        # Apply flattening and JSON field processing if enabled
+        processed_row = self._process_complex_fields(row.copy())
+
         # Ensure ID exists (most entities have it)
-        if not row.get("id") and "id" not in row:
+        if not processed_row.get("id") and "id" not in processed_row:
             # Some entities might not have ID field
             logger.debug("Record without ID in %s", self.entity_name)
 
         # Add metadata
-        row["_entity_name"] = self.entity_name
-        row["_extracted_at"] = datetime.now(timezone.utc).isoformat()
+        processed_row["_entity_name"] = self.entity_name
+        processed_row["_extracted_at"] = datetime.now(timezone.utc).isoformat()
 
         # Add extraction context if available
         if context:
-            row["_extraction_context"] = context
+            processed_row["_extraction_context"] = context
 
+        return processed_row
+
+    def _process_complex_fields(self, row: dict[str, Any]) -> dict[str, Any]:
+        """Process complex fields according to configuration."""
+        if not hasattr(self._tap, 'config'):
+            return row
+        
+        config = dict(self._tap.config)
+        
+        # Check if flattening or JSON processing is enabled
+        enable_flattening = config.get("enable_flattening", True)
+        preserve_nested = config.get("preserve_nested_objects", True)
+        
+        if not enable_flattening and not preserve_nested:
+            return row
+        
+        # Import processing classes from discovery module
+        try:
+            from .discovery import SchemaGenerator
+            
+            # Create processors with current configuration
+            flattener = ObjectFlattener(config) if enable_flattening else None
+            json_handler = JsonFieldHandler(config) if preserve_nested else None
+            
+            # Apply flattening first
+            if flattener:
+                row = flattener.flatten_object(row)
+            
+            # Then apply JSON field handling
+            if json_handler:
+                row = json_handler.process_nested_objects(row)
+                
+        except ImportError:
+            logger.debug("Could not import processing classes, skipping complex field processing")
+        
         return row
+
+
+class ObjectFlattener:
+    """Enhanced object flattening with configurable rules."""
+
+    def __init__(self, config: dict[str, Any]) -> None:
+        """Initialize object flattener."""
+        self.config = config
+        self.enable_flattening = config.get("enable_flattening", True)
+        self.flatten_id_objects = config.get("flatten_id_based_objects", True)
+        self.flatten_key_objects = config.get("flatten_key_based_objects", True)
+        self.flatten_url_objects = config.get("flatten_url_based_objects", True)
+        self.max_depth = config.get("max_flatten_depth", 3)
+
+    def should_flatten_object(self, obj: dict[str, Any], key: str = "") -> bool:
+        """Determine if an object should be flattened."""
+        if not self.enable_flattening:
+            return False
+        
+        if not isinstance(obj, dict):
+            return False
+        
+        # Check for ID-based objects
+        if self.flatten_id_objects and "id" in obj:
+            return True
+        
+        # Check for key-based objects
+        if self.flatten_key_objects and "key" in obj:
+            return True
+        
+        # Check for URL-based objects
+        if self.flatten_url_objects and any(k.endswith(("url", "_url", "href", "_href")) for k in obj.keys()):
+            return True
+        
+        # Check for simple objects (< 5 fields)
+        if len(obj) <= 3:
+            return True
+        
+        return False
+
+    def flatten_object(self, obj: Any, prefix: str = "", depth: int = 0) -> dict[str, Any]:
+        """Flatten complex objects with configurable rules."""
+        if depth > self.max_depth:
+            return {prefix.rstrip("_"): obj}
+        
+        if not isinstance(obj, dict):
+            return {prefix.rstrip("_"): obj}
+        
+        result = {}
+        
+        for key, value in obj.items():
+            new_key = f"{prefix}{key}" if prefix else key
+            
+            if isinstance(value, dict):
+                if self.should_flatten_object(value, key):
+                    # Flatten this object
+                    flattened = self.flatten_object(value, f"{new_key}_", depth + 1)
+                    result.update(flattened)
+                else:
+                    # Keep as nested object
+                    result[new_key] = value
+            elif isinstance(value, list):
+                if value and isinstance(value[0], dict) and self.should_flatten_object(value[0]):
+                    # Flatten array of simple objects
+                    for i, item in enumerate(value[:3]):  # Limit array flattening to first 3 items
+                        if isinstance(item, dict):
+                            flattened = self.flatten_object(item, f"{new_key}_{i}_", depth + 1)
+                            result.update(flattened)
+                        else:
+                            result[f"{new_key}_{i}"] = item
+                else:
+                    # Keep as array
+                    result[new_key] = value
+            else:
+                result[new_key] = value
+        
+        return result
+
+
+class JsonFieldHandler:
+    """Handle nested objects as JSON fields."""
+
+    def __init__(self, config: dict[str, Any]) -> None:
+        """Initialize JSON field handler."""
+        self.config = config
+        self.preserve_nested = config.get("preserve_nested_objects", True)
+        self.json_prefix = config.get("json_field_prefix", "json_")
+        self.nested_threshold = config.get("nested_object_threshold", 5)
+
+    def should_preserve_as_json(self, obj: dict[str, Any]) -> bool:
+        """Determine if object should be preserved as JSON field."""
+        if not self.preserve_nested:
+            return False
+        
+        if not isinstance(obj, dict):
+            return False
+        
+        # Large objects become JSON fields
+        if len(obj) > self.nested_threshold:
+            return True
+        
+        # Objects with nested objects become JSON fields
+        if any(isinstance(v, (dict, list)) for v in obj.values()):
+            return True
+        
+        return False
+
+    def process_nested_objects(self, obj: dict[str, Any]) -> dict[str, Any]:
+        """Process nested objects according to configuration."""
+        import json
+        
+        result = {}
+        
+        for key, value in obj.items():
+            if isinstance(value, dict):
+                if self.should_preserve_as_json(value):
+                    # Convert to JSON field
+                    result[f"{self.json_prefix}{key}"] = json.dumps(value)
+                else:
+                    # Keep as regular field
+                    result[key] = value
+            elif isinstance(value, list):
+                if value and isinstance(value[0], dict) and self.should_preserve_as_json(value[0]):
+                    # Convert array of objects to JSON
+                    result[f"{self.json_prefix}{key}"] = json.dumps(value)
+                else:
+                    result[key] = value
+            else:
+                result[key] = value
+        
+        return result
 
     @property
     def schema(self) -> dict:
-        """Dynamic schema with fallback."""
+        """Dynamic schema - PRODUCTION: Must have valid schema."""
+        enhanced_logger.trace("🔍 Retrieving schema for entity: %s", self.entity_name)
+        
         if self._dynamic_schema:
+            enhanced_logger.trace("✅ Using dynamic schema with %d properties",
+                                len(self._dynamic_schema.get('properties', {})))
             return self._dynamic_schema
 
-        # Minimal fallback schema
-        return {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": ["integer", "string", "null"],
-                    "description": "Entity identifier",
-                },
-                "_entity_name": {"type": "string", "description": "WMS entity name"},
-                "_extracted_at": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Extraction timestamp",
-                },
-            },
-            "additionalProperties": True,
-        }
+        # PRODUCTION: Never use fallback - always require proper schema discovery
+        enhanced_logger.critical("❌ No schema available for entity: %s", self.entity_name)
+        raise ValueError(
+            f"No schema available for entity '{self.entity_name}'. "
+            f"Schema discovery must be completed before accessing streams."
+        )
 
-    def get_records(self, context: Context | None) -> Iterable[dict]:
-        """Get records with monitoring."""
+    def get_records(self, context: Context | None) -> Iterable[dict]:  # type: ignore[override]
+        """Get records with EXTREME TRACE monitoring."""
         self._start_time = time.time()
+        
+        enhanced_logger.info("🚀🚀🚀 EXTREME TRACE: Starting get_records for entity=%s", self.entity_name)
+        enhanced_logger.trace("🔬 EXTREME TRACE: Context=%s", context)
+        enhanced_logger.trace("🔬 EXTREME TRACE: Stream URL=%s", self.url)
+        enhanced_logger.trace("🔬 EXTREME TRACE: Base URL=%s", self._base_url)
+        enhanced_logger.trace("🔬 EXTREME TRACE: Entity path=%s", self.path)
 
+        # TRACE: Stream configuration
+        enhanced_logger.trace("🔬 EXTREME TRACE: Stream config=%s", self.config)
+        enhanced_logger.trace("🔬 EXTREME TRACE: Page size=%s", self._get_optimal_page_size())
+        
+        record_count = 0
+        batch_count = 0
+        
         try:
-            yield from super().get_records(context)
+            enhanced_logger.info("🌊🌊🌊 EXTREME TRACE: About to call super().get_records()")
+            
+            for record in super().get_records(context):
+                record_count += 1
+                
+                # TRACE: First record details
+                if record_count == 1:
+                    enhanced_logger.info("📥📥📥 EXTREME TRACE: FIRST RECORD RECEIVED!")
+                    enhanced_logger.trace("🔬 EXTREME TRACE: First record type=%s", type(record))
+                    enhanced_logger.trace("🔬 EXTREME TRACE: First record keys=%s", list(record.keys()) if isinstance(record, dict) else "NOT_DICT")
+                    if isinstance(record, dict):
+                        record_id = record.get('id', 'NO_ID')
+                        enhanced_logger.info("📥 EXTREME TRACE: First record ID=%s", record_id)
+                        enhanced_logger.trace("🔬 EXTREME TRACE: First record sample=%s", str(record)[:300])
+                
+                # TRACE: Batch milestones
+                if record_count % 100 == 0:
+                    batch_count += 1
+                    enhanced_logger.info("📊📊📊 EXTREME TRACE: Batch %d completed - %d records processed", batch_count, record_count)
+                
+                # TRACE: Individual record processing
+                if record_count <= 5:
+                    enhanced_logger.trace("🔬 EXTREME TRACE: Processing record #%d", record_count)
+                
+                yield record
+                
+            enhanced_logger.info("✅✅✅ EXTREME TRACE: Generator exhausted - total records yielded=%d", record_count)
+            
+        except Exception as e:
+            enhanced_logger.critical("🚨🚨🚨 EXTREME TRACE: Exception in get_records: %s", str(e))
+            enhanced_logger.exception("🚨 EXTREME TRACE: Exception details")
+            raise
+            
         finally:
             # Log extraction metrics
             duration = time.time() - self._start_time
-            if duration > 0:
-                rate = self._records_extracted / duration
-                logger.info(
-                    "Extracted %d records from %s in %.2fs (%.2f records/sec)",
-                    self._records_extracted,
-                    self.entity_name,
-                    duration,
-                    rate,
-                )
+            enhanced_logger.info("🏁🏁🏁 EXTREME TRACE: FINAL SUMMARY:")
+            enhanced_logger.info("📊 Records processed: %d", record_count)
+            enhanced_logger.info("⏱️ Duration: %.2fs", duration)
+            
+            if duration > 0 and record_count > 0:
+                rate = record_count / duration
+                enhanced_logger.info("📈 Processing rate: %.2f records/sec", rate)
+            
+            if record_count == 0:
+                enhanced_logger.critical("🚨🚨🚨 EXTREME TRACE: ZERO RECORDS EXTRACTED!")
+                enhanced_logger.critical("🚨 This indicates a problem with:")
+                enhanced_logger.critical("🚨 1. API request parameters")
+                enhanced_logger.critical("🚨 2. API response parsing")
+                enhanced_logger.critical("🚨 3. Data filtering")
+                enhanced_logger.critical("🚨 4. Authentication/permissions")
 
             if self._errors:
-                logger.warning("Errors during extraction: %s", self._errors)
+                enhanced_logger.warning("Errors during extraction: %s", self._errors)
 
     def request_decorator(self, func: Any) -> Any:
         """Decorator for retry logic with exponential backoff."""

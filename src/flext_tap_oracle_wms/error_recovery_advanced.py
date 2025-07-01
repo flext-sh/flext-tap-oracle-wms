@@ -20,11 +20,14 @@ from typing import Any, Callable, TypeVar
 
 import httpx
 
+from .enhanced_logging import get_enhanced_logger
+
 
 # Type variable for generic functions
 T = TypeVar("T")
 
 logger = logging.getLogger(__name__)
+enhanced_logger = get_enhanced_logger(__name__)
 
 
 class ErrorSeverity(Enum):
@@ -57,7 +60,7 @@ class CircuitState(Enum):
 class ErrorContext:
     """Enhanced error context with comprehensive metadata."""
 
-    def __init__(
+    def __init__( # noqa: D107
         self,
         error_type: str,
         severity: ErrorSeverity,
@@ -72,12 +75,12 @@ class ErrorContext:
         self.message = message
         self.attempt_count = attempt_count
         self.metadata = metadata or {}
-        self.timestamp = timestamp or datetime.now()
+        self.timestamp = timestamp or datetime.now() # noqa: DTZ005
         self.correlation_id = correlation_id or self._generate_correlation_id()
 
     def _generate_correlation_id(self) -> str:
         """Generate unique correlation ID for error tracking."""
-        return f"err_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
+        return f"err_{int(time.time() * 1000)}_{random.randint(1000, 9999)}" # noqa: S311
 
     def to_dict(self) -> dict[str, Any]:
         """Convert error context to dictionary for logging."""
@@ -95,7 +98,7 @@ class ErrorContext:
 class RecoveryStrategy:
     """Recovery strategy configuration."""
 
-    def __init__(
+    def __init__( # noqa: D107
         self,
         action: RecoveryAction,
         max_attempts: int = 3,
@@ -124,7 +127,7 @@ class RecoveryStrategy:
 
         # Add jitter to prevent thundering herd
         if self.jitter_enabled:
-            jitter = delay * 0.1 * random.random()  # Up to 10% jitter
+            jitter = delay * 0.1 * random.random()  # Up to 10% jitter # noqa: S311
             delay += jitter
 
         return delay
@@ -133,7 +136,7 @@ class RecoveryStrategy:
 class AdvancedCircuitBreaker:
     """Advanced circuit breaker with adaptive thresholds."""
 
-    def __init__(
+    def __init__( # noqa: D107
         self,
         failure_threshold: int = 5,
         success_threshold: int = 3,
@@ -187,7 +190,7 @@ class AdvancedCircuitBreaker:
     def _record_failure(self) -> None:
         """Record failed operation."""
         self.failure_count += 1
-        self.last_failure_time = datetime.now()
+        self.last_failure_time = datetime.now() # noqa: DTZ005
         self.request_history.append(False)
         self._trim_history()
 
@@ -216,7 +219,7 @@ class AdvancedCircuitBreaker:
         if not self.last_failure_time:
             return True
 
-        time_since_failure = datetime.now() - self.last_failure_time
+        time_since_failure = datetime.now() - self.last_failure_time # noqa: DTZ005
         return time_since_failure.total_seconds() >= self.timeout
 
     def _trim_history(self) -> None:
@@ -237,12 +240,12 @@ class AdvancedCircuitBreaker:
 class BulkheadIsolation:
     """Bulkhead pattern for resource isolation."""
 
-    def __init__(self, max_concurrent_requests: int = 10) -> None:
+    def __init__(self, max_concurrent_requests: int = 10) -> None: # noqa: D107
         self.max_concurrent_requests = max_concurrent_requests
         self.semaphore = asyncio.Semaphore(max_concurrent_requests)
         self.active_requests = 0
 
-    async def execute(self, func: Callable, *args, **kwargs):
+    async def execute(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """Execute function with bulkhead isolation."""
         async with self.semaphore:
             self.active_requests += 1
@@ -262,13 +265,21 @@ class BulkheadIsolation:
 class AdvancedErrorRecoveryManager:
     """Advanced error recovery manager with comprehensive strategies."""
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, Any]) -> None: # noqa: D107
+        enhanced_logger.trace("🔧 Initializing Advanced Error Recovery Manager")
         self.config = config
+        
+        enhanced_logger.trace("🚪 Setting up circuit breaker with thresholds: %d/%d",
+                             config.get("circuit_breaker_failure_threshold", 5),
+                             config.get("circuit_breaker_success_threshold", 3))
         self.circuit_breaker = AdvancedCircuitBreaker(
             failure_threshold=config.get("circuit_breaker_failure_threshold", 5),
             success_threshold=config.get("circuit_breaker_success_threshold", 3),
             timeout=config.get("circuit_breaker_timeout", 60.0),
         )
+        
+        enhanced_logger.trace("🛡️ Setting up bulkhead isolation with max concurrent: %d",
+                             config.get("max_concurrent_requests", 10))
         self.bulkhead = BulkheadIsolation(
             max_concurrent_requests=config.get("max_concurrent_requests", 10)
         )
@@ -278,7 +289,9 @@ class AdvancedErrorRecoveryManager:
         self.adaptive_strategies: dict[str, RecoveryStrategy] = {}
 
         # Initialize default strategies
+        enhanced_logger.trace("⚙️ Initializing default recovery strategies")
         self._initialize_default_strategies()
+        enhanced_logger.trace("✅ Advanced Error Recovery Manager initialization complete")
 
     def _initialize_default_strategies(self) -> None:
         """Initialize default recovery strategies."""
@@ -322,9 +335,9 @@ class AdvancedErrorRecoveryManager:
     async def handle_error_with_recovery(
         self,
         error: Exception,
-        operation: Callable,
-        *args,
-        **kwargs,
+        operation: Callable[..., Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         """Handle error with advanced recovery strategies."""
         error_context = self._create_error_context(error)
@@ -332,8 +345,13 @@ class AdvancedErrorRecoveryManager:
 
         strategy = self._select_recovery_strategy(error_context)
 
+        enhanced_logger.trace(
+            "🛠️ Handling error with strategy: %s for error: %s",
+            strategy.action.value, error_context.error_type
+        )
+        enhanced_logger.trace("📄 Error context details: %s", error_context.to_dict())
         logger.info(
-            f"Handling error with strategy: {strategy.action.value}",
+            "Handling error with strategy: %s", strategy.action.value,
             extra={"error_context": error_context.to_dict()},
         )
 
@@ -365,7 +383,7 @@ class AdvancedErrorRecoveryManager:
         if isinstance(error, httpx.HTTPStatusError):
             metadata.update(
                 {
-                    "status_code": error.response.status_code,
+                    "status_code": str(error.response.status_code),
                     "response_text": error.response.text[:500],  # Limit size
                     "request_url": str(error.request.url),
                     "request_method": error.request.method,
@@ -491,9 +509,9 @@ class AdvancedErrorRecoveryManager:
         self,
         error_context: ErrorContext,
         strategy: RecoveryStrategy,
-        operation: Callable,
-        *args,
-        **kwargs,
+        operation: Callable[..., Any],
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         """Execute retry strategy with exponential backoff."""
         for attempt in range(1, strategy.max_attempts + 1):
@@ -519,19 +537,17 @@ class AdvancedErrorRecoveryManager:
         return None
 
     async def _execute_fallback_strategy(self, error_context: ErrorContext) -> Any:
-        """Execute fallback strategy."""
-        logger.info("Executing fallback for error: %s", error_context.error_type)
-
-        # Return cached data or default values
-        return {
-            "data": [],
-            "pagination": {"has_next": False},
-            "metadata": {
-                "source": "fallback",
-                "error_context": error_context.correlation_id,
-                "generated_at": datetime.now().isoformat(),
-            },
-        }
+        """Execute fallback strategy - PRODUCTION: Fail explicitly, no fake data."""
+        enhanced_logger.critical(
+            "❌ Fallback strategy triggered for error: %s - FAILING EXPLICITLY",
+            error_context.error_type
+        )
+        logger.critical("Fallback strategy not allowed in production: %s", error_context.error_type)
+        
+        # PRODUCTION: Never return fake data - always fail explicitly
+        raise ProductionFallbackNotAllowedError(
+            f"Fallback strategy not allowed in production for error: {error_context.error_type}"
+        )
 
     async def _execute_circuit_break_strategy(self, error_context: ErrorContext) -> Any:
         """Execute circuit breaker strategy."""
@@ -585,6 +601,10 @@ class CircuitBreakerOpenError(Exception):
 
 class CriticalErrorRequiresEscalation(Exception):
     """Exception for errors requiring escalation."""
+
+
+class ProductionFallbackNotAllowedError(Exception):
+    """Exception raised when fallback strategies are attempted in production."""
 
 
 # Factory function for easy integration

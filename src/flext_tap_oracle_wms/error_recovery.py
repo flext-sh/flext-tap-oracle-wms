@@ -210,7 +210,15 @@ class ErrorRecoveryManager:
                 entity_name=context.get("entity_name"),
                 metadata={"error_class": error.__class__.__name__},
             )
-        return None
+        from datetime import datetime, timezone
+        return ErrorContext(
+            error_type=error.__class__.__name__,
+            severity=ErrorSeverity.MEDIUM,
+            message=str(error),
+            timestamp=datetime.now(timezone.utc).timestamp(),
+            entity_name=context.get("entity_name"),
+            metadata={"error_class": error.__class__.__name__},
+        )
 
     def should_recover(
         self, error_context: ErrorContext

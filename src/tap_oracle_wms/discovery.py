@@ -12,14 +12,17 @@ import httpx
 
 from .auth import get_wms_authenticator, get_wms_headers
 from .config import HTTP_FORBIDDEN, HTTP_NOT_FOUND, HTTP_OK
+from .enhanced_logging import get_enhanced_logger, trace_performance
 
 
 logger = logging.getLogger(__name__)
+enhanced_logger = get_enhanced_logger(__name__)
 
 
 class EntityDiscovery:
     """Handle dynamic entity discovery from Oracle WMS API."""
 
+    @trace_performance("Entity Discovery Initialization")
     def __init__(self, config: dict[str, Any]) -> None:
         """Initialize entity discovery.
 
@@ -28,6 +31,8 @@ class EntityDiscovery:
             config: Configuration dictionary
 
         """
+        enhanced_logger.trace("🔍 Initializing entity discovery system")
+        enhanced_logger.trace("⚙️  Config keys: %s", list(config.keys()))
         self.config = config
         self.base_url = config["base_url"].rstrip("/")
         self.api_version = "v10"  # Current stable version
@@ -266,7 +271,7 @@ class EntityDiscovery:
                 logger.debug("Using cached sample data for entity: %s", entity_name)
                 return self._sample_cache[cache_key]
         url = f"{self.entity_endpoint}/{entity_name}"
-        params = {"page_size": limit, "page": 1}
+        params = {"page_size": limit, "page_mode": "sequenced"}
 
         async with httpx.AsyncClient(timeout=30) as client:
             try:
@@ -398,7 +403,7 @@ class EntityDiscovery:
                 logger.debug("Using cached access result for entity: %s", entity_name)
                 return self._access_cache[entity_name]
         url = f"{self.entity_endpoint}/{entity_name}"
-        params = {"page_size": 1, "page": 1}
+        params = {"page_size": 1, "page_mode": "sequenced"}
 
         async with httpx.AsyncClient(timeout=30) as client:
             try:
@@ -444,7 +449,7 @@ class EntityDiscovery:
 
         """
         url = f"{self.entity_endpoint}/{entity_name}"
-        params = {"page_size": 1, "page": 1}
+        params = {"page_size": 1, "page_mode": "sequenced"}
 
         async with httpx.AsyncClient(timeout=30) as client:
             try:
@@ -626,7 +631,7 @@ class EntityDiscovery:
 
 
 class SchemaGenerator:
-    """Generate Singer schemas from WMS entity metadata."""
+    """Generate Singer schemas from WMS entity metadata with enhanced flattening support."""
 
     # Map WMS types to Singer/JSON Schema types
     TYPE_MAPPING = {  # noqa: RUF012
@@ -645,6 +650,22 @@ class SchemaGenerator:
         "char": "string",
         "varchar": "string",
     }
+    
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
+        """Initialize schema generator with flattening configuration."""
+        self.config = config or {}
+        
+        # Flattening configuration
+        self.enable_flattening = self.config.get("enable_flattening", True)
+        self.flatten_id_objects = self.config.get("flatten_id_based_objects", True)
+        self.flatten_key_objects = self.config.get("flatten_key_based_objects", True)
+        self.flatten_url_objects = self.config.get("flatten_url_based_objects", True)
+        self.max_flatten_depth = self.config.get("max_flatten_depth", 3)
+        
+        # JSON field configuration
+        self.preserve_nested = self.config.get("preserve_nested_objects", True)
+        self.json_prefix = self.config.get("json_field_prefix", "json_")
+        self.nested_threshold = self.config.get("nested_object_threshold", 5)
 
     def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         """Generate schema from entity describe metadata.
@@ -693,7 +714,7 @@ class SchemaGenerator:
         return schema
 
     def generate_from_sample(self, samples: list[dict[str, Any]]) -> dict[str, Any]:
-        """Generate schema by inferring from sample data.
+        """Generate schema by inferring from sample data with enhanced flattening.
 
         Args:
         ----
@@ -701,23 +722,32 @@ class SchemaGenerator:
 
         Returns:
         -------
-            Singer-compatible schema
+            Singer-compatible schema with flattened complex objects
 
         """
         if not samples:
             return {"type": "object", "properties": {}}
 
+        # Process samples with flattening if enabled
+        processed_samples = []
+        for sample in samples:
+            if self.enable_flattening:
+                processed_sample = self._flatten_complex_objects(sample)
+            else:
+                processed_sample = sample
+            processed_samples.append(processed_sample)
+
         # Analyze all samples to build complete schema
         properties: dict[str, Any] = {}
 
-        for sample in samples:
+        for sample in processed_samples:
             for field_name, value in sample.items():
                 if field_name not in properties:
-                    properties[field_name] = self._infer_type(value)
+                    properties[field_name] = self._infer_type_enhanced(value, field_name)
                 else:
                     # Update type if needed (handle nulls, mixed types)
                     current_type = properties[field_name]
-                    new_type = self._infer_type(value)
+                    new_type = self._infer_type_enhanced(value, field_name)
                     properties[field_name] = self._merge_types(current_type, new_type)
 
         return {
@@ -725,6 +755,121 @@ class SchemaGenerator:
             "properties": properties,
             "additionalProperties": False,
         }
+
+    def _flatten_complex_objects(self, obj: dict[str, Any], prefix: str = "", depth: int = 0) -> dict[str, Any]:
+        """Flatten complex objects according to configuration rules.
+        
+        Args:
+        ----
+            obj: Object to flatten
+            prefix: Current field prefix
+            depth: Current nesting depth
+            
+        Returns:
+        -------
+            Flattened object
+        """
+        if depth > self.max_flatten_depth:
+            return {prefix.rstrip("_"): obj}
+        
+        result = {}
+        
+        for key, value in obj.items():
+            new_key = f"{prefix}{key}" if prefix else key
+            
+            if isinstance(value, dict):
+                if self._should_flatten_object(value, key):
+                    # Flatten this object
+                    flattened = self._flatten_complex_objects(value, f"{new_key}_", depth + 1)
+                    result.update(flattened)
+                elif self._should_preserve_as_json(value):
+                    # Convert to JSON field
+                    result[f"{self.json_prefix}{new_key}"] = value
+                else:
+                    # Keep as nested object
+                    result[new_key] = value
+            elif isinstance(value, list):
+                if value and isinstance(value[0], dict) and self._should_flatten_object(value[0]):
+                    # Flatten array of simple objects
+                    for i, item in enumerate(value[:3]):  # Limit array flattening
+                        if isinstance(item, dict):
+                            flattened = self._flatten_complex_objects(item, f"{new_key}_{i}_", depth + 1)
+                            result.update(flattened)
+                        else:
+                            result[f"{new_key}_{i}"] = item
+                elif self._should_preserve_as_json(value):
+                    # Convert array to JSON field
+                    result[f"{self.json_prefix}{new_key}"] = value
+                else:
+                    # Keep as array
+                    result[new_key] = value
+            else:
+                result[new_key] = value
+        
+        return result
+
+    def _should_flatten_object(self, obj: dict[str, Any], key: str = "") -> bool:
+        """Determine if an object should be flattened."""
+        if not self.enable_flattening or not isinstance(obj, dict):
+            return False
+        
+        # Check for ID-based objects
+        if self.flatten_id_objects and "id" in obj:
+            return True
+        
+        # Check for key-based objects
+        if self.flatten_key_objects and "key" in obj:
+            return True
+        
+        # Check for URL-based objects
+        if self.flatten_url_objects and any(k.endswith(("url", "_url", "href", "_href")) for k in obj.keys()):
+            return True
+        
+        # Check for simple objects (≤ 3 fields)
+        if len(obj) <= 3:
+            return True
+        
+        return False
+
+    def _should_preserve_as_json(self, obj: Any) -> bool:
+        """Determine if object should be preserved as JSON field."""
+        if not self.preserve_nested:
+            return False
+        
+        if isinstance(obj, dict):
+            # Large objects become JSON fields
+            if len(obj) > self.nested_threshold:
+                return True
+            
+            # Objects with nested objects become JSON fields
+            if any(isinstance(v, (dict, list)) for v in obj.values()):
+                return True
+                
+        elif isinstance(obj, list):
+            # Arrays of complex objects become JSON fields
+            if obj and isinstance(obj[0], dict) and len(obj[0]) > 3:
+                return True
+        
+        return False
+
+    def _infer_type_enhanced(self, value: Any, field_name: str = "") -> dict[str, Any]:
+        """Enhanced type inference with JSON field detection.
+        
+        Args:
+        ----
+            value: Sample value
+            field_name: Field name for context
+            
+        Returns:
+        -------
+            Type definition
+        """
+        # Check if this is a JSON field
+        if field_name.startswith(self.json_prefix):
+            return {"type": "string", "description": "JSON-encoded complex object"}
+        
+        # Use standard type inference
+        return self._infer_type(value)
 
     def _create_property_from_field(
         self,

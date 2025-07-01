@@ -247,34 +247,37 @@ def create_validation_report(config: dict[str, Any]) -> dict[str, Any]:
     """
     is_valid, errors = validate_complete_config(config)
 
+    warnings: list[str] = []
+    recommendations: list[str] = []
+    
     report = {
         "valid": is_valid,
         "timestamp": "2025-06-29T12:00:00Z",
         "config_hash": hash(str(sorted(config.items()))),
         "errors": errors,
-        "warnings": [],
-        "recommendations": [],
+        "warnings": warnings,
+        "recommendations": recommendations,
     }
 
     # Add warnings for sub-optimal settings
     if config.get("page_size", 1000) > 2000:
-        report["warnings"].append("Large page size may impact performance")
+        warnings.append("Large page size may impact performance")
 
     if config.get("verify_ssl", True) is False:
-        report["warnings"].append("SSL verification disabled - security risk")
+        warnings.append("SSL verification disabled - security risk")
 
     if config.get("request_timeout", 7200) > 7200:
-        report["warnings"].append("Very long timeout may cause operational issues")
+        warnings.append("Very long timeout may cause operational issues")
 
     # Add recommendations
     if not config.get("monitoring", {}).get("enabled", False):
-        report["recommendations"].append("Enable monitoring for production use")
+        recommendations.append("Enable monitoring for production use")
 
     if config.get("log_level", "INFO") == "DEBUG":
-        report["recommendations"].append("Use INFO log level for production")
+        recommendations.append("Use INFO log level for production")
 
     if not config.get("circuit_breaker", {}).get("enabled", True):
-        report["recommendations"].append("Enable circuit breaker for resilience")
+        recommendations.append("Enable circuit breaker for resilience")
 
     return report
 

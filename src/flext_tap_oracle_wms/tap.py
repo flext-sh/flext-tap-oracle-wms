@@ -16,6 +16,18 @@ import httpx
 from singer_sdk import Stream, Tap
 
 from .config import config_schema
+from .enhanced_logging import (
+    get_enhanced_logger,
+    PerformanceTracer,
+    trace_performance,
+)
+from .logging import (
+    get_singer_logger,
+    trace_singer_operation,
+    trace_wms_api_call,
+    trace_stream_operation,
+    trace_discovery_operation,
+)
 from .error_recovery import ErrorRecoveryManager
 from .error_recovery_advanced import (
     create_advanced_error_recovery,
@@ -31,6 +43,9 @@ from .validation import validate_complete_config
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from singer_sdk.tap_base import Tap as BaseTap
+else:
+    BaseTap = Any
 
 
 class OracleWMSStream(Stream):
@@ -38,7 +53,7 @@ class OracleWMSStream(Stream):
 
     def __init__(
         self,
-        tap: TapOracleWMS,
+        tap: Any,  # TapOracleWMS - forward reference
         name: str,
         schema: dict[str, Any],
     ) -> None:
@@ -48,20 +63,35 @@ class OracleWMSStream(Stream):
         self.api_path = f"/api/v1/{name}"
         # Use advanced error recovery if enabled
         if tap.config.get("advanced_error_recovery", True):
-            self.error_manager = create_advanced_error_recovery(tap.config)
+            self.error_manager: Any = create_advanced_error_recovery(dict(tap.config))
         else:
-            self.error_manager = ErrorRecoveryManager(tap.config)
+            self.error_manager = ErrorRecoveryManager(dict(tap.config))
         self.records_processed = 0
         self.last_processed_time: datetime | None = None
 
-        # Initialize monitoring
+        # Initialize monitoring and enterprise logging
         self.monitor = get_monitor()
         self.business_metrics = BusinessMetricsCollector(self.monitor)
+        self.enhanced_logger = get_enhanced_logger(f"{__name__}.{name}")
+        self.enterprise_logger = get_singer_logger(f"{__name__}.{name}")
+        
+        # Enterprise TRACE logging for stream initialization
+        trace_stream_operation(
+            self.enterprise_logger,
+            stream_name=name,
+            operation="stream_initialization",
+            timing_ms=0.0,
+            entity_name=name,
+            api_path=self.api_path,
+        )
+        self.enhanced_logger.trace(f"🔍 Initializing stream for entity: {name}")
+        self.enterprise_logger.trace(f"🚀 Enterprise stream initialization for {name} complete")
 
     @property
     def url_base(self) -> str:
         """Get base URL for Oracle WMS API."""
-        return self.config.get("base_url", "").rstrip("/")
+        base_url = self.config.get("base_url", "")
+        return str(base_url).rstrip("/")
 
     @property
     def http_headers(self) -> dict[str, str]:
@@ -69,7 +99,7 @@ class OracleWMSStream(Stream):
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "User-Agent": self.config.get("user_agent", "tap-oracle-wms/1.0"),
+            "User-Agent": str(self.config.get("user_agent", "tap-oracle-wms/1.0")),
         }
 
         # Add WMS context headers
@@ -77,9 +107,9 @@ class OracleWMSStream(Stream):
         facility_code = self.config.get("facility_code", "*")
 
         if company_code != "*":
-            headers["X-WMS-Company"] = company_code
+            headers["X-WMS-Company"] = str(company_code)
         if facility_code != "*":
-            headers["X-WMS-Facility"] = facility_code
+            headers["X-WMS-Facility"] = str(facility_code)
 
         return headers
 
@@ -140,10 +170,26 @@ class OracleWMSStream(Stream):
         params: dict[str, Any],
         headers: dict[str, str],
     ) -> dict[str, Any]:
-        """Make HTTP request with error recovery and safe mode support."""
-        # Check if in safe demo mode
-        if self.config.get("safe_mode", True) or "demo" in url.lower():
-            return await self._make_safe_demo_request(url, params)
+        """Make HTTP request with error recovery."""
+        request_start = time.perf_counter()
+        
+        # Enterprise TRACE logging for API call
+        self.enhanced_logger.trace("🚀 Making HTTP request to %s", url)
+        self.enhanced_logger.trace("📈 Request params: %s", params)
+        
+        trace_wms_api_call(
+            self.enterprise_logger,
+            method="GET",
+            endpoint=url,
+            request_size=len(str(params)),
+            entity_name=self.entity_name,
+            page_params=params,
+        )
+        
+        # PRODUCTION: Always use real API - no demo mode
+        if self.config.get("safe_mode", False):
+            self.enhanced_logger.critical("❌ Safe mode not allowed in production")
+            raise ValueError("Safe mode/demo mode not allowed in production environment")
 
         timeout = httpx.Timeout(
             connect=self.config.get("connect_timeout", 30),
@@ -167,199 +213,53 @@ class OracleWMSStream(Stream):
             try:
                 response = await client.get(url, params=params, headers=headers)
                 response.raise_for_status()
-                return response.json()
+                response_data = response.json()
+                
+                # Enterprise TRACE logging for successful API response
+                timing_ms = (time.perf_counter() - request_start) * 1000
+                trace_wms_api_call(
+                    self.enterprise_logger,
+                    method="GET",
+                    endpoint=url,
+                    status_code=response.status_code,
+                    timing_ms=timing_ms,
+                    request_size=len(str(params)),
+                    response_size=len(str(response_data)) if response_data else 0,
+                    entity_name=self.entity_name,
+                    success=True,
+                )
+                
+                return dict(response_data) if response_data else {}
 
             except httpx.HTTPStatusError as e:
                 # Use advanced error recovery if available
                 if hasattr(self.error_manager, "handle_error_with_recovery"):
-                    return await self.error_manager.handle_error_with_recovery(
+                    result = await self.error_manager.handle_error_with_recovery(
                         e, self._make_request_with_recovery, url, params, headers
                     )
+                    return dict(result) if result else {}
                 # Fallback to basic error recovery
-                return await self.error_manager.handle_error(
+                result = await self.error_manager.handle_error(
                     e, self._make_request_with_recovery, url, params, headers
                 )
+                return dict(result) if result else {}
 
             except httpx.RequestError as e:
                 # Use advanced error recovery if available
                 if hasattr(self.error_manager, "handle_error_with_recovery"):
-                    return await self.error_manager.handle_error_with_recovery(
+                    result = await self.error_manager.handle_error_with_recovery(
                         e, self._make_request_with_recovery, url, params, headers
                     )
+                    return dict(result) if result else {}
                 # Fallback to basic error recovery
-                return await self.error_manager.handle_error(
+                self.enhanced_logger.warning("⚠️ Request Error, attempting recovery: %s", e)
+                result = await self.error_manager.handle_error(
                     e, self._make_request_with_recovery, url, params, headers
                 )
+                return dict(result) if result else {}
 
-    async def _make_safe_demo_request(
-        self,
-        url: str,
-        params: dict[str, Any],
-    ) -> dict[str, Any]:
-        """Make safe demo request that generates realistic data without hitting real APIs."""
-        # Simulate realistic API response time
-        await asyncio.sleep(random.uniform(0.1, 0.5))
-
-        entity_name = self.entity_name.lower()
-        page_size = params.get("page_size", 100)
-        cursor = params.get("cursor")
-
-        # Generate realistic demo data based on entity type
-        if "item" in entity_name:
-            demo_records = self._generate_item_demo_data(page_size)
-        elif "inventory" in entity_name:
-            demo_records = self._generate_inventory_demo_data(page_size)
-        elif "order" in entity_name:
-            demo_records = self._generate_order_demo_data(page_size)
-        elif "location" in entity_name:
-            demo_records = self._generate_location_demo_data(page_size)
-        else:
-            demo_records = self._generate_generic_demo_data(page_size)
-
-        # Simulate pagination
-        has_next_page = random.choice([True, False]) if not cursor else False
-        next_cursor = f"page_{random.randint(2, 10)}" if has_next_page else None
-
-        return {
-            "data": demo_records,
-            "pagination": {
-                "page_size": page_size,
-                "has_next": has_next_page,
-                "next_cursor": next_cursor,
-                "total_estimated": random.randint(500, 10000),
-            },
-            "metadata": {
-                "generated_at": datetime.now().isoformat(),
-                "demo_mode": True,
-                "entity": entity_name,
-                "response_time_ms": random.randint(50, 500),
-            },
-        }
-
-    def _generate_item_demo_data(self, count: int) -> list[dict[str, Any]]:
-        """Generate realistic item demo data."""
-        items = []
-        for i in range(count):
-            item_id = f"ITEM{str(i + 1).zfill(6)}"
-            items.append(
-                {
-                    "id": item_id,
-                    "code": item_id,
-                    "item_code": item_id,
-                    "description": f"Demo Item {i + 1}",
-                    "item_description": f"Warehouse Demo Item {i + 1} - Testing Data",
-                    "unit_of_measure": random.choice(["EA", "CS", "PL", "LB", "KG"]),
-                    "category": random.choice(["GENERAL", "HAZMAT", "BULK", "FRAGILE"]),
-                    "location": f"LOC{random.randint(1, 999):03d}",
-                    "quantity_on_hand": random.randint(0, 1000),
-                    "available_quantity": random.randint(0, 800),
-                    "active": True,
-                    "created_date": (
-                        datetime.now() - timedelta(days=random.randint(1, 365))
-                    ).isoformat(),
-                    "modified_date": (
-                        datetime.now() - timedelta(hours=random.randint(1, 24))
-                    ).isoformat(),
-                }
-            )
-        return items
-
-    def _generate_inventory_demo_data(self, count: int) -> list[dict[str, Any]]:
-        """Generate realistic inventory demo data."""
-        return [
-            {
-                "id": f"INV{str(i + 1).zfill(6)}",
-                "item_code": f"ITEM{random.randint(1, 1000):06d}",
-                "location": f"LOC{random.randint(1, 999):03d}",
-                "quantity_on_hand": random.randint(0, 1000),
-                "available_quantity": random.randint(0, 800),
-                "allocated_quantity": random.randint(0, 200),
-                "lot_number": f"LOT{random.randint(1000, 9999)}",
-                "expiry_date": (
-                    datetime.now() + timedelta(days=random.randint(30, 365))
-                ).isoformat(),
-                "last_count_date": (
-                    datetime.now() - timedelta(days=random.randint(1, 90))
-                ).isoformat(),
-                "active": True,
-                "created_date": (
-                    datetime.now() - timedelta(days=random.randint(1, 365))
-                ).isoformat(),
-                "modified_date": (
-                    datetime.now() - timedelta(hours=random.randint(1, 24))
-                ).isoformat(),
-            }
-            for i in range(count)
-        ]
-
-    def _generate_order_demo_data(self, count: int) -> list[dict[str, Any]]:
-        """Generate realistic order demo data."""
-        return [
-            {
-                "id": f"ORD{str(i + 1).zfill(6)}",
-                "order_number": f"SO{random.randint(100000, 999999)}",
-                "order_type": random.choice(["OUTBOUND", "INBOUND", "TRANSFER"]),
-                "customer_code": f"CUST{random.randint(1, 100):03d}",
-                "order_date": (
-                    datetime.now() - timedelta(days=random.randint(0, 30))
-                ).isoformat(),
-                "status": random.choice(
-                    ["OPEN", "ALLOCATED", "PICKED", "SHIPPED", "COMPLETE"]
-                ),
-                "priority": random.choice(["LOW", "NORMAL", "HIGH", "URGENT"]),
-                "total_lines": random.randint(1, 20),
-                "active": True,
-                "created_date": (
-                    datetime.now() - timedelta(days=random.randint(1, 365))
-                ).isoformat(),
-                "modified_date": (
-                    datetime.now() - timedelta(hours=random.randint(1, 24))
-                ).isoformat(),
-            }
-            for i in range(count)
-        ]
-
-    def _generate_location_demo_data(self, count: int) -> list[dict[str, Any]]:
-        """Generate realistic location demo data."""
-        return [
-            {
-                "id": f"LOC{str(i + 1).zfill(6)}",
-                "location_code": f"LOC{str(i + 1).zfill(3)}",
-                "zone": random.choice(["A", "B", "C", "D", "DOCK", "STAGE"]),
-                "location_type": random.choice(
-                    ["PICK", "RESERVE", "STAGE", "DOCK", "QC"]
-                ),
-                "capacity": random.randint(100, 10000),
-                "occupied": random.choice([True, False]),
-                "description": f"Demo Location {i + 1}",
-                "active": True,
-                "created_date": (
-                    datetime.now() - timedelta(days=random.randint(1, 365))
-                ).isoformat(),
-                "modified_date": (
-                    datetime.now() - timedelta(hours=random.randint(1, 24))
-                ).isoformat(),
-            }
-            for i in range(count)
-        ]
-
-    def _generate_generic_demo_data(self, count: int) -> list[dict[str, Any]]:
-        """Generate generic demo data for unknown entity types."""
-        return [
-            {
-                "id": f"REC{str(i + 1).zfill(6)}",
-                "code": f"CODE{str(i + 1).zfill(6)}",
-                "description": f"Demo Record {i + 1}",
-                "active": True,
-                "created_date": (
-                    datetime.now() - timedelta(days=random.randint(1, 365))
-                ).isoformat(),
-                "modified_date": (
-                    datetime.now() - timedelta(hours=random.randint(1, 24))
-                ).isoformat(),
-            }
-            for i in range(count)
-        ]
+    # PRODUCTION NOTICE: All demo/mock data generation functions removed
+    # for security and reliability. Only real API connections allowed.
 
     async def _make_request_with_recovery(
         self,
@@ -383,8 +283,10 @@ class OracleWMSStream(Stream):
 
             response = await client.get(url, params=params, headers=headers)
             response.raise_for_status()
-            return response.json()
+            result = response.json()
+            return dict(result) if result else {}
 
+    @trace_performance("Stream Data Extraction")
     def get_records(self, context: dict[str, Any] | None) -> Iterable[dict[str, Any]]:
         """Get records from Oracle WMS API with real data processing."""
         next_page_token = None
@@ -392,16 +294,23 @@ class OracleWMSStream(Stream):
         start_time = time.perf_counter()
         total_errors = 0
 
-        # Start monitoring timer
-        with timer(f"stream_extraction_{self.entity_name}"):
+        self.enhanced_logger.trace(f"🚀 Starting data extraction for {self.entity_name}")
+        
+        # Start monitoring timer with enhanced performance tracing
+        with timer(f"stream_extraction_{self.entity_name}"), PerformanceTracer(self.enhanced_logger, f"Extract {self.entity_name}") as tracer:
             while True:
                 page_count += 1
-logger.info("Processing %s page %s", self.entity_name, page_count)
+                self.enhanced_logger.trace(f"📄 Processing {self.entity_name} page {page_count}")
+                tracer.checkpoint(f"Starting page {page_count}")
+                self.logger.info("Processing %s page %s", self.entity_name, page_count)
 
                 # Prepare request parameters
                 url = f"{self.url_base}{self.api_path}"
                 params = self.get_url_params(context, next_page_token)
                 headers = self.http_headers
+                
+                self.enhanced_logger.trace(f"📈 Request URL: {url}")
+                self.enhanced_logger.trace(f"📉 Request params: {params}")
 
                 try:
                     # Record API request timing
@@ -434,12 +343,16 @@ logger.info("Processing %s page %s", self.entity_name, page_count)
                     # Record successful API request
                     request_duration = (time.perf_counter() - request_start) * 1000
                     self.monitor.record_request(request_duration, success=True)
+                    self.enhanced_logger.trace(f"✅ API request successful in {request_duration:.2f}ms")
+                    tracer.checkpoint(f"API request page {page_count}")
 
                     # Process response data
                     records = self._extract_records_from_response(response_data)
+                    self.enhanced_logger.trace(f"📀 Extracted {len(records)} records from response")
 
-                    for record in records:
+                    for i, record in enumerate(records):
                         # Apply data transformations
+                        self.enhanced_logger.trace(f"🔄 Transforming record {i+1}/{len(records)}")
                         transformed_record = self._transform_record(record)
                         self.records_processed += 1
                         self.last_processed_time = datetime.now()
@@ -448,7 +361,10 @@ logger.info("Processing %s page %s", self.entity_name, page_count)
                     # Check for pagination
                     next_page_token = self._extract_next_page_token(response_data)
                     if not next_page_token:
+                        self.enhanced_logger.trace("✅ No more pages - extraction complete")
                         break
+                    else:
+                        self.enhanced_logger.trace(f"🔄 Next page token: {next_page_token}")
 
                     # Respect rate limiting
                     if self.config.get("rate_limit_delay", 0) > 0:
@@ -459,9 +375,12 @@ logger.info("Processing %s page %s", self.entity_name, page_count)
                     # Record failed API request
                     request_duration = (time.perf_counter() - request_start) * 1000
                     self.monitor.record_request(request_duration, success=False)
+                    
+                    self.enhanced_logger.critical(f"❌ Error processing {self.entity_name} page {page_count}: {e}")
+                    tracer.checkpoint(f"Error on page {page_count}")
 
                     self.logger.exception(
-                        f"Error processing {self.entity_name} page {page_count}: {e}"
+                        "Error processing %s page %d", self.entity_name, page_count
                     )
                     if not self.config.get("continue_on_error", True):
                         raise
@@ -472,6 +391,8 @@ logger.info("Processing %s page %s", self.entity_name, page_count)
             self.monitor.record_stream_metrics(
                 self.entity_name, self.records_processed, total_errors, total_duration
             )
+            
+            tracer.checkpoint("Final metrics calculation")
 
             # Record business metrics
             data_quality_score = max(
@@ -484,6 +405,17 @@ logger.info("Processing %s page %s", self.entity_name, page_count)
                 self.records_processed,
                 total_duration,
                 data_quality_score,
+            )
+            
+            # Enhanced final logging
+            self.enhanced_logger.info(
+                f"✅ Extraction completed for {self.entity_name}: "
+                f"{self.records_processed} records, {total_errors} errors, "
+                f"quality score: {data_quality_score:.2%}"
+            )
+            self.enhanced_logger.trace(
+                f"📈 Final stats - Duration: {total_duration:.2f}ms, "
+                f"Pages: {page_count}, Records/page: {self.records_processed/max(page_count, 1):.1f}"
             )
 
             self.logger.info(
@@ -521,14 +453,16 @@ logger.info("Processing %s page %s", self.entity_name, page_count)
 
         for pattern in pagination_patterns:
             if pattern in response_data:
-                return response_data[pattern]
+                value = response_data[pattern]
+                return str(value) if value else None
 
         # Check nested pagination info
         if "pagination" in response_data:
             pagination = response_data["pagination"]
             for pattern in pagination_patterns:
                 if pattern in pagination:
-                    return pagination[pattern]
+                    value = pagination[pattern]
+                    return str(value) if value else None
 
         # Check if there are more pages using links
         if "links" in response_data:
@@ -537,7 +471,8 @@ logger.info("Processing %s page %s", self.entity_name, page_count)
                 # Extract cursor from next URL
                 next_url = links["next"]
                 if "cursor=" in next_url:
-                    return next_url.split("cursor=")[1].split("&")[0]
+                    cursor_value = next_url.split("cursor=")[1].split("&")[0]
+                    return str(cursor_value) if cursor_value else None
 
         return None
 
@@ -663,56 +598,103 @@ class TapOracleWMS(Tap):
     name = "tap-oracle-wms"
     config_jsonschema = config_schema
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize Oracle WMS TAP."""
         super().__init__(*args, **kwargs)
+        
+        # Initialize enterprise logging system first
+        self.enhanced_logger = get_enhanced_logger(f"{__name__}.TapOracleWMS")
+        self.enterprise_logger = get_singer_logger(f"{__name__}.TapOracleWMS")
+        
+        # Enterprise TRACE logging for TAP initialization
+        trace_singer_operation(
+            self.enterprise_logger,
+            operation="tap_initialization",
+            timing_ms=0.0,
+            config_items=len(self.config),
+            auth_method=self.config.get("auth_method", "basic"),
+            base_url=self.config.get("base_url", "not_set"),
+        )
+        
+        self.enhanced_logger.trace("🔧 Initializing Oracle WMS TAP")
+        self.enterprise_logger.trace("🚀 Enterprise Oracle WMS TAP initialization started")
+        
         # Use advanced error recovery if enabled
         if self.config.get("advanced_error_recovery", True):
-            self.error_manager = create_advanced_error_recovery(self.config)
+            self.enhanced_logger.trace("🚪 Using advanced error recovery")
+            self.error_manager = create_advanced_error_recovery(dict(self.config))
         else:
-            self.error_manager = ErrorRecoveryManager(self.config)
-        self.discovered_entities = []
+            self.enhanced_logger.trace("🚪 Using basic error recovery")
+            from .error_recovery_advanced import AdvancedErrorRecoveryManager
+            self.error_manager = AdvancedErrorRecoveryManager(dict(self.config))
+        self.discovered_entities: list[str] = []
 
         # Initialize monitoring and health checking
         self.monitor = get_monitor()
         self.health_checker = HealthChecker(self.monitor)
         self.business_metrics = BusinessMetricsCollector(self.monitor)
+        
+        self.enhanced_logger.trace("✅ Oracle WMS TAP initialization complete")
 
+    @trace_performance("Stream Discovery")
     def discover_streams(self) -> list[Stream]:
         """Discover available Oracle WMS entities."""
         discovery_start = time.perf_counter()
+        
+        # Enterprise TRACE logging for discovery start
+        trace_discovery_operation(
+            self.enterprise_logger,
+            operation="discovery_start",
+            timing_ms=0.0,
+            config_entities=len(self.config.get("entities", [])),
+            business_areas=self.config.get("business_areas", []),
+        )
+        
+        self.enhanced_logger.trace("🔍 Starting comprehensive entity discovery for Oracle WMS")
+        self.enterprise_logger.trace("🔍 Enterprise entity discovery process initiated")
         self.logger.info("Starting entity discovery for Oracle WMS")
 
         try:
             # Run health checks before discovery
-            self.health_checker.run_all_checks(self.config)
+            self.enhanced_logger.trace("🌡️ Running health checks before discovery")
+            self.health_checker.run_all_checks(dict(self.config))
 
             # Validate configuration first
-            validation_result = validate_complete_config(self.config)
+            self.enhanced_logger.trace("⚙️ Validating configuration")
+            validation_result = validate_complete_config(dict(self.config))
             if not validation_result[0]:
                 msg = f"Configuration validation failed: {validation_result[1]}"
+                self.enhanced_logger.critical(f"❌ {msg}")
                 raise ValueError(msg)
+            
+            self.enhanced_logger.trace("✅ Configuration validation passed")
 
             # Discover entities from API or use configured entities
             entities = self.config.get("entities")
             if entities:
-logger.info("Using configured entities: %s", entities)
+                self.enhanced_logger.trace(f"📝 Using configured entities: {entities}")
+                self.logger.info("Using configured entities: %s", entities)
                 discovered_entities = entities
             else:
+                self.enhanced_logger.trace("🔍 Auto-discovering entities from API")
                 discovered_entities = self._discover_entities_from_api()
+            self.enhanced_logger.trace(f"📅 Discovery found {len(discovered_entities)} entities")
 
             # Create streams for discovered entities
-            streams = []
-            for entity_name in discovered_entities:
+            streams: list[Stream] = []
+            for i, entity_name in enumerate(discovered_entities):
                 try:
+                    self.enhanced_logger.trace(f"🔨 Creating stream {i+1}/{len(discovered_entities)}: {entity_name}")
                     schema = self._generate_entity_schema(entity_name)
                     stream = OracleWMSStream(tap=self, name=entity_name, schema=schema)
                     streams.append(stream)
-logger.info("Created stream for entity: %s", entity_name)
+                    self.logger.info("Created stream for entity: %s", entity_name)
+                    self.enhanced_logger.trace(f"✅ Stream created successfully for {entity_name}")
 
                 except Exception as e:
+                    self.enhanced_logger.warning("Failed to create stream for %s: %s", entity_name, e)
                     self.logger.warning(
-                        f"Failed to create stream for {entity_name}: {e}"
+                        "Failed to create stream for %s: %s", entity_name, e
                     )
                     if not self.config.get("continue_on_error", True):
                         raise
@@ -722,15 +704,37 @@ logger.info("Created stream for entity: %s", entity_name)
             self.business_metrics.record_stream_discovery(
                 len(streams), discovery_duration
             )
+            
+            # Enterprise TRACE logging for discovery completion
+            trace_discovery_operation(
+                self.enterprise_logger,
+                operation="discovery_complete",
+                entity_count=len(streams),
+                timing_ms=discovery_duration,
+                success_rate=len(streams) / max(len(discovered_entities), 1),
+                performance_streams_per_sec=len(streams) / max(discovery_duration / 1000, 0.001),
+            )
+            
+            # Enhanced completion logging
+            self.enhanced_logger.info(
+                "✅ Discovery completed successfully: %d streams created in %.2fms",
+                len(streams), discovery_duration
+            )
+            self.enhanced_logger.trace(
+                f"📈 Discovery performance: {len(streams)/max(discovery_duration/1000, 0.001):.1f} "
+                f"streams/second"
+            )
+            self.enterprise_logger.trace(
+                f"🎯 Enterprise discovery complete: {len(streams)} streams in {discovery_duration:.2f}ms"
+            )
 
-logger.info("Discovery completed: %s streams created", len(streams))
+            self.logger.info("Discovery completed: %s streams created", len(streams))
             return streams
 
         except Exception as e:
-logger.exception("Stream discovery failed: %s", e)
-            if self.config.get("test_connection", True):
-                # Return minimal streams for testing
-                return self._create_fallback_streams()
+            self.enhanced_logger.critical("❌ Stream discovery failed: %s", e)
+            self.logger.exception("Stream discovery failed")
+            # PRODUCTION: No fallback streams - fail fast and explicit
             raise
 
     def _discover_entities_from_api(self) -> list[str]:
@@ -738,48 +742,42 @@ logger.exception("Stream discovery failed: %s", e)
         # Default entities for Oracle WMS based on common business areas
         default_entities = []
 
-        business_areas = self.config.get(
+        business_areas = list(self.config.get(
             "business_areas", ["inventory", "orders", "warehouse"]
-        )
+        ))
 
         if "inventory" in business_areas:
-            default_entities.extend(
-                [
-                    "item",
-                    "item_master",
-                    "inventory",
-                    "stock_ledger",
-                    "lot_master",
-                    "serial_numbers",
-                    "cycle_counts",
-                ]
-            )
+            default_entities.extend([
+                "item",
+                "item_master",
+                "inventory",
+                "stock_ledger",
+                "lot_master",
+                "serial_numbers",
+                "cycle_counts",
+            ])
 
         if "orders" in business_areas:
-            default_entities.extend(
-                [
-                    "orders",
-                    "order_lines",
-                    "allocations",
-                    "picks",
-                    "shipments",
-                    "receipts",
-                    "returns",
-                ]
-            )
+            default_entities.extend([
+                "orders",
+                "order_lines",
+                "allocations",
+                "picks",
+                "shipments",
+                "receipts",
+                "returns",
+            ])
 
         if "warehouse" in business_areas:
-            default_entities.extend(
-                [
-                    "locations",
-                    "zones",
-                    "tasks",
-                    "labor_tracking",
-                    "equipment",
-                    "dock_doors",
-                    "waves",
-                ]
-            )
+            default_entities.extend([
+                "locations",
+                "zones",
+                "tasks",
+                "labor_tracking",
+                "equipment",
+                "dock_doors",
+                "waves",
+            ])
 
         # Filter based on entity patterns if configured
         entity_patterns = self.config.get("entity_patterns", {})
@@ -803,7 +801,7 @@ logger.exception("Stream discovery failed: %s", e)
                 ]
 
         self.logger.info(
-            f"Discovered {len(default_entities)} entities from configuration"
+            "Discovered %d entities from configuration", len(default_entities)
         )
         return default_entities
 
@@ -832,7 +830,11 @@ logger.exception("Stream discovery failed: %s", e)
         entity_lower = entity_name.lower()
 
         if "item" in entity_lower or "inventory" in entity_lower:
-            schema["properties"].update(
+            if isinstance(schema["properties"], dict):
+                properties_dict = dict(schema["properties"].items())
+            else:
+                properties_dict = {}
+            properties_dict.update(
                 {
                     "item_code": {"type": "string"},
                     "item_description": {"type": "string"},
@@ -843,9 +845,14 @@ logger.exception("Stream discovery failed: %s", e)
                     "available_quantity": {"type": "number"},
                 }
             )
+            schema["properties"] = properties_dict
 
         elif "order" in entity_lower:
-            schema["properties"].update(
+            if isinstance(schema["properties"], dict):
+                properties_dict = dict(schema["properties"].items())
+            else:
+                properties_dict = {}
+            properties_dict.update(
                 {
                     "order_number": {"type": "string"},
                     "order_type": {"type": "string"},
@@ -856,9 +863,14 @@ logger.exception("Stream discovery failed: %s", e)
                     "total_lines": {"type": "integer"},
                 }
             )
+            schema["properties"] = properties_dict
 
         elif "location" in entity_lower or "zone" in entity_lower:
-            schema["properties"].update(
+            if isinstance(schema["properties"], dict):
+                properties_dict = dict(schema["properties"].items())
+            else:
+                properties_dict = {}
+            properties_dict.update(
                 {
                     "location_code": {"type": "string"},
                     "zone": {"type": "string"},
@@ -867,12 +879,20 @@ logger.exception("Stream discovery failed: %s", e)
                     "occupied": {"type": "boolean"},
                 }
             )
+            schema["properties"] = properties_dict
 
         # Set replication key for incremental sync
         if self.config.get("enable_incremental", True):
             replication_key = self._determine_replication_key(entity_name)
             if replication_key and replication_key in schema["properties"]:
-                schema["properties"][replication_key]["inclusion"] = "automatic"
+                if isinstance(schema["properties"], dict):
+                    properties_dict = dict(schema["properties"].items())
+                else:
+                    properties_dict = {}
+                if replication_key in properties_dict:
+                    if isinstance(properties_dict[replication_key], dict):
+                        properties_dict[replication_key]["inclusion"] = "automatic"
+                schema["properties"] = properties_dict
 
         return schema
 
@@ -881,7 +901,7 @@ logger.exception("Stream discovery failed: %s", e)
         # Check for custom replication key override
         override_keys = self.config.get("replication_key_override", {})
         if entity_name in override_keys:
-            return override_keys[entity_name]
+            return str(override_keys[entity_name])
 
         # Common timestamp fields used for incremental sync
         timestamp_candidates = [
@@ -896,18 +916,8 @@ logger.exception("Stream discovery failed: %s", e)
         # Return the first candidate (will be validated during schema generation)
         return timestamp_candidates[0]
 
-    def _create_fallback_streams(self) -> list[Stream]:
-        """Create minimal streams for testing when API discovery fails."""
-        fallback_entities = ["item", "orders", "locations"]
-        streams = []
-
-        for entity_name in fallback_entities:
-            schema = self._generate_entity_schema(entity_name)
-            stream = OracleWMSStream(tap=self, name=entity_name, schema=schema)
-            streams.append(stream)
-
-logger.warning("Created %s fallback streams for testing", len(streams))
-        return streams
+    # PRODUCTION NOTICE: Fallback streams removed for production safety.
+    # All streams must be explicitly discovered from real API endpoints.
 
 
 def main() -> None:

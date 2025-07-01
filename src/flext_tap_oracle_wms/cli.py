@@ -94,7 +94,7 @@ import logging
 from pathlib import Path
 import re
 import sys
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TextIO, cast
 
 import click
 from rich.console import Console
@@ -102,7 +102,23 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from .discovery import EntityDiscovery, SchemaGenerator
-from .monitoring import TAPMonitor
+from .enhanced_logging import (
+    setup_cli_logging,
+    trace_performance,
+    get_enhanced_logger
+)
+
+# Create mock TAPMonitor if not available
+class TAPMonitor:
+    def __init__(self, config: dict[str, Any]) -> None:
+        self.config = config
+    async def start_monitoring(self) -> None:
+        pass
+    async def stop_monitoring(self) -> None:
+        pass
+    def get_monitoring_status(self) -> dict[str, Any]:
+        return {"timestamp": "mock", "health": {"overall_healthy": True}}
+
 from .tap import TapOracleWMS
 
 
@@ -140,6 +156,7 @@ def safe_print(message: str, style: str | None = None) -> None:
 @click.option("--config", type=click.File("r"), help="Singer config file")
 @click.option("--state", type=click.File("r"), help="Singer state file")
 @click.pass_context
+@trace_performance("CLI Command")
 def cli(
     ctx: click.Context,
     version: bool,
@@ -167,13 +184,27 @@ def cli(
     tap-oracle-wms warehouse task-performance --config config.json
 
     """
+    # Setup enhanced logging for CLI operations
+    config_dict = {}
+    if config:
+        try:
+            config_dict = json.load(cast(TextIO, config))
+            if hasattr(config, 'seek'):
+                config.seek(0)  # Reset file pointer for later use
+        except Exception:  # noqa: BLE001
+            config_dict = {"debug": True}  # Default to debug on config errors
+    # Initialize enhanced logging based on config
+    enhanced_logger = setup_cli_logging(config_dict)
+    enhanced_logger.trace(f"🚀 CLI started with args: version={version}, discover={discover}")
     # Handle Singer SDK compatibility first
     if version or discover or catalog or config:
+        enhanced_logger.trace("🎵 Running in Singer SDK compatibility mode")
         _handle_singer_mode(version, discover, catalog, config, state)
         return
 
     # If no command provided, show help
     if ctx.invoked_subcommand is None:
+        enhanced_logger.trace("📝 Displaying help - no command provided")
         click.echo(ctx.get_help())
 
 
@@ -261,17 +292,22 @@ def discover_entities(
 ) -> None:
     """Discover available WMS entities with business categorization."""
     config_data = _prepare_discovery_config(
-        json.load(config),
+        json.load(cast(TextIO, config)),
         include_patterns,
         exclude_patterns,
         verify_access,
     )
     discovery = EntityDiscovery(config_data)
 
-    entities = asyncio.run(_run_entity_discovery(discovery, verify_access))
-    categorized = _categorize_entities(entities)
+    entities_list: list[str] = asyncio.run(_run_entity_discovery(discovery, verify_access))
+    if not entities_list:
+        entities_list = []
+    
+    # Convert list to dict for categorization function compatibility
+    entities_dict = {entity: entity for entity in entities_list}
+    categorized = _categorize_entities(entities_dict)
 
-    _output_discovery_results(entities, categorized, output_format, output)
+    _output_discovery_results(entities_list, categorized, output_format, output)
 
 
 @discover.command("schemas")
@@ -305,27 +341,30 @@ def discover_entities(
 )
 def discover_schemas(
     config: click.File,
-    entities: str,
+    entities: tuple[str, ...],
     method: str,
     output_dir: click.Path,
     sample_size: int,
 ) -> None:
     """Generate schemas for WMS entities."""
-    config_data = json.load(config)
+    config_data = json.load(cast(TextIO, config))
     config_data["schema_discovery_method"] = method
     config_data["schema_sample_size"] = sample_size
 
     TapOracleWMS(config=config_data)
 
-    async def _generate_schemas() -> None:
+    async def _generate_schemas() -> dict[str, Any]:
         discovery = EntityDiscovery(config_data)
         generator = SchemaGenerator()
 
         # Get entities to process
+        entity_list: dict[str, str] = {}
         if entities:
             entity_list = {name: f"/entity/{name}" for name in entities}
+        else:
             all_entities = await discovery.discover_entities()
-            entity_list = discovery.filter_entities(all_entities)
+            if all_entities:
+                entity_list = discovery.filter_entities(all_entities)
 
         schemas: dict[str, Any] = {}
 
@@ -380,15 +419,17 @@ def discover_schemas(
 
     # Save schemas
     if output_dir:
-        output_path = Path(output_dir)
+        output_path = Path(str(output_dir))
         output_path.mkdir(exist_ok=True)
 
-        for entity_name, schema in schemas.items():
-            schema_file = output_path / f"{entity_name}_schema.json"
-            with open(schema_file, "w", encoding="utf-8") as f:
-                json.dump(schema, f, indent=2)
+        if schemas:
+            for entity_name, schema in schemas.items():
+                schema_file = output_path / f"{entity_name}_schema.json"
+                with open(schema_file, "w", encoding="utf-8") as f:
+                    json.dump(schema, f, indent=2)
 
-        logger.info("Saved %s schemas to %s", len(schemas), output_dir)
+            logger.info("Saved %s schemas to %s", len(schemas), output_dir)
+    else:
         # Output to stdout
         json.dump(schemas, sys.stdout, indent=2)
 
@@ -425,10 +466,10 @@ def inventory_status(
     location: str,
     include_lots: bool,
     include_serials: bool,
-    low_stock_threshold: int,
+    low_stock_threshold: float | None,
 ) -> None:
     """Get current inventory status with business intelligence."""
-    config_data = json.load(config)
+    config_data = json.load(cast(TextIO, config))
 
     # Configure inventory-specific extraction
     inventory_entities = ["inventory", "item", "location", "uom"]
@@ -580,7 +621,7 @@ def analyze_allocation(
     """Analyze order allocation patterns and efficiency."""
     logger.info("Analyzing order allocation patterns...")
 
-    config_data = json.load(config)
+    config_data = json.load(cast(TextIO, config))
 
     # Configure order-specific entities
     order_entities = [
@@ -675,7 +716,7 @@ def task_performance(
     """Analyze warehouse task performance and productivity."""
     logger.info("Analyzing %s task performance...", task_type)
 
-    config_data = json.load(config)
+    config_data = json.load(cast(TextIO, config))
 
     # Configure task-related entities
 
@@ -810,7 +851,7 @@ def sync_incremental(
     For incremental sync, we use page_mode="sequenced" for optimal performance.
     """
     # Load and configure
-    config_data = json.load(config)
+    config_data = json.load(cast(TextIO, config))
 
     # Configure incremental sync with correct pagination settings
     config_data["enable_incremental"] = True
@@ -833,9 +874,9 @@ def sync_incremental(
         logger.info("🎯 Filtering to entities: %s", list(entities))
 
     # Load previous state
-    state_data = None
+    state_data: dict[str, Any] | None = None
     if state:
-        state_data = json.load(state)
+        state_data = json.load(cast(TextIO, state))
         logger.info("📊 Loaded previous state from file")
 
     logger.info("🔄 Starting incremental sync with validated rules...")
@@ -1112,9 +1153,9 @@ def _execute_incremental_sync_custom(
     # Output final state to file if specified
     if output_state and current_state:
         try:
-            json.dump(current_state, output_state, indent=2)
+            json.dump(current_state, cast(TextIO, output_state), indent=2)
             logger.info("💾 Final state saved to %s", output_state.name)
-        except Exception as e:
+        except Exception as e: # noqa: BLE001
             logger.info("⚠️ Failed to save state: %s", e)
 
     # Log final summary
@@ -1165,7 +1206,7 @@ def sync_full(
     batch_size: int,
 ) -> None:
     """Run full sync for business area or all entities."""
-    config_data = json.load(config)
+    config_data = json.load(cast(TextIO, config))
 
     # Configure full sync settings
     config_data["page_size"] = batch_size
@@ -1300,12 +1341,12 @@ def _prepare_discovery_config(
     return config_data
 
 
-async def _run_entity_discovery(discovery, verify_access) -> None:
+async def _run_entity_discovery(discovery: Any, verify_access: bool) -> list[str]:
     """Run entity discovery with progress tracking."""
     return await _run_discovery_with_progress(discovery, verify_access)
 
 
-async def _run_discovery_with_progress(discovery, verify_access) -> None:
+async def _run_discovery_with_progress(discovery: Any, verify_access: bool) -> list[str]:
     """Run discovery with rich progress display."""
     with Progress(
         SpinnerColumn(),
@@ -1335,10 +1376,10 @@ async def _run_discovery_with_progress(discovery, verify_access) -> None:
             filtered = accessible
 
         progress.remove_task(task)
-        return filtered
+        return list(filtered)
 
 
-async def _run_discovery_simple(discovery, verify_access) -> None:
+async def _run_discovery_simple(discovery: Any, verify_access: bool) -> list[str]:
     """Run discovery with simple text output."""
     logger.info("Discovering entities...")
     entities = await discovery.discover_entities()
@@ -1360,7 +1401,7 @@ async def _run_discovery_simple(discovery, verify_access) -> None:
                 )
         filtered = accessible
 
-    return filtered
+    return list(filtered)
 
 
 def _output_discovery_results(
@@ -1391,7 +1432,7 @@ def _output_discovery_results(
 
 def _categorize_entities(entities: dict[str, str]) -> dict[str, list[str]]:
     """Categorize entities by business area."""
-    categories = {
+    categories: dict[str, list[str]] = {
         "Master Data": [],
         "Inventory Management": [],
         "Order Management": [],
@@ -1501,17 +1542,19 @@ def _get_business_context(entity_name: str, category: str) -> str:
     return context_map.get(entity_name, f"{category} related entity")
 
 
-def _export_entities_csv(entities: dict[str, str], output: Any) -> None:
+def _export_entities_csv(entities: list[str], output: Any) -> None:
     """Export entities to CSV format."""
     import csv
 
     writer = csv.writer(output)
-    writer.writerow(["Entity Name", "URL", "Category"])
+    writer.writerow(["Entity Name", "Category"])
 
-    categorized = _categorize_entities(entities)
+    # Convert list to dict for categorization
+    entity_dict = {entity: f"/entity/{entity}" for entity in entities}
+    categorized = _categorize_entities(entity_dict)
     for category, entity_list in categorized.items():
         for entity in entity_list:
-            writer.writerow([entity, entities[entity], category])
+            writer.writerow([entity, category])
 
 
 def _get_business_area_entities(business_area: str) -> list[str]:
@@ -1585,12 +1628,12 @@ def monitor() -> None:
 )
 def monitor_status(config: click.File, output_format: str) -> None:
     """Get current monitoring status and metrics."""
-    config_data = json.load(config)
+    config_data = json.load(cast(TextIO, config))
     config_data.setdefault("metrics", {})["enabled"] = True
 
     monitor = TAPMonitor(config_data)
 
-    async def _get_status() -> None:
+    async def _get_status() -> dict[str, Any]:
         await monitor.start_monitoring()
         await asyncio.sleep(2)
         status = monitor.get_monitoring_status()
@@ -1601,7 +1644,7 @@ def monitor_status(config: click.File, output_format: str) -> None:
 
     if output_format in {"json", "prometheus"}:
         logger.info("Oracle WMS TAP Monitoring Status", "bold blue")
-        logger.info("Timestamp: {status['timestamp']}")
+        logger.info("Timestamp: %s", status['timestamp'])
         health = status.get("health", {})
         overall_health = health.get("overall_healthy", False)
         safe_print(

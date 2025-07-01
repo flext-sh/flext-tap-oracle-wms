@@ -90,7 +90,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
-import logging
 from pathlib import Path
 import sys
 from typing import TYPE_CHECKING, Any
@@ -101,6 +100,11 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from .discovery import EntityDiscovery, SchemaGenerator
+from .enhanced_logging import (
+    setup_cli_logging,
+    trace_performance,
+    get_enhanced_logger,
+)
 from .monitoring import TAPMonitor
 from .tap import TapOracleWMS
 
@@ -114,7 +118,7 @@ else:
         pass
 
 
-logger = logging.getLogger(__name__)
+logger = get_enhanced_logger(__name__)
 
 
 console = Console()
@@ -140,6 +144,17 @@ def safe_print(message: str, style: str | None = None) -> None:
 @click.option("--catalog", type=click.File("r"), help="Singer catalog file")
 @click.option("--config", type=click.File("r"), help="Singer config file")
 @click.option("--state", type=click.File("r"), help="Singer state file")
+@click.option(
+    "--log-level",
+    type=click.Choice(["TRACE", "DEBUG", "INFO", "WARNING", "CRITICAL"], case_sensitive=False),
+    default="TRACE",
+    help="Set logging level (default: TRACE for maximum visibility)",
+)
+@click.option(
+    "--log-file",
+    type=click.Path(),
+    help="Optional log file path for persistent logging",
+)
 @click.pass_context
 def cli(
     ctx: click.Context,
@@ -148,6 +163,8 @@ def cli(
     catalog: click.File | None,
     config: click.File | None,
     state: click.File | None,
+    log_level: str,
+    log_file: str | None,
 ) -> None:
     r"""Oracle WMS Singer Tap with Extended Business Functionality.
 
@@ -168,6 +185,18 @@ def cli(
     tap-oracle-wms warehouse task-performance --config config.json
 
     """
+    # Configure 5-level logging system with TRACE emphasis
+    config_dict = {"log_level": log_level.upper(), "log_file": log_file, "debug": log_level.upper() == "TRACE"}
+    setup_cli_logging(config_dict)
+
+    # Log CLI startup with TRACE for maximum visibility
+    logger.trace("CLI startup initiated",
+                 log_level=log_level,
+                 log_file=log_file,
+                 version_requested=version,
+                 discover_requested=discover)
+    logger.debug("Oracle WMS Singer Tap CLI starting with enhanced logging system")
+
     # Handle Singer SDK compatibility first
     if version or discover or catalog or config:
         _handle_singer_mode(version, discover, catalog, config, state)
@@ -186,27 +215,53 @@ def _handle_singer_mode(
     state: click.File | None,
 ) -> None:
     """Handle standard Singer SDK protocol commands."""
+    logger.trace("_handle_singer_mode - method entry")
+    logger.trace("Singer mode parameters",
+                 version=version,
+                 discover=discover,
+                 has_catalog=catalog is not None,
+                 has_config=config is not None,
+                 has_state=state is not None)
+
     # Build Singer CLI arguments
     singer_args = ["tap-oracle-wms"]  # Program name
+    logger.trace("Building Singer CLI arguments")
 
     if version:
         singer_args.append("--version")
+        logger.trace("Added --version to Singer args")
     if discover:
         singer_args.append("--discover")
+        logger.trace("Added --discover to Singer args")
     if catalog:
         singer_args.extend(["--catalog", catalog.name])
+        logger.trace("Added --catalog to Singer args: %s", catalog.name)
     if config:
         singer_args.extend(["--config", config.name])
+        logger.trace("Added --config to Singer args: %s", config.name)
     if state:
         singer_args.extend(["--state", state.name])
+        logger.trace("Added --state to Singer args: %s", state.name)
+
+    logger.debug("Final Singer CLI arguments built: %s", singer_args)
 
     # Replace sys.argv and call Singer CLI
     original_argv = sys.argv
+    logger.trace("Storing original argv: %s", original_argv)
+
     try:
         sys.argv = singer_args
+        logger.trace("Replaced sys.argv with Singer args")
+        logger.info("Calling Singer SDK CLI with enhanced logging")
         TapOracleWMS.cli()
+        logger.trace("Singer SDK CLI call completed successfully")
+    except Exception as e:
+        logger.critical("Singer SDK CLI call failed: %s", str(e))
+        logger.exception("Singer CLI exception details")
+        raise
     finally:
         sys.argv = original_argv
+        logger.trace("Restored original sys.argv")
 
 
 # DISCOVERY AND SCHEMA SUBCOMMANDS
@@ -262,7 +317,7 @@ def discover_entities(
 ) -> None:
     """Discover available WMS entities with business categorization."""
     config_data = _prepare_discovery_config(
-        json.load(config),
+        json.load(config),  # type: ignore[arg-type]
         include_patterns,
         exclude_patterns,
         verify_access,
@@ -312,13 +367,13 @@ def discover_schemas(
     sample_size: int,
 ) -> None:
     """Generate schemas for WMS entities."""
-    config_data = json.load(config)
+    config_data = json.load(config)  # type: ignore[arg-type]
     config_data["schema_discovery_method"] = method
     config_data["schema_sample_size"] = sample_size
 
     TapOracleWMS(config=config_data)
 
-    async def _generate_schemas() -> None:
+    async def _generate_schemas() -> dict[str, Any]:
         discovery = EntityDiscovery(config_data)
         generator = SchemaGenerator()
 
@@ -380,8 +435,8 @@ def discover_schemas(
     schemas = asyncio.run(_generate_schemas())
 
     # Save schemas
-    if output_dir:
-        output_path = Path(output_dir)
+    if output_dir and schemas:
+        output_path = Path(str(output_dir))
         output_path.mkdir(exist_ok=True)
 
         for entity_name, schema in schemas.items():
@@ -390,8 +445,12 @@ def discover_schemas(
                 json.dump(schema, f, indent=2)
 
         logger.info("Saved %s schemas to %s", len(schemas), output_dir)
-        # Output to stdout
+    
+    # Output to stdout
+    if schemas:
         json.dump(schemas, sys.stdout, indent=2)
+    else:
+        logger.warning("No schemas generated")
 
 
 # INVENTORY MANAGEMENT SUBCOMMANDS
@@ -429,7 +488,7 @@ def inventory_status(
     low_stock_threshold: int,
 ) -> None:
     """Get current inventory status with business intelligence."""
-    config_data = json.load(config)
+    config_data = json.load(config)  # type: ignore[arg-type]
 
     # Configure inventory-specific extraction
     inventory_entities = ["inventory", "item", "location", "uom"]
@@ -517,7 +576,7 @@ def inventory_cycle_count(
     logger.info("Generating cycle count analysis...")
 
     # Configuration for cycle count extraction
-    json.load(config)
+    json.loads(config.read())
     cycle_count_entities = [
         "cycle_count",
         "cycle_count_detail",
@@ -581,7 +640,7 @@ def analyze_allocation(
     """Analyze order allocation patterns and efficiency."""
     logger.info("Analyzing order allocation patterns...")
 
-    config_data = json.load(config)
+    config_data = json.load(config)  # type: ignore[arg-type]
 
     # Configure order-specific entities
     order_entities = [
@@ -676,7 +735,7 @@ def task_performance(
     """Analyze warehouse task performance and productivity."""
     logger.info("Analyzing %s task performance...", task_type)
 
-    config_data = json.load(config)
+    config_data = json.load(config)  # type: ignore[arg-type]
 
     # Configure task-related entities
 
@@ -815,7 +874,7 @@ def sync_incremental(
     from .tap import TapOracleWMS
 
     # Load and configure
-    config_data = json.load(config)
+    config_data = json.load(config)  # type: ignore[arg-type]
 
     # Configure incremental sync with correct pagination settings
     config_data["enable_incremental"] = True
@@ -840,7 +899,7 @@ def sync_incremental(
     # Load previous state
     state_data = None
     if state:
-        state_data = json.load(state)
+        state_data = json.load(state)  # type: ignore[arg-type]
         logger.info("📊 Loaded previous state from file")
 
     logger.info("🔄 Starting incremental sync with validated rules...")
@@ -1117,7 +1176,7 @@ def _execute_incremental_sync_custom(
     # Output final state to file if specified
     if output_state and current_state:
         try:
-            json.dump(current_state, output_state, indent=2)
+            json.dump(current_state, output_state, indent=2)  # type: ignore[arg-type]
             logger.info("💾 Final state saved to %s", output_state.name)
         except Exception as e:
             logger.info("⚠️ Failed to save state: %s", e)
@@ -1170,7 +1229,7 @@ def sync_full(
     batch_size: int,
 ) -> None:
     """Run full sync for business area or all entities."""
-    config_data = json.load(config)
+    config_data = json.load(config)  # type: ignore[arg-type]
 
     # Configure full sync settings
     config_data["page_size"] = batch_size
@@ -1305,12 +1364,12 @@ def _prepare_discovery_config(
     return config_data
 
 
-async def _run_entity_discovery(discovery, verify_access) -> None:
+async def _run_entity_discovery(discovery, verify_access) -> dict[str, str]:
     """Run entity discovery with progress tracking."""
     return await _run_discovery_with_progress(discovery, verify_access)
 
 
-async def _run_discovery_with_progress(discovery, verify_access) -> None:
+async def _run_discovery_with_progress(discovery, verify_access) -> dict[str, str]:
     """Run discovery with rich progress display."""
     with Progress(
         SpinnerColumn(),
@@ -1369,7 +1428,7 @@ async def _run_discovery_simple(discovery, verify_access) -> None:
 
 
 def _output_discovery_results(
-    entities: list[str],
+    entities: dict[str, str],
     categorized: dict[str, list[str]],
     output_format: str,
     output: Any,
@@ -1396,7 +1455,7 @@ def _output_discovery_results(
 
 def _categorize_entities(entities: dict[str, str]) -> dict[str, list[str]]:
     """Categorize entities by business area."""
-    categories = {
+    categories: dict[str, list[str]] = {
         "Master Data": [],
         "Inventory Management": [],
         "Order Management": [],
@@ -1590,12 +1649,12 @@ def monitor() -> None:
 )
 def monitor_status(config: click.File, output_format: str) -> None:
     """Get current monitoring status and metrics."""
-    config_data = json.load(config)
+    config_data = json.load(config)  # type: ignore[arg-type]
     config_data.setdefault("metrics", {})["enabled"] = True
 
     monitor = TAPMonitor(config_data)
 
-    async def _get_status() -> None:
+    async def _get_status() -> dict[str, Any]:
         await monitor.start_monitoring()
         await asyncio.sleep(2)
         status = monitor.get_monitoring_status()
@@ -1603,6 +1662,10 @@ def monitor_status(config: click.File, output_format: str) -> None:
         return status
 
     status = asyncio.run(_get_status())
+
+    if not status:
+        logger.error("Failed to get monitoring status")
+        return
 
     if output_format in {"json", "prometheus"}:
         logger.info("Oracle WMS TAP Monitoring Status", "bold blue")
