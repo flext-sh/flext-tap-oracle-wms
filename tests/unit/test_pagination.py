@@ -42,7 +42,11 @@ def test_pagination_sequenced_mode() -> None:
 
 
 def _test_pagination_mode(
-    entity: str, page_mode: str, headers: dict, base_url: str, page_size: int = 10,
+    entity: str,
+    page_mode: str,
+    headers: dict,
+    base_url: str,
+    page_size: int = 10,
 ) -> str:
     """Testa o modo de paginação sequenced."""
     try:
@@ -196,7 +200,10 @@ def test_page_sizes() -> None:
 
 
 def _test_page_size_performance(
-    entity: str, page_size: int, headers: dict, base_url: str,
+    entity: str,
+    page_size: int,
+    headers: dict,
+    base_url: str,
 ) -> str:
     """Testa performance de um tamanho de página específico com mode sequenced."""
     try:
@@ -251,7 +258,9 @@ def test_pagination_config() -> None:
 
         # Validar configuração - page_mode deve ser sempre "sequenced"
         page_mode = config.get("page_mode", "sequenced")
-        assert page_mode == "sequenced", f"page_mode deve ser 'sequenced', encontrado: {page_mode}"
+        assert (
+            page_mode == "sequenced"
+        ), f"page_mode deve ser 'sequenced', encontrado: {page_mode}"
 
         config.get("page_size", 100)
 

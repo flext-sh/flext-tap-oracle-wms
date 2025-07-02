@@ -227,7 +227,8 @@ class TestStreamURLParams:
             ]
 
             params = stream_instance.get_url_params(
-                context=None, next_page_token=mock_next_token,
+                context=None,
+                next_page_token=mock_next_token,
             )
 
             assert params["cursor"] == "abc123"
@@ -246,7 +247,8 @@ class TestStreamURLParams:
 
             # Deve fallback para parâmetros base
             params = stream_instance.get_url_params(
-                context=None, next_page_token=mock_next_token,
+                context=None,
+                next_page_token=mock_next_token,
             )
 
             assert "page_mode" in params
@@ -257,7 +259,8 @@ class TestStreamURLParams:
         """Testa parâmetros para sync incremental."""
         # Mock bookmark value
         with patch.object(
-            stream_instance, "get_starting_replication_key_value",
+            stream_instance,
+            "get_starting_replication_key_value",
         ) as mock_bookmark:
             mock_bookmark.return_value = "2024-01-01T10:00:00Z"
 
@@ -279,7 +282,8 @@ class TestStreamURLParams:
         )
 
         with patch.object(
-            stream, "get_starting_replication_key_value",
+            stream,
+            "get_starting_replication_key_value",
         ) as mock_bookmark:
             mock_bookmark.return_value = "2024-01-01T10:00:00Z"
 

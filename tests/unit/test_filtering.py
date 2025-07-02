@@ -40,7 +40,7 @@ def test_entity_filters() -> None:
         {"from_inventory_id__isnull": "false"},
     ]
 
-    for _i, filter_params in enumerate(filters_allocation, 1):
+    for filter_params in filters_allocation:
         test_api_filter("allocation", filter_params, headers, base_url)
 
     # 2. Teste filtros para order_hdr
@@ -52,7 +52,7 @@ def test_entity_filters() -> None:
         {"order_nbr__contains": "ORD"},
     ]
 
-    for _i, filter_params in enumerate(filters_order_hdr, 1):
+    for filter_params in filters_order_hdr:
         test_api_filter("order_hdr", filter_params, headers, base_url)
 
     # 3. Teste filtros para order_dtl
@@ -64,7 +64,7 @@ def test_entity_filters() -> None:
         {"seq_nbr__gte": 1},
     ]
 
-    for _i, filter_params in enumerate(filters_order_dtl, 1):
+    for filter_params in filters_order_dtl:
         test_api_filter("order_dtl", filter_params, headers, base_url)
 
 

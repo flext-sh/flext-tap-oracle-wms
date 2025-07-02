@@ -226,7 +226,7 @@ def test_auth_config_file() -> None:
     """Testa configuração de autenticação via arquivo."""
     config_file = Path("examples/config.json")
     if config_file.exists():
-        with Path(config_file).open() as f:
+        with Path(config_file).open(encoding="utf-8") as f:
             config = json.load(f)
 
         # Verificar campos de autenticação

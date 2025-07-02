@@ -159,11 +159,19 @@ class CircuitBreaker:
                 and time.time() - self.last_failure_time > self.recovery_timeout
             ):
                 self.state = "half-open"
-                enhanced_logger.info("🔄 Circuit breaker entering HALF-OPEN state - testing recovery")
+                enhanced_logger.info(
+                    "🔄 Circuit breaker entering HALF-OPEN state - testing recovery"
+                )
                 return True
 
-            time_remaining = self.recovery_timeout - (time.time() - self.last_failure_time) if self.last_failure_time else 0
-            enhanced_logger.debug(f"🚨 Circuit breaker OPEN - {time_remaining:.1f}s remaining")
+            time_remaining = (
+                self.recovery_timeout - (time.time() - self.last_failure_time)
+                if self.last_failure_time
+                else 0
+            )
+            enhanced_logger.debug(
+                f"🚨 Circuit breaker OPEN - {time_remaining:.1f}s remaining"
+            )
             return False
 
         # half-open state
@@ -354,7 +362,8 @@ class WMSAdvancedStream(RESTStream[dict[str, Any]]):
         # Add metadata fields to prevent Singer SDK warnings
         enhanced_schema["properties"]["_entity_name"] = {"type": "string"}
         enhanced_schema["properties"]["_extracted_at"] = {
-            "type": "string", "format": "date-time"
+            "type": "string",
+            "format": "date-time",
         }
         enhanced_schema["properties"]["_extraction_context"] = {
             "type": ["object", "null"]
@@ -365,8 +374,7 @@ class WMSAdvancedStream(RESTStream[dict[str, Any]]):
 
         # Add flattened ID fields that might be created during processing
         id_props = [
-            prop for prop in enhanced_schema["properties"]
-            if prop.endswith("_id")
+            prop for prop in enhanced_schema["properties"] if prop.endswith("_id")
         ]
         for prop in id_props:
             base_prop = prop[:-3]
@@ -519,7 +527,8 @@ class WMSAdvancedStream(RESTStream[dict[str, Any]]):
         else:
             # Add mod_ts if available and incremental is enabled
             use_mod_ts = entity_config.get(
-                "use_mod_ts", False,
+                "use_mod_ts",
+                False,
             ) or incremental_config.get("use_mod_ts_default", False)
 
             if (
@@ -666,13 +675,17 @@ class WMSAdvancedStream(RESTStream[dict[str, Any]]):
         params["page_mode"] = "sequenced"
 
         if record_limit and record_limit > 0:
-            enhanced_logger.info(f"🔢 Record limit configured: {record_limit} records for entity {self.entity_name}")
+            enhanced_logger.info(
+                f"🔢 Record limit configured: {record_limit} records for entity {self.entity_name}"
+            )
 
             # For page_mode="sequenced", we'll track record count during extraction
             # Initialize record counter if not exists
             if not hasattr(self, "_extracted_records_count"):
                 self._extracted_records_count = 0
-                enhanced_logger.info(f"🎯 Initializing record counter for {self.entity_name}")
+                enhanced_logger.info(
+                    f"🎯 Initializing record counter for {self.entity_name}"
+                )
 
         enhanced_logger.info(f"🔧 Initial params: {params}")
 
@@ -758,9 +771,7 @@ class WMSAdvancedStream(RESTStream[dict[str, Any]]):
         )
         enhanced_logger.trace("🔬 EXTREME TRACE: Params count: %d", len(params))
         for key, value in params.items():
-            enhanced_logger.trace(
-                "🔬 EXTREME TRACE: Param %s = %s", key, value
-            )
+            enhanced_logger.trace("🔬 EXTREME TRACE: Param %s = %s", key, value)
 
         return params
 
@@ -883,7 +894,9 @@ class WMSAdvancedStream(RESTStream[dict[str, Any]]):
 
         # Check circuit breaker BEFORE processing errors
         if not self._circuit_breaker.can_attempt_call():
-            enhanced_logger.error(f"🚨 Circuit breaker blocking call to {self.entity_name}")
+            enhanced_logger.error(
+                f"🚨 Circuit breaker blocking call to {self.entity_name}"
+            )
             msg = f"Circuit breaker is open for {self.entity_name} - service temporarily unavailable"
             raise FatalAPIError(msg)
 
@@ -891,14 +904,20 @@ class WMSAdvancedStream(RESTStream[dict[str, Any]]):
         if response.status_code == 429:
             self._circuit_breaker.call_failed()
             retry_after = response.headers.get("Retry-After", "60")
-            enhanced_logger.warning(f"⏱️ Rate limited for {self.entity_name}: retry after {retry_after}s")
+            enhanced_logger.warning(
+                f"⏱️ Rate limited for {self.entity_name}: retry after {retry_after}s"
+            )
             msg = f"Rate limited for {self.entity_name}. Retry after {retry_after} seconds"
             raise RetriableAPIError(msg)
 
         if response.status_code in {500, 502, 503, 504}:
             self._circuit_breaker.call_failed()
-            enhanced_logger.error(f"🔥 Server error {response.status_code} for {self.entity_name}")
-            msg = f"Server error {response.status_code} for {self.entity_name} - retrying"
+            enhanced_logger.error(
+                f"🔥 Server error {response.status_code} for {self.entity_name}"
+            )
+            msg = (
+                f"Server error {response.status_code} for {self.entity_name} - retrying"
+            )
             raise RetriableAPIError(msg)
 
         if response.status_code == 401:
@@ -924,19 +943,27 @@ class WMSAdvancedStream(RESTStream[dict[str, Any]]):
 
         # Handle any other 4xx errors as fatal (client errors)
         if 400 <= response.status_code < 500:
-            enhanced_logger.error(f"❌ Client error {response.status_code} for {self.entity_name}")
+            enhanced_logger.error(
+                f"❌ Client error {response.status_code} for {self.entity_name}"
+            )
             msg = f"Client error {response.status_code} for {self.entity_name}"
             raise FatalAPIError(msg)
 
         # Handle any other 5xx errors as retriable (server errors)
         if response.status_code >= 500:
             self._circuit_breaker.call_failed()
-            enhanced_logger.error(f"💥 Server error {response.status_code} for {self.entity_name}")
-            msg = f"Server error {response.status_code} for {self.entity_name} - retrying"
+            enhanced_logger.error(
+                f"💥 Server error {response.status_code} for {self.entity_name}"
+            )
+            msg = (
+                f"Server error {response.status_code} for {self.entity_name} - retrying"
+            )
             raise RetriableAPIError(msg)
 
         # Default validation for any other cases
-        enhanced_logger.debug(f"🔍 Using default validation for {self.entity_name} status {response.status_code}")
+        enhanced_logger.debug(
+            f"🔍 Using default validation for {self.entity_name} status {response.status_code}"
+        )
         super().validate_response(response)  # type: ignore[arg-type]
 
     def parse_response(self, response: httpx.Response) -> Iterable[dict[str, Any]]:  # type: ignore[override]
@@ -1155,9 +1182,7 @@ class WMSAdvancedStream(RESTStream[dict[str, Any]]):
             raise
 
     def post_process(  # type: ignore[override]
-        self,
-        row: dict[str, Any],
-        context: dict[str, Any] | None = None
+        self, row: dict[str, Any], context: dict[str, Any] | None = None
     ) -> dict[str, Any] | None:
         """Post-process records with validation, flattening, and JSON field handling."""
         # Skip invalid records

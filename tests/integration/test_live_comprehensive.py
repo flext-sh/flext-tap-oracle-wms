@@ -216,9 +216,9 @@ class TestComprehensiveLiveFlow:
             actual_pages = len(page_requests)
 
             # Allow some variance in page detection
-            assert actual_pages >= expected_pages - 1, (
-                f"Too few pages: {actual_pages} vs {expected_pages}"
-            )
+            assert (
+                actual_pages >= expected_pages - 1
+            ), f"Too few pages: {actual_pages} vs {expected_pages}"
 
             # Check for duplicate records (pagination issue indicator)
             record_ids: list = []
@@ -230,9 +230,9 @@ class TestComprehensiveLiveFlow:
             if len(record_ids) > 1:
                 unique_ids = set(record_ids)
                 duplicate_ratio = 1 - (len(unique_ids) / len(record_ids))
-                assert duplicate_ratio < 0.1, (
-                    f"Too many duplicates: {duplicate_ratio:.2%}"
-                )
+                assert (
+                    duplicate_ratio < 0.1
+                ), f"Too many duplicates: {duplicate_ratio:.2%}"
 
     def test_error_handling_comprehensive(self, live_config) -> None:
         """Test comprehensive error handling scenarios."""
@@ -343,9 +343,9 @@ class TestComprehensiveLiveFlow:
 
             # Performance assertions
             assert discovery_time < 30.0, f"Discovery too slow: {discovery_time:.2f}s"
-            assert records_per_second > 0.5, (
-                f"Extraction too slow: {records_per_second:.2f} records/s"
-            )
+            assert (
+                records_per_second > 0.5
+            ), f"Extraction too slow: {records_per_second:.2f} records/s"
 
     def test_data_quality_comprehensive(self, live_config, captured_messages) -> None:
         """Test comprehensive data quality validation."""
@@ -421,9 +421,9 @@ class TestComprehensiveLiveFlow:
 
         # Quality assertions
         quality_ratio = len(quality_issues) / max(len(record_messages), 1)
-        assert quality_ratio < QUALITY_THRESHOLD, (
-            f"Too many quality issues: {quality_ratio:.2%}"
-        )
+        assert (
+            quality_ratio < QUALITY_THRESHOLD
+        ), f"Too many quality issues: {quality_ratio:.2%}"
 
         if len(record_messages) > 0:
             # Schema compliance check

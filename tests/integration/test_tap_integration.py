@@ -48,14 +48,20 @@ class TestTapStreamIntegration:
 
     @pytest.mark.integration
     def test_tap_stream_creation_integration(
-        self, integration_config, mock_discovery_response, mock_schema_response,
+        self,
+        integration_config,
+        mock_discovery_response,
+        mock_schema_response,
     ) -> None:
         """Testa criação e integração entre tap e streams."""
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = mock_discovery_response
             mock_schema.return_value = mock_schema_response
 
@@ -157,11 +163,14 @@ class TestTapStreamIntegration:
             },
         }
 
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = entities
             mock_schema.return_value = expected_schema
 
@@ -271,7 +280,9 @@ class TestHTTPIntegration:
 
     @pytest.mark.integration
     def test_http_client_stream_integration(
-        self, integration_config, mock_http_responses,
+        self,
+        integration_config,
+        mock_http_responses,
     ) -> None:
         """Testa integração entre HTTP client e streams."""
         with patch("httpx.Client") as mock_client_class:
@@ -309,7 +320,9 @@ class TestHTTPIntegration:
 
     @pytest.mark.integration
     def test_pagination_http_integration(
-        self, integration_config, mock_http_responses,
+        self,
+        integration_config,
+        mock_http_responses,
     ) -> None:
         """Testa integração entre paginação e requests HTTP."""
         mock_tap = Mock()
@@ -396,7 +409,8 @@ class TestStateManagementIntegration:
 
         # Mock bookmark value
         with patch.object(
-            stream, "get_starting_replication_key_value",
+            stream,
+            "get_starting_replication_key_value",
         ) as mock_bookmark:
             mock_bookmark.return_value = "2024-01-01T10:00:00Z"
 
@@ -490,11 +504,14 @@ class TestEndToEndIntegration:
             },
         }
 
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = entities
             mock_schema.return_value = schema
 

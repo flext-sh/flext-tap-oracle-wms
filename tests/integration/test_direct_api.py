@@ -49,7 +49,9 @@ def test_direct_api_call_if_config_exists() -> None:
             elif isinstance(data, list):
                 assert len(data) >= 0  # Empty list is valid
         else:
-            pytest.fail(f"API call failed with status {response.status_code}: {response.text}")
+            pytest.fail(
+                f"API call failed with status {response.status_code}: {response.text}"
+            )
 
     except Exception as e:
         pytest.fail(f"API call failed with exception: {e}")

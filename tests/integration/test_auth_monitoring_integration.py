@@ -37,7 +37,9 @@ class TestAuthenticationIntegration:
     @pytest.mark.integration
     def test_basic_auth_integration_with_tap(self, auth_config_basic) -> None:
         """Testa integração de auth básica com o tap."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.auth.WMSAuthenticator") as mock_auth_class:
                 mock_discovery.return_value = ["facility"]
 
@@ -63,7 +65,9 @@ class TestAuthenticationIntegration:
     @pytest.mark.integration
     def test_oauth2_auth_integration_with_tap(self, auth_config_oauth2) -> None:
         """Testa integração de OAuth2 com o tap."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.auth.WMSAuthenticator") as mock_auth_class:
                 mock_discovery.return_value = ["facility"]
 
@@ -85,7 +89,9 @@ class TestAuthenticationIntegration:
     @pytest.mark.integration
     def test_auth_http_client_integration(self, auth_config_basic) -> None:
         """Testa integração entre auth e HTTP client."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("httpx.Client") as mock_client_class:
                 with patch("tap_oracle_wms.auth.WMSAuthenticator") as mock_auth_class:
                     mock_discovery.return_value = ["facility"]
@@ -119,7 +125,9 @@ class TestAuthenticationIntegration:
     @pytest.mark.integration
     def test_auth_error_handling_integration(self, auth_config_basic) -> None:
         """Testa tratamento de erros de autenticação."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("httpx.Client") as mock_client_class:
                 mock_discovery.return_value = ["facility"]
 
@@ -142,12 +150,18 @@ class TestAuthenticationIntegration:
                     # Se chegou aqui, erro 401 foi tratado graciosamente
                 except Exception as e:
                     # Se falhou, deve ser erro relacionado a auth
-                    assert "401" in str(e) or "Unauthorized" in str(e) or "auth" in str(e).lower()
+                    assert (
+                        "401" in str(e)
+                        or "Unauthorized" in str(e)
+                        or "auth" in str(e).lower()
+                    )
 
     @pytest.mark.integration
     def test_auth_token_refresh_integration(self, auth_config_oauth2) -> None:
         """Testa refresh de token OAuth2."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.auth.WMSAuthenticator") as mock_auth_class:
                 mock_discovery.return_value = ["facility"]
 
@@ -209,7 +223,9 @@ class TestMonitoringIntegration:
     @pytest.mark.integration
     def test_monitoring_integration_with_tap(self, monitoring_config) -> None:
         """Testa integração de monitoramento com o tap."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor_class:
                 mock_discovery.return_value = ["facility"]
 
@@ -228,7 +244,9 @@ class TestMonitoringIntegration:
     @pytest.mark.integration
     def test_monitoring_disabled_integration(self, monitoring_disabled_config) -> None:
         """Testa tap sem monitoramento."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             mock_discovery.return_value = ["facility"]
 
             # Criar tap sem monitoring
@@ -240,7 +258,9 @@ class TestMonitoringIntegration:
     @pytest.mark.integration
     def test_monitoring_metrics_integration(self, monitoring_config) -> None:
         """Testa integração de métricas com operações do tap."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor_class:
                 mock_discovery.return_value = ["facility", "item"]
 
@@ -261,9 +281,9 @@ class TestMonitoringIntegration:
 
                 # Verificar se pelo menos algumas métricas foram chamadas
                 total_calls = (
-                    mock_metrics.record_counter.call_count +
-                    mock_metrics.record_gauge.call_count +
-                    mock_metrics.record_histogram.call_count
+                    mock_metrics.record_counter.call_count
+                    + mock_metrics.record_gauge.call_count
+                    + mock_metrics.record_histogram.call_count
                 )
 
                 assert total_calls > 0  # Pelo menos uma métrica foi registrada
@@ -273,7 +293,9 @@ class TestMonitoringIntegration:
         """Testa métricas durante teste de conexão."""
         monitoring_config["test_connection"] = True
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor_class:
                 mock_discovery.return_value = ["facility", "item"]
 
@@ -298,7 +320,9 @@ class TestMonitoringIntegration:
     @pytest.mark.integration
     def test_monitoring_error_tracking_integration(self, monitoring_config) -> None:
         """Testa tracking de erros via monitoramento."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor_class:
                 # Forçar erro no discovery
                 mock_discovery.side_effect = Exception("Discovery failed")
@@ -319,7 +343,9 @@ class TestMonitoringIntegration:
     @pytest.mark.integration
     def test_monitoring_stream_metrics_integration(self, monitoring_config) -> None:
         """Testa métricas específicas de streams."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor_class:
                 mock_discovery.return_value = ["facility"]
 
@@ -376,7 +402,9 @@ class TestAuthMonitoringIntegration:
     @pytest.mark.integration
     def test_auth_success_monitoring(self, auth_monitoring_config) -> None:
         """Testa monitoramento de auth bem-sucedida."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor_class:
                 with patch("tap_oracle_wms.auth.WMSAuthenticator") as mock_auth_class:
                     mock_discovery.return_value = ["facility"]
@@ -407,7 +435,9 @@ class TestAuthMonitoringIntegration:
     @pytest.mark.integration
     def test_auth_failure_monitoring(self, auth_monitoring_config) -> None:
         """Testa monitoramento de falha de auth."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor_class:
                 with patch("tap_oracle_wms.auth.WMSAuthenticator") as mock_auth_class:
                     mock_discovery.return_value = ["facility"]
@@ -434,8 +464,8 @@ class TestAuthMonitoringIntegration:
                     # auth.failure, connection.test.failure, etc.
                     # Pelo menos uma métrica deve ter sido registrada
                     total_metric_calls = (
-                        mock_metrics.record_counter.call_count +
-                        mock_metrics.record_gauge.call_count
+                        mock_metrics.record_counter.call_count
+                        + mock_metrics.record_gauge.call_count
                     )
                     assert total_metric_calls > 0
 
@@ -455,7 +485,9 @@ class TestAuthMonitoringIntegration:
             "test_connection": False,
         }
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor_class:
                 with patch("tap_oracle_wms.auth.WMSAuthenticator") as mock_auth_class:
                     mock_discovery.return_value = ["facility"]
@@ -469,7 +501,9 @@ class TestAuthMonitoringIntegration:
 
                     def mock_refresh() -> None:
                         refresh_call_count["count"] += 1
-                        mock_auth.auth_headers = {"Authorization": f'Bearer refreshed_{refresh_call_count["count"]}'}
+                        mock_auth.auth_headers = {
+                            "Authorization": f'Bearer refreshed_{refresh_call_count["count"]}'
+                        }
 
                     mock_auth.refresh_token = mock_refresh
                     mock_auth_class.return_value = mock_auth
@@ -494,7 +528,9 @@ class TestAuthMonitoringIntegration:
     @pytest.mark.integration
     def test_comprehensive_auth_monitoring_flow(self, auth_monitoring_config) -> None:
         """Testa fluxo completo de auth + monitoring."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities"
+        ) as mock_discovery:
             with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor_class:
                 with patch("tap_oracle_wms.auth.WMSAuthenticator") as mock_auth_class:
                     with patch("httpx.Client") as mock_client_class:

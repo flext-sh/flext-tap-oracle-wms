@@ -215,7 +215,7 @@ def test_flatten_simple_objects() -> None:
 
             # Mostrar exemplo de valor
             if result_keys:
-                sorted(result_keys)[0]
+                min(result_keys)
 
     except ImportError:
         pass
@@ -542,7 +542,7 @@ def test_config_file_flattening() -> None:
     """Testa configuração de flattening via arquivo."""
     config_file = Path("examples/config.json")
     if config_file.exists():
-        with Path(config_file).open() as f:
+        with Path(config_file).open(encoding="utf-8") as f:
             config = json.load(f)
 
         # Verificar configurações de flattening

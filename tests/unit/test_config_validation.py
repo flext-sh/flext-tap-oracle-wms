@@ -79,7 +79,7 @@ def test_config_file() -> None:
     """Testa carregamento de arquivo de configuração."""
     config_file = Path("examples/config.json")
     if config_file.exists():
-        with Path(config_file).open() as f:
+        with Path(config_file).open(encoding="utf-8") as f:
             config = json.load(f)
 
         # Validar parâmetros obrigatórios
@@ -104,7 +104,7 @@ def test_config_file() -> None:
         for param in important_params:
             if param in config:
                 value = config[param]
-                if param in ["password"]:
+                if param == "password":
                     value = "*" * len(str(value))
     else:
         pass

@@ -84,17 +84,24 @@ class TestTapE2EDiscovery:
 
     @pytest.mark.e2e
     def test_complete_discovery_flow(
-        self, e2e_config, mock_complete_entities, mock_entity_schemas,
+        self,
+        e2e_config,
+        mock_complete_entities,
+        mock_entity_schemas,
     ) -> None:
         """Testa fluxo completo de discovery com todas as entidades."""
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = mock_complete_entities
             mock_schema.side_effect = lambda entity: mock_entity_schemas.get(
-                entity, mock_entity_schemas["facility"],
+                entity,
+                mock_entity_schemas["facility"],
             )
 
             # Criar tap
@@ -133,17 +140,24 @@ class TestTapE2EDiscovery:
 
     @pytest.mark.e2e
     def test_catalog_generation_complete(
-        self, e2e_config, mock_complete_entities, mock_entity_schemas,
+        self,
+        e2e_config,
+        mock_complete_entities,
+        mock_entity_schemas,
     ) -> None:
         """Testa geração completa de catálogo."""
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = mock_complete_entities
             mock_schema.side_effect = lambda entity: mock_entity_schemas.get(
-                entity, mock_entity_schemas["facility"],
+                entity,
+                mock_entity_schemas["facility"],
             )
 
             tap = TapOracleWMS(config=e2e_config)
@@ -258,7 +272,9 @@ class TestTapE2EExecution:
 
     @pytest.mark.e2e
     def test_complete_extraction_flow(
-        self, execution_config, mock_data_responses,
+        self,
+        execution_config,
+        mock_data_responses,
     ) -> None:
         """Testa fluxo completo de extração de dados."""
         entities = ["facility", "item"]
@@ -272,11 +288,15 @@ class TestTapE2EExecution:
             },
         }
 
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema, patch("httpx.Client") as mock_client_class:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+            patch("httpx.Client") as mock_client_class,
+        ):
             mock_discovery.return_value = entities
             mock_schema.return_value = schema
 
@@ -302,9 +322,7 @@ class TestTapE2EExecution:
                             "facility_page1"
                         ]
                 elif "item" in url:
-                    response.json.return_value = mock_data_responses[
-                        "item_page1"
-                    ]
+                    response.json.return_value = mock_data_responses["item_page1"]
 
                 return response
 
@@ -327,9 +345,7 @@ class TestTapE2EExecution:
                         "facility_page1"
                     ]
                 else:
-                    first_response.json.return_value = mock_data_responses[
-                        "item_page1"
-                    ]
+                    first_response.json.return_value = mock_data_responses["item_page1"]
 
                 # Verificar paginação
                 has_more = paginator.has_more(first_response)
@@ -370,11 +386,14 @@ class TestTapE2EExecution:
             ],
         }
 
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = ["facility"]
             mock_schema.return_value = {
                 "type": "object",
@@ -403,9 +422,12 @@ class TestTapE2EExecution:
     @pytest.mark.e2e
     def test_error_recovery_complete_flow(self, execution_config) -> None:
         """Testa fluxo completo de recuperação de erros."""
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch("httpx.Client") as mock_client_class:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch("httpx.Client") as mock_client_class,
+        ):
             mock_discovery.return_value = ["facility"]
 
             # Configurar client que falha e depois recupera
@@ -498,11 +520,14 @@ class TestTapE2ECommandLine:
     @pytest.mark.slow
     def test_cli_discover_command(self, temp_config_file) -> None:
         """Testa comando CLI de discovery."""
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = ["facility", "item"]
             mock_schema.return_value = {
                 "type": "object",
@@ -530,14 +555,20 @@ class TestTapE2ECommandLine:
     @pytest.mark.e2e
     @pytest.mark.slow
     def test_cli_sync_command_simulation(
-        self, temp_config_file, temp_catalog_file,
+        self,
+        temp_config_file,
+        temp_catalog_file,
     ) -> None:
         """Simula comando CLI de sync."""
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema, patch("httpx.Client") as mock_client_class:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+            patch("httpx.Client") as mock_client_class,
+        ):
             mock_discovery.return_value = ["facility"]
             mock_schema.return_value = {
                 "type": "object",
@@ -642,11 +673,15 @@ class TestTapE2EPerformance:
             ],
         }
 
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema, patch("httpx.Client") as mock_client_class:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+            patch("httpx.Client") as mock_client_class,
+        ):
             mock_discovery.return_value = ["large_entity"]
             mock_schema.return_value = {
                 "type": "object",
@@ -758,11 +793,15 @@ class TestTapE2ERealWorldScenarios:
             },
         }
 
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema, patch("httpx.Client") as mock_client_class:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+            patch("httpx.Client") as mock_client_class,
+        ):
             mock_discovery.return_value = oracle_config["entities"]
             mock_schema.return_value = {
                 "type": "object",
@@ -796,9 +835,7 @@ class TestTapE2ERealWorldScenarios:
             assert "order_dtl" in stream_names
 
             # Verificar URL construction para Oracle WMS
-            allocation_stream = next(
-                s for s in streams if s.name == "allocation"
-            )
+            allocation_stream = next(s for s in streams if s.name == "allocation")
             expected_path = "/wms/lgfapi/v10/entity/allocation"
             assert expected_path in allocation_stream.url
 
@@ -826,9 +863,12 @@ class TestTapE2ERealWorldScenarios:
             ],
         }
 
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch("httpx.Client") as mock_client_class:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch("httpx.Client") as mock_client_class,
+        ):
             mock_discovery.return_value = ["facility", "inventory"]
 
             mock_client = Mock()
@@ -863,11 +903,14 @@ class TestTapE2ERealWorldScenarios:
 
         # Dados com timestamps realistas
 
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = ["updated_entity"]
             mock_schema.return_value = {
                 "type": "object",
@@ -892,7 +935,8 @@ class TestTapE2ERealWorldScenarios:
 
             # Verificar que overlap é aplicado corretamente
             with patch.object(
-                stream, "get_starting_replication_key_value",
+                stream,
+                "get_starting_replication_key_value",
             ) as mock_bookmark:
                 mock_bookmark.return_value = previous_bookmark
 

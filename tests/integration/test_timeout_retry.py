@@ -380,7 +380,7 @@ def test_config_file_timeout() -> None:
     """Testa configuração de timeout via arquivo."""
     config_file = Path("examples/config.json")
     if config_file.exists():
-        with Path(config_file).open() as f:
+        with Path(config_file).open(encoding="utf-8") as f:
             config = json.load(f)
 
         # Verificar configurações de timeout/retry

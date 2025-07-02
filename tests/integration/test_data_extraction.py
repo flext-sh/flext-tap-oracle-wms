@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Teste completo de extração de dados com diferentes page_size."""
 
+import operator
 import time
 
 import httpx
@@ -87,19 +88,22 @@ def test_data_extraction_sizes() -> None:
         # Recomendações
 
         # Melhor rate
-        max(valid_results, key=lambda x: x["records_per_sec"])
+        max(valid_results, key=operator.itemgetter("records_per_sec"))
 
         # Menor overhead
-        min(valid_results, key=lambda x: x["bytes_per_record"])
+        min(valid_results, key=operator.itemgetter("bytes_per_record"))
 
         # Balanced approach
         balanced = [r for r in valid_results if 100 <= r["page_size"] <= 500]
         if balanced:
-            max(balanced, key=lambda x: x["records_per_sec"])
+            max(balanced, key=operator.itemgetter("records_per_sec"))
 
 
 def test_extraction_performance(
-    entity: str, page_size: int, headers: dict, base_url: str,
+    entity: str,
+    page_size: int,
+    headers: dict,
+    base_url: str,
 ) -> str:
     """Testa performance de extração para um page_size específico."""
     try:

@@ -390,19 +390,9 @@ config_schema = th.PropertiesList(
         required=False,
         description="Simple date expressions like 'today-7d', 'yesterday', etc. Automatically converted to ISO format",
         examples=[
-            {
-                "allocation": {
-                    "mod_ts__gte": "today-7d",
-                    "mod_ts__lte": "today"
-                }
-            },
-            {
-                "order_hdr": {
-                    "create_ts__gte": "yesterday",
-                    "create_ts__lte": "now"
-                }
-            }
-        ]
+            {"allocation": {"mod_ts__gte": "today-7d", "mod_ts__lte": "today"}},
+            {"order_hdr": {"create_ts__gte": "yesterday", "create_ts__lte": "now"}},
+        ],
     ),
     # Advanced features
     th.Property(

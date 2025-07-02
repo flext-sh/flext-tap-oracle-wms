@@ -231,7 +231,8 @@ class TestTapValidation:
 
     @pytest.mark.unit
     def test_validate_config_invalid_pagination(
-        self, invalid_pagination_config,
+        self,
+        invalid_pagination_config,
     ) -> None:
         """Testa validação com paginação inválida."""
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities"):

@@ -355,7 +355,10 @@ class TestPaginatorIntegration:
         ],
     )
     def test_paginator_various_responses(
-        self, response_data, expected_has_more, expected_next_url,
+        self,
+        response_data,
+        expected_has_more,
+        expected_next_url,
     ) -> None:
         """Testa paginador com várias respostas diferentes."""
         paginator = WMSAdvancedPaginator()
