@@ -42,14 +42,21 @@ class WMSPaginator(BaseHATEOASPaginator):
             data = response.json()
             return data.get("next_page") if isinstance(data, dict) else None
         except (ValueError, json.JSONDecodeError) as e:
-            # JSON parsing errors in pagination indicate API issues
+            # CRITICAL: JSON parsing failures in pagination must not be silent
             import logging
             logger = logging.getLogger(__name__)
-            logger.warning(
-                "Failed to parse pagination response as JSON - stopping pagination: %s. "
-                "This may indicate API version incompatibility.", e
+            logger.error(
+                "Critical pagination failure: Failed to parse JSON response. "
+                "This will terminate data extraction and may cause incomplete datasets. "
+                "Response status: %s, Content-Type: %s, Error: %s",
+                response.status_code,
+                response.headers.get("Content-Type", "unknown"),
+                e
             )
-            return None
+            # Raise exception to ensure pagination failures are not silent
+            from singer_sdk.exceptions import RetriableAPIError
+            msg = f"Pagination JSON parsing failed: {e}"
+            raise RetriableAPIError(msg) from e
 
     def has_more(self, response: requests.Response) -> bool:
         """Check if there are more pages to fetch."""
@@ -183,12 +190,28 @@ class WMSStream(RESTStream[dict[str, Any]]):
         )
 
     def _get_pagination_params(self, next_page_token: object) -> dict[str, Any]:
-        """Extract parameters from pagination token."""
+        """Extract parameters from pagination token with validation."""
         params: dict[str, Any] = {}
         if hasattr(next_page_token, "query") and next_page_token.query:
-            parsed_params = parse_qs(next_page_token.query)
-            for key, value in parsed_params.items():
-                params[key] = value[0] if len(value) == 1 else value
+            try:
+                parsed_params = parse_qs(next_page_token.query)
+                # Validate and sanitize query parameters
+                for key, value in parsed_params.items():
+                    # Prevent parameter injection attacks
+                    if not isinstance(key, str) or len(key) > 50:
+                        self.logger.warning("Suspicious query parameter key: %s", key)
+                        continue
+                    # Basic sanitization - allow only alphanumeric, underscore, dash
+                    if not key.replace("_", "").replace("-", "").isalnum():
+                        self.logger.warning("Invalid query parameter key format: %s", key)
+                        continue
+                    # Handle value arrays safely
+                    if isinstance(value, list) and value:
+                        clean_values = [str(v)[:100] for v in value if v is not None]
+                        params[key] = clean_values[0] if len(clean_values) == 1 else clean_values
+            except Exception as e:
+                self.logger.error("Failed to parse pagination query parameters: %s", e)
+                raise ValueError(f"Invalid pagination token query: {e}") from e
         return params
 
     def _get_base_params(self) -> dict[str, Any]:
@@ -214,11 +237,36 @@ class WMSStream(RESTStream[dict[str, Any]]):
         params: dict[str, Any],
         context: Mapping[str, Any] | None,
     ) -> None:
-        """Add incremental sync filter."""
+        """Add incremental sync filter with comprehensive timestamp validation."""
         start_date = self.get_starting_timestamp(context)
         if start_date:
+            # Validate timestamp has timezone information
+            if start_date.tzinfo is None:
+                error_msg = (
+                    f"Critical timestamp error: start_date '{start_date}' for entity "
+                    f"'{self._entity_name}' lacks timezone information. This can cause "
+                    f"data consistency issues across time zones."
+                )
+                self.logger.error(error_msg)
+                # Add UTC timezone as fallback but warn
+                start_date = start_date.replace(tzinfo=timezone.utc)
+                self.logger.warning("Applied UTC timezone as fallback for start_date")
+            
+            # Validate overlap configuration
             overlap_minutes = self.config.get("incremental_overlap_minutes", 5)
+            if not isinstance(overlap_minutes, (int, float)) or overlap_minutes < 0:
+                self.logger.warning("Invalid overlap_minutes: %s, using default 5", overlap_minutes)
+                overlap_minutes = 5
+            if overlap_minutes > 1440:  # More than 24 hours
+                self.logger.warning("Large overlap_minutes may cause performance issues: %s", overlap_minutes)
+            
             adjusted_date = start_date - timedelta(minutes=overlap_minutes)
+            
+            # Validate date range reasonableness 
+            now = datetime.now(timezone.utc)
+            if adjusted_date > now:
+                self.logger.warning("Start date is in the future: %s", adjusted_date)
+            
             params[f"{self.replication_key}__gte"] = adjusted_date.isoformat()
 
     def _add_full_table_filter(
@@ -226,19 +274,28 @@ class WMSStream(RESTStream[dict[str, Any]]):
         params: dict[str, Any],
         context: Mapping[str, Any] | None,
     ) -> None:
-        """Add full table sync filter."""
+        """Add full table sync filter with strict bookmark validation."""
         bookmark = self.get_starting_replication_key_value(context)
         if bookmark and "id" in self._schema.get("properties", {}):
             try:
                 bookmark_id = int(bookmark)
+                # Additional validation for reasonable bookmark values
+                if bookmark_id < 0:
+                    raise ValueError("Bookmark ID cannot be negative")
+                if bookmark_id > 999999999999:  # Reasonable upper limit
+                    raise ValueError("Bookmark ID suspiciously large")
                 params["id__lte"] = str(bookmark_id)
+                self.logger.debug("Applied full sync filter with bookmark ID: %s", bookmark_id)
             except (ValueError, TypeError) as e:
-                self.logger.warning(
-                    "Invalid bookmark format for full sync, "
-                    "expected integer ID but got '%s': %s",
-                    bookmark,
-                    e,
+                # CRITICAL: Invalid bookmarks cause data consistency issues
+                error_msg = (
+                    f"Critical bookmark validation failure for full sync: "
+                    f"Invalid bookmark '{bookmark}' for entity '{self._entity_name}'. "
+                    f"Expected integer ID. This will cause data sync issues. Error: {e}"
                 )
+                self.logger.error(error_msg)
+                # Fail fast - don't continue with invalid bookmark
+                raise ValueError(error_msg) from e
 
     def _add_ordering_params(self, params: dict[str, Any]) -> None:
         """Add ordering parameters for consistent results."""
@@ -604,12 +661,15 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     dt = datetime.fromisoformat(timestamp_value.replace("Z", ""))
                     return dt.replace(tzinfo=timezone.utc).isoformat()
                 except (ValueError, TypeError) as e:
-                    # Timestamp parsing failures can be tolerated for normalization
-                    self.logger.warning(
-                        "Failed to normalize timestamp timezone for '%s': %s. "
-                        "Using original timestamp format.",
-                        timestamp_value, e,
+                    # Timestamp normalization failures indicate data quality issues
+                    error_msg = (
+                        f"Critical timestamp format error: Cannot normalize timestamp '{timestamp_value}' "
+                        f"for field '{getattr(self, '_current_field', 'unknown')}'. "
+                        f"This indicates invalid timestamp data that may cause downstream issues. Error: {e}"
                     )
+                    self.logger.error(error_msg)
+                    # For timestamp normalization, we can be more lenient but must log clearly
+                    self.logger.warning("Proceeding with original timestamp format - may cause timezone issues")
                     return timestamp_value
             return timestamp_value
         if isinstance(timestamp_value, datetime):
@@ -640,7 +700,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 "request_number": request_count + 1,
                 "url": url,
                 "params": params,
-                "headers": {k: v for k, v in headers.items() if k.lower() not in ["authorization", "cookie"]},
+                "headers": {k: v for k, v in headers.items() if k.lower() not in ["authorization", "cookie", "x-api-key", "x-auth-token"]},
                 "method": "GET",
                 "request_start_time": time.time(),
             },
