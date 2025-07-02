@@ -6,7 +6,6 @@ from typing import Any
 
 from singer_sdk import typing as th
 
-
 # Constants
 WMS_MAX_PAGE_SIZE = 1250
 
@@ -37,7 +36,7 @@ config_schema = th.PropertiesList(
         required=True,
         description="Base URL for Oracle WMS instance (e.g., https://wms.company.com)",
         examples=["https://wms.example.com", "https://prod-wms.company.com"],
-        pattern=r"^https?://[a-zA-Z0-9.-]+",  # JSON Schema pattern validation
+        # pattern=r"^https?://[a-zA-Z0-9.-]+",  # JSON Schema pattern validation
     ),
     # Authentication configuration
     th.Property(
@@ -142,15 +141,20 @@ config_schema = th.PropertiesList(
         "pagination_mode",
         th.StringType,
         default="sequenced",
-        allowed_values=["offset", "cursor", "sequenced", "paged"],
-        description="Pagination mode: sequenced (cursor-based, recommended), "
-        "paged (offset-based), offset (legacy), cursor (legacy)",
+        allowed_values=["sequenced"],
+        description="Pagination mode: sequenced (cursor-based, Oracle WMS HATEOAS)",
     ),
     th.Property(
         "page_size",
         th.IntegerType,
-        default=1000,
-        description="Number of records per page (recommended: 1000, max 1250)",
+        required=True,
+        description="Number of records per page",
+    ),
+    th.Property(
+        "record_limit",
+        th.IntegerType,
+        required=False,
+        description="Maximum number of records to extract per entity (prevents extracting thousands)",
     ),
     th.Property(
         "max_parallel_streams",
@@ -379,6 +383,27 @@ config_schema = th.PropertiesList(
         required=False,
         description="Circuit breaker configuration",
     ),
+    # === DATE STRATEGY CONFIGURATION ===
+    th.Property(
+        "simple_date_expressions",
+        th.ObjectType(),
+        required=False,
+        description="Simple date expressions like 'today-7d', 'yesterday', etc. Automatically converted to ISO format",
+        examples=[
+            {
+                "allocation": {
+                    "mod_ts__gte": "today-7d",
+                    "mod_ts__lte": "today"
+                }
+            },
+            {
+                "order_hdr": {
+                    "create_ts__gte": "yesterday",
+                    "create_ts__lte": "now"
+                }
+            }
+        ]
+    ),
     # Advanced features
     th.Property(
         "verify_entity_access",
@@ -425,12 +450,6 @@ config_schema = th.PropertiesList(
                 th.BooleanType,
                 default=False,
                 description="Enable bulk operations support",
-            ),
-            th.Property(
-                "batch_size",
-                th.IntegerType,
-                default=500,
-                description="Batch size for bulk operations",
             ),
         ),
         required=False,
@@ -508,7 +527,13 @@ config_schema = th.PropertiesList(
         th.StringType,
         default="INFO",
         allowed_values=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        description="Logging level",
+        description="Logging level (INFO recommended for production, DEBUG for troubleshooting)",
+    ),
+    th.Property(
+        "disable_trace_logs",
+        th.BooleanType,
+        default=True,
+        description="Disable extremely verbose TRACE logs for production (recommended: true)",
     ),
     th.Property(
         "log_to_file",

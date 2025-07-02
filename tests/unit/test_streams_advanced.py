@@ -188,7 +188,9 @@ class TestStreamURLParams:
         }
         # Mock methods
         mock_tap.apply_entity_filters.return_value = {}
-        mock_tap.apply_incremental_filters.return_value = {"mod_ts__gte": "2024-01-01T10:00:00Z"}
+        mock_tap.apply_incremental_filters.return_value = {
+            "mod_ts__gte": "2024-01-01T10:00:00Z",
+        }
         mock_tap.apply_full_sync_filters.return_value = {}
         return mock_tap
 
@@ -224,7 +226,9 @@ class TestStreamURLParams:
                 ("page_mode", "sequenced"),
             ]
 
-            params = stream_instance.get_url_params(context=None, next_page_token=mock_next_token)
+            params = stream_instance.get_url_params(
+                context=None, next_page_token=mock_next_token,
+            )
 
             assert params["cursor"] == "abc123"
             assert params["page_size"] == "1000"
@@ -241,7 +245,9 @@ class TestStreamURLParams:
             mock_parse.side_effect = ValueError("Parse error")
 
             # Deve fallback para parâmetros base
-            params = stream_instance.get_url_params(context=None, next_page_token=mock_next_token)
+            params = stream_instance.get_url_params(
+                context=None, next_page_token=mock_next_token,
+            )
 
             assert "page_mode" in params
             assert "page_size" in params
@@ -250,7 +256,9 @@ class TestStreamURLParams:
     def test_get_url_params_incremental_sync(self, stream_instance, mock_tap) -> None:
         """Testa parâmetros para sync incremental."""
         # Mock bookmark value
-        with patch.object(stream_instance, "get_starting_replication_key_value") as mock_bookmark:
+        with patch.object(
+            stream_instance, "get_starting_replication_key_value",
+        ) as mock_bookmark:
             mock_bookmark.return_value = "2024-01-01T10:00:00Z"
 
             stream_instance.get_url_params(context=None, next_page_token=None)
@@ -270,7 +278,9 @@ class TestStreamURLParams:
             schema={"type": "object"},
         )
 
-        with patch.object(stream, "get_starting_replication_key_value") as mock_bookmark:
+        with patch.object(
+            stream, "get_starting_replication_key_value",
+        ) as mock_bookmark:
             mock_bookmark.return_value = "2024-01-01T10:00:00Z"
 
             params = stream.get_url_params(context=None, next_page_token=None)
@@ -279,10 +289,14 @@ class TestStreamURLParams:
             assert "mod_ts__gte" in params
 
             # Verifica se aplicou overlap de 5 minutos
-            bookmark_time = datetime.fromisoformat("2024-01-01T10:00:00Z".replace("Z", "+00:00"))
+            bookmark_time = datetime.fromisoformat(
+                "2024-01-01T10:00:00Z".replace("Z", "+00:00"),
+            )
             expected_time = bookmark_time - timedelta(minutes=5)
 
-            param_time = datetime.fromisoformat(params["mod_ts__gte"].replace("Z", "+00:00"))
+            param_time = datetime.fromisoformat(
+                params["mod_ts__gte"].replace("Z", "+00:00"),
+            )
             assert param_time == expected_time
 
     @pytest.mark.unit

@@ -1,0 +1,17 @@
+{
+  "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+  "username": "INVALID_USER",
+  "password": "invalid_password",
+  "auth_method": "basic",
+  "page_size": 10,
+  "page_mode": "sequenced",
+  "record_limit": 10,
+  "entities": ["allocation"],
+  "request_timeout": 10,
+  "enable_incremental": false,
+  "circuit_breaker": {
+    "enabled": true,
+    "failure_threshold": 2,
+    "recovery_timeout": 5
+  }
+}

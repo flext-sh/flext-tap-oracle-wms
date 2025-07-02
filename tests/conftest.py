@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any
 from unittest.mock import Mock
 
-from dotenv import load_dotenv
 import httpx
 import pytest
-
+from dotenv import load_dotenv
 
 # Load environment variables for tests
 load_dotenv()
@@ -32,7 +31,6 @@ def src_root(project_root) -> Any:
 @pytest.fixture(autouse=True)
 def add_src_to_path(src_root) -> None:
     """Add src directory to Python path for imports."""
-
     if str(src_root) not in sys.path:
         sys.path.insert(0, str(src_root))
 

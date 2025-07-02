@@ -11,7 +11,6 @@ from singer_sdk.authenticators import OAuthAuthenticator, SimpleAuthenticator
 
 from .enhanced_logging import get_enhanced_logger, trace_performance
 
-
 if TYPE_CHECKING:
     from singer_sdk.streams import RESTStream
 
@@ -36,16 +35,16 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
         enhanced_logger.trace("🔐 Initializing basic authenticator")
         enhanced_logger.trace("👤 Username: %s", username)
         enhanced_logger.trace("🔑 Password length: %d", len(password))
-        
+
         self.username = username
         self.password = password
-        self._auth_headers: dict[str, str] | None = None
+        self._auth_headers: dict[str, Any] = {}
         super().__init__(stream)
         enhanced_logger.trace("✅ Basic authenticator initialized")
 
     @property
     @trace_performance("Basic Auth Header Generation")
-    def auth_headers(self) -> dict[str, str]:
+    def auth_headers(self) -> dict[str, Any]:
         """Get authentication headers.
 
         Returns:
@@ -58,7 +57,7 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
 
         """
         enhanced_logger.trace("🔐 Generating authentication headers")
-        
+
         if not self._auth_headers or "Authorization" not in self._auth_headers:
             enhanced_logger.trace("🔄 Creating new auth headers")
             try:
@@ -241,7 +240,8 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
 
 
 def get_wms_authenticator(
-    stream: RESTStream[Any], config: dict[str, Any]
+    stream: RESTStream[Any],
+    config: dict[str, Any],
 ) -> WMSBasicAuthenticator | WMSOAuth2Authenticator:
     """Create appropriate authenticator based on configuration.
 

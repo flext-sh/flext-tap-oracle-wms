@@ -12,11 +12,11 @@ The system emphasizes TRACE level logging for comprehensive debugging and monito
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import logging
-from pathlib import Path
 import sys
 import time
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 if TYPE_CHECKING:
@@ -50,15 +50,19 @@ class EnhancedFormatter(logging.Formatter):
 
     # Color codes for different log levels
     COLORS: ClassVar[dict[str, str]] = {
-        "TRACE": "\033[36m",      # Cyan
-        "DEBUG": "\033[34m",      # Blue
-        "INFO": "\033[32m",       # Green
-        "WARNING": "\033[33m",    # Yellow
-        "CRITICAL": "\033[31m",   # Red
-        "RESET": "\033[0m"        # Reset
+        "TRACE": "\033[36m",  # Cyan
+        "DEBUG": "\033[34m",  # Blue
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "CRITICAL": "\033[31m",  # Red
+        "RESET": "\033[0m",  # Reset
     }
 
-    def __init__(self, use_colors: bool = True, include_trace_details: bool = True) -> None:
+    def __init__(
+        self,
+        use_colors: bool = True,
+        include_trace_details: bool = True,
+    ) -> None:
         """Initialize enhanced formatter.
 
         Args:
@@ -83,14 +87,14 @@ class EnhancedFormatter(logging.Formatter):
         )
 
         # Minimal format for INFO level
-        self.info_format = (
-            "{color}[{levelname}] {asctime} | {message}{reset}"
-        )
+        self.info_format = "{color}[{levelname}] {asctime} | {message}{reset}"
 
     def format(self, record: logging.LogRecord) -> str:
         """Format log record with appropriate detail level."""
         # Add timestamp
-        record.asctime = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        record.asctime = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[
+            :-3
+        ]
 
         # Select format based on level
         if record.levelno == TRACE_LEVEL and self.include_trace_details:
@@ -120,9 +124,9 @@ class EnhancedFormatter(logging.Formatter):
                 funcName=record.funcName,
                 process=record.process,
                 thread=record.thread,
-                message=record.getMessage()
+                message=record.getMessage(),
             )
-        except Exception:  # noqa: BLE001
+        except Exception:
             # Fallback to basic formatting
             return f"[{record.levelname}] {record.getMessage()}"
 
@@ -159,9 +163,14 @@ class PerformanceTracer:
             total_time = (time.perf_counter() - self.start_time) * 1000
 
             if exc_type is None:
-                self.logger.trace(f"✅ Completed {self.operation_name} in {total_time:.2f}ms")
+                self.logger.trace(
+                    f"✅ Completed {self.operation_name} in {total_time:.2f}ms",
+                )
             else:
-                self.logger.trace(f"❌ Failed {self.operation_name} after {total_time:.2f}ms: {exc_val}")
+                self.logger.trace(
+                    f"❌ Failed {self.operation_name} after "
+                    f"{total_time:.2f}ms: {exc_val}",
+                )
 
             # Log checkpoint details if any
             if self.checkpoints:
@@ -186,7 +195,8 @@ def setup_enhanced_logging(
     log_file: str | None = None,
     use_colors: bool = True,
     include_trace_details: bool = True,
-    enable_performance_tracing: bool = True
+    enable_performance_tracing: bool = True,
+    disable_trace_logs: bool = True,
 ) -> TraceLogger:
     """Setup enhanced logging system with 5-level support.
 
@@ -197,6 +207,7 @@ def setup_enhanced_logging(
         use_colors: Whether to use colored output
         include_trace_details: Whether to include detailed trace information
         enable_performance_tracing: Whether to enable performance tracing
+        disable_trace_logs: Whether to disable TRACE level logs
     Returns:
         Configured TraceLogger instance
     """
@@ -210,7 +221,7 @@ def setup_enhanced_logging(
     # Create formatter
     formatter = EnhancedFormatter(
         use_colors=use_colors,
-        include_trace_details=include_trace_details
+        include_trace_details=include_trace_details,
     )
 
     # Setup console handler
@@ -219,8 +230,10 @@ def setup_enhanced_logging(
 
     # Set appropriate level
     if isinstance(level, str):
-        if level.upper() == "TRACE":
+        if level.upper() == "TRACE" and not disable_trace_logs:
             console_level = TRACE_LEVEL
+        elif level.upper() == "TRACE" and disable_trace_logs:
+            console_level = logging.DEBUG  # Fall back to DEBUG if TRACE disabled
         else:
             console_level = getattr(logging, level.upper(), logging.INFO)
     else:
@@ -242,17 +255,22 @@ def setup_enhanced_logging(
         logger.trace(f"📊 Console level: {logging.getLevelName(console_level)}")  # type: ignore[attr-defined]
         logger.trace(f"📁 File logging: {'enabled' if log_file else 'disabled'}")  # type: ignore[attr-defined]
         logger.trace(f"🎨 Colors: {'enabled' if use_colors else 'disabled'}")  # type: ignore[attr-defined]
-        logger.trace(f"🔍 Trace details: {'enabled' if include_trace_details else 'disabled'}")  # type: ignore[attr-defined]
+        logger.trace(  # type: ignore[attr-defined]
+            f"🔍 Trace details: {'enabled' if include_trace_details else 'disabled'}",
+        )
 
     return logger  # type: ignore[return-value]
 
 
-def trace_performance(operation_name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+def trace_performance(
+    operation_name: str,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for automatic performance tracing.
 
     Args:
         operation_name: Name of the operation to trace
     """
+
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Get logger from module
@@ -262,6 +280,7 @@ def trace_performance(operation_name: str) -> Callable[[Callable[..., Any]], Cal
                 return func(*args, **kwargs)
 
         return wrapper
+
     return decorator
 
 
@@ -290,12 +309,12 @@ def setup_cli_logging(config: dict[str, Any]) -> TraceLogger:
     log_level = config.get("log_level", "INFO").upper()
 
     # Enable TRACE by default in debug mode
-    if config.get("debug", False):
+    if config.get("debug"):
         log_level = "TRACE"
 
     # Setup file logging in debug mode
     log_file = None
-    if config.get("debug", False) or config.get("enable_file_logging", False):
+    if config.get("debug") or config.get("enable_file_logging"):
         log_file = config.get("log_file", "tap-oracle-wms.log")
 
     # Setup enhanced logging
@@ -305,11 +324,11 @@ def setup_cli_logging(config: dict[str, Any]) -> TraceLogger:
         log_file=log_file,
         use_colors=config.get("use_colors", True),
         include_trace_details=config.get("include_trace_details", True),
-        enable_performance_tracing=config.get("enable_performance_tracing", True)
+        enable_performance_tracing=config.get("enable_performance_tracing", True),
     )
 
     # Log CLI startup
-    logger.trace("🎯 CLI logging system initialized")  # type: ignore[attr-defined]
-    logger.trace(f"⚙️  Configuration: {config}")  # type: ignore[attr-defined]
+    logger.trace("🎯 CLI logging system initialized")
+    logger.trace("⚙️  Configuration: %s", config)
 
     return logger

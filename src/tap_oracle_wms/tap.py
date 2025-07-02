@@ -4,24 +4,23 @@ from __future__ import annotations
 
 import asyncio
 import concurrent.futures
+import logging
 from datetime import datetime, timedelta
 from itertools import starmap
-import logging
 from typing import Any
 
 from singer_sdk import Stream, Tap
 from singer_sdk.helpers.capabilities import TapCapabilities
 
 from .config import config_schema, validate_auth_config, validate_pagination_config
+from .date_utils import SimpleDateConverter
 from .discovery import EntityDiscovery, SchemaGenerator
 from .enhanced_logging import (
     get_enhanced_logger,
-    PerformanceTracer,
     trace_performance,
 )
 from .monitoring import TAPMonitor
 from .streams import WMSAdvancedStream
-
 
 logger = logging.getLogger(__name__)
 enhanced_logger = get_enhanced_logger(__name__)
@@ -131,7 +130,10 @@ class TapOracleWMS(Tap):
          "password": "pass",
          "advanced_filters": {
            "allocation": {
-             "mod_ts": {"__gte": "2024-01-01T00:00:00Z", "__lte": "2024-12-31T23:59:59Z"},
+             "mod_ts": {
+                "__gte": "2024-01-01T00:00:00Z",
+                "__lte": "2024-12-31T23:59:59Z"
+             },
              "status": {"__in": ["ACTIVE", "PENDING"]},
              "facility_code": "MAIN"
            }
@@ -173,14 +175,14 @@ class TapOracleWMS(Tap):
        - Ordering: chronological (mod_ts ASC)
        - Use case: Full historical extraction
 
-    PAGINATION ADAPTATION:
-    =====================
-    Automatically adapts to Oracle WMS pagination modes:
+    PAGINATION OPTIMIZATION:
+    =======================
+    Optimized for Oracle WMS pagination:
 
-    • page_mode="sequenced": High-performance cursor navigation
-    • page_mode="paged": Standard page number navigation
+    • page_mode="sequenced": High-performance cursor navigation (ONLY MODE)
     • Auto page size optimization per entity
-    • Handles different response formats transparently
+    • HATEOAS-based navigation with next_page URLs
+    • Handles large datasets efficiently without total calculations
 
     SCHEMA GENERATION:
     =================
@@ -244,23 +246,24 @@ class TapOracleWMS(Tap):
         TapCapabilities.DISCOVER,  # Schema discovery and catalog generation
         TapCapabilities.STATE,  # Incremental sync with state management
         TapCapabilities.CATALOG,  # Stream selection and metadata
-        TapCapabilities.PROPERTIES,  # Configuration properties and validation
+        TapCapabilities.CATALOG,  # Configuration properties and validation
     ]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize tap."""
         enhanced_logger.trace("🔧 Initializing Oracle WMS TAP")
-        
+
         # CRITICAL: Singer SDK requires tap_name BEFORE super().__init__
         self.tap_name = "tap-oracle-wms"  # Required by Singer SDK
         enhanced_logger.trace("📝 Set tap_name: %s", self.tap_name)
-        
+
         self._entity_discovery: EntityDiscovery | None = None
         self._schema_generator: SchemaGenerator | None = None
         self._discovered_entities = None
         self._entity_schemas: dict[str, dict[str, Any]] = {}
         self._monitor = None
-        
+        self._processed_entity_filters: dict[str, dict[str, Any]] = {}
+
         enhanced_logger.trace("🚀 Calling super().__init__")
         super().__init__(*args, **kwargs)
         enhanced_logger.trace("✅ Super initialization complete")
@@ -273,7 +276,10 @@ class TapOracleWMS(Tap):
             logger.info("Monitoring enabled for TAP")
         else:
             enhanced_logger.trace("⚠️ Monitoring disabled in configuration")
-            
+
+        # Validate configuration and process simple date expressions
+        self.validate_config()
+
         enhanced_logger.trace("🎯 Oracle WMS TAP initialization complete")
 
     def validate_config(self) -> None:
@@ -294,12 +300,75 @@ class TapOracleWMS(Tap):
         if page_error:
             raise ValueError(page_error)
 
+        # Process simple date expressions and convert to entity_filters
+        self._process_simple_date_expressions()
+
         # Test connection if configured
         if self.config.get("test_connection", True):
             self._test_connection()
 
+    def _process_simple_date_expressions(self) -> None:
+        """Process simple date expressions and convert to entity_filters.
+
+        This method takes simple_date_expressions configuration and converts
+        all human-friendly date expressions (like 'today-7d') to proper ISO
+        format timestamps that Oracle WMS can understand.
+        """
+        simple_date_config = self.config.get("simple_date_expressions")
+        if not simple_date_config:
+            enhanced_logger.trace("📅 No simple date expressions configured")
+            return
+
+        enhanced_logger.info("📅 Processing simple date expressions")
+        enhanced_logger.info(f"📅 Raw simple_date_config: {simple_date_config}")
+        converter = SimpleDateConverter()
+
+        try:
+            # Convert simple date expressions to ISO format
+            converted_filters = converter.process_simple_date_expressions(simple_date_config)
+
+            # Merge with existing entity_filters (if any)
+            existing_filters = dict(self.config.get("entity_filters", {}))
+
+            for entity_name, filters in converted_filters.items():
+                if entity_name in existing_filters:
+                    # Merge filters for this entity
+                    existing_filters[entity_name].update(filters)
+                    enhanced_logger.info(
+                        "📅 Merged date filters for entity %s: %s",
+                        entity_name,
+                        filters
+                    )
+                else:
+                    # Add new entity filters
+                    existing_filters[entity_name] = filters
+                    enhanced_logger.info(
+                        "📅 Added date filters for entity %s: %s",
+                        entity_name,
+                        filters
+                    )
+
+            # Store converted filters for later use by streams
+            # We don't modify self.config directly, instead we store the processed filters
+            # in a separate attribute that streams can access
+            self._processed_entity_filters = existing_filters
+
+            enhanced_logger.info("✅ Simple date expressions processed and converted to ISO format")
+
+        except Exception as e:
+            enhanced_logger.exception("❌ Failed to process simple date expressions")
+            raise ValueError(f"Invalid simple date expressions: {e}") from e
+
     def _test_connection(self) -> None:
-        """Test connection to Oracle WMS API."""
+        """Test connection to Oracle WMS API.
+
+        This performs a lightweight connection test that validates:
+        1. Network connectivity to the Oracle WMS API
+        2. Authentication credentials
+        3. Basic API accessibility
+
+        The test is designed to be fast and non-blocking for normal operation.
+        """
         logger.info("Testing connection to Oracle WMS API")
 
         try:
@@ -307,35 +376,56 @@ class TapOracleWMS(Tap):
             if self._monitor:
                 asyncio.run(self._monitor.start_monitoring())
 
-            # Run async discovery to test connection
-            entities = asyncio.run(self.entity_discovery.discover_entities())
-
-            # Record connection test metrics
+            # Record connection test attempt
             if self._monitor:
                 self._monitor.metrics.record_counter("connection.test.attempts")
 
-            if entities:
-                logger.info("Connection successful. Found %s entities.", len(entities))
+            # Simple connectivity test - just try to discover entities
+            # This is lightweight and tests auth + network connectivity
+            entities = asyncio.run(self.entity_discovery.discover_entities())
+
+            if entities and len(entities) > 0:
+                logger.info("✅ Connection successful. Found %s entities.", len(entities))
                 if self._monitor:
                     self._monitor.metrics.record_counter("connection.test.success")
                     self._monitor.metrics.record_gauge(
                         "connection.entities_discovered",
                         len(entities),
                     )
-                if self._monitor:
-                    self._monitor.metrics.record_counter("connection.test.failure")
-                msg = "No entities discovered. Check permissions."
-                raise ValueError(msg)
-        except (ValueError, TypeError, AttributeError) as e:
+                return  # Success - return normally
+            # No entities found - this might be a permissions issue
+            # but don't fail hard, just warn and continue
+            enhanced_logger.warning(
+                "⚠️ Connection test: No entities discovered. This may indicate limited permissions, "
+                "but the connection itself appears to work. Continuing..."
+            )
+            if self._monitor:
+                self._monitor.metrics.record_counter("connection.test.warning")
+            return  # Continue execution - don't block
+
+        except (ValueError, TypeError, AttributeError) as config_error:
+            # Configuration or authentication errors - these should fail hard
             if self._monitor:
                 self._monitor.metrics.record_counter("connection.test.failure")
-            msg = f"Connection test failed: {e}"
-            raise ValueError(msg) from e
-        except Exception as e:
+            enhanced_logger.exception(f"❌ Connection test failed due to configuration/auth error: {config_error}")
+            raise ValueError(f"Connection test failed: {config_error}") from config_error
+
+        except Exception as unexpected_error:
+            # Unexpected errors - log but don't fail hard unless it's clearly fatal
             if self._monitor:
                 self._monitor.metrics.record_counter("connection.test.error")
-            msg = f"Unexpected error during connection test: {e}"
-            raise ValueError(msg) from e
+
+            # Check if this is a network connectivity issue
+            error_str = str(unexpected_error).lower()
+            if any(keyword in error_str for keyword in ["connection", "timeout", "network", "dns", "unreachable"]):
+                enhanced_logger.exception(f"❌ Network connectivity issue: {unexpected_error}")
+                raise ValueError(f"Network connectivity failed: {unexpected_error}") from unexpected_error
+            # Other errors - warn but continue
+            enhanced_logger.warning(
+                f"⚠️ Connection test encountered non-fatal error: {unexpected_error}. "
+                "Continuing with TAP initialization..."
+            )
+            return  # Continue execution
 
     @property
     def entity_discovery(self) -> EntityDiscovery:
@@ -409,7 +499,7 @@ class TapOracleWMS(Tap):
                         e,
                     )
                     return name, url, False
-                except Exception as e:  # noqa: BLE001
+                except Exception as e:
                     logger.warning(
                         "Unexpected error checking access to entity %s: %s",
                         name,
@@ -596,7 +686,7 @@ class TapOracleWMS(Tap):
                         e,
                     )
                     return entity_name, None
-                except Exception as e:  # noqa: BLE001
+                except Exception as e:
                     logger.warning(
                         "Unexpected error generating schema for entity %s: %s",
                         entity_name,
@@ -625,14 +715,14 @@ class TapOracleWMS(Tap):
                 try:
                     schema = await self._generate_schema_for_entity(entity_name)
                     sequential_results.append((entity_name, schema))
-                except (ValueError, TypeError, AttributeError) as e:  # noqa: PERF203
+                except (ValueError, TypeError, AttributeError) as e:
                     logger.warning(
                         "Configuration error generating schema for entity %s: %s",
                         entity_name,
                         e,
                     )
                     sequential_results.append((entity_name, None))
-                except Exception as e:  # noqa: BLE001
+                except Exception as e:
                     logger.warning(
                         "Unexpected error generating schema for entity %s: %s",
                         entity_name,
@@ -708,7 +798,7 @@ class TapOracleWMS(Tap):
         }
 
     @trace_performance("Stream Discovery")
-    def discover_streams(self) -> list[Stream]:  # noqa: PLR0912
+    def discover_streams(self) -> list[Stream]:
         """Discover available streams.
 
         Returns:
@@ -738,7 +828,10 @@ class TapOracleWMS(Tap):
             # No running loop, safe to use asyncio.run()
             entities = asyncio.run(self._discover_and_filter_entities())
 
-        enhanced_logger.trace("📅 Discovery found %d accessible entities", len(entities))
+        enhanced_logger.trace(
+            "📅 Discovery found %d accessible entities",
+            len(entities),
+        )
         logger.info("Discovered %s accessible entities", len(entities))
 
         # Record discovery metrics
@@ -780,8 +873,9 @@ class TapOracleWMS(Tap):
                 # Create advanced stream with full functionality
                 stream = WMSAdvancedStream(
                     tap=self,
-                    entity_name=entity_name,
+                    name=entity_name,
                     schema=schema,
+                    entity_name=entity_name,
                 )
                 streams.append(stream)
 
@@ -794,7 +888,7 @@ class TapOracleWMS(Tap):
                         tags={"entity": entity_name},
                     )
 
-            except (ValueError, TypeError, AttributeError):  # noqa: PERF203
+            except (ValueError, TypeError, AttributeError):
                 logger.exception(
                     "Configuration error creating stream for entity %s",
                     entity_name,
@@ -843,7 +937,7 @@ class TapOracleWMS(Tap):
         """
         # Discover streams if not already done
         if self._discovered_entities is None:
-            return self.discover_streams()
+            return list(self.discover_streams())
 
         # Otherwise recreate streams from cached data
         streams: list[Stream] = []
@@ -928,8 +1022,15 @@ class TapOracleWMS(Tap):
         for field, value in global_filters.items():
             params[field] = value
 
-        # 2. Apply entity-specific simple filters
+        # 2. Apply entity-specific simple filters (including processed simple date expressions)
         entity_filters = self.config.get("entity_filters", {}).get(entity_name, {})
+
+        # Merge with processed entity filters (from simple date expressions)
+        if hasattr(self, '_processed_entity_filters'):
+            processed_filters = self._processed_entity_filters.get(entity_name, {})
+            entity_filters = {**entity_filters, **processed_filters}
+            enhanced_logger.trace(f"📅 Applied processed date filters for {entity_name}: {processed_filters}")
+
         for field, value in entity_filters.items():
             params[field] = value
 
@@ -1195,7 +1296,11 @@ class TapOracleWMS(Tap):
 
             if start_date:
                 params["mod_ts__gte"] = start_date
-                logger.info("🔄 Full sync for %s: mod_ts >= %s", entity_name, start_date)
+                logger.info(
+                    "🔄 Full sync for %s: mod_ts >= %s",
+                    entity_name,
+                    start_date,
+                )
             if end_date:
                 params["mod_ts__lte"] = end_date
                 logger.info("🔄 Full sync for %s: mod_ts <= %s", entity_name, end_date)

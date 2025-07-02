@@ -1,0 +1,22 @@
+{
+  "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+  "username": "USER_WMS_INTEGRA",
+  "password": "jmCyS7BK94YvhS@",
+  "auth_method": "basic",
+  "page_size": 5,
+  "page_mode": "sequenced",
+  "entities": ["allocation"],
+  "request_timeout": 300,
+  "enable_incremental": false,
+  "entity_filters": {
+    "allocation": {
+      "status_id": 99
+    }
+  },
+  "advanced_filters": {
+    "allocation": {
+      "id": {"__gte": 20},
+      "alloc_qty": {"__gte": "100"}
+    }
+  }
+}

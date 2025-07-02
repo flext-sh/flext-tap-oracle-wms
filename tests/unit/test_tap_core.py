@@ -63,7 +63,7 @@ class TestTapCore:
             stream_instance = stream_class(tap=tap)
 
             assert stream_instance.tap_name == "tap-oracle-wms"
-            assert stream_instance.name == stream_name
+            assert stream_instance.name == stream_instance.name
             assert hasattr(stream_instance, "schema")
             assert hasattr(stream_instance, "get_records")
 

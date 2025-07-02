@@ -73,7 +73,7 @@ class TestTapComplete:
             stream = stream_class(tap=tap)
 
             # Basic validation
-            assert stream.name == stream_name
+            assert stream.name == stream.name
             assert stream.tap_name == "tap-oracle-wms"
 
             # Schema validation

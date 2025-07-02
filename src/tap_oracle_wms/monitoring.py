@@ -8,24 +8,22 @@ Oracle WMS Singer TAP implementation.
 from __future__ import annotations
 
 import asyncio
-from collections import defaultdict, deque
 import contextlib
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
 import json
 import logging
 import time
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 
 import psutil
 from typing_extensions import Self
 
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-from .enhanced_logging import get_enhanced_logger, trace_performance
-
+from .enhanced_logging import get_enhanced_logger
 
 logger = logging.getLogger(__name__)
 enhanced_logger = get_enhanced_logger(__name__)
@@ -192,7 +190,7 @@ class MetricsCollector:
         except ImportError:
             # psutil not available, skip system metrics
             pass
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning("Error collecting system metrics: %s", e)
 
     def record_counter(
@@ -577,7 +575,7 @@ class HealthMonitor:
 
             # Alert if memory usage > 512MB
             return memory_mb < 512
-        except Exception:  # noqa: BLE001
+        except Exception:
             return False
 
     def _check_async_tasks(self) -> bool:
@@ -590,7 +588,7 @@ class HealthMonitor:
 
             # Alert if more than 50 active tasks
             return active_tasks < 50
-        except Exception:  # noqa: BLE001
+        except Exception:
             return False
 
 

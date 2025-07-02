@@ -1,0 +1,31 @@
+{
+  "base_url": "https://your-wms.oracle.com",
+  "username": "${TAP_ORACLE_WMS_USERNAME}",
+  "password": "${TAP_ORACLE_WMS_PASSWORD}",
+  "auth_method": "basic",
+  "page_size": 100,
+  "record_limit": null,
+  "log_level": "INFO",
+  "disable_trace_logs": true,
+  "simple_date_expressions": {
+    "allocation": {
+      "mod_ts__gte": "today-7d",
+      "create_ts__gte": "yesterday"
+    },
+    "order_hdr": {
+      "mod_ts__gte": "today-1w"
+    }
+  },
+  "entity_filters": {
+    "allocation": {"status_id": "ACTIVE"},
+    "order_hdr": {"facility_code": "MAIN"}
+  },
+  "circuit_breaker": {
+    "enabled": true,
+    "failure_threshold": 5,
+    "recovery_timeout": 60
+  },
+  "entities": ["allocation", "order_hdr", "inventory"],
+  "enable_incremental": true,
+  "test_connection": true
+}
