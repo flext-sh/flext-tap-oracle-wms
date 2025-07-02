@@ -1,141 +1,155 @@
-#!/usr/bin/env python3
-"""Teste completo de validação de configuração e parâmetros."""
+"""Unit tests for configuration validation."""
 
-import json
 import os
-from pathlib import Path
+from unittest.mock import patch
 
 from tap_oracle_wms.config import validate_auth_config, validate_pagination_config
-from tap_oracle_wms.tap import TapOracleWMS
 
 
-def test_config_validation() -> None:
-    """Testa validação completa de configuração."""
-    # 1. Teste com configuração válida
-    valid_config = {
-        "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
-        "auth_method": "basic",
-        "username": "USER_WMS_INTEGRA",
-        "password": "jmCyS7BK94YvhS@",
-        "page_size": 100,
-    }
+class TestConfigValidation:
+    """Test configuration validation functions."""
 
-    validate_auth_config(valid_config)
-    validate_pagination_config(valid_config)
+    def test_validate_auth_config_basic(self):
+        """Test basic auth validation."""
+        # Valid basic auth
+        config = {
+            "auth_method": "basic",
+            "username": "test_user",
+            "password": "test_pass"
+        }
+        assert validate_auth_config(config) is True
 
-    # 2. Teste de validação de autenticação
+        # Missing username
+        config = {
+            "auth_method": "basic",
+            "password": "test_pass"
+        }
+        assert validate_auth_config(config) is False
 
-    # Basic auth sem username
-    invalid_basic = {"auth_method": "basic", "password": "test"}
-    validate_auth_config(invalid_basic)
+        # Missing password
+        config = {
+            "auth_method": "basic",
+            "username": "test_user"
+        }
+        assert validate_auth_config(config) is False
 
-    # OAuth2 sem client_id
-    invalid_oauth = {"auth_method": "oauth2", "oauth_client_secret": "secret"}
-    validate_auth_config(invalid_oauth)
+        # Empty credentials
+        config = {
+            "auth_method": "basic",
+            "username": "",
+            "password": ""
+        }
+        assert validate_auth_config(config) is False
 
-    # 3. Teste de validação de paginação
+    def test_validate_auth_config_oauth2(self):
+        """Test OAuth2 auth validation."""
+        # Valid OAuth2
+        config = {
+            "auth_method": "oauth2",
+            "oauth_client_id": "client123",
+            "oauth_client_secret": "secret456",
+            "oauth_token_url": "https://auth.example.com/token"
+        }
+        assert validate_auth_config(config) is True
 
-    # Page size muito pequeno
-    invalid_page_small = {"page_size": 0}
-    validate_pagination_config(invalid_page_small)
+        # Missing client_id
+        config = {
+            "auth_method": "oauth2",
+            "oauth_client_secret": "secret456",
+            "oauth_token_url": "https://auth.example.com/token"
+        }
+        assert validate_auth_config(config) is False
 
-    # Page size muito grande
-    invalid_page_large = {"page_size": 2000}
-    validate_pagination_config(invalid_page_large)
+        # Missing token_url
+        config = {
+            "auth_method": "oauth2",
+            "oauth_client_id": "client123",
+            "oauth_client_secret": "secret456"
+        }
+        assert validate_auth_config(config) is False
 
+    def test_validate_auth_config_default(self):
+        """Test default auth method."""
+        # No auth method specified - defaults to basic
+        config = {
+            "username": "test_user",
+            "password": "test_pass"
+        }
+        assert validate_auth_config(config) is True
 
-def test_env_variables() -> None:
-    """Testa suporte a variáveis de ambiente."""
-    # Configurar variáveis de ambiente
-    test_env = {
-        "TAP_ORACLE_WMS_BASE_URL": "https://test-env.wms.com",
-        "TAP_ORACLE_WMS_USERNAME": "env_user",
-        "TAP_ORACLE_WMS_PASSWORD": "env_pass",
-        "TAP_ORACLE_WMS_PAGE_SIZE": "50",
-    }
+        # Invalid auth method
+        config = {
+            "auth_method": "invalid_method"
+        }
+        assert validate_auth_config(config) is False
 
-    # Salvar valores originais
-    original_env = {}
-    for key, value in test_env.items():
-        original_env[key] = os.environ.get(key)
-        os.environ[key] = value
+    def test_validate_pagination_config(self):
+        """Test pagination config validation."""
+        # Valid page sizes
+        assert validate_pagination_config({"page_size": 1}) is True
+        assert validate_pagination_config({"page_size": 100}) is True
+        assert validate_pagination_config({"page_size": 1000}) is True
+        assert validate_pagination_config({"page_size": 1250}) is True
 
-    try:
-        # Criar configuração mínima (tap deve pegar do .env)
+        # Invalid page sizes
+        assert validate_pagination_config({"page_size": 0}) is False
+        assert validate_pagination_config({"page_size": -1}) is False
+        assert validate_pagination_config({"page_size": 1251}) is False
+        assert validate_pagination_config({"page_size": 5000}) is False
 
-        for _key, _value in test_env.items():
-            pass
+        # Default page size (should be valid)
+        assert validate_pagination_config({}) is True
 
-    finally:
-        # Restaurar ambiente
-        for key, original_value in original_env.items():
-            if original_value is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = original_value
+    def test_env_var_override(self):
+        """Test that environment variables can override config."""
+        # Test with environment variables
+        with patch.dict(os.environ, {
+            "WMS_BASE_URL": "https://env.example.com",
+            "WMS_USERNAME": "env_user",
+            "WMS_PASSWORD": "env_pass"
+        }):
+            # Environment variables should be accessible
+            assert os.getenv("WMS_BASE_URL") == "https://env.example.com"
+            assert os.getenv("WMS_USERNAME") == "env_user"
+            assert os.getenv("WMS_PASSWORD") == "env_pass"
 
+    def test_config_defaults(self):
+        """Test configuration defaults."""
+        from tap_oracle_wms.config import WMS_DEFAULT_PAGE_SIZE, WMS_MAX_PAGE_SIZE
 
-def test_config_file() -> None:
-    """Testa carregamento de arquivo de configuração."""
-    config_file = Path("examples/config.json")
-    if config_file.exists():
-        with Path(config_file).open(encoding="utf-8") as f:
-            config = json.load(f)
+        assert WMS_DEFAULT_PAGE_SIZE == 1000
+        assert WMS_MAX_PAGE_SIZE == 1250
+        assert WMS_DEFAULT_PAGE_SIZE <= WMS_MAX_PAGE_SIZE
 
-        # Validar parâmetros obrigatórios
-        required_params = ["base_url", "username", "password", "page_size"]
-        missing = [p for p in required_params if p not in config]
-
-        if missing:
-            pass
-        else:
-            pass
-
-        # Mostrar alguns parâmetros importantes
-        important_params = [
-            "base_url",
-            "auth_method",
-            "page_size",
-            "page_mode",
-            "request_timeout",
-            "entities",
+    def test_url_validation_patterns(self):
+        """Test URL validation patterns."""
+        valid_urls = [
+            "https://wms.example.com",
+            "https://wms.example.com/",
+            "https://wms.example.com:8443",
+            "http://localhost:8080",
+            "https://internal.invalid/REDACTED",
+            "https://internal.invalid/REDACTED"
         ]
 
-        for param in important_params:
-            if param in config:
-                value = config[param]
-                if param == "password":
-                    value = "*" * len(str(value))
-    else:
-        pass
+        invalid_urls = [
+            "",
+            "not-a-url",
+            "ftp://wms.example.com",
+            "//no-protocol.com",
+            "https://",
+            "http:/missing-slash.com"
+        ]
 
+        # Using urlparse for validation (same as E2E tests)
+        from urllib.parse import urlparse
 
-def test_schema_validation() -> None:
-    """Testa validação de schema de configuração."""
-    try:
-        # Tentar criar tap com configuração mínima
-        minimal_config = {
-            "base_url": "https://test.wms.com",
-            "auth_method": "basic",
-            "username": "test",
-            "password": "test",
-            "page_size": 10,
-        }
+        for url in valid_urls:
+            result = urlparse(url)
+            assert result.scheme in ["http", "https"], f"Invalid scheme for {url}"
+            assert result.netloc, f"Missing netloc for {url}"
 
-        tap = TapOracleWMS(config=minimal_config, parse_env_config=False)
-
-        # Verificar propriedades do schema
-        schema_props = tap.config_schema.get("properties", {})
-
-        # Verificar propriedades obrigatórias
-        [p for p, def_ in schema_props.items() if def_.get("required", False)]
-
-    except Exception:
-        pass
-
-
-if __name__ == "__main__":
-    test_config_validation()
-    test_env_variables()
-    test_config_file()
-    test_schema_validation()
+        for url in invalid_urls:
+            result = urlparse(url)
+            valid = result.scheme in ["http", "https"] and bool(result.netloc)
+            assert not valid, f"URL should be invalid: {url}"

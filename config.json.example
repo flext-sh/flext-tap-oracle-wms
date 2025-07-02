@@ -1,0 +1,38 @@
+{
+  "base_url": "https://your-wms-instance.com",
+  "username": "your_username",
+  "password": "your_password",
+  "company_code": "*",
+  "facility_code": "*",
+  "page_size": 1000,
+  "request_timeout": 120,
+  "enable_incremental": true,
+  "start_date": "2024-01-01T00:00:00Z",
+  "entities": [
+    "item",
+    "location",
+    "inventory",
+    "order_header",
+    "order_detail",
+    "allocation"
+  ],
+  "entity_filters": {
+    "inventory": {
+      "status": "active"
+    },
+    "order_header": {
+      "order_status__in": ["allocated", "picked", "shipped"]
+    }
+  },
+  "stream_maps": {
+    "item": {
+      "_transform": "upper_case_strings"
+    }
+  },
+  "flattening_enabled": true,
+  "flattening_max_depth": 3,
+  "schema_generation_mode": "hybrid",
+  "metadata_first": true,
+  "pattern_fallback": true,
+  "sample_limit": 200
+}

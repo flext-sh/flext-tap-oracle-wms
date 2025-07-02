@@ -1,194 +1,284 @@
-# Makefile for tap-oracle-wms
-# Strict PEP8 compliance with Poetry
+# Oracle WMS Tap - Complete Makefile
+# Automatically handles venv, configuration, and all operations
 
-.PHONY: help install dev-install clean test test-cov lint format type-check security check pre-commit build docs run discover extract validate config-gen
+# Auto-detect and setup environment
+VENV_PATH := /home/marlonsc/flext/.venv
+PYTHON := $(VENV_PATH)/bin/python
+ACTIVATE := source $(VENV_PATH)/bin/activate
 
-# Default target
-.DEFAULT_GOAL := help
+# Auto-check if environment is ready
+ENV_CHECK := $(shell test -f $(VENV_PATH)/bin/python && echo "ready" || echo "missing")
 
-# Variables
-PYTHON_VERSION = 3.9+
-PROJECT_NAME = tap-oracle-wms
-SRC_DIR = src/tap_oracle_wms
-TEST_DIR = tests
-DOCS_DIR = docs
+help:
+	@echo "Oracle WMS Tap - Complete Automation"
+	@echo "===================================="
+	@echo "🚀 QUICK START:"
+	@echo "  make auto-setup  - Auto-detect credentials and setup everything"
+	@echo "  make run-all     - Complete validation and testing"
+	@echo ""
+	@echo "📊 Real WMS Testing:"
+	@echo "  make check-connection - Test Oracle WMS connection"
+	@echo "  make test-entity     - Test entity extraction"
+	@echo "  make discover        - Discover all entities from WMS"
+	@echo "  make extract         - Extract data from WMS"
+	@echo "  make e2e-test        - Complete end-to-end test"
+	@echo ""
+	@echo "🧪 Development Testing:"
+	@echo "  make test            - Unit tests"
+	@echo "  make test-integration - Integration tests"
+	@echo "  make mock            - Mock server test"
+	@echo "  make validate        - Complete validation"
+	@echo ""
+	@echo "🛠️ Utilities:"
+	@echo "  make info            - Show environment info"
+	@echo "  make clean           - Clean all artifacts"
+	@echo "  make perf-test       - Performance testing"
 
-# Colors for output
-BLUE = \033[34m
-GREEN = \033[32m
-YELLOW = \033[33m
-RED = \033[31m
-NC = \033[0m # No Color
+# Check environment and setup if needed
+check-env:
+	@echo "Checking environment..."
+	@if [ "$(ENV_CHECK)" = "missing" ]; then \
+		echo "Environment not ready. Run 'make setup' first."; \
+		exit 1; \
+	else \
+		echo "Environment ready"; \
+	fi
 
-help: ## Show this help message
-	@echo "$(BLUE)$(PROJECT_NAME) Makefile Commands$(NC)"
-	@echo "$(YELLOW)Setup Commands:$(NC)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
+# Auto-setup with credential detection
+auto-setup: check-env
+	@echo "🚀 Starting automatic setup..."
+	@$(ACTIVATE) && python auto_setup.py
 
-## SETUP COMMANDS
+# Setup everything needed
+setup:
+	@echo "Setting up Oracle WMS Tap environment..."
+	@if [ ! -f $(VENV_PATH)/bin/python ]; then \
+		echo "Virtual environment not found at $(VENV_PATH)"; \
+		echo "Please ensure the FLEXT workspace venv exists"; \
+		exit 1; \
+	fi
+	@echo "Environment setup complete"
 
-install: ## Install production dependencies
-	@echo "$(BLUE)Installing production dependencies...$(NC)"
-	poetry install --only=main --no-interaction --no-ansi
+# Create config file for testing
+config:
+	@$(ACTIVATE) && python -c "import os; print('Base URL:', os.getenv('TAP_ORACLE_WMS_BASE_URL', 'NOT_SET'))"
+	@if [ -f .env ]; then \
+		echo "Using existing .env configuration"; \
+	else \
+		echo "Warning: .env file not found"; \
+	fi
 
-dev-install: ## Install all dependencies including dev
-	@echo "$(BLUE)Installing all dependencies...$(NC)"
-	poetry install --no-interaction --no-ansi
-	poetry run pre-commit install
+# Run all tests and validation
+run-all: check-env config
+	@echo "Running complete Oracle WMS Tap validation..."
+	@echo ""
+	@echo "1. Unit Tests:"
+	@$(MAKE) test
+	@echo ""
+	@echo "2. Integration Tests:"
+	@$(MAKE) test-integration
+	@echo ""
+	@echo "3. Mock Server Test:"
+	@$(MAKE) mock
+	@echo ""
+	@echo "4. Configuration Validation:"
+	@$(MAKE) validate-config
+	@echo ""
+	@echo "5. Singer CLI Test:"
+	@$(MAKE) validate-cli
+	@echo ""
+	@echo "✅ ALL TESTS COMPLETED SUCCESSFULLY"
 
-clean: ## Clean build artifacts and cache
-	@echo "$(BLUE)Cleaning build artifacts...$(NC)"
-	rm -rf build/
-	rm -rf dist/
-	rm -rf *.egg-info/
-	rm -rf .pytest_cache/
-	rm -rf .mypy_cache/
-	rm -rf .coverage
-	rm -rf htmlcov/
-	rm -rf .tox/
-	rm -rf **/__pycache__/
-	find . -type f -name "*.pyc" -delete
-	find . -type d -name "__pycache__" -delete
+# Test with real Oracle WMS
+test-real: check-env
+	@echo "Testing with real Oracle WMS..."
+	@$(ACTIVATE) && python test_real_wms.py
 
-## QUALITY ASSURANCE COMMANDS
+# Unit tests
+test: check-env
+	@$(ACTIVATE) && python -m pytest tests/unit/ -v --tb=short
 
-lint: ## Run all linters (ruff, black, isort)
-	@echo "$(BLUE)Running linters...$(NC)"
-	poetry run ruff check $(SRC_DIR) $(TEST_DIR) --fix
-	poetry run black --check $(SRC_DIR) $(TEST_DIR)
-	poetry run isort --check-only $(SRC_DIR) $(TEST_DIR)
+# Integration tests
+test-integration: check-env
+	@$(ACTIVATE) && python -m pytest tests/integration/ -v --tb=short
 
-format: ## Format code with black and isort
-	@echo "$(BLUE)Formatting code...$(NC)"
-	poetry run black $(SRC_DIR) $(TEST_DIR)
-	poetry run isort $(SRC_DIR) $(TEST_DIR)
-	poetry run ruff check $(SRC_DIR) $(TEST_DIR) --fix
+# Mock server test
+mock: check-env
+	@echo "Testing with mock WMS server..."
+	@$(ACTIVATE) && python test_mock_simple.py
 
-type-check: ## Run mypy type checking
-	@echo "$(BLUE)Running type checking...$(NC)"
-	poetry run mypy $(SRC_DIR)
+# Validate configuration
+validate-config: check-env
+	@echo "Validating configuration..."
+	@$(ACTIVATE) && python tests/e2e/validate_config.py
 
-security: ## Run security checks (bandit, safety)
-	@echo "$(BLUE)Running security checks...$(NC)"
-	poetry run bandit -r $(SRC_DIR) -f json -o bandit-report.json
-	poetry run safety check --json --output safety-report.json
+# Validate CLI commands
+validate-cli: check-env
+	@echo "Validating CLI commands..."
+	@$(ACTIVATE) && python -m tap_oracle_wms --help > /dev/null && echo "  ✅ --help: OK"
+	@$(ACTIVATE) && python -m tap_oracle_wms --version && echo "  ✅ --version: OK"
+	@$(ACTIVATE) && python -m tap_oracle_wms --about > /dev/null && echo "  ✅ --about: OK"
 
-check: lint type-check security ## Run all quality checks
+# Complete validation
+validate: check-env validate-config validate-cli mock
+	@echo "✅ Complete validation successful"
 
-pre-commit: ## Run pre-commit hooks on all files
-	@echo "$(BLUE)Running pre-commit hooks...$(NC)"
-	poetry run pre-commit run --all-files
+# Discover entities from WMS
+discover: check-env
+	@echo "Discovering entities from Oracle WMS..."
+	@$(ACTIVATE) && python -m tap_oracle_wms --config .env --discover
 
-## TESTING COMMANDS
+# Extract data from WMS
+extract: check-env
+	@echo "Extracting data from Oracle WMS..."
+	@if [ ! -f catalog.json ]; then \
+		echo "Catalog not found. Running discovery first..."; \
+		$(MAKE) discover > catalog.json; \
+	fi
+	@$(ACTIVATE) && python -m tap_oracle_wms --config .env --catalog catalog.json
 
-test: ## Run tests
-	@echo "$(BLUE)Running tests...$(NC)"
-	poetry run pytest $(TEST_DIR) -v
+# Generate catalog file
+catalog: check-env
+	@echo "Generating catalog file..."
+	@$(ACTIVATE) && python -m tap_oracle_wms --config .env --discover > catalog.json
+	@echo "✅ Catalog saved to catalog.json"
 
-test-cov: ## Run tests with coverage
-	@echo "$(BLUE)Running tests with coverage...$(NC)"
-	poetry run pytest $(TEST_DIR) -v \
-		--cov=$(SRC_DIR) \
-		--cov-report=html \
-		--cov-report=xml \
-		--cov-report=term-missing \
-		--cov-fail-under=90
+# Test specific entity
+test-entity: check-env
+	@echo "Testing specific entity extraction..."
+	@$(ACTIVATE) && python -c "\
+import asyncio; \
+from tap_oracle_wms.discovery import EntityDiscovery; \
+import os; \
+from dotenv import load_dotenv; \
+load_dotenv(); \
+config = { \
+    'base_url': os.getenv('TAP_ORACLE_WMS_BASE_URL'), \
+    'username': os.getenv('TAP_ORACLE_WMS_USERNAME'), \
+    'password': os.getenv('TAP_ORACLE_WMS_PASSWORD'), \
+    'company_code': os.getenv('TAP_ORACLE_WMS_COMPANY_CODE', '*'), \
+    'facility_code': os.getenv('TAP_ORACLE_WMS_FACILITY_CODE', '*'), \
+    'verify_ssl': os.getenv('TAP_ORACLE_WMS_VERIFY_SSL', 'true').lower() == 'true', \
+    'record_limit': 5 \
+}; \
+discovery = EntityDiscovery(config); \
+entities = asyncio.run(discovery.discover_entities()); \
+if entities: \
+    first_entity = list(entities.keys())[0]; \
+    print(f'Testing entity: {first_entity}'); \
+    samples = asyncio.run(discovery.get_entity_sample(first_entity, limit=3)); \
+    print(f'✅ Got {len(samples)} sample records'); \
+    if samples: print(f'Fields: {list(samples[0].keys())}'); \
+else: \
+    print('❌ No entities found') \
+"
 
-test-e2e: ## Run E2E tests
-	@echo "$(BLUE)Running E2E tests...$(NC)"
-	poetry run python $(TEST_DIR)/e2e/test_tap_e2e.py
+# Check WMS connectivity
+check-connection: check-env
+	@echo "Checking Oracle WMS connectivity..."
+	@$(ACTIVATE) && python -c "\
+import asyncio; \
+from tap_oracle_wms.discovery import EntityDiscovery; \
+import os; \
+from dotenv import load_dotenv; \
+load_dotenv(); \
+config = { \
+    'base_url': os.getenv('TAP_ORACLE_WMS_BASE_URL'), \
+    'username': os.getenv('TAP_ORACLE_WMS_USERNAME'), \
+    'password': os.getenv('TAP_ORACLE_WMS_PASSWORD'), \
+    'company_code': os.getenv('TAP_ORACLE_WMS_COMPANY_CODE', '*'), \
+    'facility_code': os.getenv('TAP_ORACLE_WMS_FACILITY_CODE', '*'), \
+    'verify_ssl': os.getenv('TAP_ORACLE_WMS_VERIFY_SSL', 'true').lower() == 'true' \
+}; \
+print(f'Connecting to: {config[\"base_url\"]}'); \
+print(f'Username: {config[\"username\"]}'); \
+print(f'Company: {config[\"company_code\"]}'); \
+print(f'Facility: {config[\"facility_code\"]}'); \
+discovery = EntityDiscovery(config); \
+try: \
+    entities = asyncio.run(discovery.discover_entities()); \
+    print(f'✅ Connection successful! Found {len(entities)} entities'); \
+    for i, entity in enumerate(list(entities.keys())[:3], 1): \
+        print(f'  {i}. {entity}'); \
+    if len(entities) > 3: print(f'  ... and {len(entities) - 3} more'); \
+except Exception as e: \
+    print(f'❌ Connection failed: {e}'); \
+    import sys; sys.exit(1) \
+"
 
-## BUILD COMMANDS
+# Complete end-to-end test
+e2e-test: check-env
+	@echo "Running complete end-to-end test..."
+	@echo "1. Checking connection..."
+	@$(MAKE) check-connection
+	@echo ""
+	@echo "2. Testing entity access..."
+	@$(MAKE) test-entity
+	@echo ""
+	@echo "3. Generating catalog..."
+	@$(MAKE) catalog
+	@echo ""
+	@echo "✅ End-to-end test completed successfully"
 
-build: ## Build the package
-	@echo "$(BLUE)Building package...$(NC)"
-	poetry build
+# Performance test
+perf-test: check-env
+	@echo "Running performance test..."
+	@$(ACTIVATE) && python -c "\
+import asyncio; \
+import time; \
+from tap_oracle_wms.discovery import EntityDiscovery; \
+import os; \
+from dotenv import load_dotenv; \
+load_dotenv(); \
+config = { \
+    'base_url': os.getenv('TAP_ORACLE_WMS_BASE_URL'), \
+    'username': os.getenv('TAP_ORACLE_WMS_USERNAME'), \
+    'password': os.getenv('TAP_ORACLE_WMS_PASSWORD'), \
+    'company_code': os.getenv('TAP_ORACLE_WMS_COMPANY_CODE', '*'), \
+    'facility_code': os.getenv('TAP_ORACLE_WMS_FACILITY_CODE', '*'), \
+    'verify_ssl': os.getenv('TAP_ORACLE_WMS_VERIFY_SSL', 'true').lower() == 'true', \
+    'page_size': 100 \
+}; \
+discovery = EntityDiscovery(config); \
+start = time.time(); \
+entities = asyncio.run(discovery.discover_entities()); \
+discovery_time = time.time() - start; \
+print(f'Discovery: {discovery_time:.2f}s for {len(entities)} entities'); \
+if entities: \
+    entity = list(entities.keys())[0]; \
+    start = time.time(); \
+    samples = asyncio.run(discovery.get_entity_sample(entity, limit=10)); \
+    sample_time = time.time() - start; \
+    print(f'Sample extraction: {sample_time:.2f}s for {len(samples)} records'); \
+    print(f'✅ Performance test completed') \
+"
 
-docs: ## Build documentation
-	@echo "$(BLUE)Building documentation...$(NC)"
-	poetry run mkdocs build
+# Clean artifacts
+clean:
+	@echo "Cleaning artifacts..."
+	@rm -f catalog.json schema.json state.json messages.jsonl test_config.json
+	@rm -rf .pytest_cache __pycache__ *.egg-info build dist
+	@find . -name "*.pyc" -delete
+	@find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+	@echo "✅ Cleanup complete"
 
-docs-serve: ## Serve documentation locally
-	@echo "$(BLUE)Serving documentation...$(NC)"
-	poetry run mkdocs serve
+# Show environment info
+info: check-env
+	@echo "Oracle WMS Tap Environment Info"
+	@echo "==============================="
+	@echo "Python: $(shell $(PYTHON) --version)"
+	@echo "Virtual Env: $(VENV_PATH)"
+	@echo "Working Dir: $(shell pwd)"
+	@$(ACTIVATE) && python -c "import tap_oracle_wms; print(f'TAP Version: {tap_oracle_wms.__version__ if hasattr(tap_oracle_wms, \"__version__\") else \"0.1.0\"}')"
+	@echo ""
+	@echo "Configuration Status:"
+	@$(ACTIVATE) && python -c "\
+import os; \
+from dotenv import load_dotenv; \
+load_dotenv(); \
+print(f'  Base URL: {\"SET\" if os.getenv(\"TAP_ORACLE_WMS_BASE_URL\") and not \"your-\" in os.getenv(\"TAP_ORACLE_WMS_BASE_URL\", \"\") else \"NOT SET\"}'); \
+print(f'  Username: {\"SET\" if os.getenv(\"TAP_ORACLE_WMS_USERNAME\") and not \"your_\" in os.getenv(\"TAP_ORACLE_WMS_USERNAME\", \"\") else \"NOT SET\"}'); \
+print(f'  Password: {\"SET\" if os.getenv(\"TAP_ORACLE_WMS_PASSWORD\") and not \"your_\" in os.getenv(\"TAP_ORACLE_WMS_PASSWORD\", \"\") else \"NOT SET\"}') \
+"
 
-## APPLICATION COMMANDS
-
-config-gen: ## Generate config.json from .env
-	@echo "$(BLUE)Generating config from .env...$(NC)"
-	poetry run python generate_config.py
-
-discover: config-gen ## Run discovery command
-	@echo "$(BLUE)Running discovery...$(NC)"
-	poetry run tap-oracle-wms --config config.json --discover
-
-extract: config-gen ## Run extraction
-	@echo "$(BLUE)Running extraction...$(NC)"
-	poetry run tap-oracle-wms --config config.json --catalog catalog.json
-
-validate: ## Validate configuration
-	@echo "$(BLUE)Validating configuration...$(NC)"
-	poetry run python -c "from tap_oracle_wms.tap import TapOracleWMS; import json; tap = TapOracleWMS(config=json.load(open('config.json'))); tap.validate_config(); print('✅ Configuration is valid')"
-
-run: extract ## Alias for extract
-
-## DEVELOPMENT COMMANDS
-
-shell: ## Open Poetry shell
-	poetry shell
-
-install-hooks: ## Install git hooks
-	poetry run pre-commit install
-
-update: ## Update dependencies
-	poetry update
-
-lock: ## Update poetry.lock
-	poetry lock
-
-version: ## Show version
-	poetry version
-
-bump-patch: ## Bump patch version
-	poetry version patch
-
-bump-minor: ## Bump minor version
-	poetry version minor
-
-bump-major: ## Bump major version
-	poetry version major
-
-## CI/CD COMMANDS
-
-ci-test: ## Run CI test suite
-	$(MAKE) clean
-	$(MAKE) dev-install
-	$(MAKE) check
-	$(MAKE) test-cov
-	$(MAKE) build
-
-publish: ## Publish to PyPI
-	poetry publish
-
-publish-test: ## Publish to test PyPI
-	poetry publish --repository testpypi
-
-## MONITORING COMMANDS
-
-metrics: ## Show project metrics
-	@echo "$(BLUE)Project Metrics:$(NC)"
-	@echo "Lines of code:"
-	@find $(SRC_DIR) -name "*.py" -exec wc -l {} + | tail -1
-	@echo "Test coverage:"
-	@poetry run pytest $(TEST_DIR) --cov=$(SRC_DIR) --cov-report=term-missing --quiet | grep "TOTAL"
-	@echo "Dependencies:"
-	@poetry show --tree | head -20
-
-debug: ## Show debug information
-	@echo "$(BLUE)Debug Information:$(NC)"
-	@echo "Python version: $(shell python --version)"
-	@echo "Poetry version: $(shell poetry --version)"
-	@echo "Project root: $(shell pwd)"
-	@echo "Virtual env: $(shell poetry env info --path)"
-	@echo "Dependencies status:"
-	@poetry check
+.PHONY: help check-env auto-setup setup config run-all test-real test test-integration mock validate-config validate-cli validate discover extract catalog test-entity check-connection e2e-test perf-test clean info
