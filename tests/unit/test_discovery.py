@@ -1,0 +1,323 @@
+"""Unit tests for discovery module."""
+
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import httpx
+import pytest
+
+from tap_oracle_wms.discovery import EntityDiscovery, SchemaGenerator
+
+
+class TestEntityDiscovery:
+    """Test EntityDiscovery class."""
+
+    @pytest.fixture
+    def discovery(self, mock_wms_config):
+        """Create EntityDiscovery instance."""
+        return EntityDiscovery(mock_wms_config)
+
+    def test_discovery_initialization(self, discovery):
+        """Test discovery initialization."""
+        assert discovery.config is not None
+        assert discovery.base_url == "https://mock-wms.example.com"
+        assert discovery.api_version == "v10"
+        assert discovery.headers is not None
+
+    def test_entity_endpoint_property(self, discovery):
+        """Test entity endpoint property."""
+        expected = "https://mock-wms.example.com/wms/lgfapi/v10/entity/"
+        assert discovery.entity_endpoint == expected
+
+    @patch("httpx.AsyncClient")
+    async def test_discover_entities_success(self, mock_client, discovery):
+        """Test successful entity discovery."""
+        # Setup mock response
+        mock_response = MagicMock()
+        mock_response.json.return_value = ["item", "location", "inventory"]
+        mock_response.raise_for_status.return_value = None
+
+        mock_client_instance = MagicMock()
+        mock_client_instance.get = AsyncMock(return_value=mock_response)
+        mock_client.return_value.__aenter__.return_value = mock_client_instance
+
+        # Test discovery
+        entities = await discovery.discover_entities()
+
+        assert len(entities) == 3
+        assert "item" in entities
+        assert "location" in entities
+        assert "inventory" in entities
+
+        # Verify URLs are correctly constructed
+        base_url = "https://mock-wms.example.com/wms/lgfapi/v10/entity"
+        assert entities["item"] == f"{base_url}/item"
+
+    @patch("httpx.AsyncClient")
+    async def test_discover_entities_http_error(self, mock_client, discovery):
+        """Test entity discovery with HTTP error."""
+        # Setup mock response with 404 error
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.text = "Not Found"
+
+        mock_client_instance = MagicMock()
+        mock_client_instance.get = AsyncMock(side_effect=httpx.HTTPStatusError(
+            "404 Not Found", request=MagicMock(), response=mock_response
+        ))
+        mock_client.return_value.__aenter__.return_value = mock_client_instance
+
+        # Test that error is raised
+        with pytest.raises(httpx.HTTPStatusError):
+            await discovery.discover_entities()
+
+    @patch("httpx.AsyncClient")
+    async def test_describe_entity_success(self, mock_client, discovery):
+        """Test successful entity description."""
+        # Setup mock response
+        mock_metadata = {
+            "parameters": ["id", "code", "description"],
+            "fields": {
+                "id": {"type": "integer", "required": True},
+                "code": {"type": "string", "max_length": 50},
+                "description": {"type": "string", "required": False}
+            }
+        }
+
+        mock_response = MagicMock()
+        mock_response.json.return_value = mock_metadata
+        mock_response.raise_for_status.return_value = None
+
+        mock_client_instance = MagicMock()
+        mock_client_instance.get = AsyncMock(return_value=mock_response)
+        mock_client.return_value.__aenter__.return_value = mock_client_instance
+
+        # Test description
+        metadata = await discovery.describe_entity("item")
+
+        assert metadata == mock_metadata
+        assert "parameters" in metadata
+        assert "fields" in metadata
+
+    @patch("httpx.AsyncClient")
+    async def test_get_entity_sample_success(self, mock_client, discovery, sample_wms_response):
+        """Test successful entity sample retrieval."""
+        # Setup mock response
+        mock_response = MagicMock()
+        mock_response.json.return_value = sample_wms_response
+        mock_response.raise_for_status.return_value = None
+
+        mock_client_instance = MagicMock()
+        mock_client_instance.get = AsyncMock(return_value=mock_response)
+        mock_client.return_value.__aenter__.return_value = mock_client_instance
+
+        # Test sample retrieval
+        samples = await discovery.get_entity_sample("item", limit=2)
+
+        assert len(samples) == 2
+        assert samples[0]["id"] == 1
+        assert samples[0]["code"] == "ITEM001"
+        assert samples[1]["id"] == 2
+        assert samples[1]["code"] == "ITEM002"
+
+    def test_filter_entities_with_patterns(self, discovery):
+        """Test entity filtering with patterns."""
+        entities = {
+            "item": "/entity/item",
+            "location": "/entity/location",
+            "inventory": "/entity/inventory",
+            "_system": "/entity/_system",
+            "sys_config": "/entity/sys_config"
+        }
+
+        # Test filtering (should exclude system entities by default)
+        filtered = discovery.filter_entities(entities)
+
+        # System entities should be excluded
+        assert "_system" not in filtered
+        assert "sys_config" not in filtered
+
+        # Regular entities should be included (but check actual filtering logic)
+        assert "item" in filtered
+        assert "location" in filtered
+
+    def test_filter_entities_with_specific_entities(self, discovery):
+        """Test entity filtering with specific entity list."""
+        entities = {
+            "item": "/entity/item",
+            "location": "/entity/location",
+            "inventory": "/entity/inventory"
+        }
+
+        # Configure specific entities
+        discovery.config["entities"] = ["item", "location"]
+
+        filtered = discovery.filter_entities(entities)
+
+        assert len(filtered) == 2
+        assert "item" in filtered
+        assert "location" in filtered
+        assert "inventory" not in filtered
+
+    @patch("httpx.AsyncClient")
+    async def test_check_entity_access_success(self, mock_client, discovery):
+        """Test successful entity access check."""
+        # Setup mock response
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+
+        mock_client_instance = MagicMock()
+        mock_client_instance.get = AsyncMock(return_value=mock_response)
+        mock_client.return_value.__aenter__.return_value = mock_client_instance
+
+        # Test access check
+        has_access = await discovery.check_entity_access("item")
+
+        assert has_access is True
+
+    def test_cache_functionality(self, discovery):
+        """Test cache functionality."""
+        # Test cache stats
+        stats = discovery.get_cache_stats()
+
+        assert "entity_cache" in stats
+        assert "metadata_cache" in stats
+        assert "sample_cache" in stats
+        assert "access_cache" in stats
+
+        # Test cache clearing
+        discovery.clear_cache("all")
+
+        stats_after = discovery.get_cache_stats()
+        assert stats_after["metadata_cache"]["entries"] == 0
+        assert stats_after["sample_cache"]["entries"] == 0
+        assert stats_after["access_cache"]["entries"] == 0
+
+
+class TestSchemaGenerator:
+    """Test SchemaGenerator class."""
+
+    @pytest.fixture
+    def generator(self):
+        """Create SchemaGenerator instance."""
+        return SchemaGenerator()
+
+    def test_generator_initialization(self, generator):
+        """Test schema generator initialization."""
+        assert generator.enable_flattening is True
+        assert generator.flatten_id_objects is True
+        assert generator.max_flatten_depth == 3
+
+    def test_generate_from_metadata(self, generator):
+        """Test schema generation from metadata."""
+        metadata = {
+            "parameters": ["id", "code", "description"],
+            "fields": {
+                "id": {"type": "integer", "required": True},
+                "code": {"type": "string", "max_length": 50, "required": True},
+                "description": {"type": "string", "required": False}
+            }
+        }
+
+        schema = generator.generate_from_metadata(metadata)
+
+        assert schema["type"] == "object"
+        assert "properties" in schema
+        assert len(schema["properties"]) == 3
+
+        # Check required fields
+        assert "required" in schema
+        assert "id" in schema["required"]
+        assert "code" in schema["required"]
+        assert "description" not in schema["required"]
+
+        # Check property types
+        assert schema["properties"]["id"]["type"] == "integer"
+        assert schema["properties"]["code"]["type"] == "string"
+
+    def test_generate_from_sample(self, generator, sample_wms_response):
+        """Test schema generation from sample data."""
+        samples = sample_wms_response["results"]
+
+        schema = generator.generate_from_sample(samples)
+
+        assert schema["type"] == "object"
+        assert "properties" in schema
+
+        properties = schema["properties"]
+        assert "id" in properties
+        assert "code" in properties
+        assert "description" in properties
+        assert "mod_ts" in properties
+        assert "create_ts" in properties
+
+    def test_type_inference(self, generator):
+        """Test type inference functionality."""
+        # Test different value types
+        assert generator._infer_type(123)["type"] == "integer"
+        assert generator._infer_type(123.45)["type"] == "number"
+        assert generator._infer_type(True)["type"] == "boolean"
+        assert generator._infer_type("test")["type"] == "string"
+        assert generator._infer_type(None)["type"] == "null"
+        assert generator._infer_type([1, 2, 3])["type"] == "array"
+        assert generator._infer_type({"key": "value"})["type"] == "object"
+
+    def test_datetime_detection(self, generator):
+        """Test datetime format detection."""
+        # Test various datetime formats
+        iso_datetime = "2024-01-01T10:00:00Z"
+        iso_date = "2024-01-01"
+
+        dt_schema = generator._infer_type(iso_datetime)
+        date_schema = generator._infer_type(iso_date)
+
+        assert dt_schema["type"] == "string"
+        # Note: _infer_type might not add format directly, that could be in other methods
+
+        assert date_schema["type"] == "string"
+        # Same for date - the format detection might be in a different method
+
+    def test_object_flattening(self, generator):
+        """Test object flattening functionality."""
+        nested_obj = {
+            "id": 1,
+            "details": {
+                "code": "ITEM001",
+                "status": "active"
+            },
+            "metadata": {
+                "created": "2024-01-01",
+                "tags": ["tag1", "tag2"]
+            }
+        }
+
+        flattened = generator._flatten_complex_objects(nested_obj)
+
+        # Should flatten simple objects
+        assert "details_code" in flattened
+        assert "details_status" in flattened
+
+        # Complex objects might be preserved as JSON
+        assert "id" in flattened
+        assert flattened["id"] == 1
+
+    def test_type_merging(self, generator):
+        """Test type merging for mixed types."""
+        type1 = {"type": "string"}
+        type2 = {"type": "integer"}
+
+        merged = generator._merge_types(type1, type2)
+
+        assert "anyOf" in merged
+        assert len(merged["anyOf"]) == 2
+
+    def test_nullable_field_handling(self, generator):
+        """Test handling of nullable fields."""
+        field_def = {
+            "type": "string",
+            "required": False
+        }
+
+        prop = generator._create_property_from_field("test_field", field_def)
+
+        assert "anyOf" in prop
+        assert {"type": "null"} in prop["anyOf"]

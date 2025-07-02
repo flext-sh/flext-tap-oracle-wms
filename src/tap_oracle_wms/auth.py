@@ -3,25 +3,24 @@
 from __future__ import annotations
 
 import base64
+import logging
+import threading
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 
 import httpx
 from singer_sdk.authenticators import OAuthAuthenticator, SimpleAuthenticator
 
-from .enhanced_logging import get_enhanced_logger, trace_performance
-
 if TYPE_CHECKING:
     from singer_sdk.streams import RESTStream
 
 
-enhanced_logger = get_enhanced_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class WMSBasicAuthenticator(SimpleAuthenticator):
     """Basic authentication for Oracle WMS."""
 
-    @trace_performance("Basic Auth Initialization")
     def __init__(self, stream: RESTStream[Any], username: str, password: str) -> None:
         """Initialize basic authenticator.
 
@@ -32,51 +31,51 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
             password: WMS password
 
         """
-        enhanced_logger.trace("🔐 Initializing basic authenticator")
-        enhanced_logger.trace("👤 Username: %s", username)
-        enhanced_logger.trace("🔑 Password length: %d", len(password))
-
+        logger.debug("Initializing basic authenticator for user: %s", username)
         self.username = username
         self.password = password
         self._auth_headers: dict[str, Any] = {}
+        self._auth_lock = threading.Lock()  # Thread safety for auth headers
         super().__init__(stream)
-        enhanced_logger.trace("✅ Basic authenticator initialized")
 
     @property
-    @trace_performance("Basic Auth Header Generation")
     def auth_headers(self) -> dict[str, Any]:
         """Get authentication headers.
 
-        Returns:
+        Returns
         -------
             Dictionary with Authorization header
 
-        Raises:
+        Raises
         ------
             ValueError: If username or password are invalid
 
         """
-        enhanced_logger.trace("🔐 Generating authentication headers")
-
-        if not self._auth_headers or "Authorization" not in self._auth_headers:
-            enhanced_logger.trace("🔄 Creating new auth headers")
-            try:
-                if not self.username or not self.password:
-                    enhanced_logger.critical("❌ Missing username or password")
-                    msg = "Username and password are required for basic auth"
-                    raise ValueError(msg)
-
-                enhanced_logger.trace("🔒 Encoding credentials")
-                credentials = f"{self.username}:{self.password}"
-                encoded = base64.b64encode(credentials.encode()).decode()
-                self._auth_headers = {"Authorization": f"Basic {encoded}"}
-                enhanced_logger.trace("✅ Auth headers created successfully")
-            except (AttributeError, TypeError) as e:
-                enhanced_logger.critical("❌ Invalid credentials format: %s", e)
-                msg = "Invalid credentials format"
-                raise ValueError(msg) from e
-        else:
-            enhanced_logger.trace("♻️  Using cached auth headers")
+        # Thread-safe auth header creation with validation
+        with self._auth_lock:
+            if not self._auth_headers or "Authorization" not in self._auth_headers:
+                logger.debug("Creating new auth headers")
+                try:
+                    # Validate credentials immediately before use
+                    if not self.username or not self.password:
+                        logger.error("Missing username or password")
+                        msg = "Username and password are required for basic auth"
+                        raise ValueError(msg)
+                    
+                    # Additional validation for credential strength
+                    if len(self.username.strip()) < 2 or len(self.password) < 4:
+                        logger.warning("Weak credentials detected")
+                        
+                    credentials = f"{self.username}:{self.password}"
+                    encoded = base64.b64encode(credentials.encode()).decode()
+                    self._auth_headers = {"Authorization": f"Basic {encoded}"}
+                    logger.debug("Auth headers created successfully")
+                except (AttributeError, TypeError) as e:
+                    logger.exception("Invalid credentials format")
+                    msg = "Invalid credentials format"
+                    raise ValueError(msg) from e
+            else:
+            logger.debug("Using cached auth headers")
 
         return self._auth_headers
 
@@ -117,9 +116,10 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         )
         oauth_scopes = oauth_scopes or default_scope
 
-        # Token management
+        # Token management with thread safety
         self._access_token: str | None = None
         self._token_expires: datetime | None = None
+        self._token_lock = threading.Lock()  # Thread safety for token refresh
         self._refresh_token: str | None = None
         self._auth_headers: dict[str, str] = {}
 
@@ -129,7 +129,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
     def oauth_request_body(self) -> dict[str, Any]:
         """Get OAuth2 request body for token endpoint.
 
-        Returns:
+        Returns
         -------
             Dictionary with OAuth2 parameters
 
@@ -145,7 +145,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
     def auth_headers(self) -> dict[str, str]:
         """Get authentication headers.
 
-        Returns:
+        Returns
         -------
             Dictionary with Authorization header
 
@@ -169,7 +169,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
     def _get_access_token(self) -> str:
         """Get valid access token, refreshing if needed.
 
-        Returns:
+        Returns
         -------
             Valid access token
 
@@ -228,7 +228,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
     def is_token_valid(self) -> bool:
         """Check if current token is still valid.
 
-        Returns:
+        Returns
         -------
             True if token is valid, False otherwise
 

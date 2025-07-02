@@ -1,6 +1,6 @@
-"""Entry point for tap-oracle-wms CLI."""
+"""Allow running as python -m tap_oracle_wms."""
 
-from tap_oracle_wms.cli import cli
+from .cli import main
 
 if __name__ == "__main__":
-    cli()
+    main()
