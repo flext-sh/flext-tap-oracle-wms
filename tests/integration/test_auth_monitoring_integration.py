@@ -287,11 +287,9 @@ class TestMonitoringIntegration:
                 tap = TapOracleWMS(config=monitoring_config)
 
                 # Executar teste de conexão
-                try:
-                    tap.validate_config()
-                except Exception:
+                with contextlib.suppress(Exception):
                     # Teste pode falhar, mas métricas devem ter sido registradas
-                    pass
+                    tap.validate_config()
 
                 # Verificar que métricas de conexão foram registradas
                 # connection.test.start, connection.test.success/failure, etc.

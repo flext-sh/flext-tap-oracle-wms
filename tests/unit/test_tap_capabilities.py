@@ -136,13 +136,15 @@ class TestTapInitialization:
         config_with_monitoring = basic_config.copy()
         config_with_monitoring["metrics"] = {"enabled": True}
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities"):
-            with patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor:
-                tap = TapOracleWMS(config=config_with_monitoring)
+        with (
+            patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities"),
+            patch("tap_oracle_wms.monitoring.TAPMonitor") as mock_monitor,
+        ):
+            tap = TapOracleWMS(config=config_with_monitoring)
 
-                # Verifica se monitor foi criado
-                mock_monitor.assert_called_once_with(config_with_monitoring)
-                assert tap._monitor is not None
+            # Verifica se monitor foi criado
+            mock_monitor.assert_called_once_with(config_with_monitoring)
+            assert tap._monitor is not None
 
     @pytest.mark.unit
     def test_tap_initialization_without_monitoring(self, basic_config) -> None:
@@ -228,7 +230,9 @@ class TestTapValidation:
                 tap.validate_config()
 
     @pytest.mark.unit
-    def test_validate_config_invalid_pagination(self, invalid_pagination_config) -> None:
+    def test_validate_config_invalid_pagination(
+        self, invalid_pagination_config,
+    ) -> None:
         """Testa validação com paginação inválida."""
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities"):
             tap = TapOracleWMS(config=invalid_pagination_config)
@@ -322,9 +326,12 @@ class TestTapConnectionTest:
 
             # Verifica se métricas foram registradas
             monitor = tap_instance._monitor
-            assert monitor.metrics.record_counter.call_count >= 2  # test.success + entities_discovered
+            assert (
+                monitor.metrics.record_counter.call_count >= 2
+            )  # test.success + entities_discovered
             monitor.metrics.record_gauge.assert_called_with(
-                "connection.entities_discovered", 2,
+                "connection.entities_discovered",
+                2,
             )
 
     @pytest.mark.unit

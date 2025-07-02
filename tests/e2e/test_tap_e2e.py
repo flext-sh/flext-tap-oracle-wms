@@ -1,7 +1,7 @@
 """Testes E2E exaustivos para tap-oracle-wms."""
 
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
@@ -30,9 +30,18 @@ class TestTapE2EDiscovery:
     def mock_complete_entities(self):
         """Mock de entidades completas para E2E."""
         return [
-            "facility", "item", "location", "inventory",
-            "order_hdr", "order_dtl", "allocation", "allocation_dtl",
-            "shipment", "receipt", "pick_task", "replenishment",
+            "facility",
+            "item",
+            "location",
+            "inventory",
+            "order_hdr",
+            "order_dtl",
+            "allocation",
+            "allocation_dtl",
+            "shipment",
+            "receipt",
+            "pick_task",
+            "replenishment",
         ]
 
     @pytest.fixture
@@ -50,96 +59,118 @@ class TestTapE2EDiscovery:
 
         schemas = {}
         entities = [
-            "facility", "item", "location", "inventory",
-            "order_hdr", "order_dtl", "allocation", "allocation_dtl",
+            "facility",
+            "item",
+            "location",
+            "inventory",
+            "order_hdr",
+            "order_dtl",
+            "allocation",
+            "allocation_dtl",
         ]
 
         for entity in entities:
             entity_schema = base_schema.copy()
-            entity_schema["properties"].update({
-                "code": {"type": "string"},
-                "name": {"type": "string"},
-                f"{entity}_specific_field": {"type": "string"},
-            })
+            entity_schema["properties"].update(
+                {
+                    "code": {"type": "string"},
+                    "name": {"type": "string"},
+                    f"{entity}_specific_field": {"type": "string"},
+                },
+            )
             schemas[entity] = entity_schema
 
         return schemas
 
     @pytest.mark.e2e
-    def test_complete_discovery_flow(self, e2e_config, mock_complete_entities, mock_entity_schemas) -> None:
+    def test_complete_discovery_flow(
+        self, e2e_config, mock_complete_entities, mock_entity_schemas,
+    ) -> None:
         """Testa fluxo completo de discovery com todas as entidades."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                mock_discovery.return_value = mock_complete_entities
-                mock_schema.side_effect = lambda entity: mock_entity_schemas.get(entity, mock_entity_schemas["facility"])
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema:
+            mock_discovery.return_value = mock_complete_entities
+            mock_schema.side_effect = lambda entity: mock_entity_schemas.get(
+                entity, mock_entity_schemas["facility"],
+            )
 
-                # Criar tap
-                tap = TapOracleWMS(config=e2e_config)
+            # Criar tap
+            tap = TapOracleWMS(config=e2e_config)
 
-                # Executar discovery completo
-                streams = tap.discover_streams()
+            # Executar discovery completo
+            streams = tap.discover_streams()
 
-                # Verificações exaustivas
-                assert len(streams) == len(mock_complete_entities)
+            # Verificações exaustivas
+            assert len(streams) == len(mock_complete_entities)
 
-                discovered_entities = {stream.name for stream in streams}
-                expected_entities = set(mock_complete_entities)
-                assert discovered_entities == expected_entities
+            discovered_entities = {stream.name for stream in streams}
+            expected_entities = set(mock_complete_entities)
+            assert discovered_entities == expected_entities
 
-                # Verificar cada stream individualmente
-                for stream in streams:
-                    # Verificar configuração básica
-                    assert stream.tap is tap
-                    assert stream.name in mock_complete_entities
-                    assert stream._base_url == e2e_config["base_url"]
+            # Verificar cada stream individualmente
+            for stream in streams:
+                # Verificar configuração básica
+                assert stream.tap is tap
+                assert stream.name in mock_complete_entities
+                assert stream._base_url == e2e_config["base_url"]
 
-                    # Verificar schema
-                    assert stream.schema is not None
-                    assert "type" in stream.schema
-                    assert stream.schema["type"] == "object"
+                # Verificar schema
+                assert stream.schema is not None
+                assert "type" in stream.schema
+                assert stream.schema["type"] == "object"
 
-                    # Verificar replication method
-                    if e2e_config["enable_incremental"]:
-                        assert stream.replication_method == "INCREMENTAL"
-                        assert "mod_ts" in stream.replication_keys
+                # Verificar replication method
+                if e2e_config["enable_incremental"]:
+                    assert stream.replication_method == "INCREMENTAL"
+                    assert "mod_ts" in stream.replication_keys
 
-                    # Verificar paginator
-                    paginator = stream.get_new_paginator()
-                    assert paginator is not None
+                # Verificar paginator
+                paginator = stream.get_new_paginator()
+                assert paginator is not None
 
     @pytest.mark.e2e
-    def test_catalog_generation_complete(self, e2e_config, mock_complete_entities, mock_entity_schemas) -> None:
+    def test_catalog_generation_complete(
+        self, e2e_config, mock_complete_entities, mock_entity_schemas,
+    ) -> None:
         """Testa geração completa de catálogo."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                mock_discovery.return_value = mock_complete_entities
-                mock_schema.side_effect = lambda entity: mock_entity_schemas.get(entity, mock_entity_schemas["facility"])
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema:
+            mock_discovery.return_value = mock_complete_entities
+            mock_schema.side_effect = lambda entity: mock_entity_schemas.get(
+                entity, mock_entity_schemas["facility"],
+            )
 
-                tap = TapOracleWMS(config=e2e_config)
+            tap = TapOracleWMS(config=e2e_config)
 
-                # Gerar catálogo
-                catalog = tap.catalog_dict
+            # Gerar catálogo
+            catalog = tap.catalog_dict
 
-                # Verificações do catálogo
-                assert "streams" in catalog
-                assert len(catalog["streams"]) == len(mock_complete_entities)
+            # Verificações do catálogo
+            assert "streams" in catalog
+            assert len(catalog["streams"]) == len(mock_complete_entities)
 
-                for stream_catalog in catalog["streams"]:
-                    assert "stream" in stream_catalog
-                    assert "schema" in stream_catalog
-                    assert "metadata" in stream_catalog
+            for stream_catalog in catalog["streams"]:
+                assert "stream" in stream_catalog
+                assert "schema" in stream_catalog
+                assert "metadata" in stream_catalog
 
-                    stream_name = stream_catalog["stream"]
-                    assert stream_name in mock_complete_entities
+                stream_name = stream_catalog["stream"]
+                assert stream_name in mock_complete_entities
 
-                    # Verificar schema no catálogo
-                    schema = stream_catalog["schema"]
-                    assert schema["type"] == "object"
-                    assert "properties" in schema
+                # Verificar schema no catálogo
+                schema = stream_catalog["schema"]
+                assert schema["type"] == "object"
+                assert "properties" in schema
 
-                    # Verificar metadata
-                    metadata = stream_catalog["metadata"]
-                    assert isinstance(metadata, list)
+                # Verificar metadata
+                metadata = stream_catalog["metadata"]
+                assert isinstance(metadata, list)
 
 
 class TestTapE2EExecution:
@@ -226,7 +257,9 @@ class TestTapE2EExecution:
         }
 
     @pytest.mark.e2e
-    def test_complete_extraction_flow(self, execution_config, mock_data_responses) -> None:
+    def test_complete_extraction_flow(
+        self, execution_config, mock_data_responses,
+    ) -> None:
         """Testa fluxo completo de extração de dados."""
         entities = ["facility", "item"]
         schema = {
@@ -239,61 +272,75 @@ class TestTapE2EExecution:
             },
         }
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                with patch("httpx.Client") as mock_client_class:
-                    mock_discovery.return_value = entities
-                    mock_schema.return_value = schema
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema, patch("httpx.Client") as mock_client_class:
+            mock_discovery.return_value = entities
+            mock_schema.return_value = schema
 
-                    # Configurar HTTP client mock
-                    mock_client = Mock()
-                    mock_client_class.return_value = mock_client
+            # Configurar HTTP client mock
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
 
-                    def mock_get(url, **kwargs):
-                        response = Mock()
-                        response.status_code = 200
+            def mock_get(url, **kwargs):
+                response = Mock()
+                response.status_code = 200
 
-                        if "facility" in url:
-                            if "cursor=page2" in url:
-                                response.json.return_value = mock_data_responses["facility_page2"]
-                            elif "cursor=page3" in url:
-                                response.json.return_value = mock_data_responses["facility_page3"]
-                            else:
-                                response.json.return_value = mock_data_responses["facility_page1"]
-                        elif "item" in url:
-                            response.json.return_value = mock_data_responses["item_page1"]
+                if "facility" in url:
+                    if "cursor=page2" in url:
+                        response.json.return_value = mock_data_responses[
+                            "facility_page2"
+                        ]
+                    elif "cursor=page3" in url:
+                        response.json.return_value = mock_data_responses[
+                            "facility_page3"
+                        ]
+                    else:
+                        response.json.return_value = mock_data_responses[
+                            "facility_page1"
+                        ]
+                elif "item" in url:
+                    response.json.return_value = mock_data_responses[
+                        "item_page1"
+                    ]
 
-                        return response
+                return response
 
-                    mock_client.get.side_effect = mock_get
+            mock_client.get.side_effect = mock_get
 
-                    # Criar tap
-                    tap = TapOracleWMS(config=execution_config)
+            # Criar tap
+            tap = TapOracleWMS(config=execution_config)
 
-                    # Simular extração completa
-                    streams = tap.discover_streams()
+            # Simular extração completa
+            streams = tap.discover_streams()
 
-                    for stream in streams:
-                        # Verificar que stream pode fazer múltiplas requests
-                        paginator = stream.get_new_paginator()
+            for stream in streams:
+                # Verificar que stream pode fazer múltiplas requests
+                paginator = stream.get_new_paginator()
 
-                        # Simular primeira página
-                        first_response = Mock()
-                        if stream.name == "facility":
-                            first_response.json.return_value = mock_data_responses["facility_page1"]
-                        else:
-                            first_response.json.return_value = mock_data_responses["item_page1"]
+                # Simular primeira página
+                first_response = Mock()
+                if stream.name == "facility":
+                    first_response.json.return_value = mock_data_responses[
+                        "facility_page1"
+                    ]
+                else:
+                    first_response.json.return_value = mock_data_responses[
+                        "item_page1"
+                    ]
 
-                        # Verificar paginação
-                        has_more = paginator.has_more(first_response)
-                        next_url = paginator.get_next_url(first_response)
+                # Verificar paginação
+                has_more = paginator.has_more(first_response)
+                next_url = paginator.get_next_url(first_response)
 
-                        if stream.name == "facility":
-                            assert has_more is True
-                            assert next_url is not None
-                        else:
-                            # Item tem apenas uma página no mock
-                            assert next_url is not None  # Ainda tem next_page
+                if stream.name == "facility":
+                    assert has_more is True
+                    assert next_url is not None
+                else:
+                    # Item tem apenas uma página no mock
+                    assert next_url is not None  # Ainda tem next_page
 
     @pytest.mark.e2e
     def test_incremental_sync_complete_flow(self, execution_config) -> None:
@@ -323,81 +370,86 @@ class TestTapE2EExecution:
             ],
         }
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                mock_discovery.return_value = ["facility"]
-                mock_schema.return_value = {
-                    "type": "object",
-                    "properties": {
-                        "id": {"type": "integer"},
-                        "mod_ts": {"type": "string", "format": "date-time"},
-                    },
-                }
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema:
+            mock_discovery.return_value = ["facility"]
+            mock_schema.return_value = {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer"},
+                    "mod_ts": {"type": "string", "format": "date-time"},
+                },
+            }
 
-                tap = TapOracleWMS(config=execution_config)
-                streams = tap.discover_streams()
+            tap = TapOracleWMS(config=execution_config)
+            streams = tap.discover_streams()
 
-                facility_stream = streams[0]
+            facility_stream = streams[0]
 
-                # Verificar configuração incremental
-                assert facility_stream.replication_method == "INCREMENTAL"
-                assert "mod_ts" in facility_stream.replication_keys
+            # Verificar configuração incremental
+            assert facility_stream.replication_method == "INCREMENTAL"
+            assert "mod_ts" in facility_stream.replication_keys
 
-                # Simular state anterior
-                facility_stream._singer_state = initial_state
+            # Simular state anterior
+            facility_stream._singer_state = initial_state
 
-                # Verificar que bookmark é usado
-                bookmark = facility_stream.get_starting_replication_key_value(None)
-                assert bookmark == "2024-01-15T10:00:00Z"
+            # Verificar que bookmark é usado
+            bookmark = facility_stream.get_starting_replication_key_value(None)
+            assert bookmark == "2024-01-15T10:00:00Z"
 
     @pytest.mark.e2e
     def test_error_recovery_complete_flow(self, execution_config) -> None:
         """Testa fluxo completo de recuperação de erros."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("httpx.Client") as mock_client_class:
-                mock_discovery.return_value = ["facility"]
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch("httpx.Client") as mock_client_class:
+            mock_discovery.return_value = ["facility"]
 
-                # Configurar client que falha e depois recupera
-                mock_client = Mock()
-                mock_client_class.return_value = mock_client
+            # Configurar client que falha e depois recupera
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
 
-                call_count = {"count": 0}
+            call_count = {"count": 0}
 
-                def mock_get_with_retry(url, **kwargs):
-                    call_count["count"] += 1
+            def mock_get_with_retry(url, **kwargs):
+                call_count["count"] += 1
 
-                    if call_count["count"] <= 2:
-                        # Primeiras duas tentativas falham
-                        import httpx
-                        msg = "Server error"
-                        raise httpx.HTTPStatusError(
-                            msg,
-                            request=Mock(),
-                            response=Mock(status_code=500),
-                        )
+                if call_count["count"] <= 2:
+                    # Primeiras duas tentativas falham
+                    import httpx
 
-                    # Terceira tentativa sucede
-                    response = Mock()
-                    response.status_code = 200
-                    response.json.return_value = {
-                        "result_count": 1,
-                        "results": [{"id": 1, "code": "TEST"}],
-                    }
-                    return response
+                    msg = "Server error"
+                    raise httpx.HTTPStatusError(
+                        msg,
+                        request=Mock(),
+                        response=Mock(status_code=500),
+                    )
 
-                mock_client.get.side_effect = mock_get_with_retry
+                # Terceira tentativa sucede
+                response = Mock()
+                response.status_code = 200
+                response.json.return_value = {
+                    "result_count": 1,
+                    "results": [{"id": 1, "code": "TEST"}],
+                }
+                return response
 
-                tap = TapOracleWMS(config=execution_config)
+            mock_client.get.side_effect = mock_get_with_retry
 
-                # Discovery deve lidar com falhas iniciais
-                # (Dependendo da implementação de retry)
-                try:
-                    streams = tap.discover_streams()
-                    # Se chegou aqui, retry funcionou
-                    assert len(streams) > 0
-                except Exception:
-                    # Se falhou, erro é esperado sem retry
-                    pass
+            tap = TapOracleWMS(config=execution_config)
+
+            # Discovery deve lidar com falhas iniciais
+            # (Dependendo da implementação de retry)
+            try:
+                streams = tap.discover_streams()
+                # Se chegou aqui, retry funcionou
+                assert len(streams) > 0
+            except Exception:
+                # Se falhou, erro é esperado sem retry
+                pass
 
 
 class TestTapE2ECommandLine:
@@ -446,85 +498,92 @@ class TestTapE2ECommandLine:
     @pytest.mark.slow
     def test_cli_discover_command(self, temp_config_file) -> None:
         """Testa comando CLI de discovery."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                mock_discovery.return_value = ["facility", "item"]
-                mock_schema.return_value = {
-                    "type": "object",
-                    "properties": {"id": {"type": "integer"}},
-                }
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema:
+            mock_discovery.return_value = ["facility", "item"]
+            mock_schema.return_value = {
+                "type": "object",
+                "properties": {"id": {"type": "integer"}},
+            }
 
-                # Executar comando discover
-                from tap_oracle_wms.tap import TapOracleWMS
+            # Executar comando discover
+            from tap_oracle_wms.tap import TapOracleWMS
 
-                # Simular CLI discover
-                with open(temp_config_file, encoding="utf-8") as f:
-                    config = json.load(f)
+            # Simular CLI discover
+            with Path(temp_config_file).open(encoding="utf-8") as f:
+                config = json.load(f)
 
-                tap = TapOracleWMS(config=config)
-                catalog = tap.catalog_dict
+            tap = TapOracleWMS(config=config)
+            catalog = tap.catalog_dict
 
-                # Verificar resultado
-                assert "streams" in catalog
-                assert len(catalog["streams"]) == 2
+            # Verificar resultado
+            assert "streams" in catalog
+            assert len(catalog["streams"]) == 2
 
-                stream_names = {stream["stream"] for stream in catalog["streams"]}
-                assert "facility" in stream_names
-                assert "item" in stream_names
+            stream_names = {stream["stream"] for stream in catalog["streams"]}
+            assert "facility" in stream_names
+            assert "item" in stream_names
 
     @pytest.mark.e2e
     @pytest.mark.slow
-    def test_cli_sync_command_simulation(self, temp_config_file, temp_catalog_file) -> None:
+    def test_cli_sync_command_simulation(
+        self, temp_config_file, temp_catalog_file,
+    ) -> None:
         """Simula comando CLI de sync."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                with patch("httpx.Client") as mock_client_class:
-                    mock_discovery.return_value = ["facility"]
-                    mock_schema.return_value = {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "code": {"type": "string"},
-                        },
-                    }
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema, patch("httpx.Client") as mock_client_class:
+            mock_discovery.return_value = ["facility"]
+            mock_schema.return_value = {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer"},
+                    "code": {"type": "string"},
+                },
+            }
 
-                    # Mock HTTP responses
-                    mock_client = Mock()
-                    mock_client_class.return_value = mock_client
+            # Mock HTTP responses
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
 
-                    mock_response = Mock()
-                    mock_response.status_code = 200
-                    mock_response.json.return_value = {
-                        "result_count": 2,
-                        "results": [
-                            {"id": 1, "code": "FAC001"},
-                            {"id": 2, "code": "FAC002"},
-                        ],
-                    }
-                    mock_client.get.return_value = mock_response
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                "result_count": 2,
+                "results": [
+                    {"id": 1, "code": "FAC001"},
+                    {"id": 2, "code": "FAC002"},
+                ],
+            }
+            mock_client.get.return_value = mock_response
 
-                    # Simular execução sync
-                    with open(temp_config_file, encoding="utf-8") as f:
-                        config = json.load(f)
+            # Simular execução sync
+            with Path(temp_config_file).open(encoding="utf-8") as f:
+                config = json.load(f)
 
-                    tap = TapOracleWMS(config=config)
+            tap = TapOracleWMS(config=config)
 
-                    # Capturar output (simular redirecionamento)
-                    output_messages = []
+            # Capturar output (simular redirecionamento)
+            output_messages = []
 
-                    def mock_write_message(message) -> None:
-                        if hasattr(message, "to_dict"):
-                            output_messages.append(message.to_dict())
+            def mock_write_message(message) -> None:
+                if hasattr(message, "to_dict"):
+                    output_messages.append(message.to_dict())
 
-                    # Simular sync execution com capture de mensagens
-                    streams = tap.discover_streams()
-                    for _stream in streams:
-                        # Simular iteração sobre records
-                        # (Normalmente seria feito pelo Singer SDK)
-                        pass
+            # Simular sync execution com capture de mensagens
+            streams = tap.discover_streams()
+            for _stream in streams:
+                # Simular iteração sobre records
+                # (Normalmente seria feito pelo Singer SDK)
+                pass
 
-                    # Se chegou aqui, sync simulation funcionou
-                    assert len(streams) > 0
+            # Se chegou aqui, sync simulation funcionou
+            assert len(streams) > 0
 
     @pytest.mark.e2e
     def test_cli_validation_complete(self, temp_config_file) -> None:
@@ -539,7 +598,7 @@ class TestTapE2ECommandLine:
             TapOracleWMS(config=invalid_config)
 
         # Teste com configuração válida
-        with open(temp_config_file, encoding="utf-8") as f:
+        with Path(temp_config_file).open(encoding="utf-8") as f:
             valid_config = json.load(f)
 
         with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities"):
@@ -583,50 +642,53 @@ class TestTapE2EPerformance:
             ],
         }
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                with patch("httpx.Client") as mock_client_class:
-                    mock_discovery.return_value = ["large_entity"]
-                    mock_schema.return_value = {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "code": {"type": "string"},
-                            "mod_ts": {"type": "string", "format": "date-time"},
-                        },
-                    }
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema, patch("httpx.Client") as mock_client_class:
+            mock_discovery.return_value = ["large_entity"]
+            mock_schema.return_value = {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer"},
+                    "code": {"type": "string"},
+                    "mod_ts": {"type": "string", "format": "date-time"},
+                },
+            }
 
-                    mock_client = Mock()
-                    mock_client_class.return_value = mock_client
-                    mock_client.get.return_value = Mock(
-                        status_code=200,
-                        json=Mock(return_value=large_dataset),
-                    )
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
+            mock_client.get.return_value = Mock(
+                status_code=200,
+                json=Mock(return_value=large_dataset),
+            )
 
-                    tap = TapOracleWMS(config=performance_config)
-                    streams = tap.discover_streams()
+            tap = TapOracleWMS(config=performance_config)
+            streams = tap.discover_streams()
 
-                    # Verificar que pode lidar com dataset grande
-                    stream = streams[0]
-                    paginator = stream.get_new_paginator()
+            # Verificar que pode lidar com dataset grande
+            stream = streams[0]
+            paginator = stream.get_new_paginator()
 
-                    mock_response = Mock()
-                    mock_response.json.return_value = large_dataset
+            mock_response = Mock()
+            mock_response.json.return_value = large_dataset
 
-                    # Performance check: deve processar rapidamente
-                    import time
-                    start_time = time.time()
+            # Performance check: deve processar rapidamente
+            import time
 
-                    has_more = paginator.has_more(mock_response)
-                    next_url = paginator.get_next_url(mock_response)
+            start_time = time.time()
 
-                    end_time = time.time()
-                    processing_time = end_time - start_time
+            has_more = paginator.has_more(mock_response)
+            next_url = paginator.get_next_url(mock_response)
 
-                    # Deve processar em menos de 1 segundo
-                    assert processing_time < 1.0
-                    assert has_more is True
-                    assert next_url is not None
+            end_time = time.time()
+            processing_time = end_time - start_time
+
+            # Deve processar em menos de 1 segundo
+            assert processing_time < 1.0
+            assert has_more is True
+            assert next_url is not None
 
     @pytest.mark.e2e
     @pytest.mark.slow
@@ -645,7 +707,9 @@ class TestTapE2EPerformance:
             ],
         }
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery:
             mock_discovery.return_value = ["huge_entity"]
 
             tap = TapOracleWMS(config=performance_config)
@@ -694,45 +758,49 @@ class TestTapE2ERealWorldScenarios:
             },
         }
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                with patch("httpx.Client") as mock_client_class:
-                    mock_discovery.return_value = oracle_config["entities"]
-                    mock_schema.return_value = {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "facility_code": {"type": "string"},
-                            "company_code": {"type": "string"},
-                            "item_id": {"type": "string"},
-                            "location_id": {"type": "string"},
-                            "alloc_qty": {"type": "number"},
-                            "create_ts": {"type": "string", "format": "date-time"},
-                            "mod_ts": {"type": "string", "format": "date-time"},
-                        },
-                    }
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema, patch("httpx.Client") as mock_client_class:
+            mock_discovery.return_value = oracle_config["entities"]
+            mock_schema.return_value = {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer"},
+                    "facility_code": {"type": "string"},
+                    "company_code": {"type": "string"},
+                    "item_id": {"type": "string"},
+                    "location_id": {"type": "string"},
+                    "alloc_qty": {"type": "number"},
+                    "create_ts": {"type": "string", "format": "date-time"},
+                    "mod_ts": {"type": "string", "format": "date-time"},
+                },
+            }
 
-                    mock_client = Mock()
-                    mock_client_class.return_value = mock_client
-                    mock_client.get.return_value = Mock(
-                        status_code=200,
-                        json=Mock(return_value=oracle_responses["allocation"]),
-                    )
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
+            mock_client.get.return_value = Mock(
+                status_code=200,
+                json=Mock(return_value=oracle_responses["allocation"]),
+            )
 
-                    tap = TapOracleWMS(config=oracle_config)
-                    streams = tap.discover_streams()
+            tap = TapOracleWMS(config=oracle_config)
+            streams = tap.discover_streams()
 
-                    # Verificar entidades específicas do Oracle WMS
-                    stream_names = {stream.name for stream in streams}
-                    assert "allocation" in stream_names
-                    assert "allocation_dtl" in stream_names
-                    assert "order_hdr" in stream_names
-                    assert "order_dtl" in stream_names
+            # Verificar entidades específicas do Oracle WMS
+            stream_names = {stream.name for stream in streams}
+            assert "allocation" in stream_names
+            assert "allocation_dtl" in stream_names
+            assert "order_hdr" in stream_names
+            assert "order_dtl" in stream_names
 
-                    # Verificar URL construction para Oracle WMS
-                    allocation_stream = next(s for s in streams if s.name == "allocation")
-                    expected_path = "/wms/lgfapi/v10/entity/allocation"
-                    assert expected_path in allocation_stream.url
+            # Verificar URL construction para Oracle WMS
+            allocation_stream = next(
+                s for s in streams if s.name == "allocation"
+            )
+            expected_path = "/wms/lgfapi/v10/entity/allocation"
+            assert expected_path in allocation_stream.url
 
     @pytest.mark.e2e
     def test_multi_facility_scenario(self) -> None:
@@ -758,25 +826,26 @@ class TestTapE2ERealWorldScenarios:
             ],
         }
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("httpx.Client") as mock_client_class:
-                mock_discovery.return_value = ["facility", "inventory"]
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch("httpx.Client") as mock_client_class:
+            mock_discovery.return_value = ["facility", "inventory"]
 
-                mock_client = Mock()
-                mock_client_class.return_value = mock_client
-                mock_client.get.return_value = Mock(
-                    status_code=200,
-                    json=Mock(return_value=facilities_response),
-                )
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
+            mock_client.get.return_value = Mock(
+                status_code=200,
+                json=Mock(return_value=facilities_response),
+            )
 
-                tap = TapOracleWMS(config=multi_facility_config)
-                streams = tap.discover_streams()
+            tap = TapOracleWMS(config=multi_facility_config)
+            streams = tap.discover_streams()
 
-                # Verificar que pode lidar com múltiplas facilities
-                next(s for s in streams if s.name == "facility")
+            # Verificar que pode lidar com múltiplas facilities
+            next(s for s in streams if s.name == "facility")
 
-                # Verificar que facility_code='*' está na configuração
-                assert tap.config["facility_code"] == "*"
+            # Verificar que facility_code='*' está na configuração
+            assert tap.config["facility_code"] == "*"
 
     @pytest.mark.e2e
     def test_incremental_sync_real_timestamps(self) -> None:
@@ -794,47 +863,56 @@ class TestTapE2ERealWorldScenarios:
 
         # Dados com timestamps realistas
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                mock_discovery.return_value = ["updated_entity"]
-                mock_schema.return_value = {
-                    "type": "object",
-                    "properties": {
-                        "id": {"type": "integer"},
-                        "code": {"type": "string"},
-                        "mod_ts": {"type": "string", "format": "date-time"},
-                    },
-                }
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema:
+            mock_discovery.return_value = ["updated_entity"]
+            mock_schema.return_value = {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer"},
+                    "code": {"type": "string"},
+                    "mod_ts": {"type": "string", "format": "date-time"},
+                },
+            }
 
-                tap = TapOracleWMS(config=incremental_config)
-                streams = tap.discover_streams()
+            tap = TapOracleWMS(config=incremental_config)
+            streams = tap.discover_streams()
 
-                stream = streams[0]
+            stream = streams[0]
 
-                # Verificar configuração incremental
-                assert stream.replication_method == "INCREMENTAL"
-                assert stream.replication_keys == ["mod_ts"]
+            # Verificar configuração incremental
+            assert stream.replication_method == "INCREMENTAL"
+            assert stream.replication_keys == ["mod_ts"]
 
-                # Simular bookmark anterior
-                previous_bookmark = "2024-06-27T14:00:00Z"
+            # Simular bookmark anterior
+            previous_bookmark = "2024-06-27T14:00:00Z"
 
-                # Verificar que overlap é aplicado corretamente
-                with patch.object(stream, "get_starting_replication_key_value") as mock_bookmark:
-                    mock_bookmark.return_value = previous_bookmark
+            # Verificar que overlap é aplicado corretamente
+            with patch.object(
+                stream, "get_starting_replication_key_value",
+            ) as mock_bookmark:
+                mock_bookmark.return_value = previous_bookmark
 
-                    params = stream.get_url_params(context=None, next_page_token=None)
+                params = stream.get_url_params(context=None, next_page_token=None)
 
-                    # Deve ter filtro incremental
-                    if hasattr(stream.tap, "apply_incremental_filters"):
-                        # Se tap tem método de filtros, deve ser chamado
-                        pass
-                    else:
-                        # Senão deve ter mod_ts__gte com overlap
-                        assert "mod_ts__gte" in params
+                # Deve ter filtro incremental
+                if hasattr(stream.tap, "apply_incremental_filters"):
+                    # Se tap tem método de filtros, deve ser chamado
+                    pass
+                else:
+                    # Senão deve ter mod_ts__gte com overlap
+                    assert "mod_ts__gte" in params
 
-                        # Verificar que overlap de 5 minutos foi aplicado
-                        bookmark_dt = datetime.fromisoformat(previous_bookmark.replace("Z", "+00:00"))
-                        expected_dt = bookmark_dt - timedelta(minutes=5)
+                    # Verificar que overlap de 5 minutos foi aplicado
+                    bookmark_dt = datetime.fromisoformat(
+                        previous_bookmark.replace("Z", "+00:00"),
+                    )
+                    expected_dt = bookmark_dt - timedelta(minutes=5)
 
-                        param_dt = datetime.fromisoformat(params["mod_ts__gte"].replace("Z", "+00:00"))
-                        assert param_dt == expected_dt
+                    param_dt = datetime.fromisoformat(
+                        params["mod_ts__gte"].replace("Z", "+00:00"),
+                    )
+                    assert param_dt == expected_dt

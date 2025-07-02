@@ -1,298 +1,128 @@
-# ===================================================================
-# MODERN MELTANO SINGER SDK PROJECT CONFIGURATION
-# Singer SDK 0.46.4+ | Python 3.9+ | Enterprise Grade
-# ===================================================================
-
 [build-system]
-requires = ["hatchling>=1.27.0", "hatch-vcs>=0.4.0"]
-build-backend = "hatchling.build"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "tap-oracle-wms"
-description = "Modern Singer Tap for Oracle WMS - Enterprise Data Integration"
-authors = [
-    {name = "DataCosmos Team", email = "team@datacosmos.com"},
-]
-license = {text = "MIT"}
+version = "0.1.0"
+description = "Singer Tap for Oracle WMS - Data Integration"
+authors = ["DataCosmos Team <team@datacosmos.com>"]
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.9"
-dynamic = ["version"]
-
-keywords = [
-    "meltano", 
-    "singer", 
-    "tap", 
-    "oracle", 
-    "wms", 
-    "etl", 
-    "data-integration",
-    "enterprise"
+packages = [
+    { include = "tap_oracle_wms", from = "src" },
 ]
 
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "Intended Audience :: System Administrators", 
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11", 
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Database",
-    "Topic :: System :: Integration",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Typing :: Typed",
-    "Framework :: Singer",
-]
+[tool.poetry.dependencies]
+python = "^3.9"
+singer-sdk = "^0.47.0"
+oracledb = "^2.0.0"
+requests = "^2.31.0"
+backoff = "^2.2.0"
+typing-extensions = "^4.0.0"
+pydantic = "^2.0.0"
+sqlalchemy = "^2.0.0"
+click = "^8.1.0"
 
-# ===================================================================
-# MODERN SINGER SDK DEPENDENCIES WITH PERFORMANCE EXTRAS
-# ===================================================================
-dependencies = [
-    # Core Singer SDK with modern performance extras
-    "singer-sdk[msgspec,s3,parquet,faker]>=0.46.4,<1.0.0",
-    
-    # Modern Oracle Database connectivity
-    "oracledb>=2.4.1", 
-    
-    # HTTP client with modern features
-    "requests>=2.32.0",
-    "httpx>=0.27.0",  # Modern async HTTP client
-    
-    # Enhanced error handling and retries
-    "backoff>=2.2.0",
-    
-    # Modern type system
-    "typing-extensions>=4.12.0",
-    
-    # Performance and data handling
-    "msgspec>=0.18.0",      # High-performance JSON
-    "orjson>=3.10.0",       # Fast JSON serialization
-    "pyarrow>=17.0.0",      # Column-oriented data
-    
-    # Modern path handling
-    "universal-pathlib>=0.2.6",
-    
-    # Enhanced configuration
-    "pydantic>=2.11.0",
-    "jsonschema>=4.23.0",
-    
-    # Database abstractions
-    "sqlalchemy>=2.0.36",
-    
-    # CLI enhancements
-    "rich>=13.9.0",
-    "click>=8.1.0",
-]
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-cov = "^5.0.0"
+pytest-mock = "^3.14.0"
+ruff = "^0.8.0"
+mypy = "^1.13.0"
+pre-commit = "^4.0.0"
 
-[project.optional-dependencies]
-# Development dependencies
-dev = [
-    # Testing framework
-    "pytest>=8.3.0",
-    "pytest-cov>=6.0.0",
-    "pytest-xdist>=3.6.0",
-    "pytest-mock>=3.14.0",
-    "pytest-asyncio>=0.24.0",
-    "pytest-sugar>=1.0.0",
-    "pytest-randomly>=3.15.0",
-    
-    # Code quality
-    "ruff>=0.8.4",           # Modern linter/formatter
-    "mypy>=1.13.0",          # Type checking
-    "pre-commit>=4.0.0",     # Git hooks
-    
-    # Type stubs
-    "types-requests>=2.32.0",
-    "types-jsonschema>=4.17.0",
-    "types-setuptools>=75.6.0",
-    "types-backoff>=2.0.0",
-]
-
-# Security scanning
-security = [
-    "bandit[toml]>=1.7.9",
-    "safety>=3.2.0",
-    "semgrep>=1.45.0",
-]
-
-# Performance profiling  
-performance = [
-    "py-spy>=0.3.0",
-    "memory-profiler>=0.61.0",
-    "line-profiler>=4.1.0",
-]
-
-# Documentation
-docs = [
-    "mkdocs>=1.6.0",
-    "mkdocs-material>=9.5.0",
-    "mkdocstrings[python]>=0.26.0",
-]
-
-# Build and release
-build = [
-    "build>=1.2.0",
-    "twine>=6.0.0",
-    "hatch>=1.12.0",
-]
-
-[project.urls]
-Homepage = "https://github.com/datacosmos-br/tap-oracle-wms"
-Documentation = "https://github.com/datacosmos-br/tap-oracle-wms/blob/main/README.md"
-Repository = "https://github.com/datacosmos-br/tap-oracle-wms.git"
-"Bug Tracker" = "https://github.com/datacosmos-br/tap-oracle-wms/issues"
-Changelog = "https://github.com/datacosmos-br/tap-oracle-wms/blob/main/CHANGELOG.md"
-
-[project.entry-points."console_scripts"]
+[tool.poetry.scripts]
 tap-oracle-wms = "tap_oracle_wms.tap:TapOracleWMS.cli"
 
-[project.entry-points."singer_sdk.taps"]
+[tool.poetry.plugins."singer_sdk.taps"]
 tap-oracle-wms = "tap_oracle_wms.tap:TapOracleWMS"
-
-# ===================================================================
-# MODERN BUILD CONFIGURATION (HATCH)
-# ===================================================================
-[tool.hatch.version]
-source = "vcs"
-fallback-version = "0.0.0"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/tap_oracle_wms"]
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/src",
-    "/tests", 
-    "/README.md",
-    "/CHANGELOG.md",
-    "/LICENSE",
-    "/pyproject.toml",
-]
-
-[tool.hatch.envs.default]
-dependencies = [
-    "pytest>=8.0.0",
-    "pytest-cov>=4.0.0",
-    "ruff>=0.8.0",
-    "mypy>=1.13.0",
-]
-
-[tool.hatch.envs.default.scripts]
-test = "pytest {args:tests}"
-test-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/tap_oracle_wms {args:tests}"
-lint = "ruff check {args:.}"
-format = "ruff format {args:.}"
-type-check = "mypy {args:src tests}"
 
 [tool.ruff]
 line-length = 88
 target-version = "py39"
 fix = true
-show-fixes = true
-output-format = "full"
 
 [tool.ruff.lint]
-select = ["E", "F", "W"]  # Focus on critical errors only: syntax, undefined vars, warnings
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "D",   # pydocstyle
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "A",   # flake8-builtins
+    "C4",  # flake8-comprehensions
+    "T20", # flake8-print
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "PLE", # pylint errors
+    "PLR", # pylint refactor
+    "PLW", # pylint warnings
+    "TRY", # tryceratops
+    "FLY", # flynt
+    "PERF", # perflint
+    "FURB", # refurb
+    "LOG",  # flake8-logging
+]
 ignore = [
-    # Non-critical style issues
-    "E501",    # line-too-long (handled by formatter) 
-    "W191",    # indentation-contains-tabs
-    "E111",    # indentation-is-not-a-multiple-of-four
-    "E114",    # indentation-is-not-a-multiple-of-four-comment
-    "E117",    # over-indented
-    "W293",    # blank-line-contains-whitespace (cosmetic)
-    "W505",    # doc-line-too-long (cosmetic for docs)
-    
-    # Allow some imports patterns for legacy code
-    "E402",    # module-level-import-not-at-top-of-file (legacy compatibility)
-    
-    # Allow unused imports for stub compatibility
-    "F401",    # unused-import (needed for stubs)
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107", # docstrings
+    "PLR2004", # magic values
+    "PLR0913", # too many arguments
+    "PLR0912", # too many branches
+    "PLR0915", # too many statements
+    "PLR0911", # too many return statements
+    "TRY003", # raise-vanilla-args
+    "TRY300", # try-consider-else
+    "TRY301", # abstract-raise-to-an-inner-function
+    "TRY401", # redundant-exception-object-included-in-logging-exception-call
+    "ARG001", # unused-function-argument
+    "ARG002", # unused-method-argument
+    "PLE1205", # logging-too-many-args
+    "PERF203", # try-except-in-loop
+    "E501", # line-too-long (handled by formatter)
 ]
 
-# === STRICT PEP COMPLIANCE ENFORCEMENT ===
-[tool.ruff.lint.pep8-naming]
-# PEP 8 naming conventions (strict enforcement)
-ignore-names = ["setUp", "tearDown"] # Allow unittest conventions
+[tool.ruff.lint.isort]
+known-first-party = ["tap_oracle_wms"]
 
 [tool.ruff.lint.pydocstyle]
-# PEP 257 docstring conventions (strict enforcement)
-convention = "google" # Google-style docstrings for consistency
-
-[tool.ruff.lint.pycodestyle]
-# PEP 8 style guide enforcement
-max-doc-length = 88
-ignore-overlong-task-comments = true
-
-[tool.ruff.lint.isort]
-# PEP 8 import organization (strict)
-case-sensitive = true
-force-single-line = false
-force-sort-within-sections = true
-known-first-party = ["tap_oracle_wms"]
-lines-after-imports = 2
-order-by-type = true
-single-line-exclusions = ["typing"]
-split-on-trailing-comma = true
-
-[tool.ruff.lint.flake8-quotes]
-# PEP 8 string quote consistency
-docstring-quotes = "double"
-inline-quotes = "double"
-multiline-quotes = "double"
-
-[tool.ruff.lint.flake8-annotations]
-# PEP 484/526 type annotations (strict enforcement)
-allow-star-arg-any = false
-ignore-fully-untyped = false
-suppress-dummy-args = false
-suppress-none-returning = false
+convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "PLR2004", "D"]
-"examples/*" = ["T201", "D", "ERA001"]
-"__init__.py" = ["D104"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-line-ending = "lf"
-
-[tool.black]
-line-length = 88
-target-version = ["py39"]
-
-[tool.isort]
-profile = "black"
-line_length = 88
-known_first_party = ["tap_oracle_wms"]
+"tests/**/*.py" = [
+    "SIM117", # Use a single with statement with multiple contexts
+    "E402",   # Module level import not at top of file
+    "PTH123", # open() should be replaced by Path.open()
+    "PTH108", # os.unlink() should be replaced by Path.unlink()
+    "B007",   # Loop control variable not used within loop body
+    "T201",   # print found
+    "SIM102", # Use a single if statement instead of nested if statements
+    "PLW2901", # for loop variable overwritten by assignment target
+    "B015",   # Pointless comparison
+    "F401",   # unused-import
+    "F821",   # undefined-name
+]
 
 [tool.mypy]
 python_version = "3.9"
-strict = false  # Relaxed for legacy code
-warn_return_any = false
-warn_unused_configs = false
-disallow_any_generics = false
-disallow_subclassing_any = false
-disallow_untyped_calls = false
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-check_untyped_defs = false
-disallow_untyped_decorators = false
-no_implicit_optional = false
-warn_redundant_casts = false
-warn_unused_ignores = false
-warn_no_return = true
-warn_unreachable = false
-strict_equality = false
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["click.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["singer.*", "singer_sdk.*", "oracledb.*", "sqlalchemy.*"]
-ignore_missing_imports = true
+module = ["tap_oracle_wms.cli"]
+disable_error_code = ["arg-type", "no-any-return"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -307,32 +137,20 @@ addopts = [
     "--cov-report=xml:reports/coverage.xml",
     "--cov-fail-under=85",
     "--junitxml=reports/pytest.xml",
-    "--maxfail=10",
 ]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "slow: marks tests as slow",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "e2e: marks tests as end-to-end tests",
     "smoke: marks tests as smoke tests",
-    "regression: marks tests as regression tests",
-    "security: marks tests as security tests",
+    "live: marks tests requiring live API connection",
     "performance: marks tests as performance tests",
 ]
-filterwarnings = [
-    "error",
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-]
-log_cli = false
-log_cli_level = "INFO"
-log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
-log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 
 [tool.coverage.run]
 branch = true
@@ -343,45 +161,20 @@ omit = [
     "*/*_test.py",
     "*/conftest.py",
     "*/__pycache__/*",
-    "*/site-packages/*",
-    "*/.venv/*",
-    "*/venv/*",
-    "*/build/*",
-    "*/dist/*",
-    "*/.eggs/*",
 ]
 data_file = "reports/.coverage"
 
 [tool.coverage.report]
 skip_empty = true
-skip_covered = false
 show_missing = true
 sort = "Cover"
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
     "if self.debug:",
-    "if settings.DEBUG",
     "raise AssertionError",
     "raise NotImplementedError",
     "if 0:",
     "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
     "TYPE_CHECKING",
 ]
-
-[tool.coverage.html]
-directory = "reports/coverage"
-title = "tap-oracle-wms Coverage Report"
-
-[tool.coverage.xml]
-output = "reports/coverage.xml"
-
-[tool.bandit]
-targets = ["src"]
-exclude_dirs = ["tests", "build", "dist"]
-skips = ["B101", "B601"]
-
-[tool.bandit.assert_used]
-skips = ["*/tests/*", "*/test_*.py"]

@@ -306,52 +306,57 @@ class TestPaginatorIntegration:
         assert "page_size=1000" in parsed_url.query
 
     @pytest.mark.unit
-    @pytest.mark.parametrize(("response_data", "expected_has_more", "expected_next_url"), [
-        # Caso 1: Com next_page e resultados
-        (
-            {
-                "results": [{"id": 1}],
-                "next_page": "https://test.com/next",
-            },
-            True,
-            "https://test.com/next",
-        ),
-        # Caso 2: Sem next_page
-        (
-            {
-                "results": [{"id": 1}],
-            },
-            False,
-            None,
-        ),
-        # Caso 3: next_page None
-        (
-            {
-                "results": [{"id": 1}],
-                "next_page": None,
-            },
-            False,
-            None,
-        ),
-        # Caso 4: next_page string vazia
-        (
-            {
-                "results": [{"id": 1}],
-                "next_page": "",
-            },
-            False,
-            None,
-        ),
-        # Caso 5: Resultados vazios sem next_page
-        (
-            {
-                "results": [],
-            },
-            False,
-            None,
-        ),
-    ])
-    def test_paginator_various_responses(self, response_data, expected_has_more, expected_next_url) -> None:
+    @pytest.mark.parametrize(
+        ("response_data", "expected_has_more", "expected_next_url"),
+        [
+            # Caso 1: Com next_page e resultados
+            (
+                {
+                    "results": [{"id": 1}],
+                    "next_page": "https://test.com/next",
+                },
+                True,
+                "https://test.com/next",
+            ),
+            # Caso 2: Sem next_page
+            (
+                {
+                    "results": [{"id": 1}],
+                },
+                False,
+                None,
+            ),
+            # Caso 3: next_page None
+            (
+                {
+                    "results": [{"id": 1}],
+                    "next_page": None,
+                },
+                False,
+                None,
+            ),
+            # Caso 4: next_page string vazia
+            (
+                {
+                    "results": [{"id": 1}],
+                    "next_page": "",
+                },
+                False,
+                None,
+            ),
+            # Caso 5: Resultados vazios sem next_page
+            (
+                {
+                    "results": [],
+                },
+                False,
+                None,
+            ),
+        ],
+    )
+    def test_paginator_various_responses(
+        self, response_data, expected_has_more, expected_next_url,
+    ) -> None:
         """Testa paginador com várias respostas diferentes."""
         paginator = WMSAdvancedPaginator()
 

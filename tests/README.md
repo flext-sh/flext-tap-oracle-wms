@@ -10,29 +10,39 @@ tests/
 ├── pytest.ini                              # Pytest configuration
 ├── README.md                                # This file
 │
-├── unit/                                    # Unit tests (NEW)
-│   ├── test_config_validation.py           # Configuration validation
+├── unit/                                    # Unit tests (ORGANIZED)
+│   ├── test_config_validation.py           # Configuration validation (moved from examples/)
+│   ├── test_filtering.py                   # Data filtering tests (moved from examples/)
+│   ├── test_object_flattening.py           # Object flattening tests (moved from examples/)
+│   ├── test_pagination.py                  # Pagination tests (moved from examples/)
 │   ├── test_pagination_hateoas.py          # HATEOAS pagination
 │   ├── test_streams_advanced.py            # Advanced stream functionality
 │   ├── test_tap_capabilities.py            # Tap capabilities and initialization
-│   └── test_tap_core.py                    # Core tap functionality
+│   ├── test_tap_core.py                    # Core tap functionality
+│   ├── test_unit_auth.py                   # Unit tests for authentication (moved from root)
+│   ├── test_unit_discovery.py              # Unit tests for entity discovery (moved from root)
+│   └── test_validation.py                  # General validation tests (moved from root)
 │
-├── integration/                             # Integration tests (NEW)
-│   ├── test_tap_integration.py             # Tap-Stream integration
+├── integration/                             # Integration tests (ORGANIZED)
+│   ├── test_auth_headers.py                # Auth headers tests (moved from examples/)
 │   ├── test_auth_monitoring_integration.py # Auth + Monitoring integration
+│   ├── test_data_extraction.py             # Data extraction tests (moved from examples/)
+│   ├── test_direct_api.py                  # Direct API tests (moved from examples/)
+│   ├── test_extraction.py                  # Extraction flow tests (moved from examples/)
+│   ├── test_integration_extraction.py      # Integration extraction tests (moved from root)
+│   ├── test_live_comprehensive.py          # Comprehensive live API tests (moved from root)
+│   ├── test_meltano_integration.py         # Meltano integration tests (moved from examples/)
+│   ├── test_tap_integration.py             # Tap-Stream integration
+│   ├── test_timeout_retry.py               # Timeout and retry tests (moved from examples/)
 │   └── test_wms_connection.py              # WMS connection integration
 │
-├── e2e/                                     # End-to-End tests (NEW)
-│   ├── test_tap_e2e.py                     # Complete E2E workflows
-│   └── test_tap_complete.py                # Full tap lifecycle
+├── e2e/                                     # End-to-End tests (ORGANIZED)
+│   ├── test_e2e.py                         # E2E workflows (moved from root)
+│   ├── test_tap_complete.py                # Full tap lifecycle
+│   └── test_tap_e2e.py                     # Complete E2E workflows
 │
-├── performance/                             # Performance tests (NEW)
-│   └── test_performance.py                 # Benchmarks and scaling
-│
-├── test_unit_auth.py                       # Unit tests for authentication
-├── test_unit_discovery.py                  # Unit tests for entity discovery
-├── test_integration_extraction.py          # Integration tests for data extraction
-└── test_live_comprehensive.py              # Comprehensive live API tests
+└── performance/                             # Performance tests
+    └── test_performance.py                 # Benchmarks and scaling
 ```
 
 ## 🏷️ Test Categories

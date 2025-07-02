@@ -1,0 +1,8 @@
+{
+  "base_url": "https://your-wms.oracle.com",
+  "username": "your_username",
+  "password": "your_password",
+  "auth_method": "basic",
+  "page_size": 100,
+  "entities": ["allocation", "order_hdr", "inventory"]
+}

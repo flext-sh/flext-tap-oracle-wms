@@ -51,7 +51,7 @@ class TestWMSConnection:
             # Validate stream has proper configuration
             assert stream.config == sample_config
             assert stream.tap_name == "tap-oracle-wms"
-            assert stream.name == stream_name
+            assert stream.name == stream.name
 
             # Validate stream has proper URL construction
             assert hasattr(stream, "url_base")

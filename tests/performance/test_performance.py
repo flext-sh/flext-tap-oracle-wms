@@ -48,45 +48,55 @@ class TestPerformanceBasic:
 
     @pytest.mark.performance
     @pytest.mark.slow
-    def test_tap_initialization_performance(self, perf_config, large_entity_list, large_schema) -> None:
+    def test_tap_initialization_performance(
+        self, perf_config, large_entity_list, large_schema,
+    ) -> None:
         """Testa performance de inicialização do tap."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                mock_discovery.return_value = large_entity_list
-                mock_schema.return_value = large_schema
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema:
+            mock_discovery.return_value = large_entity_list
+            mock_schema.return_value = large_schema
 
-                # Medir tempo de inicialização
-                start_time = time.time()
+            # Medir tempo de inicialização
+            start_time = time.time()
 
-                tap = TapOracleWMS(config=perf_config)
+            tap = TapOracleWMS(config=perf_config)
 
-                initialization_time = time.time() - start_time
+            initialization_time = time.time() - start_time
 
-                # Inicialização deve ser rápida mesmo com muitas entidades
-                assert initialization_time < 5.0  # Menos de 5 segundos
-                assert tap is not None
+            # Inicialização deve ser rápida mesmo com muitas entidades
+            assert initialization_time < 5.0  # Menos de 5 segundos
+            assert tap is not None
 
     @pytest.mark.performance
     @pytest.mark.slow
-    def test_stream_discovery_performance(self, perf_config, large_entity_list, large_schema) -> None:
+    def test_stream_discovery_performance(
+        self, perf_config, large_entity_list, large_schema,
+    ) -> None:
         """Testa performance do discovery de streams."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                mock_discovery.return_value = large_entity_list
-                mock_schema.return_value = large_schema
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema:
+            mock_discovery.return_value = large_entity_list
+            mock_schema.return_value = large_schema
 
-                tap = TapOracleWMS(config=perf_config)
+            tap = TapOracleWMS(config=perf_config)
 
-                # Medir tempo de discovery
-                start_time = time.time()
+            # Medir tempo de discovery
+            start_time = time.time()
 
-                streams = tap.discover_streams()
+            streams = tap.discover_streams()
 
-                discovery_time = time.time() - start_time
+            discovery_time = time.time() - start_time
 
-                # Discovery deve ser eficiente
-                assert discovery_time < 10.0  # Menos de 10 segundos
-                assert len(streams) == len(large_entity_list)
+            # Discovery deve ser eficiente
+            assert discovery_time < 10.0  # Menos de 10 segundos
+            assert len(streams) == len(large_entity_list)
 
     @pytest.mark.performance
     def test_paginator_performance_large_response(self) -> None:
@@ -132,7 +142,9 @@ class TestPerformanceBasic:
         mock_tap = Mock()
         mock_tap.config = perf_config
         mock_tap.apply_entity_filters = Mock(return_value={})
-        mock_tap.apply_incremental_filters = Mock(return_value={"mod_ts__gte": "2024-01-01T10:00:00Z"})
+        mock_tap.apply_incremental_filters = Mock(
+            return_value={"mod_ts__gte": "2024-01-01T10:00:00Z"},
+        )
 
         stream = WMSAdvancedStream(
             tap=mock_tap,
@@ -177,39 +189,44 @@ class TestPerformanceMemory:
         # Criar dataset grande simulado
         large_entities = [f"entity_{i:04d}" for i in range(50)]
 
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-            with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                mock_discovery.return_value = large_entities
-                mock_schema.return_value = {
-                    "type": "object",
-                    "properties": {f"field_{i}": {"type": "string"} for i in range(20)},
-                }
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery, patch(
+            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+        ) as mock_schema:
+            mock_discovery.return_value = large_entities
+            mock_schema.return_value = {
+                "type": "object",
+                "properties": {f"field_{i}": {"type": "string"} for i in range(20)},
+            }
 
-                # Medir memória antes
-                process = psutil.Process(os.getpid())
-                memory_before = process.memory_info().rss / 1024 / 1024  # MB
+            # Medir memória antes
+            process = psutil.Process(os.getpid())
+            memory_before = process.memory_info().rss / 1024 / 1024  # MB
 
-                # Criar tap e streams
-                tap = TapOracleWMS(config=memory_config)
-                streams = tap.discover_streams()
+            # Criar tap e streams
+            tap = TapOracleWMS(config=memory_config)
+            streams = tap.discover_streams()
 
-                # Forçar criação de todas as estruturas
-                for stream in streams:
-                    stream.get_new_paginator()
-                    stream.get_url_params(context=None, next_page_token=None)
+            # Forçar criação de todas as estruturas
+            for stream in streams:
+                stream.get_new_paginator()
+                stream.get_url_params(context=None, next_page_token=None)
 
-                # Medir memória depois
-                memory_after = process.memory_info().rss / 1024 / 1024  # MB
-                memory_increase = memory_after - memory_before
+            # Medir memória depois
+            memory_after = process.memory_info().rss / 1024 / 1024  # MB
+            memory_increase = memory_after - memory_before
 
-                # Aumento de memória deve ser razoável
-                assert memory_increase < 100  # Menos de 100MB para 50 entidades
-                assert len(streams) == len(large_entities)
+            # Aumento de memória deve ser razoável
+            assert memory_increase < 100  # Menos de 100MB para 50 entidades
+            assert len(streams) == len(large_entities)
 
     @pytest.mark.performance
     def test_memory_leak_detection(self, memory_config) -> None:
         """Testa detecção de vazamentos de memória."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery:
             mock_discovery.return_value = ["test_entity"]
 
             process = psutil.Process(os.getpid())
@@ -282,7 +299,9 @@ class TestPerformanceConcurrency:
     @pytest.mark.slow
     def test_concurrent_tap_creation(self, concurrency_config) -> None:
         """Testa criação concorrente de taps."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery:
             mock_discovery.return_value = ["concurrent_entity"]
 
             results = []
@@ -295,11 +314,13 @@ class TestPerformanceConcurrency:
                     streams = tap.discover_streams()
                     end_time = time.time()
 
-                    results.append({
-                        "thread_id": thread_id,
-                        "time": end_time - start_time,
-                        "streams_count": len(streams),
-                    })
+                    results.append(
+                        {
+                            "thread_id": thread_id,
+                            "time": end_time - start_time,
+                            "streams_count": len(streams),
+                        },
+                    )
                 except Exception as e:
                     errors.append({"thread_id": thread_id, "error": str(e)})
 
@@ -378,7 +399,9 @@ class TestPerformanceConcurrency:
     @pytest.mark.performance
     def test_stream_thread_safety(self, concurrency_config) -> None:
         """Testa thread safety dos streams."""
-        with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+        with patch(
+            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+        ) as mock_discovery:
             mock_discovery.return_value = ["thread_safe_entity"]
 
             mock_tap = Mock()
@@ -444,23 +467,31 @@ class TestPerformanceBenchmarks:
                 "test_connection": False,
             }
 
-            with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
-                with patch("tap_oracle_wms.discovery.SchemaGenerator.generate_schema") as mock_schema:
-                    mock_discovery.return_value = entities
-                    mock_schema.return_value = {"type": "object", "properties": {"id": {"type": "integer"}}}
+            with patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery, patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema:
+                mock_discovery.return_value = entities
+                mock_schema.return_value = {
+                    "type": "object",
+                    "properties": {"id": {"type": "integer"}},
+                }
 
-                    start_time = time.time()
+                start_time = time.time()
 
-                    tap = TapOracleWMS(config=config)
-                    streams = tap.discover_streams()
+                tap = TapOracleWMS(config=config)
+                streams = tap.discover_streams()
 
-                    end_time = time.time()
+                end_time = time.time()
 
-                    times.append({
+                times.append(
+                    {
                         "entity_count": count,
                         "time": end_time - start_time,
                         "streams_created": len(streams),
-                    })
+                    },
+                )
 
         # Verificar que scaling é razoável (não exponencial)
         for i in range(1, len(times)):
@@ -473,7 +504,9 @@ class TestPerformanceBenchmarks:
             time_ratio = curr_time / prev_time if prev_time > 0 else 1
             count_ratio = curr_count / prev_count
 
-            assert time_ratio < count_ratio * 2  # Scaling não deve ser muito pior que linear
+            assert (
+                time_ratio < count_ratio * 2
+            )  # Scaling não deve ser muito pior que linear
 
     @pytest.mark.performance
     def test_benchmark_paginator_throughput(self) -> None:
@@ -523,7 +556,9 @@ class TestPerformanceBenchmarks:
         mock_tap = Mock()
         mock_tap.config = config
         mock_tap.apply_entity_filters = Mock(return_value={"facility_code": "MAIN"})
-        mock_tap.apply_incremental_filters = Mock(return_value={"mod_ts__gte": "2024-01-01T10:00:00Z"})
+        mock_tap.apply_incremental_filters = Mock(
+            return_value={"mod_ts__gte": "2024-01-01T10:00:00Z"},
+        )
 
         stream = WMSAdvancedStream(
             tap=mock_tap,
@@ -546,7 +581,7 @@ class TestPerformanceBenchmarks:
 
         # Performance deve ser excelente
         assert throughput > 1000  # Pelo menos 1000 generations/second
-        assert avg_time < 0.001   # Menos de 1ms por geração
+        assert avg_time < 0.001  # Menos de 1ms por geração
 
     @pytest.mark.performance
     def test_benchmark_memory_efficiency_scale(self) -> None:
@@ -565,7 +600,9 @@ class TestPerformanceBenchmarks:
                 "test_connection": False,
             }
 
-            with patch("tap_oracle_wms.discovery.EntityDiscovery.discover_entities") as mock_discovery:
+            with patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery:
                 mock_discovery.return_value = entities
 
                 process = psutil.Process(os.getpid())
@@ -581,11 +618,15 @@ class TestPerformanceBenchmarks:
                 memory_after = process.memory_info().rss / 1024 / 1024  # MB
                 memory_increase = memory_after - memory_before
 
-                memory_measurements.append({
-                    "entity_count": count,
-                    "memory_increase_mb": memory_increase,
-                    "memory_per_entity_kb": (memory_increase * 1024) / count if count > 0 else 0,
-                })
+                memory_measurements.append(
+                    {
+                        "entity_count": count,
+                        "memory_increase_mb": memory_increase,
+                        "memory_per_entity_kb": (memory_increase * 1024) / count
+                        if count > 0
+                        else 0,
+                    },
+                )
 
                 # Cleanup
                 del tap
