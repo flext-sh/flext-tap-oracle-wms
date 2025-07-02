@@ -71,11 +71,20 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
                     self._auth_headers = {"Authorization": f"Basic {encoded}"}
                     logger.debug("Auth headers created successfully")
                 except (AttributeError, TypeError) as e:
-                    logger.exception("Invalid credentials format")
-                    msg = "Invalid credentials format"
+                    # Authentication credential errors are critical - fail immediately
+                    logger.error(
+                        "Critical authentication error: Invalid credentials format. "
+                        "Username: '%s', Password type: %s. "
+                        "This indicates configuration issues that will prevent API access.",
+                        self.username, type(self.password).__name__
+                    )
+                    msg = (
+                        f"Authentication configuration error: Invalid credentials format for user '{self.username}'. "
+                        f"Username and password must be non-empty strings. Error: {e}"
+                    )
                     raise ValueError(msg) from e
             else:
-            logger.debug("Using cached auth headers")
+                logger.debug("Using cached auth headers")
 
         return self._auth_headers
 
@@ -167,27 +176,35 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         self._auth_headers = value
 
     def _get_access_token(self) -> str:
-        """Get valid access token, refreshing if needed.
+        """Get valid access token, refreshing if needed (thread-safe).
 
         Returns
         -------
             Valid access token
 
         """
-        # Check if we have a valid token
-        if (
-            self._access_token
-            and self._token_expires
-            and datetime.now(timezone.utc) < self._token_expires
-        ):
-            return self._access_token
+        # Thread-safe token access with proper expiration buffering
+        with self._token_lock:
+            # Add 30-second buffer to prevent token expiration during request
+            buffer_time = timedelta(seconds=30)
+            current_time = datetime.now(timezone.utc)
+            
+            # Check if we have a valid token with buffer
+            if (
+                self._access_token
+                and self._token_expires
+                and current_time + buffer_time < self._token_expires
+            ):
+                logger.debug("Using cached valid access token")
+                return self._access_token
 
-        # Need to get a new token
-        self._refresh_access_token()
-        if not self._access_token:
-            msg = "Failed to obtain access token"
-            raise ValueError(msg)
-        return self._access_token
+            # Need to get a new token
+            logger.debug("Refreshing access token (expired or missing)")
+            self._refresh_access_token()
+            if not self._access_token:
+                msg = "Failed to obtain access token after refresh"
+                raise ValueError(msg)
+            return self._access_token
 
     def _refresh_access_token(self) -> None:
         """Refresh the access token."""

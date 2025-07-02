@@ -467,10 +467,14 @@ class EntityDiscovery:
                 self._access_cache_times[entity_name] = datetime.now(timezone.utc)
 
                 return access_result
-            except (httpx.ConnectError, httpx.TimeoutException, httpx.RequestError) as e:
-                logger.exception("Network error checking access to entity %s: %s", entity_name, e)
-                msg = f"Network error checking access to entity {entity_name}: {e}"
-                raise httpx.RequestError(msg) from e
+            except (httpx.ConnectError, httpx.TimeoutException) as e:
+                # Network connectivity issues - should be retriable
+                logger.error("Network connectivity error checking access to entity %s: %s", entity_name, e)
+                raise NetworkError(f"Cannot connect to WMS API for entity {entity_name}: {e}") from e
+            except httpx.RequestError as e:
+                # HTTP request configuration issues - should fail fast
+                logger.error("HTTP request error checking access to entity %s: %s", entity_name, e)
+                raise NetworkError(f"HTTP request failed for entity {entity_name}: {e}") from e
             except Exception as e:
                 logger.exception("Unexpected error checking access to entity %s: %s", entity_name, e)
                 msg = f"Unexpected error checking access to entity {entity_name}: {e}"
