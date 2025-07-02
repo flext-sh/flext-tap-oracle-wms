@@ -265,7 +265,9 @@ class CoverageAnalyzer:
     """Analyzes test coverage and identifies gaps."""
 
     def __init__(
-        self, src_dir: Path | None = None, test_dir: Path | None = None,
+        self,
+        src_dir: Path | None = None,
+        test_dir: Path | None = None,
     ) -> None:
         self.src_dir = src_dir or Path(__file__).parent.parent / "src"
         self.test_dir = test_dir or Path(__file__).parent

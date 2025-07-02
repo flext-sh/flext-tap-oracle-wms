@@ -193,7 +193,7 @@ def test_meltano_compatibility() -> None:
 
     config_file = Path("examples/config.json")
     if config_file.exists():
-        with Path(config_file).open() as f:
+        with Path(config_file).open(encoding="utf-8") as f:
             config = json.load(f)
 
         # Campos importantes para Meltano
@@ -324,7 +324,7 @@ def test_production_readiness() -> None:
 
     pyproject_file = Path("pyproject.toml")
     if pyproject_file.exists():
-        with Path(pyproject_file).open() as f:
+        with Path(pyproject_file).open(encoding="utf-8") as f:
             content = f.read()
 
         # Verificar seções importantes

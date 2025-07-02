@@ -67,12 +67,16 @@ class SimpleDateConverter:
 
         # Handle 'yesterday'
         if self.patterns["yesterday"].match(expression):
-            yesterday = now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+            yesterday = now.replace(
+                hour=0, minute=0, second=0, microsecond=0
+            ) - timedelta(days=1)
             return yesterday.isoformat().replace("+00:00", "Z")
 
         # Handle 'tomorrow'
         if self.patterns["tomorrow"].match(expression):
-            tomorrow = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+            tomorrow = now.replace(
+                hour=0, minute=0, second=0, microsecond=0
+            ) + timedelta(days=1)
             return tomorrow.isoformat().replace("+00:00", "Z")
 
         # Handle relative days (today+3d, today-7d)
@@ -81,7 +85,9 @@ class SimpleDateConverter:
             days = int(days_str)
             if operator == "-":
                 days = -days
-            target_date = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=days)
+            target_date = now.replace(
+                hour=0, minute=0, second=0, microsecond=0
+            ) + timedelta(days=days)
             return target_date.isoformat().replace("+00:00", "Z")
 
         # Handle relative weeks (today+2w, today-1w)
@@ -90,7 +96,9 @@ class SimpleDateConverter:
             weeks = int(weeks_str)
             if operator == "-":
                 weeks = -weeks
-            target_date = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(weeks=weeks)
+            target_date = now.replace(
+                hour=0, minute=0, second=0, microsecond=0
+            ) + timedelta(weeks=weeks)
             return target_date.isoformat().replace("+00:00", "Z")
 
         # Handle relative months (today+1m, today-3m)
@@ -119,7 +127,11 @@ class SimpleDateConverter:
                 # Handle day overflow (e.g., Jan 31 + 1 month = Feb 31, which doesn't exist)
                 # Fall back to last day of target month
                 last_day = calendar.monthrange(target_year, target_month)[1]
-                target_date = base_date.replace(year=target_year, month=target_month, day=min(base_date.day, last_day))
+                target_date = base_date.replace(
+                    year=target_year,
+                    month=target_month,
+                    day=min(base_date.day, last_day),
+                )
 
             return target_date.isoformat().replace("+00:00", "Z")
 
@@ -160,10 +172,19 @@ class SimpleDateConverter:
                 # Check if this looks like a timestamp field filter
                 if isinstance(filter_value, str) and any(
                     timestamp_field in filter_key.lower()
-                    for timestamp_field in ["ts", "date", "time", "created", "modified", "updated"]
+                    for timestamp_field in [
+                        "ts",
+                        "date",
+                        "time",
+                        "created",
+                        "modified",
+                        "updated",
+                    ]
                 ):
                     # Convert the date expression
-                    processed_entity_filters[filter_key] = self.convert_expression(filter_value)
+                    processed_entity_filters[filter_key] = self.convert_expression(
+                        filter_value
+                    )
                 else:
                     # Keep non-date filters as-is
                     processed_entity_filters[filter_key] = filter_value
@@ -172,7 +193,9 @@ class SimpleDateConverter:
 
         return processed_filters
 
-    def process_simple_date_expressions(self, simple_date_config: dict[str, Any]) -> dict[str, Any]:
+    def process_simple_date_expressions(
+        self, simple_date_config: dict[str, Any]
+    ) -> dict[str, Any]:
         """Process simple_date_expressions configuration.
 
         This method takes the simple_date_expressions config and converts all

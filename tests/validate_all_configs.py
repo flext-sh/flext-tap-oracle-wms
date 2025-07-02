@@ -16,7 +16,7 @@ def validate_config_file(config_path: Path) -> tuple[bool, str]:
         Tuple of (is_valid, error_message)
     """
     try:
-        with Path(config_path).open() as f:
+        with Path(config_path).open(encoding="utf-8") as f:
             config = json.load(f)
 
         # Check required fields
@@ -44,8 +44,14 @@ def validate_config_file(config_path: Path) -> tuple[bool, str]:
 
             for filters in sde.values():
                 for filter_value in filters.values():
-                    if isinstance(filter_value, str) and not any(pattern in filter_value for pattern in
-                                 ["today", "yesterday", "tomorrow", "now"]) and not any(op in filter_value for op in ["+", "-"]):
+                    if (
+                        isinstance(filter_value, str)
+                        and not any(
+                            pattern in filter_value
+                            for pattern in ["today", "yesterday", "tomorrow", "now"]
+                        )
+                        and not any(op in filter_value for op in ["+", "-"])
+                    ):
                         # Basic validation for date expressions
                         return False, f"Invalid date expression: {filter_value}"
 
@@ -55,7 +61,9 @@ def validate_config_file(config_path: Path) -> tuple[bool, str]:
             if not isinstance(cb, dict):
                 return False, "circuit_breaker must be a dict"
 
-            if "failure_threshold" in cb and not isinstance(cb["failure_threshold"], int):
+            if "failure_threshold" in cb and not isinstance(
+                cb["failure_threshold"], int
+            ):
                 return False, "circuit_breaker.failure_threshold must be an integer"
 
             if "recovery_timeout" in cb and not isinstance(cb["recovery_timeout"], int):
@@ -68,6 +76,7 @@ def validate_config_file(config_path: Path) -> tuple[bool, str]:
     except Exception as e:
         return False, f"Error reading file: {e}"
 
+
 def main():
     """Validate all configuration files."""
     evidence_dir = Path(__file__).parent
@@ -75,21 +84,19 @@ def main():
     examples_dir = evidence_dir.parent / "examples" / "configs"
     config_files = list(examples_dir.glob("*.json"))
 
-
     valid_count = 0
     total_count = len(config_files)
 
     for config_file in sorted(config_files):
         is_valid, message = validate_config_file(config_file)
 
-
         if is_valid:
             valid_count += 1
-
 
     if valid_count == total_count:
         return 0
     return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

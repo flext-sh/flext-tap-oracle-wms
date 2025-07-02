@@ -51,9 +51,9 @@ class TestTapCore:
         # Test required fields are present
         required_fields = ["base_url", "username", "password"]
         for field in required_fields:
-            assert field in sample_config, (
-                f"Required field '{field}' missing from config"
-            )
+            assert (
+                field in sample_config
+            ), f"Required field '{field}' missing from config"
 
     def test_tap_stream_instantiation(self, sample_config) -> None:
         """Test that tap can instantiate streams correctly."""

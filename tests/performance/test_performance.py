@@ -49,14 +49,20 @@ class TestPerformanceBasic:
     @pytest.mark.performance
     @pytest.mark.slow
     def test_tap_initialization_performance(
-        self, perf_config, large_entity_list, large_schema,
+        self,
+        perf_config,
+        large_entity_list,
+        large_schema,
     ) -> None:
         """Testa performance de inicialização do tap."""
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = large_entity_list
             mock_schema.return_value = large_schema
 
@@ -74,14 +80,20 @@ class TestPerformanceBasic:
     @pytest.mark.performance
     @pytest.mark.slow
     def test_stream_discovery_performance(
-        self, perf_config, large_entity_list, large_schema,
+        self,
+        perf_config,
+        large_entity_list,
+        large_schema,
     ) -> None:
         """Testa performance do discovery de streams."""
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = large_entity_list
             mock_schema.return_value = large_schema
 
@@ -189,11 +201,14 @@ class TestPerformanceMemory:
         # Criar dataset grande simulado
         large_entities = [f"entity_{i:04d}" for i in range(50)]
 
-        with patch(
-            "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-        ) as mock_discovery, patch(
-            "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-        ) as mock_schema:
+        with (
+            patch(
+                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+            ) as mock_discovery,
+            patch(
+                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+            ) as mock_schema,
+        ):
             mock_discovery.return_value = large_entities
             mock_schema.return_value = {
                 "type": "object",
@@ -467,11 +482,14 @@ class TestPerformanceBenchmarks:
                 "test_connection": False,
             }
 
-            with patch(
-                "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
-            ) as mock_discovery, patch(
-                "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
-            ) as mock_schema:
+            with (
+                patch(
+                    "tap_oracle_wms.discovery.EntityDiscovery.discover_entities",
+                ) as mock_discovery,
+                patch(
+                    "tap_oracle_wms.discovery.SchemaGenerator.generate_schema",
+                ) as mock_schema,
+            ):
                 mock_discovery.return_value = entities
                 mock_schema.return_value = {
                     "type": "object",

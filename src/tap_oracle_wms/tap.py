@@ -325,7 +325,9 @@ class TapOracleWMS(Tap):
 
         try:
             # Convert simple date expressions to ISO format
-            converted_filters = converter.process_simple_date_expressions(simple_date_config)
+            converted_filters = converter.process_simple_date_expressions(
+                simple_date_config
+            )
 
             # Merge with existing entity_filters (if any)
             existing_filters = dict(self.config.get("entity_filters", {}))
@@ -335,17 +337,13 @@ class TapOracleWMS(Tap):
                     # Merge filters for this entity
                     existing_filters[entity_name].update(filters)
                     enhanced_logger.info(
-                        "📅 Merged date filters for entity %s: %s",
-                        entity_name,
-                        filters
+                        "📅 Merged date filters for entity %s: %s", entity_name, filters
                     )
                 else:
                     # Add new entity filters
                     existing_filters[entity_name] = filters
                     enhanced_logger.info(
-                        "📅 Added date filters for entity %s: %s",
-                        entity_name,
-                        filters
+                        "📅 Added date filters for entity %s: %s", entity_name, filters
                     )
 
             # Store converted filters for later use by streams
@@ -353,7 +351,9 @@ class TapOracleWMS(Tap):
             # in a separate attribute that streams can access
             self._processed_entity_filters = existing_filters
 
-            enhanced_logger.info("✅ Simple date expressions processed and converted to ISO format")
+            enhanced_logger.info(
+                "✅ Simple date expressions processed and converted to ISO format"
+            )
 
         except Exception as e:
             enhanced_logger.exception("❌ Failed to process simple date expressions")
@@ -385,7 +385,9 @@ class TapOracleWMS(Tap):
             entities = asyncio.run(self.entity_discovery.discover_entities())
 
             if entities and len(entities) > 0:
-                logger.info("✅ Connection successful. Found %s entities.", len(entities))
+                logger.info(
+                    "✅ Connection successful. Found %s entities.", len(entities)
+                )
                 if self._monitor:
                     self._monitor.metrics.record_counter("connection.test.success")
                     self._monitor.metrics.record_gauge(
@@ -407,8 +409,12 @@ class TapOracleWMS(Tap):
             # Configuration or authentication errors - these should fail hard
             if self._monitor:
                 self._monitor.metrics.record_counter("connection.test.failure")
-            enhanced_logger.exception(f"❌ Connection test failed due to configuration/auth error: {config_error}")
-            raise ValueError(f"Connection test failed: {config_error}") from config_error
+            enhanced_logger.exception(
+                f"❌ Connection test failed due to configuration/auth error: {config_error}"
+            )
+            raise ValueError(
+                f"Connection test failed: {config_error}"
+            ) from config_error
 
         except Exception as unexpected_error:
             # Unexpected errors - log but don't fail hard unless it's clearly fatal
@@ -417,9 +423,22 @@ class TapOracleWMS(Tap):
 
             # Check if this is a network connectivity issue
             error_str = str(unexpected_error).lower()
-            if any(keyword in error_str for keyword in ["connection", "timeout", "network", "dns", "unreachable"]):
-                enhanced_logger.exception(f"❌ Network connectivity issue: {unexpected_error}")
-                raise ValueError(f"Network connectivity failed: {unexpected_error}") from unexpected_error
+            if any(
+                keyword in error_str
+                for keyword in [
+                    "connection",
+                    "timeout",
+                    "network",
+                    "dns",
+                    "unreachable",
+                ]
+            ):
+                enhanced_logger.exception(
+                    f"❌ Network connectivity issue: {unexpected_error}"
+                )
+                raise ValueError(
+                    f"Network connectivity failed: {unexpected_error}"
+                ) from unexpected_error
             # Other errors - warn but continue
             enhanced_logger.warning(
                 f"⚠️ Connection test encountered non-fatal error: {unexpected_error}. "
@@ -1026,10 +1045,12 @@ class TapOracleWMS(Tap):
         entity_filters = self.config.get("entity_filters", {}).get(entity_name, {})
 
         # Merge with processed entity filters (from simple date expressions)
-        if hasattr(self, '_processed_entity_filters'):
+        if hasattr(self, "_processed_entity_filters"):
             processed_filters = self._processed_entity_filters.get(entity_name, {})
             entity_filters = {**entity_filters, **processed_filters}
-            enhanced_logger.trace(f"📅 Applied processed date filters for {entity_name}: {processed_filters}")
+            enhanced_logger.trace(
+                f"📅 Applied processed date filters for {entity_name}: {processed_filters}"
+            )
 
         for field, value in entity_filters.items():
             params[field] = value

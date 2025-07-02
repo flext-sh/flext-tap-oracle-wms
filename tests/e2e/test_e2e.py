@@ -543,9 +543,9 @@ class TestE2EPerformance:
             discovery_time = time.time() - start_time
 
             # Discovery should complete in reasonable time
-            assert discovery_time < 60, (
-                f"Discovery took too long: {discovery_time:.2f}s"
-            )
+            assert (
+                discovery_time < 60
+            ), f"Discovery took too long: {discovery_time:.2f}s"
 
         except Exception as e:
             pytest.skip(f"Discovery performance test failed: {e}")
