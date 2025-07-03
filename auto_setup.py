@@ -39,7 +39,7 @@ def detect_valid_credentials():
         "password": password,
         "company_code": os.getenv("TAP_ORACLE_WMS_COMPANY_CODE", "*"),
         "facility_code": os.getenv("TAP_ORACLE_WMS_FACILITY_CODE", "*"),
-        "verify_ssl": os.getenv("TAP_ORACLE_WMS_VERIFY_SSL", "true").lower() == "true"
+        "verify_ssl": os.getenv("TAP_ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
     }
 
 
@@ -84,7 +84,7 @@ def create_working_config():
         "verify_ssl": os.getenv("TAP_ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
         "page_size": int(os.getenv("TAP_ORACLE_WMS_PAGE_SIZE", "100")),
         "request_timeout": int(os.getenv("TAP_ORACLE_WMS_REQUEST_TIMEOUT", "120")),
-        "record_limit": int(os.getenv("TAP_ORACLE_WMS_RECORD_LIMIT", "10"))
+        "record_limit": int(os.getenv("TAP_ORACLE_WMS_RECORD_LIMIT", "10")),
     }
 
     import json

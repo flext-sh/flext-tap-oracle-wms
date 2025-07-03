@@ -7,6 +7,7 @@ Singer SDK compatible format.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 # WMS Metadata Type Mappings (Priority 1 - Most Accurate) -> Singer Schema Format
@@ -119,8 +120,20 @@ def convert_metadata_type_to_singer(
     if metadata_type and metadata_type.lower() in WMS_METADATA_TO_SINGER:
         return _create_schema_from_metadata(metadata_type, max_length)
 
+    # Priority 2: Field name patterns
+    pattern_schema = _match_field_pattern(column_name, max_length)
+    if pattern_schema:
+        return pattern_schema
+
+    # Priority 3: Sample value inference (last resort)
+    if sample_value is not None:
+        return _infer_from_sample(sample_value)
+
+    # Default fallback - Singer SDK standard nullable string with generous size
+    return {"type": ["string", "null"], "maxLength": 500}
+
 def _create_schema_from_metadata(
-    metadata_type: str, max_length: int | None
+    metadata_type: str, max_length: int | None,
 ) -> dict[str, Any]:
     """Create schema from WMS metadata type."""
     base_schema = WMS_METADATA_TO_SINGER[metadata_type.lower()]
@@ -140,20 +153,10 @@ def _create_schema_from_metadata(
 
     return schema
 
-    # Priority 2: Field name patterns
-    pattern_schema = _match_field_pattern(column_name, max_length)
-    if pattern_schema:
-        return pattern_schema
 
-    # Priority 3: Sample value inference (last resort)
-    if sample_value is not None:
-        return _infer_from_sample(sample_value)
-
-    # Default fallback - Singer SDK standard nullable string with generous size
-    return {"type": ["string", "null"], "maxLength": 500}
-
-
-def _match_field_pattern(column_name: str, max_length: int | None) -> dict[str, Any] | None:
+def _match_field_pattern(
+    column_name: str, max_length: int | None,
+) -> dict[str, Any] | None:
     """Match field name against patterns and return schema."""
     column_lower = column_name.lower()
     for pattern_key, patterns in FIELD_PATTERN_RULES.items():
@@ -168,7 +171,9 @@ def _pattern_matches(pattern: str, column_lower: str) -> bool:
     pattern_clean = pattern.replace("*_", "").replace("*", "")
     return (
         (pattern.startswith("*_") and column_lower.endswith("_" + pattern_clean))
-        or (pattern.endswith("_*") and column_lower.startswith(pattern_clean + "_"))
+        or (
+            pattern.endswith("_*") and column_lower.startswith(pattern_clean + "_")
+        )
         or (pattern == column_lower)
     )
 
@@ -314,23 +319,38 @@ def _infer_type_from_sample(sample_value: object) -> str:
 
 def _infer_from_sample(sample_value: object) -> dict[str, Any]:
     """Infer Singer type from sample value in Singer SDK format."""
-    if isinstance(sample_value, bool):
-        return {"type": ["boolean", "null"]}
-    if isinstance(sample_value, int):
-        return {"type": ["integer", "null"]}
-    if isinstance(sample_value, float):
-        return {"type": ["number", "null"]}
+    # Define type mappings to reduce return statements
+    type_mappings = [
+        (lambda v: isinstance(v, bool), {"type": ["boolean", "null"]}),
+        (lambda v: isinstance(v, int), {"type": ["integer", "null"]}),
+        (lambda v: isinstance(v, float), {"type": ["number", "null"]}),
+        (
+            lambda v: isinstance(v, (dict, list)),
+            {"type": ["string", "null"], "maxLength": 4000},
+        ),
+    ]
+
+    # Check simple type mappings first
+    for type_check, type_def in type_mappings:
+        if type_check(sample_value):
+            return type_def
+
+    # Handle string types with special logic
     if isinstance(sample_value, str):
-        # Check if it looks like a date
-        if _looks_like_date(sample_value):
-            return {"type": ["string", "null"], "format": "date-time"}
-        return {
-            "type": ["string", "null"],
-            "maxLength": min(len(sample_value) * 2, 4000),
-        }
-    if isinstance(sample_value, (dict, list)):
-        return {"type": ["string", "null"], "maxLength": 4000}  # JSON as string
+        return _infer_string_type(sample_value)
+
+    # Default fallback
     return {"type": ["string", "null"], "maxLength": 255}
+
+
+def _infer_string_type(sample_value: str) -> dict[str, Any]:
+    """Infer string type based on content."""
+    if _looks_like_date(sample_value):
+        return {"type": ["string", "null"], "format": "date-time"}
+    return {
+        "type": ["string", "null"],
+        "maxLength": min(len(sample_value) * 2, 4000),
+    }
 
 
 def _infer_oracle_from_sample(sample_value: object) -> str:
@@ -349,8 +369,6 @@ def _infer_oracle_from_sample(sample_value: object) -> str:
 
 def _looks_like_date(value: str) -> bool:
     """Check if string value looks like a date."""
-    import re
-
     date_patterns = [
         r"\d{4}-\d{2}-\d{2}",  # YYYY-MM-DD
         r"\d{2}/\d{2}/\d{4}",  # MM/DD/YYYY

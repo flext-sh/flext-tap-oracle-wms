@@ -16,7 +16,7 @@ class TestSimpleIntegration:
         return {
             "base_url": "https://test.example.com",
             "username": "test",
-            "password": "test"
+            "password": "test",
         }
 
     def test_tap_initialization_integration(self, config):
@@ -100,7 +100,7 @@ class TestSimpleIntegration:
                 "base_url": "http://localhost:8889",
                 "username": "test",
                 "password": "test",
-                "verify_ssl": False
+                "verify_ssl": False,
             }
 
             discovery = EntityDiscovery(config)
@@ -146,7 +146,7 @@ class TestSimpleIntegration:
                 "base_url": "http://localhost:8890",
                 "username": "test",
                 "password": "test",
-                "verify_ssl": False
+                "verify_ssl": False,
             }
 
             # Test complete workflow

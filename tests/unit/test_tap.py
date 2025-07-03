@@ -38,7 +38,7 @@ class TestTapOracleWMS:
         # Setup mock data
         mock_entities = {
             "item": "/entity/item",
-            "location": "/entity/location"
+            "location": "/entity/location",
         }
 
         # Mock asyncio.run to return our test data
@@ -70,7 +70,7 @@ class TestTapOracleWMS:
         with patch.object(tap, "post_process", return_value={
             "id": 1,
             "name": "Test",
-            "_extracted_at": "2024-01-01T12:00:00Z"
+            "_extracted_at": "2024-01-01T12:00:00Z",
         }) as mock_post_process:
             record = {"id": 1, "name": "Test"}
             processed = mock_post_process(record)

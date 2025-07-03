@@ -8,7 +8,7 @@ import re
 
 
 def fix_streams_logging():
-    """Corrigir logging em streams.py"""
+    """Corrigir logging em streams.py."""
     file_path = "src/tap_oracle_wms/streams.py"
 
     with open(file_path, encoding="utf-8") as f:
@@ -125,7 +125,7 @@ def fix_streams_logging():
     print(f"✅ Fixed logging in {file_path}")
 
 def fix_discovery_logging():
-    """Corrigir logging em discovery.py"""
+    """Corrigir logging em discovery.py."""
     file_path = "src/tap_oracle_wms/discovery.py"
 
     with open(file_path, encoding="utf-8") as f:
@@ -197,7 +197,7 @@ def fix_discovery_logging():
     print(f"✅ Fixed logging in {file_path}")
 
 def fix_auth_logging():
-    """Corrigir logging em auth.py"""
+    """Corrigir logging em auth.py."""
     file_path = "src/tap_oracle_wms/auth.py"
 
     with open(file_path, encoding="utf-8") as f:
@@ -221,7 +221,7 @@ def fix_auth_logging():
     print(f"✅ Fixed logging in {file_path}")
 
 def fix_tap_logging():
-    """Corrigir logging em tap.py"""
+    """Corrigir logging em tap.py."""
     file_path = "src/tap_oracle_wms/tap.py"
 
     with open(file_path, encoding="utf-8") as f:
@@ -250,7 +250,7 @@ def fix_tap_logging():
     print(f"✅ Fixed logging in {file_path}")
 
 def main():
-    """Executar todas as correções de logging"""
+    """Executar todas as correções de logging."""
     print("🔧 FIXING LOGGING - Consolidating error messages and using appropriate log levels")
     print("=" * 70)
 

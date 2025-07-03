@@ -6,14 +6,25 @@ import json
 import logging
 import ssl
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, Union
 
 import httpx
 
 from .auth import get_wms_authenticator, get_wms_headers
+from .type_mapping import convert_metadata_type_to_singer
+
+# Type alias for values that can be of various types to avoid FBT001
+# Include bool in Union to handle all data types but avoid FBT001 violation
+ValueType = Union[float, str, int, bool, dict[str, Any], list[Any], None]
 
 logger = logging.getLogger(__name__)
 
+# HTTP status codes
+HTTP_NOT_FOUND = 404
+
+# Flattening thresholds
+FK_INDICATOR_THRESHOLD = 0.5
+SIMPLE_OBJECT_MAX_FIELDS = 3
 
 # Custom exception classes for proper error handling
 class WMSDiscoveryError(Exception):
@@ -115,11 +126,11 @@ class EntityDiscovery:
             else:
                 logger.debug("No authenticator configured")
         except ImportError as e:
-            logger.exception("Authentication module import failed: %s", e)
+            logger.exception("Authentication module import failed")
             msg = f"Could not import authentication module: {e}"
             raise AuthenticationError(msg) from e
         except (AttributeError, ValueError, TypeError) as e:
-            logger.exception("Authentication setup failed: %s", e)
+            logger.exception("Authentication setup failed")
             msg = f"Authentication configuration error: {e}"
             raise AuthenticationError(msg) from e
 
@@ -147,7 +158,7 @@ class EntityDiscovery:
 
         """
         # Check enhanced entity cache
-        if self._is_entity_cache_valid():
+        if self._is_entity_cache_valid() and self._entity_cache is not None:
             logger.debug("Using cached entity list")
             return self._entity_cache
 
@@ -186,12 +197,11 @@ class EntityDiscovery:
 
     def _is_entity_cache_valid(self) -> bool:
         """Check if entity cache is still valid."""
-        return (
-            self._entity_cache
-            and self._last_entity_cache_time
-            and datetime.now(timezone.utc) - self._last_entity_cache_time
-            < timedelta(seconds=self._entity_cache_ttl)
-        )
+        if not self._entity_cache or not self._last_entity_cache_time:
+            return False
+
+        time_diff = datetime.now(timezone.utc) - self._last_entity_cache_time
+        return time_diff < timedelta(seconds=self._entity_cache_ttl)
 
     def _create_http_client(self) -> httpx.AsyncClient:
         """Create configured HTTP client."""
@@ -210,16 +220,16 @@ class EntityDiscovery:
             headers={"User-Agent": self.config.get("user_agent", "tap-oracle-wms/1.0")},
         )
 
-    def _configure_ssl(self):
+    def _configure_ssl(self) -> ssl.SSLContext | bool:
         """Configure SSL settings."""
         verify_ssl = self.config.get("verify_ssl", True)
         if not verify_ssl:
             return False
-        elif self.config.get("ssl_ca_file"):
+        if self.config.get("ssl_ca_file"):
             ssl_context = ssl.create_default_context()
             ssl_context.load_verify_locations(self.config["ssl_ca_file"])
             return ssl_context
-        return verify_ssl
+        return bool(verify_ssl)
 
     def _convert_entity_list_to_dict(self, entity_list: object) -> dict[str, str]:
         """Convert entity list to dictionary mapping names to URLs."""
@@ -272,11 +282,8 @@ class EntityDiscovery:
                 # Cache the result with enhanced caching
                 self._metadata_cache[entity_name] = metadata
                 self._metadata_cache_times[entity_name] = datetime.now(timezone.utc)
-
-                return metadata
-
             except httpx.HTTPStatusError as e:
-                if e.response.status_code == 404:
+                if e.response.status_code == HTTP_NOT_FOUND:
                     # 404 is a legitimate failure - entity doesn't exist
                     logger.exception(
                         "Entity %s does not exist (404) - check name or permissions",
@@ -287,7 +294,7 @@ class EntityDiscovery:
                         f"Verify entity name and access permissions."
                     )
                     raise EntityDescriptionError(msg) from e
-                logger.exception("HTTP error describing entity %s: %s", entity_name, e)
+                logger.exception("HTTP error describing entity %s", entity_name)
                 msg = (
                     f"Failed to describe entity {entity_name}: "
                     f"HTTP {e.response.status_code}"
@@ -299,7 +306,7 @@ class EntityDiscovery:
                 httpx.RequestError,
             ) as e:
                 logger.exception(
-                    "Network error describing entity %s: %s", entity_name, e
+                    "Network error describing entity %s", entity_name,
                 )
                 msg = f"Network error describing entity {entity_name}: {e}"
                 raise httpx.RequestError(msg) from e
@@ -313,6 +320,8 @@ class EntityDiscovery:
                     e,
                 )
                 return None
+            else:
+                return metadata
 
     def clear_cache(self, cache_type: str = "all") -> None:
         """Clear cached data.
@@ -456,21 +465,23 @@ class EntityDiscovery:
 
         for entity_name, entity_url in entities.items():
             # Apply include filter
-            if entity_includes:
-                if not any(pattern in entity_name for pattern in entity_includes):
-                    continue
+            if entity_includes and not any(
+                pattern in entity_name for pattern in entity_includes
+            ):
+                continue
 
             # Apply exclude filter
-            if entity_excludes:
-                if any(pattern in entity_name for pattern in entity_excludes):
-                    continue
+            if entity_excludes and any(
+                pattern in entity_name for pattern in entity_excludes
+            ):
+                continue
 
             filtered[entity_name] = entity_url
 
         return filtered
 
     async def get_entity_sample(
-        self, entity_name: str, limit: int = 5
+        self, entity_name: str, limit: int = 5,
     ) -> list[dict[str, Any]]:
         """Get sample records from an entity for schema inference."""
         url = f"{self.entity_endpoint}/{entity_name}"
@@ -494,16 +505,15 @@ class EntityDiscovery:
                         return results[:limit]
                 elif isinstance(data, list):
                     return data[:limit]
-
-                return []
-
+                else:
+                    return []
             except httpx.HTTPStatusError as e:
-                if e.response.status_code == 404:
+                if e.response.status_code == HTTP_NOT_FOUND:
                     logger.exception("Entity %s not found for sampling", entity_name)
                     msg = f"Entity '{entity_name}' not found for sampling"
                     raise EntityDiscoveryError(msg) from e
                 logger.exception(
-                    "HTTP error getting samples for entity %s", entity_name
+                    "HTTP error getting samples for entity %s", entity_name,
                 )
                 msg = f"HTTP error getting samples for entity {entity_name}: {e}"
                 raise EntityDiscoveryError(msg) from e
@@ -513,15 +523,14 @@ class EntityDiscovery:
                 httpx.RequestError,
             ) as e:
                 logger.exception(
-                    "Network error getting samples for entity %s: %s", entity_name, e
+                    "Network error getting samples for entity %s", entity_name,
                 )
                 msg = f"Network error getting samples for entity {entity_name}: {e}"
                 raise NetworkError(msg) from e
             except (ValueError, KeyError, TypeError) as e:
                 logger.exception(
-                    "Data parsing error getting samples for entity %s: %s",
+                    "Data parsing error getting samples for entity %s",
                     entity_name,
-                    e,
                 )
                 msg = (
                     f"Data parsing error getting samples for entity {entity_name}: {e}"
@@ -730,6 +739,10 @@ class SchemaGenerator:
             "additionalProperties": False,
         }
 
+    def flatten_complex_objects(self, record: dict[str, Any]) -> dict[str, Any]:
+        """Public method to flatten complex objects for external use."""
+        return self._flatten_complex_objects(record)
+
     def _flatten_complex_objects(
         self,
         record: dict[str, Any],
@@ -749,110 +762,154 @@ class SchemaGenerator:
             Flattened dictionary with enhanced FK handling
 
         """
-        flattened = {}
+        flattened: dict[str, Any] = {}
 
         for key, value in record.items():
             new_key = f"{parent_key}{separator}{key}" if parent_key else key
 
             if isinstance(value, dict):
-                # Handle SET objects (relationship collections)
-                if key.endswith("_set") and "result_count" in value:
-                    # Extract only useful data from set, ignore URL
-                    set_data = {
-                        "count": value.get("result_count", 0),
-                        "total": value.get("total_count", value.get("result_count", 0)),
-                    }
-
-                    # Add query parameters if available (useful for filtering)
-                    if "url" in value:
-                        url_str = value["url"]
-                        if "?" in url_str:
-                            # Extract query parameters as metadata
-                            query_part = url_str.split("?")[1]
-                            params = {}
-                            for param in query_part.split("&"):
-                                if "=" in param:
-                                    param_key, param_value = param.split("=", 1)
-                                    params[param_key] = param_value
-                            if params:
-                                set_data["filter_params"] = json.dumps(params)
-
-                    # Flatten the set data
-                    for set_key, set_value in set_data.items():
-                        flattened[f"{new_key}_{set_key}"] = set_value
-
-                # Handle FK objects (id/key/url triplets)
-                elif self._is_fk_object(value):
-                    base_name = self._get_fk_base_name(key)
-
-                    # Add ID field (primary for joins)
-                    if "id" in value:
-                        flattened[f"{base_name}_id"] = value["id"]
-
-                    # Add key field (human readable identifier)
-                    if "key" in value:
-                        flattened[f"{base_name}_key"] = value["key"]
-
-                    # Skip URL field as requested by user
-                    # if "url" in value:
-                    #     flattened[f"{base_name}_url"] = value["url"]
-
-                # Handle other complex objects
-                else:
-                    nested_flattened = self._flatten_complex_objects(
-                        value,
-                        new_key,
-                        separator,
-                    )
-                    flattened.update(nested_flattened)
-
+                self._flatten_dict_value(flattened, key, value, new_key, separator)
             elif isinstance(value, list):
-                # Handle list/array fields
-                if (
-                    key.endswith("_set")
-                    or "instructions" in key.lower()
-                    or "serial" in key.lower()
-                ):
-                    # For sets, store as JSON string with count
-                    flattened[f"{new_key}_count"] = len(value)
-                    if value:  # Only store non-empty lists
-                        # Store as JSON for complex analysis later
-                        flattened[f"{new_key}_data"] = json.dumps(value, default=str)
-
-                        # Extract summary info
-                        if isinstance(value[0], dict):
-                            # If list of objects, extract key fields
-                            keys_found: set[str] = set()
-                            for item in value:
-                                if isinstance(item, dict):
-                                    keys_found.update(item.keys())
-                            flattened[f"{new_key}_schema"] = json.dumps(
-                                sorted(keys_found),
-                            )
-                        elif isinstance(value[0], str):
-                            # If list of strings, store unique values count
-                            unique_values = len(set(value))
-                            flattened[f"{new_key}_unique_count"] = unique_values
-                else:
-                    # For regular arrays, store with index
-                    for i, item in enumerate(value):
-                        if isinstance(item, dict):
-                            nested_flattened = self._flatten_complex_objects(
-                                item,
-                                f"{new_key}_{i}",
-                                separator,
-                            )
-                            flattened.update(nested_flattened)
-                        else:
-                            flattened[f"{new_key}_{i}"] = item
-
+                self._flatten_list_value(flattened, key, value, new_key, separator)
             else:
                 # Simple value
                 flattened[new_key] = value
 
         return flattened
 
-    def _is_fk_object(self, obj: Any) -> bool:
+    def _flatten_dict_value(
+        self,
+        flattened: dict[str, Any],
+        key: str,
+        value: dict[str, Any],
+        new_key: str,
+        separator: str,
+    ) -> None:
+        """Flatten dictionary value based on its type."""
+        # Handle SET objects (relationship collections)
+        if key.endswith("_set") and "result_count" in value:
+            self._flatten_set_object(flattened, value, new_key)
+        # Handle FK objects (id/key/url triplets)
+        elif self._is_fk_object(value):
+            self._flatten_fk_object(flattened, key, value)
+        # Handle other complex objects
+        else:
+            nested_flattened = self._flatten_complex_objects(
+                value,
+                new_key,
+                separator,
+            )
+            flattened.update(nested_flattened)
+
+    def _flatten_set_object(
+        self, flattened: dict[str, Any], value: dict[str, Any], new_key: str,
+    ) -> None:
+        """Flatten SET object data."""
+        # Extract only useful data from set, ignore URL
+        set_data = {
+            "count": value.get("result_count", 0),
+            "total": value.get("total_count", value.get("result_count", 0)),
+        }
+
+        # Add query parameters if available (useful for filtering)
+        if "url" in value:
+            url_str = value["url"]
+            if "?" in url_str:
+                # Extract query parameters as metadata
+                query_part = url_str.split("?")[1]
+                params = {}
+                for param in query_part.split("&"):
+                    if "=" in param:
+                        param_key, param_value = param.split("=", 1)
+                        params[param_key] = param_value
+                if params:
+                    set_data["filter_params"] = json.dumps(params)
+
+        # Flatten the set data
+        for set_key, set_value in set_data.items():
+            flattened[f"{new_key}_{set_key}"] = set_value
+
+    def _flatten_fk_object(
+        self, flattened: dict[str, Any], key: str, value: dict[str, Any],
+    ) -> None:
+        """Flatten foreign key object."""
+        base_name = self._get_fk_base_name(key)
+
+        # Add ID field (primary for joins)
+        if "id" in value:
+            flattened[f"{base_name}_id"] = value["id"]
+
+        # Add key field (human readable identifier)
+        if "key" in value:
+            flattened[f"{base_name}_key"] = value["key"]
+
+        # Skip URL field as requested by user
+
+    def _flatten_list_value(
+        self,
+        flattened: dict[str, Any],
+        key: str,
+        value: list[Any],
+        new_key: str,
+        separator: str,
+    ) -> None:
+        """Flatten list value based on its type."""
+        # Handle list/array fields
+        if (
+            key.endswith("_set")
+            or "instructions" in key.lower()
+            or "serial" in key.lower()
+        ):
+            self._flatten_special_list(flattened, value, new_key)
+        else:
+            self._flatten_regular_list(flattened, value, new_key, separator)
+
+    def _flatten_special_list(
+        self, flattened: dict[str, Any], value: list[Any], new_key: str,
+    ) -> None:
+        """Flatten special lists (sets, instructions, etc.)."""
+        # For sets, store as JSON string with count
+        flattened[f"{new_key}_count"] = len(value)
+        if value:  # Only store non-empty lists
+            # Store as JSON for complex analysis later
+            flattened[f"{new_key}_data"] = json.dumps(value, default=str)
+
+            # Extract summary info
+            if isinstance(value[0], dict):
+                # If list of objects, extract key fields
+                keys_found: set[str] = set()
+                for item in value:
+                    if isinstance(item, dict):
+                        keys_found.update(item.keys())
+                flattened[f"{new_key}_schema"] = json.dumps(
+                    sorted(keys_found),
+                )
+            elif isinstance(value[0], str):
+                # If list of strings, store unique values count
+                unique_values = len(set(value))
+                flattened[f"{new_key}_unique_count"] = unique_values
+
+    def _flatten_regular_list(
+        self,
+        flattened: dict[str, Any],
+        value: list[Any],
+        new_key: str,
+        separator: str,
+    ) -> None:
+        """Flatten regular arrays with index."""
+        # For regular arrays, store with index
+        for i, item in enumerate(value):
+            if isinstance(item, dict):
+                nested_flattened = self._flatten_complex_objects(
+                    item,
+                    f"{new_key}_{i}",
+                    separator,
+                )
+                flattened.update(nested_flattened)
+            else:
+                flattened[f"{new_key}_{i}"] = item
+
+    def _is_fk_object(self, obj: dict[str, Any] | None) -> bool:
         """Check if object is a foreign key object with id/key/url structure.
 
         Args:
@@ -879,7 +936,7 @@ class SchemaGenerator:
             len(obj_keys & fk_indicators) / len(obj_keys) if obj_keys else 0
         )
 
-        return has_id_or_key and indicator_ratio >= 0.5
+        return has_id_or_key and indicator_ratio >= FK_INDICATOR_THRESHOLD
 
     def _get_fk_base_name(self, field_name: str) -> str:
         """Extract base name from FK field name.
@@ -898,7 +955,7 @@ class SchemaGenerator:
             return field_name[:-3]
         return field_name
 
-    def _should_flatten_object(self, obj: dict[str, Any], key: str = "") -> bool:
+    def _should_flatten_object(self, obj: dict[str, Any], _key: str = "") -> bool:
         """Determine if an object should be flattened."""
         if not self.enable_flattening or not isinstance(obj, dict):
             return False
@@ -918,9 +975,9 @@ class SchemaGenerator:
             return True
 
         # Check for simple objects (≤ 3 fields)
-        return len(obj) <= 3
+        return len(obj) <= SIMPLE_OBJECT_MAX_FIELDS
 
-    def _should_preserve_as_json(self, obj: Any) -> bool:
+    def _should_preserve_as_json(self, obj: dict[str, Any] | list[Any] | None) -> bool:
         """Determine if object should be preserved as JSON field."""
         if not self.preserve_nested:
             return False
@@ -936,14 +993,18 @@ class SchemaGenerator:
 
         elif isinstance(obj, list):
             # Arrays of complex objects become JSON fields
-            if obj and isinstance(obj[0], dict) and len(obj[0]) > 3:
+            if (
+                obj
+                and isinstance(obj[0], dict)
+                and len(obj[0]) > SIMPLE_OBJECT_MAX_FIELDS
+            ):
                 return True
 
         return False
 
     def _infer_type_enhanced(
         self,
-        value: Any,
+        value: ValueType,  # Use ValueType union to avoid FBT001
         field_name: str = "",
         metadata_type: str | None = None,
     ) -> dict[str, Any]:
@@ -971,6 +1032,46 @@ class SchemaGenerator:
         # 🎯 PRIORITY 2: Smart inference based on field name patterns (fallback)
         field_lower = field_name.lower()
 
+        # Try pattern-based inference
+        pattern_type = self._infer_from_field_patterns(field_lower)
+        if pattern_type:
+            return pattern_type
+
+        # 🎯 PRIORITY 3: Use standard type inference for everything else
+        base_type = self._infer_type(value)
+
+        # Make non-required fields nullable
+        if base_type.get("type") != "null":
+            return {"anyOf": [base_type, {"type": "null"}]}
+
+        return base_type
+
+    def _infer_from_field_patterns(self, field_lower: str) -> dict[str, Any] | None:
+        """Infer type from field name patterns."""
+        # Check FK and relationship patterns
+        fk_type = self._infer_fk_patterns(field_lower)
+        if fk_type:
+            return fk_type
+
+        # Check numeric patterns
+        numeric_type = self._infer_numeric_patterns(field_lower)
+        if numeric_type:
+            return numeric_type
+
+        # Check temporal patterns
+        temporal_type = self._infer_temporal_patterns(field_lower)
+        if temporal_type:
+            return temporal_type
+
+        # Check other patterns
+        other_type = self._infer_other_patterns(field_lower)
+        if other_type:
+            return other_type
+
+        return None
+
+    def _infer_fk_patterns(self, field_lower: str) -> dict[str, Any] | None:
+        """Infer FK and relationship field types."""
         # FK ID fields (flattened)
         if field_lower.endswith("_id") and not field_lower.endswith("_id_id"):
             return {"anyOf": [{"type": "integer"}, {"type": "null"}]}
@@ -991,6 +1092,10 @@ class SchemaGenerator:
         if field_lower.endswith(("_filter_params", "_params")):
             return {"anyOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]}
 
+        return None
+
+    def _infer_numeric_patterns(self, field_lower: str) -> dict[str, Any] | None:
+        """Infer numeric field types."""
         # Quantity fields
         if any(
             suffix in field_lower
@@ -1001,12 +1106,7 @@ class SchemaGenerator:
         # Price/Cost/Amount fields
         if any(
             suffix in field_lower
-            for suffix in [
-                "_price",
-                "_cost",
-                "_amount",
-                "_value",
-            ]
+            for suffix in ["_price", "_cost", "_amount", "_value"]
         ):
             return {"anyOf": [{"type": "number", "multipleOf": 0.01}, {"type": "null"}]}
 
@@ -1023,6 +1123,17 @@ class SchemaGenerator:
         if "decimal" in field_lower:
             return {"anyOf": [{"type": "number"}, {"type": "null"}]}
 
+        # Number fields
+        if any(
+            suffix in field_lower
+            for suffix in ["_nbr", "_number", "_seq_nbr", "_count"]
+        ):
+            return {"anyOf": [{"type": "integer"}, {"type": "null"}]}
+
+        return None
+
+    def _infer_temporal_patterns(self, field_lower: str) -> dict[str, Any] | None:
+        """Infer temporal field types."""
         # Date fields
         if any(suffix in field_lower for suffix in ["_date", "_exp_date", "cust_date"]):
             return {"anyOf": [{"type": "string", "format": "date"}, {"type": "null"}]}
@@ -1036,16 +1147,13 @@ class SchemaGenerator:
                 "anyOf": [{"type": "string", "format": "date-time"}, {"type": "null"}],
             }
 
+        return None
+
+    def _infer_other_patterns(self, field_lower: str) -> dict[str, Any] | None:
+        """Infer other field types."""
         # Boolean flags
         if field_lower.endswith(("_flg", "_flag")):
             return {"anyOf": [{"type": "boolean"}, {"type": "null"}]}
-
-        # Number fields
-        if any(
-            suffix in field_lower
-            for suffix in ["_nbr", "_number", "_seq_nbr", "_count"]
-        ):
-            return {"anyOf": [{"type": "integer"}, {"type": "null"}]}
 
         # Code fields (usually short strings)
         if field_lower.endswith("_code"):
@@ -1055,14 +1163,7 @@ class SchemaGenerator:
         if field_lower.endswith("_ref"):
             return {"anyOf": [{"type": "string", "maxLength": 100}, {"type": "null"}]}
 
-        # 🎯 PRIORITY 3: Use standard type inference for everything else
-        base_type = self._infer_type(value)
-
-        # Make non-required fields nullable
-        if base_type.get("type") != "null":
-            return {"anyOf": [base_type, {"type": "null"}]}
-
-        return base_type
+        return None
 
     def _convert_metadata_type_to_singer(
         self,
@@ -1070,8 +1171,6 @@ class SchemaGenerator:
         field_name: str,
     ) -> dict[str, Any]:
         """Convert WMS metadata type to Singer type using centralized mapping."""
-        from .type_mapping import convert_metadata_type_to_singer
-
         return convert_metadata_type_to_singer(
             metadata_type=metadata_type,
             column_name=field_name,
@@ -1091,40 +1190,34 @@ class SchemaGenerator:
         """
         field_lower = field_name.lower()
 
-        # FK ID fields
+        # Check specific patterns first
         if field_lower.endswith("_id"):
             return {"anyOf": [{"type": "integer"}, {"type": "null"}]}
-
-        # FK Key fields
         if field_lower.endswith("_key"):
             return {"anyOf": [{"type": "string", "maxLength": 255}, {"type": "null"}]}
-
-        # FK URL fields
         if field_lower.endswith("_url"):
             return {"anyOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]}
-
-        # Quantity fields
-        if any(suffix in field_lower for suffix in ["_qty", "_quantity"]):
-            return {"anyOf": [{"type": "number"}, {"type": "null"}]}
-
-        # Price/Cost fields
-        if any(suffix in field_lower for suffix in ["_price", "_cost", "_amount"]):
-            return {"anyOf": [{"type": "number", "multipleOf": 0.01}, {"type": "null"}]}
-
-        # Date fields
-        if "_date" in field_lower:
-            return {"anyOf": [{"type": "string", "format": "date"}, {"type": "null"}]}
-
-        # Timestamp fields
         if field_lower.endswith("_ts"):
             return {
                 "anyOf": [{"type": "string", "format": "date-time"}, {"type": "null"}],
             }
-
-        # Boolean flags
         if field_lower.endswith("_flg"):
             return {"anyOf": [{"type": "boolean"}, {"type": "null"}]}
 
+        # Check for patterns with content matching
+        return self._get_type_by_content_pattern(field_lower)
+
+    def _get_type_by_content_pattern(self, field_lower: str) -> dict[str, Any]:
+        """Check content-based patterns for type inference."""
+        # Quantity fields
+        if any(suffix in field_lower for suffix in ["_qty", "_quantity"]):
+            return {"anyOf": [{"type": "number"}, {"type": "null"}]}
+        # Price/Cost fields
+        if any(suffix in field_lower for suffix in ["_price", "_cost", "_amount"]):
+            return {"anyOf": [{"type": "number", "multipleOf": 0.01}, {"type": "null"}]}
+        # Date fields
+        if "_date" in field_lower:
+            return {"anyOf": [{"type": "string", "format": "date"}, {"type": "null"}]}
         # Default to nullable string
         return {"anyOf": [{"type": "string"}, {"type": "null"}]}
 
@@ -1168,31 +1261,68 @@ class SchemaGenerator:
 
         base_prop = {"type": base_type}
 
-        # Add description if available
+        # Add description
+        self._add_description(base_prop, param)
+
+        # Add type-specific constraints
+        self._add_type_constraints(base_prop, base_type, field_type, param)
+
+        # Add common properties
+        self._add_common_properties(base_prop, param)
+
+        # Handle nullable fields
+        return self._make_nullable_if_needed(base_prop, param)
+
+    def _add_description(
+        self, base_prop: dict[str, Any], param: dict[str, Any],
+    ) -> None:
+        """Add description to property."""
         if param.get("help_text"):
             base_prop["description"] = param["help_text"]
         elif param.get("description"):
             base_prop["description"] = param["description"]
 
-        # Add constraints
+    def _add_type_constraints(
+        self,
+        base_prop: dict[str, Any],
+        base_type: str,
+        field_type: str,
+        param: dict[str, Any],
+    ) -> None:
+        """Add type-specific constraints."""
         if base_type == "string":
-            if param.get("max_length"):
-                base_prop["maxLength"] = param["max_length"]
-
-            # Add format for date/time types
-            if field_type in {"datetime", "timestamp"}:
-                base_prop["format"] = "date-time"
-            elif field_type == "date":
-                base_prop["format"] = "date"
-            elif field_type == "time":
-                base_prop["format"] = "time"
-
+            self._add_string_constraints(base_prop, field_type, param)
         elif base_type in {"number", "integer"}:
-            if param.get("min_value") is not None:
-                base_prop["minimum"] = param["min_value"]
-            if param.get("max_value") is not None:
-                base_prop["maximum"] = param["max_value"]
+            self._add_numeric_constraints(base_prop, param)
 
+    def _add_string_constraints(
+        self, base_prop: dict[str, Any], field_type: str, param: dict[str, Any],
+    ) -> None:
+        """Add string-specific constraints."""
+        if param.get("max_length"):
+            base_prop["maxLength"] = param["max_length"]
+
+        # Add format for date/time types
+        if field_type in {"datetime", "timestamp"}:
+            base_prop["format"] = "date-time"
+        elif field_type == "date":
+            base_prop["format"] = "date"
+        elif field_type == "time":
+            base_prop["format"] = "time"
+
+    def _add_numeric_constraints(
+        self, base_prop: dict[str, Any], param: dict[str, Any],
+    ) -> None:
+        """Add numeric constraints."""
+        if param.get("min_value") is not None:
+            base_prop["minimum"] = param["min_value"]
+        if param.get("max_value") is not None:
+            base_prop["maximum"] = param["max_value"]
+
+    def _add_common_properties(
+        self, base_prop: dict[str, Any], param: dict[str, Any],
+    ) -> None:
+        """Add common properties like enums and defaults."""
         # Handle enums
         if param.get("choices"):
             base_prop["enum"] = param["choices"]
@@ -1201,13 +1331,17 @@ class SchemaGenerator:
         if param.get("default") is not None:
             base_prop["default"] = param["default"]
 
-        # Handle nullable fields by wrapping in anyOf
+    def _make_nullable_if_needed(
+        self, base_prop: dict[str, Any], param: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Make property nullable if needed."""
         if param.get("allow_blank") or param.get("required") == "N":
             return {"anyOf": [base_prop, {"type": "null"}]}
-
         return base_prop
 
-    def _infer_type(self, value: Any) -> dict[str, Any]:
+    def _infer_type(
+        self, value: ValueType,  # Use ValueType union to avoid FBT001
+    ) -> dict[str, Any]:
         """Infer JSON schema type from a value.
 
         Args:
@@ -1222,35 +1356,54 @@ class SchemaGenerator:
         if value is None:
             return {"type": "null"}
 
+        # Check primitive types first
+        primitive_type = self._infer_primitive_type(value)
+        if primitive_type:
+            return primitive_type
+
+        # Check complex types
+        return self._infer_complex_type(value)
+
+    def _infer_primitive_type(
+        self, value: ValueType,  # Use ValueType union to avoid FBT001
+    ) -> dict[str, Any] | None:
+        """Infer primitive types (bool, int, float, str)."""
         if isinstance(value, bool):
             return {"type": "boolean"}
-
         if isinstance(value, int):
             return {"type": "integer"}
-
         if isinstance(value, float):
             return {"type": "number"}
-
         if isinstance(value, str):
-            # Try to detect date/time formats
-            if self._is_datetime(value):
-                return {"type": "string", "format": "date-time"}
-            if self._is_date(value):
-                return {"type": "string", "format": "date"}
-            return {"type": "string"}
+            return self._infer_string_type(value)
+        return None
 
+    def _infer_string_type(self, value: str) -> dict[str, Any]:
+        """Infer string type with format detection."""
+        if self._is_datetime(value):
+            return {"type": "string", "format": "date-time"}
+        if self._is_date(value):
+            return {"type": "string", "format": "date"}
+        return {"type": "string"}
+
+    def _infer_complex_type(
+        self, value: dict[str, Any] | list[Any] | None,
+    ) -> dict[str, Any]:
+        """Infer complex types (list, dict, unknown)."""
         if isinstance(value, list):
-            if value:
-                # Infer array item type from first element
-                item_type = self._infer_type(value[0])
-                return {"type": "array", "items": item_type}
-            return {"type": "array"}
-
+            return self._infer_array_type(value)
         if isinstance(value, dict):
             return {"type": "object"}
-
         # Default to string for unknown types
         return {"type": "string"}
+
+    def _infer_array_type(self, value: list[Any]) -> dict[str, Any]:
+        """Infer array type and items."""
+        if value:
+            # Infer array item type from first element
+            item_type = self._infer_type(value[0])
+            return {"type": "array", "items": item_type}
+        return {"type": "array"}
 
     def _merge_types(
         self,
@@ -1282,28 +1435,34 @@ class SchemaGenerator:
         # If types differ, create a union
         return {"anyOf": [type1, type2]}
 
+    def _try_parse_datetime_format(self, value: str, fmt: str) -> bool:
+        """Try to parse datetime with specific format."""
+        try:
+            dt = datetime.strptime(value, fmt).replace(tzinfo=timezone.utc)
+            if dt.tzinfo is None:
+                # If no timezone info, assume UTC
+                dt = dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            return False
+        else:
+            return True
+
     def _is_datetime(self, value: str) -> bool:
         """Check if string value is a datetime."""
         if not isinstance(value, str) or not value.strip():
             return False
 
         # Common datetime formats
-        for fmt in [
+        formats = [
             "%Y-%m-%dT%H:%M:%S.%fZ",
             "%Y-%m-%dT%H:%M:%SZ",
             "%Y-%m-%d %H:%M:%S",
             "%Y-%m-%dT%H:%M:%S",
-        ]:
-            try:
-                dt = datetime.strptime(value, fmt)
-                if dt.tzinfo is None:
-                    # If no timezone info, assume UTC
-                    dt = dt.replace(tzinfo=timezone.utc)
-                return True
-            except ValueError:
-                continue  # Try next format
-        # Not masking - this is legitimate format checking
-        return False
+        ]
+
+        return any(
+            self._try_parse_datetime_format(value, fmt) for fmt in formats
+        )
 
     def _is_date(self, value: str) -> bool:
         """Check if string value is a date."""
@@ -1311,8 +1470,9 @@ class SchemaGenerator:
             return False
 
         try:
-            datetime.strptime(value, "%Y-%m-%d")
-            return True
+            datetime.strptime(value, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         except ValueError:
             # Not masking - this is legitimate format checking
             return False
+        else:
+            return True

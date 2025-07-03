@@ -16,7 +16,7 @@ def test_mock():
         "base_url": "http://localhost:8888",
         "username": "test",
         "password": "test",
-        "verify_ssl": False
+        "verify_ssl": False,
     }
 
     discovery = EntityDiscovery(config)

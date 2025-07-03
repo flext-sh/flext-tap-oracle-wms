@@ -15,21 +15,21 @@ class TestConfigValidation:
         config = {
             "auth_method": "basic",
             "username": "test_user",
-            "password": "test_pass"
+            "password": "test_pass",
         }
         assert validate_auth_config(config) is True
 
         # Missing username
         config = {
             "auth_method": "basic",
-            "password": "test_pass"
+            "password": "test_pass",
         }
         assert validate_auth_config(config) is False
 
         # Missing password
         config = {
             "auth_method": "basic",
-            "username": "test_user"
+            "username": "test_user",
         }
         assert validate_auth_config(config) is False
 
@@ -37,7 +37,7 @@ class TestConfigValidation:
         config = {
             "auth_method": "basic",
             "username": "",
-            "password": ""
+            "password": "",
         }
         assert validate_auth_config(config) is False
 
@@ -48,7 +48,7 @@ class TestConfigValidation:
             "auth_method": "oauth2",
             "oauth_client_id": "client123",
             "oauth_client_secret": "secret456",
-            "oauth_token_url": "https://auth.example.com/token"
+            "oauth_token_url": "https://auth.example.com/token",
         }
         assert validate_auth_config(config) is True
 
@@ -56,7 +56,7 @@ class TestConfigValidation:
         config = {
             "auth_method": "oauth2",
             "oauth_client_secret": "secret456",
-            "oauth_token_url": "https://auth.example.com/token"
+            "oauth_token_url": "https://auth.example.com/token",
         }
         assert validate_auth_config(config) is False
 
@@ -64,7 +64,7 @@ class TestConfigValidation:
         config = {
             "auth_method": "oauth2",
             "oauth_client_id": "client123",
-            "oauth_client_secret": "secret456"
+            "oauth_client_secret": "secret456",
         }
         assert validate_auth_config(config) is False
 
@@ -73,13 +73,13 @@ class TestConfigValidation:
         # No auth method specified - defaults to basic
         config = {
             "username": "test_user",
-            "password": "test_pass"
+            "password": "test_pass",
         }
         assert validate_auth_config(config) is True
 
         # Invalid auth method
         config = {
-            "auth_method": "invalid_method"
+            "auth_method": "invalid_method",
         }
         assert validate_auth_config(config) is False
 
@@ -106,7 +106,7 @@ class TestConfigValidation:
         with patch.dict(os.environ, {
             "WMS_BASE_URL": "https://env.example.com",
             "WMS_USERNAME": "env_user",
-            "WMS_PASSWORD": "env_pass"
+            "WMS_PASSWORD": "env_pass",
         }):
             # Environment variables should be accessible
             assert os.getenv("WMS_BASE_URL") == "https://env.example.com"
@@ -129,7 +129,7 @@ class TestConfigValidation:
             "https://wms.example.com:8443",
             "http://localhost:8080",
             "https://internal.invalid/REDACTED",
-            "https://internal.invalid/REDACTED"
+            "https://internal.invalid/REDACTED",
         ]
 
         invalid_urls = [
@@ -138,7 +138,7 @@ class TestConfigValidation:
             "ftp://wms.example.com",
             "//no-protocol.com",
             "https://",
-            "http:/missing-slash.com"
+            "http:/missing-slash.com",
         ]
 
         # Using urlparse for validation (same as E2E tests)

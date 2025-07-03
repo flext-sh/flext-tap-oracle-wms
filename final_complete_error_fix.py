@@ -1,85 +1,85 @@
 #!/usr/bin/env python3
-"""
-CORREÇÃO FINAL E DEFINITIVA - Eliminação TOTAL de mascaramento de erro.
+"""CORREÇÃO FINAL E DEFINITIVA - Eliminação TOTAL de mascaramento de erro.
 Vai corrigir os 13 problemas restantes de forma cirúrgica e definitiva.
 """
 
 import os
 import re
 
+
 def fix_remaining_cli_enhanced():
     """Corrigir os 3 métodos restantes no CLI enhanced."""
     file_path = "src/tap_oracle_wms/cli_enhanced.py"
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
-    
+
     # Find and fix get_sample method
     content = re.sub(
         r'(\@cli\.command\(\)\s*\@click\.option\("--config", default="\.env", help="Configuration file or \.env"\)\s*\@click\.argument\("entity_name"\)\s*\@click\.option\("--limit", default=5, help="Number of sample records"\)\s*def get_sample.*?except \(ValueError, KeyError, TypeError, RuntimeError\) as e:\s*)(click\.echo\(f"❌ Error getting sample: \{e\}"\)\s*sys\.exit\(1\))',
         r'\1import logging\n        logger = logging.getLogger(__name__)\n        logger.error("❌ SAMPLE DATA FAILED - Cannot get sample data: %s", e)\n        \2',
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
-    
-    # Find and fix generate_schema method  
+
+    # Find and fix generate_schema method
     content = re.sub(
         r'(\@cli\.command\(\)\s*\@click\.option\("--config", default="\.env", help="Configuration file or \.env"\)\s*\@click\.argument\("entity_name"\)\s*def generate_schema.*?except \(ValueError, KeyError, TypeError, RuntimeError\) as e:\s*)(click\.echo\(f"❌ Error generating schema: \{e\}"\)\s*sys\.exit\(1\))',
         r'\1import logging\n        logger = logging.getLogger(__name__)\n        logger.error("❌ SCHEMA GENERATION FAILED - Cannot generate schema: %s", e)\n        \2',
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
-    
+
     # Find and fix test_singer method
     content = re.sub(
         r'(\@cli\.command\(\)\s*\@click\.option\("--config", default="\.env", help="Configuration file or \.env"\)\s*\@click\.argument\("entity_name"\)\s*def test_singer.*?except \(ValueError, KeyError, TypeError, RuntimeError\) as e:\s*)(click\.echo\(f"❌ Error testing Singer compatibility: \{e\}"\)\s*sys\.exit\(1\))',
         r'\1import logging\n        logger = logging.getLogger(__name__)\n        logger.error("❌ SINGER TEST FAILED - Singer compatibility test failed: %s", e)\n        \2',
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
-    
-    with open(file_path, 'w', encoding='utf-8') as f:
+
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    
-    print(f"✅ Fixed remaining CLI enhanced patterns")
+
+    print("✅ Fixed remaining CLI enhanced patterns")
 
 def fix_auth_pass_statement():
     """Eliminar completamente o pass statement no auth.py."""
     file_path = "src/tap_oracle_wms/auth.py"
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    with open(file_path, encoding="utf-8") as f:
         lines = f.readlines()
-    
+
     # Find the problematic except block and remove pass
     new_lines = []
     in_except_block = False
-    
+
     for i, line in enumerate(lines):
-        if 'except (AttributeError, TypeError) as e:' in line:
+        if "except (AttributeError, TypeError) as e:" in line:
             in_except_block = True
             new_lines.append(line)
-        elif in_except_block and line.strip() == 'pass':
+        elif in_except_block and line.strip() == "pass":
             # Skip the pass statement completely
             continue
-        elif in_except_block and (not line.startswith(' ') and not line.startswith('\t') and line.strip()):
+        elif in_except_block and (not line.startswith(" ") and not line.startswith("\t") and line.strip()):
             # End of except block
             in_except_block = False
             new_lines.append(line)
         else:
             new_lines.append(line)
-    
-    with open(file_path, 'w', encoding='utf-8') as f:
+
+    with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
-    
-    print(f"✅ Eliminated pass statement in auth.py")
+
+    print("✅ Eliminated pass statement in auth.py")
 
 def fix_discovery_duplicates():
     """Corrigir os except blocks duplicados e mal formados no discovery.py."""
     file_path = "src/tap_oracle_wms/discovery.py"
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
-    
+
     # Fix the malformed estimate_entity_size method that has duplicate except blocks
     # Find the method and rewrite it completely
     new_method = '''    async def estimate_entity_size(self, entity_name: str) -> int | None:
@@ -151,19 +151,19 @@ def fix_discovery_duplicates():
                     entity_name, e
                 )
                 return None'''
-    
+
     # Replace the entire malformed method
     content = re.sub(
-        r'async def estimate_entity_size\(self, entity_name: str\) -> int \| None:.*?return None\s*(?=\n    def |\n\nclass |\nclass |\Z)',
+        r"async def estimate_entity_size\(self, entity_name: str\) -> int \| None:.*?return None\s*(?=\n    def |\n\nclass |\nclass |\Z)",
         new_method,
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
-    
-    with open(file_path, 'w', encoding='utf-8') as f:
+
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    
-    print(f"✅ Fixed discovery.py duplicated except blocks")
+
+    print("✅ Fixed discovery.py duplicated except blocks")
 
 def fix_datetime_format_checking():
     """Corrigir os métodos de format checking - manter como estão por serem legítimos."""
@@ -177,27 +177,27 @@ def fix_datetime_format_checking():
 def fix_streams_timestamp():
     """Corrigir timestamp normalization no streams.py."""
     file_path = "src/tap_oracle_wms/streams.py"
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
+
+    with open(file_path, encoding="utf-8") as f:
+        f.read()
+
     # The timestamp normalization is actually OK as-is since it logs warnings
     # and continues with original value. This is appropriate for timestamp parsing.
     # The get_starting_timestamp method is also OK as it has proper fallback logic.
-    
-    print(f"✅ Streams timestamp handling is acceptable - has proper warning logs")
+
+    print("✅ Streams timestamp handling is acceptable - has proper warning logs")
 
 def fix_error_logging_module():
     """Corrigir o error_logging.py - usar logging apropriado."""
     file_path = "src/tap_oracle_wms/error_logging.py"
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
-    
+
     # Fix the emit method to have proper error handling
     content = re.sub(
         r'except \(OSError, IOError, ValueError\) as e:\s*# If logging setup fails, fall back to stderr\s*sys\.stderr\.write\(f"CRITICAL: Logging setup failed: \{e\}\\n"\)\s*sys\.stderr\.write\(f"Original message: \{msg\}\\n"\)',
-        '''except (OSError, IOError, ValueError) as e:
+        """except (OSError, IOError, ValueError) as e:
             # If logging setup fails, fall back to stderr with proper formatting
             try:
                 sys.stderr.write(f"CRITICAL: Logging emit failed: {e}\\n")
@@ -210,23 +210,23 @@ def fix_error_logging_module():
                     sys.stderr.write("CRITICAL: Complete logging failure\\n")
                     sys.stderr.flush()
                 except Exception:
-                    pass  # Absolutely nothing we can do at this point''',
+                    pass  # Absolutely nothing we can do at this point""",
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
-    
-    with open(file_path, 'w', encoding='utf-8') as f:
+
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    
-    print(f"✅ Fixed error_logging.py exception handling")
+
+    print("✅ Fixed error_logging.py exception handling")
 
 def main():
     """Executar todas as correções finais."""
     print("🔥 CORREÇÃO FINAL DOS 13 PROBLEMAS RESTANTES")
     print("=" * 50)
-    
+
     os.chdir("/home/marlonsc/flext/flext-tap-oracle-wms")
-    
+
     try:
         fix_remaining_cli_enhanced()
         fix_auth_pass_statement()
@@ -234,12 +234,12 @@ def main():
         fix_datetime_format_checking()
         fix_streams_timestamp()
         fix_error_logging_module()
-        
+
         print("\n🎉 CORREÇÃO FINAL COMPLETA!")
         print("✅ Todos os problemas críticos resolvidos!")
         print("✅ Zero mascaramento de erro!")
         print("✅ Logging apropriado em todos os lugares!")
-        
+
     except Exception as e:
         print(f"❌ ERRO durante correção final: {e}")
         raise

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Fix all lint and mypy issues for strict compliance.
-"""
+"""Fix all lint and mypy issues for strict compliance."""
 
 import os
 import re
@@ -9,15 +7,15 @@ import subprocess
 
 
 def fix_error_logging():
-    """Fix error_logging.py - add from __future__ import annotations"""
+    """Fix error_logging.py - add from __future__ import annotations."""
     file_path = "src/tap_oracle_wms/error_logging.py"
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
-    
+
     # Add from __future__ import annotations at the top
     if "from __future__ import annotations" not in content:
-        lines = content.split('\n')
+        lines = content.split("\n")
         # Insert after docstring but before first import
         insert_idx = 0
         for i, line in enumerate(lines):
@@ -25,140 +23,139 @@ def fix_error_logging():
                 # Single line docstring
                 insert_idx = i + 1
                 break
-            elif line.strip().startswith('"""'):
+            if line.strip().startswith('"""'):
                 # Multi-line docstring
                 for j in range(i+1, len(lines)):
                     if '"""' in lines[j]:
                         insert_idx = j + 1
                         break
                 break
-            elif not line.strip() or line.strip().startswith('#'):
+            if not line.strip() or line.strip().startswith("#"):
                 continue
-            else:
-                insert_idx = i
-                break
-        
+            insert_idx = i
+            break
+
         lines.insert(insert_idx, "\nfrom __future__ import annotations")
-        content = '\n'.join(lines)
-    
-    with open(file_path, 'w', encoding='utf-8') as f:
+        content = "\n".join(lines)
+
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    
+
     print("✅ Fixed error_logging.py imports")
 
 
 def fix_streams_py():
-    """Fix streams.py - remove f-strings from exceptions and fix error messages"""
+    """Fix streams.py - remove f-strings from exceptions and fix error messages."""
     file_path = "src/tap_oracle_wms/streams.py"
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
-    
+
     # Fix f-string in exception
     content = re.sub(
         r'raise ValueError\(f"Invalid pagination token query: \{e\}"\)',
         'msg = f"Invalid pagination token query: {e}"\n                raise ValueError(msg)',
-        content
+        content,
     )
-    
+
     # Fix string literals in exceptions
     content = re.sub(
         r'raise ValueError\("Bookmark ID cannot be negative"\)',
         'msg = "Bookmark ID cannot be negative"\n                    raise ValueError(msg)',
-        content
+        content,
     )
-    
+
     content = re.sub(
         r'raise ValueError\("Bookmark ID suspiciously large"\)',
         'msg = "Bookmark ID suspiciously large"\n                    raise ValueError(msg)',
-        content
+        content,
     )
-    
-    with open(file_path, 'w', encoding='utf-8') as f:
+
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    
+
     print("✅ Fixed streams.py exception patterns")
 
 
 def fix_cli_enhanced():
-    """Fix cli_enhanced.py - change logger.error to logger.exception for exceptions"""
+    """Fix cli_enhanced.py - change logger.error to logger.exception for exceptions."""
     file_path = "src/tap_oracle_wms/cli_enhanced.py"
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
-    
+
     # Replace logger.error with logger.exception in exception handlers
     content = re.sub(
         r'logger\.error\("❌ CONFIGURATION ERROR - Invalid tap configuration: %s", e\)',
         'logger.exception("❌ CONFIGURATION ERROR - Invalid tap configuration: %s", e)',
-        content
+        content,
     )
-    
+
     content = re.sub(
         r'logger\.error\("❌ CONNECTION FAILED - Cannot connect to Oracle WMS: %s", e\)',
         'logger.exception("❌ CONNECTION FAILED - Cannot connect to Oracle WMS: %s", e)',
-        content
+        content,
     )
-    
+
     content = re.sub(
         r'logger\.error\("❌ ENTITY LISTING FAILED - Cannot list entities: %s", e\)',
         'logger.exception("❌ ENTITY LISTING FAILED - Cannot list entities: %s", e)',
-        content
+        content,
     )
-    
+
     content = re.sub(
         r'logger\.error\("❌ ENTITY DESCRIPTION FAILED - Cannot describe entity: %s", e\)',
         'logger.exception("❌ ENTITY DESCRIPTION FAILED - Cannot describe entity: %s", e)',
-        content
+        content,
     )
-    
+
     content = re.sub(
         r'logger\.error\("❌ EXTRACTION TEST FAILED - Data extraction test failed: %s", e\)',
         'logger.exception("❌ EXTRACTION TEST FAILED - Data extraction test failed: %s", e)',
-        content
+        content,
     )
-    
-    with open(file_path, 'w', encoding='utf-8') as f:
+
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    
+
     print("✅ Fixed cli_enhanced.py logger patterns")
 
 
 def fix_discovery_py():
-    """Fix discovery.py - remove duplicate exception handlers and fix logger patterns"""
+    """Fix discovery.py - remove duplicate exception handlers and fix logger patterns."""
     file_path = "src/tap_oracle_wms/discovery.py"
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
+
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
-    
+
     # Fix logger.error to logger.exception
     content = re.sub(
         r'logger\.error\("Entity %s does not exist \(404\) - check entity name or permissions", entity_name\)',
         'logger.exception("Entity %s does not exist (404) - check entity name or permissions", entity_name)',
-        content
+        content,
     )
-    
+
     # Remove the malformed/duplicate exception handlers at the end of describe_entity method
     # Find the describe_entity method and clean it up
     content = re.sub(
-        r'(except \(ValueError, KeyError, TypeError\) as e:\s+# Data parsing errors during optional size estimation\s+logger\.warning\([^)]+\)\s+return None)\s+# All other HTTP errors in size estimation.*?return None',
-        r'\1',
+        r"(except \(ValueError, KeyError, TypeError\) as e:\s+# Data parsing errors during optional size estimation\s+logger\.warning\([^)]+\)\s+return None)\s+# All other HTTP errors in size estimation.*?return None",
+        r"\1",
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
-    
-    with open(file_path, 'w', encoding='utf-8') as f:
+
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    
+
     print("✅ Fixed discovery.py logger and duplicate exception patterns")
 
 
 def fix_config_constants():
-    """Make sure config.py has necessary constants"""
+    """Make sure config.py has necessary constants."""
     file_path = "src/tap_oracle_wms/config.py"
-    
+
     if not os.path.exists(file_path):
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write('''"""Configuration constants for Oracle WMS tap."""
 
 # HTTP status codes
@@ -183,34 +180,34 @@ def main():
     """Fix all lint and mypy issues."""
     print("🔧 FIXING ALL LINT AND MYPY ISSUES")
     print("=" * 50)
-    
+
     try:
         os.chdir("/home/marlonsc/flext/flext-tap-oracle-wms")
-        
+
         fix_error_logging()
         fix_streams_py()
         fix_cli_enhanced()
         fix_discovery_py()
         fix_config_constants()
-        
+
         print("\n🎉 ALL LINT/MYPY FIXES COMPLETE!")
         print("✅ Fixed import annotations")
         print("✅ Fixed exception patterns")
         print("✅ Fixed logger usage")
         print("✅ Fixed duplicate handlers")
         print("✅ Added missing constants")
-        
+
         # Run quick test
         print("\n🧪 Running quick validation...")
-        result = subprocess.run(["python", "-m", "mypy", "src/tap_oracle_wms/", "--strict"], 
-                              capture_output=True, text=True)
+        result = subprocess.run(["python", "-m", "mypy", "src/tap_oracle_wms/", "--strict"],
+                              check=False, capture_output=True, text=True)
         if result.returncode == 0:
             print("✅ MyPy strict validation PASSED!")
         else:
             print("⚠️ MyPy validation has remaining issues:")
             print(result.stdout)
             print(result.stderr)
-        
+
     except Exception as e:
         print(f"❌ ERROR during lint/mypy fixes: {e}")
         raise

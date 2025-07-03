@@ -108,52 +108,10 @@ ignore = [
     "ISC001",  # implicit-str-concat (conflicts with formatter)
     "D203",    # one-blank-line-before-class (conflicts with D211)
     "D213",    # multi-line-docstring-summary-second-line (conflicts with D212)
-
-    # FOCUS: Only critical errors for now - ignore non-critical temporarily
-    "E501",    # line-too-long (formatting)
-    "D100", "D101", "D102", "D103", "D105", "D107", "D205", "D401", "D417",  # docstring issues
-    "ANN001", "ANN101", "ANN102", "ANN201", "ANN202", "ANN204", "ANN401", "ANN003", "ANN002",  # type annotations
-    "PLR0911", "PLR0912", "PLR0913", "PLR0915", "C901",  # complexity
-    "E402",    # import-not-at-top (legacy)
-    "S110", "S112", "S105", "S106", "S108", "S314", "S603", "S607", "S101", "S102",  # security (non-critical)
-    "ARG001", "ARG002", "ARG003", "ARG005",  # unused arguments
-    "PTH108", "PTH110", "PTH116", "PTH117", "PTH118", "PTH120", "PTH123",  # pathlib
-    "TRY002", "TRY003", "TRY004", "TRY300", "TRY301", "TRY401",  # try/except patterns
-    "FBT001", "FBT002", "FBT003",  # boolean traps
-    "DTZ001", "DTZ005", "DTZ006", "DTZ007",  # datetime
-    "G004", "G201",  # logging
-    "N806", "N811",  # naming
-    "B007", "B018", "B019", "B023", "B904",  # bugbear non-critical
-    "SIM102", "SIM105", "SIM113", "SIM117",  # simplify
-    "RUF001", "RUF002", "RUF005",  # ruff specific
-    "UP035",  # typing upgrades
-    "ERA001",  # commented code
-    "TD002", "TD003",  # todos
-    "FIX002",  # fixme
-    "PLW0602", "PLW0603", "PLW2901",  # pylint warnings
-    "PLC0415",  # pylint conventions
-    "PLE0605",  # pylint errors non-critical
-    "PERF102", "PERF203", "PERF402",  # performance
-    "A002", "A004",  # builtins
-    "PT011", "PT012", "PT017",  # pytest
-    "PD008",  # pandas
-    "INP001",  # namespace packages
-    "PLR0124", "PLR2004",  # magic values
-    "PYI056",  # pyi
-    "EXE001",  # executable
-    "BLE001",  # blind except (temporarily)
-    "SLF001",  # private access (temporarily)
-    "E722", "E741",  # bare except and ambiguous names
-    "T201",  # print statements (temporarily)
-    "PLW2901",  # redefined loop variable (temporarily)
-    "D401",  # docstring imperative mood (temporarily)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "PLR2004", "D", "ANN"]
-"examples/*" = ["T201", "D", "ERA001"]
-"__init__.py" = ["D104"]
-"conftest.py" = ["D"]
+# ZERO TOLERANCE: No file-specific ignores
 
 [tool.ruff.format]
 quote-style = "double"
@@ -183,9 +141,7 @@ warn_no_return = true
 warn_unreachable = true
 strict_equality = true
 
-[[tool.mypy.overrides]]
-module = ["oracledb.*", "singer.*", "testcontainers.*", "sqlalchemy.*", "backoff.*"]
-ignore_missing_imports = true
+# ZERO TOLERANCE: No missing imports ignored - install type stubs for all dependencies
 
 [tool.pytest.ini_options]
 minversion = "8.0"

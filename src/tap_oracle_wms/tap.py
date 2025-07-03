@@ -15,6 +15,8 @@ using the latest Singer SDK capabilities while maintaining all original function
 from __future__ import annotations
 
 import asyncio
+import sys
+from datetime import datetime, timezone
 from typing import Any
 
 from singer_sdk import Stream, Tap
@@ -176,7 +178,7 @@ class TapOracleWMS(Tap):
         ),
     ).to_dict()
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: object, **kwargs: dict[str, object]) -> None:
         """Initialize tap with entity discovery."""
         # Cache for discovered entities and schemas
         self._entity_cache: dict[str, str] | None = None
@@ -209,16 +211,14 @@ class TapOracleWMS(Tap):
             self._schema_generator = SchemaGenerator(dict(self.config))
         return self._schema_generator
 
-    def set_discovery_mode(self, enabled: bool = True) -> None:
+    def set_discovery_mode(self, *, enabled: bool = True) -> None:
         """Set discovery mode flag."""
         self._is_discovery_mode = enabled
 
     @classmethod
-    def invoke(cls, *args: Any, **kwargs: Any) -> Any:
+    def invoke(cls, *args: str, **kwargs: dict[str, Any]) -> int:
         """Override invoke to detect discovery mode."""
         # Check if this is a discovery command
-        import sys
-
         if "--discover" in sys.argv:
             instance = cls(*args, **kwargs)
             instance.set_discovery_mode(True)
@@ -238,7 +238,7 @@ class TapOracleWMS(Tap):
             # DISCOVERY MODE: Full API discovery for catalog generation
             discovered_entities = asyncio.run(self._discover_entities_async())
 
-            for entity_name, entity_url in discovered_entities.items():
+            for entity_name in discovered_entities:
                 # Generate schema for entity
                 schema = asyncio.run(self._generate_schema_async(entity_name))
 
@@ -252,8 +252,9 @@ class TapOracleWMS(Tap):
                     streams.append(stream)
 
                     self.logger.info(
-                        f"Discovered stream: {entity_name} with "
-                        f"{len(schema.get('properties', {}))} properties",
+                        "Discovered stream: %s with %s properties",
+                        entity_name,
+                        len(schema.get("properties", {})),
                     )
         else:
             # SYNC MODE: Use pre-configured entities from config
@@ -267,46 +268,56 @@ class TapOracleWMS(Tap):
                 )
                 return streams
 
+            # Process entities individually to avoid performance issues
             for entity_name in configured_entities:
-                # 🎯 CRITICAL FIX: Use proper schema generation vs generic fallback
-                # This ensures WMS-specific field types instead of fallback Oracle types
-                try:
-                    schema = asyncio.run(self._generate_schema_async(entity_name))
-
-                    if schema:
-                        stream = WMSStream(
-                            tap=self,
-                            name=entity_name,
-                            schema=schema,
-                        )
-                        streams.append(stream)
-
-                        self.logger.info(
-                            f"Configured stream: {entity_name} with "
-                            f"{len(schema.get('properties', {}))} WMS properties"
-                        )
-                    else:
-                        self.logger.warning(
-                            f"Could not generate schema for {entity_name}, skipping"
-                        )
-                except Exception as e:
-                    self.logger.exception(
-                        f"Schema generation failed for {entity_name}: {e}"
-                    )
-                    # Fallback to predefined schema as last resort
-                    schema = self._get_predefined_schema(entity_name)
-                    if schema:
-                        stream = WMSStream(
-                            tap=self,
-                            name=entity_name,
-                            schema=schema,
-                        )
-                        streams.append(stream)
-                        self.logger.warning(f"Using fallback schema for {entity_name}")
+                stream = self._create_stream_safe(entity_name)
+                if stream:
+                    streams.append(stream)
 
         return streams
 
-    def _get_predefined_schema(self, entity_name: str) -> dict[str, Any] | None:
+    def _create_stream_safe(self, entity_name: str) -> WMSStream | None:
+        """Create stream with proper error handling to avoid try-except in loop."""
+        # 🎯 CRITICAL FIX: Use proper schema generation vs generic fallback
+        # This ensures WMS-specific field types instead of fallback Oracle types
+        try:
+            schema = asyncio.run(self._generate_schema_async(entity_name))
+
+            if schema:
+                stream = WMSStream(
+                    tap=self,
+                    name=entity_name,
+                    schema=schema,
+                )
+
+                self.logger.info(
+                    "Configured stream: %s with %s WMS properties",
+                    entity_name,
+                    len(schema.get("properties", {})),
+                )
+                return stream
+        except Exception:
+            self.logger.exception(
+                "Schema generation failed for %s", entity_name,
+            )
+            # Fallback to predefined schema as last resort
+            schema = self._get_predefined_schema(entity_name)
+            if schema:
+                stream = WMSStream(
+                    tap=self,
+                    name=entity_name,
+                    schema=schema,
+                )
+                self.logger.warning("Using fallback schema for %s", entity_name)
+                return stream
+        else:
+            self.logger.warning(
+                "Could not generate schema for %s, skipping",
+                entity_name,
+            )
+            return None
+
+    def _get_predefined_schema(self, _entity_name: str) -> dict[str, Any] | None:
         """Get basic schema for configured entities (generic for all entities)."""
         # Generic base schema for sync mode - Singer will discover actual structure
         return {
@@ -345,7 +356,7 @@ class TapOracleWMS(Tap):
         # Cache results
         self._entity_cache = filtered_entities
 
-        self.logger.info(f"Discovered {len(filtered_entities)} entities from WMS API")
+        self.logger.info("Discovered %s entities from WMS API", len(filtered_entities))
         return filtered_entities
 
     async def _generate_schema_async(self, entity_name: str) -> dict[str, Any] | None:
@@ -366,18 +377,20 @@ class TapOracleWMS(Tap):
                 if metadata and samples:
                     # PRIORITY: Hybrid schema (metadata-first + flattened FK objects)
                     schema = self.schema_generator.generate_hybrid_schema(
-                        metadata, samples
+                        metadata, samples,
                     )
                     self.logger.info(
-                        f"Generated hybrid schema for {entity_name} "
-                        f"with {len(schema.get('properties', {}))} properties",
+                        "Generated hybrid schema for %s with %s properties",
+                        entity_name,
+                        len(schema.get("properties", {})),
                     )
                 elif metadata:
                     # ACCEPTABLE: Pure metadata (accurate types but no FK flattening)
                     schema = self.schema_generator.generate_from_metadata(metadata)
                     self.logger.info(
-                        f"Generated metadata-only schema for {entity_name} "
-                        f"(samples unavailable but not critical)",
+                        "Generated metadata-only schema for %s "
+                        "(samples unavailable but not critical)",
+                        entity_name,
                     )
                 else:
                     # FAILURE: No metadata means entity doesn't exist or no access
@@ -387,7 +400,7 @@ class TapOracleWMS(Tap):
                         f"doesn't exist or you lack permissions to access it."
                     )
                     self.logger.exception(error_msg)
-                    raise ValueError(error_msg)
+                    self._raise_schema_error(error_msg)
             else:
                 # 🎯 FLATTENING DISABLED: Metadata-first approach (faster)
                 metadata = await self.discovery.describe_entity(entity_name)
@@ -395,8 +408,9 @@ class TapOracleWMS(Tap):
                     # PRIORITY: Pure metadata (most accurate and fastest)
                     schema = self.schema_generator.generate_from_metadata(metadata)
                     self.logger.info(
-                        f"Generated metadata schema for {entity_name} "
-                        f"with {len(schema.get('properties', {}))} properties",
+                        "Generated metadata schema for %s with %s properties",
+                        entity_name,
+                        len(schema.get("properties", {})),
                     )
                 else:
                     # FAILURE: No metadata means entity doesn't exist or no access
@@ -406,7 +420,7 @@ class TapOracleWMS(Tap):
                         f"doesn't exist or you lack permissions to access it."
                     )
                     self.logger.exception(error_msg)
-                    raise ValueError(error_msg)
+                    self._raise_schema_error(error_msg)
         except (
             EntityDiscoveryError,
             EntityDescriptionError,
@@ -432,7 +446,7 @@ class TapOracleWMS(Tap):
     # Singer SDK hooks for advanced functionality
 
     def post_process(
-        self, row: dict[str, Any], context: dict[str, Any] | None = None
+        self, row: dict[str, Any], _context: dict[str, Any] | None = None,
     ) -> dict[str, Any] | None:
         """Post-process a record after extraction.
 
@@ -442,8 +456,6 @@ class TapOracleWMS(Tap):
         - Filtering
         """
         # Add extraction metadata
-        from datetime import datetime, timezone
-
         row["_extracted_at"] = datetime.now(timezone.utc).isoformat()
         return row
 
@@ -456,6 +468,10 @@ class TapOracleWMS(Tap):
     def state_dict(self) -> dict[str, Any]:
         """Get state dictionary for persistence."""
         return dict(self.state) if self.state else {}
+
+    def _raise_schema_error(self, error_msg: str) -> None:
+        """Raise schema generation errors."""
+        raise ValueError(error_msg)
 
 
 if __name__ == "__main__":

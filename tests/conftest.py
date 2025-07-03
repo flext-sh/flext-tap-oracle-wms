@@ -15,13 +15,13 @@ if env_file.exists():
 def pytest_configure(config):
     """Configure pytest with custom markers."""
     config.addinivalue_line(
-        "markers", "e2e: mark test as end-to-end test requiring real WMS instance"
+        "markers", "e2e: mark test as end-to-end test requiring real WMS instance",
     )
     config.addinivalue_line(
-        "markers", "integration: mark test as integration test"
+        "markers", "integration: mark test as integration test",
     )
     config.addinivalue_line(
-        "markers", "unit: mark test as unit test"
+        "markers", "unit: mark test as unit test",
     )
 
 
@@ -31,7 +31,7 @@ def pytest_addoption(parser):
         "--run-e2e",
         action="store_true",
         default=False,
-        help="run end-to-end tests against real WMS instance"
+        help="run end-to-end tests against real WMS instance",
     )
 
 
@@ -83,12 +83,45 @@ def sample_wms_response():
                 "description": "Test Item 2",
                 "mod_ts": "2024-01-01T11:00:00Z",
                 "create_ts": "2024-01-01T09:30:00Z",
-            }
+            },
         ],
         "next_page": "https://mock-wms.example.com/entity/item?cursor=abc123",
         "page_nbr": 1,
         "page_count": 5,
-        "result_count": 10
+        "result_count": 10,
+    }
+
+
+@pytest.fixture
+def sample_metadata():
+    """Sample WMS entity metadata for testing."""
+    return {
+        "parameters": ["id", "code", "description", "mod_ts", "create_ts"],
+        "fields": {
+            "id": {"type": "integer", "required": True},
+            "code": {"type": "string", "max_length": 50, "required": True},
+            "description": {"type": "string", "required": False},
+            "mod_ts": {"type": "datetime", "required": False},
+            "create_ts": {"type": "datetime", "required": False},
+        },
+    }
+
+
+@pytest.fixture
+def sample_flattened_record():
+    """Sample flattened WMS record for testing."""
+    return {
+        "id": 1,
+        "code": "ITEM001",
+        "description": "Test Item 1",
+        "mod_ts": "2024-01-01T10:00:00Z",
+        "create_ts": "2024-01-01T09:00:00Z",
+        "location_id": 100,
+        "location_key": "A01-01-01",
+        "category_set_count": 3,
+        "category_set_data": '[{"code": "CAT1"}, {"code": "CAT2"}]',
+        "_extracted_at": "2024-01-01T12:00:00Z",
+        "_entity": "item",
     }
 
 
@@ -107,5 +140,21 @@ def sample_entity_list():
         "receipt",
         "user",
         "company",
-        "facility"
+        "facility",
     ]
+
+
+@pytest.fixture
+def sample_entity_dict():
+    """Sample entity discovery response as dictionary."""
+    return {
+        "item": "/entity/item",
+        "location": "/entity/location",
+        "inventory": "/entity/inventory",
+        "order_header": "/entity/order_header",
+        "order_detail": "/entity/order_detail",
+        "allocation": "/entity/allocation",
+        "pick": "/entity/pick",
+        "shipment": "/entity/shipment",
+        "receipt": "/entity/receipt",
+    }

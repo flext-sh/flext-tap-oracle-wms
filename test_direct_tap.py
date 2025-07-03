@@ -22,7 +22,7 @@ def test_tap_directly():
         "facility_code": "*",
         "entities": ["allocation", "order_hdr", "order_dtl"],
         "page_size": 10,
-        "start_date": "2025-01-01T00:00:00Z"
+        "start_date": "2025-01-01T00:00:00Z",
     }
 
     print(f"📋 Config: {json.dumps(config, indent=2)}")

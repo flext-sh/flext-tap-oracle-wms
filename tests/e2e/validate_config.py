@@ -40,7 +40,7 @@ def validate_e2e_config():
     required_vars = {
         "TAP_ORACLE_WMS_BASE_URL": "Base URL for WMS instance",
         "TAP_ORACLE_WMS_USERNAME": "Username for authentication",
-        "TAP_ORACLE_WMS_PASSWORD": "Password for authentication"
+        "TAP_ORACLE_WMS_PASSWORD": "Password for authentication",
     }
 
     all_valid = True
@@ -84,7 +84,7 @@ def validate_e2e_config():
         "TAP_ORACLE_WMS_PAGE_SIZE": ("100", "Records per page"),
         "TAP_ORACLE_WMS_REQUEST_TIMEOUT": ("120", "Request timeout in seconds"),
         "TAP_ORACLE_WMS_VERIFY_SSL": ("true", "SSL verification"),
-        "TAP_ORACLE_WMS_RECORD_LIMIT": ("10", "Max records for tests")
+        "TAP_ORACLE_WMS_RECORD_LIMIT": ("10", "Max records for tests"),
     }
 
     for var, (default, description) in optional_vars.items():

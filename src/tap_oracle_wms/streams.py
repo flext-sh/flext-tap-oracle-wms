@@ -24,7 +24,38 @@ from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
 
+# Import commonly used modules to avoid PLC0415 violations
+if TYPE_CHECKING:
+    from .auth import get_wms_authenticator
+    from .discovery import SchemaGenerator
+else:
+    try:
+        from .auth import get_wms_authenticator
+        from .discovery import SchemaGenerator
+    except ImportError:
+        # Handle circular import gracefully
+        SchemaGenerator = None
+        get_wms_authenticator = None
+
+# Type alias for value parameters that can accept various types
+ValueType = object | str | int | float | bool | dict[str, object] | list[object] | None
+
 # Error logging functionality integrated inline
+
+# HTTP status code constants
+STATUS_OK = 200
+STATUS_UNAUTHORIZED = 401
+STATUS_FORBIDDEN = 403
+STATUS_NOT_FOUND = 404
+STATUS_TOO_MANY_REQUESTS = 429
+STATUS_SERVER_ERROR_START = 500
+STATUS_SERVER_ERROR_END = 600
+DEFAULT_RETRY_AFTER = 60
+
+# Validation and processing constants
+MAX_PARAM_KEY_LENGTH = 50
+MAX_OVERLAP_MINUTES = 1440  # 24 hours
+MAX_REASONABLE_ID = 999999999999
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
@@ -55,8 +86,6 @@ class WMSPaginator(BaseHATEOASPaginator):
             )
             logger.exception(error_msg, exc_info=e)
             # Raise exception to ensure pagination failures are not silent
-            from singer_sdk.exceptions import RetriableAPIError
-
             msg = f"Pagination JSON parsing failed: {e}"
             raise RetriableAPIError(msg) from e
 
@@ -82,7 +111,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
     replication_method = "INCREMENTAL"
     replication_key = "mod_ts"
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, *args: object, **kwargs: dict[str, object],
+    ) -> None:
         """Initialize stream with dynamic settings."""
         # Extract custom settings before calling parent
         self._entity_name = str(kwargs.get("name", ""))
@@ -200,13 +231,13 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 # Validate and sanitize query parameters
                 for key, value in parsed_params.items():
                     # Prevent parameter injection attacks
-                    if not isinstance(key, str) or len(key) > 50:
+                    if not isinstance(key, str) or len(key) > MAX_PARAM_KEY_LENGTH:
                         self.logger.warning("Suspicious query parameter key: %s", key)
                         continue
                     # Basic sanitization - allow only alphanumeric, underscore, dash
                     if not key.replace("_", "").replace("-", "").isalnum():
                         self.logger.warning(
-                            "Invalid query parameter key format: %s", key
+                            "Invalid query parameter key format: %s", key,
                         )
                         continue
                     # Handle value arrays safely
@@ -217,7 +248,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                         )
             except Exception as e:
                 self.logger.exception(
-                    "Failed to parse pagination query parameters: %s", e
+                    "Failed to parse pagination query parameters",
                 )
                 msg = f"Invalid pagination token query: {e}"
                 raise ValueError(msg) from e
@@ -226,7 +257,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
     def _get_base_params(self) -> dict[str, Any]:
         """Get base request parameters."""
         return {
-            "page_size": self.config.get("page_size", 1000),
+            "page_size": self.config.get("page_size", 1250),
             "page_mode": "sequenced",  # Always use cursor-based pagination
         }
 
@@ -246,42 +277,64 @@ class WMSStream(RESTStream[dict[str, Any]]):
         params: dict[str, Any],
         context: Mapping[str, Any] | None,
     ) -> None:
-        """Add incremental sync filter with comprehensive timestamp validation."""
-        start_date = self.get_starting_timestamp(context)
-        if start_date:
-            # Validate timestamp has timezone information
-            if start_date.tzinfo is None:
-                error_msg = (
-                    f"Critical timestamp error: start_date '{start_date}' for entity "
-                    f"'{self._entity_name}' lacks timezone information. This can cause "
-                    f"data consistency issues across time zones."
-                )
-                self.logger.exception(error_msg)
-                # Add UTC timezone as fallback but warn
-                start_date = start_date.replace(tzinfo=timezone.utc)
-                self.logger.warning("Applied UTC timezone as fallback for start_date")
+        """Add incremental sync filter with comprehensive timestamp validation.
 
-            # Validate overlap configuration
+        REGRA: sync incr --- ordering mod_ts e filter mod_ts>=(last mod_ts -5m)
+        SEM ESTADO: filtro inicial usa hora_atual - 5m
+        """
+        start_date = self.get_starting_timestamp(context)
+
+        # Se não há estado inicial, usar hora_atual - 5m
+        if not start_date:
+            overlap_minutes = self.config.get("lookback_minutes", 5)
+            now = datetime.now(timezone.utc)
+            start_date = now - timedelta(minutes=overlap_minutes)
+            self.logger.info(
+                "No initial state - using current time minus %d minutes: %s",
+                overlap_minutes, start_date.isoformat(),
+            )
+
+        # Validate timestamp has timezone information
+        if start_date.tzinfo is None:
+            error_msg = (
+                f"Critical timestamp error: start_date '{start_date}' for entity "
+                f"'{self._entity_name}' lacks timezone information. This can cause "
+                f"data consistency issues across time zones."
+            )
+            self.logger.exception(error_msg)
+            # Add UTC timezone as fallback but warn
+            start_date = start_date.replace(tzinfo=timezone.utc)
+            self.logger.warning("Applied UTC timezone as fallback for start_date")
+
+        # Validate overlap configuration para estado existente
+        if self.get_starting_timestamp(context):  # Só se tem estado
             overlap_minutes = self.config.get("incremental_overlap_minutes", 5)
             if not isinstance(overlap_minutes, (int, float)) or overlap_minutes < 0:
                 self.logger.warning(
-                    "Invalid overlap_minutes: %s, using default 5", overlap_minutes
+                    "Invalid overlap_minutes: %s, using default 5", overlap_minutes,
                 )
                 overlap_minutes = 5
-            if overlap_minutes > 1440:  # More than 24 hours
+            if overlap_minutes > MAX_OVERLAP_MINUTES:  # More than 24 hours
                 self.logger.warning(
                     "Large overlap_minutes may cause performance issues: %s",
                     overlap_minutes,
                 )
 
             adjusted_date = start_date - timedelta(minutes=overlap_minutes)
+        else:
+            # Para estado inicial, já calculamos acima
+            adjusted_date = start_date
 
-            # Validate date range reasonableness
-            now = datetime.now(timezone.utc)
-            if adjusted_date > now:
-                self.logger.warning("Start date is in the future: %s", adjusted_date)
+        # Validate date range reasonableness
+        now = datetime.now(timezone.utc)
+        if adjusted_date > now:
+            self.logger.warning("Start date is in the future: %s", adjusted_date)
 
-            params[f"{self.replication_key}__gte"] = adjusted_date.isoformat()
+        params[f"{self.replication_key}__gte"] = adjusted_date.isoformat()
+        self.logger.info(
+            "Incremental filter: %s >= %s",
+            self.replication_key, adjusted_date.isoformat(),
+        )
 
     def _add_full_table_filter(
         self,
@@ -304,11 +357,12 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 # Validate bookmark is reasonable
                 if bookmark_id < 0:
                     self.logger.warning(
-                        "Bookmark ID is negative (%s), resetting full sync", bookmark_id
+                        "Bookmark ID is negative (%s), resetting full sync",
+                        bookmark_id,
                     )
                     return  # No filter = start from beginning
 
-                if bookmark_id > 999999999999:  # Reasonable upper limit
+                if bookmark_id > MAX_REASONABLE_ID:  # Reasonable upper limit
                     self.logger.warning(
                         "Bookmark ID suspiciously large (%s), resetting full sync",
                         bookmark_id,
@@ -320,11 +374,10 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 params["id__lt"] = str(bookmark_id)
                 self.logger.info("Full sync continuing from ID < %s", bookmark_id)
 
-            except (ValueError, TypeError) as e:
+            except (ValueError, TypeError):
                 self.logger.exception(
-                    "Invalid bookmark '%s' for full sync, starting from beginning: %s",
+                    "Invalid bookmark '%s' for full sync, starting from beginning",
                     bookmark,
-                    e,
                 )
                 # Don't add filter = start from highest ID
         else:
@@ -353,7 +406,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         elif self.replication_key:
             params["ordering"] = f"-{self.replication_key}"
             self.logger.warning(
-                "No ID field found, using -%s for ordering", self.replication_key
+                "No ID field found, using -%s for ordering", self.replication_key,
             )
 
     def _add_incremental_ordering(self, params: dict[str, Any]) -> None:
@@ -367,17 +420,17 @@ class WMSStream(RESTStream[dict[str, Any]]):
         if self.replication_key == "mod_ts":
             params["ordering"] = "mod_ts"  # CRITICAL: Ascending temporal order
             self.logger.debug(
-                "Incremental sync using ordering=mod_ts for temporal progression"
+                "Incremental sync using ordering=mod_ts for temporal progression",
             )
         elif self.replication_key:
             params["ordering"] = self.replication_key
             self.logger.debug(
-                "Incremental sync using ordering=%s", self.replication_key
+                "Incremental sync using ordering=%s", self.replication_key,
             )
         elif "id" in self._schema.get("properties", {}):
             params["ordering"] = "id"  # Fallback to ID if no replication key
             self.logger.warning(
-                "No temporal replication key, falling back to ordering=id"
+                "No temporal replication key, falling back to ordering=id",
             )
 
     def _add_entity_filters(self, params: dict[str, Any]) -> None:
@@ -523,16 +576,6 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     def validate_response(self, response: requests.Response) -> None:
         """Validate HTTP response and handle errors."""
-        # HTTP status code constants
-        STATUS_OK = 200
-        STATUS_UNAUTHORIZED = 401
-        STATUS_FORBIDDEN = 403
-        STATUS_NOT_FOUND = 404
-        STATUS_TOO_MANY_REQUESTS = 429
-        STATUS_SERVER_ERROR_START = 500
-        STATUS_SERVER_ERROR_END = 600
-        DEFAULT_RETRY_AFTER = 60
-
         status = response.status_code
 
         if status == STATUS_UNAUTHORIZED:
@@ -558,7 +601,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
     def post_process(
         self,
         row: dict[str, Any],
-        context: Mapping[str, Any] | None = None,
+        _context: Mapping[str, Any] | None = None,
     ) -> dict[str, Any] | None:
         """Process each record after extraction with metadata-first consistent logic.
 
@@ -573,10 +616,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         if flattening_enabled:
             # Use IDENTICAL flattening logic from discovery for consistency
-            from .discovery import SchemaGenerator
-
+            # Import moved to top of file for PLC0415 compliance
             schema_gen = SchemaGenerator(dict(self.config))
-            row = schema_gen._flatten_complex_objects(row)
+            row = schema_gen.flatten_complex_objects(row)
 
         # 🎯 APPLY METADATA-FIRST TYPE PROCESSING
         # Ensure extracted data matches schema types generated in discovery
@@ -603,87 +645,123 @@ class WMSStream(RESTStream[dict[str, Any]]):
         🎯 CRITICAL FIX: Automatically add missing fields found in real data
         but not present in schema discovery to avoid data loss.
         """
-        processed_row: dict[str, Any] = {}
-
         # Get schema properties for type validation
         schema_properties = self._schema.get("properties", {})
 
-        # 🔧 AUTO-DISCOVERY: Check for fields in data not present in schema
+        # Handle missing fields auto-discovery
+        self._handle_missing_fields(row, schema_properties)
+
+        # Process all fields with proper typing
+        return self._process_all_fields(row, schema_properties)
+
+    def _handle_missing_fields(
+        self, row: dict[str, Any], schema_properties: dict[str, Any],
+    ) -> None:
+        """Handle auto-discovery of missing fields."""
         missing_fields = set(row.keys()) - set(schema_properties.keys())
-        if missing_fields:
-            self.logger.warning(
-                "🚨 SCHEMA EXTENSION: Found %d fields not in schema discovery: %s",
-                len(missing_fields),
-                sorted(missing_fields),
-                extra={
-                    "entity": self._entity_name,
-                    "missing_fields": sorted(missing_fields),
-                    "schema_fields_count": len(schema_properties),
-                    "data_fields_count": len(row.keys()),
-                }
-            )
+        if not missing_fields:
+            return
 
-            # 🎯 AUTO-ADD missing fields to schema with smart typing
-            for field_name in missing_fields:
-                field_value = row.get(field_name)
+        self._log_missing_fields_warning(missing_fields, schema_properties, row)
 
-                # Infer type from field name and value
-                if field_name.endswith("_key"):
-                    # Key fields - varchar with reasonable length
-                    inferred_schema = {"type": ["string", "null"], "maxLength": 255}
-                elif field_name.endswith("_id"):
-                    # ID fields - try integer first, fallback to string
-                    if isinstance(field_value, (int, float)) or (
-                        isinstance(field_value, str) and field_value.isdigit()
-                    ):
-                        inferred_schema = {"type": ["integer", "null"]}
-                    else:
-                        inferred_schema = {
-                            "type": ["string", "null"],
-                            "maxLength": 100
-                        }
-                elif field_name.endswith(("_ts", "_date", "_time")):
-                    # Timestamp/date fields
-                    inferred_schema = {
-                        "type": ["string", "null"],
-                        "format": "date-time"
-                    }
-                elif field_name.endswith("_flg"):
-                    # Flag fields - boolean
-                    inferred_schema = {"type": ["boolean", "null"]}
-                elif isinstance(field_value, bool):
-                    inferred_schema = {"type": ["boolean", "null"]}
-                elif isinstance(field_value, (int, float)):
-                    inferred_schema = {"type": ["number", "null"]}
-                else:
-                    # Default to string with generous length
-                    inferred_schema = {"type": ["string", "null"], "maxLength": 500}
+        # Auto-add missing fields to schema
+        for field_name in missing_fields:
+            field_value = row.get(field_name)
+            inferred_schema = self._infer_field_schema(field_name, field_value)
+            schema_properties[field_name] = inferred_schema
+            self._log_auto_added_field(field_name, inferred_schema)
 
-                # Add metadata for traceability
-                inferred_schema["x-wms-metadata"] = {
-                    "original_metadata_type": "auto_discovered",
-                    "inferred_from": "data_analysis",
-                    "column_name": field_name,
-                    "auto_added": True
-                }
+        # Update the stream schema to include auto-discovered fields
+        self._schema["properties"] = schema_properties
 
-                # Add to schema properties
-                schema_properties[field_name] = inferred_schema
+    def _log_missing_fields_warning(
+        self,
+        missing_fields: set[str],
+        schema_properties: dict[str, Any],
+        row: dict[str, Any],
+    ) -> None:
+        """Log warning about missing fields."""
+        self.logger.warning(
+            "🚨 SCHEMA EXTENSION: Found %d fields not in schema discovery: %s",
+            len(missing_fields),
+            sorted(missing_fields),
+            extra={
+                "entity": self._entity_name,
+                "missing_fields": sorted(missing_fields),
+                "schema_fields_count": len(schema_properties),
+                "data_fields_count": len(row.keys()),
+            },
+        )
 
-                self.logger.info(
-                    "🔧 AUTO-ADDED field '%s' to schema with type %s",
-                    field_name,
-                    inferred_schema.get("type"),
-                    extra={
-                        "entity": self._entity_name,
-                        "field_name": field_name,
-                        "inferred_type": inferred_schema.get("type"),
-                        "auto_added": True
-                    }
-                )
+    def _infer_field_schema(
+        self, field_name: str, field_value: object,
+    ) -> dict[str, Any]:
+        """Infer schema for a field based on name and value."""
+        # Infer type from field name patterns
+        if field_name.endswith("_key"):
+            inferred_schema = {"type": ["string", "null"], "maxLength": 255}
+        elif field_name.endswith("_id"):
+            inferred_schema = self._infer_id_field_schema(field_value)
+        elif field_name.endswith(("_ts", "_date", "_time")):
+            inferred_schema = {
+                "type": ["string", "null"],
+                "format": "date-time",
+            }
+        elif field_name.endswith("_flg"):
+            inferred_schema = {"type": ["boolean", "null"]}
+        else:
+            inferred_schema = self._infer_from_value_type(field_value)
 
-            # Update the stream schema to include auto-discovered fields
-            self._schema["properties"] = schema_properties
+        # Add metadata for traceability
+        inferred_schema["x-wms-metadata"] = {
+            "original_metadata_type": "auto_discovered",
+            "inferred_from": "data_analysis",
+            "column_name": field_name,
+            "auto_added": True,
+        }
+        return inferred_schema
+
+    def _infer_id_field_schema(self, field_value: ValueType) -> dict[str, Any]:
+        """Infer schema for ID fields."""
+        if isinstance(field_value, (int, float)) or (
+            isinstance(field_value, str) and field_value.isdigit()
+        ):
+            return {"type": ["integer", "null"]}
+        return {
+            "type": ["string", "null"],
+            "maxLength": 100,
+        }
+
+    def _infer_from_value_type(self, field_value: ValueType) -> dict[str, Any]:
+        """Infer schema from value type."""
+        if isinstance(field_value, bool):
+            return {"type": ["boolean", "null"]}
+        if isinstance(field_value, (int, float)):
+            return {"type": ["number", "null"]}
+        # Default to string with generous length
+        return {"type": ["string", "null"], "maxLength": 500}
+
+    def _log_auto_added_field(
+        self, field_name: str, inferred_schema: dict[str, Any],
+    ) -> None:
+        """Log information about auto-added field."""
+        self.logger.info(
+            "🔧 AUTO-ADDED field '%s' to schema with type %s",
+            field_name,
+            inferred_schema.get("type"),
+            extra={
+                "entity": self._entity_name,
+                "field_name": field_name,
+                "inferred_type": inferred_schema.get("type"),
+                "auto_added": True,
+            },
+        )
+
+    def _process_all_fields(
+        self, row: dict[str, Any], schema_properties: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Process all fields with proper typing."""
+        processed_row: dict[str, Any] = {}
 
         for field_name, field_value in row.items():
             # Get schema definition for this field
@@ -713,9 +791,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
     def _process_field_with_metadata(
         self,
         field_name: str,
-        field_value: Any,
+        field_value: ValueType,
         field_schema: dict[str, Any],
-    ) -> Any:
+    ) -> ValueType:
         """Process field using metadata-first pattern information."""
         metadata = field_schema.get("x-wms-metadata", {})
         original_type = metadata.get("original_metadata_type")
@@ -730,33 +808,10 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         try:
             # Apply metadata-first type conversions
-            if original_type in ("pk", "integer"):
-                return int(field_value) if field_value not in ("", None) else None
-            if original_type in ("number", "decimal"):
-                return float(field_value) if field_value not in ("", None) else None
-            if original_type == "boolean":
-                if isinstance(field_value, bool):
-                    return field_value
-                if isinstance(field_value, str):
-                    return field_value.lower() in ("true", "1", "yes", "y")
-                if isinstance(field_value, (int, float)):
-                    return bool(field_value)
-                return None
-            if original_type in ("datetime", "date"):
-                return self._normalize_timestamp(field_value)
-            if original_type in ("varchar", "char", "text"):
-                return str(field_value) if field_value is not None else None
-            if original_type is None:
-                # Pattern-based fields (inferred_from: "pattern") - use Singer type
-                if actual_type == "integer":
-                    return int(field_value) if field_value not in ("", None) else None
-                if actual_type == "number":
-                    return float(field_value) if field_value not in ("", None) else None
-                if actual_type == "boolean":
-                    return bool(field_value) if field_value is not None else None
-                return str(field_value) if field_value is not None else None
-            # Fallback for unknown metadata types
-            return str(field_value) if field_value is not None else None
+            if original_type:
+                return self._convert_by_metadata_type(original_type, field_value)
+            # Pattern-based fields (inferred_from: "pattern") - use Singer type
+            return self._convert_by_schema_type(actual_type, field_value)
 
         except (ValueError, TypeError) as e:
             # Type conversion failures are serious data quality issues
@@ -770,13 +825,52 @@ class WMSStream(RESTStream[dict[str, Any]]):
             # Fail fast - don't mask data quality issues
             raise ValueError(error_msg) from e
 
+    def _convert_by_metadata_type(
+        self, original_type: str, field_value: ValueType,
+    ) -> ValueType:
+        """Convert field value based on WMS metadata type."""
+        if original_type in ("pk", "integer"):
+            return int(field_value) if field_value not in ("", None) else None
+        if original_type in ("number", "decimal"):
+            return float(field_value) if field_value not in ("", None) else None
+        if original_type == "boolean":
+            return self._convert_to_boolean(field_value)
+        if original_type in ("datetime", "date"):
+            return self._normalize_timestamp(field_value)
+        if original_type in ("varchar", "char", "text"):
+            return str(field_value) if field_value is not None else None
+        # Fallback for unknown metadata types
+        return str(field_value) if field_value is not None else None
+
+    def _convert_by_schema_type(
+        self, actual_type: str, field_value: ValueType,
+    ) -> ValueType:
+        """Convert field value based on Singer schema type."""
+        if actual_type == "integer":
+            return int(field_value) if field_value not in ("", None) else None
+        if actual_type == "number":
+            return float(field_value) if field_value not in ("", None) else None
+        if actual_type == "boolean":
+            return bool(field_value) if field_value is not None else None
+        return str(field_value) if field_value is not None else None
+
+    def _convert_to_boolean(self, field_value: ValueType) -> bool | None:
+        """Convert various value types to boolean."""
+        if isinstance(field_value, bool):
+            return field_value
+        if isinstance(field_value, str):
+            return field_value.lower() in ("true", "1", "yes", "y")
+        if isinstance(field_value, (int, float)):
+            return bool(field_value)
+        return None
+
     def _process_field_standard(
         self,
         field_name: str,
-        field_value: Any,
+        field_value: ValueType,
         field_schema: dict[str, Any],
-    ) -> Any:
-        """Standard field processing for fields without metadata."""
+    ) -> ValueType:
+        """Process field without metadata using standard approach."""
         schema_type = field_schema.get("type", ["string", "null"])
 
         # Extract actual type (remove 'null' from Singer schema)
@@ -805,41 +899,47 @@ class WMSStream(RESTStream[dict[str, Any]]):
             # Fail fast - don't mask data quality issues
             raise ValueError(error_msg) from e
 
-    def _normalize_timestamp(self, timestamp_value: Any) -> str | None:
+    def _normalize_timestamp(self, timestamp_value: ValueType) -> str | None:
         """Normalize timestamp to ISO format with timezone."""
         if timestamp_value is None:
             return None
 
         if isinstance(timestamp_value, str):
-            if not timestamp_value.strip():
-                return None
-            # Ensure UTC timezone if not present
-            if not timestamp_value.endswith("Z") and "+00:00" not in timestamp_value:
-                try:
-                    # Try to parse and add UTC timezone
-                    dt = datetime.fromisoformat(timestamp_value.replace("Z", ""))
-                    return dt.replace(tzinfo=timezone.utc).isoformat()
-                except (ValueError, TypeError) as e:
-                    # Timestamp normalization failures - log as error but proceed
-                    self.logger.exception(
-                        "Timestamp normalization failed for value '%s': %s. "
-                        "Using original value - may cause timezone issues downstream.",
-                        timestamp_value,
-                        e,
-                    )
-                    return timestamp_value
-            return timestamp_value
+            return self._normalize_string_timestamp(timestamp_value)
         if isinstance(timestamp_value, datetime):
-            # Convert datetime to ISO string with timezone
-            if timestamp_value.tzinfo is None:
-                timestamp_with_tz = timestamp_value.replace(tzinfo=timezone.utc)
-                return timestamp_with_tz.isoformat()
-            return timestamp_value.isoformat()
+            return self._normalize_datetime_timestamp(timestamp_value)
         # Try to convert to string - timestamp_value is guaranteed non-None here
         return str(timestamp_value)
 
+    def _normalize_string_timestamp(self, timestamp_value: str) -> str | None:
+        """Normalize string timestamp values."""
+        if not timestamp_value.strip():
+            return None
+        # Ensure UTC timezone if not present
+        if not timestamp_value.endswith("Z") and "+00:00" not in timestamp_value:
+            try:
+                # Try to parse and add UTC timezone
+                dt = datetime.fromisoformat(timestamp_value.replace("Z", ""))
+                return dt.replace(tzinfo=timezone.utc).isoformat()
+            except (ValueError, TypeError):
+                # Timestamp normalization failures - log as error but proceed
+                self.logger.exception(
+                    "Timestamp normalization failed for value '%s'. "
+                    "Using original value - may cause timezone issues downstream.",
+                    timestamp_value,
+                )
+                return timestamp_value
+        return timestamp_value
+
+    def _normalize_datetime_timestamp(self, timestamp_value: datetime) -> str:
+        """Normalize datetime timestamp objects."""
+        if timestamp_value.tzinfo is None:
+            timestamp_with_tz = timestamp_value.replace(tzinfo=timezone.utc)
+            return timestamp_with_tz.isoformat()
+        return timestamp_value.isoformat()
+
     def request_records(
-        self, context: Mapping[str, Any] | None
+        self, context: Mapping[str, Any] | None,
     ) -> Iterable[dict[str, Any]]:
         """Override request_records to add detailed HTTP logging."""
         request_count = 0
@@ -931,9 +1031,6 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     "encoding": response.encoding,
                 },
             )
-
-            return response
-
         except Exception as e:
             request_duration = time.time() - request_start
 
@@ -950,9 +1047,11 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 },
             )
             raise
+        else:
+            return response
 
     def get_records(
-        self, context: Mapping[str, Any] | None
+        self, context: Mapping[str, Any] | None,
     ) -> Iterable[dict[str, Any]]:
         """Get records from the stream with retry logic."""
         self.logger.info(
@@ -987,11 +1086,11 @@ class WMSStream(RESTStream[dict[str, Any]]):
         except RetriableAPIError as e:
             self.logger.warning("Retryable error for %s: %s", self._entity_name, e)
             raise
-        except FatalAPIError as e:
-            self.logger.exception("Fatal error for %s: %s", self._entity_name, e)
+        except FatalAPIError:
+            self.logger.exception("Fatal error for %s", self._entity_name)
             raise
-        except Exception as e:
-            self.logger.exception("Unexpected error for %s: %s", self._entity_name, e)
+        except Exception:
+            self.logger.exception("Unexpected error for %s", self._entity_name)
             raise
         finally:
             elapsed_time = time.time() - start_time
@@ -1009,10 +1108,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
             )
 
     @property
-    def authenticator(self) -> Any:
+    def authenticator(self) -> object:
         """Return authenticator for API requests."""
-        from .auth import get_wms_authenticator
-
         return get_wms_authenticator(self, dict(self.config))
 
     # Additional Singer SDK features
@@ -1023,7 +1120,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return self._schema
 
     def get_starting_timestamp(
-        self, context: Mapping[str, Any] | None
+        self, context: Mapping[str, Any] | None,
     ) -> datetime | None:
         """Get starting timestamp for incremental sync."""
         if self.replication_key:
@@ -1032,14 +1129,13 @@ class WMSStream(RESTStream[dict[str, Any]]):
             if state_value:
                 try:
                     return datetime.fromisoformat(
-                        state_value.replace("Z", "+00:00")
+                        state_value.replace("Z", "+00:00"),
                     )
                 except (ValueError, TypeError) as e:
                     self.logger.exception(
-                        "State corruption: Failed to parse timestamp '%s': %s. "
+                        "State corruption: Failed to parse timestamp '%s'. "
                         "Corrupted state prevents incremental sync.",
                         state_value,
-                        e,
                     )
                     msg = f"Corrupted state timestamp '{state_value}': {e}"
                     raise ValueError(msg) from e
