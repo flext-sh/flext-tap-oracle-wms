@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import fnmatch
 import json
 import logging
 import ssl
@@ -12,7 +11,6 @@ from typing import Any
 import httpx
 
 from .auth import get_wms_authenticator, get_wms_headers
-from .config import HTTP_FORBIDDEN, HTTP_NOT_FOUND, HTTP_OK
 
 logger = logging.getLogger(__name__)
 
@@ -22,35 +20,28 @@ class WMSDiscoveryError(Exception):
     """Base exception for WMS discovery errors."""
 
 
-
 class EntityDiscoveryError(WMSDiscoveryError):
     """Exception raised when entity discovery fails."""
-
 
 
 class EntityDescriptionError(WMSDiscoveryError):
     """Exception raised when entity description fails."""
 
 
-
 class SchemaGenerationError(WMSDiscoveryError):
     """Exception raised when schema generation fails."""
-
 
 
 class DataTypeConversionError(WMSDiscoveryError):
     """Exception raised when data type conversion fails."""
 
 
-
 class NetworkError(WMSDiscoveryError):
     """Exception raised for network-related errors."""
 
 
-
 class AuthenticationError(WMSDiscoveryError):
     """Exception raised for authentication errors."""
-
 
 
 class EntityDiscovery:
@@ -269,282 +260,37 @@ class EntityDiscovery:
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 404:
                     # 404 is a legitimate failure - entity doesn't exist
-                    logger.error("Entity %s does not exist (404) - check entity name or permissions", entity_name)
-                    msg = f"Entity '{entity_name}' not found. Verify entity name and access permissions."
+                    logger.exception(
+                        "Entity %s does not exist (404) - check name or permissions",
+                        entity_name,
+                    )
+                    msg = (
+                        f"Entity '{entity_name}' not found. "
+                        f"Verify entity name and access permissions."
+                    )
                     raise EntityDescriptionError(msg) from e
                 logger.exception("HTTP error describing entity %s: %s", entity_name, e)
-                msg = f"Failed to describe entity {entity_name}: HTTP {e.response.status_code}"
+                msg = (
+                    f"Failed to describe entity {entity_name}: "
+                    f"HTTP {e.response.status_code}"
+                )
                 raise EntityDescriptionError(msg) from e
-            except (httpx.ConnectError, httpx.TimeoutException, httpx.RequestError) as e:
-                logger.exception("Network error describing entity %s: %s", entity_name, e)
-                msg = f"Network error describing entity {entity_name}: {e}"
-                raise httpx.RequestError(msg) from e
-            except (ValueError, KeyError, TypeError) as e:
-                logger.exception("Data parsing error describing entity %s: %s", entity_name, e)
-                msg = f"Failed to parse entity metadata for {entity_name}: {e}"
-                raise ValueError(msg) from e
-
-    async def get_entity_sample(
-        self,
-        entity_name: str,
-        limit: int = 5,
-        order_by: str | None = None,
-    ) -> list[dict[str, Any]]:
-        """Get sample records from entity for schema inference with caching.
-
-        Args:
-        ----
-            entity_name: Name of the entity
-            limit: Number of sample records to fetch
-            order_by: Field to order by (e.g., "mod_ts DESC")
-
-        Returns:
-        -------
-            List of sample records
-
-        """
-        # Check enhanced sample cache
-        cache_key = f"{entity_name}_{limit}_{order_by or ''}"
-        if cache_key in self._sample_cache:
-            cache_time = self._sample_cache_times.get(cache_key)
-            if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
-                seconds=self._cache_ttl,
-            ):
-                logger.debug("Using cached sample data for entity: %s", entity_name)
-                return self._sample_cache[cache_key]
-        url = f"{self.entity_endpoint}/{entity_name}"
-        params = {"page_size": limit, "page_mode": "sequenced"}
-
-        # Add ordering if specified
-        if order_by:
-            params["ordering"] = order_by
-
-        async with httpx.AsyncClient(timeout=30) as client:
-            try:
-                response = await client.get(
-                    url,
-                    headers=self.headers,
-                    params=params,  # type: ignore[arg-type]
-                )
-                response.raise_for_status()
-
-                data = response.json()
-
-                # Handle different response formats
-                sample_data: list[dict[str, Any]]
-                if isinstance(data, dict) and "results" in data:
-                    sample_data = data["results"]
-                elif isinstance(data, list):
-                    sample_data = data[:limit]
-                else:
-                    sample_data = []
-
-                # Cache the sample data
-                self._sample_cache[cache_key] = sample_data
-                self._sample_cache_times[cache_key] = datetime.now(timezone.utc)
-
-                return sample_data
-
-            except httpx.HTTPStatusError as e:
-                if e.response.status_code == HTTP_NOT_FOUND:
-                    # 404 for sampling is a legitimate failure - entity doesn't exist
-                    logger.error("Entity %s does not exist for sampling (404)", entity_name)
-                    msg = f"Entity '{entity_name}' not found for sampling. Verify entity name and permissions."
-                    raise EntityDescriptionError(msg) from e
-                logger.exception("HTTP error getting sample for %s: %s", entity_name, e)
-                msg = f"Failed to get sample data for entity {entity_name}: HTTP {e.response.status_code}"
-                raise EntityDescriptionError(msg) from e
-            except (httpx.ConnectError, httpx.TimeoutException, httpx.RequestError) as e:
-                logger.exception("Network error getting sample for entity %s: %s", entity_name, e)
-                msg = f"Network error getting sample for entity {entity_name}: {e}"
-                raise NetworkError(msg) from e
-            except (ValueError, KeyError, TypeError) as e:
-                logger.exception("Data parsing error getting sample for entity %s: %s", entity_name, e)
-                msg = f"Failed to parse sample data for entity {entity_name}: {e}"
-                raise DataTypeConversionError(msg) from e
-
-    def filter_entities(self, entities: dict[str, str]) -> dict[str, str]:
-        """Filter entities based on configuration.
-
-        Args:
-        ----
-            entities: Dictionary of discovered entities
-
-        Returns:
-        -------
-            Filtered dictionary of entities
-
-        """
-        # If specific entities are configured, use only those
-        if self.config.get("entities"):
-            configured_entities = self.config["entities"]
-            return {
-                name: url
-                for name, url in entities.items()
-                if name in configured_entities
-            }
-
-        # Apply pattern-based filtering
-        filtered = dict(entities)
-
-        patterns = self.config.get("entity_patterns", {})
-
-        # Apply include patterns
-        if patterns.get("include"):
-            filtered = {
-                name: url
-                for name, url in filtered.items()
-                if any(
-                    fnmatch.fnmatch(name, pattern) for pattern in patterns["include"]
-                )
-            }
-
-        # Apply exclude patterns
-        if patterns.get("exclude"):
-            filtered = {
-                name: url
-                for name, url in filtered.items()
-                if not any(
-                    fnmatch.fnmatch(name, pattern) for pattern in patterns["exclude"]
-                )
-            }
-
-        # Always exclude system/internal entities
-        system_prefixes = ["_", "sys_", "internal_"]
-        return {
-            name: url
-            for name, url in filtered.items()
-            if not any(name.startswith(prefix) for prefix in system_prefixes)
-        }
-
-    async def check_entity_access(self, entity_name: str) -> bool:
-        """Check if user has access to entity with caching.
-
-        Args:
-        ----
-            entity_name: Name of the entity
-
-        Returns:
-        -------
-            True if entity is accessible
-
-        """
-        # Check enhanced access cache
-        if entity_name in self._access_cache:
-            cache_time = self._access_cache_times.get(entity_name)
-            if cache_time and datetime.now(timezone.utc) - cache_time < timedelta(
-                seconds=self._access_cache_ttl,
-            ):
-                logger.debug("Using cached access result for entity: %s", entity_name)
-                return self._access_cache[entity_name]
-        url = f"{self.entity_endpoint}/{entity_name}"
-        params = {"page_size": 1, "page_mode": "sequenced"}
-
-        async with httpx.AsyncClient(timeout=30) as client:
-            try:
-                response = await client.get(
-                    url,
-                    headers=self.headers,
-                    params=params,  # type: ignore[arg-type]
-                )
-                access_result = response.status_code == HTTP_OK
-
-                # Cache the access result
-                self._access_cache[entity_name] = access_result
-                self._access_cache_times[entity_name] = datetime.now(timezone.utc)
-
-                return access_result
-
-            except httpx.HTTPStatusError as e:
-                if e.response.status_code == HTTP_FORBIDDEN:
-                    logger.warning("No access to entity %s", entity_name)
-                    access_result = False
-                else:
-                    access_result = False
-
-                # Cache negative results too
-                self._access_cache[entity_name] = access_result
-                self._access_cache_times[entity_name] = datetime.now(timezone.utc)
-
-                return access_result
-            except (httpx.ConnectError, httpx.TimeoutException) as e:
-                # Network connectivity issues - should be retriable
-                logger.error("Network connectivity error checking access to entity %s: %s", entity_name, e)
-                raise NetworkError(f"Cannot connect to WMS API for entity {entity_name}: {e}") from e
-            except httpx.RequestError as e:
-                # HTTP request configuration issues - should fail fast
-                logger.error("HTTP request error checking access to entity %s: %s", entity_name, e)
-                raise NetworkError(f"HTTP request failed for entity {entity_name}: {e}") from e
-            except Exception as e:
-                logger.exception("Unexpected error checking access to entity %s: %s", entity_name, e)
-                msg = f"Unexpected error checking access to entity {entity_name}: {e}"
-                raise RuntimeError(msg) from e
-
-    async def estimate_entity_size(self, entity_name: str) -> int | None:
-        """Estimate the number of records in an entity.
-
-        Args:
-        ----
-            entity_name: Name of the entity
-
-        Returns:
-        -------
-            Estimated record count or None
-
-        """
-        url = f"{self.entity_endpoint}/{entity_name}"
-        params = {"page_size": 1, "page_mode": "sequenced"}
-
-        async with httpx.AsyncClient(timeout=30) as client:
-            try:
-                response = await client.get(
-                    url,
-                    headers=self.headers,
-                    params=params,  # type: ignore[arg-type]
-                )
-                response.raise_for_status()
-
-                data = response.json()
-
-                # Look for count in response
-                if isinstance(data, dict):
-                    return (
-                        data.get("result_count")
-                        or data.get("count")
-                        or data.get("total")
-                    )
-
-                return None
-
-            except httpx.HTTPStatusError as e:
-                if e.response.status_code == HTTP_NOT_FOUND:
-                    # Size estimation 404 can be tolerated - not all entities support this
-                    logger.info("Entity %s does not support size estimation", entity_name)
-                    return None
-                else:
-                    # Other HTTP errors should be logged but not propagated for size estimation
-                    logger.warning(
-                        "HTTP error estimating size for entity %s: %s",
-                        entity_name,
-                        e,
-                    )
-                    return None
             except (
                 httpx.ConnectError,
                 httpx.TimeoutException,
                 httpx.RequestError,
             ) as e:
-                # Size estimation network errors can be tolerated
-                logger.info(
-                    "Network error estimating size for entity %s (not critical): %s",
-                    entity_name,
-                    e,
+                logger.exception(
+                    "Network error describing entity %s: %s", entity_name, e
                 )
-                return None
+                msg = f"Network error describing entity {entity_name}: {e}"
+                raise httpx.RequestError(msg) from e
             except (ValueError, KeyError, TypeError) as e:
-                # Size estimation parsing errors can be tolerated
-                logger.info(
-                    "Data parsing error estimating size for entity %s (not critical): %s",
+                # Data parsing errors during optional size estimation
+                logger.warning(
+                    "Data parsing error during size estimation for entity %s: %s. "
+                    "Response format may not include size information. "
+                    "Size estimation failed but extraction will continue normally.",
                     entity_name,
                     e,
                 )
@@ -678,6 +424,92 @@ class EntityDiscovery:
                 len(expired_access),
             )
 
+    def filter_entities(self, entities: dict[str, str]) -> dict[str, str]:
+        """Filter entities based on configuration patterns."""
+        # Check for entity filters in config
+        entity_filters = self.config.get("entity_filters", {})
+        entity_includes = self.config.get("entity_includes", [])
+        entity_excludes = self.config.get("entity_excludes", [])
+
+        if not entity_includes and not entity_excludes and not entity_filters:
+            return entities
+
+        filtered: dict[str, str] = {}
+
+        for entity_name, entity_url in entities.items():
+            # Apply include filter
+            if entity_includes:
+                if not any(pattern in entity_name for pattern in entity_includes):
+                    continue
+
+            # Apply exclude filter
+            if entity_excludes:
+                if any(pattern in entity_name for pattern in entity_excludes):
+                    continue
+
+            filtered[entity_name] = entity_url
+
+        return filtered
+
+    async def get_entity_sample(
+        self, entity_name: str, limit: int = 5
+    ) -> list[dict[str, Any]]:
+        """Get sample records from an entity for schema inference."""
+        url = f"{self.entity_endpoint}/{entity_name}"
+        params = {"page_size": limit, "page_mode": "sequenced"}
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            try:
+                response = await client.get(
+                    url,
+                    headers=self.headers,
+                    params=params,  # type: ignore[arg-type]
+                )
+                response.raise_for_status()
+
+                data = response.json()
+
+                # Extract records from response
+                if isinstance(data, dict) and "results" in data:
+                    results = data["results"]
+                    if isinstance(results, list):
+                        return results[:limit]
+                elif isinstance(data, list):
+                    return data[:limit]
+
+                return []
+
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    logger.exception("Entity %s not found for sampling", entity_name)
+                    msg = f"Entity '{entity_name}' not found for sampling"
+                    raise EntityDiscoveryError(msg) from e
+                logger.exception(
+                    "HTTP error getting samples for entity %s", entity_name
+                )
+                msg = f"HTTP error getting samples for entity {entity_name}: {e}"
+                raise EntityDiscoveryError(msg) from e
+            except (
+                httpx.ConnectError,
+                httpx.TimeoutException,
+                httpx.RequestError,
+            ) as e:
+                logger.exception(
+                    "Network error getting samples for entity %s: %s", entity_name, e
+                )
+                msg = f"Network error getting samples for entity {entity_name}: {e}"
+                raise NetworkError(msg) from e
+            except (ValueError, KeyError, TypeError) as e:
+                logger.exception(
+                    "Data parsing error getting samples for entity %s: %s",
+                    entity_name,
+                    e,
+                )
+                msg = (
+                    f"Data parsing error getting samples for entity {entity_name}: {e}"
+                )
+                raise DataTypeConversionError(msg) from e
+
 
 class SchemaGenerator:
     """Generate Singer schemas from WMS entity metadata."""
@@ -801,7 +633,9 @@ class SchemaGenerator:
                     # Update type if needed (handle nulls, mixed types)
                     current_type = properties[field_name]
                     new_type = self._infer_type_enhanced(
-                        value, field_name, metadata_type=None,
+                        value,
+                        field_name,
+                        metadata_type=None,
                     )
                     properties[field_name] = self._merge_types(current_type, new_type)
 
@@ -812,9 +646,11 @@ class SchemaGenerator:
         }
 
     def generate_hybrid_schema(
-        self, metadata: dict[str, Any], samples: list[dict[str, Any]],
+        self,
+        metadata: dict[str, Any],
+        samples: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        """Generate schema using metadata for base types and samples for flattened FK objects.
+        """Generate schema using metadata for base types and samples for FK objects.
 
         Args:
         ----
@@ -860,9 +696,11 @@ class SchemaGenerator:
                     break
 
             if field_value is not None:
-                # No metadata available for flattened fields, use pattern-based inference
+                # No metadata for flattened fields, use pattern-based inference
                 base_properties[field_name] = self._infer_type_enhanced(
-                    field_value, field_name, metadata_type=None,
+                    field_value,
+                    field_name,
+                    metadata_type=None,
                 )
             else:
                 # Default nullable type based on field name pattern
@@ -1086,9 +924,12 @@ class SchemaGenerator:
         return False
 
     def _infer_type_enhanced(
-        self, value: Any, field_name: str = "", metadata_type: str | None = None,
+        self,
+        value: Any,
+        field_name: str = "",
+        metadata_type: str | None = None,
     ) -> dict[str, Any]:
-        """Enhanced type inference using metadata FIRST, then field patterns as fallback.
+        """Enhanced type inference using metadata FIRST, then patterns as fallback.
 
         Args:
         ----
@@ -1206,13 +1047,16 @@ class SchemaGenerator:
         return base_type
 
     def _convert_metadata_type_to_singer(
-        self, metadata_type: str, field_name: str,
+        self,
+        metadata_type: str,
+        field_name: str,
     ) -> dict[str, Any]:
         """Convert WMS metadata type to Singer type using centralized mapping."""
         from .type_mapping import convert_metadata_type_to_singer
 
         return convert_metadata_type_to_singer(
-            metadata_type=metadata_type, column_name=field_name,
+            metadata_type=metadata_type,
+            column_name=field_name,
         )
 
     def _infer_type_from_name(self, field_name: str) -> dict[str, Any]:
@@ -1271,7 +1115,7 @@ class SchemaGenerator:
         field_name: str,
         field_def: dict[str, Any],
     ) -> dict[str, Any]:
-        """Create a property definition from field definition using metadata-first approach.
+        """Create property definition using metadata-first approach.
 
         Args:
         ----
@@ -1424,7 +1268,7 @@ class SchemaGenerator:
         """Check if string value is a datetime."""
         if not isinstance(value, str) or not value.strip():
             return False
-            
+
         # Common datetime formats
         for fmt in [
             "%Y-%m-%dT%H:%M:%S.%fZ",
@@ -1447,7 +1291,7 @@ class SchemaGenerator:
         """Check if string value is a date."""
         if not isinstance(value, str) or not value.strip():
             return False
-            
+
         try:
             datetime.strptime(value, "%Y-%m-%d")
             return True

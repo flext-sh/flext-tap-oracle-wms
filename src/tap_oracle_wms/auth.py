@@ -61,25 +61,33 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
                         logger.error("Missing username or password")
                         msg = "Username and password are required for basic auth"
                         raise ValueError(msg)
-                    
+
                     # Additional validation for credential strength
-                    if len(self.username.strip()) < 2 or len(self.password) < 4:
+                    MIN_USERNAME_LEN = 2
+                    MIN_PASSWORD_LEN = 4
+                    if (
+                        len(self.username.strip()) < MIN_USERNAME_LEN
+                        or len(self.password) < MIN_PASSWORD_LEN
+                    ):
                         logger.warning("Weak credentials detected")
-                        
+
                     credentials = f"{self.username}:{self.password}"
                     encoded = base64.b64encode(credentials.encode()).decode()
                     self._auth_headers = {"Authorization": f"Basic {encoded}"}
                     logger.debug("Auth headers created successfully")
                 except (AttributeError, TypeError) as e:
                     # Authentication credential errors are critical - fail immediately
-                    logger.error(
+                    logger.exception(
                         "Critical authentication error: Invalid credentials format. "
                         "Username: '%s', Password type: %s. "
-                        "This indicates configuration issues that will prevent API access.",
-                        self.username, type(self.password).__name__
+                        "This indicates configuration issues that will "
+                        "prevent API access.",
+                        self.username,
+                        type(self.password).__name__,
                     )
                     msg = (
-                        f"Authentication configuration error: Invalid credentials format for user '{self.username}'. "
+                        f"Authentication configuration error: "
+                        f"Invalid credentials format for user '{self.username}'. "
                         f"Username and password must be non-empty strings. Error: {e}"
                     )
                     raise ValueError(msg) from e
@@ -188,7 +196,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
             # Add 30-second buffer to prevent token expiration during request
             buffer_time = timedelta(seconds=30)
             current_time = datetime.now(timezone.utc)
-            
+
             # Check if we have a valid token with buffer
             if (
                 self._access_token

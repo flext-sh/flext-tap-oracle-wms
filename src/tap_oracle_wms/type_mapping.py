@@ -14,8 +14,14 @@ WMS_METADATA_TO_SINGER: dict[str, dict[str, Any]] = {
     "pk": {
         "type": ["integer", "null"],
     },  # Primary keys are integers but nullable in Singer
-    "varchar": {"type": ["string", "null"], "maxLength": 255},
-    "char": {"type": ["string", "null"], "maxLength": 10},
+    "varchar": {
+        "type": ["string", "null"],
+        "maxLength": 500,
+    },  # Increased from 255 to handle longer values
+    "char": {
+        "type": ["string", "null"],
+        "maxLength": 100,
+    },  # Increased from 10 to handle longer values
     "number": {"type": ["number", "null"]},
     "decimal": {"type": ["number", "null"]},
     "integer": {"type": ["integer", "null"]},
@@ -25,7 +31,10 @@ WMS_METADATA_TO_SINGER: dict[str, dict[str, Any]] = {
     "time": {"type": ["string", "null"], "format": "time"},
     "text": {"type": ["string", "null"], "maxLength": 4000},
     "clob": {"type": ["string", "null"], "maxLength": 4000},
-    "relation": {"type": ["string", "null"], "maxLength": 255},  # FK fields
+    "relation": {
+        "type": ["string", "null"],
+        "maxLength": 500,
+    },  # FK fields - increased from 255
 }
 
 # Removed Oracle DDL mappings - moved to table_creator.py and target_oracle
@@ -34,7 +43,10 @@ WMS_METADATA_TO_SINGER: dict[str, dict[str, Any]] = {
 FIELD_PATTERNS_TO_SINGER: dict[str, dict[str, Any]] = {
     # ID fields
     "id_patterns": {"type": ["integer", "null"]},
-    "key_patterns": {"type": ["string", "null"], "maxLength": 255},
+    "key_patterns": {
+        "type": ["string", "null"],
+        "maxLength": 500,
+    },  # Increased from 255
     # Quantity and numeric fields
     "qty_patterns": {"type": ["number", "null"]},
     "price_patterns": {"type": ["number", "null"]},
@@ -44,10 +56,22 @@ FIELD_PATTERNS_TO_SINGER: dict[str, dict[str, Any]] = {
     # Boolean flags
     "flag_patterns": {"type": ["boolean", "null"]},
     # Text fields
-    "desc_patterns": {"type": ["string", "null"], "maxLength": 500},
-    "code_patterns": {"type": ["string", "null"], "maxLength": 50},
-    "name_patterns": {"type": ["string", "null"], "maxLength": 255},
-    "addr_patterns": {"type": ["string", "null"], "maxLength": 500},
+    "desc_patterns": {
+        "type": ["string", "null"],
+        "maxLength": 1000,
+    },  # Increased from 500
+    "code_patterns": {
+        "type": ["string", "null"],
+        "maxLength": 100,
+    },  # Increased from 50
+    "name_patterns": {
+        "type": ["string", "null"],
+        "maxLength": 500,
+    },  # Increased from 255
+    "addr_patterns": {
+        "type": ["string", "null"],
+        "maxLength": 1000,
+    },  # Increased from 500
 }
 
 # Pattern matching rules
@@ -93,63 +117,78 @@ def convert_metadata_type_to_singer(
     """
     # Priority 1: WMS metadata types
     if metadata_type and metadata_type.lower() in WMS_METADATA_TO_SINGER:
-        base_schema = WMS_METADATA_TO_SINGER[metadata_type.lower()]
-        schema = {
-            "type": base_schema["type"][:],  # Create copy of type array
-        }
+        return _create_schema_from_metadata(metadata_type, max_length)
 
-        # Copy other properties
-        if "format" in base_schema:
-            schema["format"] = base_schema["format"]
-        if "maxLength" in base_schema:
-            schema["maxLength"] = base_schema["maxLength"]
+def _create_schema_from_metadata(metadata_type: str, max_length: int | None) -> dict[str, Any]:
+    """Create schema from WMS metadata type."""
+    base_schema = WMS_METADATA_TO_SINGER[metadata_type.lower()]
+    schema = {
+        "type": base_schema["type"][:],  # Create copy of type array
+    }
 
-        # Apply max_length override for string types
-        if "string" in schema["type"] and max_length:
-            schema["maxLength"] = min(max_length, 4000)
+    # Copy other properties
+    if "format" in base_schema:
+        schema["format"] = base_schema["format"]
+    if "maxLength" in base_schema:
+        schema["maxLength"] = base_schema["maxLength"]
 
-        return schema
+    # Apply max_length override for string types
+    if "string" in schema["type"] and max_length:
+        schema["maxLength"] = min(max_length, 4000)
+
+    return schema
 
     # Priority 2: Field name patterns
-    column_lower = column_name.lower()
-    for pattern_key, patterns in FIELD_PATTERN_RULES.items():
-        for pattern in patterns:
-            pattern_clean = pattern.replace("*_", "").replace("*", "")
-            if (
-                (
-                    pattern.startswith("*_")
-                    and column_lower.endswith("_" + pattern_clean)
-                )
-                or (
-                    pattern.endswith("_*")
-                    and column_lower.startswith(pattern_clean + "_")
-                )
-                or (pattern == column_lower)
-            ):
-
-                pattern_schema = FIELD_PATTERNS_TO_SINGER[pattern_key]
-                schema = {
-                    "type": pattern_schema["type"][:],  # Create copy of type array
-                }
-
-                # Copy other properties
-                if "format" in pattern_schema:
-                    schema["format"] = pattern_schema["format"]
-                if "maxLength" in pattern_schema:
-                    schema["maxLength"] = pattern_schema["maxLength"]
-
-                # Apply max_length override for string types
-                if "string" in schema["type"] and max_length:
-                    schema["maxLength"] = min(max_length, 4000)
-
-                return schema
+    pattern_schema = _match_field_pattern(column_name, max_length)
+    if pattern_schema:
+        return pattern_schema
 
     # Priority 3: Sample value inference (last resort)
     if sample_value is not None:
         return _infer_from_sample(sample_value)
 
-    # Default fallback - Singer SDK standard nullable string
-    return {"type": ["string", "null"], "maxLength": 255}
+    # Default fallback - Singer SDK standard nullable string with generous size
+    return {"type": ["string", "null"], "maxLength": 500}
+
+
+def _match_field_pattern(column_name: str, max_length: int | None) -> dict[str, Any] | None:
+    """Match field name against patterns and return schema."""
+    column_lower = column_name.lower()
+    for pattern_key, patterns in FIELD_PATTERN_RULES.items():
+        for pattern in patterns:
+            if _pattern_matches(pattern, column_lower):
+                return _create_pattern_schema(pattern_key, max_length)
+    return None
+
+
+def _pattern_matches(pattern: str, column_lower: str) -> bool:
+    """Check if pattern matches column name."""
+    pattern_clean = pattern.replace("*_", "").replace("*", "")
+    return (
+        (pattern.startswith("*_") and column_lower.endswith("_" + pattern_clean))
+        or (pattern.endswith("_*") and column_lower.startswith(pattern_clean + "_"))
+        or (pattern == column_lower)
+    )
+
+
+def _create_pattern_schema(pattern_key: str, max_length: int | None) -> dict[str, Any]:
+    """Create schema from pattern key."""
+    pattern_schema = FIELD_PATTERNS_TO_SINGER[pattern_key]
+    schema = {
+        "type": pattern_schema["type"][:],  # Create copy of type array
+    }
+
+    # Copy other properties
+    if "format" in pattern_schema:
+        schema["format"] = pattern_schema["format"]
+    if "maxLength" in pattern_schema:
+        schema["maxLength"] = pattern_schema["maxLength"]
+
+    # Apply max_length override for string types
+    if "string" in schema["type"] and max_length:
+        schema["maxLength"] = min(max_length, 4000)
+
+    return schema
 
 
 # Oracle conversion functions moved to table_creator.py and target_oracle
@@ -176,7 +215,9 @@ def infer_type_enhanced(
     """
     # Get base schema from metadata-first conversion
     schema = convert_metadata_type_to_singer(
-        metadata_type=metadata_type, column_name=column_name, sample_value=sample_value,
+        metadata_type=metadata_type,
+        column_name=column_name,
+        sample_value=sample_value,
     )
 
     # Determine the inferred type for metadata traceability
@@ -210,31 +251,44 @@ def _infer_type_from_pattern(column_name: str) -> str:
     column_lower = column_name.lower()
 
     # ID patterns -> integer
-    if any(column_lower.endswith("_" + p.replace("*_", "")) or column_lower == p
-           for p in ["id", "*_id"]):
+    if any(
+        column_lower.endswith("_" + p.replace("*_", "")) or column_lower == p
+        for p in ["id", "*_id"]
+    ):
         return "integer"
 
     # Key patterns -> varchar
-    if any(column_lower.endswith("_" + p.replace("*_", ""))
-           for p in ["key"]):
+    if any(column_lower.endswith("_" + p.replace("*_", "")) for p in ["key"]):
         return "varchar"
 
     # Quantity patterns -> number
     quantity_patterns = [
-        "qty", "quantity", "count", "amount", "price", "cost",
-        "rate", "percent", "weight", "volume",
+        "qty",
+        "quantity",
+        "count",
+        "amount",
+        "price",
+        "cost",
+        "rate",
+        "percent",
+        "weight",
+        "volume",
     ]
     if any(column_lower.endswith("_" + p.replace("*_", "")) for p in quantity_patterns):
         return "number"
 
     # Date patterns -> datetime
-    if any(column_lower.endswith("_" + p.replace("*_", "")) or p in column_lower
-           for p in ["date", "time", "ts", "timestamp"]):
+    if any(
+        column_lower.endswith("_" + p.replace("*_", "")) or p in column_lower
+        for p in ["date", "time", "ts", "timestamp"]
+    ):
         return "datetime"
 
     # Flag patterns -> boolean
-    if any(column_lower.endswith("_" + p.replace("*_", ""))
-           for p in ["flg", "flag", "enabled", "active"]):
+    if any(
+        column_lower.endswith("_" + p.replace("*_", ""))
+        for p in ["flg", "flag", "enabled", "active"]
+    ):
         return "boolean"
 
     # Default to varchar
@@ -311,7 +365,8 @@ def get_singer_type(metadata_type: str | None, column_name: str = "") -> dict[st
 
 
 def singer_type_from_wms_metadata(
-    metadata_type: str, column_name: str = "",
+    metadata_type: str,
+    column_name: str = "",
 ) -> dict[str, Any]:
     """Convert WMS metadata to Singer type in proper Singer SDK format.
 

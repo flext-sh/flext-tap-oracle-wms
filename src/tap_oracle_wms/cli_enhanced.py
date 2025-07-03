@@ -4,14 +4,19 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
+import os
 import sys
 from pathlib import Path
 from typing import Any
 
 import click
+from dotenv import load_dotenv
 
 from tap_oracle_wms.discovery import EntityDiscovery
 from tap_oracle_wms.tap import TapOracleWMS
+
+logger = logging.getLogger(__name__)
 
 
 @click.group()
@@ -45,7 +50,8 @@ def validate(config: str) -> None:
 
         click.echo("✅ Configuration is valid")
 
-    except (ValueError, KeyError, TypeError) as e:
+    except (ValueError, KeyError, TypeError, RuntimeError) as e:
+        logger.exception("❌ CONFIGURATION ERROR - Invalid tap configuration: %s", e)
         click.echo(f"❌ Configuration error: {e}")
         sys.exit(1)
 
@@ -74,6 +80,7 @@ def check_connectivity(config: str) -> None:
             click.echo("⚠️  Connected but no entities found")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
+        logger.exception("❌ CONNECTION FAILED - Cannot connect to Oracle WMS: %s", e)
         click.echo(f"❌ Connection failed: {e}")
         sys.exit(1)
 
@@ -102,6 +109,7 @@ def list_entities(config: str) -> None:
             click.echo(f"    URL: {url}")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
+        logger.exception("❌ ENTITY LISTING FAILED - Cannot list entities: %s", e)
         click.echo(f"❌ Error listing entities: {e}")
         sys.exit(1)
 
@@ -144,6 +152,7 @@ def describe_entity(config: str, entity_name: str) -> None:
             click.echo(f"\nParameters: {', '.join(params)}")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
+        logger.exception("❌ ENTITY DESCRIPTION FAILED - Cannot describe entity: %s", e)
         click.echo(f"❌ Error describing entity: {e}")
         sys.exit(1)
 
@@ -177,6 +186,7 @@ def sample_data(config: str, entity_name: str, limit: int) -> None:
                 click.echo(f"  {key}: {value}")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
+        logger.exception("❌ SAMPLE DATA FAILED - Cannot get sample data: %s", e)
         click.echo(f"❌ Error getting sample data: {e}")
         sys.exit(1)
 
@@ -209,6 +219,9 @@ def generate_catalog(config: str, output: str) -> None:
             click.echo(f"   ... and {len(streams) - max_display_streams} more streams")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
+        logger.exception(
+            "❌ CATALOG GENERATION FAILED - Cannot generate catalog: %s", e
+        )
         click.echo(f"❌ Error generating catalog: {e}")
         sys.exit(1)
 
@@ -253,6 +266,9 @@ def test_singer(config: str) -> None:
             sys.exit(1)
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
+        logger.exception(
+            "❌ SINGER TEST FAILED - Singer compatibility test failed: %s", e
+        )
         click.echo(f"❌ Error testing Singer compliance: {e}")
         sys.exit(1)
 
@@ -296,6 +312,9 @@ def test_extraction(config: str, entity: str | None) -> None:
             click.echo("⚠️  No data available for extraction test")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
+        logger.exception(
+            "❌ EXTRACTION TEST FAILED - Data extraction test failed: %s", e
+        )
         click.echo(f"❌ Error testing extraction: {e}")
         sys.exit(1)
 
@@ -304,9 +323,6 @@ def _load_config(config_path: str) -> dict[str, Any]:
     """Load configuration from file or environment."""
     if config_path == ".env" or config_path.endswith(".env"):
         # Load from environment variables
-        import os
-
-        from dotenv import load_dotenv
 
         if Path(config_path).exists():
             load_dotenv(config_path)
@@ -319,7 +335,8 @@ def _load_config(config_path: str) -> dict[str, Any]:
             "facility_code": os.getenv("TAP_ORACLE_WMS_FACILITY_CODE", "*"),
             "page_size": int(os.getenv("TAP_ORACLE_WMS_PAGE_SIZE", "100")),
             "request_timeout": int(os.getenv("TAP_ORACLE_WMS_REQUEST_TIMEOUT", "120")),
-            "verify_ssl": os.getenv("TAP_ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
+            "verify_ssl": os.getenv("TAP_ORACLE_WMS_VERIFY_SSL", "true").lower()
+            == "true",
             "record_limit": int(os.getenv("TAP_ORACLE_WMS_RECORD_LIMIT", "1000")),
         }
     # Load from JSON file

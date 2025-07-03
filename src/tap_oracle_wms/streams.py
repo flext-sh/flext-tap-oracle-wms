@@ -13,6 +13,7 @@ with full functionality including:
 from __future__ import annotations
 
 import json
+import logging
 import time
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
@@ -22,6 +23,8 @@ import requests
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
+
+# Error logging functionality integrated inline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
@@ -43,18 +46,17 @@ class WMSPaginator(BaseHATEOASPaginator):
             return data.get("next_page") if isinstance(data, dict) else None
         except (ValueError, json.JSONDecodeError) as e:
             # CRITICAL: JSON parsing failures in pagination must not be silent
-            import logging
             logger = logging.getLogger(__name__)
-            logger.error(
+            error_msg = (
                 "Critical pagination failure: Failed to parse JSON response. "
-                "This will terminate data extraction and may cause incomplete datasets. "
-                "Response status: %s, Content-Type: %s, Error: %s",
-                response.status_code,
-                response.headers.get("Content-Type", "unknown"),
-                e
+                "This will terminate extraction and may cause incomplete datasets. "
+                f"Response status: {response.status_code}, "
+                f"Content-Type: {response.headers.get('Content-Type', 'unknown')}"
             )
+            logger.exception(error_msg, exc_info=e)
             # Raise exception to ensure pagination failures are not silent
             from singer_sdk.exceptions import RetriableAPIError
+
             msg = f"Pagination JSON parsing failed: {e}"
             raise RetriableAPIError(msg) from e
 
@@ -88,6 +90,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         super().__init__(*args, **kwargs)
 
+        # Error logging setup removed for simplicity
+
         # Set primary keys based on schema
         if "id" in self._schema.get("properties", {}):
             self.primary_keys = ["id"]
@@ -96,11 +100,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
         schema_props = self._schema.get("properties", {})
 
         # Check for forced full sync in config
-        stream_maps = self.config.get("stream_maps", {})
-        entity_config = stream_maps.get(self._entity_name, {})
-        forced_method = entity_config.get("replication_method")
+        force_full_table = self.config.get("force_full_table", False)
 
-        if forced_method == "FULL_TABLE":
+        if force_full_table:
             # Forced full sync via config
             self.replication_method = "FULL_TABLE"
             # Use id as replication key for full sync bookmark tracking
@@ -203,15 +205,22 @@ class WMSStream(RESTStream[dict[str, Any]]):
                         continue
                     # Basic sanitization - allow only alphanumeric, underscore, dash
                     if not key.replace("_", "").replace("-", "").isalnum():
-                        self.logger.warning("Invalid query parameter key format: %s", key)
+                        self.logger.warning(
+                            "Invalid query parameter key format: %s", key
+                        )
                         continue
                     # Handle value arrays safely
                     if isinstance(value, list) and value:
                         clean_values = [str(v)[:100] for v in value if v is not None]
-                        params[key] = clean_values[0] if len(clean_values) == 1 else clean_values
+                        params[key] = (
+                            clean_values[0] if len(clean_values) == 1 else clean_values
+                        )
             except Exception as e:
-                self.logger.error("Failed to parse pagination query parameters: %s", e)
-                raise ValueError(f"Invalid pagination token query: {e}") from e
+                self.logger.exception(
+                    "Failed to parse pagination query parameters: %s", e
+                )
+                msg = f"Invalid pagination token query: {e}"
+                raise ValueError(msg) from e
         return params
 
     def _get_base_params(self) -> dict[str, Any]:
@@ -247,26 +256,31 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     f"'{self._entity_name}' lacks timezone information. This can cause "
                     f"data consistency issues across time zones."
                 )
-                self.logger.error(error_msg)
+                self.logger.exception(error_msg)
                 # Add UTC timezone as fallback but warn
                 start_date = start_date.replace(tzinfo=timezone.utc)
                 self.logger.warning("Applied UTC timezone as fallback for start_date")
-            
+
             # Validate overlap configuration
             overlap_minutes = self.config.get("incremental_overlap_minutes", 5)
             if not isinstance(overlap_minutes, (int, float)) or overlap_minutes < 0:
-                self.logger.warning("Invalid overlap_minutes: %s, using default 5", overlap_minutes)
+                self.logger.warning(
+                    "Invalid overlap_minutes: %s, using default 5", overlap_minutes
+                )
                 overlap_minutes = 5
             if overlap_minutes > 1440:  # More than 24 hours
-                self.logger.warning("Large overlap_minutes may cause performance issues: %s", overlap_minutes)
-            
+                self.logger.warning(
+                    "Large overlap_minutes may cause performance issues: %s",
+                    overlap_minutes,
+                )
+
             adjusted_date = start_date - timedelta(minutes=overlap_minutes)
-            
-            # Validate date range reasonableness 
+
+            # Validate date range reasonableness
             now = datetime.now(timezone.utc)
             if adjusted_date > now:
                 self.logger.warning("Start date is in the future: %s", adjusted_date)
-            
+
             params[f"{self.replication_key}__gte"] = adjusted_date.isoformat()
 
     def _add_full_table_filter(
@@ -274,28 +288,48 @@ class WMSStream(RESTStream[dict[str, Any]]):
         params: dict[str, Any],
         context: Mapping[str, Any] | None,
     ) -> None:
-        """Add full table sync filter with strict bookmark validation."""
+        """Add full table sync filter for recovery by ID.
+
+        Full sync works by:
+        1. Starting from highest ID (no filter)
+        2. Each batch saves the lowest ID as bookmark
+        3. Next request uses id__lt=bookmark to continue
+        4. Stops when reaching ID=0 or no more records
+        """
         bookmark = self.get_starting_replication_key_value(context)
         if bookmark and "id" in self._schema.get("properties", {}):
             try:
                 bookmark_id = int(bookmark)
-                # Additional validation for reasonable bookmark values
+
+                # Validate bookmark is reasonable
                 if bookmark_id < 0:
-                    raise ValueError("Bookmark ID cannot be negative")
+                    self.logger.warning(
+                        "Bookmark ID is negative (%s), resetting full sync", bookmark_id
+                    )
+                    return  # No filter = start from beginning
+
                 if bookmark_id > 999999999999:  # Reasonable upper limit
-                    raise ValueError("Bookmark ID suspiciously large")
-                params["id__lte"] = str(bookmark_id)
-                self.logger.debug("Applied full sync filter with bookmark ID: %s", bookmark_id)
+                    self.logger.warning(
+                        "Bookmark ID suspiciously large (%s), resetting full sync",
+                        bookmark_id,
+                    )
+                    return  # No filter = start from beginning
+
+                # Use id__lt (less than) to get records with ID lower than bookmark
+                # This ensures we continue from where we left off in descending order
+                params["id__lt"] = str(bookmark_id)
+                self.logger.info("Full sync continuing from ID < %s", bookmark_id)
+
             except (ValueError, TypeError) as e:
-                # CRITICAL: Invalid bookmarks cause data consistency issues
-                error_msg = (
-                    f"Critical bookmark validation failure for full sync: "
-                    f"Invalid bookmark '{bookmark}' for entity '{self._entity_name}'. "
-                    f"Expected integer ID. This will cause data sync issues. Error: {e}"
+                self.logger.exception(
+                    "Invalid bookmark '%s' for full sync, starting from beginning: %s",
+                    bookmark,
+                    e,
                 )
-                self.logger.error(error_msg)
-                # Fail fast - don't continue with invalid bookmark
-                raise ValueError(error_msg) from e
+                # Don't add filter = start from highest ID
+        else:
+            self.logger.info("Full sync starting from beginning (highest ID)")
+            # No bookmark or no ID field = start from beginning
 
     def _add_ordering_params(self, params: dict[str, Any]) -> None:
         """Add ordering parameters for consistent results."""
@@ -305,20 +339,46 @@ class WMSStream(RESTStream[dict[str, Any]]):
             self._add_incremental_ordering(params)
 
     def _add_full_table_ordering(self, params: dict[str, Any]) -> None:
-        """Add ordering for full table sync."""
+        """Add ordering for full table sync.
+
+        Full sync MUST use ordering=-id (descending) to enable proper recovery:
+        - Start from highest ID and work down to 0
+        - Each batch bookmark is the lowest ID from that batch
+        - Next request continues with id__lt=bookmark
+        """
         if "id" in self._schema.get("properties", {}):
-            params["ordering"] = "-id"  # Descending for full sync
+            params["ordering"] = "-id"  # CRITICAL: Descending for full sync recovery
+            self.logger.debug("Full sync using ordering=-id for proper recovery")
+        # Fallback if no ID field
         elif self.replication_key:
             params["ordering"] = f"-{self.replication_key}"
+            self.logger.warning(
+                "No ID field found, using -%s for ordering", self.replication_key
+            )
 
     def _add_incremental_ordering(self, params: dict[str, Any]) -> None:
-        """Add ordering for incremental sync."""
+        """Add ordering for incremental sync.
+
+        Incremental sync MUST use temporal ordering for proper checkpointing:
+        - Order by mod_ts ascending to get oldest-to-newest changes
+        - Each batch bookmark is the latest mod_ts from that batch
+        - Next request continues with mod_ts__gte=bookmark
+        """
         if self.replication_key == "mod_ts":
-            params["ordering"] = "mod_ts"  # Ascending for incremental
+            params["ordering"] = "mod_ts"  # CRITICAL: Ascending temporal order
+            self.logger.debug(
+                "Incremental sync using ordering=mod_ts for temporal progression"
+            )
         elif self.replication_key:
             params["ordering"] = self.replication_key
+            self.logger.debug(
+                "Incremental sync using ordering=%s", self.replication_key
+            )
         elif "id" in self._schema.get("properties", {}):
-            params["ordering"] = "id"
+            params["ordering"] = "id"  # Fallback to ID if no replication key
+            self.logger.warning(
+                "No temporal replication key, falling back to ordering=id"
+            )
 
     def _add_entity_filters(self, params: dict[str, Any]) -> None:
         """Add custom entity filters from config."""
@@ -366,12 +426,12 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         except json.JSONDecodeError as e:
             # JSON decode errors indicate serious API issues
-            self.logger.exception(
-                "Critical JSON parsing error for entity %s: Invalid response format. "
-                "This indicates API incompatibility or server-side issues.",
-                self._entity_name
+            error_msg = (
+                f"Critical JSON error for entity {self._entity_name}: Invalid format. "
+                "This indicates API incompatibility or server-side issues."
             )
-            msg = f"Invalid JSON response from WMS API for entity {self._entity_name}: {e}"
+            self.logger.exception(error_msg, exc_info=e)
+            msg = f"Invalid JSON response from API for entity {self._entity_name}: {e}"
             # This is likely a retriable error (server issue)
             raise RetriableAPIError(msg) from e
 
@@ -389,9 +449,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 "response_length": (
                     len(data) if isinstance(data, (list, dict)) else None
                 ),
-                "has_results": (
-                    "results" in data if isinstance(data, dict) else False
-                ),
+                "has_results": ("results" in data if isinstance(data, dict) else False),
                 "has_next_page": (
                     "next_page" in data if isinstance(data, dict) else False
                 ),
@@ -430,6 +488,15 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 },
             )
             yield from results
+        else:
+            # Critical error: results field exists but is not a list
+            error_msg = (
+                f"Critical API data format error for entity '{self._entity_name}': "
+                f"'results' exists but not a list (got {type(results).__name__}). "
+                f"This indicates API format change that prevents data extraction."
+            )
+            self.logger.exception(error_msg)
+            raise FatalAPIError(error_msg)
 
     def _yield_direct_array(self, data: list[Any]) -> Iterable[dict[str, Any]]:
         """Yield records from direct array format."""
@@ -445,12 +512,14 @@ class WMSStream(RESTStream[dict[str, Any]]):
         yield from data
 
     def _log_unexpected_format(self, data: object) -> None:
-        """Log warning for unexpected response format."""
-        self.logger.warning(
-            "Unexpected response format for %s: %s",
-            self._entity_name,
-            type(data).__name__,
+        """Log error and raise exception for unexpected response format."""
+        error_msg = (
+            f"Critical API response format error for entity '{self._entity_name}': "
+            f"Expected dict with 'results' key or list, but got {type(data).__name__}. "
+            f"This indicates an API incompatibility that prevents data extraction."
         )
+        self.logger.exception(error_msg)
+        raise FatalAPIError(error_msg)
 
     def validate_response(self, response: requests.Response) -> None:
         """Validate HTTP response and handle errors."""
@@ -530,11 +599,91 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         Ensures data types match exactly what was defined in schema discovery.
         This guarantees consistency between schema generation and data extraction.
+        
+        🎯 CRITICAL FIX: Automatically add missing fields found in real data
+        but not present in schema discovery to avoid data loss.
         """
         processed_row: dict[str, Any] = {}
 
         # Get schema properties for type validation
         schema_properties = self._schema.get("properties", {})
+
+        # 🔧 AUTO-DISCOVERY: Check for fields in data not present in schema
+        missing_fields = set(row.keys()) - set(schema_properties.keys())
+        if missing_fields:
+            self.logger.warning(
+                "🚨 SCHEMA EXTENSION: Found %d fields not in schema discovery: %s",
+                len(missing_fields),
+                sorted(missing_fields),
+                extra={
+                    "entity": self._entity_name,
+                    "missing_fields": sorted(missing_fields),
+                    "schema_fields_count": len(schema_properties),
+                    "data_fields_count": len(row.keys()),
+                }
+            )
+
+            # 🎯 AUTO-ADD missing fields to schema with smart typing
+            for field_name in missing_fields:
+                field_value = row.get(field_name)
+
+                # Infer type from field name and value
+                if field_name.endswith("_key"):
+                    # Key fields - varchar with reasonable length
+                    inferred_schema = {"type": ["string", "null"], "maxLength": 255}
+                elif field_name.endswith("_id"):
+                    # ID fields - try integer first, fallback to string
+                    if isinstance(field_value, (int, float)) or (
+                        isinstance(field_value, str) and field_value.isdigit()
+                    ):
+                        inferred_schema = {"type": ["integer", "null"]}
+                    else:
+                        inferred_schema = {
+                            "type": ["string", "null"],
+                            "maxLength": 100
+                        }
+                elif field_name.endswith(("_ts", "_date", "_time")):
+                    # Timestamp/date fields
+                    inferred_schema = {
+                        "type": ["string", "null"],
+                        "format": "date-time"
+                    }
+                elif field_name.endswith("_flg"):
+                    # Flag fields - boolean
+                    inferred_schema = {"type": ["boolean", "null"]}
+                elif isinstance(field_value, bool):
+                    inferred_schema = {"type": ["boolean", "null"]}
+                elif isinstance(field_value, (int, float)):
+                    inferred_schema = {"type": ["number", "null"]}
+                else:
+                    # Default to string with generous length
+                    inferred_schema = {"type": ["string", "null"], "maxLength": 500}
+
+                # Add metadata for traceability
+                inferred_schema["x-wms-metadata"] = {
+                    "original_metadata_type": "auto_discovered",
+                    "inferred_from": "data_analysis",
+                    "column_name": field_name,
+                    "auto_added": True
+                }
+
+                # Add to schema properties
+                schema_properties[field_name] = inferred_schema
+
+                self.logger.info(
+                    "🔧 AUTO-ADDED field '%s' to schema with type %s",
+                    field_name,
+                    inferred_schema.get("type"),
+                    extra={
+                        "entity": self._entity_name,
+                        "field_name": field_name,
+                        "inferred_type": inferred_schema.get("type"),
+                        "auto_added": True
+                    }
+                )
+
+            # Update the stream schema to include auto-discovered fields
+            self._schema["properties"] = schema_properties
 
         for field_name, field_value in row.items():
             # Get schema definition for this field
@@ -547,18 +696,25 @@ class WMSStream(RESTStream[dict[str, Any]]):
             elif "x-wms-metadata" in field_schema:
                 # Process field using metadata-first pattern
                 processed_row[field_name] = self._process_field_with_metadata(
-                    field_name, field_value, field_schema,
+                    field_name,
+                    field_value,
+                    field_schema,
                 )
             else:
                 # Standard processing for fields without metadata
                 processed_row[field_name] = self._process_field_standard(
-                    field_name, field_value, field_schema,
+                    field_name,
+                    field_value,
+                    field_schema,
                 )
 
         return processed_row
 
     def _process_field_with_metadata(
-        self, field_name: str, field_value: Any, field_schema: dict[str, Any],
+        self,
+        field_name: str,
+        field_value: Any,
+        field_schema: dict[str, Any],
     ) -> Any:
         """Process field using metadata-first pattern information."""
         metadata = field_schema.get("x-wms-metadata", {})
@@ -591,7 +747,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             if original_type in ("varchar", "char", "text"):
                 return str(field_value) if field_value is not None else None
             if original_type is None:
-                # Pattern-based fields (inferred_from: "pattern") - use Singer schema type
+                # Pattern-based fields (inferred_from: "pattern") - use Singer type
                 if actual_type == "integer":
                     return int(field_value) if field_value not in ("", None) else None
                 if actual_type == "number":
@@ -606,16 +762,19 @@ class WMSStream(RESTStream[dict[str, Any]]):
             # Type conversion failures are serious data quality issues
             error_msg = (
                 f"Critical type conversion error for field '{field_name}': "
-                f"Cannot convert value '{field_value}' (type: {type(field_value).__name__}) "
-                f"to expected type '{original_type}'. This indicates data quality issues "
+                f"Cannot convert '{field_value}' (type: {type(field_value).__name__}) "
+                f"to expected type '{original_type}'. Data quality issues "
                 f"or incorrect schema definition. Error: {e}"
             )
-            self.logger.error(error_msg)
+            self.logger.exception(error_msg)
             # Fail fast - don't mask data quality issues
             raise ValueError(error_msg) from e
 
     def _process_field_standard(
-        self, field_name: str, field_value: Any, field_schema: dict[str, Any],
+        self,
+        field_name: str,
+        field_value: Any,
+        field_schema: dict[str, Any],
     ) -> Any:
         """Standard field processing for fields without metadata."""
         schema_type = field_schema.get("type", ["string", "null"])
@@ -639,10 +798,10 @@ class WMSStream(RESTStream[dict[str, Any]]):
             # Type conversion failures indicate serious data/schema issues
             error_msg = (
                 f"Critical type conversion error for field '{field_name}': "
-                f"Cannot convert value '{field_value}' (type: {type(field_value).__name__}) "
-                f"to expected type '{actual_type}'. This indicates data quality issues. Error: {e}"
+                f"Cannot convert '{field_value}' (type: {type(field_value).__name__}) "
+                f"to expected type '{actual_type}'. Data quality issues. Error: {e}"
             )
-            self.logger.error(error_msg)
+            self.logger.exception(error_msg)
             # Fail fast - don't mask data quality issues
             raise ValueError(error_msg) from e
 
@@ -661,15 +820,13 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     dt = datetime.fromisoformat(timestamp_value.replace("Z", ""))
                     return dt.replace(tzinfo=timezone.utc).isoformat()
                 except (ValueError, TypeError) as e:
-                    # Timestamp normalization failures indicate data quality issues
-                    error_msg = (
-                        f"Critical timestamp format error: Cannot normalize timestamp '{timestamp_value}' "
-                        f"for field '{getattr(self, '_current_field', 'unknown')}'. "
-                        f"This indicates invalid timestamp data that may cause downstream issues. Error: {e}"
+                    # Timestamp normalization failures - log as error but proceed
+                    self.logger.exception(
+                        "Timestamp normalization failed for value '%s': %s. "
+                        "Using original value - may cause timezone issues downstream.",
+                        timestamp_value,
+                        e,
                     )
-                    self.logger.error(error_msg)
-                    # For timestamp normalization, we can be more lenient but must log clearly
-                    self.logger.warning("Proceeding with original timestamp format - may cause timezone issues")
                     return timestamp_value
             return timestamp_value
         if isinstance(timestamp_value, datetime):
@@ -681,7 +838,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
         # Try to convert to string - timestamp_value is guaranteed non-None here
         return str(timestamp_value)
 
-    def request_records(self, context: Mapping[str, Any] | None) -> Iterable[dict[str, Any]]:
+    def request_records(
+        self, context: Mapping[str, Any] | None
+    ) -> Iterable[dict[str, Any]]:
         """Override request_records to add detailed HTTP logging."""
         request_count = 0
 
@@ -700,7 +859,12 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 "request_number": request_count + 1,
                 "url": url,
                 "params": params,
-                "headers": {k: v for k, v in headers.items() if k.lower() not in ["authorization", "cookie", "x-api-key", "x-auth-token"]},
+                "headers": {
+                    k: v
+                    for k, v in headers.items()
+                    if k.lower()
+                    not in ["authorization", "cookie", "x-api-key", "x-auth-token"]
+                },
                 "method": "GET",
                 "request_start_time": time.time(),
             },
@@ -722,7 +886,11 @@ class WMSStream(RESTStream[dict[str, Any]]):
             )
             raise
 
-    def _request(self, prepared_request: requests.PreparedRequest, context: Mapping[str, Any] | None) -> requests.Response:
+    def _request(
+        self,
+        prepared_request: requests.PreparedRequest,
+        context: Mapping[str, Any] | None,
+    ) -> requests.Response:
         """Override _request to log every HTTP call with timing."""
         request_start = time.time()
 
@@ -736,7 +904,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 "entity": self._entity_name,
                 "method": prepared_request.method,
                 "url": prepared_request.url,
-                "headers_count": len(prepared_request.headers) if prepared_request.headers else 0,
+                "headers_count": len(prepared_request.headers)
+                if prepared_request.headers
+                else 0,
                 "body_size": len(prepared_request.body) if prepared_request.body else 0,
                 "call_start_time": request_start,
             },
@@ -781,7 +951,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
             )
             raise
 
-    def get_records(self, context: Mapping[str, Any] | None) -> Iterable[dict[str, Any]]:
+    def get_records(
+        self, context: Mapping[str, Any] | None
+    ) -> Iterable[dict[str, Any]]:
         """Get records from the stream with retry logic."""
         self.logger.info(
             "WMS GET_RECORDS START - Entity: %s",
@@ -830,7 +1002,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     "entity": self._entity_name,
                     "total_records": record_count,
                     "total_time_seconds": elapsed_time,
-                    "records_per_second": record_count / elapsed_time if elapsed_time > 0 else 0,
+                    "records_per_second": record_count / elapsed_time
+                    if elapsed_time > 0
+                    else 0,
                 },
             )
 
@@ -848,21 +1022,27 @@ class WMSStream(RESTStream[dict[str, Any]]):
         """Return the schema for this stream."""
         return self._schema
 
-    def get_starting_timestamp(self, context: Mapping[str, Any] | None) -> datetime | None:
+    def get_starting_timestamp(
+        self, context: Mapping[str, Any] | None
+    ) -> datetime | None:
         """Get starting timestamp for incremental sync."""
         if self.replication_key:
             # Try to get from state
             state_value = self.get_starting_replication_key_value(context)
             if state_value:
                 try:
-                    return datetime.fromisoformat(state_value.replace("Z", "+00:00"))
+                    return datetime.fromisoformat(
+                        state_value.replace("Z", "+00:00")
+                    )
                 except (ValueError, TypeError) as e:
-                    self.logger.warning(
-                        "Failed to parse state timestamp '%s': %s",
+                    self.logger.exception(
+                        "State corruption: Failed to parse timestamp '%s': %s. "
+                        "Corrupted state prevents incremental sync.",
                         state_value,
                         e,
                     )
-                    # Continue to fall back to config start_date
+                    msg = f"Corrupted state timestamp '{state_value}': {e}"
+                    raise ValueError(msg) from e
 
             # Fall back to config start_date
             if self.config.get("start_date"):

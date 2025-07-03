@@ -125,7 +125,9 @@ config_jsonschema = th.PropertiesList(
     th.Property(
         "entity_filters",
         th.ObjectType(),
-        description="Entity-specific filters (e.g., {'allocation': {'status': 'active'}})",
+        description=(
+            "Entity-specific filters (e.g., {'allocation': {'status': 'active'}})"
+        ),
     ),
     # === INCREMENTAL SYNC ===
     th.Property(
