@@ -144,7 +144,7 @@ config_jsonschema = th.PropertiesList(
     th.Property(
         "incremental_overlap_minutes",
         th.IntegerType,
-        default=5,
+        default=30,
         description="Safety overlap in minutes for incremental sync",
     ),
     # === PERFORMANCE SETTINGS ===

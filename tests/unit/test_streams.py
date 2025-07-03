@@ -27,8 +27,8 @@ class TestWMSStream:
                 "code": {"type": "string"},
                 "description": {"type": "string"},
                 "mod_ts": {"type": "string", "format": "date-time"},
-                "create_ts": {"type": "string", "format": "date-time"}
-            }
+                "create_ts": {"type": "string", "format": "date-time"},
+            },
         }
 
     @pytest.fixture
@@ -73,7 +73,7 @@ class TestWMSStream:
         # Mock the method to return expected parameters
         mock_wms_stream.get_url_params.return_value = {
             "page_size": 100,
-            "page_mode": "sequenced"
+            "page_mode": "sequenced",
         }
 
         context = {}
@@ -92,16 +92,16 @@ class TestWMSStream:
         mock_wms_stream.get_url_params.return_value = {
             "page_size": 100,
             "page_mode": "sequenced",
-            "mod_ts_from": "2024-01-01T10:00:00Z"
+            "mod_ts_from": "2024-01-01T10:00:00Z",
         }
 
         context = {}
         state = {
             "bookmarks": {
                 "item": {
-                    "replication_key_value": "2024-01-01T10:00:00Z"
-                }
-            }
+                    "replication_key_value": "2024-01-01T10:00:00Z",
+                },
+            },
         }
 
         params = mock_wms_stream.get_url_params(context, state)
@@ -143,14 +143,14 @@ class TestWMSStream:
             "code": "ITEM001",
             "mod_ts": "2024-01-01T10:00:00Z",
             "_extracted_at": "2024-01-01T12:00:00Z",
-            "_entity": "item"
+            "_entity": "item",
         }
         mock_wms_stream.post_process.return_value = processed_record
 
         record = {
             "id": 1,
             "code": "ITEM001",
-            "mod_ts": "2024-01-01T10:00:00Z"
+            "mod_ts": "2024-01-01T10:00:00Z",
         }
 
         processed = mock_wms_stream.post_process(record)
@@ -181,7 +181,7 @@ class TestWMSStream:
         response_without_next = {
             "results": [{"id": 1}],
             "page_nbr": 1,
-            "page_count": 1
+            "page_count": 1,
         }
 
         mock_response = MagicMock()

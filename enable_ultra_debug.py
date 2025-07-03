@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Ultra Debug Mode Activator for Oracle WMS Tap
+"""Ultra Debug Mode Activator for Oracle WMS Tap.
 
 This script configures maximum logging visibility for sync operations.
 Run this before executing the tap to get EXTREME visibility into what's happening.

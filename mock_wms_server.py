@@ -49,7 +49,7 @@ class MockWMSHandler(BaseHTTPRequestHandler):
             "order_detail",
             "allocation",
             "pick",
-            "shipment"
+            "shipment",
         ]
 
         self._send_json_response(200, entities)
@@ -64,8 +64,8 @@ class MockWMSHandler(BaseHTTPRequestHandler):
                     "item_code": {"type": "string", "max_length": 50, "required": True},
                     "description": {"type": "string", "max_length": 200, "required": False},
                     "mod_ts": {"type": "datetime", "required": False},
-                    "create_ts": {"type": "datetime", "required": False}
-                }
+                    "create_ts": {"type": "datetime", "required": False},
+                },
             }
         elif entity_name == "location":
             metadata = {
@@ -74,8 +74,8 @@ class MockWMSHandler(BaseHTTPRequestHandler):
                     "id": {"type": "integer", "required": True},
                     "location_code": {"type": "string", "max_length": 20, "required": True},
                     "zone": {"type": "string", "max_length": 10, "required": False},
-                    "mod_ts": {"type": "datetime", "required": False}
-                }
+                    "mod_ts": {"type": "datetime", "required": False},
+                },
             }
         else:
             metadata = {
@@ -83,8 +83,8 @@ class MockWMSHandler(BaseHTTPRequestHandler):
                 "fields": {
                     "id": {"type": "integer", "required": True},
                     "code": {"type": "string", "required": True},
-                    "mod_ts": {"type": "datetime", "required": False}
-                }
+                    "mod_ts": {"type": "datetime", "required": False},
+                },
             }
 
         self._send_json_response(200, metadata)
@@ -119,7 +119,7 @@ class MockWMSHandler(BaseHTTPRequestHandler):
                 "item_code": f"ITEM{item_id:06d}",
                 "description": f"Test Item {item_id}",
                 "mod_ts": "2024-01-01T10:00:00Z",
-                "create_ts": "2024-01-01T09:00:00Z"
+                "create_ts": "2024-01-01T09:00:00Z",
             })
 
         # Add pagination info
@@ -130,7 +130,7 @@ class MockWMSHandler(BaseHTTPRequestHandler):
             "page_nbr": 1,
             "page_count": 10,
             "result_count": len(items),
-            "next_page": f"http://localhost:8888/wms/lgfapi/v10/entity/item?cursor={next_cursor}" if next_cursor else None
+            "next_page": f"http://localhost:8888/wms/lgfapi/v10/entity/item?cursor={next_cursor}" if next_cursor else None,
         }
 
     def _generate_location_data(self, page_size, cursor):
@@ -146,13 +146,13 @@ class MockWMSHandler(BaseHTTPRequestHandler):
                 "id": loc_id,
                 "location_code": f"LOC{loc_id:04d}",
                 "zone": zones[loc_id % len(zones)],
-                "mod_ts": "2024-01-01T10:00:00Z"
+                "mod_ts": "2024-01-01T10:00:00Z",
             })
 
         return {
             "results": locations,
             "page_nbr": 1,
-            "result_count": len(locations)
+            "result_count": len(locations),
         }
 
     def _generate_inventory_data(self, page_size, cursor):
@@ -167,12 +167,12 @@ class MockWMSHandler(BaseHTTPRequestHandler):
                 "item_id": (inv_id % 100) + 1,
                 "location_id": (inv_id % 50) + 1,
                 "quantity": inv_id * 10,
-                "mod_ts": "2024-01-01T11:00:00Z"
+                "mod_ts": "2024-01-01T11:00:00Z",
             })
 
         return {
             "results": inventory,
-            "result_count": len(inventory)
+            "result_count": len(inventory),
         }
 
     def _generate_generic_data(self, entity_name, page_size, cursor):
@@ -185,12 +185,12 @@ class MockWMSHandler(BaseHTTPRequestHandler):
             records.append({
                 "id": record_id,
                 "code": f"{entity_name.upper()}{record_id:06d}",
-                "mod_ts": "2024-01-01T10:00:00Z"
+                "mod_ts": "2024-01-01T10:00:00Z",
             })
 
         return {
             "results": records,
-            "result_count": len(records)
+            "result_count": len(records),
         }
 
     def _send_json_response(self, status_code, data):

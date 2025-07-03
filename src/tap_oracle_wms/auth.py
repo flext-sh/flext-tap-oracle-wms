@@ -63,11 +63,11 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
                         raise ValueError(msg)
 
                     # Additional validation for credential strength
-                    MIN_USERNAME_LEN = 2
-                    MIN_PASSWORD_LEN = 4
+                    min_username_len = 2
+                    min_password_len = 4
                     if (
-                        len(self.username.strip()) < MIN_USERNAME_LEN
-                        or len(self.password) < MIN_PASSWORD_LEN
+                        len(self.username.strip()) < min_username_len
+                        or len(self.password) < min_password_len
                     ):
                         logger.warning("Weak credentials detected")
 

@@ -21,7 +21,7 @@ def validate_singer_compliance():
         test_catalog_format,
         test_record_output,
         test_state_handling,
-        test_error_handling
+        test_error_handling,
     ]
 
     passed = 0
@@ -54,7 +54,7 @@ def test_cli_commands():
     commands = [
         ("--help", "Help command"),
         ("--version", "Version command"),
-        ("--about", "About command")
+        ("--about", "About command"),
     ]
 
     for cmd, desc in commands:
@@ -63,7 +63,7 @@ def test_cli_commands():
                 ["python", "-m", "tap_oracle_wms", cmd],
                 check=False, capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
             if result.returncode == 0:
                 print(f"  ✅ {desc}: OK")
@@ -87,7 +87,7 @@ def test_discovery_output():
             "base_url": "http://localhost:8888",
             "username": "test",
             "password": "test",
-            "verify_ssl": False
+            "verify_ssl": False,
         }
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
@@ -107,7 +107,7 @@ def test_discovery_output():
                 ["python", "-m", "tap_oracle_wms", "--config", config_file, "--discover"],
                 check=False, capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode != 0:
@@ -171,16 +171,16 @@ def test_catalog_format():
                             "type": "object",
                             "properties": {
                                 "type": {"type": "string"},
-                                "properties": {"type": "object"}
+                                "properties": {"type": "object"},
                             },
-                            "required": ["type", "properties"]
-                        }
+                            "required": ["type", "properties"],
+                        },
                     },
-                    "required": ["stream", "tap_stream_id", "schema"]
-                }
-            }
+                    "required": ["stream", "tap_stream_id", "schema"],
+                },
+            },
         },
-        "required": ["streams"]
+        "required": ["streams"],
     }
 
     try:
@@ -191,7 +191,7 @@ def test_catalog_format():
             "base_url": "http://localhost:8888",
             "username": "test",
             "password": "test",
-            "verify_ssl": False
+            "verify_ssl": False,
         }
 
         # Mock the discovery to avoid network calls
@@ -244,7 +244,7 @@ def test_record_output():
             "username": "test",
             "password": "test",
             "verify_ssl": False,
-            "record_limit": 1
+            "record_limit": 1,
         }
 
         # Mock record should have Singer format
@@ -254,9 +254,9 @@ def test_record_output():
             "record": {
                 "id": 1,
                 "item_code": "TEST001",
-                "description": "Test Item"
+                "description": "Test Item",
             },
-            "time_extracted": "2024-01-01T12:00:00Z"
+            "time_extracted": "2024-01-01T12:00:00Z",
         }
 
         # Check record structure
@@ -293,7 +293,7 @@ def test_state_handling():
             "base_url": "http://localhost:8888",
             "username": "test",
             "password": "test",
-            "verify_ssl": False
+            "verify_ssl": False,
         }
 
         tap = TapOracleWMS(config=config)
@@ -328,7 +328,7 @@ def test_error_handling():
         invalid_config = {
             "base_url": "http://invalid-wms-server-that-does-not-exist.com",
             "username": "invalid",
-            "password": "invalid"
+            "password": "invalid",
         }
 
         import asyncio

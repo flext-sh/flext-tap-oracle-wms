@@ -24,7 +24,7 @@ else:
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s"
+    format="%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s",
 )
 
 def validate_env_config():
@@ -32,7 +32,7 @@ def validate_env_config():
     required_vars = [
         "TAP_ORACLE_WMS_BASE_URL",
         "TAP_ORACLE_WMS_USERNAME",
-        "TAP_ORACLE_WMS_PASSWORD"
+        "TAP_ORACLE_WMS_PASSWORD",
     ]
 
     missing = []
@@ -68,7 +68,7 @@ def get_wms_config():
         "page_size": int(os.getenv("TAP_ORACLE_WMS_PAGE_SIZE", "100")),
         "request_timeout": int(os.getenv("TAP_ORACLE_WMS_REQUEST_TIMEOUT", "120")),
         "verify_ssl": os.getenv("TAP_ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
-        "record_limit": int(os.getenv("TAP_ORACLE_WMS_RECORD_LIMIT", "10"))
+        "record_limit": int(os.getenv("TAP_ORACLE_WMS_RECORD_LIMIT", "10")),
     }
 
 async def test_discovery_real():

@@ -51,7 +51,7 @@ def validate(config: str) -> None:
         click.echo("✅ Configuration is valid")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
-        logger.exception("❌ CONFIGURATION ERROR - Invalid tap configuration: %s", e)
+        logger.exception("❌ CONFIGURATION ERROR - Invalid tap configuration")
         click.echo(f"❌ Configuration error: {e}")
         sys.exit(1)
 
@@ -80,7 +80,7 @@ def check_connectivity(config: str) -> None:
             click.echo("⚠️  Connected but no entities found")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
-        logger.exception("❌ CONNECTION FAILED - Cannot connect to Oracle WMS: %s", e)
+        logger.exception("❌ CONNECTION FAILED - Cannot connect to Oracle WMS")
         click.echo(f"❌ Connection failed: {e}")
         sys.exit(1)
 
@@ -109,7 +109,7 @@ def list_entities(config: str) -> None:
             click.echo(f"    URL: {url}")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
-        logger.exception("❌ ENTITY LISTING FAILED - Cannot list entities: %s", e)
+        logger.exception("❌ ENTITY LISTING FAILED - Cannot list entities")
         click.echo(f"❌ Error listing entities: {e}")
         sys.exit(1)
 
@@ -152,7 +152,7 @@ def describe_entity(config: str, entity_name: str) -> None:
             click.echo(f"\nParameters: {', '.join(params)}")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
-        logger.exception("❌ ENTITY DESCRIPTION FAILED - Cannot describe entity: %s", e)
+        logger.exception("❌ ENTITY DESCRIPTION FAILED - Cannot describe entity")
         click.echo(f"❌ Error describing entity: {e}")
         sys.exit(1)
 
@@ -186,7 +186,7 @@ def sample_data(config: str, entity_name: str, limit: int) -> None:
                 click.echo(f"  {key}: {value}")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
-        logger.exception("❌ SAMPLE DATA FAILED - Cannot get sample data: %s", e)
+        logger.exception("❌ SAMPLE DATA FAILED - Cannot get sample data")
         click.echo(f"❌ Error getting sample data: {e}")
         sys.exit(1)
 
@@ -220,7 +220,7 @@ def generate_catalog(config: str, output: str) -> None:
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
         logger.exception(
-            "❌ CATALOG GENERATION FAILED - Cannot generate catalog: %s", e
+            "❌ CATALOG GENERATION FAILED - Cannot generate catalog",
         )
         click.echo(f"❌ Error generating catalog: {e}")
         sys.exit(1)
@@ -267,7 +267,7 @@ def test_singer(config: str) -> None:
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
         logger.exception(
-            "❌ SINGER TEST FAILED - Singer compatibility test failed: %s", e
+            "❌ SINGER TEST FAILED - Singer compatibility test failed",
         )
         click.echo(f"❌ Error testing Singer compliance: {e}")
         sys.exit(1)
@@ -313,7 +313,7 @@ def test_extraction(config: str, entity: str | None) -> None:
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
         logger.exception(
-            "❌ EXTRACTION TEST FAILED - Data extraction test failed: %s", e
+            "❌ EXTRACTION TEST FAILED - Data extraction test failed",
         )
         click.echo(f"❌ Error testing extraction: {e}")
         sys.exit(1)
