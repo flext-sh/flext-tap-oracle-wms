@@ -147,39 +147,13 @@ class EntityDiscovery:
 
         """
         # Check enhanced entity cache
-        if (
-            self._entity_cache
-            and self._last_entity_cache_time
-            and datetime.now(timezone.utc) - self._last_entity_cache_time
-            < timedelta(seconds=self._entity_cache_ttl)
-        ):
+        if self._is_entity_cache_valid():
             logger.debug("Using cached entity list")
             return self._entity_cache
 
         logger.info("Discovering entities from Oracle WMS API")
 
-        # Setup timeouts
-        timeout = httpx.Timeout(
-            connect=self.config.get("connect_timeout", 30),
-            read=self.config.get("read_timeout", 120),
-            write=self.config.get("write_timeout", 30),
-            pool=self.config.get("pool_timeout", 10),
-        )
-
-        # SSL configuration
-        verify_ssl = self.config.get("verify_ssl", True)
-        if not verify_ssl:
-            verify_ssl = False
-        elif self.config.get("ssl_ca_file"):
-            ssl_context = ssl.create_default_context()
-            ssl_context.load_verify_locations(self.config["ssl_ca_file"])
-            verify_ssl = ssl_context
-
-        async with httpx.AsyncClient(
-            timeout=timeout,
-            verify=verify_ssl,
-            headers={"User-Agent": self.config.get("user_agent", "tap-oracle-wms/1.0")},
-        ) as client:
+        async with self._create_http_client() as client:
             try:
                 response = await client.get(
                     self.entity_endpoint,
@@ -188,23 +162,12 @@ class EntityDiscovery:
                 response.raise_for_status()
 
                 entity_list = response.json()
-
-                # Convert list of entity names to dictionary mapping names to URLs
-                entities: dict[str, str] = {}
-                if isinstance(entity_list, list):
-                    base_url = f"{self.base_url}/wms/lgfapi/{self.api_version}/entity"
-                    for entity_name in entity_list:
-                        if isinstance(entity_name, str):
-                            entities[entity_name] = f"{base_url}/{entity_name}"
-                elif isinstance(entity_list, dict):
-                    # If API returns dict directly, use it
-                    entities = entity_list
+                entities = self._convert_entity_list_to_dict(entity_list)
 
                 # Cache the results with enhanced caching
-                self._entity_cache = entities
-                self._last_entity_cache_time = datetime.now(timezone.utc)
-
+                self._update_entity_cache(entities)
                 logger.info("Discovered %s entities", len(entities))
+
             except httpx.HTTPStatusError as e:
                 logger.exception("Failed to discover entities")
                 logger.exception("Response: %s", e.response.text)
@@ -220,6 +183,61 @@ class EntityDiscovery:
                 logger.exception("Data parsing error discovering entities")
                 raise
         return entities
+
+    def _is_entity_cache_valid(self) -> bool:
+        """Check if entity cache is still valid."""
+        return (
+            self._entity_cache
+            and self._last_entity_cache_time
+            and datetime.now(timezone.utc) - self._last_entity_cache_time
+            < timedelta(seconds=self._entity_cache_ttl)
+        )
+
+    def _create_http_client(self) -> httpx.AsyncClient:
+        """Create configured HTTP client."""
+        timeout = httpx.Timeout(
+            connect=self.config.get("connect_timeout", 30),
+            read=self.config.get("read_timeout", 120),
+            write=self.config.get("write_timeout", 30),
+            pool=self.config.get("pool_timeout", 10),
+        )
+
+        verify_ssl = self._configure_ssl()
+
+        return httpx.AsyncClient(
+            timeout=timeout,
+            verify=verify_ssl,
+            headers={"User-Agent": self.config.get("user_agent", "tap-oracle-wms/1.0")},
+        )
+
+    def _configure_ssl(self):
+        """Configure SSL settings."""
+        verify_ssl = self.config.get("verify_ssl", True)
+        if not verify_ssl:
+            return False
+        elif self.config.get("ssl_ca_file"):
+            ssl_context = ssl.create_default_context()
+            ssl_context.load_verify_locations(self.config["ssl_ca_file"])
+            return ssl_context
+        return verify_ssl
+
+    def _convert_entity_list_to_dict(self, entity_list: object) -> dict[str, str]:
+        """Convert entity list to dictionary mapping names to URLs."""
+        entities: dict[str, str] = {}
+        if isinstance(entity_list, list):
+            base_url = f"{self.base_url}/wms/lgfapi/{self.api_version}/entity"
+            for entity_name in entity_list:
+                if isinstance(entity_name, str):
+                    entities[entity_name] = f"{base_url}/{entity_name}"
+        elif isinstance(entity_list, dict):
+            # If API returns dict directly, use it
+            entities = entity_list
+        return entities
+
+    def _update_entity_cache(self, entities: dict[str, str]) -> None:
+        """Update entity cache with timestamp."""
+        self._entity_cache = entities
+        self._last_entity_cache_time = datetime.now(timezone.utc)
 
     async def describe_entity(self, entity_name: str) -> dict[str, Any] | None:
         """Get entity metadata from describe endpoint.

@@ -119,7 +119,9 @@ def convert_metadata_type_to_singer(
     if metadata_type and metadata_type.lower() in WMS_METADATA_TO_SINGER:
         return _create_schema_from_metadata(metadata_type, max_length)
 
-def _create_schema_from_metadata(metadata_type: str, max_length: int | None) -> dict[str, Any]:
+def _create_schema_from_metadata(
+    metadata_type: str, max_length: int | None
+) -> dict[str, Any]:
     """Create schema from WMS metadata type."""
     base_schema = WMS_METADATA_TO_SINGER[metadata_type.lower()]
     schema = {

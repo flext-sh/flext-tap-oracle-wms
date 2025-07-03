@@ -599,7 +599,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         Ensures data types match exactly what was defined in schema discovery.
         This guarantees consistency between schema generation and data extraction.
-        
+
         🎯 CRITICAL FIX: Automatically add missing fields found in real data
         but not present in schema discovery to avoid data loss.
         """
