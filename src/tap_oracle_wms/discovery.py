@@ -133,29 +133,8 @@ class EntityDiscovery:
             msg = f"Entity description failed for {entity_name}: {e}"
             raise EntityDescriptionError(msg) from e
 
-    async def get_entity_sample(
-        self, entity_name: str, limit: int = 5
-    ) -> list[dict[str, Any]]:
-        """Get sample records from an entity for schema inference.
-
-        Delegates to the specialized entity discovery component.
-
-        Args:
-        ----
-            entity_name: Name of the entity to sample
-            limit: Maximum number of sample records
-
-        Returns:
-        -------
-            List of sample records
-
-        """
-        try:
-            return await self._entity_discovery.get_entity_sample(entity_name, limit)
-        except Exception:
-            logger.exception("Entity sampling failed for %s", entity_name)
-            # Return empty list instead of raising for sampling failures
-            return []
+    # 🚨 METHOD PERMANENTLY DELETED: get_entity_sample
+    # This method is FORBIDDEN - schema discovery uses ONLY API metadata describe
 
     def clear_cache(self, cache_type: str = "all") -> None:
         """Clear cached data.
@@ -203,28 +182,8 @@ class SchemaGenerator:
     def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         """Generate schema from API metadata ONLY - NEVER uses samples."""
         # 🚨 CRITICAL MANDATORY VALIDATION: Enforce metadata-only mode
-        import os
-
-        use_metadata_only = (
-            os.getenv("TAP_ORACLE_WMS_USE_METADATA_ONLY", "true").lower() == "true"
-        )
-        discovery_sample_size = int(
-            os.getenv("TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE", "0")
-        )
-
-        if not use_metadata_only:
-            error_msg = "❌ CRITICAL FAILURE: TAP_ORACLE_WMS_USE_METADATA_ONLY must be true - ABORTING!"
-            logger.error(error_msg)
-            raise SystemExit(error_msg)
-
-        if discovery_sample_size != 0:
-            error_msg = "❌ CRITICAL FAILURE: TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE must be 0 - ABORTING!"
-            logger.error(error_msg)
-            raise SystemExit(error_msg)
-
-        logger.info(
-            "✅ MANDATORY VALIDATIONS PASSED: Using ONLY API metadata for schema generation"
-        )
+        # Schema generation uses EXCLUSIVELY API metadata - no configuration needed
+        logger.info("Generating schema using ONLY API metadata describe")
 
         try:
             return self._schema_generator.generate_from_metadata(metadata)
@@ -233,19 +192,8 @@ class SchemaGenerator:
             msg = f"Schema generation from metadata failed: {e}"
             raise SchemaGenerationError(msg) from e
 
-    def generate_from_sample(self, samples: list[dict[str, Any]]) -> dict[str, Any]:
-        """FORBIDDEN METHOD - NEVER, NEVER, NEVER use samples for schema generation!"""
-        error_msg = "❌ CRITICAL FAILURE: generate_from_sample is FORBIDDEN - Use metadata-only mode! ABORTING!"
-        logger.error(error_msg)
-        raise SystemExit(error_msg)
-
-    def generate_hybrid_schema(
-        self, metadata: dict[str, Any], samples: list[dict[str, Any]]
-    ) -> dict[str, Any]:
-        """FORBIDDEN METHOD - NEVER, NEVER, NEVER use samples for schema generation!"""
-        error_msg = "❌ CRITICAL FAILURE: generate_hybrid_schema is FORBIDDEN - Use metadata-only mode! ABORTING!"
-        logger.error(error_msg)
-        raise SystemExit(error_msg)
+    # 🚨 METHODS PERMANENTLY DELETED: generate_from_sample and generate_hybrid_schema
+    # These methods are FORBIDDEN - schema generation uses ONLY API metadata describe
 
     def generate_metadata_schema_with_flattening(
         self, metadata: dict[str, Any]
@@ -286,22 +234,22 @@ class SchemaGenerator:
         """Legacy private method for backward compatibility."""
         return self.flatten_complex_objects(data, prefix, separator)
 
-    def _infer_type(self, sample_value: object) -> dict[str, Any]:
+    def _infer_type(self, value: object) -> dict[str, Any]:
         """Legacy private method for type inference - backward compatibility."""
         # Simple type inference for backward compatibility
-        if sample_value is None:
+        if value is None:
             return {"type": "null"}
-        if isinstance(sample_value, bool):
+        if isinstance(value, bool):
             return {"type": "boolean"}
-        if isinstance(sample_value, int):
+        if isinstance(value, int):
             return {"type": "integer"}
-        if isinstance(sample_value, float):
+        if isinstance(value, float):
             return {"type": "number"}
-        if isinstance(sample_value, str):
+        if isinstance(value, str):
             return {"type": "string"}
-        if isinstance(sample_value, list):
+        if isinstance(value, list):
             return {"type": "array"}
-        if isinstance(sample_value, dict):
+        if isinstance(value, dict):
             return {"type": "object"}
         return {"type": "string"}
 

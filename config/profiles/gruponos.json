@@ -3,16 +3,15 @@
   "company_code": "GNOS",
   "domain": "gruponos.com.br",
   "environment": "prod",
-  "target_schema": "OIC",
   "table_prefix": "WMS_",
   "performance": {
-    "page_size": 1000,
+    "page_size": 100,
     "max_page_size": 5000,
     "request_timeout": 300,
     "max_retries": 3,
     "retry_backoff_factor": 1.5,
     "connection_pool_size": 5,
-    "batch_processing_size": 1000,
+    "batch_processing_size": 100,
     "cache_ttl_seconds": 1800
   },
   "api": {

@@ -117,7 +117,7 @@ def convert_metadata_type_to_singer(
 
     """
     # Priority 1: WMS metadata types
-    if metadata_type and metadata_type.lower() in WMS_METADATA_TO_SINGER:
+    if metadata_type and metadata_type.lower() in API_METADATA_TO_SINGER:
         return _create_schema_from_metadata(metadata_type, max_length)
 
     # Priority 2: Field name patterns
@@ -138,7 +138,7 @@ def _create_schema_from_metadata(
     max_length: int | None,
 ) -> dict[str, Any]:
     """Create schema from WMS metadata type."""
-    base_schema = WMS_METADATA_TO_SINGER[metadata_type.lower()]
+    base_schema = API_METADATA_TO_SINGER[metadata_type.lower()]
     schema = {
         "type": base_schema["type"][:],  # Create copy of type array
     }

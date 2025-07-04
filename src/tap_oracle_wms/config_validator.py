@@ -129,7 +129,7 @@ class ConfigValidator:
     def _validate_performance_settings(self, config: Dict[str, Any]) -> None:
         """Validate performance settings."""
         # Page size validation
-        page_size = config.get("page_size", 1000)
+        page_size = config.get("page_size", 100)
         if not isinstance(page_size, int) or page_size < 1:
             self.errors.append(f"page_size must be a positive integer: {page_size}")
         elif page_size > 10000:

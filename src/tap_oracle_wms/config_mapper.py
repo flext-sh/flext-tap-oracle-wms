@@ -309,14 +309,8 @@ class ConfigMapper:
 
     # Database/Target Configuration
 
-    def get_target_schema(self) -> str:
-        """Get target schema name."""
-        return self._get_config_value(
-            "target_schema",
-            env_var="WMS_TARGET_SCHEMA",
-            default="WMS_SYNC",
-            profile_path="target_schema",
-        )
+    # 🚨 CRITICAL: get_target_schema METHOD PERMANENTLY DELETED
+    # TAP must NOT know about target/destination schemas - Singer SDK separation of concerns
 
     def get_table_prefix(self) -> str:
         """Get table prefix for target tables."""
@@ -398,17 +392,17 @@ class ConfigMapper:
     # Field Type Patterns
 
     def get_field_type_patterns(self) -> Dict[str, str]:
-        """Get field type patterns for Oracle DDL generation."""
+        """Get field type patterns for target database DDL generation."""
         patterns = self._get_config_value(
             "field_type_patterns",
             env_var="WMS_FIELD_TYPE_PATTERNS_JSON",
             default={
-                "_id$": "NUMBER",
-                "_qty$": "NUMBER(15,3)",
+                "_id$": "INTEGER",
+                "_qty$": "DECIMAL(15,3)",
                 "_flg$": "CHAR(1)",
                 "_ts$": "TIMESTAMP",
-                "_code$": "VARCHAR2(50)",
-                "_desc$": "VARCHAR2(500)",
+                "_code$": "VARCHAR(50)",
+                "_desc$": "VARCHAR(500)",
             },
             profile_path="business_rules.field_type_patterns",
         )
@@ -421,12 +415,12 @@ class ConfigMapper:
             except json.JSONDecodeError:
                 logger.warning("Invalid JSON in field type patterns, using defaults")
                 patterns = {
-                    "_id$": "NUMBER",
-                    "_qty$": "NUMBER(15,3)",
+                    "_id$": "INTEGER",
+                    "_qty$": "DECIMAL(15,3)",
                     "_flg$": "CHAR(1)",
                     "_ts$": "TIMESTAMP",
-                    "_code$": "VARCHAR2(50)",
-                    "_desc$": "VARCHAR2(500)",
+                    "_code$": "VARCHAR(50)",
+                    "_desc$": "VARCHAR(500)",
                 }
 
         return patterns
@@ -549,7 +543,7 @@ class ConfigMapper:
             # Entities
             "enabled_entities": self.get_enabled_entities(),
             # Target
-            "target_schema": self.get_target_schema(),
+            # 🚨 CRITICAL: target_schema REMOVED - TAP must NOT know about destination
             "table_prefix": self.get_table_prefix(),
             # Company
             "company_timezone": self.get_company_timezone(),

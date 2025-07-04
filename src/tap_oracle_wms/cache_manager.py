@@ -31,21 +31,21 @@ class CacheManager(CacheManagerInterface):
         self._schema_cache: dict[str, dict[str, Any]] = {}
         self._metadata_cache: dict[str, dict[str, Any]] = {}
         self._access_cache: dict[str, bool] = {}
-        self._sample_cache: dict[str, list[dict[str, Any]]] = {}
+        # 🚨 SAMPLE CACHE PERMANENTLY DELETED - schema discovery uses ONLY API metadata
 
         # Cache timestamps for TTL management
         self._entity_cache_time: datetime | None = None
         self._schema_cache_times: dict[str, datetime] = {}
         self._metadata_cache_times: dict[str, datetime] = {}
         self._access_cache_times: dict[str, datetime] = {}
-        self._sample_cache_times: dict[str, datetime] = {}
+        # SAMPLE CACHE TIMES DELETED
 
         # Cache configuration
         self._entity_cache_ttl = config.get("entity_cache_ttl", 7200)  # 2 hours
         self._schema_cache_ttl = config.get("schema_cache_ttl", 3600)  # 1 hour
         self._metadata_cache_ttl = config.get("metadata_cache_ttl", 3600)  # 1 hour
         self._access_cache_ttl = config.get("access_cache_ttl", 1800)  # 30 minutes
-        self._sample_cache_ttl = config.get("sample_cache_ttl", 1800)  # 30 minutes
+        # SAMPLE CACHE TTL DELETED
 
     def get_cached_value(self, key: str) -> Any | None:
         """Get value from appropriate cache based on key type."""
@@ -68,11 +68,7 @@ class CacheManager(CacheManagerInterface):
                 self._access_cache, cache_key,
                 self._access_cache_times, self._access_cache_ttl
             )
-        if cache_type == "sample":
-            return self._get_from_cache_with_ttl(
-                self._sample_cache, cache_key,
-                self._sample_cache_times, self._sample_cache_ttl
-            )
+        # SAMPLE CACHE GET DELETED
 
         return None
 
@@ -95,9 +91,7 @@ class CacheManager(CacheManagerInterface):
         elif cache_type == "access":
             self._access_cache[cache_key] = value
             self._access_cache_times[cache_key] = now
-        elif cache_type == "sample":
-            self._sample_cache[cache_key] = value
-            self._sample_cache_times[cache_key] = now
+        # SAMPLE CACHE SET DELETED
 
         logger.debug("Cached %s:%s (TTL: %s)", cache_type, cache_key, ttl)
 
@@ -119,9 +113,7 @@ class CacheManager(CacheManagerInterface):
             self._access_cache.clear()
             self._access_cache_times.clear()
 
-        if cache_type in {"all", "sample"}:
-            self._sample_cache.clear()
-            self._sample_cache_times.clear()
+        # SAMPLE CACHE CLEAR DELETED
 
         logger.info("Cleared %s cache", cache_type)
 
@@ -140,9 +132,7 @@ class CacheManager(CacheManagerInterface):
         if cache_type == "access":
             timestamp = self._access_cache_times.get(cache_key)
             return self._is_timestamp_valid(timestamp, ttl)
-        if cache_type == "sample":
-            timestamp = self._sample_cache_times.get(cache_key)
-            return self._is_timestamp_valid(timestamp, ttl)
+        # SAMPLE CACHE VALIDITY DELETED
 
         return False
 
@@ -168,11 +158,7 @@ class CacheManager(CacheManagerInterface):
                 "entries": len(self._access_cache),
                 "ttl_seconds": self._access_cache_ttl,
             },
-            "sample_cache": {
-                "entries": len(self._sample_cache),
-                "keys": list(self._sample_cache.keys()),
-                "ttl_seconds": self._sample_cache_ttl,
-            },
+            # SAMPLE CACHE STATS DELETED
         }
 
     def _parse_cache_key(self, key: str) -> tuple[str, str]:

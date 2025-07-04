@@ -34,7 +34,7 @@ environments:
           - name: tap-oracle-wms
             config:
               log_level: WARNING
-              page_size: 1000
+              page_size: 100
               pagination_mode: cursor
               retry_limit: 10
               request_concurrency: 5
@@ -144,7 +144,7 @@ plugins:
         - name: page_size
           label: Page Size
           kind: integer
-          description: Number of records per page (1-1000)
+          description: Number of records per page (1-100)
           value: 100
 
         - name: pagination_mode
@@ -184,15 +184,11 @@ plugins:
         - name: schema_discovery_method
           label: Schema Discovery Method
           kind: options
-          description: Method for discovering entity schemas
+          description: Method for discovering entity schemas - ONLY metadata allowed
           options:
-            - label: Automatic
-              value: auto
-            - label: Describe Endpoint
+            - label: API Metadata Only
               value: describe
-            - label: Sample Data
-              value: sample
-          value: auto
+          value: describe
 
         - name: log_level
           label: Log Level
@@ -314,7 +310,7 @@ jobs:
 # Project-specific variables
 vars:
   # Default WMS settings
-  default_page_size: 1000
+  default_page_size: 100
   default_retry_limit: 5
   default_timeout: 30
 

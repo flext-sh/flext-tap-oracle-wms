@@ -21,11 +21,8 @@ class EntityDiscoveryInterface(ABC):
     async def describe_entity(self, entity_name: str) -> dict[str, Any] | None:
         """Get metadata description for a specific entity."""
 
-    @abstractmethod
-    async def get_entity_sample(
-        self, entity_name: str, limit: int = 5
-    ) -> list[dict[str, Any]]:
-        """Get sample records from an entity."""
+    # 🚨 METHOD PERMANENTLY DELETED: get_entity_sample
+    # This method is FORBIDDEN - schema discovery uses ONLY API metadata describe
 
     @abstractmethod
     def filter_entities(self, entities: dict[str, str]) -> dict[str, str]:
@@ -77,7 +74,7 @@ class TypeMapperInterface(ABC):
         metadata_type: str | None,
         column_name: str = "",
         max_length: int | None = None,
-        sample_value: object = None,
+        # 🚨 REMOVED: sample_value parameter - FORBIDDEN
     ) -> dict[str, Any]:
         """Convert WMS metadata type to Singer schema format."""
 
