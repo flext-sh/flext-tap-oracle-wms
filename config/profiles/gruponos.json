@@ -1,0 +1,107 @@
+{
+  "company_name": "GrupoNOS",
+  "company_code": "GNOS",
+  "domain": "gruponos.com.br",
+  "environment": "prod",
+  "target_schema": "OIC",
+  "table_prefix": "WMS_",
+  "performance": {
+    "page_size": 1000,
+    "max_page_size": 5000,
+    "request_timeout": 300,
+    "max_retries": 3,
+    "retry_backoff_factor": 1.5,
+    "connection_pool_size": 5,
+    "batch_processing_size": 1000,
+    "cache_ttl_seconds": 1800
+  },
+  "api": {
+    "api_version": "v10",
+    "endpoint_prefix": "/wms/lgfapi",
+    "entity_endpoint_pattern": "/{prefix}/{version}/entity",
+    "authentication_method": "basic",
+    "custom_headers": {
+      "X-Integration-Source": "gruponos-meltano-nativo",
+      "X-Data-Source": "WMS-Oracle"
+    },
+    "ssl_verify": true
+  },
+  "business_rules": {
+    "allocation_status_mapping": {
+      "ALLOCATED": "Active",
+      "RESERVED": "Active",
+      "PICKED": "Fulfilled",
+      "SHIPPED": "Fulfilled",
+      "CANCELLED": "Cancelled"
+    },
+    "order_status_mapping": {
+      "NEW": "Created",
+      "CONFIRMED": "Confirmed",
+      "IN_PROGRESS": "Processing",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "field_type_patterns": {
+      "_id$": "NUMBER",
+      "_qty$": "NUMBER(15,3)",
+      "_flg$": "CHAR(1)",
+      "_ts$": "TIMESTAMP",
+      "_code$": "VARCHAR2(50)",
+      "_desc$": "VARCHAR2(500)"
+    },
+    "audit_fields": [
+      "create_user",
+      "create_ts",
+      "mod_user",
+      "mod_ts"
+    ],
+    "company_timezone": "America/Sao_Paulo",
+    "fiscal_year_start_month": 1,
+    "currency_code": "BRL"
+  },
+  "entities": {
+    "allocation": {
+      "name": "allocation",
+      "enabled": true,
+      "replication_method": "INCREMENTAL",
+      "replication_key": "mod_ts",
+      "primary_keys": [
+        "company_code",
+        "facility_code",
+        "allocation_id"
+      ],
+      "incremental_overlap_minutes": 5,
+      "custom_filters": {},
+      "custom_ordering": null
+    },
+    "order_hdr": {
+      "name": "order_hdr",
+      "enabled": true,
+      "replication_method": "INCREMENTAL",
+      "replication_key": "mod_ts",
+      "primary_keys": [
+        "company_code",
+        "facility_code",
+        "order_nbr"
+      ],
+      "incremental_overlap_minutes": 5,
+      "custom_filters": {},
+      "custom_ordering": null
+    },
+    "order_dtl": {
+      "name": "order_dtl",
+      "enabled": true,
+      "replication_method": "INCREMENTAL",
+      "replication_key": "mod_ts",
+      "primary_keys": [
+        "company_code",
+        "facility_code",
+        "order_nbr",
+        "order_line_nbr"
+      ],
+      "incremental_overlap_minutes": 5,
+      "custom_filters": {},
+      "custom_ordering": null
+    }
+  }
+}

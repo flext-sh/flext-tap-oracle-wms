@@ -1,0 +1,156 @@
+# Meltano Template for Oracle WMS Tap with ConfigMapper System
+# This template uses the new externalized configuration approach
+
+version: 1
+default_environment: dev
+project_id: ${PROJECT_NAME}
+
+environments:
+- name: dev
+- name: prod
+
+plugins:
+  extractors:
+  # Basic Oracle WMS Tap - Full Sync
+  - name: tap-oracle-wms-full
+    namespace: tap_oracle_wms
+    executable: ${TAP_EXECUTABLE_PATH}
+    config:
+      # Core connection settings (required)
+      base_url: $TAP_ORACLE_WMS_BASE_URL
+      username: $TAP_ORACLE_WMS_USERNAME
+      password: $TAP_ORACLE_WMS_PASSWORD
+
+      # Entity and data selection
+      entities: ${ENTITIES_LIST}
+      force_full_table: true
+
+      # Legacy timeout (kept for backward compatibility)
+      timeout: 3600
+
+    # ALL OTHER CONFIGURATIONS NOW COME FROM:
+    # 1. WMS_PROFILE_NAME environment variable (company-specific profiles)
+    # 2. Individual WMS_* environment variables
+    # 3. ConfigMapper defaults (sensible fallbacks)
+    settings:
+      WMS_PROFILE_NAME: $WMS_PROFILE_NAME
+
+  # Basic Oracle WMS Tap - Incremental Sync
+  - name: tap-oracle-wms-incremental
+    namespace: tap_oracle_wms
+    executable: ${TAP_EXECUTABLE_PATH}
+    config:
+      # Core connection settings (required)
+      base_url: $TAP_ORACLE_WMS_BASE_URL
+      username: $TAP_ORACLE_WMS_USERNAME
+      password: $TAP_ORACLE_WMS_PASSWORD
+
+      # Entity and data selection
+      entities: ${ENTITIES_LIST}
+      force_full_table: false
+
+      # Legacy timeout (kept for backward compatibility)
+      timeout: 2700
+
+    # Configuration comes from profile system
+    settings:
+      WMS_PROFILE_NAME: $WMS_PROFILE_NAME
+
+  # Individual entity extractors (optional - for parallel processing)
+  - name: tap-oracle-wms-allocation-full
+    inherit_from: tap-oracle-wms-full
+    config:
+      entities: ["allocation"]
+
+  - name: tap-oracle-wms-order-hdr-full
+    inherit_from: tap-oracle-wms-full
+    config:
+      entities: ["order_hdr"]
+
+  - name: tap-oracle-wms-order-dtl-full
+    inherit_from: tap-oracle-wms-full
+    config:
+      entities: ["order_dtl"]
+
+  loaders:
+  # Example Oracle Target (adjust as needed)
+  - name: target-oracle
+    namespace: target_oracle
+    executable: ${TARGET_EXECUTABLE_PATH}
+    config:
+      host: $TARGET_ORACLE_HOST
+      port: $TARGET_ORACLE_PORT
+      service_name: $TARGET_ORACLE_SERVICE_NAME
+      username: $TARGET_ORACLE_USERNAME
+      password: $TARGET_ORACLE_PASSWORD
+      default_target_schema: ${TARGET_SCHEMA}
+      table_prefix: ${TABLE_PREFIX}
+
+jobs:
+  - name: full-sync-job
+    tasks:
+      - tap-oracle-wms-full target-oracle
+
+  - name: incremental-sync-job
+    tasks:
+      - tap-oracle-wms-incremental target-oracle
+
+  # Single entity jobs (optional)
+  - name: sync-allocation-full
+    tasks:
+      - tap-oracle-wms-allocation-full target-oracle
+
+  - name: sync-order-hdr-full
+    tasks:
+      - tap-oracle-wms-order-hdr-full target-oracle
+
+  - name: sync-order-dtl-full
+    tasks:
+      - tap-oracle-wms-order-dtl-full target-oracle
+
+schedules: []
+
+# =============================================================================
+# TEMPLATE VARIABLES TO REPLACE:
+# =============================================================================
+# ${PROJECT_NAME} - Your project name (e.g., "company-meltano-native")
+# ${TAP_EXECUTABLE_PATH} - Path to tap executable (e.g., "/path/to/.venv/bin/tap-oracle-wms")
+# ${TARGET_EXECUTABLE_PATH} - Path to target executable (e.g., "/path/to/.venv/bin/target-oracle")
+# ${ENTITIES_LIST} - JSON list of entities (e.g., ["allocation", "order_hdr", "order_dtl"])
+# ${TARGET_SCHEMA} - Target schema name (e.g., "WMS_SYNC")
+# ${TABLE_PREFIX} - Table prefix (e.g., "WMS_")
+#
+# =============================================================================
+# ENVIRONMENT VARIABLES NEEDED:
+# =============================================================================
+# Core connection:
+#   TAP_ORACLE_WMS_BASE_URL
+#   TAP_ORACLE_WMS_USERNAME
+#   TAP_ORACLE_WMS_PASSWORD
+#
+# Profile system:
+#   WMS_PROFILE_NAME (e.g., "gruponos", "company_a", "development")
+#
+# Target database:
+#   TARGET_ORACLE_HOST
+#   TARGET_ORACLE_PORT
+#   TARGET_ORACLE_SERVICE_NAME
+#   TARGET_ORACLE_USERNAME
+#   TARGET_ORACLE_PASSWORD
+#
+# Optional overrides (if not using profile):
+#   WMS_API_VERSION
+#   WMS_PAGE_SIZE
+#   WMS_REQUEST_TIMEOUT
+#   WMS_COMPANY_CODE
+#   WMS_FACILITY_CODE
+#   ... (see .env.template for complete list)
+#
+# =============================================================================
+# PROFILE SYSTEM BENEFITS:
+# =============================================================================
+# - Company-specific configurations in JSON profiles
+# - Environment-based overrides via WMS_* variables
+# - No hardcoded values in meltano.yml
+# - Easy maintenance and deployment
+# - Consistent settings across environments

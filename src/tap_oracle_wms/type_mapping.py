@@ -10,19 +10,19 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# WMS Metadata Type Mappings (Priority 1 - Most Accurate) -> Singer Schema Format
-WMS_METADATA_TO_SINGER: dict[str, dict[str, Any]] = {
+# API Metadata Type Mappings (Priority 1 - Most Accurate) -> Singer Schema Format
+API_METADATA_TO_SINGER: dict[str, dict[str, Any]] = {
     "pk": {
         "type": ["integer", "null"],
     },  # Primary keys are integers but nullable in Singer
     "varchar": {
         "type": ["string", "null"],
-        "maxLength": 500,
-    },  # Increased from 255 to handle longer values
+        # NO maxLength - String fields are unlimited per Singer SDK specification
+    },
     "char": {
         "type": ["string", "null"],
-        "maxLength": 100,
-    },  # Increased from 10 to handle longer values
+        # NO maxLength - String fields are unlimited per Singer SDK specification
+    },
     "number": {"type": ["number", "null"]},
     "decimal": {"type": ["number", "null"]},
     "integer": {"type": ["integer", "null"]},
@@ -30,15 +30,19 @@ WMS_METADATA_TO_SINGER: dict[str, dict[str, Any]] = {
     "datetime": {"type": ["string", "null"], "format": "date-time"},
     "date": {"type": ["string", "null"], "format": "date"},
     "time": {"type": ["string", "null"], "format": "time"},
-    "text": {"type": ["string", "null"], "maxLength": 4000},
-    "clob": {"type": ["string", "null"], "maxLength": 4000},
+    "text": {
+        "type": ["string", "null"]
+    },  # NO maxLength - unlimited per Singer SDK specification
+    "clob": {
+        "type": ["string", "null"]
+    },  # NO maxLength - unlimited per Singer SDK specification
     "relation": {
         "type": ["string", "null"],
-        "maxLength": 500,
-    },  # FK fields - increased from 255
+        # NO maxLength - relationship fields are unlimited per Singer SDK specification
+    },
 }
 
-# Removed Oracle DDL mappings - moved to table_creator.py and target_oracle
+# Target-specific mappings are handled by the target/sink - this is source-agnostic
 
 # Field Name Patterns (Priority 2 - Fallback) -> Singer Schema Format
 FIELD_PATTERNS_TO_SINGER: dict[str, dict[str, Any]] = {
@@ -46,8 +50,8 @@ FIELD_PATTERNS_TO_SINGER: dict[str, dict[str, Any]] = {
     "id_patterns": {"type": ["integer", "null"]},
     "key_patterns": {
         "type": ["string", "null"],
-        "maxLength": 500,
-    },  # Increased from 255
+        # NO maxLength - key fields are unlimited per Singer SDK specification
+    },
     # Quantity and numeric fields
     "qty_patterns": {"type": ["number", "null"]},
     "price_patterns": {"type": ["number", "null"]},
@@ -59,20 +63,16 @@ FIELD_PATTERNS_TO_SINGER: dict[str, dict[str, Any]] = {
     # Text fields
     "desc_patterns": {
         "type": ["string", "null"],
-        "maxLength": 1000,
-    },  # Increased from 500
+    },  # NO maxLength - unlimited per Singer SDK specification
     "code_patterns": {
         "type": ["string", "null"],
-        "maxLength": 100,
-    },  # Increased from 50
+    },  # NO maxLength - unlimited per Singer SDK specification
     "name_patterns": {
         "type": ["string", "null"],
-        "maxLength": 500,
-    },  # Increased from 255
+    },  # NO maxLength - unlimited per Singer SDK specification
     "addr_patterns": {
         "type": ["string", "null"],
-        "maxLength": 1000,
-    },  # Increased from 500
+    },  # NO maxLength - unlimited per Singer SDK specification
 }
 
 # Pattern matching rules
@@ -97,20 +97,20 @@ def convert_metadata_type_to_singer(
     metadata_type: str | None = None,
     column_name: str = "",
     max_length: int | None = None,
-    sample_value: object = None,
 ) -> dict[str, Any]:
-    """Convert WMS metadata type to Singer schema using metadata-first pattern.
+    """Convert WMS metadata type to Singer schema using ONLY metadata and patterns.
+
+    🚨 CRITICAL: Uses ONLY metadata and field name patterns - NO other methods allowed
 
     Priority:
-    1. WMS metadata types (most accurate)
-    2. Field name patterns (fallback)
-    3. Sample value inference (last resort)
+    1. WMS metadata types (REQUIRED)
+    2. Field name patterns (IF metadata missing)
+    3. ABORT if neither available
 
     Args:
         metadata_type: WMS metadata type ('varchar', 'number', etc.)
         column_name: Field name for pattern matching
-        max_length: Maximum length for string fields
-        sample_value: Sample value for type inference
+        max_length: IGNORED - no artificial limits allowed
 
     Returns:
         Singer schema dict with type information in Singer SDK format
@@ -125,12 +125,12 @@ def convert_metadata_type_to_singer(
     if pattern_schema:
         return pattern_schema
 
-    # Priority 3: Sample value inference (last resort)
-    if sample_value is not None:
-        return _infer_from_sample(sample_value)
-
-    # Default fallback - Singer SDK standard nullable string with generous size
-    return {"type": ["string", "null"], "maxLength": 500}
+    # 🚨 CRITICAL: NO fallbacks allowed - ABORT if metadata and pattern both fail
+    raise SystemExit(
+        f"🚨 ABORT: Cannot determine type for field '{column_name}' - "
+        f"metadata_type='{metadata_type}' not found and no pattern match. "
+        "Schema discovery MUST use ONLY API metadata!"
+    )
 
 
 def _create_schema_from_metadata(
@@ -146,12 +146,9 @@ def _create_schema_from_metadata(
     # Copy other properties
     if "format" in base_schema:
         schema["format"] = base_schema["format"]
-    if "maxLength" in base_schema:
-        schema["maxLength"] = base_schema["maxLength"]
-
-    # Apply max_length override for string types
-    if "string" in schema["type"] and max_length:
-        schema["maxLength"] = min(max_length, 4000)
+    # NO artificial maxLength limits - removed base schema maxLength
+    # NO max_length override - Singer SDK allows unlimited strings
+    # WMS API max_length is ignored to prevent artificial limitations
 
     return schema
 
@@ -189,12 +186,9 @@ def _create_pattern_schema(pattern_key: str, max_length: int | None) -> dict[str
     # Copy other properties
     if "format" in pattern_schema:
         schema["format"] = pattern_schema["format"]
-    if "maxLength" in pattern_schema:
-        schema["maxLength"] = pattern_schema["maxLength"]
-
-    # Apply max_length override for string types
-    if "string" in schema["type"] and max_length:
-        schema["maxLength"] = min(max_length, 4000)
+    # NO artificial maxLength limits - removed pattern schema maxLength
+    # NO max_length override - Singer SDK allows unlimited strings
+    # Pattern max_length is ignored to prevent artificial limitations
 
     return schema
 
@@ -205,44 +199,42 @@ def _create_pattern_schema(pattern_key: str, max_length: int | None) -> dict[str
 def infer_type_enhanced(
     metadata_type: str | None = None,
     column_name: str = "",
-    sample_value: object = None,
 ) -> dict[str, Any]:
-    """Enhanced type inference that mirrors discovery._infer_type_enhanced().
+    """🚨 CRITICAL: Enhanced type inference using ONLY metadata and patterns.
 
-    This function provides the same logic used in tap discovery for consistency.
+    This function provides metadata-only logic for tap discovery consistency.
     Returns Singer SDK compatible schema.
 
     Args:
-        metadata_type: WMS metadata type (priority 1)
+        metadata_type: WMS metadata type (REQUIRED priority 1)
         column_name: Field name for pattern matching (priority 2)
-        sample_value: Sample value for inference (priority 3)
 
     Returns:
         Complete Singer schema dict with type and format information
 
     """
-    # Get base schema from metadata-first conversion
+    # Get base schema from metadata-only conversion
     schema = convert_metadata_type_to_singer(
         metadata_type=metadata_type,
         column_name=column_name,
-        sample_value=sample_value,
     )
 
     # Determine the inferred type for metadata traceability
     inferred_type = metadata_type
     inferred_from = "metadata"
 
-    # If no metadata type, infer from pattern or sample
+    # If no metadata type, try pattern only - NO other methods allowed
     if not metadata_type:
         if column_name:
             inferred_type = _infer_type_from_pattern(column_name)
             inferred_from = "pattern"
-        elif sample_value is not None:
-            inferred_type = _infer_type_from_sample(sample_value)
-            inferred_from = "sample"
         else:
-            inferred_type = "varchar"  # Default fallback
-            inferred_from = "default"
+            # 🚨 CRITICAL: ABORT if no metadata and no pattern
+            raise SystemExit(
+                f"🚨 ABORT: Cannot infer type for field '{column_name}' - "
+                "no metadata_type and no column_name for pattern matching. "
+                "Schema discovery MUST use ONLY API metadata!"
+            )
 
     # Add WMS metadata for traceability (Singer SDK allows custom properties)
     schema["x-wms-metadata"] = {
@@ -303,69 +295,25 @@ def _infer_type_from_pattern(column_name: str) -> str:
     return "varchar"
 
 
-def _infer_type_from_sample(sample_value: object) -> str:
-    """Infer WMS-like type from sample value."""
-    if isinstance(sample_value, bool):
-        return "boolean"
-    if isinstance(sample_value, int):
-        return "integer"
-    if isinstance(sample_value, float):
-        return "number"
-    if isinstance(sample_value, str):
-        if _looks_like_date(sample_value):
-            return "datetime"
-        return "varchar"
-    return "varchar"
+# 🚨 FUNCTION PERMANENTLY DELETED: _infer_type_from_sample
+# This function is FORBIDDEN and has been completely removed
+# Schema discovery MUST use ONLY API metadata - NO other methods allowed
 
 
-def _infer_from_sample(sample_value: object) -> dict[str, Any]:
-    """Infer Singer type from sample value in Singer SDK format."""
-    # Define type mappings to reduce return statements
-    type_mappings = [
-        (lambda v: isinstance(v, bool), {"type": ["boolean", "null"]}),
-        (lambda v: isinstance(v, int), {"type": ["integer", "null"]}),
-        (lambda v: isinstance(v, float), {"type": ["number", "null"]}),
-        (
-            lambda v: isinstance(v, (dict, list)),
-            {"type": ["string", "null"], "maxLength": 4000},
-        ),
-    ]
-
-    # Check simple type mappings first
-    for type_check, type_def in type_mappings:
-        if type_check(sample_value):
-            return type_def
-
-    # Handle string types with special logic
-    if isinstance(sample_value, str):
-        return _infer_string_type(sample_value)
-
-    # Default fallback
-    return {"type": ["string", "null"], "maxLength": 255}
+# 🚨 FUNCTION PERMANENTLY DELETED: _infer_from_sample
+# This function is FORBIDDEN and has been completely removed
+# Schema discovery MUST use ONLY API metadata - NO other methods allowed
 
 
-def _infer_string_type(sample_value: str) -> dict[str, Any]:
-    """Infer string type based on content."""
-    if _looks_like_date(sample_value):
-        return {"type": ["string", "null"], "format": "date-time"}
-    return {
-        "type": ["string", "null"],
-        "maxLength": min(len(sample_value) * 2, 4000),
-    }
+# 🚨 FUNCTION PERMANENTLY DELETED: _infer_string_type
+# This function is FORBIDDEN and has been completely removed
+# Schema discovery MUST use ONLY API metadata - NO other methods allowed
 
 
-def _infer_oracle_from_sample(sample_value: object) -> str:
-    """Infer Oracle type from sample value."""
-    if isinstance(sample_value, bool):
-        return "NUMBER(1,0)"
-    if isinstance(sample_value, (int, float)):
-        return "NUMBER"
-    if isinstance(sample_value, str):
-        if _looks_like_date(sample_value):
-            return "TIMESTAMP(6)"
-        length = min(len(sample_value) * 2, 4000)
-        return f"VARCHAR2({length} BYTE)"
-    return "VARCHAR2(255 BYTE)"
+# 🚨 FUNCTION PERMANENTLY DELETED: _infer_oracle_from_sample
+# This function is FORBIDDEN and has been completely removed
+# Oracle type mapping belongs in TARGET module, not TAP
+# TAP must be GENERIC Singer SDK - doesn't know target is Oracle
 
 
 def _looks_like_date(value: str) -> bool:

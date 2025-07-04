@@ -37,6 +37,8 @@ else:
         SchemaGenerator = None
         get_wms_authenticator = None
 
+from .config_mapper import ConfigMapper
+
 # Type alias for value parameters that can accept various types
 ValueType = object | str | int | float | bool | dict[str, object] | list[object] | None
 
@@ -124,17 +126,25 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         super().__init__(*args, **kwargs)
 
+        # Initialize configuration mapper for flexible configuration
+        self.config_mapper = ConfigMapper(dict(self.config))
+
         # Error logging setup removed for simplicity
 
-        # Set primary keys based on schema
-        if "id" in self._schema.get("properties", {}):
+        # Set primary keys using configurable logic
+        entity_primary_keys = self.config_mapper.get_entity_primary_keys(
+            self._entity_name
+        )
+        if entity_primary_keys:
+            self.primary_keys = entity_primary_keys
+        elif "id" in self._schema.get("properties", {}):
             self.primary_keys = ["id"]
 
         # Determine replication method
         schema_props = self._schema.get("properties", {})
 
-        # Get configured replication key
-        configured_rep_key = self.config.get("replication_key", "updated_at")
+        # Get configured replication key from mapper
+        configured_rep_key = self.config_mapper.get_replication_key()
 
         # Check for forced full sync in config
         force_full_table = self.config.get("force_full_table", False)
@@ -162,34 +172,26 @@ class WMSStream(RESTStream[dict[str, Any]]):
     @property
     def path(self) -> str:  # type: ignore[override]
         """Generate entity-specific path."""
-        # Build path from configuration
-        prefix = self.config.get("api_endpoint_prefix", "")
-        if prefix and not prefix.startswith("/"):
-            prefix = f"/{prefix}"
+        # Build path from configuration using ConfigMapper
+        prefix = self.config_mapper.get_endpoint_prefix()
+        api_version = self.config_mapper.get_api_version()
 
-        # Support custom path patterns
-        path_pattern = self.config.get("path_pattern", "/{entity}")
-        path = path_pattern.replace("{entity}", self._entity_name)
+        # Use pattern from ConfigMapper: /wms/lgfapi/v10/entity/{entity}
+        pattern = self.config_mapper.get_entity_endpoint_pattern()
+        path = pattern.format(
+            prefix=prefix, version=api_version, entity=self._entity_name
+        )
 
-        return f"{prefix}{path}"
+        return path
 
     @property
     def http_headers(self) -> dict[str, Any]:
         """Return headers for all requests."""
         headers = super().http_headers
 
-        # Add standard headers
-        headers.update(
-            {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            }
-        )
-
-        # Add custom headers from config
-        custom_headers = self.config.get("custom_headers", {})
-        if custom_headers:
-            headers.update(custom_headers)
+        # Get headers from configuration mapper (no longer hardcoded)
+        configured_headers = self.config_mapper.get_custom_headers()
+        headers.update(configured_headers)
 
         return headers
 
@@ -275,8 +277,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
     def _get_base_params(self) -> dict[str, Any]:
         """Get base request parameters."""
         return {
-            "page_size": self.config.get("page_size", 100),
-            "page_mode": "sequenced",  # Always use cursor-based pagination
+            "page_size": self.config_mapper.get_page_size(),
+            "page_mode": self.config_mapper.get_pagination_mode(),
         }
 
     def _add_replication_filters(
@@ -304,7 +306,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         # Se não há estado inicial, usar hora_atual - 5m
         if not start_date:
-            overlap_minutes = self.config.get("lookback_minutes", 5)
+            overlap_minutes = self.config_mapper.get_lookback_minutes()
             now = datetime.now(timezone.utc)
             start_date = now - timedelta(minutes=overlap_minutes)
             self.logger.info(
@@ -327,7 +329,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         # Validate overlap configuration para estado existente
         if self.get_starting_timestamp(context):  # Só se tem estado
-            overlap_minutes = self.config.get("incremental_overlap_minutes", 5)
+            overlap_minutes = self.config_mapper.get_incremental_overlap_minutes()
             if not isinstance(overlap_minutes, (int, float)) or overlap_minutes < 0:
                 self.logger.warning(
                     "Invalid overlap_minutes: %s, using default 5",
@@ -634,9 +636,13 @@ class WMSStream(RESTStream[dict[str, Any]]):
         - Adds metadata fields
         - Handles data type conversions using metadata-first pattern
         """
-        # 🎯 APPLY CONSISTENT FLATTENING (exact same logic as discovery)
+        # 🚨 CRITICAL: Processing is ALWAYS consistent with metadata-only discovery
+        # These values are HARD-CODED and cannot be overridden for safety
         flattening_enabled = self.config.get("flattening_enabled", True)
+        # use_metadata_only = True  # HARD-CODED: Always True (no config allowed)
+        # discovery_sample_size = 0  # HARD-CODED: Always 0 (no samples ever)
 
+        # Apply flattening consistently with metadata-only discovery
         if flattening_enabled:
             # Use IDENTICAL flattening logic from discovery for consistency
             # Import moved to top of file for PLC0415 compliance
@@ -726,7 +732,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         """Infer schema for a field based on name and value."""
         # Infer type from field name patterns
         if field_name.endswith("_key"):
-            inferred_schema = {"type": ["string", "null"], "maxLength": 255}
+            inferred_schema = {"type": ["string", "null"]}
         elif field_name.endswith("_id"):
             inferred_schema = self._infer_id_field_schema(field_value)
         elif field_name.endswith(("_ts", "_date", "_time")):
@@ -756,7 +762,6 @@ class WMSStream(RESTStream[dict[str, Any]]):
             return {"type": ["integer", "null"]}
         return {
             "type": ["string", "null"],
-            "maxLength": 100,
         }
 
     def _infer_from_value_type(self, field_value: ValueType) -> dict[str, Any]:
@@ -765,8 +770,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
             return {"type": ["boolean", "null"]}
         if isinstance(field_value, (int, float)):
             return {"type": ["number", "null"]}
-        # Default to string with generous length
-        return {"type": ["string", "null"], "maxLength": 500}
+        # Default to string (unlimited per Singer SDK specification)
+        return {"type": ["string", "null"]}
 
     def _log_auto_added_field(
         self,

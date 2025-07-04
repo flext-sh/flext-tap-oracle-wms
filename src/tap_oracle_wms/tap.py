@@ -17,6 +17,7 @@ Designed specifically for Oracle WMS REST API integration.
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 from datetime import datetime, timezone
 from typing import Any
@@ -24,6 +25,9 @@ from typing import Any
 from singer_sdk import Stream, Tap
 from singer_sdk import typing as th
 
+from .config_mapper import ConfigMapper
+from .config_profiles import ConfigProfileManager
+from .config_validator import ConfigValidationError, validate_config_with_mapper
 from .discovery import (
     AuthenticationError,
     EntityDescriptionError,
@@ -203,6 +207,20 @@ class TapOracleWMS(Tap):
             default=3600,
             description="Catalog cache TTL in seconds",
         ),
+        th.Property(
+            "discovery_timeout",
+            th.IntegerType,
+            default=30,
+            description="HTTP timeout for discovery operations in seconds",
+        ),
+        th.Property(
+            "auth_timeout",
+            th.IntegerType,
+            default=30,
+            description="HTTP timeout for authentication operations in seconds",
+        ),
+        # 🚨 SCHEMA DISCOVERY: HARD-CODED to use ONLY API metadata describe
+        # This functionality is not configurable - no environment variables exist for this
         # OAuth2 settings (if using OAuth2)
         th.Property("oauth_client_id", th.StringType, secret=True),
         th.Property("oauth_client_secret", th.StringType, secret=True),
@@ -223,7 +241,18 @@ class TapOracleWMS(Tap):
     ).to_dict()
 
     def __init__(self, *args: object, **kwargs: dict[str, object]) -> None:
-        """Initialize tap with entity discovery."""
+        """Initialize tap with entity discovery and configuration profiles."""
+        # Check for configuration profile override
+        self._profile_config = self._load_profile_config()
+
+        # Merge profile config with provided config
+        if self._profile_config and "config" in kwargs:
+            merged_config = {**self._profile_config}
+            merged_config.update(kwargs["config"])
+            kwargs["config"] = merged_config
+        elif self._profile_config and not kwargs.get("config"):
+            kwargs["config"] = self._profile_config
+
         # Cache for discovered entities and schemas
         self._entity_cache: dict[str, str] | None = None
         self._schema_cache: dict[str, dict[str, Any]] = {}
@@ -238,8 +267,65 @@ class TapOracleWMS(Tap):
         # Call parent init
         super().__init__(*args, **kwargs)
 
+        # Validate configuration using ConfigMapper
+        self._validate_configuration()
+
         # Setup critical error logging to prevent silencing
         # Error logging setup removed for simplicity
+
+    def _load_profile_config(self) -> dict[str, Any] | None:
+        """Load configuration from profile if specified.
+
+        Returns:
+            Configuration dictionary from profile, or None if no profile specified
+
+        """
+        profile_name = os.getenv("WMS_PROFILE_NAME")
+        if not profile_name:
+            return None
+
+        try:
+            manager = ConfigProfileManager()
+            profile = manager.load_profile(profile_name)
+            config = profile.to_singer_config()
+
+            self.logger.info(f"Loaded configuration from profile: {profile_name}")
+            self.logger.debug(
+                f"Profile config: company={profile.company_name}, "
+                f"environment={profile.environment}, "
+                f"entities={len(profile.get_enabled_entities())}"
+            )
+
+            return config
+        except Exception as e:
+            self.logger.warning(f"Failed to load profile '{profile_name}': {e}")
+            return None
+
+    def _validate_configuration(self) -> None:
+        """Validate configuration using ConfigMapper and profiles."""
+        # 🚨 SCHEMA DISCOVERY: HARD-CODED to use ONLY API metadata describe
+        # This tap uses EXCLUSIVELY API metadata - this is not configurable and not optional
+        # NO environment variables or configuration options exist for schema discovery method
+
+        self.logger.info(
+            "✅ SCHEMA DISCOVERY: Hard-coded to use ONLY API metadata describe (no configuration options)"
+        )
+
+        try:
+            # Create ConfigMapper with merged configuration
+            config_mapper = ConfigMapper(dict(self.config))
+
+            # Validate configuration
+            validate_config_with_mapper(config_mapper)
+
+            self.logger.info("✅ Configuration validation passed")
+
+        except ConfigValidationError as e:
+            self.logger.error(f"❌ Configuration validation failed: {e}")
+            raise
+        except Exception as e:
+            self.logger.warning(f"Configuration validation encountered an error: {e}")
+            # Don't fail the entire tap for validation errors, just warn
 
     @property
     def discovery(self) -> EntityDiscovery:
@@ -341,50 +427,15 @@ class TapOracleWMS(Tap):
                 )
                 return stream
         except Exception:
-            self.logger.exception(
-                "Schema generation failed for %s",
-                entity_name,
-            )
-            # Fallback to predefined schema as last resort
-            schema = self._get_predefined_schema(entity_name)
-            if schema:
-                stream = WMSStream(
-                    tap=self,
-                    name=entity_name,
-                    schema=schema,
-                )
-                self.logger.warning("Using fallback schema for %s", entity_name)
-                return stream
-        else:
-            self.logger.warning(
-                "Could not generate schema for %s, skipping",
-                entity_name,
-            )
-            return None
+            # 🚨 CRITICAL: NO FALLBACK HARDCODED SCHEMAS ALLOWED - ABORT INSTEAD
+            error_msg = f"❌ CRITICAL FAILURE: Schema generation failed for {entity_name} - ABORTING! NO fallback schemas allowed!"
+            self.logger.error(error_msg)
+            self.logger.exception("Schema generation failed - this is FATAL:")
+            raise ValueError(error_msg)
 
-    def _get_predefined_schema(self, _entity_name: str) -> dict[str, Any] | None:
-        """Get basic schema for configured entities (generic for all entities)."""
-        # Generic base schema for sync mode - Singer will discover actual structure
-        return {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": ["integer", "null"],
-                    "description": "Primary key",
-                },
-                "mod_ts": {
-                    "type": ["string", "null"],
-                    "format": "date-time",
-                    "description": "Modification timestamp",
-                },
-                "create_ts": {
-                    "type": ["string", "null"],
-                    "format": "date-time",
-                    "description": "Creation timestamp",
-                },
-            },
-            "additionalProperties": True,  # Allow dynamic discovery of all properties
-        }
+    # 🚨 CRITICAL: _get_predefined_schema METHOD PERMANENTLY DELETED
+    # NEVER, NEVER, NEVER use fallback hardcoded schemas - THIS IS FORBIDDEN
+    # Schema MUST ALWAYS come from API metadata describe - NO EXCEPTIONS!
 
     async def _discover_entities_async(self) -> dict[str, str]:
         """Discover available entities from WMS API."""
@@ -405,71 +456,55 @@ class TapOracleWMS(Tap):
         return filtered_entities
 
     async def _generate_schema_async(self, entity_name: str) -> dict[str, Any] | None:
-        """Generate schema for entity using sample data (for flattening) or metadata."""
+        """Generate schema for entity using ONLY API metadata - NEVER samples."""
         # Check cache first
         if entity_name in self._schema_cache:
             return self._schema_cache[entity_name]
 
-        # Schema generation with clear failure modes
+        # 🚨 CRITICAL: Schema generation uses ONLY API metadata describe
+
         flattening_enabled = self.config.get("flattening_enabled", True)
 
         try:
-            if flattening_enabled:
-                # 🎯 FLATTENING ENABLED: Hybrid approach (metadata + samples for FK)
-                metadata = await self.discovery.describe_entity(entity_name)
-                # 🚨 CRITICAL FIX: Use larger sample to ensure all complex objects are discovered
-                # task_key, wave_key and other FK fields come from flattening complex objects
-                # Small samples (5 records) may miss these objects, causing schema inconsistency
-                samples = await self.discovery.get_entity_sample(entity_name, limit=50)
+            # 🎯 ALWAYS GET METADATA FIRST - This is fundamental and never optional
+            metadata = await self.discovery.describe_entity(entity_name)
 
-                if metadata and samples:
-                    # PRIORITY: Hybrid schema (metadata-first + flattened FK objects)
-                    schema = self.schema_generator.generate_hybrid_schema(
-                        metadata,
-                        samples,
-                    )
-                    self.logger.info(
-                        "Generated hybrid schema for %s with %s properties",
-                        entity_name,
-                        len(schema.get("properties", {})),
-                    )
-                elif metadata:
-                    # ACCEPTABLE: Pure metadata (accurate types but no FK flattening)
-                    schema = self.schema_generator.generate_from_metadata(metadata)
-                    self.logger.info(
-                        "Generated metadata-only schema for %s "
-                        "(samples unavailable but not critical)",
-                        entity_name,
-                    )
-                else:
-                    # FAILURE: No metadata means entity doesn't exist or no access
-                    error_msg = (
-                        f"Schema generation failed for {entity_name}: "
-                        f"Entity metadata unavailable. This indicates the entity "
-                        f"doesn't exist or you lack permissions to access it."
-                    )
-                    self.logger.exception(error_msg)
-                    self._raise_schema_error(error_msg)
+            if not metadata:
+                error_msg = f"❌ CRITICAL FAILURE: Cannot get metadata for entity: {entity_name}. This is a fatal error - aborting!"
+                self.logger.error(error_msg)
+                raise ValueError(error_msg)
+
+            # 🚀 METADATA-ONLY MODE: HARD-CODED BEHAVIOR
+            self.logger.info(
+                "🚀 METADATA-ONLY MODE (HARD-CODED): Using ONLY API metadata for entity: %s",
+                entity_name,
+            )
+
+            # Generate schema from metadata ONLY - flattening support if enabled
+            if flattening_enabled:
+                schema = self.schema_generator.generate_metadata_schema_with_flattening(
+                    metadata
+                )
+                self.logger.info(
+                    "✅ Generated metadata schema with flattening for %s with %d total fields",
+                    entity_name,
+                    len(schema.get("properties", {})),
+                )
             else:
-                # 🎯 FLATTENING DISABLED: Metadata-first approach (faster)
-                metadata = await self.discovery.describe_entity(entity_name)
-                if metadata:
-                    # PRIORITY: Pure metadata (most accurate and fastest)
-                    schema = self.schema_generator.generate_from_metadata(metadata)
-                    self.logger.info(
-                        "Generated metadata schema for %s with %s properties",
-                        entity_name,
-                        len(schema.get("properties", {})),
-                    )
-                else:
-                    # FAILURE: No metadata means entity doesn't exist or no access
-                    error_msg = (
-                        f"Schema generation failed for {entity_name}: "
-                        f"Entity metadata unavailable. This indicates the entity "
-                        f"doesn't exist or you lack permissions to access it."
-                    )
-                    self.logger.exception(error_msg)
-                    self._raise_schema_error(error_msg)
+                schema = self.schema_generator.generate_from_metadata(metadata)
+                self.logger.info(
+                    "✅ Generated basic metadata schema for %s with %d fields",
+                    entity_name,
+                    len(schema.get("properties", {})),
+                )
+
+            # Log schema field names for verification
+            field_names = list(schema.get("properties", {}).keys())
+            self.logger.info(
+                "📋 Schema fields for %s: %s",
+                entity_name,
+                field_names[:10] + ["..."] if len(field_names) > 10 else field_names,
+            )
         except (
             EntityDiscoveryError,
             EntityDescriptionError,
