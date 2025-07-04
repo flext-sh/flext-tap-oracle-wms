@@ -79,7 +79,7 @@ class TestSimpleIntegration:
         assert hasattr(discovery, "entity_endpoint")
 
         # Test SchemaGenerator initialization
-        generator = SchemaGenerator()
+        generator = SchemaGenerator(config)
         assert hasattr(generator, "generate_from_sample")
         assert hasattr(generator, "generate_from_metadata")
 

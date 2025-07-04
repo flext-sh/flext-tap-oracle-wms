@@ -197,6 +197,11 @@ class SchemaGenerator:
         """Initialize schema generator facade."""
         self.config = config
         self._schema_generator = SchemaGeneratorCore(config)
+        
+        # Backward compatibility attributes
+        self.enable_flattening = config.get("flattening_enabled", True)
+        self.flatten_id_objects = True  # Default behavior
+        self.max_flatten_depth = config.get("flattening_max_depth", 3)
 
     def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         """Generate schema from API metadata."""
@@ -246,4 +251,39 @@ class SchemaGenerator:
 
     def _infer_type(self, sample_value: object) -> dict[str, Any]:
         """Legacy private method for type inference - backward compatibility."""
-        return self._schema_generator.type_mapper.infer_type_from_sample(sample_value)
+        # Simple type inference for backward compatibility
+        if sample_value is None:
+            return {"type": "null"}
+        elif isinstance(sample_value, bool):
+            return {"type": "boolean"}
+        elif isinstance(sample_value, int):
+            return {"type": "integer"}
+        elif isinstance(sample_value, float):
+            return {"type": "number"}
+        elif isinstance(sample_value, str):
+            return {"type": "string"}
+        elif isinstance(sample_value, list):
+            return {"type": "array"}
+        elif isinstance(sample_value, dict):
+            return {"type": "object"}
+        else:
+            return {"type": "string"}
+
+    def _merge_types(self, type1: dict[str, Any], type2: dict[str, Any]) -> dict[str, Any]:
+        """Legacy private method for type merging - backward compatibility."""
+        # If same type, return it
+        if type1.get("type") == type2.get("type"):
+            return type1
+        else:
+            # Different types - use anyOf structure
+            return {"anyOf": [type1, type2]}
+
+    def _create_property_from_field(self, field_name: str, field_info: dict[str, Any]) -> dict[str, Any]:
+        """Legacy private method for property creation - backward compatibility."""
+        field_type = field_info.get("type", "string")
+        required = field_info.get("required", True)
+        
+        if not required:
+            return {"type": [field_type, "null"]}
+        else:
+            return {"type": field_type}

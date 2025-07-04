@@ -53,7 +53,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         for field_name, field_info in fields.items():
             field_type = field_info.get("type", "string")
             max_length = field_info.get("max_length")
-            nullable = field_info.get("nullable", True)
+            required = field_info.get("required", False)
 
             properties[field_name] = self.type_mapper.convert_metadata_type_to_singer(
                 metadata_type=field_type,
@@ -61,8 +61,8 @@ class SchemaGenerator(SchemaGeneratorInterface):
                 max_length=max_length,
             )
 
-            # Add to required if not nullable and not a known optional field
-            if not nullable and field_name not in {"description", "mod_ts", "create_ts"}:
+            # Add to required if explicitly marked as required
+            if required:
                 required_fields.append(field_name)
 
         schema = {
