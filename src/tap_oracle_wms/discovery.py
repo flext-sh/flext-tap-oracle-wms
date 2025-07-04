@@ -70,7 +70,9 @@ class EntityDiscovery:
 
         # Dependency injection - create specialized components
         self._cache_manager = CacheManager(config)
-        self._entity_discovery = EntityDiscoveryCore(config, self._cache_manager, self.headers)
+        self._entity_discovery = EntityDiscoveryCore(
+            config, self._cache_manager, self.headers
+        )
         self._schema_generator = SchemaGeneratorCore(config)
 
         # Legacy compatibility properties
@@ -92,12 +94,7 @@ class EntityDiscovery:
             Dictionary mapping entity names to their API URLs
 
         """
-        try:
-            return await self._entity_discovery.discover_entities()
-        except Exception as e:
-            logger.exception("Entity discovery failed")
-            msg = f"Entity discovery failed: {e}"
-            raise EntityDiscoveryError(msg) from e
+        return await self._entity_discovery.discover_entities()
 
     def filter_entities(self, entities: dict[str, str]) -> dict[str, str]:
         """Filter entities based on configuration.
@@ -197,14 +194,38 @@ class SchemaGenerator:
         """Initialize schema generator facade."""
         self.config = config
         self._schema_generator = SchemaGeneratorCore(config)
-        
+
         # Backward compatibility attributes
         self.enable_flattening = config.get("flattening_enabled", True)
         self.flatten_id_objects = True  # Default behavior
         self.max_flatten_depth = config.get("flattening_max_depth", 3)
 
     def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
-        """Generate schema from API metadata."""
+        """Generate schema from API metadata ONLY - NEVER uses samples."""
+        # 🚨 CRITICAL MANDATORY VALIDATION: Enforce metadata-only mode
+        import os
+
+        use_metadata_only = (
+            os.getenv("TAP_ORACLE_WMS_USE_METADATA_ONLY", "true").lower() == "true"
+        )
+        discovery_sample_size = int(
+            os.getenv("TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE", "0")
+        )
+
+        if not use_metadata_only:
+            error_msg = "❌ CRITICAL FAILURE: TAP_ORACLE_WMS_USE_METADATA_ONLY must be true - ABORTING!"
+            logger.error(error_msg)
+            raise SystemExit(error_msg)
+
+        if discovery_sample_size != 0:
+            error_msg = "❌ CRITICAL FAILURE: TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE must be 0 - ABORTING!"
+            logger.error(error_msg)
+            raise SystemExit(error_msg)
+
+        logger.info(
+            "✅ MANDATORY VALIDATIONS PASSED: Using ONLY API metadata for schema generation"
+        )
+
         try:
             return self._schema_generator.generate_from_metadata(metadata)
         except Exception as e:
@@ -213,23 +234,37 @@ class SchemaGenerator:
             raise SchemaGenerationError(msg) from e
 
     def generate_from_sample(self, samples: list[dict[str, Any]]) -> dict[str, Any]:
-        """Generate schema from sample data."""
-        try:
-            return self._schema_generator.generate_from_sample(samples)
-        except Exception as e:
-            logger.exception("Schema generation from samples failed")
-            msg = f"Schema generation from samples failed: {e}"
-            raise SchemaGenerationError(msg) from e
+        """FORBIDDEN METHOD - NEVER, NEVER, NEVER use samples for schema generation!"""
+        error_msg = "❌ CRITICAL FAILURE: generate_from_sample is FORBIDDEN - Use metadata-only mode! ABORTING!"
+        logger.error(error_msg)
+        raise SystemExit(error_msg)
 
     def generate_hybrid_schema(
         self, metadata: dict[str, Any], samples: list[dict[str, Any]]
     ) -> dict[str, Any]:
-        """Generate schema using both metadata and samples."""
+        """FORBIDDEN METHOD - NEVER, NEVER, NEVER use samples for schema generation!"""
+        error_msg = "❌ CRITICAL FAILURE: generate_hybrid_schema is FORBIDDEN - Use metadata-only mode! ABORTING!"
+        logger.error(error_msg)
+        raise SystemExit(error_msg)
+
+    def generate_metadata_schema_with_flattening(
+        self, metadata: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Generate schema from API metadata ONLY with flattening support.
+
+        🚨 CRITICAL ENFORCEMENT: Uses ONLY API describe metadata
+        NEVER, NEVER, NEVER uses any sample data - that is FORBIDDEN
+        """
+        # Schema generation uses EXCLUSIVELY API metadata describe
+        logger.info("Generating schema with flattening using ONLY API metadata")
+
         try:
-            return self._schema_generator.generate_hybrid_schema(metadata, samples)
+            return self._schema_generator.generate_metadata_schema_with_flattening(
+                metadata
+            )
         except Exception as e:
-            logger.exception("Hybrid schema generation failed")
-            msg = f"Hybrid schema generation failed: {e}"
+            logger.exception("Schema generation with flattening failed")
+            msg = f"Schema generation with flattening failed: {e}"
             raise SchemaGenerationError(msg) from e
 
     def flatten_complex_objects(
@@ -237,7 +272,9 @@ class SchemaGenerator:
     ) -> dict[str, Any]:
         """Flatten nested objects for schema consistency."""
         try:
-            return self._schema_generator.flatten_complex_objects(data, prefix, separator)
+            return self._schema_generator.flatten_complex_objects(
+                data, prefix, separator
+            )
         except Exception:
             logger.exception("Object flattening failed")
             # Return original data if flattening fails
@@ -254,36 +291,37 @@ class SchemaGenerator:
         # Simple type inference for backward compatibility
         if sample_value is None:
             return {"type": "null"}
-        elif isinstance(sample_value, bool):
+        if isinstance(sample_value, bool):
             return {"type": "boolean"}
-        elif isinstance(sample_value, int):
+        if isinstance(sample_value, int):
             return {"type": "integer"}
-        elif isinstance(sample_value, float):
+        if isinstance(sample_value, float):
             return {"type": "number"}
-        elif isinstance(sample_value, str):
+        if isinstance(sample_value, str):
             return {"type": "string"}
-        elif isinstance(sample_value, list):
+        if isinstance(sample_value, list):
             return {"type": "array"}
-        elif isinstance(sample_value, dict):
+        if isinstance(sample_value, dict):
             return {"type": "object"}
-        else:
-            return {"type": "string"}
+        return {"type": "string"}
 
-    def _merge_types(self, type1: dict[str, Any], type2: dict[str, Any]) -> dict[str, Any]:
+    def _merge_types(
+        self, type1: dict[str, Any], type2: dict[str, Any]
+    ) -> dict[str, Any]:
         """Legacy private method for type merging - backward compatibility."""
         # If same type, return it
         if type1.get("type") == type2.get("type"):
             return type1
-        else:
-            # Different types - use anyOf structure
-            return {"anyOf": [type1, type2]}
+        # Different types - use anyOf structure
+        return {"anyOf": [type1, type2]}
 
-    def _create_property_from_field(self, field_name: str, field_info: dict[str, Any]) -> dict[str, Any]:
+    def _create_property_from_field(
+        self, field_name: str, field_info: dict[str, Any]
+    ) -> dict[str, Any]:
         """Legacy private method for property creation - backward compatibility."""
         field_type = field_info.get("type", "string")
         required = field_info.get("required", True)
-        
+
         if not required:
             return {"type": [field_type, "null"]}
-        else:
-            return {"type": field_type}
+        return {"type": field_type}

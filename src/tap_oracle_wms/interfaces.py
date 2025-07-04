@@ -39,15 +39,9 @@ class SchemaGeneratorInterface(ABC):
     def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         """Generate schema from API metadata."""
 
-    @abstractmethod
-    def generate_from_sample(self, samples: list[dict[str, Any]]) -> dict[str, Any]:
-        """Generate schema from sample data."""
-
-    @abstractmethod
-    def generate_hybrid_schema(
-        self, metadata: dict[str, Any], samples: list[dict[str, Any]]
-    ) -> dict[str, Any]:
-        """Generate schema using both metadata and samples."""
+    # REMOVED: generate_from_sample and generate_hybrid_schema
+    # These methods are FORBIDDEN and have been permanently deleted
+    # Any implementation attempting to use samples will fail
 
     @abstractmethod
     def flatten_complex_objects(self, data: dict[str, Any]) -> dict[str, Any]:
@@ -87,9 +81,8 @@ class TypeMapperInterface(ABC):
     ) -> dict[str, Any]:
         """Convert WMS metadata type to Singer schema format."""
 
-    @abstractmethod
-    def infer_type_from_sample(self, sample_value: object) -> dict[str, Any]:
-        """Infer type from sample value."""
+    # REMOVED: infer_type_from_sample - FORBIDDEN METHOD
+    # This method is FORBIDDEN and has been permanently deleted
 
 
 class AuthenticatorInterface(ABC):

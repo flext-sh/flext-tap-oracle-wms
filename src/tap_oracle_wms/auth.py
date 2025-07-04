@@ -14,6 +14,7 @@ from singer_sdk.authenticators import OAuthAuthenticator, SimpleAuthenticator
 if TYPE_CHECKING:
     from singer_sdk.streams import RESTStream
 
+from .config_mapper import ConfigMapper
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +113,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
         oauth_scopes: str | None = None,
         client_id: str | None = None,
         client_secret: str | None = None,
+        config_mapper: ConfigMapper | None = None,
     ) -> None:
         """Initialize OAuth2 authenticator.
 
@@ -122,15 +124,17 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
             oauth_scopes: OAuth2 scopes (space-separated)
             client_id: OAuth2 client ID
             client_secret: OAuth2 client secret
+            config_mapper: Configuration mapper for flexible settings
 
         """
         self._auth_endpoint = auth_endpoint
         self._client_id = client_id
         self._client_secret = client_secret
-        default_scope = (
-            "https://instance.wms.ocs.oraclecloud.com:443/"
-            "urn:opc:resource:consumer::all"
-        )
+
+        # Use ConfigMapper for OAuth scope instead of hardcoded value
+        if config_mapper is None:
+            config_mapper = ConfigMapper()
+        default_scope = config_mapper.get_oauth_scope()
         oauth_scopes = oauth_scopes or default_scope
 
         # Token management with thread safety
@@ -232,7 +236,7 @@ class WMSOAuth2Authenticator(OAuthAuthenticator):
                 self._auth_endpoint,
                 headers=headers,
                 data=self.oauth_request_body,
-                timeout=30,
+                timeout=self.config.get("auth_timeout", 30),
             )
             response.raise_for_status()
 
@@ -324,7 +328,7 @@ def get_wms_authenticator(
 
 
 def get_wms_headers(config: dict[str, Any]) -> dict[str, str]:
-    """Get required WMS headers.
+    """Get required WMS headers with authentication.
 
     Args:
     ----
@@ -340,6 +344,16 @@ def get_wms_headers(config: dict[str, Any]) -> dict[str, str]:
         "Accept": "application/json",
         "User-Agent": "tap-oracle-wms/0.1.0",
     }
+
+    # Add authentication if username and password are provided
+    username = config.get("username")
+    password = config.get("password")
+
+    if username and password:
+        # Create basic auth header
+        credentials = f"{username}:{password}"
+        encoded = base64.b64encode(credentials.encode()).decode()
+        headers["Authorization"] = f"Basic {encoded}"
 
     # Add WMS context headers with defaults
     # Use "*" as default if not provided (tested and confirmed to work)

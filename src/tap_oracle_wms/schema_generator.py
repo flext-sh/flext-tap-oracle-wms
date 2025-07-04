@@ -30,7 +30,9 @@ class SchemaGenerator(SchemaGeneratorInterface):
     to specialized components. Follows SRP and DIP principles.
     """
 
-    def __init__(self, config: dict[str, Any], type_mapper: TypeMapperInterface | None = None) -> None:
+    def __init__(
+        self, config: dict[str, Any], type_mapper: TypeMapperInterface | None = None
+    ) -> None:
         """Initialize schema generator with configuration and type mapper."""
         self.config = config
         # Dependency injection for type mapper (DIP)
@@ -43,12 +45,24 @@ class SchemaGenerator(SchemaGeneratorInterface):
     def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         """Generate schema from API metadata only."""
         if not metadata or "fields" not in metadata:
-            logger.warning("Empty or invalid metadata provided for schema generation")
-            return self._get_default_schema()
+            error_msg = "🚨 ABORT: Empty or invalid metadata provided for schema generation - NO fallback allowed!"
+            logger.error(error_msg)
+            raise SystemExit(error_msg)
 
         properties = {}
         required_fields = []
         fields = metadata["fields"]
+
+        # Handle both dictionary and list formats for fields
+        if isinstance(fields, list):
+            # Convert list format to dictionary format
+            fields_dict = {}
+            for field_item in fields:
+                if isinstance(field_item, dict) and "name" in field_item:
+                    field_name = field_item["name"]
+                    field_info = {k: v for k, v in field_item.items() if k != "name"}
+                    fields_dict[field_name] = field_info
+            fields = fields_dict
 
         for field_name, field_info in fields.items():
             field_type = field_info.get("type", "string")
@@ -76,75 +90,31 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
         return schema
 
-    def generate_from_sample(self, samples: list[dict[str, Any]]) -> dict[str, Any]:
-        """Generate schema from sample data only."""
-        if not samples:
-            logger.warning("No samples provided for schema generation")
-            return self._get_default_schema()
-
-        # Process samples with flattening if enabled
-        processed_samples = self._process_samples(samples)
-
-        # Collect all unique fields
-        all_fields: set[str] = set()
-        for sample in processed_samples:
-            all_fields.update(sample.keys())
-
-        properties = {}
-        for field_name in all_fields:
-            # Find representative value
-            field_value = self._find_representative_value(processed_samples, field_name)
-            properties[field_name] = self.type_mapper.infer_type_from_sample(field_value)
-
-        return {
-            "type": "object",
-            "properties": properties,
-            "additionalProperties": True,  # Allow additional fields in sample-only mode
-        }
-
-    def generate_hybrid_schema(
-        self, metadata: dict[str, Any], samples: list[dict[str, Any]]
+    def generate_metadata_schema_with_flattening(
+        self, metadata: dict[str, Any]
     ) -> dict[str, Any]:
-        """Generate schema using both metadata and samples for maximum accuracy."""
-        if not metadata or "fields" not in metadata:
-            logger.warning("Invalid metadata, falling back to sample-only schema")
-            return self.generate_from_sample(samples)
+        """Generate schema from API metadata only, with predictable flattening support.
 
-        if not samples:
-            logger.warning("No samples provided, falling back to metadata-only schema")
-            return self.generate_from_metadata(metadata)
+        This method uses ONLY the API describe metadata to generate the schema,
+        and anticipates flattening fields based on metadata patterns.
+        """
+        # Generate base schema from metadata
+        base_schema = self.generate_from_metadata(metadata)
 
-        # Start with metadata-based schema
-        base_properties = self._generate_metadata_properties(metadata["fields"])
+        # If flattening is enabled, add anticipated flattening fields
+        if self.flattening_enabled:
+            base_schema = self._add_anticipated_flattening_fields(base_schema, metadata)
 
-        # Process samples with flattening
-        processed_samples = self._process_samples(samples)
+        return base_schema
 
-        # Find additional fields from samples (flattened FK fields)
-        sample_fields: set[str] = set()
-        for sample in processed_samples:
-            sample_fields.update(sample.keys())
+    # REMOVED: generate_from_sample - FORBIDDEN METHOD
+    # NEVER, NEVER, NEVER use samples for schema generation
+    # This method has been PERMANENTLY DELETED to prevent any possibility of sample usage
 
-        metadata_fields = set(base_properties.keys())
-        additional_fields = sample_fields - metadata_fields
-
-        logger.info(
-            "Hybrid schema generation: metadata=%d fields, samples=%d fields, additional=%d fields",
-            len(metadata_fields),
-            len(sample_fields),
-            len(additional_fields),
-        )
-
-        # Add additional fields from samples
-        for field_name in additional_fields:
-            field_value = self._find_representative_value(processed_samples, field_name)
-            base_properties[field_name] = self.type_mapper.infer_type_from_sample(field_value)
-
-        return {
-            "type": "object",
-            "properties": base_properties,
-            "additionalProperties": True,  # Allow discovery of new fields
-        }
+    # REMOVED: generate_hybrid_schema - FORBIDDEN METHOD
+    # NEVER, NEVER, NEVER use samples for schema generation
+    # This method has been PERMANENTLY DELETED to prevent any possibility of sample usage
+    # Any attempt to use samples is a FATAL ERROR and will cause immediate abortion
 
     def flatten_complex_objects(
         self, data: dict[str, Any], prefix: str = "", separator: str = "_"
@@ -189,7 +159,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             return samples
 
         processed = []
-        for sample in samples[:self.max_sample_size]:
+        for sample in samples[: self.max_sample_size]:
             flattened = self.flatten_complex_objects(sample)
             processed.append(flattened)
 
@@ -303,6 +273,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         if "next_page" in value:
             try:
                 from urllib.parse import parse_qs, urlparse
+
                 parsed = urlparse(value["next_page"])
                 params = parse_qs(parsed.query)
                 if params:
@@ -345,28 +316,13 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
         for suffix in suffixes:
             if base_name.endswith(suffix):
-                base_name = base_name[:-len(suffix)]
+                base_name = base_name[: -len(suffix)]
                 break
 
         return base_name
 
-    def _get_default_schema(self) -> dict[str, Any]:
-        """Get default schema for fallback cases."""
-        return {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": ["integer", "null"],
-                    "description": "Primary key",
-                },
-                "mod_ts": {
-                    "type": ["string", "null"],
-                    "format": "date-time",
-                    "description": "Modification timestamp",
-                },
-            },
-            "additionalProperties": True,
-        }
+    # 🚨 CRITICAL: _get_default_schema METHOD PERMANENTLY DELETED
+    # NO fallback schemas allowed - schema MUST come from API metadata describe only!
 
 
 class DefaultTypeMapper(TypeMapperInterface):
@@ -379,19 +335,119 @@ class DefaultTypeMapper(TypeMapperInterface):
         max_length: int | None = None,
         sample_value: object = None,
     ) -> dict[str, Any]:
-        """Convert WMS metadata type to Singer schema format."""
+        """Convert WMS metadata type to Singer schema format.
+
+        🚨 CRITICAL: sample_value parameter is IGNORED - NEVER used for type inference
+        Type conversion MUST use ONLY metadata_type and max_length from API describe
+        """
+        # 🚨 ENFORCE: sample_value is IGNORED and should NEVER be used
+        if sample_value is not None:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                "🚨 WARNING: sample_value provided but IGNORED - using ONLY metadata!"
+            )
+
         return convert_metadata_type_to_singer(
             metadata_type=metadata_type,
             column_name=column_name,
             max_length=max_length,
-            sample_value=sample_value,
+            sample_value=None,  # 🚨 CRITICAL: ALWAYS pass None for sample_value
         )
 
-    def infer_type_from_sample(self, sample_value: object) -> dict[str, Any]:
-        """Infer type from sample value."""
-        # Use existing type mapping logic
-        return convert_metadata_type_to_singer(
-            metadata_type=None,
-            column_name="",
-            sample_value=sample_value,
-        )
+    # REMOVED: infer_type_from_sample - FORBIDDEN METHOD
+    # NEVER, NEVER, NEVER infer types from samples - this method is PERMANENTLY DELETED
+
+    def _add_anticipated_flattening_fields(
+        self, base_schema: dict[str, Any], metadata: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Add anticipated flattening fields based on metadata patterns.
+
+        This method predicts which fields will be created by flattening
+        based on known WMS API patterns, without needing data samples.
+        """
+        properties = base_schema.get("properties", {}).copy()
+
+        # Known WMS object types that get flattened
+        object_field_patterns = {
+            "facility": ["id", "code", "name", "key"],
+            "company": ["id", "code", "name", "key"],
+            "user": ["id", "code", "name", "key"],
+            "location": ["id", "code", "name", "key", "zone_key"],
+            "item": ["id", "code", "name", "key", "desc"],
+            "task": ["id", "key", "type"],
+            "wave": ["id", "key", "number"],
+            "order": ["id", "key", "number"],
+            "allocation": ["id", "key", "number"],
+            "status": ["id", "code", "name"],
+            "configuration": ["id", "code", "name"],
+        }
+
+        # List field patterns that get flattened
+        list_field_patterns = {
+            "serial": ["count", "data"],
+            "instruction": ["count", "data"],
+            "set": ["count", "total", "filter_params"],
+        }
+
+        # Scan existing fields for flattening patterns
+        for field_name, field_schema in properties.items():
+            # Check for object fields (ending with common WMS object names)
+            for obj_type, sub_fields in object_field_patterns.items():
+                if field_name.endswith(f"_{obj_type}") or field_name == obj_type:
+                    self._add_object_flattening_fields(
+                        properties, field_name, sub_fields
+                    )
+
+            # Check for list fields
+            for list_type, sub_fields in list_field_patterns.items():
+                if list_type in field_name.lower():
+                    self._add_list_flattening_fields(properties, field_name, sub_fields)
+
+        # Return updated schema
+        updated_schema = base_schema.copy()
+        updated_schema["properties"] = properties
+        return updated_schema
+
+    def _add_object_flattening_fields(
+        self, properties: dict[str, Any], base_field: str, sub_fields: list[str]
+    ) -> None:
+        """Add object flattening fields to properties."""
+        for sub_field in sub_fields:
+            flattened_field = f"{base_field}_{sub_field}"
+            if flattened_field not in properties:
+                # Add the flattened field with appropriate type
+                if sub_field == "id":
+                    field_type = {"type": ["integer", "null"]}
+                else:
+                    field_type = {"type": ["string", "null"]}
+
+                field_type["x-wms-metadata"] = {
+                    "original_metadata_type": "flattened_fk",
+                    "flattened_from": base_field,
+                    "column_name": flattened_field,
+                    "anticipated": True,
+                }
+                properties[flattened_field] = field_type
+
+    def _add_list_flattening_fields(
+        self, properties: dict[str, Any], base_field: str, sub_fields: list[str]
+    ) -> None:
+        """Add list flattening fields to properties."""
+        for sub_field in sub_fields:
+            flattened_field = f"{base_field}_{sub_field}"
+            if flattened_field not in properties:
+                # Add the flattened field with appropriate type
+                if sub_field == "count" or sub_field in ["total"]:
+                    field_type = {"type": ["integer", "null"]}
+                else:
+                    field_type = {"type": ["string", "null"]}
+
+                field_type["x-wms-metadata"] = {
+                    "original_metadata_type": "flattened_list",
+                    "flattened_from": base_field,
+                    "column_name": flattened_field,
+                    "anticipated": True,
+                }
+                properties[flattened_field] = field_type
