@@ -154,7 +154,7 @@ plugins:
 - `WMS_AUTH_METHOD` - Authentication method (default: "basic")
 
 #### Performance Settings
-- `WMS_PAGE_SIZE` - Records per page (default: 1000)
+- `WMS_PAGE_SIZE` - Records per page (default: 100)
 - `WMS_MAX_PAGE_SIZE` - Maximum page size (default: 5000)
 - `WMS_REQUEST_TIMEOUT` - Request timeout seconds (default: 120)
 - `WMS_MAX_RETRIES` - Maximum retry attempts (default: 3)

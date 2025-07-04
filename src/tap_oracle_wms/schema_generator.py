@@ -274,7 +274,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         """Check if object represents a foreign key reference."""
         if not isinstance(obj, dict):
             return False
-        
+
         # REMOVED ARTIFICIAL LIMITATION: Accept any number of fields as WMS provides
         # No maximum field count restrictions - process all data as provided by API
 
@@ -328,7 +328,6 @@ class DefaultTypeMapper(TypeMapperInterface):
         🚨 CRITICAL: Schema generation uses ONLY metadata - no other parameters accepted
         Type conversion MUST use ONLY metadata_type and max_length from API describe
         """
-
         return convert_metadata_type_to_singer(
             metadata_type=metadata_type,
             column_name=column_name,

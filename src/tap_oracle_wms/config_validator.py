@@ -132,9 +132,9 @@ class ConfigValidator:
         page_size = config.get("page_size", 100)
         if not isinstance(page_size, int) or page_size < 1:
             self.errors.append(f"page_size must be a positive integer: {page_size}")
-        elif page_size > 10000:
-            self.warnings.append(
-                f"Large page_size may cause performance issues: {page_size}"
+        elif page_size > 1250:
+            self.errors.append(
+                f"page_size exceeds Oracle WMS API limit (max 1250): {page_size}"
             )
 
         # Max page size validation

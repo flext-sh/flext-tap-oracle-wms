@@ -42,7 +42,7 @@ Create a `config.json` file with your Oracle WMS credentials:
   "password": "your_password",
   "company_code": "*",
   "facility_code": "*",
-  "page_size": 1000
+  "page_size": 100
 }
 ```
 
@@ -104,7 +104,7 @@ plugins:
 - `facility_code` - WMS facility code (default: "*" for all)
 
 ### Performance Settings
-- `page_size` - Records per page, 1-1250 (default: 1000)
+- `page_size` - Records per page, 1-1250 (default: 100)
 - `request_timeout` - Request timeout in seconds (default: 120)
 - `max_retries` - Maximum retry attempts (default: 3)
 
