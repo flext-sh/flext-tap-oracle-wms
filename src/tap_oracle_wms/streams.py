@@ -1,11 +1,11 @@
-"""Generic REST Stream - Enterprise implementation using Singer SDK REST capabilities.
+"""Oracle WMS Stream - Enterprise implementation using Singer SDK REST capabilities.
 
-This module implements a dynamic REST stream that can handle any REST API endpoint
+This module implements a dynamic REST stream specifically for Oracle WMS API
 with full functionality including:
 
-- Multiple pagination strategies (HATEOAS, offset, page, cursor)
-- Incremental sync with configurable replication keys
-- Dynamic URL and parameter generation
+- HATEOAS pagination following Oracle WMS patterns
+- Incremental sync with WMS timestamp fields (mod_ts)
+- Dynamic URL generation for WMS entities
 - Automatic retry with exponential backoff
 - Request caching and performance optimization
 """
@@ -95,16 +95,14 @@ class WMSPaginator(BaseHATEOASPaginator):
 
 
 class WMSStream(RESTStream[dict[str, Any]]):
-    """Generic REST API stream using Singer SDK capabilities.
+    """Oracle WMS API stream using Singer SDK capabilities.
 
-    This stream automatically adapts to any REST API endpoint with:
-    - Dynamic path generation
-    - Automatic schema discovery
-    - Incremental sync support
-    - Advanced filtering
-    - Multiple pagination strategies
-
-    Note: Class name kept for backward compatibility.
+    This stream is specifically designed for Oracle WMS REST API with:
+    - WMS entity path generation (/wms/lgfapi/v10/entity/{entity})
+    - Automatic schema discovery from WMS metadata
+    - Incremental sync using mod_ts timestamps
+    - WMS-specific filtering and ordering
+    - HATEOAS pagination support
     """
 
     # Use HATEOAS paginator

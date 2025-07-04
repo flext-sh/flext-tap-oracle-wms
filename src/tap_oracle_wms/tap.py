@@ -1,17 +1,17 @@
-"""Generic REST API Tap - Enterprise-grade implementation using Singer SDK.
+"""Oracle WMS Tap - Enterprise-grade implementation using Singer SDK.
 
-This tap can extract data from any REST API with advanced features:
+This tap extracts data from Oracle Warehouse Management System REST API
+with advanced features:
 
-- Automatic endpoint discovery
-- Dynamic schema generation from API responses
-- Incremental sync support with configurable replication keys
-- Multiple pagination strategies (HATEOAS, offset, cursor)
+- Automatic entity discovery from WMS API
+- Dynamic schema generation from API metadata and sample data
+- Incremental sync with timestamp-based replication
+- HATEOAS pagination following Oracle WMS patterns
 - Advanced filtering and field selection
 - Resilient API calls with retry logic
 - Performance monitoring and metrics
 
-While the module name references Oracle WMS for backward compatibility,
-this is a completely generic REST API tap that works with any API.
+Designed specifically for Oracle WMS REST API integration.
 """
 
 from __future__ import annotations
@@ -39,13 +39,13 @@ from .streams import WMSStream
 
 
 class TapOracleWMS(Tap):
-    """Generic REST API tap using modern Singer SDK patterns.
+    """Oracle WMS tap using modern Singer SDK patterns.
 
-    This tap implements automatic endpoint discovery and dynamic schema generation
-    to work with any REST API without hardcoded business logic.
-
-    Note: Despite the class name (kept for backward compatibility), this is
-    a completely generic REST API tap.
+    This tap implements automatic entity discovery and dynamic schema generation
+    specifically designed for Oracle Warehouse Management System REST API.
+    
+    Built with professional standards: SOLID principles, clean architecture,
+    and enterprise-grade error handling.
     """
 
     name = "tap-oracle-wms"
@@ -57,7 +57,7 @@ class TapOracleWMS(Tap):
             "base_url",
             th.StringType,
             required=True,
-            description="Base URL of the REST API (e.g., https://api.example.com)",
+            description="Oracle WMS base URL (e.g., https://wms.company.com)",
         ),
         th.Property(
             "auth_method",
@@ -78,29 +78,35 @@ class TapOracleWMS(Tap):
             secret=True,
             description="Password for basic auth",
         ),
-        # Custom headers
+        # WMS-specific settings
+        th.Property(
+            "company_code",
+            th.StringType,
+            default="*",
+            description="WMS company code (* for all companies)",
+        ),
+        th.Property(
+            "facility_code",
+            th.StringType,
+            default="*",
+            description="WMS facility code (* for all facilities)",
+        ),
         th.Property(
             "custom_headers",
             th.ObjectType(),
-            description="Custom headers to send with requests",
+            description="Additional headers to send with WMS API requests",
         ),
-        # API versioning
+        # Entity configuration
         th.Property(
-            "api_version",
+            "wms_api_version",
             th.StringType,
-            description="API version to use (if applicable)",
-        ),
-        # Endpoint configuration
-        th.Property(
-            "api_endpoint_prefix",
-            th.StringType,
-            default="",
-            description="Prefix for API endpoints (e.g., /api/v1)",
+            default="v10",
+            description="WMS API version (e.g., v10, v11)",
         ),
         th.Property(
             "entities",
             th.ArrayType(th.StringType),
-            description="Specific endpoints/entities to extract",
+            description="Specific WMS entities to extract (e.g., allocation, order_hdr)",
         ),
         th.Property(
             "entity_patterns",
@@ -110,43 +116,19 @@ class TapOracleWMS(Tap):
             ),
             description="Entity filtering patterns",
         ),
-        # Pagination configuration
+        # WMS API behavior configuration
         th.Property(
-            "pagination_style",
+            "page_mode",
             th.StringType,
-            default="hateoas",
-            allowed_values=["hateoas", "offset", "page", "cursor", "none"],
-            description="Pagination style used by the API",
+            default="sequenced",
+            allowed_values=["sequenced", "paged"],
+            description="WMS pagination mode",
         ),
         th.Property(
-            "pagination_page_param",
-            th.StringType,
-            default="page",
-            description="Query parameter name for page number",
-        ),
-        th.Property(
-            "pagination_limit_param",
-            th.StringType,
-            default="limit",
-            description="Query parameter name for page size",
-        ),
-        th.Property(
-            "pagination_offset_param",
-            th.StringType,
-            default="offset",
-            description="Query parameter name for offset",
-        ),
-        th.Property(
-            "pagination_results_key",
-            th.StringType,
-            default="results",
-            description="JSON key containing the results array",
-        ),
-        th.Property(
-            "pagination_next_key",
-            th.StringType,
-            default="next_page",
-            description="JSON key containing the next page URL",
+            "max_page_size",
+            th.IntegerType,
+            default=1250,
+            description="Maximum page size supported by WMS API",
         ),
         # Performance settings
         th.Property(
@@ -182,8 +164,8 @@ class TapOracleWMS(Tap):
         th.Property(
             "replication_key",
             th.StringType,
-            default="updated_at",
-            description="Field to use for incremental replication",
+            default="mod_ts",
+            description="Field to use for incremental replication (WMS typically uses mod_ts)",
         ),
         th.Property(
             "replication_key_format",
