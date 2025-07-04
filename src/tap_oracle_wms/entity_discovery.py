@@ -129,6 +129,11 @@ class EntityDiscovery(EntityDiscoveryInterface):
         entity_patterns = self.config.get("entity_patterns", {})
         include_patterns = entity_patterns.get("include", [])
         exclude_patterns = entity_patterns.get("exclude", [])
+        
+        # Backward compatibility for legacy config
+        legacy_excludes = self.config.get("entity_excludes", [])
+        if legacy_excludes:
+            exclude_patterns.extend(legacy_excludes)
 
         filtered = {}
         for entity_name, entity_url in entities.items():
