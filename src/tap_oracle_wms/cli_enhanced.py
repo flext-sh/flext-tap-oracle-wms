@@ -157,38 +157,8 @@ def describe_entity(config: str, entity_name: str) -> None:
         sys.exit(1)
 
 
-@cli.command()
-@click.option("--config", default=".env", help="Configuration file or .env")
-@click.argument("entity_name")
-@click.option("--limit", default=5, help="Number of sample records")
-def sample_data(config: str, entity_name: str, limit: int) -> None:
-    """Get sample data from entity."""
-    click.echo(f"📊 Getting sample data from: {entity_name}")
-
-    try:
-        tap_config = _load_config(config)
-        discovery = EntityDiscovery(tap_config)
-
-        samples = asyncio.run(discovery.get_entity_sample(entity_name, limit=limit))
-
-        if not samples:
-            click.echo(f"❌ No sample data available for '{entity_name}'")
-            sys.exit(1)
-
-        click.echo(
-            f"\nSample data from {entity_name} (showing {len(samples)} records):",
-        )
-        click.echo("-" * 60)
-
-        for i, record in enumerate(samples, 1):
-            click.echo(f"\nRecord {i}:")
-            for key, value in record.items():
-                click.echo(f"  {key}: {value}")
-
-    except (ValueError, KeyError, TypeError, RuntimeError) as e:
-        logger.exception("❌ SAMPLE DATA FAILED - Cannot get sample data")
-        click.echo(f"❌ Error getting sample data: {e}")
-        sys.exit(1)
+# 🚨 COMMAND PERMANENTLY DELETED: sample_data
+# This command is FORBIDDEN - schema discovery uses ONLY API metadata describe
 
 
 @cli.command()
@@ -302,14 +272,16 @@ def test_extraction(config: str, entity: str | None) -> None:
 
         click.echo(f"Testing extraction from: {test_entity}")
 
-        # Get sample data
-        samples = asyncio.run(discovery.get_entity_sample(test_entity, limit=5))
-
-        if samples:
-            click.echo(f"✅ Successfully extracted {len(samples)} records")
-            click.echo(f"   Sample fields: {', '.join(samples[0].keys())}")
-        else:
-            click.echo("⚠️  No data available for extraction test")
+        # Test schema generation using ONLY API metadata
+        try:
+            metadata = asyncio.run(discovery.get_entity_metadata(test_entity))
+            if metadata and "fields" in metadata:
+                click.echo(f"✅ Successfully got metadata with {len(metadata['fields'])} fields")
+                click.echo(f"   Metadata fields: {', '.join(metadata['fields'].keys())}")
+            else:
+                click.echo("⚠️  No metadata available for extraction test")
+        except Exception as e:
+            click.echo(f"❌ Error getting metadata: {e}")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:
         logger.exception(
@@ -337,7 +309,7 @@ def _load_config(config_path: str) -> dict[str, Any]:
             "request_timeout": int(os.getenv("TAP_ORACLE_WMS_REQUEST_TIMEOUT", "120")),
             "verify_ssl": os.getenv("TAP_ORACLE_WMS_VERIFY_SSL", "true").lower()
             == "true",
-            "record_limit": int(os.getenv("TAP_ORACLE_WMS_RECORD_LIMIT", "1000")),
+            "record_limit": int(os.getenv("TAP_ORACLE_WMS_RECORD_LIMIT", "100")),
         }
     # Load from JSON file
     with Path(config_path).open(encoding="utf-8") as f:

@@ -20,11 +20,12 @@ ValueType = Union[float, str, int, bool, dict[str, Any], list[Any], None]
 
 # Flattening thresholds
 FK_INDICATOR_THRESHOLD = 0.5
-SIMPLE_OBJECT_MAX_FIELDS = 3
+# REMOVED ARTIFICIAL LIMITATION: SIMPLE_OBJECT_MAX_FIELDS completely
+# Accept unlimited fields in objects as the WMS API provides
 
 
 class SchemaGenerator(SchemaGeneratorInterface):
-    """Generate Singer schemas from WMS entity metadata and samples.
+    """Generate Singer schemas from WMS entity metadata ONLY.
 
     Focuses solely on schema generation logic, delegating type mapping
     to specialized components. Follows SRP and DIP principles.
@@ -40,7 +41,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
         # Schema generation settings
         self.flattening_enabled = config.get("flattening_enabled", True)
-        self.max_sample_size = config.get("max_sample_size", 100)
+        # REMOVED: max_sample_size - samples are FORBIDDEN
 
     def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         """Generate schema from API metadata only."""
@@ -153,27 +154,11 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
         return properties
 
-    def _process_samples(self, samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Process samples with flattening if enabled."""
-        if not self.flattening_enabled:
-            return samples
+    # 🚨 METHOD PERMANENTLY DELETED: _process_samples
+    # This method is FORBIDDEN - schema generation uses ONLY API metadata describe
 
-        processed = []
-        for sample in samples[: self.max_sample_size]:
-            flattened = self.flatten_complex_objects(sample)
-            processed.append(flattened)
-
-        return processed
-
-    def _find_representative_value(
-        self, samples: list[dict[str, Any]], field_name: str
-    ) -> Any:
-        """Find a representative non-null value for the field."""
-        for sample in samples:
-            value = sample.get(field_name)
-            if value is not None:
-                return value
-        return None
+    # 🚨 METHOD PERMANENTLY DELETED: _find_representative_value
+    # This method is FORBIDDEN - schema generation uses ONLY API metadata describe
 
     def _flatten_dict_value(
         self,
@@ -234,8 +219,8 @@ class SchemaGenerator(SchemaGeneratorInterface):
         """Flatten regular lists by indexing elements."""
         flattened[f"{new_key}_count"] = len(value)
 
-        # Flatten first few elements for schema discovery
-        max_elements = min(len(value), 3)  # Limit to prevent explosion
+        # Flatten all elements - no artificial limitations
+        max_elements = len(value)  # Accept unlimited elements as WMS provides
         for i, item in enumerate(value[:max_elements]):
             if isinstance(item, dict):
                 item_flattened = self.flatten_complex_objects(
@@ -287,8 +272,11 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     def _is_foreign_key_object(self, obj: dict[str, Any]) -> bool:
         """Check if object represents a foreign key reference."""
-        if not isinstance(obj, dict) or len(obj) > SIMPLE_OBJECT_MAX_FIELDS:
+        if not isinstance(obj, dict):
             return False
+        
+        # REMOVED ARTIFICIAL LIMITATION: Accept any number of fields as WMS provides
+        # No maximum field count restrictions - process all data as provided by API
 
         # Check for FK indicators
         fk_indicators = {"id", "key", "code", "name", "url"}
@@ -333,27 +321,19 @@ class DefaultTypeMapper(TypeMapperInterface):
         metadata_type: str | None,
         column_name: str = "",
         max_length: int | None = None,
-        sample_value: object = None,
+        # 🚨 REMOVED: sample_value parameter - FORBIDDEN
     ) -> dict[str, Any]:
         """Convert WMS metadata type to Singer schema format.
 
-        🚨 CRITICAL: sample_value parameter is IGNORED - NEVER used for type inference
+        🚨 CRITICAL: Schema generation uses ONLY metadata - no other parameters accepted
         Type conversion MUST use ONLY metadata_type and max_length from API describe
         """
-        # 🚨 ENFORCE: sample_value is IGNORED and should NEVER be used
-        if sample_value is not None:
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.warning(
-                "🚨 WARNING: sample_value provided but IGNORED - using ONLY metadata!"
-            )
 
         return convert_metadata_type_to_singer(
             metadata_type=metadata_type,
             column_name=column_name,
             max_length=max_length,
-            sample_value=None,  # 🚨 CRITICAL: ALWAYS pass None for sample_value
+            # 🚨 CRITICAL: Uses ONLY metadata
         )
 
     # REMOVED: infer_type_from_sample - FORBIDDEN METHOD

@@ -97,27 +97,8 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         return metadata
 
-    async def get_entity_sample(
-        self, entity_name: str, limit: int = 5
-    ) -> list[dict[str, Any]]:
-        """Get sample records from an entity for schema inference."""
-        # Check cache first
-        cache_key = f"sample:{entity_name}:{limit}"
-        cached_samples = self.cache_manager.get_cached_value(cache_key)
-        if cached_samples is not None:
-            logger.debug("Using cached samples for entity: %s", entity_name)
-            return cached_samples
-
-        # Fetch from API
-        samples = await self._fetch_entity_samples(entity_name, limit)
-
-        # Cache the results
-        self.cache_manager.set_cached_value(cache_key, samples)
-
-        logger.debug(
-            "Fetched %d sample records for entity: %s", len(samples), entity_name
-        )
-        return samples
+    # 🚨 METHOD PERMANENTLY DELETED: get_entity_sample
+    # This method is FORBIDDEN - schema discovery uses ONLY API metadata describe
 
     def filter_entities(self, entities: dict[str, str]) -> dict[str, str]:
         """Filter entities based on configuration patterns."""
@@ -254,56 +235,8 @@ class EntityDiscovery(EntityDiscoveryInterface):
                 )
                 return None
 
-    async def _fetch_entity_samples(
-        self, entity_name: str, limit: int
-    ) -> list[dict[str, Any]]:
-        """Fetch sample records from an entity."""
-        url = f"{self.entity_endpoint}/{entity_name}"
-        params = {"page_size": limit, "page_mode": "sequenced"}
-
-        # Use configurable timeout instead of hard-coded 30
-        discovery_timeout = self.config.get("discovery_timeout", 30)
-        async with httpx.AsyncClient(timeout=discovery_timeout) as client:
-            try:
-                response = await client.get(url, headers=self.headers, params=params)
-                response.raise_for_status()
-
-                data = response.json()
-
-                # Parse sample data response
-                if isinstance(data, dict) and "results" in data:
-                    results = data["results"]
-                    if isinstance(results, list):
-                        return results[:limit]
-                elif isinstance(data, list):
-                    return data[:limit]
-
-                return []
-
-            except httpx.HTTPStatusError as e:
-                if e.response.status_code == HTTP_NOT_FOUND:
-                    logger.warning("Entity %s not found for sampling", entity_name)
-                    return []
-                error_msg = f"HTTP error getting samples for entity {entity_name}: {e}"
-                logger.exception(error_msg)
-                raise EntityDiscoveryError(error_msg) from e
-            except (
-                httpx.ConnectError,
-                httpx.TimeoutException,
-                httpx.RequestError,
-            ) as e:
-                error_msg = (
-                    f"Network error getting samples for entity {entity_name}: {e}"
-                )
-                logger.exception(error_msg)
-                raise NetworkError(error_msg) from e
-            except (ValueError, KeyError, TypeError) as e:
-                logger.warning(
-                    "Data parsing error getting samples for entity %s: %s",
-                    entity_name,
-                    e,
-                )
-                return []
+    # 🚨 METHOD PERMANENTLY DELETED: _fetch_entity_samples
+    # This method is FORBIDDEN - schema discovery uses ONLY API metadata describe
 
     def _parse_entity_results(self, results: list[Any]) -> dict[str, str]:
         """Parse entity results from API response."""

@@ -27,13 +27,13 @@ logger = logging.getLogger(__name__)
 class PerformanceConfig:
     """Performance configuration settings."""
 
-    page_size: int = 1000
+    page_size: int = 100
     max_page_size: int = 5000
     request_timeout: int = 120
     max_retries: int = 3
     retry_backoff_factor: float = 1.5
     connection_pool_size: int = 5
-    batch_processing_size: int = 1000
+    batch_processing_size: int = 100
     cache_ttl_seconds: int = 3600
 
     def __post_init__(self) -> None:
@@ -169,8 +169,7 @@ class CompanyProfile:
     # Entity configuration
     entities: Dict[str, EntityConfig] = field(default_factory=dict)
 
-    # Database/target configuration
-    target_schema: str = "WMS_SYNC"
+    # 🚨 CRITICAL: TAP must NOT know about destination schemas - only table prefixes for naming
     table_prefix: str = "WMS_"
 
     def __post_init__(self) -> None:
@@ -251,8 +250,7 @@ class CompanyProfile:
             "incremental_overlap_minutes": 5,
             # Custom headers
             "custom_headers": self.api.get_standard_headers(),
-            # Target settings (for reference)
-            "_target_schema": self.target_schema,
+            # Table naming settings (for reference only)
             "_table_prefix": self.table_prefix,
         }
 
@@ -339,7 +337,6 @@ class ConfigProfileManager:
             "company_code": profile.company_code,
             "domain": profile.domain,
             "environment": profile.environment,
-            "target_schema": profile.target_schema,
             "table_prefix": profile.table_prefix,
             "performance": profile.performance.__dict__,
             "api": profile.api.__dict__,
@@ -397,7 +394,6 @@ class ConfigProfileManager:
             company_code=data["company_code"],
             domain=data["domain"],
             environment=data.get("environment", "dev"),
-            target_schema=data.get("target_schema", "WMS_SYNC"),
             table_prefix=data.get("table_prefix", "WMS_"),
             performance=performance,
             api=api,
@@ -418,7 +414,7 @@ class ConfigProfileManager:
 
         # Create profile with defaults, allowing environment overrides
         performance = PerformanceConfig(
-            page_size=int(os.getenv("WMS_PAGE_SIZE", "1000")),
+            page_size=int(os.getenv("WMS_PAGE_SIZE", "100")),
             max_page_size=int(os.getenv("WMS_MAX_PAGE_SIZE", "5000")),
             request_timeout=int(os.getenv("WMS_REQUEST_TIMEOUT", "120")),
             max_retries=int(os.getenv("WMS_MAX_RETRIES", "3")),
@@ -451,11 +447,11 @@ class ConfigProfileManager:
         """Create default client-b profile based on current usage patterns."""
         # Performance settings optimized for client-b usage
         performance = PerformanceConfig(
-            page_size=1000,  # client-b uses 1000-record batches
+            page_size=100,  # Standard page size for consistent performance
             max_page_size=5000,
             request_timeout=300,  # Larger timeout for complex queries
             max_retries=3,
-            batch_processing_size=1000,
+            batch_processing_size=100,
             cache_ttl_seconds=1800,  # 30 minutes cache
         )
 
@@ -515,7 +511,6 @@ class ConfigProfileManager:
             company_code="GNOS",
             domain="client-b.com.br",
             environment="prod",
-            target_schema="OIC",
             table_prefix="WMS_",
             performance=performance,
             api=api,

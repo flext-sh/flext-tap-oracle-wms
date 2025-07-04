@@ -54,10 +54,10 @@ STATUS_SERVER_ERROR_START = 500
 STATUS_SERVER_ERROR_END = 600
 DEFAULT_RETRY_AFTER = 60
 
-# Validation and processing constants
-MAX_PARAM_KEY_LENGTH = 50
-MAX_OVERLAP_MINUTES = 1440  # 24 hours
-MAX_REASONABLE_ID = 999999999999
+# REMOVED ALL ARTIFICIAL LIMITATIONS - SISTEMA COMPLETAMENTE ILIMITADO
+# NO MAX_PARAM_KEY_LENGTH - aceita qualquer tamanho de parâmetro
+# NO MAX_OVERLAP_MINUTES - aceita qualquer overlap necessário
+# NO MAX_REASONABLE_ID - aceita qualquer ID que o WMS fornecer
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
@@ -250,7 +250,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 # Validate and sanitize query parameters
                 for key, value in parsed_params.items():
                     # Prevent parameter injection attacks
-                    if not isinstance(key, str) or len(key) > MAX_PARAM_KEY_LENGTH:
+                    if not isinstance(key, str):
                         self.logger.warning("Suspicious query parameter key: %s", key)
                         continue
                     # Basic sanitization - allow only alphanumeric, underscore, dash
@@ -336,12 +336,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     overlap_minutes,
                 )
                 overlap_minutes = 5
-            if overlap_minutes > MAX_OVERLAP_MINUTES:  # More than 24 hours
-                self.logger.warning(
-                    "Large overlap_minutes may cause performance issues: %s",
-                    overlap_minutes,
-                )
-
+            # REMOVED ARTIFICIAL LIMIT: Accept any overlap the WMS requires
+            # REMOVED ARTIFICIAL LIMITATION: Accept any overlap the WMS requires
             adjusted_date = start_date - timedelta(minutes=overlap_minutes)
         else:
             # Para estado inicial, já calculamos acima
@@ -385,12 +381,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     )
                     return  # No filter = start from beginning
 
-                if bookmark_id > MAX_REASONABLE_ID:  # Reasonable upper limit
-                    self.logger.warning(
-                        "Bookmark ID suspiciously large (%s), resetting full sync",
-                        bookmark_id,
-                    )
-                    return  # No filter = start from beginning
+                # REMOVED ARTIFICIAL LIMIT: Accept any ID the WMS provides
 
                 # Use id__lt (less than) to get records with ID lower than bookmark
                 # This ensures we continue from where we left off in descending order
@@ -640,7 +631,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         # These values are HARD-CODED and cannot be overridden for safety
         flattening_enabled = self.config.get("flattening_enabled", True)
         # use_metadata_only = True  # HARD-CODED: Always True (no config allowed)
-        # discovery_sample_size = 0  # HARD-CODED: Always 0 (no samples ever)
+        # 🚨 SCHEMA DISCOVERY: HARD-CODED to use ONLY API metadata describe
 
         # Apply flattening consistently with metadata-only discovery
         if flattening_enabled:

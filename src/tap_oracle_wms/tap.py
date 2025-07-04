@@ -4,7 +4,7 @@ This tap extracts data from Oracle Warehouse Management System REST API
 with advanced features:
 
 - Automatic entity discovery from WMS API
-- Dynamic schema generation from API metadata and sample data
+- Dynamic schema generation from API metadata ONLY
 - Incremental sync with timestamp-based replication
 - HATEOAS pagination following Oracle WMS patterns
 - Advanced filtering and field selection
@@ -303,13 +303,35 @@ class TapOracleWMS(Tap):
 
     def _validate_configuration(self) -> None:
         """Validate configuration using ConfigMapper and profiles."""
-        # 🚨 SCHEMA DISCOVERY: HARD-CODED to use ONLY API metadata describe
-        # This tap uses EXCLUSIVELY API metadata - this is not configurable and not optional
-        # NO environment variables or configuration options exist for schema discovery method
-
-        self.logger.info(
-            "✅ SCHEMA DISCOVERY: Hard-coded to use ONLY API metadata describe (no configuration options)"
-        )
+        
+        # 🚨 CRITICAL MANDATORY VALIDATION: ENFORCE non-negotiable schema discovery rules
+        # These settings MUST be exactly as specified or the tap will ABORT immediately
+        
+        # ABORT if TAP_ORACLE_WMS_USE_METADATA_ONLY is not true
+        use_metadata_only = os.getenv("TAP_ORACLE_WMS_USE_METADATA_ONLY", "").lower()
+        if use_metadata_only != "true":
+            error_msg = (
+                f"❌ CRITICAL FAILURE: TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true' "
+                f"but got '{use_metadata_only}'. This is a NON-NEGOTIABLE requirement. ABORTING!"
+            )
+            self.logger.error(error_msg)
+            raise SystemExit(error_msg)
+        
+        # ABORT if TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE is not 0
+        try:
+            discovery_sample_size = int(os.getenv("TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE", "-1"))
+        except (ValueError, TypeError):
+            discovery_sample_size = -1
+            
+        if discovery_sample_size != 0:
+            error_msg = (
+                f"❌ CRITICAL FAILURE: TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE must be '0' "
+                f"but got '{discovery_sample_size}'. Sample-based discovery is FORBIDDEN. ABORTING!"
+            )
+            self.logger.error(error_msg)
+            raise SystemExit(error_msg)
+        
+        self.logger.info("🚨 CRITICAL VALIDATION PASSED: Mandatory schema discovery rules enforced")
 
         try:
             # Create ConfigMapper with merged configuration
