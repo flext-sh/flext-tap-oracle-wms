@@ -22,16 +22,17 @@ def test_mock():
     discovery = EntityDiscovery(config)
     result = asyncio.run(discovery.discover_entities())
 
-    print(f"✅ SUCCESS: Found {len(result)} entities")
-    for i, entity in enumerate(list(result.keys())[:5], 1):
-        print(f"  {i}. {entity}")
+    for _i, _entity in enumerate(list(result.keys())[:5], 1):
+        pass
     if len(result) > 5:
-        print(f"  ... and {len(result) - 5} more")
+        pass
 
     server.shutdown()
     return len(result) > 0
 
+
 if __name__ == "__main__":
     success = test_mock()
     import sys
+
     sys.exit(0 if success else 1)

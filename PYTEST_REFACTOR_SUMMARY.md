@@ -120,7 +120,7 @@ python run_tests.py lint      # Ruff + MyPy
 # Quick validation (recommended)
 source .venv/bin/activate && python run_tests.py quick
 
-# Individual test suites  
+# Individual test suites
 pytest tests/unit/ -v
 pytest tests/integration/ -v
 pytest tests/e2e/ -v --run-e2e  # Requires WMS config
@@ -148,7 +148,7 @@ TAP_ORACLE_WMS_FACILITY_CODE=*
 
 **REFATORAÇÃO 100% COMPLETA:**
 - ✅ Todos os testes unitários funcionando (48/48)
-- ✅ Todos os testes de integração funcionando (8/8)  
+- ✅ Todos os testes de integração funcionando (8/8)
 - ✅ E2E tests configurados e aguardando WMS real (14/14)
 - ✅ Zero falhas, zero erros
 - ✅ Cobertura abrangente de funcionalidades

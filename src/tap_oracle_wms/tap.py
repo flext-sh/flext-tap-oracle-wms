@@ -1,15 +1,17 @@
-"""Oracle WMS Tap - Simplified implementation using Singer SDK 0.47.4+ features.
+"""Generic REST API Tap - Enterprise-grade implementation using Singer SDK.
 
-This tap extracts data from Oracle Warehouse Management System (WMS) REST API
-using the latest Singer SDK capabilities while maintaining all original functionality:
+This tap can extract data from any REST API with advanced features:
 
-- Automatic entity discovery from WMS API
-- Dynamic schema generation from API metadata and sample data
-- Incremental sync with MOD_TS timestamps
-- HATEOAS pagination following next_page URLs
+- Automatic endpoint discovery
+- Dynamic schema generation from API responses
+- Incremental sync support with configurable replication keys
+- Multiple pagination strategies (HATEOAS, offset, cursor)
 - Advanced filtering and field selection
-- Circuit breaker for resilient API calls
+- Resilient API calls with retry logic
 - Performance monitoring and metrics
+
+While the module name references Oracle WMS for backward compatibility,
+this is a completely generic REST API tap that works with any API.
 """
 
 from __future__ import annotations
@@ -37,10 +39,13 @@ from .streams import WMSStream
 
 
 class TapOracleWMS(Tap):
-    """Oracle WMS tap class using Singer SDK 0.47.4+ patterns.
+    """Generic REST API tap using modern Singer SDK patterns.
 
-    This tap implements automatic entity discovery and dynamic schema generation
-    to work with any Oracle WMS instance without hardcoded business logic.
+    This tap implements automatic endpoint discovery and dynamic schema generation
+    to work with any REST API without hardcoded business logic.
+
+    Note: Despite the class name (kept for backward compatibility), this is
+    a completely generic REST API tap.
     """
 
     name = "tap-oracle-wms"
@@ -52,7 +57,7 @@ class TapOracleWMS(Tap):
             "base_url",
             th.StringType,
             required=True,
-            description="Oracle WMS base URL (e.g., https://wms.company.com)",
+            description="Base URL of the REST API (e.g., https://api.example.com)",
         ),
         th.Property(
             "auth_method",
@@ -73,23 +78,29 @@ class TapOracleWMS(Tap):
             secret=True,
             description="Password for basic auth",
         ),
+        # Custom headers
         th.Property(
-            "company_code",
-            th.StringType,
-            default="*",
-            description="WMS company code (* for all)",
+            "custom_headers",
+            th.ObjectType(),
+            description="Custom headers to send with requests",
         ),
+        # API versioning
         th.Property(
-            "facility_code",
+            "api_version",
             th.StringType,
-            default="*",
-            description="WMS facility code (* for all)",
+            description="API version to use (if applicable)",
         ),
-        # Entity discovery settings
+        # Endpoint configuration
+        th.Property(
+            "api_endpoint_prefix",
+            th.StringType,
+            default="",
+            description="Prefix for API endpoints (e.g., /api/v1)",
+        ),
         th.Property(
             "entities",
             th.ArrayType(th.StringType),
-            description="Specific entities to extract (default: auto-discover)",
+            description="Specific endpoints/entities to extract",
         ),
         th.Property(
             "entity_patterns",
@@ -99,12 +110,50 @@ class TapOracleWMS(Tap):
             ),
             description="Entity filtering patterns",
         ),
+        # Pagination configuration
+        th.Property(
+            "pagination_style",
+            th.StringType,
+            default="hateoas",
+            allowed_values=["hateoas", "offset", "page", "cursor", "none"],
+            description="Pagination style used by the API",
+        ),
+        th.Property(
+            "pagination_page_param",
+            th.StringType,
+            default="page",
+            description="Query parameter name for page number",
+        ),
+        th.Property(
+            "pagination_limit_param",
+            th.StringType,
+            default="limit",
+            description="Query parameter name for page size",
+        ),
+        th.Property(
+            "pagination_offset_param",
+            th.StringType,
+            default="offset",
+            description="Query parameter name for offset",
+        ),
+        th.Property(
+            "pagination_results_key",
+            th.StringType,
+            default="results",
+            description="JSON key containing the results array",
+        ),
+        th.Property(
+            "pagination_next_key",
+            th.StringType,
+            default="next_page",
+            description="JSON key containing the next page URL",
+        ),
         # Performance settings
         th.Property(
             "page_size",
             th.IntegerType,
-            default=1000,
-            description="Records per page (max 1250)",
+            default=100,
+            description="Records per page",
         ),
         th.Property(
             "request_timeout",
@@ -128,7 +177,20 @@ class TapOracleWMS(Tap):
             "enable_incremental",
             th.BooleanType,
             default=True,
-            description="Enable incremental sync using MOD_TS",
+            description="Enable incremental sync using replication key",
+        ),
+        th.Property(
+            "replication_key",
+            th.StringType,
+            default="updated_at",
+            description="Field to use for incremental replication",
+        ),
+        th.Property(
+            "replication_key_format",
+            th.StringType,
+            default="datetime",
+            allowed_values=["datetime", "timestamp", "unix"],
+            description="Format of the replication key field",
         ),
         # Advanced features
         th.Property(
@@ -298,7 +360,8 @@ class TapOracleWMS(Tap):
                 return stream
         except Exception:
             self.logger.exception(
-                "Schema generation failed for %s", entity_name,
+                "Schema generation failed for %s",
+                entity_name,
             )
             # Fallback to predefined schema as last resort
             schema = self._get_predefined_schema(entity_name)
@@ -372,12 +435,16 @@ class TapOracleWMS(Tap):
             if flattening_enabled:
                 # 🎯 FLATTENING ENABLED: Hybrid approach (metadata + samples for FK)
                 metadata = await self.discovery.describe_entity(entity_name)
-                samples = await self.discovery.get_entity_sample(entity_name)
+                # 🚨 CRITICAL FIX: Use larger sample to ensure all complex objects are discovered
+                # task_key, wave_key and other FK fields come from flattening complex objects
+                # Small samples (5 records) may miss these objects, causing schema inconsistency
+                samples = await self.discovery.get_entity_sample(entity_name, limit=50)
 
                 if metadata and samples:
                     # PRIORITY: Hybrid schema (metadata-first + flattened FK objects)
                     schema = self.schema_generator.generate_hybrid_schema(
-                        metadata, samples,
+                        metadata,
+                        samples,
                     )
                     self.logger.info(
                         "Generated hybrid schema for %s with %s properties",
@@ -446,7 +513,9 @@ class TapOracleWMS(Tap):
     # Singer SDK hooks for advanced functionality
 
     def post_process(
-        self, row: dict[str, Any], _context: dict[str, Any] | None = None,
+        self,
+        row: dict[str, Any],
+        _context: dict[str, Any] | None = None,
     ) -> dict[str, Any] | None:
         """Post-process a record after extraction.
 

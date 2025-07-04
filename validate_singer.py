@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 """Complete Singer Protocol Compliance Validator for Oracle WMS Tap."""
 
+import contextlib
 import json
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 import jsonschema
 
 
-def validate_singer_compliance():
+def validate_singer_compliance() -> bool:
     """Validate complete Singer protocol compliance."""
-    print("🎯 Singer Protocol Compliance Validator")
-    print("=" * 50)
-
     all_tests = [
         test_cli_commands,
         test_discovery_output,
@@ -31,56 +30,43 @@ def validate_singer_compliance():
         try:
             if test():
                 passed += 1
-                print("✅ PASSED")
             else:
-                print("❌ FAILED")
-        except Exception as e:
-            print(f"❌ ERROR: {e}")
+                pass
+        except Exception:
+            pass
 
-    print("\n" + "=" * 50)
-    print(f"📊 Results: {passed}/{total} tests passed")
-
-    if passed == total:
-        print("🎉 100% Singer Protocol Compliant!")
-        return True
-    print("⚠️  Some compliance issues found")
-    return False
+    return passed == total
 
 
-def test_cli_commands():
+def test_cli_commands() -> bool:
     """Test CLI command compliance."""
-    print("\n1️⃣ Testing CLI Commands...")
-
     commands = [
         ("--help", "Help command"),
         ("--version", "Version command"),
         ("--about", "About command"),
     ]
 
-    for cmd, desc in commands:
+    for cmd, _desc in commands:
         try:
             result = subprocess.run(
                 ["python", "-m", "tap_oracle_wms", cmd],
-                check=False, capture_output=True,
+                check=False,
+                capture_output=True,
                 text=True,
                 timeout=30,
             )
             if result.returncode == 0:
-                print(f"  ✅ {desc}: OK")
+                pass
             else:
-                print(f"  ❌ {desc}: Failed")
                 return False
-        except Exception as e:
-            print(f"  ❌ {desc}: Error - {e}")
+        except Exception:
             return False
 
     return True
 
 
-def test_discovery_output():
+def test_discovery_output() -> Optional[bool]:
     """Test discovery output format."""
-    print("\n2️⃣ Testing Discovery Output...")
-
     try:
         # Create test config
         test_config = {
@@ -104,25 +90,30 @@ def test_discovery_output():
 
         try:
             result = subprocess.run(
-                ["python", "-m", "tap_oracle_wms", "--config", config_file, "--discover"],
-                check=False, capture_output=True,
+                [
+                    "python",
+                    "-m",
+                    "tap_oracle_wms",
+                    "--config",
+                    config_file,
+                    "--discover",
+                ],
+                check=False,
+                capture_output=True,
                 text=True,
                 timeout=30,
             )
 
             if result.returncode != 0:
-                print(f"  ❌ Discovery failed: {result.stderr}")
                 return False
 
             # Parse discovery output
             try:
                 catalog = json.loads(result.stdout)
-                print("  ✅ Discovery output is valid JSON")
 
                 # Check catalog structure
                 if "streams" in catalog:
                     streams = catalog["streams"]
-                    print(f"  ✅ Found {len(streams)} streams in catalog")
 
                     # Check stream structure
                     if streams:
@@ -130,32 +121,26 @@ def test_discovery_output():
                         required_fields = ["stream", "tap_stream_id", "schema"]
                         for field in required_fields:
                             if field in stream:
-                                print(f"  ✅ Stream has required field: {field}")
+                                pass
                             else:
-                                print(f"  ❌ Stream missing required field: {field}")
                                 return False
 
                     return True
-                print("  ❌ Catalog missing 'streams' field")
                 return False
 
-            except json.JSONDecodeError as e:
-                print(f"  ❌ Discovery output is not valid JSON: {e}")
+            except json.JSONDecodeError:
                 return False
 
         finally:
             server.shutdown()
             Path(config_file).unlink()
 
-    except Exception as e:
-        print(f"  ❌ Discovery test error: {e}")
+    except Exception:
         return False
 
 
-def test_catalog_format():
+def test_catalog_format() -> Optional[bool]:
     """Test catalog format compliance."""
-    print("\n3️⃣ Testing Catalog Format...")
-
     # Singer catalog schema (simplified)
     catalog_schema = {
         "type": "object",
@@ -205,19 +190,15 @@ def test_catalog_format():
 
             # Validate against schema
             jsonschema.validate(catalog, catalog_schema)
-            print("  ✅ Catalog format is valid")
 
             streams = catalog.get("streams", [])
             if streams:
-                print(f"  ✅ Catalog contains {len(streams)} streams")
-
                 # Check schema validity for each stream
                 for stream in streams:
                     schema = stream.get("schema", {})
                     if "properties" in schema and "type" in schema:
-                        print(f"  ✅ Stream '{stream['stream']}' has valid schema")
+                        pass
                     else:
-                        print(f"  ❌ Stream '{stream['stream']}' has invalid schema")
                         return False
 
             return True
@@ -225,18 +206,14 @@ def test_catalog_format():
         finally:
             Path(config_file).unlink()
 
-    except jsonschema.ValidationError as e:
-        print(f"  ❌ Catalog validation error: {e}")
+    except jsonschema.ValidationError:
         return False
-    except Exception as e:
-        print(f"  ❌ Catalog test error: {e}")
+    except Exception:
         return False
 
 
-def test_record_output():
+def test_record_output() -> Optional[bool]:
     """Test record output format."""
-    print("\n4️⃣ Testing Record Output Format...")
-
     try:
         # Test that records follow Singer format
         _unused_config = {
@@ -263,29 +240,24 @@ def test_record_output():
         required_fields = ["type", "stream", "record"]
         for field in required_fields:
             if field in mock_record:
-                print(f"  ✅ Record has required field: {field}")
+                pass
             else:
-                print(f"  ❌ Record missing required field: {field}")
                 return False
 
         # Check record type
         if mock_record["type"] == "RECORD":
-            print("  ✅ Record type is correct")
+            pass
         else:
-            print("  ❌ Invalid record type")
             return False
 
         return True
 
-    except Exception as e:
-        print(f"  ❌ Record test error: {e}")
+    except Exception:
         return False
 
 
-def test_state_handling():
+def test_state_handling() -> Optional[bool]:
     """Test state handling."""
-    print("\n5️⃣ Testing State Handling...")
-
     try:
         from tap_oracle_wms.tap import TapOracleWMS
 
@@ -301,28 +273,22 @@ def test_state_handling():
         # Test state_dict property
         if hasattr(tap, "state_dict"):
             state = tap.state_dict
-            print("  ✅ TAP has state_dict property")
 
             if isinstance(state, dict):
-                print("  ✅ state_dict returns dictionary")
+                pass
             else:
-                print("  ❌ state_dict doesn't return dictionary")
                 return False
         else:
-            print("  ❌ TAP missing state_dict property")
             return False
 
         return True
 
-    except Exception as e:
-        print(f"  ❌ State test error: {e}")
+    except Exception:
         return False
 
 
-def test_error_handling():
+def test_error_handling() -> Optional[bool]:
     """Test error handling."""
-    print("\n6️⃣ Testing Error Handling...")
-
     try:
         # Test with invalid config
         invalid_config = {
@@ -338,16 +304,12 @@ def test_error_handling():
         discovery = EntityDiscovery(invalid_config)
 
         # This should handle errors gracefully
-        try:
+        with contextlib.suppress(Exception):
             _unused_result = asyncio.run(discovery.discover_entities())
-            print("  ⚠️  No error raised (might be expected with mocking)")
-        except Exception:
-            print("  ✅ Errors are handled (exceptions raised appropriately)")
 
         return True
 
-    except Exception as e:
-        print(f"  ❌ Error handling test error: {e}")
+    except Exception:
         return False
 
 

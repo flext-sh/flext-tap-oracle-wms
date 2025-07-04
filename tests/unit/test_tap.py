@@ -9,7 +9,7 @@ class TestTapOracleWMS:
     """Unit tests for TapOracleWMS class."""
 
     @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
-    def test_tap_initialization(self, mock_discover, mock_wms_config):
+    def test_tap_initialization(self, mock_discover, mock_wms_config) -> None:
         """Test tap initialization with config."""
         # Mock discover_streams to return empty list to avoid network calls
         mock_discover.return_value = []
@@ -22,7 +22,7 @@ class TestTapOracleWMS:
         assert hasattr(tap, "schema_generator")
 
     @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
-    def test_config_validation(self, mock_discover):
+    def test_config_validation(self, mock_discover) -> None:
         """Test config validation."""
         # Mock discover_streams to return empty list to avoid network calls
         mock_discover.return_value = []
@@ -33,7 +33,7 @@ class TestTapOracleWMS:
         assert tap.config["base_url"] == "https://test.com"
 
     @patch("tap_oracle_wms.tap.asyncio.run")
-    def test_discover_streams(self, mock_asyncio_run, mock_wms_config):
+    def test_discover_streams(self, mock_asyncio_run, mock_wms_config) -> None:
         """Test stream discovery with mocked async calls."""
         # Setup mock data
         mock_entities = {
@@ -59,7 +59,7 @@ class TestTapOracleWMS:
             assert tap.config == mock_wms_config
 
     @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
-    def test_post_process(self, mock_discover, mock_wms_config):
+    def test_post_process(self, mock_discover, mock_wms_config) -> None:
         """Test record post-processing."""
         # Mock discover_streams to return empty list to avoid network calls
         mock_discover.return_value = []
@@ -67,11 +67,15 @@ class TestTapOracleWMS:
         tap = TapOracleWMS(config=mock_wms_config)
 
         # Mock the post_process method to avoid datetime dependency
-        with patch.object(tap, "post_process", return_value={
-            "id": 1,
-            "name": "Test",
-            "_extracted_at": "2024-01-01T12:00:00Z",
-        }) as mock_post_process:
+        with patch.object(
+            tap,
+            "post_process",
+            return_value={
+                "id": 1,
+                "name": "Test",
+                "_extracted_at": "2024-01-01T12:00:00Z",
+            },
+        ) as mock_post_process:
             record = {"id": 1, "name": "Test"}
             processed = mock_post_process(record)
 
@@ -80,7 +84,7 @@ class TestTapOracleWMS:
             assert processed["name"] == "Test"
 
     @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
-    def test_catalog_dict_property(self, mock_discover, mock_wms_config):
+    def test_catalog_dict_property(self, mock_discover, mock_wms_config) -> None:
         """Test catalog_dict property."""
         # Mock discover_streams to return empty list to avoid network calls
         mock_discover.return_value = []
@@ -92,7 +96,7 @@ class TestTapOracleWMS:
         assert isinstance(catalog_dict, dict)
 
     @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
-    def test_state_dict_property(self, mock_discover, mock_wms_config):
+    def test_state_dict_property(self, mock_discover, mock_wms_config) -> None:
         """Test state_dict property."""
         # Mock discover_streams to return empty list to avoid network calls
         mock_discover.return_value = []
@@ -103,7 +107,7 @@ class TestTapOracleWMS:
         state_dict = tap.state_dict
         assert isinstance(state_dict, dict)
 
-    def test_discover_entities_caching(self, mock_wms_config):
+    def test_discover_entities_caching(self, mock_wms_config) -> None:
         """Test that entity discovery uses caching."""
         mock_entities = {"item": "/entity/item"}
 
@@ -122,7 +126,7 @@ class TestTapOracleWMS:
             tap._entity_cache = mock_entities
             assert tap._entity_cache == mock_entities
 
-    def test_schema_generation_caching(self, mock_wms_config):
+    def test_schema_generation_caching(self, mock_wms_config) -> None:
         """Test that schema generation uses caching."""
         mock_schema = {"type": "object", "properties": {}}
 

@@ -1,10 +1,10 @@
-"""WMS Stream - Simplified implementation using Singer SDK 0.47.4+ REST capabilities.
+"""Generic REST Stream - Enterprise implementation using Singer SDK REST capabilities.
 
-This module implements a dynamic REST stream that can handle any Oracle WMS entity
+This module implements a dynamic REST stream that can handle any REST API endpoint
 with full functionality including:
 
-- HATEOAS pagination following next_page URLs
-- Incremental sync with MOD_TS timestamps
+- Multiple pagination strategies (HATEOAS, offset, page, cursor)
+- Incremental sync with configurable replication keys
 - Dynamic URL and parameter generation
 - Automatic retry with exponential backoff
 - Request caching and performance optimization
@@ -95,24 +95,29 @@ class WMSPaginator(BaseHATEOASPaginator):
 
 
 class WMSStream(RESTStream[dict[str, Any]]):
-    """Dynamic WMS stream using Singer SDK REST capabilities.
+    """Generic REST API stream using Singer SDK capabilities.
 
-    This stream automatically adapts to any WMS entity with:
+    This stream automatically adapts to any REST API endpoint with:
     - Dynamic path generation
     - Automatic schema discovery
     - Incremental sync support
     - Advanced filtering
+    - Multiple pagination strategies
+
+    Note: Class name kept for backward compatibility.
     """
 
     # Use HATEOAS paginator
     pagination_class = WMSPaginator
 
-    # Default replication settings
+    # Default replication settings (will be overridden in __init__)
     replication_method = "INCREMENTAL"
-    replication_key = "mod_ts"
+    replication_key = None
 
     def __init__(
-        self, *args: object, **kwargs: dict[str, object],
+        self,
+        *args: object,
+        **kwargs: dict[str, object],
     ) -> None:
         """Initialize stream with dynamic settings."""
         # Extract custom settings before calling parent
@@ -130,23 +135,26 @@ class WMSStream(RESTStream[dict[str, Any]]):
         # Determine replication method
         schema_props = self._schema.get("properties", {})
 
+        # Get configured replication key
+        configured_rep_key = self.config.get("replication_key", "updated_at")
+
         # Check for forced full sync in config
         force_full_table = self.config.get("force_full_table", False)
+        enable_incremental = self.config.get("enable_incremental", True)
 
-        if force_full_table:
+        if force_full_table or not enable_incremental:
             # Forced full sync via config
             self.replication_method = "FULL_TABLE"
-            # Use id as replication key for full sync bookmark tracking
-            self.replication_key = "id" if "id" in schema_props else "record_id"
-        elif "mod_ts" not in schema_props:
-            # Fall back to full table sync if no mod_ts field
-            self.replication_method = "FULL_TABLE"
-            # Use id as replication key for full sync bookmark tracking
-            self.replication_key = "id" if "id" in schema_props else "record_id"
-        else:
-            # Use incremental sync with mod_ts
+            # Use primary key for bookmark tracking in full sync
+            self.replication_key = self.primary_keys[0] if self.primary_keys else "id"
+        elif configured_rep_key in schema_props:
+            # Use incremental sync with configured key
             self.replication_method = "INCREMENTAL"
-            self.replication_key = "mod_ts"
+            self.replication_key = configured_rep_key
+        else:
+            # Fall back to full table sync if replication key not found
+            self.replication_method = "FULL_TABLE"
+            self.replication_key = self.primary_keys[0] if self.primary_keys else "id"
 
     @property
     def url_base(self) -> str:
@@ -156,23 +164,34 @@ class WMSStream(RESTStream[dict[str, Any]]):
     @property
     def path(self) -> str:  # type: ignore[override]
         """Generate entity-specific path."""
-        # Oracle WMS REST API pattern
-        return f"/wms/lgfapi/v10/entity/{self._entity_name}"
+        # Build path from configuration
+        prefix = self.config.get("api_endpoint_prefix", "")
+        if prefix and not prefix.startswith("/"):
+            prefix = f"/{prefix}"
+
+        # Support custom path patterns
+        path_pattern = self.config.get("path_pattern", "/{entity}")
+        path = path_pattern.replace("{entity}", self._entity_name)
+
+        return f"{prefix}{path}"
 
     @property
     def http_headers(self) -> dict[str, Any]:
         """Return headers for all requests."""
         headers = super().http_headers
 
-        # Add WMS-specific headers
+        # Add standard headers
         headers.update(
             {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "X-WMS-Company": self.config.get("company_code", "*"),
-                "X-WMS-Facility": self.config.get("facility_code", "*"),
-            },
+            }
         )
+
+        # Add custom headers from config
+        custom_headers = self.config.get("custom_headers", {})
+        if custom_headers:
+            headers.update(custom_headers)
 
         return headers
 
@@ -237,7 +256,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     # Basic sanitization - allow only alphanumeric, underscore, dash
                     if not key.replace("_", "").replace("-", "").isalnum():
                         self.logger.warning(
-                            "Invalid query parameter key format: %s", key,
+                            "Invalid query parameter key format: %s",
+                            key,
                         )
                         continue
                     # Handle value arrays safely
@@ -257,7 +277,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
     def _get_base_params(self) -> dict[str, Any]:
         """Get base request parameters."""
         return {
-            "page_size": self.config.get("page_size", 1250),
+            "page_size": self.config.get("page_size", 100),
             "page_mode": "sequenced",  # Always use cursor-based pagination
         }
 
@@ -291,7 +311,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
             start_date = now - timedelta(minutes=overlap_minutes)
             self.logger.info(
                 "No initial state - using current time minus %d minutes: %s",
-                overlap_minutes, start_date.isoformat(),
+                overlap_minutes,
+                start_date.isoformat(),
             )
 
         # Validate timestamp has timezone information
@@ -311,7 +332,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
             overlap_minutes = self.config.get("incremental_overlap_minutes", 5)
             if not isinstance(overlap_minutes, (int, float)) or overlap_minutes < 0:
                 self.logger.warning(
-                    "Invalid overlap_minutes: %s, using default 5", overlap_minutes,
+                    "Invalid overlap_minutes: %s, using default 5",
+                    overlap_minutes,
                 )
                 overlap_minutes = 5
             if overlap_minutes > MAX_OVERLAP_MINUTES:  # More than 24 hours
@@ -333,7 +355,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
         params[f"{self.replication_key}__gte"] = adjusted_date.isoformat()
         self.logger.info(
             "Incremental filter: %s >= %s",
-            self.replication_key, adjusted_date.isoformat(),
+            self.replication_key,
+            adjusted_date.isoformat(),
         )
 
     def _add_full_table_filter(
@@ -406,7 +429,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
         elif self.replication_key:
             params["ordering"] = f"-{self.replication_key}"
             self.logger.warning(
-                "No ID field found, using -%s for ordering", self.replication_key,
+                "No ID field found, using -%s for ordering",
+                self.replication_key,
             )
 
     def _add_incremental_ordering(self, params: dict[str, Any]) -> None:
@@ -425,7 +449,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
         elif self.replication_key:
             params["ordering"] = self.replication_key
             self.logger.debug(
-                "Incremental sync using ordering=%s", self.replication_key,
+                "Incremental sync using ordering=%s",
+                self.replication_key,
             )
         elif "id" in self._schema.get("properties", {}):
             params["ordering"] = "id"  # Fallback to ID if no replication key
@@ -655,7 +680,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return self._process_all_fields(row, schema_properties)
 
     def _handle_missing_fields(
-        self, row: dict[str, Any], schema_properties: dict[str, Any],
+        self,
+        row: dict[str, Any],
+        schema_properties: dict[str, Any],
     ) -> None:
         """Handle auto-discovery of missing fields."""
         missing_fields = set(row.keys()) - set(schema_properties.keys())
@@ -694,7 +721,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
         )
 
     def _infer_field_schema(
-        self, field_name: str, field_value: object,
+        self,
+        field_name: str,
+        field_value: object,
     ) -> dict[str, Any]:
         """Infer schema for a field based on name and value."""
         # Infer type from field name patterns
@@ -742,7 +771,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return {"type": ["string", "null"], "maxLength": 500}
 
     def _log_auto_added_field(
-        self, field_name: str, inferred_schema: dict[str, Any],
+        self,
+        field_name: str,
+        inferred_schema: dict[str, Any],
     ) -> None:
         """Log information about auto-added field."""
         self.logger.info(
@@ -758,7 +789,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
         )
 
     def _process_all_fields(
-        self, row: dict[str, Any], schema_properties: dict[str, Any],
+        self,
+        row: dict[str, Any],
+        schema_properties: dict[str, Any],
     ) -> dict[str, Any]:
         """Process all fields with proper typing."""
         processed_row: dict[str, Any] = {}
@@ -826,7 +859,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
             raise ValueError(error_msg) from e
 
     def _convert_by_metadata_type(
-        self, original_type: str, field_value: ValueType,
+        self,
+        original_type: str,
+        field_value: ValueType,
     ) -> ValueType:
         """Convert field value based on WMS metadata type."""
         if original_type in ("pk", "integer"):
@@ -843,7 +878,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return str(field_value) if field_value is not None else None
 
     def _convert_by_schema_type(
-        self, actual_type: str, field_value: ValueType,
+        self,
+        actual_type: str,
+        field_value: ValueType,
     ) -> ValueType:
         """Convert field value based on Singer schema type."""
         if actual_type == "integer":
@@ -939,7 +976,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return timestamp_value.isoformat()
 
     def request_records(
-        self, context: Mapping[str, Any] | None,
+        self,
+        context: Mapping[str, Any] | None,
     ) -> Iterable[dict[str, Any]]:
         """Override request_records to add detailed HTTP logging."""
         request_count = 0
@@ -1004,9 +1042,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 "entity": self._entity_name,
                 "method": prepared_request.method,
                 "url": prepared_request.url,
-                "headers_count": len(prepared_request.headers)
-                if prepared_request.headers
-                else 0,
+                "headers_count": (
+                    len(prepared_request.headers) if prepared_request.headers else 0
+                ),
                 "body_size": len(prepared_request.body) if prepared_request.body else 0,
                 "call_start_time": request_start,
             },
@@ -1051,7 +1089,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
             return response
 
     def get_records(
-        self, context: Mapping[str, Any] | None,
+        self,
+        context: Mapping[str, Any] | None,
     ) -> Iterable[dict[str, Any]]:
         """Get records from the stream with retry logic."""
         self.logger.info(
@@ -1101,9 +1140,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     "entity": self._entity_name,
                     "total_records": record_count,
                     "total_time_seconds": elapsed_time,
-                    "records_per_second": record_count / elapsed_time
-                    if elapsed_time > 0
-                    else 0,
+                    "records_per_second": (
+                        record_count / elapsed_time if elapsed_time > 0 else 0
+                    ),
                 },
             )
 
@@ -1120,7 +1159,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return self._schema
 
     def get_starting_timestamp(
-        self, context: Mapping[str, Any] | None,
+        self,
+        context: Mapping[str, Any] | None,
     ) -> datetime | None:
         """Get starting timestamp for incremental sync."""
         if self.replication_key:

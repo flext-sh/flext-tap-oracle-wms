@@ -7,7 +7,7 @@ import os
 import re
 
 
-def fix_cli_enhanced():
+def fix_cli_enhanced() -> None:
     """Corrigir CLI enhanced - todos os blocos sem logging apropriado."""
     file_path = "src/tap_oracle_wms/cli_enhanced.py"
 
@@ -96,9 +96,8 @@ def fix_cli_enhanced():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Fixed ALL CLI error masking in {file_path}")
 
-def fix_auth_masking():
+def fix_auth_masking() -> None:
     """Corrigir auth.py - eliminar pass statement."""
     file_path = "src/tap_oracle_wms/auth.py"
 
@@ -127,9 +126,8 @@ def fix_auth_masking():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Fixed auth error masking in {file_path}")
 
-def fix_discovery_masking():
+def fix_discovery_masking() -> None:
     """Corrigir discovery.py - problemas críticos."""
     file_path = "src/tap_oracle_wms/discovery.py"
 
@@ -196,9 +194,8 @@ def fix_discovery_masking():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Fixed discovery error masking in {file_path}")
 
-def fix_streams_masking():
+def fix_streams_masking() -> None:
     """Corrigir streams.py - timestamp normalization."""
     file_path = "src/tap_oracle_wms/streams.py"
 
@@ -237,14 +234,12 @@ def fix_streams_masking():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Fixed streams error masking in {file_path}")
 
-def fix_error_logging_masking():
+def fix_error_logging_masking() -> None:
     """Corrigir error_logging.py - bare except."""
     file_path = "src/tap_oracle_wms/error_logging.py"
 
     if not os.path.exists(file_path):
-        print(f"⚠️  File {file_path} not found, skipping")
         return
 
     with open(file_path, encoding="utf-8") as f:
@@ -264,13 +259,9 @@ def fix_error_logging_masking():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Fixed error_logging bare except in {file_path}")
 
-def main():
+def main() -> None:
     """Corrigir TODOS os 20 padrões de mascaramento encontrados."""
-    print("🔥 CORRIGINDO TODOS OS 20 PADRÕES DE MASCARAMENTO DE ERRO")
-    print("=" * 60)
-
     os.chdir("/home/marlonsc/flext/flext-tap-oracle-wms")
 
     try:
@@ -280,14 +271,9 @@ def main():
         fix_streams_masking()
         fix_error_logging_masking()
 
-        print("\n🎉 TODOS OS 20 PADRÕES DE MASCARAMENTO CORRIGIDOS!")
-        print("✅ Agora ZERO mascaramento de erro!")
-        print("✅ Todos os erros são devidamente logados e/ou re-raised!")
-        print("✅ Não há mais 'sacanagem' - tudo transparente!")
-
-    except Exception as e:
-        print(f"❌ ERRO durante correções: {e}")
+    except Exception:
         raise
+
 
 if __name__ == "__main__":
     main()

@@ -7,7 +7,7 @@ import os
 import re
 
 
-def fix_streams_logging():
+def fix_streams_logging() -> None:
     """Corrigir logging em streams.py."""
     file_path = "src/tap_oracle_wms/streams.py"
 
@@ -122,9 +122,8 @@ def fix_streams_logging():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Fixed logging in {file_path}")
 
-def fix_discovery_logging():
+def fix_discovery_logging() -> None:
     """Corrigir logging em discovery.py."""
     file_path = "src/tap_oracle_wms/discovery.py"
 
@@ -194,9 +193,8 @@ def fix_discovery_logging():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Fixed logging in {file_path}")
 
-def fix_auth_logging():
+def fix_auth_logging() -> None:
     """Corrigir logging em auth.py."""
     file_path = "src/tap_oracle_wms/auth.py"
 
@@ -218,9 +216,8 @@ def fix_auth_logging():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Fixed logging in {file_path}")
 
-def fix_tap_logging():
+def fix_tap_logging() -> None:
     """Corrigir logging em tap.py."""
     file_path = "src/tap_oracle_wms/tap.py"
 
@@ -247,13 +244,9 @@ def fix_tap_logging():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"✅ Fixed logging in {file_path}")
 
-def main():
+def main() -> None:
     """Executar todas as correções de logging."""
-    print("🔧 FIXING LOGGING - Consolidating error messages and using appropriate log levels")
-    print("=" * 70)
-
     os.chdir("/home/marlonsc/flext/flext-tap-oracle-wms")
 
     try:
@@ -262,17 +255,9 @@ def main():
         fix_auth_logging()
         fix_tap_logging()
 
-        print("\n✅ ALL LOGGING FIXED")
-        print("📋 Summary of changes:")
-        print("  - Consolidated multiple log messages into single error messages")
-        print("  - Changed logger.exception() to logger.error() for expected errors")
-        print("  - Kept logger.exception() only for truly unexpected errors")
-        print("  - Added ❌ prefixes for clear error identification")
-        print("  - Reduced log noise while maintaining error visibility")
-
-    except Exception as e:
-        print(f"❌ ERROR during logging fixes: {e}")
+    except Exception:
         raise
+
 
 if __name__ == "__main__":
     main()
