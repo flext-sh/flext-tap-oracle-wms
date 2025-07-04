@@ -436,7 +436,7 @@ Clear cache entries.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `page_size` | integer | 1000 | Records per API page |
+| `page_size` | integer | 100 | Records per API page |
 | `request_timeout` | integer | 300 | Request timeout (seconds) |
 | `max_parallel_pages` | integer | 5 | Concurrent page fetches |
 | `cache_enabled` | boolean | true | Enable response caching |

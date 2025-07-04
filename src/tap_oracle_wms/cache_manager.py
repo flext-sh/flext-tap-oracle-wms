@@ -55,26 +55,30 @@ class CacheManager(CacheManagerInterface):
             return self._get_entity_cache()
         if cache_type == "schema":
             return self._get_from_cache_with_ttl(
-                self._schema_cache, cache_key,
-                self._schema_cache_times, self._schema_cache_ttl
+                self._schema_cache,
+                cache_key,
+                self._schema_cache_times,
+                self._schema_cache_ttl,
             )
         if cache_type == "metadata":
             return self._get_from_cache_with_ttl(
-                self._metadata_cache, cache_key,
-                self._metadata_cache_times, self._metadata_cache_ttl
+                self._metadata_cache,
+                cache_key,
+                self._metadata_cache_times,
+                self._metadata_cache_ttl,
             )
         if cache_type == "access":
             return self._get_from_cache_with_ttl(
-                self._access_cache, cache_key,
-                self._access_cache_times, self._access_cache_ttl
+                self._access_cache,
+                cache_key,
+                self._access_cache_times,
+                self._access_cache_ttl,
             )
         # SAMPLE CACHE GET DELETED
 
         return None
 
-    def set_cached_value(
-        self, key: str, value: Any, ttl: int | None = None
-    ) -> None:
+    def set_cached_value(self, key: str, value: Any, ttl: int | None = None) -> None:
         """Set value in appropriate cache."""
         cache_type, cache_key = self._parse_cache_key(key)
         now = datetime.now(timezone.utc)
@@ -141,7 +145,11 @@ class CacheManager(CacheManagerInterface):
         return {
             "entity_cache": {
                 "cached": self._entity_cache is not None,
-                "cached_at": self._entity_cache_time.isoformat() if self._entity_cache_time else None,
+                "cached_at": (
+                    self._entity_cache_time.isoformat()
+                    if self._entity_cache_time
+                    else None
+                ),
                 "ttl_seconds": self._entity_cache_ttl,
             },
             "schema_cache": {
@@ -171,8 +179,9 @@ class CacheManager(CacheManagerInterface):
 
     def _get_entity_cache(self) -> dict[str, str] | None:
         """Get entity cache if valid."""
-        if (self._entity_cache is not None and
-            self._is_timestamp_valid(self._entity_cache_time, self._entity_cache_ttl)):
+        if self._entity_cache is not None and self._is_timestamp_valid(
+            self._entity_cache_time, self._entity_cache_ttl
+        ):
             return self._entity_cache
         return None
 
@@ -196,9 +205,7 @@ class CacheManager(CacheManagerInterface):
         time_dict.pop(key, None)
         return None
 
-    def _is_timestamp_valid(
-        self, timestamp: datetime | None, ttl: int
-    ) -> bool:
+    def _is_timestamp_valid(self, timestamp: datetime | None, ttl: int) -> bool:
         """Check if timestamp is within TTL."""
         if timestamp is None:
             return False
