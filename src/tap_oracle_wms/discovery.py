@@ -26,6 +26,7 @@ HTTP_NOT_FOUND = 404
 FK_INDICATOR_THRESHOLD = 0.5
 SIMPLE_OBJECT_MAX_FIELDS = 3
 
+
 # Custom exception classes for proper error handling
 class WMSDiscoveryError(Exception):
     """Base exception for WMS discovery errors."""
@@ -306,7 +307,8 @@ class EntityDiscovery:
                 httpx.RequestError,
             ) as e:
                 logger.exception(
-                    "Network error describing entity %s", entity_name,
+                    "Network error describing entity %s",
+                    entity_name,
                 )
                 msg = f"Network error describing entity {entity_name}: {e}"
                 raise httpx.RequestError(msg) from e
@@ -481,9 +483,16 @@ class EntityDiscovery:
         return filtered
 
     async def get_entity_sample(
-        self, entity_name: str, limit: int = 5,
+        self,
+        entity_name: str,
+        limit: int = 5,
     ) -> list[dict[str, Any]]:
-        """Get sample records from an entity for schema inference."""
+        """Get sample records from an entity for schema inference.
+
+        🚨 CRITICAL FOR SCHEMA CONSISTENCY: This method must return samples
+        that contain ALL complex objects that will be present in real data
+        to ensure task_key, wave_key and other FK fields are discovered.
+        """
         url = f"{self.entity_endpoint}/{entity_name}"
         params = {"page_size": limit, "page_mode": "sequenced"}
 
@@ -502,7 +511,15 @@ class EntityDiscovery:
                 if isinstance(data, dict) and "results" in data:
                     results = data["results"]
                     if isinstance(results, list):
-                        return results[:limit]
+                        samples = results[:limit]
+
+                        # 🔧 ENHANCED SAMPLING: If we got samples but limit is large enough,
+                        # try to get samples with different patterns to ensure comprehensive discovery
+                        if samples and limit >= 20:
+                            return await self._get_enhanced_samples(
+                                entity_name, samples, limit
+                            )
+                        return samples
                 elif isinstance(data, list):
                     return data[:limit]
                 else:
@@ -513,7 +530,8 @@ class EntityDiscovery:
                     msg = f"Entity '{entity_name}' not found for sampling"
                     raise EntityDiscoveryError(msg) from e
                 logger.exception(
-                    "HTTP error getting samples for entity %s", entity_name,
+                    "HTTP error getting samples for entity %s",
+                    entity_name,
                 )
                 msg = f"HTTP error getting samples for entity {entity_name}: {e}"
                 raise EntityDiscoveryError(msg) from e
@@ -523,7 +541,8 @@ class EntityDiscovery:
                 httpx.RequestError,
             ) as e:
                 logger.exception(
-                    "Network error getting samples for entity %s", entity_name,
+                    "Network error getting samples for entity %s",
+                    entity_name,
                 )
                 msg = f"Network error getting samples for entity {entity_name}: {e}"
                 raise NetworkError(msg) from e
@@ -536,6 +555,103 @@ class EntityDiscovery:
                     f"Data parsing error getting samples for entity {entity_name}: {e}"
                 )
                 raise DataTypeConversionError(msg) from e
+
+    async def _get_enhanced_samples(
+        self, entity_name: str, initial_samples: list[dict[str, Any]], total_limit: int
+    ) -> list[dict[str, Any]]:
+        """Get enhanced samples to ensure comprehensive field discovery.
+
+        🎯 CRITICAL: This method ensures we discover ALL complex objects that
+        generate flattened fields like task_key, wave_key, etc.
+
+        Strategy:
+        1. Start with initial samples (first page)
+        2. Try to get samples from middle of dataset (different ID ranges)
+        3. Combine all unique field patterns found
+        """
+        all_samples = initial_samples.copy()
+        discovered_fields = set()
+
+        # Track fields from initial samples
+        for sample in initial_samples:
+            discovered_fields.update(sample.keys())
+
+        # If we already have enough samples or found good diversity, return
+        if len(all_samples) >= total_limit:
+            return all_samples[:total_limit]
+
+        try:
+            # Try to get samples from different parts of the dataset
+            # This helps find records with different FK object patterns
+            additional_samples = await self._get_diverse_samples(
+                entity_name, total_limit - len(all_samples)
+            )
+
+            # Add samples that have new field patterns
+            for sample in additional_samples:
+                sample_fields = set(sample.keys())
+                new_fields = sample_fields - discovered_fields
+
+                if new_fields or len(all_samples) < total_limit:
+                    all_samples.append(sample)
+                    discovered_fields.update(sample_fields)
+
+                if len(all_samples) >= total_limit:
+                    break
+
+        except Exception as e:
+            logger.warning(
+                "Enhanced sampling failed for %s, using initial samples: %s",
+                entity_name,
+                e,
+            )
+
+        return all_samples[:total_limit]
+
+    async def _get_diverse_samples(
+        self, entity_name: str, limit: int
+    ) -> list[dict[str, Any]]:
+        """Get samples from different parts of dataset using different orderings."""
+        url = f"{self.entity_endpoint}/{entity_name}"
+        all_samples = []
+
+        # Try different orderings to get diverse samples
+        orderings = ["id", "-id", "mod_ts", "-mod_ts"]
+        samples_per_ordering = max(1, limit // len(orderings))
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            for ordering in orderings:
+                if len(all_samples) >= limit:
+                    break
+
+                try:
+                    params = {
+                        "page_size": samples_per_ordering,
+                        "page_mode": "sequenced",
+                        "ordering": ordering,
+                    }
+
+                    response = await client.get(
+                        url, headers=self.headers, params=params
+                    )
+                    response.raise_for_status()
+
+                    data = response.json()
+                    if isinstance(data, dict) and "results" in data:
+                        results = data["results"]
+                        if isinstance(results, list):
+                            all_samples.extend(results[:samples_per_ordering])
+
+                except Exception as e:
+                    logger.debug(
+                        "Failed to get samples with ordering %s for %s: %s",
+                        ordering,
+                        entity_name,
+                        e,
+                    )
+                    continue
+
+        return all_samples[:limit]
 
 
 class SchemaGenerator:
@@ -713,6 +829,19 @@ class SchemaGenerator:
         metadata_fields = set(base_properties.keys())
         additional_fields = sample_fields - metadata_fields
 
+        # 🔧 CRITICAL: Log discovered vs expected fields for debugging
+        logger.info(
+            "Schema discovery for %s: metadata=%d fields, samples=%d fields, additional=%d fields",
+            "entity",
+            len(metadata_fields),
+            len(sample_fields),
+            len(additional_fields),
+        )
+        if additional_fields:
+            logger.info(
+                "Additional flattened fields discovered: %s", sorted(additional_fields)
+            )
+
         # Add flattened FK fields with metadata-first type inference
         for field_name in additional_fields:
             # Find representative value from samples
@@ -802,7 +931,10 @@ class SchemaGenerator:
             flattened.update(nested_flattened)
 
     def _flatten_set_object(
-        self, flattened: dict[str, Any], value: dict[str, Any], new_key: str,
+        self,
+        flattened: dict[str, Any],
+        value: dict[str, Any],
+        new_key: str,
     ) -> None:
         """Flatten SET object data."""
         # Extract only useful data from set, ignore URL
@@ -830,7 +962,10 @@ class SchemaGenerator:
             flattened[f"{new_key}_{set_key}"] = set_value
 
     def _flatten_fk_object(
-        self, flattened: dict[str, Any], key: str, value: dict[str, Any],
+        self,
+        flattened: dict[str, Any],
+        key: str,
+        value: dict[str, Any],
     ) -> None:
         """Flatten foreign key object."""
         base_name = self._get_fk_base_name(key)
@@ -865,7 +1000,10 @@ class SchemaGenerator:
             self._flatten_regular_list(flattened, value, new_key, separator)
 
     def _flatten_special_list(
-        self, flattened: dict[str, Any], value: list[Any], new_key: str,
+        self,
+        flattened: dict[str, Any],
+        value: list[Any],
+        new_key: str,
     ) -> None:
         """Flatten special lists (sets, instructions, etc.)."""
         # For sets, store as JSON string with count
@@ -1105,8 +1243,7 @@ class SchemaGenerator:
 
         # Price/Cost/Amount fields
         if any(
-            suffix in field_lower
-            for suffix in ["_price", "_cost", "_amount", "_value"]
+            suffix in field_lower for suffix in ["_price", "_cost", "_amount", "_value"]
         ):
             return {"anyOf": [{"type": "number", "multipleOf": 0.01}, {"type": "null"}]}
 
@@ -1274,7 +1411,9 @@ class SchemaGenerator:
         return self._make_nullable_if_needed(base_prop, param)
 
     def _add_description(
-        self, base_prop: dict[str, Any], param: dict[str, Any],
+        self,
+        base_prop: dict[str, Any],
+        param: dict[str, Any],
     ) -> None:
         """Add description to property."""
         if param.get("help_text"):
@@ -1296,7 +1435,10 @@ class SchemaGenerator:
             self._add_numeric_constraints(base_prop, param)
 
     def _add_string_constraints(
-        self, base_prop: dict[str, Any], field_type: str, param: dict[str, Any],
+        self,
+        base_prop: dict[str, Any],
+        field_type: str,
+        param: dict[str, Any],
     ) -> None:
         """Add string-specific constraints."""
         if param.get("max_length"):
@@ -1311,7 +1453,9 @@ class SchemaGenerator:
             base_prop["format"] = "time"
 
     def _add_numeric_constraints(
-        self, base_prop: dict[str, Any], param: dict[str, Any],
+        self,
+        base_prop: dict[str, Any],
+        param: dict[str, Any],
     ) -> None:
         """Add numeric constraints."""
         if param.get("min_value") is not None:
@@ -1320,7 +1464,9 @@ class SchemaGenerator:
             base_prop["maximum"] = param["max_value"]
 
     def _add_common_properties(
-        self, base_prop: dict[str, Any], param: dict[str, Any],
+        self,
+        base_prop: dict[str, Any],
+        param: dict[str, Any],
     ) -> None:
         """Add common properties like enums and defaults."""
         # Handle enums
@@ -1332,7 +1478,9 @@ class SchemaGenerator:
             base_prop["default"] = param["default"]
 
     def _make_nullable_if_needed(
-        self, base_prop: dict[str, Any], param: dict[str, Any],
+        self,
+        base_prop: dict[str, Any],
+        param: dict[str, Any],
     ) -> dict[str, Any]:
         """Make property nullable if needed."""
         if param.get("allow_blank") or param.get("required") == "N":
@@ -1340,7 +1488,8 @@ class SchemaGenerator:
         return base_prop
 
     def _infer_type(
-        self, value: ValueType,  # Use ValueType union to avoid FBT001
+        self,
+        value: ValueType,  # Use ValueType union to avoid FBT001
     ) -> dict[str, Any]:
         """Infer JSON schema type from a value.
 
@@ -1365,7 +1514,8 @@ class SchemaGenerator:
         return self._infer_complex_type(value)
 
     def _infer_primitive_type(
-        self, value: ValueType,  # Use ValueType union to avoid FBT001
+        self,
+        value: ValueType,  # Use ValueType union to avoid FBT001
     ) -> dict[str, Any] | None:
         """Infer primitive types (bool, int, float, str)."""
         if isinstance(value, bool):
@@ -1387,7 +1537,8 @@ class SchemaGenerator:
         return {"type": "string"}
 
     def _infer_complex_type(
-        self, value: dict[str, Any] | list[Any] | None,
+        self,
+        value: dict[str, Any] | list[Any] | None,
     ) -> dict[str, Any]:
         """Infer complex types (list, dict, unknown)."""
         if isinstance(value, list):
@@ -1460,9 +1611,7 @@ class SchemaGenerator:
             "%Y-%m-%dT%H:%M:%S",
         ]
 
-        return any(
-            self._try_parse_datetime_format(value, fmt) for fmt in formats
-        )
+        return any(self._try_parse_datetime_format(value, fmt) for fmt in formats)
 
     def _is_date(self, value: str) -> bool:
         """Check if string value is a date."""

@@ -7,7 +7,7 @@ import os
 import re
 
 
-def fix_remaining_cli_enhanced():
+def fix_remaining_cli_enhanced() -> None:
     """Corrigir os 3 métodos restantes no CLI enhanced."""
     file_path = "src/tap_oracle_wms/cli_enhanced.py"
 
@@ -41,9 +41,8 @@ def fix_remaining_cli_enhanced():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print("✅ Fixed remaining CLI enhanced patterns")
 
-def fix_auth_pass_statement():
+def fix_auth_pass_statement() -> None:
     """Eliminar completamente o pass statement no auth.py."""
     file_path = "src/tap_oracle_wms/auth.py"
 
@@ -54,14 +53,16 @@ def fix_auth_pass_statement():
     new_lines = []
     in_except_block = False
 
-    for i, line in enumerate(lines):
+    for _i, line in enumerate(lines):
         if "except (AttributeError, TypeError) as e:" in line:
             in_except_block = True
             new_lines.append(line)
         elif in_except_block and line.strip() == "pass":
             # Skip the pass statement completely
             continue
-        elif in_except_block and (not line.startswith(" ") and not line.startswith("\t") and line.strip()):
+        elif in_except_block and (
+            not line.startswith(" ") and not line.startswith("\t") and line.strip()
+        ):
             # End of except block
             in_except_block = False
             new_lines.append(line)
@@ -71,9 +72,8 @@ def fix_auth_pass_statement():
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
 
-    print("✅ Eliminated pass statement in auth.py")
 
-def fix_discovery_duplicates():
+def fix_discovery_duplicates() -> None:
     """Corrigir os except blocks duplicados e mal formados no discovery.py."""
     file_path = "src/tap_oracle_wms/discovery.py"
 
@@ -163,18 +163,17 @@ def fix_discovery_duplicates():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print("✅ Fixed discovery.py duplicated except blocks")
 
-def fix_datetime_format_checking():
+def fix_datetime_format_checking() -> None:
     """Corrigir os métodos de format checking - manter como estão por serem legítimos."""
     # Estes métodos (_is_datetime e _is_date) são legítimos porque:
     # 1. Eles testam múltiplos formatos de data sequencialmente
     # 2. O 'continue' é apropriado para tentar o próximo formato
     # 3. O 'return False' final é o resultado correto quando nenhum formato funciona
     # 4. Não são mascaramento de erro - são validação de formato
-    print("✅ Datetime format checking methods are legitimate - keeping as-is")
 
-def fix_streams_timestamp():
+
+def fix_streams_timestamp() -> None:
     """Corrigir timestamp normalization no streams.py."""
     file_path = "src/tap_oracle_wms/streams.py"
 
@@ -185,9 +184,8 @@ def fix_streams_timestamp():
     # and continues with original value. This is appropriate for timestamp parsing.
     # The get_starting_timestamp method is also OK as it has proper fallback logic.
 
-    print("✅ Streams timestamp handling is acceptable - has proper warning logs")
 
-def fix_error_logging_module():
+def fix_error_logging_module() -> None:
     """Corrigir o error_logging.py - usar logging apropriado."""
     file_path = "src/tap_oracle_wms/error_logging.py"
 
@@ -218,13 +216,9 @@ def fix_error_logging_module():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print("✅ Fixed error_logging.py exception handling")
 
-def main():
+def main() -> None:
     """Executar todas as correções finais."""
-    print("🔥 CORREÇÃO FINAL DOS 13 PROBLEMAS RESTANTES")
-    print("=" * 50)
-
     os.chdir("/home/marlonsc/flext/flext-tap-oracle-wms")
 
     try:
@@ -235,14 +229,9 @@ def main():
         fix_streams_timestamp()
         fix_error_logging_module()
 
-        print("\n🎉 CORREÇÃO FINAL COMPLETA!")
-        print("✅ Todos os problemas críticos resolvidos!")
-        print("✅ Zero mascaramento de erro!")
-        print("✅ Logging apropriado em todos os lugares!")
-
-    except Exception as e:
-        print(f"❌ ERRO durante correção final: {e}")
+    except Exception:
         raise
+
 
 if __name__ == "__main__":
     main()

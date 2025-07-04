@@ -132,8 +132,10 @@ def convert_metadata_type_to_singer(
     # Default fallback - Singer SDK standard nullable string with generous size
     return {"type": ["string", "null"], "maxLength": 500}
 
+
 def _create_schema_from_metadata(
-    metadata_type: str, max_length: int | None,
+    metadata_type: str,
+    max_length: int | None,
 ) -> dict[str, Any]:
     """Create schema from WMS metadata type."""
     base_schema = WMS_METADATA_TO_SINGER[metadata_type.lower()]
@@ -155,7 +157,8 @@ def _create_schema_from_metadata(
 
 
 def _match_field_pattern(
-    column_name: str, max_length: int | None,
+    column_name: str,
+    max_length: int | None,
 ) -> dict[str, Any] | None:
     """Match field name against patterns and return schema."""
     column_lower = column_name.lower()
@@ -171,9 +174,7 @@ def _pattern_matches(pattern: str, column_lower: str) -> bool:
     pattern_clean = pattern.replace("*_", "").replace("*", "")
     return (
         (pattern.startswith("*_") and column_lower.endswith("_" + pattern_clean))
-        or (
-            pattern.endswith("_*") and column_lower.startswith(pattern_clean + "_")
-        )
+        or (pattern.endswith("_*") and column_lower.startswith(pattern_clean + "_"))
         or (pattern == column_lower)
     )
 

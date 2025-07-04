@@ -6,7 +6,7 @@ import re
 import subprocess
 
 
-def fix_error_logging():
+def fix_error_logging() -> None:
     """Fix error_logging.py - add from __future__ import annotations."""
     file_path = "src/tap_oracle_wms/error_logging.py"
 
@@ -25,7 +25,7 @@ def fix_error_logging():
                 break
             if line.strip().startswith('"""'):
                 # Multi-line docstring
-                for j in range(i+1, len(lines)):
+                for j in range(i + 1, len(lines)):
                     if '"""' in lines[j]:
                         insert_idx = j + 1
                         break
@@ -41,10 +41,8 @@ def fix_error_logging():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print("✅ Fixed error_logging.py imports")
 
-
-def fix_streams_py():
+def fix_streams_py() -> None:
     """Fix streams.py - remove f-strings from exceptions and fix error messages."""
     file_path = "src/tap_oracle_wms/streams.py"
 
@@ -74,10 +72,8 @@ def fix_streams_py():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print("✅ Fixed streams.py exception patterns")
 
-
-def fix_cli_enhanced():
+def fix_cli_enhanced() -> None:
     """Fix cli_enhanced.py - change logger.error to logger.exception for exceptions."""
     file_path = "src/tap_oracle_wms/cli_enhanced.py"
 
@@ -118,10 +114,8 @@ def fix_cli_enhanced():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print("✅ Fixed cli_enhanced.py logger patterns")
 
-
-def fix_discovery_py():
+def fix_discovery_py() -> None:
     """Fix discovery.py - remove duplicate exception handlers and fix logger patterns."""
     file_path = "src/tap_oracle_wms/discovery.py"
 
@@ -147,16 +141,15 @@ def fix_discovery_py():
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print("✅ Fixed discovery.py logger and duplicate exception patterns")
 
-
-def fix_config_constants():
+def fix_config_constants() -> None:
     """Make sure config.py has necessary constants."""
     file_path = "src/tap_oracle_wms/config.py"
 
     if not os.path.exists(file_path):
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write('''"""Configuration constants for Oracle WMS tap."""
+            f.write(
+                '''"""Configuration constants for Oracle WMS tap."""
 
 # HTTP status codes
 HTTP_OK = 200
@@ -170,17 +163,14 @@ HTTP_SERVER_ERROR = 500
 DEFAULT_PAGE_SIZE = 1000
 DEFAULT_TIMEOUT = 30
 DEFAULT_MAX_RETRIES = 3
-''')
-        print("✅ Created config.py with constants")
+'''
+            )
     else:
-        print("✅ config.py already exists")
+        pass
 
 
-def main():
+def main() -> None:
     """Fix all lint and mypy issues."""
-    print("🔧 FIXING ALL LINT AND MYPY ISSUES")
-    print("=" * 50)
-
     try:
         os.chdir("/home/marlonsc/flext/flext-tap-oracle-wms")
 
@@ -190,26 +180,19 @@ def main():
         fix_discovery_py()
         fix_config_constants()
 
-        print("\n🎉 ALL LINT/MYPY FIXES COMPLETE!")
-        print("✅ Fixed import annotations")
-        print("✅ Fixed exception patterns")
-        print("✅ Fixed logger usage")
-        print("✅ Fixed duplicate handlers")
-        print("✅ Added missing constants")
-
         # Run quick test
-        print("\n🧪 Running quick validation...")
-        result = subprocess.run(["python", "-m", "mypy", "src/tap_oracle_wms/", "--strict"],
-                              check=False, capture_output=True, text=True)
+        result = subprocess.run(
+            ["python", "-m", "mypy", "src/tap_oracle_wms/", "--strict"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
         if result.returncode == 0:
-            print("✅ MyPy strict validation PASSED!")
+            pass
         else:
-            print("⚠️ MyPy validation has remaining issues:")
-            print(result.stdout)
-            print(result.stderr)
+            pass
 
-    except Exception as e:
-        print(f"❌ ERROR during lint/mypy fixes: {e}")
+    except Exception:
         raise
 
 

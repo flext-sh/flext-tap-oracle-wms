@@ -11,15 +11,11 @@ from urllib.parse import parse_qs, urlparse
 class MockWMSHandler(BaseHTTPRequestHandler):
     """Handle Oracle WMS API requests."""
 
-    def do_GET(self):  # noqa: N802
+    def do_GET(self) -> None:  # noqa: N802
         """Handle GET requests."""
         parsed_path = urlparse(self.path)
         path = parsed_path.path
         query_params = parse_qs(parsed_path.query)
-
-        print(f"[MOCK WMS] {self.command} {path}")
-        print(f"[MOCK WMS] Query: {query_params}")
-        print(f"[MOCK WMS] Headers: {dict(self.headers)}")
 
         # Check authentication
         auth_header = self.headers.get("Authorization")
@@ -39,7 +35,7 @@ class MockWMSHandler(BaseHTTPRequestHandler):
         else:
             self._send_error(404, f"Endpoint not found: {path}")
 
-    def _handle_entity_discovery(self):
+    def _handle_entity_discovery(self) -> None:
         """Return list of available entities."""
         entities = [
             "item",
@@ -54,7 +50,7 @@ class MockWMSHandler(BaseHTTPRequestHandler):
 
         self._send_json_response(200, entities)
 
-    def _handle_entity_describe(self, entity_name):
+    def _handle_entity_describe(self, entity_name) -> None:
         """Return entity metadata."""
         if entity_name == "item":
             metadata = {
@@ -62,7 +58,11 @@ class MockWMSHandler(BaseHTTPRequestHandler):
                 "fields": {
                     "id": {"type": "integer", "required": True},
                     "item_code": {"type": "string", "max_length": 50, "required": True},
-                    "description": {"type": "string", "max_length": 200, "required": False},
+                    "description": {
+                        "type": "string",
+                        "max_length": 200,
+                        "required": False,
+                    },
                     "mod_ts": {"type": "datetime", "required": False},
                     "create_ts": {"type": "datetime", "required": False},
                 },
@@ -72,7 +72,11 @@ class MockWMSHandler(BaseHTTPRequestHandler):
                 "parameters": ["id", "location_code", "zone", "mod_ts"],
                 "fields": {
                     "id": {"type": "integer", "required": True},
-                    "location_code": {"type": "string", "max_length": 20, "required": True},
+                    "location_code": {
+                        "type": "string",
+                        "max_length": 20,
+                        "required": True,
+                    },
                     "zone": {"type": "string", "max_length": 10, "required": False},
                     "mod_ts": {"type": "datetime", "required": False},
                 },
@@ -89,10 +93,12 @@ class MockWMSHandler(BaseHTTPRequestHandler):
 
         self._send_json_response(200, metadata)
 
-    def _handle_entity_data(self, entity_name, query_params):
+    def _handle_entity_data(self, entity_name, query_params) -> None:
         """Return entity data with pagination."""
         page_size = int(query_params.get("page_size", [100])[0])
-        _page_mode = query_params.get("page_mode", ["sequenced"])[0]  # Parameter for future use
+        _page_mode = query_params.get("page_mode", ["sequenced"])[
+            0
+        ]  # Parameter for future use
         cursor = query_params.get("cursor", [None])[0]
 
         # Simulate different entities
@@ -114,13 +120,15 @@ class MockWMSHandler(BaseHTTPRequestHandler):
         items = []
         for i in range(page_size):
             item_id = start_id + i
-            items.append({
-                "id": item_id,
-                "item_code": f"ITEM{item_id:06d}",
-                "description": f"Test Item {item_id}",
-                "mod_ts": "2024-01-01T10:00:00Z",
-                "create_ts": "2024-01-01T09:00:00Z",
-            })
+            items.append(
+                {
+                    "id": item_id,
+                    "item_code": f"ITEM{item_id:06d}",
+                    "description": f"Test Item {item_id}",
+                    "mod_ts": "2024-01-01T10:00:00Z",
+                    "create_ts": "2024-01-01T09:00:00Z",
+                }
+            )
 
         # Add pagination info
         next_cursor = start_id + page_size if page_size == len(items) else None
@@ -130,7 +138,11 @@ class MockWMSHandler(BaseHTTPRequestHandler):
             "page_nbr": 1,
             "page_count": 10,
             "result_count": len(items),
-            "next_page": f"http://localhost:8888/wms/lgfapi/v10/entity/item?cursor={next_cursor}" if next_cursor else None,
+            "next_page": (
+                f"http://localhost:8888/wms/lgfapi/v10/entity/item?cursor={next_cursor}"
+                if next_cursor
+                else None
+            ),
         }
 
     def _generate_location_data(self, page_size, cursor):
@@ -142,12 +154,14 @@ class MockWMSHandler(BaseHTTPRequestHandler):
 
         for i in range(page_size):
             loc_id = start_id + i
-            locations.append({
-                "id": loc_id,
-                "location_code": f"LOC{loc_id:04d}",
-                "zone": zones[loc_id % len(zones)],
-                "mod_ts": "2024-01-01T10:00:00Z",
-            })
+            locations.append(
+                {
+                    "id": loc_id,
+                    "location_code": f"LOC{loc_id:04d}",
+                    "zone": zones[loc_id % len(zones)],
+                    "mod_ts": "2024-01-01T10:00:00Z",
+                }
+            )
 
         return {
             "results": locations,
@@ -162,13 +176,15 @@ class MockWMSHandler(BaseHTTPRequestHandler):
         inventory = []
         for i in range(page_size):
             inv_id = start_id + i
-            inventory.append({
-                "id": inv_id,
-                "item_id": (inv_id % 100) + 1,
-                "location_id": (inv_id % 50) + 1,
-                "quantity": inv_id * 10,
-                "mod_ts": "2024-01-01T11:00:00Z",
-            })
+            inventory.append(
+                {
+                    "id": inv_id,
+                    "item_id": (inv_id % 100) + 1,
+                    "location_id": (inv_id % 50) + 1,
+                    "quantity": inv_id * 10,
+                    "mod_ts": "2024-01-01T11:00:00Z",
+                }
+            )
 
         return {
             "results": inventory,
@@ -182,18 +198,20 @@ class MockWMSHandler(BaseHTTPRequestHandler):
         records = []
         for i in range(page_size):
             record_id = start_id + i
-            records.append({
-                "id": record_id,
-                "code": f"{entity_name.upper()}{record_id:06d}",
-                "mod_ts": "2024-01-01T10:00:00Z",
-            })
+            records.append(
+                {
+                    "id": record_id,
+                    "code": f"{entity_name.upper()}{record_id:06d}",
+                    "mod_ts": "2024-01-01T10:00:00Z",
+                }
+            )
 
         return {
             "results": records,
             "result_count": len(records),
         }
 
-    def _send_json_response(self, status_code, data):
+    def _send_json_response(self, status_code, data) -> None:
         """Send JSON response."""
         response_data = json.dumps(data, indent=2)
 
@@ -205,14 +223,12 @@ class MockWMSHandler(BaseHTTPRequestHandler):
 
         self.wfile.write(response_data.encode("utf-8"))
 
-        print(f"[MOCK WMS] Response {status_code}: {len(response_data)} bytes")
-
-    def _send_error(self, status_code, message):
+    def _send_error(self, status_code, message) -> None:
         """Send error response."""
         error_data = {"error": message, "status": status_code}
         self._send_json_response(status_code, error_data)
 
-    def log_message(self, format, *args):
+    def log_message(self, format, *args) -> None:
         """Override to reduce noise."""
 
 
@@ -220,9 +236,7 @@ def start_mock_server(port=8888):
     """Start the mock WMS server."""
     server = HTTPServer(("localhost", port), MockWMSHandler)
 
-    def run_server():
-        print(f"[MOCK WMS] Starting mock Oracle WMS server on http://localhost:{port}")
-        print(f"[MOCK WMS] Entity discovery: http://localhost:{port}/wms/lgfapi/v10/entity/")
+    def run_server() -> None:
         server.serve_forever()
 
     thread = threading.Thread(target=run_server, daemon=True)
@@ -236,10 +250,8 @@ def start_mock_server(port=8888):
 if __name__ == "__main__":
     server = start_mock_server()
     try:
-        print("Mock WMS server running. Press Ctrl+C to stop.")
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\nShutting down mock server...")
         server.shutdown()
         server.server_close()

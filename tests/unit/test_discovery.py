@@ -16,20 +16,20 @@ class TestEntityDiscovery:
         """Create EntityDiscovery instance."""
         return EntityDiscovery(mock_wms_config)
 
-    def test_discovery_initialization(self, discovery):
+    def test_discovery_initialization(self, discovery) -> None:
         """Test discovery initialization."""
         assert discovery.config is not None
         assert discovery.base_url == "https://mock-wms.example.com"
         assert discovery.api_version == "v10"
         assert discovery.headers is not None
 
-    def test_entity_endpoint_property(self, discovery):
+    def test_entity_endpoint_property(self, discovery) -> None:
         """Test entity endpoint property."""
         expected = "https://mock-wms.example.com/wms/lgfapi/v10/entity/"
         assert discovery.entity_endpoint == expected
 
     @patch("httpx.AsyncClient")
-    async def test_discover_entities_success(self, mock_client, discovery):
+    async def test_discover_entities_success(self, mock_client, discovery) -> None:
         """Test successful entity discovery."""
         # Setup mock response
         mock_response = MagicMock()
@@ -53,7 +53,7 @@ class TestEntityDiscovery:
         assert entities["item"] == f"{base_url}/item"
 
     @patch("httpx.AsyncClient")
-    async def test_discover_entities_http_error(self, mock_client, discovery):
+    async def test_discover_entities_http_error(self, mock_client, discovery) -> None:
         """Test entity discovery with HTTP error."""
         # Setup mock response with 404 error
         mock_response = MagicMock()
@@ -61,9 +61,13 @@ class TestEntityDiscovery:
         mock_response.text = "Not Found"
 
         mock_client_instance = MagicMock()
-        mock_client_instance.get = AsyncMock(side_effect=httpx.HTTPStatusError(
-            "404 Not Found", request=MagicMock(), response=mock_response,
-        ))
+        mock_client_instance.get = AsyncMock(
+            side_effect=httpx.HTTPStatusError(
+                "404 Not Found",
+                request=MagicMock(),
+                response=mock_response,
+            )
+        )
         mock_client.return_value.__aenter__.return_value = mock_client_instance
 
         # Test that error is raised
@@ -71,7 +75,7 @@ class TestEntityDiscovery:
             await discovery.discover_entities()
 
     @patch("httpx.AsyncClient")
-    async def test_describe_entity_success(self, mock_client, discovery):
+    async def test_describe_entity_success(self, mock_client, discovery) -> None:
         """Test successful entity description."""
         # Setup mock response
         mock_metadata = {
@@ -99,7 +103,9 @@ class TestEntityDiscovery:
         assert "fields" in metadata
 
     @patch("httpx.AsyncClient")
-    async def test_get_entity_sample_success(self, mock_client, discovery, sample_wms_response):
+    async def test_get_entity_sample_success(
+        self, mock_client, discovery, sample_wms_response
+    ) -> None:
         """Test successful entity sample retrieval."""
         # Setup mock response
         mock_response = MagicMock()
@@ -119,7 +125,7 @@ class TestEntityDiscovery:
         assert samples[1]["id"] == 2
         assert samples[1]["code"] == "ITEM002"
 
-    def test_filter_entities_with_patterns(self, discovery):
+    def test_filter_entities_with_patterns(self, discovery) -> None:
         """Test entity filtering with patterns."""
         entities = {
             "item": "/entity/item",
@@ -148,7 +154,7 @@ class TestEntityDiscovery:
         assert "item" in filtered
         assert "location" in filtered
 
-    def test_filter_entities_with_specific_entities(self, discovery):
+    def test_filter_entities_with_specific_entities(self, discovery) -> None:
         """Test entity filtering with include patterns."""
         entities = {
             "item": "/entity/item",
@@ -166,7 +172,7 @@ class TestEntityDiscovery:
         assert "location" in filtered
         assert "inventory" not in filtered
 
-    def test_get_cache_stats(self, discovery):
+    def test_get_cache_stats(self, discovery) -> None:
         """Test cache statistics functionality."""
         # Test cache stats exist
         stats = discovery.get_cache_stats()
@@ -184,7 +190,7 @@ class TestEntityDiscovery:
             has_entries = "entries" in cache_info or "cached" in cache_info
             assert has_entries, f"Cache {cache_name} missing entries/cached field"
 
-    def test_cache_functionality(self, discovery):
+    def test_cache_functionality(self, discovery) -> None:
         """Test cache functionality."""
         # Test cache stats
         stats = discovery.get_cache_stats()
@@ -211,13 +217,13 @@ class TestSchemaGenerator:
         """Create SchemaGenerator instance."""
         return SchemaGenerator({})
 
-    def test_generator_initialization(self, generator):
+    def test_generator_initialization(self, generator) -> None:
         """Test schema generator initialization."""
         assert generator.enable_flattening is True
         assert generator.flatten_id_objects is True
         assert generator.max_flatten_depth == 3
 
-    def test_generate_from_metadata(self, generator):
+    def test_generate_from_metadata(self, generator) -> None:
         """Test schema generation from metadata."""
         metadata = {
             "parameters": ["id", "code", "description"],
@@ -248,7 +254,7 @@ class TestSchemaGenerator:
         assert "integer" in str(id_type)
         assert "string" in str(code_type)
 
-    def test_generate_from_sample(self, generator, sample_wms_response):
+    def test_generate_from_sample(self, generator, sample_wms_response) -> None:
         """Test schema generation from sample data."""
         samples = sample_wms_response["results"]
 
@@ -264,7 +270,7 @@ class TestSchemaGenerator:
         assert "mod_ts" in properties
         assert "create_ts" in properties
 
-    def test_type_inference(self, generator):
+    def test_type_inference(self, generator) -> None:
         """Test type inference functionality."""
         # Test different value types
         assert generator._infer_type(123)["type"] == "integer"
@@ -275,7 +281,7 @@ class TestSchemaGenerator:
         assert generator._infer_type([1, 2, 3])["type"] == "array"
         assert generator._infer_type({"key": "value"})["type"] == "object"
 
-    def test_datetime_detection(self, generator):
+    def test_datetime_detection(self, generator) -> None:
         """Test datetime format detection."""
         # Test various datetime formats
         iso_datetime = "2024-01-01T10:00:00Z"
@@ -290,7 +296,7 @@ class TestSchemaGenerator:
         assert date_schema["type"] == "string"
         # Same for date - the format detection might be in a different method
 
-    def test_object_flattening(self, generator):
+    def test_object_flattening(self, generator) -> None:
         """Test object flattening functionality."""
         nested_obj = {
             "id": 1,
@@ -314,7 +320,7 @@ class TestSchemaGenerator:
         assert "id" in flattened
         assert flattened["id"] == 1
 
-    def test_type_merging(self, generator):
+    def test_type_merging(self, generator) -> None:
         """Test type merging for mixed types."""
         type1 = {"type": "string"}
         type2 = {"type": "integer"}
@@ -324,7 +330,7 @@ class TestSchemaGenerator:
         assert "anyOf" in merged
         assert len(merged["anyOf"]) == 2
 
-    def test_nullable_field_handling(self, generator):
+    def test_nullable_field_handling(self, generator) -> None:
         """Test handling of nullable fields."""
         field_def = {
             "type": "string",

@@ -55,7 +55,7 @@ class TestWMSStream:
 
         return stream
 
-    def test_stream_basic_properties(self, mock_wms_stream, mock_wms_config):
+    def test_stream_basic_properties(self, mock_wms_stream, mock_wms_config) -> None:
         """Test basic stream properties."""
         assert mock_wms_stream.name == "item"
         assert mock_wms_stream._path == "/entity/item"
@@ -63,12 +63,12 @@ class TestWMSStream:
         assert mock_wms_stream.replication_key == "mod_ts"
         assert mock_wms_stream.replication_method == "INCREMENTAL"
 
-    def test_stream_url_construction(self, mock_wms_stream, mock_wms_config):
+    def test_stream_url_construction(self, mock_wms_stream, mock_wms_config) -> None:
         """Test stream URL construction."""
         expected_url = f"{mock_wms_config['base_url']}/entity/item"
         assert mock_wms_stream.url == expected_url
 
-    def test_get_url_params_basic(self, mock_wms_stream):
+    def test_get_url_params_basic(self, mock_wms_stream) -> None:
         """Test basic URL parameter generation."""
         # Mock the method to return expected parameters
         mock_wms_stream.get_url_params.return_value = {
@@ -86,7 +86,7 @@ class TestWMSStream:
         assert "page_mode" in params
         assert params["page_mode"] == "sequenced"
 
-    def test_get_url_params_with_bookmark(self, mock_wms_stream):
+    def test_get_url_params_with_bookmark(self, mock_wms_stream) -> None:
         """Test URL parameters with bookmark for incremental sync."""
         # Mock the method to return parameters with bookmark
         mock_wms_stream.get_url_params.return_value = {
@@ -109,7 +109,9 @@ class TestWMSStream:
         assert "mod_ts_from" in params
         assert params["mod_ts_from"] == "2024-01-01T10:00:00Z"
 
-    def test_parse_response_with_results(self, mock_wms_stream, sample_wms_response):
+    def test_parse_response_with_results(
+        self, mock_wms_stream, sample_wms_response
+    ) -> None:
         """Test response parsing with results."""
         # Mock the parse_response method
         mock_wms_stream.parse_response.return_value = sample_wms_response["results"]
@@ -123,7 +125,7 @@ class TestWMSStream:
         assert records[0]["id"] == 1
         assert records[0]["code"] == "ITEM001"
 
-    def test_parse_response_empty(self, mock_wms_stream):
+    def test_parse_response_empty(self, mock_wms_stream) -> None:
         """Test response parsing with empty response."""
         # Mock empty response
         mock_wms_stream.parse_response.return_value = []
@@ -135,7 +137,7 @@ class TestWMSStream:
 
         assert len(records) == 0
 
-    def test_post_process_record(self, mock_wms_stream):
+    def test_post_process_record(self, mock_wms_stream) -> None:
         """Test record post-processing."""
         # Mock the post_process method
         processed_record = {
@@ -161,7 +163,9 @@ class TestWMSStream:
         assert processed["_entity"] == "item"
         assert processed["id"] == 1
 
-    def test_get_next_page_token_from_response(self, mock_wms_stream, sample_wms_response):
+    def test_get_next_page_token_from_response(
+        self, mock_wms_stream, sample_wms_response
+    ) -> None:
         """Test next page token extraction."""
         # Mock the get_next_page_token method
         mock_wms_stream.get_next_page_token.return_value = "cursor_abc123"
@@ -173,7 +177,7 @@ class TestWMSStream:
 
         assert next_token == "cursor_abc123"
 
-    def test_get_next_page_token_no_next_page(self, mock_wms_stream):
+    def test_get_next_page_token_no_next_page(self, mock_wms_stream) -> None:
         """Test next page token when no next page exists."""
         # Mock no next page
         mock_wms_stream.get_next_page_token.return_value = None
@@ -191,7 +195,7 @@ class TestWMSStream:
 
         assert next_token is None
 
-    def test_stream_with_authentication_headers(self, mock_wms_stream):
+    def test_stream_with_authentication_headers(self, mock_wms_stream) -> None:
         """Test that stream uses authentication headers."""
         # Verify that tap config includes auth
         assert "username" in mock_wms_stream.tap.config
@@ -200,13 +204,13 @@ class TestWMSStream:
         # Headers would be added by the request method via tap auth
         assert mock_wms_stream.tap.config["username"] == "test_user"
 
-    def test_stream_incremental_state_management(self, mock_wms_stream):
+    def test_stream_incremental_state_management(self, mock_wms_stream) -> None:
         """Test incremental state management."""
         # Test that replication key is properly configured
         assert mock_wms_stream.replication_key == "mod_ts"
         assert mock_wms_stream.replication_method == "INCREMENTAL"
 
-    def test_stream_name_and_path_consistency(self, mock_wms_stream):
+    def test_stream_name_and_path_consistency(self, mock_wms_stream) -> None:
         """Test that stream name and path are consistent."""
         assert mock_wms_stream.name == "item"
         assert "item" in mock_wms_stream._path
@@ -214,7 +218,7 @@ class TestWMSStream:
         # URL should contain the path
         assert "item" in mock_wms_stream.url
 
-    def test_stream_schema_properties(self, mock_wms_stream):
+    def test_stream_schema_properties(self, mock_wms_stream) -> None:
         """Test stream schema properties."""
         schema = mock_wms_stream.schema
 
@@ -224,12 +228,12 @@ class TestWMSStream:
         assert "code" in schema["properties"]
         assert "mod_ts" in schema["properties"]
 
-    def test_stream_primary_keys_configuration(self, mock_wms_stream):
+    def test_stream_primary_keys_configuration(self, mock_wms_stream) -> None:
         """Test stream primary keys configuration."""
         assert mock_wms_stream.primary_keys == ["id"]
         assert isinstance(mock_wms_stream.primary_keys, list)
 
-    def test_stream_replication_configuration(self, mock_wms_stream):
+    def test_stream_replication_configuration(self, mock_wms_stream) -> None:
         """Test stream replication configuration."""
         assert mock_wms_stream.replication_key == "mod_ts"
         assert mock_wms_stream.replication_method == "INCREMENTAL"

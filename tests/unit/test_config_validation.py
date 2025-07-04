@@ -9,7 +9,7 @@ from tap_oracle_wms.config import validate_auth_config, validate_pagination_conf
 class TestConfigValidation:
     """Test configuration validation functions."""
 
-    def test_validate_auth_config_basic(self):
+    def test_validate_auth_config_basic(self) -> None:
         """Test basic auth validation."""
         # Valid basic auth
         config = {
@@ -41,7 +41,7 @@ class TestConfigValidation:
         }
         assert validate_auth_config(config) is False
 
-    def test_validate_auth_config_oauth2(self):
+    def test_validate_auth_config_oauth2(self) -> None:
         """Test OAuth2 auth validation."""
         # Valid OAuth2
         config = {
@@ -68,7 +68,7 @@ class TestConfigValidation:
         }
         assert validate_auth_config(config) is False
 
-    def test_validate_auth_config_default(self):
+    def test_validate_auth_config_default(self) -> None:
         """Test default auth method."""
         # No auth method specified - defaults to basic
         config = {
@@ -83,7 +83,7 @@ class TestConfigValidation:
         }
         assert validate_auth_config(config) is False
 
-    def test_validate_pagination_config(self):
+    def test_validate_pagination_config(self) -> None:
         """Test pagination config validation."""
         # Valid page sizes
         assert validate_pagination_config({"page_size": 1}) is True
@@ -100,20 +100,23 @@ class TestConfigValidation:
         # Default page size (should be valid)
         assert validate_pagination_config({}) is True
 
-    def test_env_var_override(self):
+    def test_env_var_override(self) -> None:
         """Test that environment variables can override config."""
         # Test with environment variables
-        with patch.dict(os.environ, {
-            "WMS_BASE_URL": "https://env.example.com",
-            "WMS_USERNAME": "env_user",
-            "WMS_PASSWORD": "env_pass",
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "WMS_BASE_URL": "https://env.example.com",
+                "WMS_USERNAME": "env_user",
+                "WMS_PASSWORD": "env_pass",
+            },
+        ):
             # Environment variables should be accessible
             assert os.getenv("WMS_BASE_URL") == "https://env.example.com"
             assert os.getenv("WMS_USERNAME") == "env_user"
             assert os.getenv("WMS_PASSWORD") == "env_pass"
 
-    def test_config_defaults(self):
+    def test_config_defaults(self) -> None:
         """Test configuration defaults."""
         from tap_oracle_wms.config import WMS_DEFAULT_PAGE_SIZE, WMS_MAX_PAGE_SIZE
 
@@ -121,7 +124,7 @@ class TestConfigValidation:
         assert WMS_MAX_PAGE_SIZE == 1250
         assert WMS_DEFAULT_PAGE_SIZE <= WMS_MAX_PAGE_SIZE
 
-    def test_url_validation_patterns(self):
+    def test_url_validation_patterns(self) -> None:
         """Test URL validation patterns."""
         valid_urls = [
             "https://wms.example.com",

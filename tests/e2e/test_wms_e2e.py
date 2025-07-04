@@ -84,9 +84,8 @@ elif invalid:
 
 # Print warnings if any
 if warnings and not skip_all_e2e:
-    print("\nConfiguration warnings:")
-    for warning in warnings:
-        print(f"  - {warning}")
+    for _warning in warnings:
+        pass
 
 
 @pytest.fixture
@@ -118,14 +117,14 @@ def wms_config():
 class TestWMSEndToEnd:
     """End-to-end tests against real WMS instance."""
 
-    def test_tap_initialization(self, wms_config):
+    def test_tap_initialization(self, wms_config) -> None:
         """Test that tap can be initialized with config."""
         tap = TapOracleWMS(config=wms_config)
         assert tap is not None
         assert tap.config == wms_config
         assert tap.name == "tap-oracle-wms"
 
-    def test_discover_streams(self, wms_config):
+    def test_discover_streams(self, wms_config) -> None:
         """Test stream discovery against real WMS."""
         # Test with specific known entities to avoid discovery issues
         wms_config["entities"] = ["item", "location"]
@@ -135,7 +134,9 @@ class TestWMSEndToEnd:
         streams = tap.discover_streams()
 
         # Should discover at least some streams
-        assert len(streams) > 0, "No streams discovered. Check WMS connection and permissions"
+        assert (
+            len(streams) > 0
+        ), "No streams discovered. Check WMS connection and permissions"
 
         # Check stream properties
         for stream in streams:
@@ -143,13 +144,14 @@ class TestWMSEndToEnd:
             assert hasattr(stream, "schema")
             assert stream.schema is not None
             assert "properties" in stream.schema
-            assert len(stream.schema["properties"]) > 0, f"Stream {stream.name} has no properties"
+            assert (
+                len(stream.schema["properties"]) > 0
+            ), f"Stream {stream.name} has no properties"
 
         # Log discovered streams for debugging
-        stream_names = [s.name for s in streams]
-        print(f"\nDiscovered {len(streams)} streams: {', '.join(sorted(stream_names))}")
+        [s.name for s in streams]
 
-    def test_discover_specific_entities(self, wms_config):
+    def test_discover_specific_entities(self, wms_config) -> None:
         """Test discovery of specific entities."""
         # Test with entities known to exist in Oracle WMS
         test_entities = ["item", "location"]
@@ -162,15 +164,13 @@ class TestWMSEndToEnd:
 
         # Log what was actually discovered
         stream_names = [s.name for s in streams]
-        print(f"\nRequested entities: {test_entities}")
-        print(f"Discovered entities: {stream_names}")
 
         # At least one requested entity should be discovered
         found_any = any(entity in stream_names for entity in test_entities)
         if not found_any:
             pytest.skip(f"None of the test entities {test_entities} exist in this WMS")
 
-    def test_schema_generation(self, wms_config):
+    def test_schema_generation(self, wms_config) -> None:
         """Test that schemas are properly generated."""
         tap = TapOracleWMS(config=wms_config)
         streams = tap.discover_streams()
@@ -181,9 +181,6 @@ class TestWMSEndToEnd:
         # Check first stream's schema
         stream = streams[0]
         schema = stream.schema
-
-        print(f"\nTesting schema for stream: {stream.name}")
-        print(f"Properties: {list(schema.get('properties', {}).keys())[:10]}...")
 
         # Basic schema validation
         assert schema["type"] == "object"
@@ -196,24 +193,33 @@ class TestWMSEndToEnd:
         # Check if numeric ID exists
         if "id" in properties:
             prop_type = properties["id"].get("type")
-            assert prop_type in ["integer", "number", ["integer", "null"], ["number", "null"]], \
-                f"ID field has unexpected type: {prop_type}"
+            assert prop_type in [
+                "integer",
+                "number",
+                ["integer", "null"],
+                ["number", "null"],
+            ], f"ID field has unexpected type: {prop_type}"
 
         # Check for timestamp fields
-        timestamp_fields = ["mod_ts", "create_ts", "updated_at", "created_at",
-                          "last_modified", "creation_date"]
+        timestamp_fields = [
+            "mod_ts",
+            "create_ts",
+            "updated_at",
+            "created_at",
+            "last_modified",
+            "creation_date",
+        ]
         ts_fields_found = [f for f in timestamp_fields if f in properties]
-
-        print(f"Timestamp fields found: {ts_fields_found}")
 
         if ts_fields_found:
             for field in ts_fields_found:
                 field_def = properties[field]
                 # Could be string or ["string", "null"]
-                assert "string" in str(field_def.get("type")), \
-                    f"Timestamp field {field} should be string type"
+                assert "string" in str(
+                    field_def.get("type")
+                ), f"Timestamp field {field} should be string type"
 
-    def test_extract_sample_records(self, wms_config):
+    def test_extract_sample_records(self, wms_config) -> None:
         """Test extracting sample records from a stream."""
         # Limit to small number of records for testing
         wms_config["record_limit"] = 5
@@ -228,7 +234,6 @@ class TestWMSEndToEnd:
         success = False
         for stream in streams[:3]:  # Try first 3 streams
             try:
-                print(f"\nTrying to extract from stream: {stream.name}")
                 records = list(stream.get_records(context={}))
 
                 if records:
@@ -241,28 +246,30 @@ class TestWMSEndToEnd:
                         assert len(record) > 0, f"Record {i} is empty"
 
                         # Check metadata fields were added
-                        assert "_extracted_at" in record, "Missing _extracted_at metadata"
+                        assert (
+                            "_extracted_at" in record
+                        ), "Missing _extracted_at metadata"
                         assert "_entity" in record, "Missing _entity metadata"
                         assert record["_entity"] == stream.name
 
-                    print(f"✓ Successfully extracted {len(records)} records from {stream.name}")
-                    print(f"  Sample fields: {list(records[0].keys())[:10]}...")
                     success = True
                     break
-                print(f"  No records found in {stream.name}")
 
-            except Exception as e:
-                print(f"  Failed to extract from {stream.name}: {e}")
+            except Exception:
                 continue
 
         if not success:
-            pytest.skip("Could not extract records from any stream. Check if WMS has data.")
+            pytest.skip(
+                "Could not extract records from any stream. Check if WMS has data."
+            )
 
-    def test_incremental_sync(self, wms_config):
+    def test_incremental_sync(self, wms_config) -> None:
         """Test incremental sync functionality."""
         # Configure for incremental sync
         wms_config["enable_incremental"] = True
-        wms_config["start_date"] = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+        wms_config["start_date"] = (
+            datetime.now(timezone.utc) - timedelta(days=7)
+        ).isoformat()
         wms_config["record_limit"] = 10
 
         tap = TapOracleWMS(config=wms_config)
@@ -278,15 +285,14 @@ class TestWMSEndToEnd:
         if not incremental_stream:
             # Try to find stream with mod_ts field
             for stream in streams:
-                if hasattr(stream, "_schema") and "mod_ts" in stream._schema.get("properties", {}):
+                if hasattr(stream, "_schema") and "mod_ts" in stream._schema.get(
+                    "properties", {}
+                ):
                     incremental_stream = stream
                     break
 
             if not incremental_stream:
                 pytest.skip("No streams support incremental sync (no mod_ts field)")
-
-        print(f"\nTesting incremental sync with stream: {incremental_stream.name}")
-        print(f"Replication key: {incremental_stream.replication_key}")
 
         # Extract records with incremental sync
         context = {}
@@ -299,11 +305,10 @@ class TestWMSEndToEnd:
                 assert rep_key in record, f"Record missing replication key {rep_key}"
                 # Value should be a timestamp string
                 assert isinstance(record[rep_key], str), f"{rep_key} should be string"
-                print(f"  {rep_key}: {record[rep_key]}")
         else:
-            print("  No records found for incremental sync test")
+            pass
 
-    def test_pagination(self, wms_config):
+    def test_pagination(self, wms_config) -> None:
         """Test that pagination works correctly."""
         # Configure small page size to test pagination
         wms_config["page_size"] = 2
@@ -318,25 +323,19 @@ class TestWMSEndToEnd:
         # Find a stream with enough data to paginate
         for stream in streams[:5]:  # Try first 5 streams
             try:
-                print(f"\nTesting pagination with stream: {stream.name}")
                 records = list(stream.get_records(context={}))
 
                 if len(records) > wms_config["page_size"]:
                     # Pagination worked if we got more than one page
-                    print(f"✓ Successfully paginated {len(records)} records")
-                    print(f"  Page size: {wms_config['page_size']}")
-                    print(f"  Total pages: {len(records) // wms_config['page_size']}")
                     assert len(records) <= wms_config["record_limit"]
                     return
-                print(f"  Not enough records to test pagination ({len(records)} found)")
 
-            except Exception as e:
-                print(f"  Error testing pagination: {e}")
+            except Exception:
                 continue
 
         pytest.skip("Could not find stream with enough data to test pagination")
 
-    def test_error_handling(self, wms_config):
+    def test_error_handling(self, wms_config) -> None:
         """Test error handling with invalid configuration."""
         # Test with invalid entity
         invalid_config = wms_config.copy()
@@ -348,9 +347,8 @@ class TestWMSEndToEnd:
         # Should handle gracefully and return empty or skip invalid entity
         assert isinstance(streams, list)
         assert len(streams) == 0, "Should return empty list for non-existent entities"
-        print("\n✓ Error handling works correctly for invalid entities")
 
-    def test_catalog_generation(self, wms_config):
+    def test_catalog_generation(self, wms_config) -> None:
         """Test Singer catalog generation."""
         tap = TapOracleWMS(config=wms_config)
 
@@ -371,19 +369,20 @@ class TestWMSEndToEnd:
             assert len(catalog.streams) == len(streams)
             assert "streams" in catalog_dict
 
-            print(f"\n✓ Catalog generated with {len(catalog.streams)} streams")
-
 
 @pytest.mark.e2e
 @pytest.mark.skipif(skip_all_e2e, reason=skip_reason)
-@pytest.mark.parametrize("entity_name", [
-    "item",
-    "location",
-    "inventory",
-    "order_header",
-    "allocation",
-])
-def test_specific_entity_extraction(wms_config, entity_name):
+@pytest.mark.parametrize(
+    "entity_name",
+    [
+        "item",
+        "location",
+        "inventory",
+        "order_header",
+        "allocation",
+    ],
+)
+def test_specific_entity_extraction(wms_config, entity_name) -> None:
     """Test extraction of specific common WMS entities."""
     wms_config["entities"] = [entity_name]
     wms_config["record_limit"] = 5
@@ -401,13 +400,11 @@ def test_specific_entity_extraction(wms_config, entity_name):
     try:
         records = list(stream.get_records(context={}))
         if records:
-            print(f"\n✓ Successfully extracted {len(records)} {entity_name} records")
             assert len(records) <= 5
 
             # Show sample record structure
             if records:
-                print(f"  Fields: {list(records[0].keys())[:10]}...")
+                pass
     except Exception as e:
         # Some entities might not have data or access
-        print(f"\n- Could not extract {entity_name}: {e}")
         pytest.skip(f"Entity {entity_name} exists but cannot be accessed: {e}")

@@ -12,20 +12,23 @@ if env_file.exists():
     load_dotenv(env_file)
 
 
-def pytest_configure(config):
+def pytest_configure(config) -> None:
     """Configure pytest with custom markers."""
     config.addinivalue_line(
-        "markers", "e2e: mark test as end-to-end test requiring real WMS instance",
+        "markers",
+        "e2e: mark test as end-to-end test requiring real WMS instance",
     )
     config.addinivalue_line(
-        "markers", "integration: mark test as integration test",
+        "markers",
+        "integration: mark test as integration test",
     )
     config.addinivalue_line(
-        "markers", "unit: mark test as unit test",
+        "markers",
+        "unit: mark test as unit test",
     )
 
 
-def pytest_addoption(parser):
+def pytest_addoption(parser) -> None:
     """Add custom command line options."""
     parser.addoption(
         "--run-e2e",
@@ -35,7 +38,7 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_collection_modifyitems(config, items):
+def pytest_collection_modifyitems(config, items) -> None:
     """Modify test collection to skip E2E tests by default."""
     if not config.getoption("--run-e2e"):
         skip_e2e = pytest.mark.skip(reason="need --run-e2e option to run")

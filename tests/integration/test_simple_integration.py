@@ -19,7 +19,7 @@ class TestSimpleIntegration:
             "password": "test",
         }
 
-    def test_tap_initialization_integration(self, config):
+    def test_tap_initialization_integration(self, config) -> None:
         """Test TAP can be initialized with configuration."""
         with patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams") as mock_discover:
             mock_discover.return_value = []
@@ -31,7 +31,7 @@ class TestSimpleIntegration:
             assert hasattr(tap, "discovery")
             assert hasattr(tap, "schema_generator")
 
-    def test_singer_interface_integration(self, config):
+    def test_singer_interface_integration(self, config) -> None:
         """Test Singer interface compliance."""
         with patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams") as mock_discover:
             mock_discover.return_value = []
@@ -52,7 +52,7 @@ class TestSimpleIntegration:
             assert isinstance(catalog, dict)
             assert isinstance(state, dict)
 
-    def test_configuration_validation_integration(self, config):
+    def test_configuration_validation_integration(self, config) -> None:
         """Test configuration validation works."""
         # Test valid config
         with patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams") as mock_discover:
@@ -69,7 +69,7 @@ class TestSimpleIntegration:
             tap = TapOracleWMS(config=minimal_config)
             assert tap.config["base_url"] == "https://minimal.test"
 
-    def test_discovery_components_integration(self, config):
+    def test_discovery_components_integration(self, config) -> None:
         """Test discovery components work together."""
         from tap_oracle_wms.discovery import EntityDiscovery, SchemaGenerator
 
@@ -83,7 +83,7 @@ class TestSimpleIntegration:
         assert hasattr(generator, "generate_from_sample")
         assert hasattr(generator, "generate_from_metadata")
 
-    def test_mock_server_integration(self):
+    def test_mock_server_integration(self) -> None:
         """Test integration with mock server."""
         import asyncio
         import time
@@ -115,7 +115,7 @@ class TestSimpleIntegration:
         finally:
             server.shutdown()
 
-    def test_error_handling_integration(self, config):
+    def test_error_handling_integration(self, config) -> None:
         """Test error handling in integration scenarios."""
         from tap_oracle_wms.discovery import EntityDiscovery
 
@@ -131,7 +131,7 @@ class TestSimpleIntegration:
         # Actual network errors would be caught during async operations
         # This tests the setup/configuration phase
 
-    def test_end_to_end_tap_workflow(self):
+    def test_end_to_end_tap_workflow(self) -> None:
         """Test complete TAP workflow with mock data."""
         import time
 
@@ -167,7 +167,7 @@ class TestSimpleIntegration:
         finally:
             server.shutdown()
 
-    def test_cli_module_integration(self):
+    def test_cli_module_integration(self) -> None:
         """Test CLI module can be imported and used."""
         from tap_oracle_wms import cli
 
@@ -178,6 +178,7 @@ class TestSimpleIntegration:
         # Test enhanced CLI exists
         try:
             from tap_oracle_wms import cli_enhanced
+
             assert hasattr(cli_enhanced, "cli")
             assert callable(cli_enhanced.cli)
         except ImportError:
