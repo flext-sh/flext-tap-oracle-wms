@@ -88,7 +88,7 @@ def create_working_config() -> str:
 
     import json
 
-    with open("working_config.json", "w") as f:
+    with open("working_config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
 
     return "working_config.json"

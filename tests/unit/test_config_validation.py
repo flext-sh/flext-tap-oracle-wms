@@ -149,10 +149,10 @@ class TestConfigValidation:
 
         for url in valid_urls:
             result = urlparse(url)
-            assert result.scheme in ["http", "https"], f"Invalid scheme for {url}"
+            assert result.scheme in {"http", "https"}, f"Invalid scheme for {url}"
             assert result.netloc, f"Missing netloc for {url}"
 
         for url in invalid_urls:
             result = urlparse(url)
-            valid = result.scheme in ["http", "https"] and bool(result.netloc)
+            valid = result.scheme in {"http", "https"} and bool(result.netloc)
             assert not valid, f"URL should be invalid: {url}"

@@ -31,23 +31,18 @@ def test_tap_directly() -> None:
         from tap_oracle_wms.tap import TapOracleWMS
 
         # Create tap instance
-        print("Creating tap instance...")
         tap = TapOracleWMS(config=config)
 
         # Test discovery
-        print("Discovering available streams...")
         catalog = tap.discover_streams()
 
         if catalog:
-            print(f"Found {len(catalog)} streams:")
             for stream in catalog:
-                print(f"  - {stream.name}")
+                pass
         else:
-            print("No streams discovered")
             return
 
         # Test extraction for allocation
-        print("\nTesting extraction for 'allocation' stream...")
         allocation_stream = None
         for stream in catalog:
             if stream.name == "allocation":
@@ -55,23 +50,18 @@ def test_tap_directly() -> None:
                 break
 
         if not allocation_stream:
-            print("Allocation stream not found")
             return
 
-        print("Extracting records...")
         records = list(allocation_stream.get_records(None))
 
         if records:
-            print(f"Successfully extracted {len(records)} records")
             # Print first record as example
             if records:
-                print("\nFirst record example:")
-                print(records[0])
+                pass
         else:
-            print("No records extracted")
+            pass
 
-    except Exception as e:
-        print(f"Error: {type(e).__name__}: {e}")
+    except Exception:
         import traceback
         traceback.print_exc()
 

@@ -10,7 +10,7 @@ from singer_sdk import typing as th
 
 # Oracle WMS API constants
 WMS_MAX_PAGE_SIZE = 1250
-WMS_DEFAULT_PAGE_SIZE = 100
+WMS_DEFAULT_PAGE_SIZE = 1000
 
 # HTTP status codes
 HTTP_OK = 200

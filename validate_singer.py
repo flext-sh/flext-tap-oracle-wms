@@ -76,7 +76,7 @@ def test_discovery_output() -> Optional[bool]:
             "verify_ssl": False,
         }
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as f:
             json.dump(test_config, f)
             config_file = f.name
 
@@ -180,7 +180,7 @@ def test_catalog_format() -> Optional[bool]:
         }
 
         # Mock the discovery to avoid network calls
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as f:
             json.dump(config, f)
             config_file = f.name
 
