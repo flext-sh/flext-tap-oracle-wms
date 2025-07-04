@@ -284,6 +284,10 @@ class EntityDiscovery(EntityDiscoveryInterface):
         for pattern in patterns:
             pattern_lower = pattern.lower()
 
+            # Exact match
+            if pattern_lower == entity_lower:
+                return True
+                
             # Support simple wildcard patterns
             if "*" in pattern_lower:
                 pattern_clean = pattern_lower.replace("*", "")
@@ -293,7 +297,11 @@ class EntityDiscovery(EntityDiscoveryInterface):
                     return True
                 if pattern_clean in entity_lower:
                     return True
-            elif pattern_lower == entity_lower:
+            # Special case: patterns ending with _ are treated as prefixes
+            elif pattern_lower.endswith("_") and entity_lower.startswith(pattern_lower):
+                return True
+            # Pattern contains entity name
+            elif pattern_lower in entity_lower:
                 return True
 
         return False
