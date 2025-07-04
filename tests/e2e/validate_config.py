@@ -51,10 +51,10 @@ def validate_e2e_config():
             if var == "TAP_ORACLE_WMS_BASE_URL":
                 try:
                     result = urlparse(value)
-                    if not all([result.scheme, result.netloc]) or result.scheme not in [
+                    if not all([result.scheme, result.netloc]) or result.scheme not in {
                         "http",
                         "https",
-                    ]:
+                    }:
                         all_valid = False
                 except Exception:
                     all_valid = False
@@ -75,11 +75,11 @@ def validate_e2e_config():
             pass
 
         # Validate numeric values
-        elif var in [
+        elif var in {
             "TAP_ORACLE_WMS_PAGE_SIZE",
             "TAP_ORACLE_WMS_REQUEST_TIMEOUT",
             "TAP_ORACLE_WMS_RECORD_LIMIT",
-        ]:
+        }:
             try:
                 int_value = int(value)
                 if var == "TAP_ORACLE_WMS_PAGE_SIZE" and not (1 <= int_value <= 1250):

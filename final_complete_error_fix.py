@@ -53,7 +53,7 @@ def fix_auth_pass_statement() -> None:
     new_lines = []
     in_except_block = False
 
-    for _i, line in enumerate(lines):
+    for line in lines:
         if "except (AttributeError, TypeError) as e:" in line:
             in_except_block = True
             new_lines.append(line)

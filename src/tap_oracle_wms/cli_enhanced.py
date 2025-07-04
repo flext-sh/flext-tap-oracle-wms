@@ -204,7 +204,7 @@ def generate_catalog(config: str, output: str) -> None:
 
         catalog = tap.catalog_dict
 
-        with Path(output).open("w") as f:
+        with Path(output).open("w", encoding="utf-8") as f:
             json.dump(catalog, f, indent=2)
 
         streams = catalog.get("streams", [])
@@ -294,7 +294,7 @@ def test_extraction(config: str, entity: str | None) -> None:
             sys.exit(1)
 
         # Test specific entity or first available
-        test_entity = entity if entity else next(iter(entities.keys()))
+        test_entity = entity or next(iter(entities.keys()))
 
         if test_entity not in entities:
             click.echo(f"❌ Entity '{test_entity}' not found")
@@ -340,7 +340,7 @@ def _load_config(config_path: str) -> dict[str, Any]:
             "record_limit": int(os.getenv("TAP_ORACLE_WMS_RECORD_LIMIT", "1000")),
         }
     # Load from JSON file
-    with Path(config_path).open() as f:
+    with Path(config_path).open(encoding="utf-8") as f:
         return dict(json.load(f))
 
 

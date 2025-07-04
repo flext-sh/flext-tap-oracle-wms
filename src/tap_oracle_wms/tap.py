@@ -43,7 +43,7 @@ class TapOracleWMS(Tap):
 
     This tap implements automatic entity discovery and dynamic schema generation
     specifically designed for Oracle Warehouse Management System REST API.
-    
+
     Built with professional standards: SOLID principles, clean architecture,
     and enterprise-grade error handling.
     """

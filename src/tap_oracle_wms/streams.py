@@ -862,15 +862,15 @@ class WMSStream(RESTStream[dict[str, Any]]):
         field_value: ValueType,
     ) -> ValueType:
         """Convert field value based on WMS metadata type."""
-        if original_type in ("pk", "integer"):
-            return int(field_value) if field_value not in ("", None) else None
-        if original_type in ("number", "decimal"):
-            return float(field_value) if field_value not in ("", None) else None
+        if original_type in {"pk", "integer"}:
+            return int(field_value) if field_value not in {"", None} else None
+        if original_type in {"number", "decimal"}:
+            return float(field_value) if field_value not in {"", None} else None
         if original_type == "boolean":
             return self._convert_to_boolean(field_value)
-        if original_type in ("datetime", "date"):
+        if original_type in {"datetime", "date"}:
             return self._normalize_timestamp(field_value)
-        if original_type in ("varchar", "char", "text"):
+        if original_type in {"varchar", "char", "text"}:
             return str(field_value) if field_value is not None else None
         # Fallback for unknown metadata types
         return str(field_value) if field_value is not None else None
@@ -882,9 +882,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
     ) -> ValueType:
         """Convert field value based on Singer schema type."""
         if actual_type == "integer":
-            return int(field_value) if field_value not in ("", None) else None
+            return int(field_value) if field_value not in {"", None} else None
         if actual_type == "number":
-            return float(field_value) if field_value not in ("", None) else None
+            return float(field_value) if field_value not in {"", None} else None
         if actual_type == "boolean":
             return bool(field_value) if field_value is not None else None
         return str(field_value) if field_value is not None else None
@@ -894,7 +894,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         if isinstance(field_value, bool):
             return field_value
         if isinstance(field_value, str):
-            return field_value.lower() in ("true", "1", "yes", "y")
+            return field_value.lower() in {"true", "1", "yes", "y"}
         if isinstance(field_value, (int, float)):
             return bool(field_value)
         return None
@@ -917,9 +917,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         try:
             if actual_type == "integer":
-                return int(field_value) if field_value not in ("", None) else None
+                return int(field_value) if field_value not in {"", None} else None
             if actual_type == "number":
-                return float(field_value) if field_value not in ("", None) else None
+                return float(field_value) if field_value not in {"", None} else None
             if actual_type == "boolean":
                 return bool(field_value) if field_value is not None else None
             return str(field_value) if field_value is not None else None
@@ -999,7 +999,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     k: v
                     for k, v in headers.items()
                     if k.lower()
-                    not in ["authorization", "cookie", "x-api-key", "x-auth-token"]
+                    not in {"authorization", "cookie", "x-api-key", "x-auth-token"}
                 },
                 "method": "GET",
                 "request_start_time": time.time(),
