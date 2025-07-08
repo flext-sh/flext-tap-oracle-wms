@@ -8,7 +8,10 @@ This script checks:
 4. Dynamic entity discovery works
 """
 
+from __future__ import annotations
+
 import json
+import sys
 from unittest.mock import Mock, patch
 
 # Test imports
@@ -17,25 +20,19 @@ try:
     from tap_oracle_wms.streams import WMSPaginator, WMSStream
     from tap_oracle_wms.tap import TapOracleWMS
 
-    print("✅ All imports successful")
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-    exit(1)
+except ImportError:
+    sys.exit(1)
 
 
-def test_generic_implementation():
+def test_generic_implementation() -> None:
     """Test implementation is generic."""
-    print("\n🔍 Testing generic implementation...")
-
     # Check tap name
     assert TapOracleWMS.name == "tap-oracle-wms"
-    print("  ✅ Tap name is generic")
 
     # Check configuration has no hardcoded references
     config_json = json.dumps(TapOracleWMS.config_jsonschema)
     assert "gruponos" not in config_json.lower()
     assert "grupo_nos" not in config_json.lower()
-    print("  ✅ No hardcoded references in config")
 
     # Test with any WMS instance
     config = {
@@ -49,13 +46,10 @@ def test_generic_implementation():
     tap = TapOracleWMS(config=config)
     assert tap.config["base_url"] == "https://any-wms.company.com"
     assert tap.config["company_code"] == "ANY_COMP"
-    print("  ✅ Works with any WMS instance")
 
 
-def test_wms_specific_features():
+def test_wms_specific_features() -> None:
     """Test Oracle WMS specific features preserved."""
-    print("\n🔍 Testing WMS-specific features...")
-
     config_schema = TapOracleWMS.config_jsonschema
     properties = config_schema["properties"]
 
@@ -64,14 +58,12 @@ def test_wms_specific_features():
     assert "facility_code" in properties
     assert "wms_api_version" in properties
     assert properties["wms_api_version"]["default"] == "v10"
-    print("  ✅ WMS-specific configuration preserved")
 
     # Check pagination modes
     assert "page_mode" in properties
     page_mode_prop = properties["page_mode"]
     if isinstance(page_mode_prop, dict):
         assert page_mode_prop.get("default") == "sequenced"
-    print("  ✅ WMS pagination modes preserved")
 
     # Test WMS paginator
     mock_response = Mock()
@@ -84,13 +76,10 @@ def test_wms_specific_features():
     paginator = WMSPaginator()
     assert paginator.get_next_url(mock_response) == "https://wms.com/api?page=2"
     assert paginator.has_more(mock_response) is True
-    print("  ✅ HATEOAS pagination working")
 
 
-def test_business_logic_preserved():
+def test_business_logic_preserved() -> None:
     """Test business logic is preserved."""
-    print("\n🔍 Testing preserved business logic...")
-
     # Test entity discovery
     config = {
         "base_url": "https://wms.example.com",
@@ -101,7 +90,6 @@ def test_business_logic_preserved():
 
     discovery = EntityDiscovery(config)
     assert discovery.entity_endpoint == "https://wms.example.com/wms/lgfapi/v11/entity/"
-    print("  ✅ Entity discovery endpoint generation preserved")
 
     # Test schema generator with WMS metadata
     generator = SchemaGenerator({})
@@ -121,7 +109,6 @@ def test_business_logic_preserved():
     assert props["order_nbr"]["type"] == ["string", "null"]
     assert props["active_flg"]["type"] == ["boolean", "null"]
     assert props["mod_ts"]["format"] == "date-time"
-    print("  ✅ WMS metadata type mapping preserved")
 
     # Test incremental sync with mod_ts
     config = {
@@ -142,13 +129,10 @@ def test_business_logic_preserved():
 
     assert stream.replication_method == "INCREMENTAL"
     assert stream.replication_key == "mod_ts"
-    print("  ✅ Incremental sync with mod_ts preserved")
 
 
-def test_dynamic_features():
+def test_dynamic_features() -> None:
     """Test dynamic features work."""
-    print("\n🔍 Testing dynamic features...")
-
     # Test dynamic stream creation
     config = {
         "base_url": "https://wms.com",
@@ -171,7 +155,6 @@ def test_dynamic_features():
         stream_names = [s.name for s in streams]
         assert "custom_entity_1" in stream_names
         assert "custom_entity_2" in stream_names
-        print("  ✅ Dynamic stream creation working")
 
     # Test entity filtering
     discovery = EntityDiscovery(
@@ -200,13 +183,10 @@ def test_dynamic_features():
     assert "item_master" in filtered
     assert "order_temp" not in filtered  # Excluded
     assert "other" not in filtered  # Not included
-    print("  ✅ Entity filtering logic preserved")
 
 
-def test_audit_fields():
+def test_audit_fields() -> None:
     """Test audit fields handling."""
-    print("\n🔍 Testing audit fields...")
-
     generator = SchemaGenerator({})
     metadata = {
         "fields": {
@@ -225,13 +205,10 @@ def test_audit_fields():
     assert props["CREATE_TS"]["format"] == "date-time"
     assert "MOD_USER" in props
     assert "MOD_TS" in props
-    print("  ✅ Audit fields recognized correctly")
 
 
-def main():
+def main() -> None:
     """Run all validation tests."""
-    print("🚀 Starting Oracle WMS Tap validation...\n")
-
     try:
         test_generic_implementation()
         test_wms_specific_features()
@@ -239,20 +216,13 @@ def main():
         test_dynamic_features()
         test_audit_fields()
 
-        print("\n✅ All functionality has been preserved!")
-        print("✅ Tap is completely generic!")
-        print("✅ Oracle WMS features intact!")
-        print("✅ Ready for production use!")
-
-    except AssertionError as e:
-        print(f"\n❌ Validation failed: {e}")
-        exit(1)
-    except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+    except AssertionError:
+        sys.exit(1)
+    except Exception:
         import traceback
 
         traceback.print_exc()
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

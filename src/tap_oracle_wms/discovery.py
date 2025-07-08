@@ -71,7 +71,9 @@ class EntityDiscovery:
         # Dependency injection - create specialized components
         self._cache_manager = CacheManager(config)
         self._entity_discovery = EntityDiscoveryCore(
-            config, self._cache_manager, self.headers
+            config,
+            self._cache_manager,
+            self.headers,
         )
         self._schema_generator = SchemaGeneratorCore(config)
 
@@ -89,7 +91,7 @@ class EntityDiscovery:
 
         Delegates to the specialized entity discovery component.
 
-        Returns
+        Returns:
         -------
             Dictionary mapping entity names to their API URLs
 
@@ -154,7 +156,7 @@ class EntityDiscovery:
 
         Delegates to the cache manager.
 
-        Returns
+        Returns:
         -------
             Dictionary with cache statistics
 
@@ -196,7 +198,8 @@ class SchemaGenerator:
     # These methods are FORBIDDEN - schema generation uses ONLY API metadata describe
 
     def generate_metadata_schema_with_flattening(
-        self, metadata: dict[str, Any]
+        self,
+        metadata: dict[str, Any],
     ) -> dict[str, Any]:
         """Generate schema from API metadata ONLY with flattening support.
 
@@ -208,7 +211,7 @@ class SchemaGenerator:
 
         try:
             return self._schema_generator.generate_metadata_schema_with_flattening(
-                metadata
+                metadata,
             )
         except Exception as e:
             logger.exception("Schema generation with flattening failed")
@@ -216,12 +219,17 @@ class SchemaGenerator:
             raise SchemaGenerationError(msg) from e
 
     def flatten_complex_objects(
-        self, data: dict[str, Any], prefix: str = "", separator: str = "_"
+        self,
+        data: dict[str, Any],
+        prefix: str = "",
+        separator: str = "_",
     ) -> dict[str, Any]:
         """Flatten nested objects for schema consistency."""
         try:
             return self._schema_generator.flatten_complex_objects(
-                data, prefix, separator
+                data,
+                prefix,
+                separator,
             )
         except Exception:
             logger.exception("Object flattening failed")
@@ -229,32 +237,39 @@ class SchemaGenerator:
             return data
 
     def _flatten_complex_objects(
-        self, data: dict[str, Any], prefix: str = "", separator: str = "_"
+        self,
+        data: dict[str, Any],
+        prefix: str = "",
+        separator: str = "_",
     ) -> dict[str, Any]:
         """Legacy private method for backward compatibility."""
         return self.flatten_complex_objects(data, prefix, separator)
 
     def _infer_type(self, value: object) -> dict[str, Any]:
         """Legacy private method for type inference - backward compatibility."""
-        # Simple type inference for backward compatibility
-        if value is None:
-            return {"type": "null"}
-        if isinstance(value, bool):
-            return {"type": "boolean"}
-        if isinstance(value, int):
-            return {"type": "integer"}
-        if isinstance(value, float):
-            return {"type": "number"}
-        if isinstance(value, str):
-            return {"type": "string"}
-        if isinstance(value, list):
-            return {"type": "array"}
-        if isinstance(value, dict):
-            return {"type": "object"}
+        # Type mapping for different Python types
+        type_mapping = [
+            (type(None), "null"),
+            (bool, "boolean"),
+            (int, "integer"),
+            (float, "number"),
+            (str, "string"),
+            (list, "array"),
+            (dict, "object"),
+        ]
+
+        # Check value against type mapping
+        for python_type, schema_type in type_mapping:
+            if isinstance(value, python_type):
+                return {"type": schema_type}
+
+        # Default fallback
         return {"type": "string"}
 
     def _merge_types(
-        self, type1: dict[str, Any], type2: dict[str, Any]
+        self,
+        type1: dict[str, Any],
+        type2: dict[str, Any],
     ) -> dict[str, Any]:
         """Legacy private method for type merging - backward compatibility."""
         # If same type, return it
@@ -264,7 +279,8 @@ class SchemaGenerator:
         return {"anyOf": [type1, type2]}
 
     def _create_property_from_field(
-        self, field_name: str, field_info: dict[str, Any]
+        self,
+        field_info: dict[str, Any],
     ) -> dict[str, Any]:
         """Legacy private method for property creation - backward compatibility."""
         field_type = field_info.get("type", "string")

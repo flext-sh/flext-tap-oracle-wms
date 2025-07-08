@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Auto-setup Oracle WMS Tap with real credentials detection."""
 
+from __future__ import annotations
+
 import os
-import sys
 from pathlib import Path
-from typing import Optional
+import sys
 
 from dotenv import load_dotenv
 
@@ -50,7 +51,7 @@ def detect_valid_credentials():
     }
 
 
-def test_connection(config) -> Optional[bool]:
+def test_connection(config) -> bool | None:
     """Test connection to Oracle WMS with provided config."""
     try:
         import asyncio

@@ -12,10 +12,10 @@ with full functionality including:
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 import json
 import logging
 import time
-from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs
 
@@ -124,7 +124,11 @@ class WMSStream(RESTStream[dict[str, Any]]):
         self._entity_name = str(kwargs.get("name", ""))
         self._schema = dict(kwargs.get("schema", {}))
 
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            tap=args[0] if args else kwargs.get("tap"),
+            name=kwargs.get("name"),
+            schema=kwargs.get("schema"),
+        )
 
         # Initialize configuration mapper for flexible configuration
         self.config_mapper = ConfigMapper(dict(self.config))
@@ -133,7 +137,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         # Set primary keys using configurable logic
         entity_primary_keys = self.config_mapper.get_entity_primary_keys(
-            self._entity_name
+            self._entity_name,
         )
         if entity_primary_keys:
             self.primary_keys = entity_primary_keys
@@ -178,11 +182,11 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         # Use pattern from ConfigMapper: /wms/lgfapi/v10/entity/{entity}
         pattern = self.config_mapper.get_entity_endpoint_pattern()
-        path = pattern.format(
-            prefix=prefix, version=api_version, entity=self._entity_name
+        return pattern.format(
+            prefix=prefix,
+            version=api_version,
+            entity=self._entity_name,
         )
-
-        return path
 
     @property
     def http_headers(self) -> dict[str, Any]:
@@ -266,7 +270,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                         params[key] = (
                             clean_values[0] if len(clean_values) == 1 else clean_values
                         )
-            except Exception as e:
+            except (ValueError, KeyError, TypeError, RuntimeError) as e:
                 self.logger.exception(
                     "Failed to parse pagination query parameters",
                 )
@@ -307,7 +311,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         # Se não há estado inicial, usar hora_atual - 5m
         if not start_date:
             overlap_minutes = self.config_mapper.get_lookback_minutes()
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             start_date = now - timedelta(minutes=overlap_minutes)
             self.logger.info(
                 "No initial state - using current time minus %d minutes: %s",
@@ -322,9 +326,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 f"'{self._entity_name}' lacks timezone information. This can cause "
                 f"data consistency issues across time zones."
             )
-            self.logger.exception(error_msg)
+            self.logger.error(error_msg)
             # Add UTC timezone as fallback but warn
-            start_date = start_date.replace(tzinfo=timezone.utc)
+            start_date = start_date.replace(tzinfo=UTC)
             self.logger.warning("Applied UTC timezone as fallback for start_date")
 
         # Validate overlap configuration para estado existente
@@ -344,7 +348,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             adjusted_date = start_date
 
         # Validate date range reasonableness
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if adjusted_date > now:
             self.logger.warning("Start date is in the future: %s", adjusted_date)
 
@@ -564,7 +568,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 f"'results' exists but not a list (got {type(results).__name__}). "
                 f"This indicates API format change that prevents data extraction."
             )
-            self.logger.exception(error_msg)
+            self.logger.error(error_msg)
             raise FatalAPIError(error_msg)
 
     def _yield_direct_array(self, data: list[Any]) -> Iterable[dict[str, Any]]:
@@ -587,7 +591,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             f"Expected dict with 'results' key or list, but got {type(data).__name__}. "
             f"This indicates an API incompatibility that prevents data extraction."
         )
-        self.logger.exception(error_msg)
+        self.logger.error(error_msg)
         raise FatalAPIError(error_msg)
 
     def validate_response(self, response: requests.Response) -> None:
@@ -595,13 +599,13 @@ class WMSStream(RESTStream[dict[str, Any]]):
         status = response.status_code
 
         if status == STATUS_UNAUTHORIZED:
-            msg = "Authentication failed (401)"
+            msg = "Authentication failed (HTTP_STATUS_UNAUTHORIZED)"
             raise FatalAPIError(msg)
         if status == STATUS_FORBIDDEN:
-            msg = f"Access forbidden to {self._entity_name} (403)"
+            msg = f"Access forbidden to {self._entity_name} (HTTP_STATUS_FORBIDDEN)"
             raise FatalAPIError(msg)
         if status == STATUS_NOT_FOUND:
-            msg = f"Entity {self._entity_name} not found (404)"
+            msg = f"Entity {self._entity_name} not found (HTTP_STATUS_NOT_FOUND)"
             raise FatalAPIError(msg)
         if status == STATUS_TOO_MANY_REQUESTS:
             retry_after = response.headers.get("Retry-After", DEFAULT_RETRY_AFTER)
@@ -630,7 +634,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         # 🚨 CRITICAL: Processing is ALWAYS consistent with metadata-only discovery
         # These values are HARD-CODED and cannot be overridden for safety
         flattening_enabled = self.config.get("flattening_enabled", True)
-        # use_metadata_only = True  # HARD-CODED: Always True (no config allowed)
+        # Schema discovery is hard-coded to use only API metadata
         # 🚨 SCHEMA DISCOVERY: HARD-CODED to use ONLY API metadata describe
 
         # Apply flattening consistently with metadata-only discovery
@@ -645,7 +649,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         processed_row = self._apply_metadata_first_processing(row)
 
         # Add extraction metadata (prefixed to avoid conflicts)
-        processed_row["_sdc_extracted_at"] = datetime.now(timezone.utc).isoformat()
+        processed_row["_sdc_extracted_at"] = datetime.now(UTC).isoformat()
         processed_row["_sdc_entity"] = self._entity_name
 
         # Ensure replication key is properly formatted (ISO standard)
@@ -951,7 +955,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             try:
                 # Try to parse and add UTC timezone
                 dt = datetime.fromisoformat(timestamp_value.replace("Z", ""))
-                return dt.replace(tzinfo=timezone.utc).isoformat()
+                return dt.replace(tzinfo=UTC).isoformat()
             except (ValueError, TypeError):
                 # Timestamp normalization failures - log as error but proceed
                 self.logger.exception(
@@ -965,7 +969,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
     def _normalize_datetime_timestamp(self, timestamp_value: datetime) -> str:
         """Normalize datetime timestamp objects."""
         if timestamp_value.tzinfo is None:
-            timestamp_with_tz = timestamp_value.replace(tzinfo=timezone.utc)
+            timestamp_with_tz = timestamp_value.replace(tzinfo=UTC)
             return timestamp_with_tz.isoformat()
         return timestamp_value.isoformat()
 
@@ -1005,7 +1009,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         try:
             # Use parent implementation but track each request
             yield from super().request_records(context)
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, RuntimeError) as e:
             self.logger.exception(
                 "WMS HTTP REQUEST FAILED - Entity: %s",
                 self._entity_name,
@@ -1063,7 +1067,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                     "encoding": response.encoding,
                 },
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, RuntimeError) as e:
             request_duration = time.time() - request_start
 
             # ❌ LOG ERRO HTTP COM TIMING
@@ -1122,7 +1126,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         except FatalAPIError:
             self.logger.exception("Fatal error for %s", self._entity_name)
             raise
-        except Exception:
+        except (ValueError, KeyError, TypeError, RuntimeError):
             self.logger.exception("Unexpected error for %s", self._entity_name)
             raise
         finally:
@@ -1163,7 +1167,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             if state_value:
                 try:
                     return datetime.fromisoformat(
-                        state_value.replace("Z", "+00:00"),
+                        state_value,
                     )
                 except (ValueError, TypeError) as e:
                     self.logger.exception(

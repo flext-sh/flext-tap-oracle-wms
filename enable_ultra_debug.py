@@ -5,6 +5,8 @@ This script configures maximum logging visibility for sync operations.
 Run this before executing the tap to get EXTREME visibility into what's happening.
 """
 
+from __future__ import annotations
+
 import logging
 import os
 import sys

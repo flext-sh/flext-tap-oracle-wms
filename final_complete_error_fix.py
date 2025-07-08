@@ -3,6 +3,8 @@
 Vai corrigir os 13 problemas restantes de forma cirúrgica e definitiva.
 """
 
+from __future__ import annotations
+
 import os
 import re
 

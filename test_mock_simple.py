@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Simple mock test script."""
 
+from __future__ import annotations
+
 import asyncio
 import time
 

@@ -6,10 +6,18 @@ for successful Oracle WMS API integration.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import re
-from typing import Any, Dict, List
+from typing import Any
 from urllib.parse import urlparse
+
+# API and Performance Constants
+MAX_PAGE_SIZE = 1250
+MAX_REQUEST_TIMEOUT = 600
+MAX_RETRIES = 10
+MAX_OVERLAP_MINUTES = 1440  # 24 hours
+CURRENCY_CODE_LENGTH = 3  # ISO 4217 standard
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +29,12 @@ class ConfigValidationError(Exception):
 class ConfigValidator:
     """Validates Oracle WMS tap configuration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the validator."""
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
 
-    def validate_config(self, config: Dict[str, Any]) -> bool:
+    def validate_config(self, config: dict[str, Any]) -> bool:
         """Validate complete configuration.
 
         Args:
@@ -52,7 +60,7 @@ class ConfigValidator:
         # Log results
         if self.warnings:
             for warning in self.warnings:
-                logger.warning(f"Configuration warning: {warning}")
+                logger.warning("Configuration warning: %s", warning)
 
         if self.errors:
             error_msg = (
@@ -65,7 +73,7 @@ class ConfigValidator:
         logger.info("Configuration validation passed successfully")
         return True
 
-    def _validate_connection_settings(self, config: Dict[str, Any]) -> None:
+    def _validate_connection_settings(self, config: dict[str, Any]) -> None:
         """Validate connection settings."""
         base_url = config.get("base_url")
         if not base_url:
@@ -83,42 +91,43 @@ class ConfigValidator:
         elif auth_method == "oauth2":
             if not config.get("oauth_client_id"):
                 self.errors.append(
-                    "oauth_client_id is required for OAuth2 authentication"
+                    "oauth_client_id is required for OAuth2 authentication",
                 )
             if not config.get("oauth_client_secret"):
                 self.errors.append(
-                    "oauth_client_secret is required for OAuth2 authentication"
+                    "oauth_client_secret is required for OAuth2 authentication",
                 )
             if not config.get("oauth_token_url"):
                 self.errors.append(
-                    "oauth_token_url is required for OAuth2 authentication"
+                    "oauth_token_url is required for OAuth2 authentication",
                 )
         else:
             self.errors.append(
-                f"Invalid auth_method: {auth_method}. Must be 'basic' or 'oauth2'"
+                f"Invalid auth_method: {auth_method}. Must be 'basic' or 'oauth2'",
             )
 
-    def _validate_api_settings(self, config: Dict[str, Any]) -> None:
+    def _validate_api_settings(self, config: dict[str, Any]) -> None:
         """Validate API-specific settings."""
         # API version validation
         api_version = config.get("wms_api_version", "v10")
         if not re.match(r"^v\d+$", api_version):
             self.errors.append(
-                f"Invalid API version format: {api_version}. Must be 'vN' where N is a number"
+                f"Invalid API version format: {api_version}. "
+                f"Must be 'vN' where N is a number",
             )
 
         # Endpoint prefix validation
         endpoint_prefix = config.get("endpoint_prefix", "/wms/lgfapi")
         if not endpoint_prefix.startswith("/"):
             self.warnings.append(
-                f"endpoint_prefix should start with '/': {endpoint_prefix}"
+                f"endpoint_prefix should start with '/': {endpoint_prefix}",
             )
 
         # Page mode validation
         page_mode = config.get("page_mode", "sequenced")
-        if page_mode not in ["sequenced", "paged"]:
+        if page_mode not in {"sequenced", "paged"}:
             self.errors.append(
-                f"Invalid page_mode: {page_mode}. Must be 'sequenced' or 'paged'"
+                f"Invalid page_mode: {page_mode}. Must be 'sequenced' or 'paged'",
             )
 
         # OAuth scope validation
@@ -126,15 +135,16 @@ class ConfigValidator:
         if oauth_scope and not self._is_valid_url(oauth_scope):
             self.warnings.append(f"oauth_scope appears to be malformed: {oauth_scope}")
 
-    def _validate_performance_settings(self, config: Dict[str, Any]) -> None:
+    def _validate_performance_settings(self, config: dict[str, Any]) -> None:
         """Validate performance settings."""
         # Page size validation
         page_size = config.get("page_size", 100)
         if not isinstance(page_size, int) or page_size < 1:
             self.errors.append(f"page_size must be a positive integer: {page_size}")
-        elif page_size > 1250:
+        elif page_size > MAX_PAGE_SIZE:
             self.errors.append(
-                f"page_size exceeds Oracle WMS API limit (max 1250): {page_size}"
+                f"page_size exceeds Oracle WMS API limit "
+                f"(max {MAX_PAGE_SIZE}): {page_size}",
             )
 
         # Max page size validation
@@ -146,32 +156,32 @@ class ConfigValidator:
         request_timeout = config.get("request_timeout", 120)
         if not isinstance(request_timeout, int) or request_timeout < 1:
             self.errors.append(
-                f"request_timeout must be a positive integer: {request_timeout}"
+                f"request_timeout must be a positive integer: {request_timeout}",
             )
-        elif request_timeout > 600:
+        elif request_timeout > MAX_REQUEST_TIMEOUT:
             self.warnings.append(
-                f"Very long request_timeout may cause issues: {request_timeout}"
+                f"Very long request_timeout may cause issues: {request_timeout}",
             )
 
         # Retry validation
         max_retries = config.get("max_retries", 3)
         if not isinstance(max_retries, int) or max_retries < 0:
             self.errors.append(
-                f"max_retries must be a non-negative integer: {max_retries}"
+                f"max_retries must be a non-negative integer: {max_retries}",
             )
-        elif max_retries > 10:
+        elif max_retries > MAX_RETRIES:
             self.warnings.append(
-                f"High max_retries may cause slow failure recovery: {max_retries}"
+                f"High max_retries may cause slow failure recovery: {max_retries}",
             )
 
         # Cache TTL validation
         cache_ttl = config.get("cache_ttl_seconds", 3600)
         if not isinstance(cache_ttl, int) or cache_ttl < 0:
             self.errors.append(
-                f"cache_ttl_seconds must be a non-negative integer: {cache_ttl}"
+                f"cache_ttl_seconds must be a non-negative integer: {cache_ttl}",
             )
 
-    def _validate_business_logic_settings(self, config: Dict[str, Any]) -> None:
+    def _validate_business_logic_settings(self, config: dict[str, Any]) -> None:
         """Validate business logic settings."""
         # Replication key validation
         replication_key = config.get("replication_key", "mod_ts")
@@ -182,18 +192,20 @@ class ConfigValidator:
         overlap_minutes = config.get("incremental_overlap_minutes", 5)
         if not isinstance(overlap_minutes, int) or overlap_minutes < 0:
             self.errors.append(
-                f"incremental_overlap_minutes must be a non-negative integer: {overlap_minutes}"
+                f"incremental_overlap_minutes must be a non-negative integer: "
+                f"{overlap_minutes}",
             )
-        elif overlap_minutes > 1440:  # 24 hours
+        elif overlap_minutes > MAX_OVERLAP_MINUTES:
             self.warnings.append(
-                f"Large incremental_overlap_minutes may cause performance issues: {overlap_minutes}"
+                f"Large incremental_overlap_minutes may cause performance issues: "
+                f"{overlap_minutes}",
             )
 
         # Lookback minutes validation
         lookback_minutes = config.get("lookback_minutes", 5)
         if not isinstance(lookback_minutes, int) or lookback_minutes < 0:
             self.errors.append(
-                f"lookback_minutes must be a non-negative integer: {lookback_minutes}"
+                f"lookback_minutes must be a non-negative integer: {lookback_minutes}",
             )
 
         # Company code validation
@@ -213,27 +225,34 @@ class ConfigValidator:
 
         # Currency validation
         currency = config.get("currency_code", "USD")
-        if not isinstance(currency, str) or len(currency) != 3:
+        if not isinstance(currency, str) or len(currency) != CURRENCY_CODE_LENGTH:
             self.errors.append(f"currency_code must be a 3-letter string: {currency}")
 
-    def _validate_entity_settings(self, config: Dict[str, Any]) -> None:
+    def _validate_entity_settings(self, config: dict[str, Any]) -> None:
         """Validate entity-specific settings."""
+        self._validate_entities_list(config)
+        self._validate_entity_patterns(config)
+        self._validate_entity_flags(config)
+
+    def _validate_entities_list(self, config: dict[str, Any]) -> None:
+        """Validate entities list configuration."""
         entities = config.get("entities")
         if entities is not None:
             if not isinstance(entities, list):
                 self.errors.append("entities must be a list")
             elif not entities:
                 self.warnings.append(
-                    "entities list is empty - no data will be extracted"
+                    "entities list is empty - no data will be extracted",
                 )
             else:
                 for entity in entities:
                     if not isinstance(entity, str) or not entity:
                         self.errors.append(
-                            f"All entity names must be non-empty strings: {entity}"
+                            f"All entity names must be non-empty strings: {entity}",
                         )
 
-        # Entity patterns validation
+    def _validate_entity_patterns(self, config: dict[str, Any]) -> None:
+        """Validate entity patterns configuration."""
         entity_patterns = config.get("entity_patterns")
         if entity_patterns is not None:
             if not isinstance(entity_patterns, dict):
@@ -243,15 +262,19 @@ class ConfigValidator:
                 exclude_patterns = entity_patterns.get("exclude")
 
                 if include_patterns is not None and not isinstance(
-                    include_patterns, list
+                    include_patterns,
+                    list,
                 ):
                     self.errors.append("entity_patterns.include must be a list")
 
                 if exclude_patterns is not None and not isinstance(
-                    exclude_patterns, list
+                    exclude_patterns,
+                    list,
                 ):
                     self.errors.append("entity_patterns.exclude must be a list")
 
+    def _validate_entity_flags(self, config: dict[str, Any]) -> None:
+        """Validate entity boolean flags."""
         # Force full table validation
         force_full_table = config.get("force_full_table")
         if force_full_table is not None and not isinstance(force_full_table, bool):
@@ -270,7 +293,7 @@ class ConfigValidator:
         except (ValueError, AttributeError):
             return False
 
-    def get_validation_summary(self) -> Dict[str, Any]:
+    def get_validation_summary(self) -> dict[str, Any]:
         """Get summary of validation results.
 
         Returns:
@@ -286,7 +309,7 @@ class ConfigValidator:
         }
 
 
-def validate_config_with_mapper(config_mapper) -> bool:
+def validate_config_with_mapper(config_mapper: object) -> bool:
     """Validate configuration using ConfigMapper.
 
     Args:
@@ -309,14 +332,10 @@ def validate_config_with_mapper(config_mapper) -> bool:
         {
             "auth_method": config_mapper.get_authentication_method(),
             "oauth_scope": config_mapper.get_oauth_scope(),
-            "company_code": config_mapper._get_config_value(
-                "company_code", env_var="WMS_COMPANY_CODE", default="*"
-            ),
-            "facility_code": config_mapper._get_config_value(
-                "facility_code", env_var="WMS_FACILITY_CODE", default="*"
-            ),
+            "company_code": config_mapper.get_company_code(),
+            "facility_code": config_mapper.get_facility_code(),
             "entities": config_mapper.get_enabled_entities(),
-        }
+        },
     )
 
     return validator.validate_config(config)
@@ -327,8 +346,5 @@ if __name__ == "__main__":
     from .config_mapper import ConfigMapper
 
     mapper = ConfigMapper()
-    try:
+    with contextlib.suppress(ConfigValidationError):
         validate_config_with_mapper(mapper)
-        print("✅ Configuration validation passed")
-    except ConfigValidationError as e:
-        print(f"❌ Configuration validation failed: {e}")

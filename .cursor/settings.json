@@ -1,0 +1,214 @@
+{
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // FLEXT STANDARD CURSOR AI CONFIGURATION
+  // Modern, AI-enhanced, and enterprise-grade development environment
+  // ═══════════════════════════════════════════════════════════════════════════════
+
+  // Cursor AI Configuration (FLEXT Standard)
+  "cursor.aiEnabled": true,
+  "cursor.aiModel": "claude-3.5-sonnet",
+  "cursor.copilotEnabled": true,
+  "cursor.enableSuggestionsOnEmptyLine": true,
+  "cursor.enableInlineCompletion": true,
+  "cursor.chat.showSuggestionsInEditor": true,
+  "cursor.chat.suggestionsDelay": 500,
+  "cursor.terminal.enableAI": true,
+  
+  // Python Configuration (FLEXT Standard)
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  
+  // Editor Configuration (FLEXT Standard)
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  "editor.rulers": [88, 120],
+  "editor.wordWrap": "bounded",
+  "editor.wordWrapColumn": 120,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.trimAutoWhitespace": true,
+  
+  // Python Language Specific (FLEXT Standard)
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.rulers": [88]
+  },
+  
+  // Ruff Configuration (FLEXT Standard)
+  "ruff.lint.enable": true,
+  "ruff.format.enable": true,
+  "ruff.organizeImports": true,
+  "ruff.fixAll": true,
+  "ruff.path": ["${workspaceFolder}/.venv/bin/ruff"],
+  "ruff.interpreter": ["${workspaceFolder}/.venv/bin/python"],
+  "ruff.lint.args": ["--config=${workspaceFolder}/pyproject.toml"],
+  "ruff.format.args": ["--config=${workspaceFolder}/pyproject.toml"],
+  
+  // Testing Configuration (FLEXT Standard)
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestPath": "${workspaceFolder}/.venv/bin/pytest",
+  "python.testing.pytestArgs": [
+    "tests",
+    "-v",
+    "--cov=tap_oracle_wms",
+    "--cov-report=html",
+    "--cov-report=term-missing"
+  ],
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+  
+  // Type Checking (FLEXT Standard)
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/src"
+  ],
+  "python.analysis.useLibraryCodeForTypes": true,
+  "python.analysis.diagnosticMode": "workspace",
+  
+  // MyPy Configuration (FLEXT Standard)
+  "python.linting.enabled": true,
+  "python.linting.lintOnSave": true,
+  "python.linting.mypyEnabled": true,
+  "python.linting.mypyPath": "${workspaceFolder}/.venv/bin/mypy",
+  "python.linting.mypyArgs": [
+    "--config-file=${workspaceFolder}/pyproject.toml",
+    "--strict",
+    "--show-error-codes"
+  ],
+  
+  // File Management (FLEXT Standard)
+  "files.trimTrailingWhitespace": true,
+  "files.trimFinalNewlines": true,
+  "files.insertFinalNewline": true,
+  "files.eol": "\\n",
+  "files.encoding": "utf8",
+  
+  // File Associations (FLEXT Standard)
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.yaml": "yaml",
+    ".env*": "dotenv",
+    "Makefile*": "makefile",
+    "requirements*.txt": "pip-requirements",
+    "pyproject.toml": "toml",
+    "poetry.lock": "toml"
+  },
+  
+  // Exclusion Patterns (FLEXT Standard)
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/htmlcov": true,
+    "**/.coverage": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/*.egg-info": true,
+    "**/.tox": true,
+    "**/node_modules": true
+  },
+  
+  // Search Configuration (FLEXT Standard)
+  "search.exclude": {
+    "**/.venv": true,
+    "**/poetry.lock": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/htmlcov": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/reports": true
+  },
+  
+  // Git Configuration (FLEXT Standard)
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.ignoreLimitWarning": true,
+  
+  // Terminal Configuration (FLEXT Standard)
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}/src:${env:PYTHONPATH}",
+    "POETRY_VIRTUALENVS_IN_PROJECT": "true"
+  },
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "${workspaceFolder}/src:${env:PYTHONPATH}",
+    "POETRY_VIRTUALENVS_IN_PROJECT": "true"
+  },
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}\\\\src;${env:PYTHONPATH}",
+    "POETRY_VIRTUALENVS_IN_PROJECT": "true"
+  },
+  
+  // Cursor AI-Specific Productivity Features
+  "cursor.ai.codeActions": true,
+  "cursor.ai.inlineEdit": true,
+  "cursor.ai.autoComplete": true,
+  "cursor.ai.contextSizeLimit": 100000,
+  
+  // AI-Enhanced Development (FLEXT Optimized)
+  "cursor.ai.modelPreferences": {
+    "codeCompletion": "claude-3.5-sonnet",
+    "codeGeneration": "claude-3.5-sonnet",
+    "debugging": "claude-3.5-sonnet"
+  },
+  
+  // FLEXT-Specific AI Prompt Context
+  "cursor.ai.systemPrompt": "You are working on a FLEXT enterprise Singer tap for Oracle WMS. Follow FLEXT standards: PEP 621, modern Python 3.13, strict typing, comprehensive testing, and enterprise-grade code quality.",
+  
+  // Coverage and Testing (FLEXT Standard)
+  "coverage-gutters.showGutterCoverage": true,
+  "coverage-gutters.showLineCoverage": true,
+  "coverage-gutters.showRulerCoverage": true,
+  
+  // Performance Optimizations (FLEXT Standard)
+  "python.analysis.memory.keepLibraryAst": true,
+  "editor.semanticHighlighting.enabled": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  
+  // Security Settings (FLEXT Standard)
+  "files.hotExit": "onExitAndWindowClose",
+  "security.workspace.trust.untrustedFiles": "prompt",
+  
+  // FLEXT Workspace Identification (Cursor)
+  "workbench.colorCustomizations": {
+    "statusBar.background": "#007ACC",
+    "statusBar.noFolderBackground": "#007ACC",
+    "statusBar.debuggingBackground": "#FF6600",
+    "titleBar.activeBackground": "#007ACC",
+    "activityBar.activeBackground": "#007ACC33"
+  },
+  
+  // Cursor-Specific Theme and Icons
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "material-icon-theme",
+  
+  // AI Code Intelligence
+  "cursor.ai.enableDeepCodeUnderstanding": true,
+  "cursor.ai.suggestionDelay": 100,
+  "cursor.ai.maxSuggestions": 5,
+  
+  // FLEXT Development Workflow Integration
+  "makefile.configureOnOpen": true,
+  "yaml.validate": true,
+  "toml.formatter.alignEntries": true,
+  
+  // Advanced AI Features (Cursor Pro)
+  "cursor.ai.enableAdvancedFeatures": true,
+  "cursor.ai.contextAwareCompletion": true,
+  "cursor.ai.projectUnderstanding": true
+}

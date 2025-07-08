@@ -3,6 +3,8 @@
 Vai ser muito mais rigoroso que as verificações anteriores.
 """
 
+from __future__ import annotations
+
 import os
 import re
 
@@ -72,8 +74,6 @@ def find_error_masking_patterns():
         for pattern in masking_patterns:
             if pattern["code_snippet"]:
                 pass
-    else:
-        pass
 
     return masking_patterns
 
@@ -178,6 +178,4 @@ if __name__ == "__main__":
     patterns = find_error_masking_patterns()
 
     if patterns:
-        pass
-    else:
         pass

@@ -5,8 +5,10 @@ This demonstrates how to test the tap directly without going through Meltano.
 Replace the configuration values with your actual Oracle WMS instance details.
 """
 
-import sys
+from __future__ import annotations
+
 from pathlib import Path
+import sys
 
 # Add path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -58,11 +60,10 @@ def test_tap_directly() -> None:
             # Print first record as example
             if records:
                 pass
-        else:
-            pass
 
     except Exception:
         import traceback
+
         traceback.print_exc()
 
 

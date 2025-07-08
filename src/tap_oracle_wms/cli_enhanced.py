@@ -6,8 +6,8 @@ import asyncio
 import json
 import logging
 import os
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 import click
@@ -276,15 +276,16 @@ def test_extraction(config: str, entity: str | None) -> None:
         try:
             metadata = asyncio.run(discovery.get_entity_metadata(test_entity))
             if metadata and "fields" in metadata:
+                field_count = len(metadata["fields"])
                 click.echo(
-                    f"✅ Successfully got metadata with {len(metadata['fields'])} fields"
+                    f"✅ Successfully got metadata with {field_count} fields",
                 )
                 click.echo(
-                    f"   Metadata fields: {', '.join(metadata['fields'].keys())}"
+                    f"   Metadata fields: {', '.join(metadata['fields'].keys())}",
                 )
             else:
                 click.echo("⚠️  No metadata available for extraction test")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, RuntimeError, ConnectionError) as e:
             click.echo(f"❌ Error getting metadata: {e}")
 
     except (ValueError, KeyError, TypeError, RuntimeError) as e:

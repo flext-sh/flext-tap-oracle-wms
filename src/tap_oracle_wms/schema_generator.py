@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Union
+from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 from .interfaces import SchemaGeneratorInterface, TypeMapperInterface
 from .type_mapping import convert_metadata_type_to_singer
@@ -16,7 +17,7 @@ from .type_mapping import convert_metadata_type_to_singer
 logger = logging.getLogger(__name__)
 
 # Type alias for values that can be of various types to avoid FBT001
-ValueType = Union[float, str, int, bool, dict[str, Any], list[Any], None]
+ValueType = float | str | int | bool | dict[str, Any] | list[Any] | None
 
 # Flattening thresholds
 FK_INDICATOR_THRESHOLD = 0.5
@@ -32,7 +33,9 @@ class SchemaGenerator(SchemaGeneratorInterface):
     """
 
     def __init__(
-        self, config: dict[str, Any], type_mapper: TypeMapperInterface | None = None
+        self,
+        config: dict[str, Any],
+        type_mapper: TypeMapperInterface | None = None,
     ) -> None:
         """Initialize schema generator with configuration and type mapper."""
         self.config = config
@@ -46,7 +49,10 @@ class SchemaGenerator(SchemaGeneratorInterface):
     def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         """Generate schema from API metadata only."""
         if not metadata or "fields" not in metadata:
-            error_msg = "🚨 ABORT: Empty or invalid metadata provided for schema generation - NO fallback allowed!"
+            error_msg = (
+                "🚨 ABORT: Empty or invalid metadata provided for schema generation - "
+                "NO fallback allowed!"
+            )
             logger.error(error_msg)
             raise SystemExit(error_msg)
 
@@ -92,7 +98,8 @@ class SchemaGenerator(SchemaGeneratorInterface):
         return schema
 
     def generate_metadata_schema_with_flattening(
-        self, metadata: dict[str, Any]
+        self,
+        metadata: dict[str, Any],
     ) -> dict[str, Any]:
         """Generate schema from API metadata only, with predictable flattening support.
 
@@ -104,21 +111,27 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
         # If flattening is enabled, add anticipated flattening fields
         if self.flattening_enabled:
-            base_schema = self._add_anticipated_flattening_fields(base_schema, metadata)
+            # Flattening fields handled in generate_from_metadata
+            pass
 
         return base_schema
 
     # REMOVED: generate_from_sample - FORBIDDEN METHOD
     # NEVER, NEVER, NEVER use samples for schema generation
-    # This method has been PERMANENTLY DELETED to prevent any possibility of sample usage
+    # This method has been PERMANENTLY DELETED to prevent any possibility of sample
+    # usage
 
     # REMOVED: generate_hybrid_schema - FORBIDDEN METHOD
     # NEVER, NEVER, NEVER use samples for schema generation
-    # This method has been PERMANENTLY DELETED to prevent any possibility of sample usage
+    # This method has been PERMANENTLY DELETED to prevent any possibility of sample
+    # usage
     # Any attempt to use samples is a FATAL ERROR and will cause immediate abortion
 
     def flatten_complex_objects(
-        self, data: dict[str, Any], prefix: str = "", separator: str = "_"
+        self,
+        data: dict[str, Any],
+        prefix: str = "",
+        separator: str = "_",
     ) -> dict[str, Any]:
         """Flatten nested objects for schema consistency."""
         if not self.flattening_enabled:
@@ -202,7 +215,10 @@ class SchemaGenerator(SchemaGeneratorInterface):
             self._flatten_regular_list(flattened, value, new_key, separator)
 
     def _flatten_special_list(
-        self, flattened: dict[str, Any], value: list[Any], new_key: str
+        self,
+        flattened: dict[str, Any],
+        value: list[Any],
+        new_key: str,
     ) -> None:
         """Flatten special lists (sets, instructions, etc.)."""
         flattened[f"{new_key}_count"] = len(value)
@@ -224,14 +240,19 @@ class SchemaGenerator(SchemaGeneratorInterface):
         for i, item in enumerate(value[:max_elements]):
             if isinstance(item, dict):
                 item_flattened = self.flatten_complex_objects(
-                    item, f"{new_key}_{i}", separator
+                    item,
+                    f"{new_key}_{i}",
+                    separator,
                 )
                 flattened.update(item_flattened)
             else:
                 flattened[f"{new_key}_{i}"] = item
 
     def _flatten_fk_object(
-        self, flattened: dict[str, Any], key: str, value: dict[str, Any]
+        self,
+        flattened: dict[str, Any],
+        key: str,
+        value: dict[str, Any],
     ) -> None:
         """Flatten foreign key object."""
         base_name = self._get_fk_base_name(key)
@@ -246,7 +267,10 @@ class SchemaGenerator(SchemaGeneratorInterface):
                 flattened[f"{base_name}_{field}"] = value[field]
 
     def _flatten_set_object(
-        self, flattened: dict[str, Any], value: dict[str, Any], new_key: str
+        self,
+        flattened: dict[str, Any],
+        value: dict[str, Any],
+        new_key: str,
     ) -> None:
         """Flatten SET object data."""
         set_data = {
@@ -257,13 +281,11 @@ class SchemaGenerator(SchemaGeneratorInterface):
         # Extract filter parameters if present
         if "next_page" in value:
             try:
-                from urllib.parse import parse_qs, urlparse
-
                 parsed = urlparse(value["next_page"])
                 params = parse_qs(parsed.query)
                 if params:
                     set_data["filter_params"] = json.dumps(params)
-            except Exception:
+            except (ValueError, KeyError, TypeError, RuntimeError):
                 pass  # Ignore parsing errors
 
         # Flatten the set data
@@ -339,7 +361,9 @@ class DefaultTypeMapper(TypeMapperInterface):
     # NEVER, NEVER, NEVER infer types from samples - this method is PERMANENTLY DELETED
 
     def _add_anticipated_flattening_fields(
-        self, base_schema: dict[str, Any], metadata: dict[str, Any]
+        self,
+        base_schema: dict[str, Any],
+        _metadata: dict[str, Any],
     ) -> dict[str, Any]:
         """Add anticipated flattening fields based on metadata patterns.
 
@@ -371,12 +395,14 @@ class DefaultTypeMapper(TypeMapperInterface):
         }
 
         # Scan existing fields for flattening patterns
-        for field_name, field_schema in properties.items():
+        for field_name in properties:
             # Check for object fields (ending with common WMS object names)
             for obj_type, sub_fields in object_field_patterns.items():
                 if field_name.endswith(f"_{obj_type}") or field_name == obj_type:
                     self._add_object_flattening_fields(
-                        properties, field_name, sub_fields
+                        properties,
+                        field_name,
+                        sub_fields,
                     )
 
             # Check for list fields
@@ -390,7 +416,10 @@ class DefaultTypeMapper(TypeMapperInterface):
         return updated_schema
 
     def _add_object_flattening_fields(
-        self, properties: dict[str, Any], base_field: str, sub_fields: list[str]
+        self,
+        properties: dict[str, Any],
+        base_field: str,
+        sub_fields: list[str],
     ) -> None:
         """Add object flattening fields to properties."""
         for sub_field in sub_fields:
@@ -411,14 +440,17 @@ class DefaultTypeMapper(TypeMapperInterface):
                 properties[flattened_field] = field_type
 
     def _add_list_flattening_fields(
-        self, properties: dict[str, Any], base_field: str, sub_fields: list[str]
+        self,
+        properties: dict[str, Any],
+        base_field: str,
+        sub_fields: list[str],
     ) -> None:
         """Add list flattening fields to properties."""
         for sub_field in sub_fields:
             flattened_field = f"{base_field}_{sub_field}"
             if flattened_field not in properties:
                 # Add the flattened field with appropriate type
-                if sub_field == "count" or sub_field in ["total"]:
+                if sub_field in {"count", "total"}:
                     field_type = {"type": ["integer", "null"]}
                 else:
                     field_type = {"type": ["string", "null"]}

@@ -1,284 +1,370 @@
-# Oracle WMS Tap - Complete Makefile
-# Automatically handles venv, configuration, and all operations
+# FLEXT Tap Oracle WMS - Modern Enterprise Makefile
+# FLEXT Standard Build Automation with Poetry & PEP 621
 
-# Auto-detect and setup environment
-VENV_PATH := /home/marlonsc/flext/.venv
-PYTHON := $(VENV_PATH)/bin/python
-ACTIVATE := source $(VENV_PATH)/bin/activate
+# ═══════════════════════════════════════════════════════════════════════════════
+# FLEXT STANDARD CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Auto-check if environment is ready
-ENV_CHECK := $(shell test -f $(VENV_PATH)/bin/python && echo "ready" || echo "missing")
+SHELL := /bin/bash
+.DEFAULT_GOAL := help
+.PHONY: help
 
-help:
-	@echo "Oracle WMS Tap - Complete Automation"
-	@echo "===================================="
-	@echo "🚀 QUICK START:"
-	@echo "  make auto-setup  - Auto-detect credentials and setup everything"
-	@echo "  make run-all     - Complete validation and testing"
+# Project Configuration (FLEXT Standard)
+PYTHON := python3.13
+POETRY := poetry
+PROJECT_NAME := flext-tap-oracle-wms
+SRC_DIR := src/tap_oracle_wms
+TEST_DIR := tests
+SCRIPTS_DIR := scripts
+
+# FLEXT Colors for Enhanced UX
+CYAN := \033[0;36m
+GREEN := \033[0;32m
+YELLOW := \033[0;33m
+RED := \033[0;31m
+BLUE := \033[0;34m
+MAGENTA := \033[0;35m
+NC := \033[0m # No Color
+
+# Version & Git Info
+VERSION := $(shell $(POETRY) version -s 2>/dev/null || echo "0.0.0")
+COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "no-git")
+BRANCH := $(shell git branch --show-current 2>/dev/null || echo "no-git")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HELP & GENERAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+##@ General
+
+help: ## Display this FLEXT help menu
+	@awk 'BEGIN {FS = ":.*##"; printf "\n${CYAN}🚀 FLEXT Enterprise Makefile${NC}\n"}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"; printf "${BLUE}Project: $(PROJECT_NAME) v$(VERSION) ($(COMMIT))${NC}\n\n"}' $(MAKEFILE_LIST)
+	@awk '/^[a-zA-Z_-]+:.*?##/ { printf "  ${GREEN}%-20s${NC} %s\n", $$1, $$2 } /^##@/ { printf "\n${YELLOW}%s${NC}\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 	@echo ""
-	@echo "📊 Real WMS Testing:"
-	@echo "  make check-connection - Test Oracle WMS connection"
-	@echo "  make test-entity     - Test entity extraction"
-	@echo "  make discover        - Discover all entities from WMS"
-	@echo "  make extract         - Extract data from WMS"
-	@echo "  make e2e-test        - Complete end-to-end test"
-	@echo ""
-	@echo "🧪 Development Testing:"
-	@echo "  make test            - Unit tests"
-	@echo "  make test-integration - Integration tests"
-	@echo "  make mock            - Mock server test"
-	@echo "  make validate        - Complete validation"
-	@echo ""
-	@echo "🛠️ Utilities:"
-	@echo "  make info            - Show environment info"
-	@echo "  make clean           - Clean all artifacts"
-	@echo "  make perf-test       - Performance testing"
 
-# Check environment and setup if needed
-check-env:
-	@echo "Checking environment..."
-	@if [ "$(ENV_CHECK)" = "missing" ]; then \
-		echo "Environment not ready. Run 'make setup' first."; \
-		exit 1; \
-	else \
-		echo "Environment ready"; \
-	fi
+status: ## Show FLEXT project status
+	@echo "${CYAN}📊 FLEXT Project Status${NC}"
+	@echo "Project: ${GREEN}$(PROJECT_NAME)${NC} v${GREEN}$(VERSION)${NC}"
+	@echo "Branch: ${GREEN}$(BRANCH)${NC} (${GREEN}$(COMMIT)${NC})"
+	@echo "Python: ${GREEN}$(shell $(PYTHON) --version)${NC}"
+	@echo "Poetry: ${GREEN}$(shell $(POETRY) --version)${NC}"
+	@echo "Venv: ${GREEN}$(shell $(POETRY) env info --path 2>/dev/null || echo 'not-found')${NC}"
 
-# Auto-setup with credential detection
-auto-setup: check-env
-	@echo "🚀 Starting automatic setup..."
-	@$(ACTIVATE) && python auto_setup.py
+# ═══════════════════════════════════════════════════════════════════════════════
+# ENVIRONMENT SETUP (FLEXT Standard)
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Setup everything needed
-setup:
-	@echo "Setting up Oracle WMS Tap environment..."
-	@if [ ! -f $(VENV_PATH)/bin/python ]; then \
-		echo "Virtual environment not found at $(VENV_PATH)"; \
-		echo "Please ensure the FLEXT workspace venv exists"; \
-		exit 1; \
-	fi
-	@echo "Environment setup complete"
+##@ Environment Setup
 
-# Create config file for testing
-config:
-	@$(ACTIVATE) && python -c "import os; print('Base URL:', os.getenv('TAP_ORACLE_WMS_BASE_URL', 'NOT_SET'))"
-	@if [ -f .env ]; then \
-		echo "Using existing .env configuration"; \
-	else \
-		echo "Warning: .env file not found"; \
-	fi
+install: ## Install all dependencies (FLEXT dev + automation)
+	@echo "${BLUE}🔧 Installing FLEXT dependencies...${NC}"
+	$(POETRY) install --extras=dev --extras=automation
 
-# Run all tests and validation
-run-all: check-env config
-	@echo "Running complete Oracle WMS Tap validation..."
-	@echo ""
-	@echo "1. Unit Tests:"
-	@$(MAKE) test
-	@echo ""
-	@echo "2. Integration Tests:"
-	@$(MAKE) test-integration
-	@echo ""
-	@echo "3. Mock Server Test:"
-	@$(MAKE) mock
-	@echo ""
-	@echo "4. Configuration Validation:"
-	@$(MAKE) validate-config
-	@echo ""
-	@echo "5. Singer CLI Test:"
-	@$(MAKE) validate-cli
-	@echo ""
-	@echo "✅ ALL TESTS COMPLETED SUCCESSFULLY"
+install-prod: ## Install production dependencies only
+	@echo "${GREEN}📦 Installing production dependencies...${NC}"
+	$(POETRY) install --only main
 
-# Test with real Oracle WMS
-test-real: check-env
-	@echo "Testing with real Oracle WMS..."
-	@$(ACTIVATE) && python test_real_wms.py
+install-ci: ## Install CI/CD dependencies (optimized)
+	@echo "${CYAN}⚙️ Installing CI dependencies...${NC}"
+	$(POETRY) install --extras=dev --no-ansi --quiet
 
-# Unit tests
-test: check-env
-	@$(ACTIVATE) && python -m pytest tests/unit/ -v --tb=short
+setup: ## Complete FLEXT development environment setup
+	@echo "${MAGENTA}🚀 Setting up FLEXT development environment...${NC}"
+	@command -v $(POETRY) >/dev/null 2>&1 || { echo "${RED}Poetry not found. Installing...${NC}"; curl -sSL https://install.python-poetry.org | $(PYTHON) -; }
+	$(POETRY) install --extras=dev --extras=automation
+	$(POETRY) run pre-commit install --install-hooks
+	$(POETRY) run pre-commit install --hook-type commit-msg
+	@echo "${GREEN}✅ FLEXT development environment ready!${NC}"
 
-# Integration tests
-test-integration: check-env
-	@$(ACTIVATE) && python -m pytest tests/integration/ -v --tb=short
+update: ## Update all dependencies to latest versions
+	@echo "${BLUE}📦 Updating FLEXT dependencies...${NC}"
+	$(POETRY) update
+	$(POETRY) run pre-commit autoupdate
+	@echo "${GREEN}✅ Dependencies updated!${NC}"
 
-# Mock server test
-mock: check-env
-	@echo "Testing with mock WMS server..."
-	@$(ACTIVATE) && python test_mock_simple.py
+clean-env: ## Clean and reset virtual environment
+	@echo "${YELLOW}🧹 Cleaning virtual environment...${NC}"
+	$(POETRY) env remove --all || true
+	rm -rf .venv/
+	@echo "${GREEN}✅ Environment cleaned!${NC}"
 
-# Validate configuration
-validate-config: check-env
-	@echo "Validating configuration..."
-	@$(ACTIVATE) && python tests/e2e/validate_config.py
+# ═══════════════════════════════════════════════════════════════════════════════
+# CODE QUALITY (FLEXT Standard)
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Validate CLI commands
-validate-cli: check-env
-	@echo "Validating CLI commands..."
-	@$(ACTIVATE) && python -m tap_oracle_wms --help > /dev/null && echo "  ✅ --help: OK"
-	@$(ACTIVATE) && python -m tap_oracle_wms --version && echo "  ✅ --version: OK"
-	@$(ACTIVATE) && python -m tap_oracle_wms --about > /dev/null && echo "  ✅ --about: OK"
+##@ Code Quality
 
-# Complete validation
-validate: check-env validate-config validate-cli mock
-	@echo "✅ Complete validation successful"
+format: ## Format code with Ruff (FLEXT standard)
+	@echo "${BLUE}🎨 Formatting code with Ruff...${NC}"
+	$(POETRY) run ruff format .
+	@echo "${GREEN}✅ Code formatted!${NC}"
 
-# Discover entities from WMS
-discover: check-env
-	@echo "Discovering entities from Oracle WMS..."
-	@$(ACTIVATE) && python -m tap_oracle_wms --config .env --discover
+lint: ## Run all linters with fixes
+	@echo "${BLUE}🔍 Running FLEXT linters...${NC}"
+	$(POETRY) run ruff check . --fix
+	@echo "${GREEN}✅ Linting completed!${NC}"
 
-# Extract data from WMS
-extract: check-env
-	@echo "Extracting data from Oracle WMS..."
-	@if [ ! -f catalog.json ]; then \
-		echo "Catalog not found. Running discovery first..."; \
-		$(MAKE) discover > catalog.json; \
-	fi
-	@$(ACTIVATE) && python -m tap_oracle_wms --config .env --catalog catalog.json
+lint-check: ## Run linters without fixes (CI mode)
+	@echo "${BLUE}🔍 Running FLEXT linters (check mode)...${NC}"
+	$(POETRY) run ruff check .
+	$(POETRY) run ruff format --check .
 
-# Generate catalog file
-catalog: check-env
-	@echo "Generating catalog file..."
-	@$(ACTIVATE) && python -m tap_oracle_wms --config .env --discover > catalog.json
-	@echo "✅ Catalog saved to catalog.json"
+type-check: ## Run MyPy type checking (strict mode)
+	@echo "${BLUE}🔍 Type checking with MyPy...${NC}"
+	$(POETRY) run mypy .
+	@echo "${GREEN}✅ Type checking passed!${NC}"
 
-# Test specific entity
-test-entity: check-env
-	@echo "Testing specific entity extraction..."
-	@$(ACTIVATE) && python -c "\
-import asyncio; \
-from tap_oracle_wms.discovery import EntityDiscovery; \
-import os; \
-from dotenv import load_dotenv; \
-load_dotenv(); \
-config = { \
-    'base_url': os.getenv('TAP_ORACLE_WMS_BASE_URL'), \
-    'username': os.getenv('TAP_ORACLE_WMS_USERNAME'), \
-    'password': os.getenv('TAP_ORACLE_WMS_PASSWORD'), \
-    'company_code': os.getenv('TAP_ORACLE_WMS_COMPANY_CODE', '*'), \
-    'facility_code': os.getenv('TAP_ORACLE_WMS_FACILITY_CODE', '*'), \
-    'verify_ssl': os.getenv('TAP_ORACLE_WMS_VERIFY_SSL', 'true').lower() == 'true', \
-    'record_limit': 5 \
-}; \
-discovery = EntityDiscovery(config); \
-entities = asyncio.run(discovery.discover_entities()); \
-if entities: \
-    first_entity = list(entities.keys())[0]; \
-    print(f'Testing entity: {first_entity}'); \
-    samples = asyncio.run(discovery.get_entity_sample(first_entity, limit=3)); \
-    print(f'✅ Got {len(samples)} sample records'); \
-    if samples: print(f'Fields: {list(samples[0].keys())}'); \
-else: \
-    print('❌ No entities found') \
-"
+security: ## Run security analysis
+	@echo "${BLUE}🔒 Running security analysis...${NC}"
+	@mkdir -p reports
+	$(POETRY) run bandit -r $(SRC_DIR) -f json -o reports/bandit-report.json
+	@echo "${GREEN}✅ Security analysis completed!${NC}"
 
-# Check WMS connectivity
-check-connection: check-env
-	@echo "Checking Oracle WMS connectivity..."
-	@$(ACTIVATE) && python -c "\
-import asyncio; \
-from tap_oracle_wms.discovery import EntityDiscovery; \
-import os; \
-from dotenv import load_dotenv; \
-load_dotenv(); \
-config = { \
-    'base_url': os.getenv('TAP_ORACLE_WMS_BASE_URL'), \
-    'username': os.getenv('TAP_ORACLE_WMS_USERNAME'), \
-    'password': os.getenv('TAP_ORACLE_WMS_PASSWORD'), \
-    'company_code': os.getenv('TAP_ORACLE_WMS_COMPANY_CODE', '*'), \
-    'facility_code': os.getenv('TAP_ORACLE_WMS_FACILITY_CODE', '*'), \
-    'verify_ssl': os.getenv('TAP_ORACLE_WMS_VERIFY_SSL', 'true').lower() == 'true' \
-}; \
-print(f'Connecting to: {config[\"base_url\"]}'); \
-print(f'Username: {config[\"username\"]}'); \
-print(f'Company: {config[\"company_code\"]}'); \
-print(f'Facility: {config[\"facility_code\"]}'); \
-discovery = EntityDiscovery(config); \
-try: \
-    entities = asyncio.run(discovery.discover_entities()); \
-    print(f'✅ Connection successful! Found {len(entities)} entities'); \
-    for i, entity in enumerate(list(entities.keys())[:3], 1): \
-        print(f'  {i}. {entity}'); \
-    if len(entities) > 3: print(f'  ... and {len(entities) - 3} more'); \
-except Exception as e: \
-    print(f'❌ Connection failed: {e}'); \
-    import sys; sys.exit(1) \
-"
+quality: format lint type-check security ## Run all quality checks (FLEXT standard)
+	@echo "${GREEN}✅ All FLEXT quality checks passed!${NC}"
 
-# Complete end-to-end test
-e2e-test: check-env
-	@echo "Running complete end-to-end test..."
-	@echo "1. Checking connection..."
-	@$(MAKE) check-connection
-	@echo ""
-	@echo "2. Testing entity access..."
-	@$(MAKE) test-entity
-	@echo ""
-	@echo "3. Generating catalog..."
-	@$(MAKE) catalog
-	@echo ""
-	@echo "✅ End-to-end test completed successfully"
+pre-commit: ## Run pre-commit hooks
+	@echo "${BLUE}🪝 Running pre-commit hooks...${NC}"
+	$(POETRY) run pre-commit run --all-files
 
-# Performance test
-perf-test: check-env
-	@echo "Running performance test..."
-	@$(ACTIVATE) && python -c "\
-import asyncio; \
-import time; \
-from tap_oracle_wms.discovery import EntityDiscovery; \
-import os; \
-from dotenv import load_dotenv; \
-load_dotenv(); \
-config = { \
-    'base_url': os.getenv('TAP_ORACLE_WMS_BASE_URL'), \
-    'username': os.getenv('TAP_ORACLE_WMS_USERNAME'), \
-    'password': os.getenv('TAP_ORACLE_WMS_PASSWORD'), \
-    'company_code': os.getenv('TAP_ORACLE_WMS_COMPANY_CODE', '*'), \
-    'facility_code': os.getenv('TAP_ORACLE_WMS_FACILITY_CODE', '*'), \
-    'verify_ssl': os.getenv('TAP_ORACLE_WMS_VERIFY_SSL', 'true').lower() == 'true', \
-    'page_size': 100 \
-}; \
-discovery = EntityDiscovery(config); \
-start = time.time(); \
-entities = asyncio.run(discovery.discover_entities()); \
-discovery_time = time.time() - start; \
-print(f'Discovery: {discovery_time:.2f}s for {len(entities)} entities'); \
-if entities: \
-    entity = list(entities.keys())[0]; \
-    start = time.time(); \
-    samples = asyncio.run(discovery.get_entity_sample(entity, limit=10)); \
-    sample_time = time.time() - start; \
-    print(f'Sample extraction: {sample_time:.2f}s for {len(samples)} records'); \
-    print(f'✅ Performance test completed') \
-"
+pre-commit-update: ## Update pre-commit hooks
+	@echo "${BLUE}🪝 Updating pre-commit hooks...${NC}"
+	$(POETRY) run pre-commit autoupdate
 
-# Clean artifacts
-clean:
-	@echo "Cleaning artifacts..."
-	@rm -f catalog.json schema.json state.json messages.jsonl test_config.json
-	@rm -rf .pytest_cache __pycache__ *.egg-info build dist
-	@find . -name "*.pyc" -delete
-	@find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
-	@echo "✅ Cleanup complete"
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTING (FLEXT Standard)
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Show environment info
-info: check-env
-	@echo "Oracle WMS Tap Environment Info"
-	@echo "==============================="
-	@echo "Python: $(shell $(PYTHON) --version)"
-	@echo "Virtual Env: $(VENV_PATH)"
-	@echo "Working Dir: $(shell pwd)"
-	@$(ACTIVATE) && python -c "import tap_oracle_wms; print(f'TAP Version: {tap_oracle_wms.__version__ if hasattr(tap_oracle_wms, \"__version__\") else \"0.1.0\"}')"
-	@echo ""
-	@echo "Configuration Status:"
-	@$(ACTIVATE) && python -c "\
-import os; \
-from dotenv import load_dotenv; \
-load_dotenv(); \
-print(f'  Base URL: {\"SET\" if os.getenv(\"TAP_ORACLE_WMS_BASE_URL\") and not \"your-\" in os.getenv(\"TAP_ORACLE_WMS_BASE_URL\", \"\") else \"NOT SET\"}'); \
-print(f'  Username: {\"SET\" if os.getenv(\"TAP_ORACLE_WMS_USERNAME\") and not \"your_\" in os.getenv(\"TAP_ORACLE_WMS_USERNAME\", \"\") else \"NOT SET\"}'); \
-print(f'  Password: {\"SET\" if os.getenv(\"TAP_ORACLE_WMS_PASSWORD\") and not \"your_\" in os.getenv(\"TAP_ORACLE_WMS_PASSWORD\", \"\") else \"NOT SET\"}') \
-"
+##@ Testing
 
-.PHONY: help check-env auto-setup setup config run-all test-real test test-integration mock validate-config validate-cli validate discover extract catalog test-entity check-connection e2e-test perf-test clean info
+test: ## Run all tests
+	@echo "${BLUE}🧪 Running FLEXT tests...${NC}"
+	$(POETRY) run pytest -v
+
+test-unit: ## Run unit tests only
+	@echo "${BLUE}🧪 Running unit tests...${NC}"
+	$(POETRY) run pytest tests/unit -v
+
+test-integration: ## Run integration tests only
+	@echo "${BLUE}🧪 Running integration tests...${NC}"
+	$(POETRY) run pytest tests/integration -v
+
+test-cov: ## Run tests with coverage report
+	@echo "${BLUE}📊 Running tests with coverage...${NC}"
+	$(POETRY) run pytest --cov=$(SRC_DIR) --cov-report=html --cov-report=term-missing --cov-report=xml -v
+	@echo "${GREEN}📊 Coverage report generated in htmlcov/${NC}"
+
+test-watch: ## Run tests in watch mode
+	@echo "${BLUE}👀 Running tests in watch mode...${NC}"
+	$(POETRY) run ptw -- -v
+
+benchmark: ## Run performance benchmarks
+	@echo "${BLUE}⚡ Running FLEXT benchmarks...${NC}"
+	$(POETRY) run pytest tests/benchmarks -v --benchmark-only
+
+test-all: test-cov benchmark ## Run all tests with coverage and benchmarks
+	@echo "${GREEN}✅ All FLEXT tests completed!${NC}"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BUILD & RELEASE (FLEXT Standard)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+##@ Build & Release
+
+build: clean ## Build FLEXT distribution packages
+	@echo "${BLUE}📦 Building FLEXT packages...${NC}"
+	$(POETRY) build
+	@echo "${GREEN}✅ Build completed!${NC}"
+
+clean: ## Clean build artifacts
+	@echo "${YELLOW}🧹 Cleaning build artifacts...${NC}"
+	rm -rf dist/ build/ *.egg-info
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	rm -rf .pytest_cache .mypy_cache .ruff_cache htmlcov/ .coverage* reports/
+	@echo "${GREEN}✅ Clean completed!${NC}"
+
+publish-test: build ## Publish to Test PyPI
+	@echo "${BLUE}📤 Publishing to Test PyPI...${NC}"
+	$(POETRY) config repositories.test-pypi https://test.pypi.org/legacy/
+	$(POETRY) publish -r test-pypi
+
+publish: build ## Publish to PyPI
+	@echo "${BLUE}📤 Publishing to PyPI...${NC}"
+	$(POETRY) publish
+
+version-patch: ## Bump patch version
+	@echo "${BLUE}📝 Bumping patch version...${NC}"
+	$(POETRY) version patch
+	@echo "${GREEN}New version: $(shell $(POETRY) version -s)${NC}"
+
+version-minor: ## Bump minor version
+	@echo "${BLUE}📝 Bumping minor version...${NC}"
+	$(POETRY) version minor
+	@echo "${GREEN}New version: $(shell $(POETRY) version -s)${NC}"
+
+version-major: ## Bump major version
+	@echo "${BLUE}📝 Bumping major version...${NC}"
+	$(POETRY) version major
+	@echo "${GREEN}New version: $(shell $(POETRY) version -s)${NC}"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEVELOPMENT (FLEXT Standard)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+##@ Development
+
+run: ## Run the FLEXT tap
+	@echo "${GREEN}🚀 Running FLEXT tap...${NC}"
+	$(POETRY) run tap-oracle-wms --help
+
+run-discover: ## Run tap discovery
+	@echo "${BLUE}🔍 Running discovery...${NC}"
+	$(POETRY) run tap-oracle-wms --discover --config config.json
+
+run-sync: ## Run tap sync
+	@echo "${BLUE}🔄 Running sync...${NC}"
+	$(POETRY) run tap-oracle-wms --config config.json --catalog catalog.json
+
+run-enhanced: ## Run enhanced CLI
+	@echo "${GREEN}🚀 Running enhanced CLI...${NC}"
+	$(POETRY) run tap-oracle-wms-enhanced --help
+
+shell: ## Open IPython shell with project context
+	@echo "${BLUE}🐍 Opening FLEXT shell...${NC}"
+	$(POETRY) run ipython
+
+debug: ## Run tap with debugger
+	@echo "${YELLOW}🐛 Running with debugger...${NC}"
+	$(POETRY) run python -m pdb -m tap_oracle_wms.tap
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DOCUMENTATION (FLEXT Standard)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+##@ Documentation
+
+docs: ## Build FLEXT documentation
+	@echo "${BLUE}📚 Building documentation...${NC}"
+	$(POETRY) run mkdocs build --strict
+
+docs-serve: ## Serve documentation locally
+	@echo "${GREEN}🌐 Serving documentation...${NC}"
+	$(POETRY) run mkdocs serve
+
+docs-deploy: ## Deploy documentation
+	@echo "${BLUE}🚀 Deploying documentation...${NC}"
+	$(POETRY) run mkdocs gh-deploy --force
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AUTOMATION & CI/CD (FLEXT Standard)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+##@ Automation
+
+ci: install-ci quality test-all ## Run complete CI pipeline
+	@echo "${GREEN}✅ FLEXT CI pipeline completed successfully!${NC}"
+
+ci-local: install quality test-all ## Run CI pipeline locally
+	@echo "${GREEN}✅ Local CI pipeline completed!${NC}"
+
+validate: ## Validate FLEXT project configuration
+	@echo "${BLUE}✔️ Validating FLEXT project...${NC}"
+	$(POETRY) check
+	$(POETRY) run pre-commit validate-config
+	$(POETRY) run pre-commit validate-manifest
+	@echo "${GREEN}✅ FLEXT project validation passed!${NC}"
+
+tox: ## Run tox multi-environment testing
+	@echo "${BLUE}🔄 Running tox environments...${NC}"
+	$(POETRY) run tox
+
+nox: ## Run nox multi-environment testing  
+	@echo "${BLUE}🔄 Running nox sessions...${NC}"
+	$(POETRY) run nox
+
+changelog: ## Generate FLEXT changelog
+	@echo "${BLUE}📝 Generating changelog...${NC}"
+	$(POETRY) run cz changelog --incremental
+
+commit: ## Create conventional commit
+	@echo "${BLUE}💬 Creating conventional commit...${NC}"
+	$(POETRY) run cz commit
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# UTILITIES (FLEXT Standard)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+##@ Utilities
+
+tree: ## Show FLEXT project structure
+	@echo "${BLUE}📁 FLEXT project structure:${NC}"
+	@tree -I '__pycache__|*.pyc|.git|.venv|htmlcov|.pytest_cache|.mypy_cache|.ruff_cache|dist|build|*.egg-info|reports' -a
+
+deps: ## Show dependency tree
+	@echo "${BLUE}📦 FLEXT dependency tree:${NC}"
+	$(POETRY) show --tree
+
+deps-outdated: ## Show outdated dependencies
+	@echo "${BLUE}📦 Outdated dependencies:${NC}"
+	$(POETRY) show --outdated
+
+env-info: ## Show environment information
+	@echo "${CYAN}ℹ️ FLEXT Environment Information:${NC}"
+	@echo "Python: ${GREEN}$(shell $(PYTHON) --version)${NC}"
+	@echo "Poetry: ${GREEN}$(shell $(POETRY) --version)${NC}"
+	@echo "Project: ${GREEN}$(PROJECT_NAME)${NC} v${GREEN}$(VERSION)${NC}"
+	@echo "Branch: ${GREEN}$(BRANCH)${NC} (${GREEN}$(COMMIT)${NC})"
+	@echo "Virtual env: ${GREEN}$(shell $(POETRY) env info --path 2>/dev/null || echo 'not-found')${NC}"
+
+reset: clean-env install setup ## Reset entire development environment
+	@echo "${GREEN}🔄 FLEXT environment reset complete!${NC}"
+
+health-check: ## Run FLEXT health check
+	@echo "${BLUE}🏥 Running FLEXT health check...${NC}"
+	@echo "Checking Poetry..."
+	@$(POETRY) check >/dev/null && echo "${GREEN}✅ Poetry: OK${NC}" || echo "${RED}❌ Poetry: ERROR${NC}"
+	@echo "Checking Python..."
+	@$(PYTHON) --version >/dev/null && echo "${GREEN}✅ Python: OK${NC}" || echo "${RED}❌ Python: ERROR${NC}"
+	@echo "Checking Git..."
+	@git --version >/dev/null && echo "${GREEN}✅ Git: OK${NC}" || echo "${RED}❌ Git: ERROR${NC}"
+	@echo "Checking Virtual Environment..."
+	@$(POETRY) env info >/dev/null && echo "${GREEN}✅ Venv: OK${NC}" || echo "${RED}❌ Venv: ERROR${NC}"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DOCKER (FLEXT Standard)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+##@ Docker
+
+docker-build: ## Build FLEXT Docker image
+	@echo "${BLUE}🐳 Building FLEXT Docker image...${NC}"
+	docker build -t $(PROJECT_NAME):$(VERSION) -t $(PROJECT_NAME):latest .
+
+docker-run: ## Run FLEXT Docker container
+	@echo "${BLUE}🐳 Running FLEXT Docker container...${NC}"
+	docker run --rm -it \
+		-v $(pwd)/config.json:/app/config.json:ro \
+		-v $(pwd)/catalog.json:/app/catalog.json:ro \
+		$(PROJECT_NAME):latest
+
+docker-push: ## Push FLEXT Docker image
+	@echo "${BLUE}🐳 Pushing FLEXT Docker image...${NC}"
+	docker push $(PROJECT_NAME):$(VERSION)
+	docker push $(PROJECT_NAME):latest
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPECIAL TARGETS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# All targets are .PHONY since they don't create files
+.PHONY: install install-prod install-ci setup update clean-env \
+	format lint lint-check type-check security quality pre-commit pre-commit-update \
+	test test-unit test-integration test-cov test-watch benchmark test-all \
+	build clean publish-test publish version-patch version-minor version-major \
+	run run-discover run-sync run-enhanced shell debug \
+	docs docs-serve docs-deploy \
+	ci ci-local validate tox nox changelog commit \
+	tree deps deps-outdated env-info reset health-check \
+	docker-build docker-run docker-push status

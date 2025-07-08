@@ -6,11 +6,14 @@ following the Single Responsibility Principle.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 import logging
-from datetime import datetime, timezone
 from typing import Any
 
 from .interfaces import CacheManagerInterface
+
+# Type alias to avoid FBT001 false positive
+CacheValueType = str | dict[str, Any] | bool
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +50,7 @@ class CacheManager(CacheManagerInterface):
         self._access_cache_ttl = config.get("access_cache_ttl", 1800)  # 30 minutes
         # SAMPLE CACHE TTL DELETED
 
-    def get_cached_value(self, key: str) -> Any | None:
+    def get_cached_value(self, key: str) -> str | dict[str, Any] | bool | None:
         """Get value from appropriate cache based on key type."""
         cache_type, cache_key = self._parse_cache_key(key)
 
@@ -78,22 +81,28 @@ class CacheManager(CacheManagerInterface):
 
         return None
 
-    def set_cached_value(self, key: str, value: Any, ttl: int | None = None) -> None:
+    def set_cached_value(
+        self, key: str, value: CacheValueType, ttl: int | None = None
+    ) -> None:
         """Set value in appropriate cache."""
         cache_type, cache_key = self._parse_cache_key(key)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         if cache_type == "entity":
-            self._entity_cache = value
+            if isinstance(value, str):
+                self._entity_cache = value
             self._entity_cache_time = now
         elif cache_type == "schema":
-            self._schema_cache[cache_key] = value
+            if isinstance(value, dict):
+                self._schema_cache[cache_key] = value
             self._schema_cache_times[cache_key] = now
         elif cache_type == "metadata":
-            self._metadata_cache[cache_key] = value
+            if isinstance(value, dict):
+                self._metadata_cache[cache_key] = value
             self._metadata_cache_times[cache_key] = now
         elif cache_type == "access":
-            self._access_cache[cache_key] = value
+            if isinstance(value, bool):
+                self._access_cache[cache_key] = value
             self._access_cache_times[cache_key] = now
         # SAMPLE CACHE SET DELETED
 
@@ -180,7 +189,8 @@ class CacheManager(CacheManagerInterface):
     def _get_entity_cache(self) -> dict[str, str] | None:
         """Get entity cache if valid."""
         if self._entity_cache is not None and self._is_timestamp_valid(
-            self._entity_cache_time, self._entity_cache_ttl
+            self._entity_cache_time,
+            self._entity_cache_ttl,
         ):
             return self._entity_cache
         return None
@@ -191,7 +201,7 @@ class CacheManager(CacheManagerInterface):
         key: str,
         time_dict: dict[str, datetime],
         ttl: int,
-    ) -> Any | None:
+    ) -> dict[str, Any] | bool | None:
         """Get value from cache with TTL validation."""
         if key not in cache_dict:
             return None
@@ -210,5 +220,5 @@ class CacheManager(CacheManagerInterface):
         if timestamp is None:
             return False
 
-        age_seconds = (datetime.now(timezone.utc) - timestamp).total_seconds()
+        age_seconds = (datetime.now(UTC) - timestamp).total_seconds()
         return age_seconds < ttl

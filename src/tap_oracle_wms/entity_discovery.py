@@ -111,7 +111,9 @@ class EntityDiscovery(EntityDiscoveryInterface):
                 if name in configured_entities
             }
             logger.info(
-                "Filtered to configured entities: %d/%d", len(filtered), len(entities)
+                "Filtered to configured entities: %d/%d",
+                len(filtered),
+                len(entities),
             )
             return filtered
 
@@ -133,13 +135,15 @@ class EntityDiscovery(EntityDiscoveryInterface):
         for entity_name, entity_url in entities.items():
             # Check include patterns
             if include_patterns and not self._matches_patterns(
-                entity_name, include_patterns
+                entity_name,
+                include_patterns,
             ):
                 continue
 
             # Check exclude patterns
             if exclude_patterns and self._matches_patterns(
-                entity_name, exclude_patterns
+                entity_name,
+                exclude_patterns,
             ):
                 continue
 
@@ -174,13 +178,13 @@ class EntityDiscovery(EntityDiscoveryInterface):
                         return self._parse_entity_results(results)
                 elif isinstance(data, list):
                     return self._parse_entity_results(data)
-
-                logger.warning("Unexpected entity discovery response format")
-                return {}
+                else:
+                    logger.warning("Unexpected entity discovery response format")
+                    return {}
 
             except httpx.HTTPStatusError as e:
                 # For test compatibility, let 404 errors pass through directly
-                if e.response.status_code == 404:
+                if e.response.status_code == HTTP_NOT_FOUND:
                     raise
                 error_msg = f"HTTP error discovering entities: {e.response.status_code}"
                 logger.exception(error_msg)
@@ -210,13 +214,14 @@ class EntityDiscovery(EntityDiscoveryInterface):
                 response.raise_for_status()
 
                 metadata: dict[str, Any] = response.json()
-                return metadata
-
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == HTTP_NOT_FOUND:
                     logger.warning("Entity %s not found (404)", entity_name)
                     return None
-                error_msg = f"HTTP error describing entity {entity_name}: {e.response.status_code}"
+                error_msg = (
+                    f"HTTP error describing entity {entity_name}: "
+                    f"{e.response.status_code}"
+                )
                 logger.exception(error_msg)
                 raise EntityDescriptionError(error_msg) from e
             except (
@@ -234,6 +239,8 @@ class EntityDiscovery(EntityDiscoveryInterface):
                     e,
                 )
                 return None
+            else:
+                return metadata
 
     # 🚨 METHOD PERMANENTLY DELETED: _fetch_entity_samples
     # This method is FORBIDDEN - schema discovery uses ONLY API metadata describe
@@ -275,11 +282,11 @@ class EntityDiscovery(EntityDiscoveryInterface):
             if "*" in pattern_lower:
                 pattern_clean = pattern_lower.replace("*", "")
                 if pattern_lower.startswith("*") and entity_lower.endswith(
-                    pattern_clean
+                    pattern_clean,
                 ):
                     return True
                 if pattern_lower.endswith("*") and entity_lower.startswith(
-                    pattern_clean
+                    pattern_clean,
                 ):
                     return True
                 if pattern_clean in entity_lower:

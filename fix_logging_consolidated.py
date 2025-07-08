@@ -3,6 +3,8 @@
 Manter apenas cases legítimos de logger.exception() para erros verdadeiramente inesperados.
 """
 
+from __future__ import annotations
+
 import os
 import re
 

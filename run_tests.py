@@ -4,9 +4,11 @@
 This script provides an easy way to run different test suites.
 """
 
+from __future__ import annotations
+
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 
 
 def run_command(cmd: list[str], description: str) -> bool:

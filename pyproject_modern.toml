@@ -1,0 +1,139 @@
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "flext-tap-oracle-wms"
+version = "1.0.0"
+description = "Modern Enterprise Singer Tap for Oracle WMS - Clean, Fast, SOLID Architecture"
+authors = [{name = "FLEXT Team", email = "team@flext.sh"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13"
+keywords = ["flext", "singer", "tap", "oracle", "wms", "enterprise", "etl", "modern"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database",
+    "Topic :: System :: Systems Administration",
+    "Typing :: Typed",
+]
+
+# Modern, minimal dependencies - removed bloat
+dependencies = [
+    "singer-sdk>=0.47.4",          # Core Singer functionality
+    "httpx>=0.28.0",               # Modern HTTP client (replaces requests)
+    "pydantic>=2.11.0",            # Modern data validation
+    "python-dateutil>=2.9.0",     # Date handling
+    "python-dotenv>=1.0.0",       # Environment configuration
+]
+
+[project.scripts]
+tap-oracle-wms = "tap_oracle_wms.tap_modern:main"
+flext-tap-oracle-wms = "tap_oracle_wms.tap_modern:main"
+
+[project.urls]
+Homepage = "https://github.com/flext-sh/flext-tap-oracle-wms"
+Repository = "https://github.com/flext-sh/flext-tap-oracle-wms"
+Documentation = "https://github.com/flext-sh/flext-tap-oracle-wms/blob/main/README.md"
+"Bug Tracker" = "https://github.com/flext-sh/flext-tap-oracle-wms/issues"
+
+[tool.poetry]
+packages = [
+    { include = "tap_oracle_wms", from = "src" }
+]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+pytest-cov = "^6.2.0"
+ruff = "^0.12.2"
+mypy = "^1.16.1"
+pre-commit = "^4.2.0"
+
+[tool.poetry.group.security.dependencies]
+bandit = {extras = ["toml"], version = "^1.8.0"}
+safety = "^3.2.0"
+
+# Modern Python 3.13+ configuration
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+fix = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "COM812",  # trailing-comma-missing (handled by formatter)
+    "ISC001",  # implicit-str-concat (conflicts with formatter)
+    "D203",    # one-blank-line-before-class
+    "D213",    # multi-line-docstring-summary-second-line
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config", 
+    "--verbose",
+    "--tb=short",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: unit tests",
+    "integration: integration tests", 
+    "e2e: end-to-end tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/.*",
+]
+
+[tool.coverage.report]
+skip_empty = true
+show_missing = true
+sort = "Cover"
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "TYPE_CHECKING",
+]
+
+[tool.bandit]
+targets = ["src"]
+exclude_dirs = ["tests"]
