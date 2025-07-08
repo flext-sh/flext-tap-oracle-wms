@@ -1,5 +1,7 @@
 """Unit tests for Oracle WMS tap."""
 
+from __future__ import annotations
+
 from unittest.mock import AsyncMock, patch
 
 from tap_oracle_wms.tap import TapOracleWMS

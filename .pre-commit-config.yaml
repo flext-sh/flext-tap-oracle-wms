@@ -1,68 +1,233 @@
-# Pre-commit configuration - FLEXT Tap Oracle WMS
-# See https://pre-commit.com for more information
+# FLEXT Standard Pre-Commit Configuration
+# Modern, centralized, and enterprise-grade hooks
 
 repos:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CORE PRE-COMMIT HOOKS (Latest)
+  # ═══════════════════════════════════════════════════════════════════════════════
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v5.0.0  # Latest stable
     hooks:
       - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
       - id: check-yaml
-      - id: check-json
-      - id: check-added-large-files
-      - id: check-case-conflict
-      - id: check-merge-conflict
+        args: [--allow-multiple-documents]
       - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: check-added-large-files
+        args: [--maxkb=1024]
       - id: debug-statements
+      - id: name-tests-test
+        args: [--pytest-test-first]
+      - id: requirements-txt-fixer
       - id: mixed-line-ending
+        args: [--fix=lf]
 
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # RUFF - Modern All-in-One Linter & Formatter (FLEXT Standard)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.2  # Latest Ruff
     hooks:
-      - id: black
-        language_version: python3.13
-
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.8.6
-    hooks:
+      # Linting with auto-fix
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        name: "🔍 Ruff Linter"
+        args: [--fix, --exit-non-zero-on-fix, --show-fixes]
+        
+      # Formatting
       - id: ruff-format
+        name: "🎨 Ruff Formatter"
 
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # MYPY - Static Type Checking (FLEXT Standard)
+  # ═══════════════════════════════════════════════════════════════════════════════
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.16.0
+    rev: v1.16.1  # Latest MyPy
     hooks:
       - id: mypy
+        name: "🔍 MyPy Type Checker"
         additional_dependencies:
-          [
-            types-python-dateutil,
-            types-requests,
-            types-setuptools,
-            pydantic,
-            pydantic-settings,
-            singer-python,
-            singer-sdk,
-            oracledb,
-            structlog,
-            click,
-            tenacity,
-            cryptography,
-            orjson,
-            sqlalchemy,
-            backoff,
-          ]
-        args: [--strict, --ignore-missing-imports]
+          - types-python-dateutil
+          - types-requests
+          - pydantic
+          - httpx
+        args: [--strict, --show-error-codes]
 
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SECURITY & VULNERABILITY SCANNING (FLEXT Standard)
+  # ═══════════════════════════════════════════════════════════════════════════════
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.3
+    rev: 1.8.0  # Latest Bandit
     hooks:
       - id: bandit
-        args: [-r, src/]
-        exclude: tests/
+        name: "🔒 Bandit Security Linter"
+        args: [-r, src/, --format, custom, --skip, B101]
+        exclude: ^tests/
 
-  - repo: https://github.com/python-poetry/poetry
-    rev: 1.8.4
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CONVENTIONAL COMMITS (FLEXT Standard)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.7.0  # Latest stable version
     hooks:
+      - id: conventional-pre-commit
+        name: "💬 Conventional Commits"
+        stages: [commit-msg]
+        args: [--strict]
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # DOCUMENTATION & MARKUP (FLEXT Standard)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.42.0  # Latest Markdown Linter
+    hooks:
+      - id: markdownlint
+        name: "📝 Markdown Linter"
+        args: [--fix]
+
+  # YAML Linting
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.37.0  # Latest YAML Linter
+    hooks:
+      - id: yamllint
+        name: "📄 YAML Linter"
+        args: [-d, relaxed]
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # DOCKER & INFRASTRUCTURE (FLEXT Standard)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.13.1-beta  # Latest Dockerfile Linter
+    hooks:
+      - id: hadolint
+        name: "🐳 Dockerfile Linter"
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SECRETS & CREDENTIALS (FLEXT Standard)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0  # Latest Secrets Detection
+    hooks:
+      - id: detect-secrets
+        name: "🔐 Secrets Detection"
+        args: [--baseline, .secrets.baseline]
+        exclude: ^\.secrets\.baseline$
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # GIT & REPOSITORY HYGIENE (FLEXT Standard)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.11.0  # Latest PyGrep Hooks
+    hooks:
+      - id: python-no-log-warn
+        name: "🚫 No logging.warn()"
+      - id: python-check-blanket-noqa
+        name: "🚫 No blanket noqa"
+      - id: python-check-blanket-type-ignore
+        name: "🚫 No blanket type: ignore"
+      - id: python-no-eval
+        name: "🚫 No eval() usage"
+      - id: python-use-type-annotations
+        name: "✅ Use type annotations"
+      - id: rst-backticks
+        name: "📝 RST backticks"
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # DEPENDENCY MANAGEMENT (FLEXT Standard)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5  # Latest Lucas-C hooks
+    hooks:
+      - id: remove-tabs
+        name: "🧹 Remove tabs"
+        exclude: '\.mk$|Makefile'
+      - id: remove-crlf
+        name: "🧹 Remove CRLF"
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # LOCAL HOOKS (FLEXT Custom)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - repo: local
+    hooks:
+      # Poetry Lock File Check
       - id: poetry-check
-      - id: poetry-lock
-        args: [--no-update]
+        name: "📦 Poetry Check"
+        entry: poetry check
+        language: system
+        pass_filenames: false
+        files: ^pyproject\.toml$
+
+      # Poetry Lock File Validation
+      - id: poetry-lock-check
+        name: "🔒 Poetry Lock Check"
+        entry: poetry lock --check
+        language: system
+        pass_filenames: false
+        files: ^(pyproject\.toml|poetry\.lock)$
+
+      # FLEXT Project Structure Validation
+      - id: flext-structure-check
+        name: "🏗️ FLEXT Structure Check"
+        entry: bash -c 'test -f pyproject.toml && test -d src/ && test -d tests/ && echo "✅ FLEXT structure valid"'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FLEXT STANDARD CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Global Configuration
+ci:
+  autofix_commit_msg: |
+    🤖 auto-fix: pre-commit hooks
+    
+    Auto-applied fixes from pre-commit hooks.
+    
+    [skip ci]
+  autofix_prs: true
+  autoupdate_branch: 'main'
+  autoupdate_commit_msg: |
+    🤖 auto-update: pre-commit hooks
+    
+    Updated pre-commit hook versions automatically.
+  autoupdate_schedule: weekly
+  skip: []
+
+# Default stages for all hooks
+default_stages: [pre-commit, pre-push]
+
+# Default language versions (FLEXT Standard)
+default_language_version:
+  python: python3.13
+
+# Exclude patterns (FLEXT Standard)
+exclude: |
+  (?x)^(
+    \.git/|
+    \.venv/|
+    \.tox/|
+    \.mypy_cache/|
+    \.pytest_cache/|
+    \.ruff_cache/|
+    build/|
+    dist/|
+    .*\.egg-info/|
+    htmlcov/|
+    node_modules/|
+    \.idea/|
+    \.vscode/(?!settings\.json$|extensions\.json$)|
+    \.coverage.*|
+    coverage\.xml|
+    reports/
+  )$
+
+# Fail fast on first error
+fail_fast: true
+
+# Minimum pre-commit version
+minimum_pre_commit_version: "3.6.0"

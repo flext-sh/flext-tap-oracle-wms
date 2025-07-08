@@ -13,12 +13,12 @@ making the tap suitable for different companies and WMS implementations.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 import json
 import logging
 import os
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +39,14 @@ class PerformanceConfig:
     def __post_init__(self) -> None:
         """Validate performance settings."""
         if self.page_size <= 0:
-            raise ValueError("page_size must be positive")
+            msg = "page_size must be positive"
+            raise ValueError(msg)
         if self.max_page_size < self.page_size:
-            raise ValueError("max_page_size must be >= page_size")
+            msg = "max_page_size must be >= page_size"
+            raise ValueError(msg)
         if self.request_timeout <= 0:
-            raise ValueError("request_timeout must be positive")
+            msg = "request_timeout must be positive"
+            raise ValueError(msg)
 
 
 @dataclass
@@ -54,17 +57,19 @@ class EntityConfig:
     enabled: bool = True
     replication_method: str = "INCREMENTAL"
     replication_key: str = "mod_ts"
-    primary_keys: List[str] = field(default_factory=lambda: ["id"])
+    primary_keys: list[str] = field(default_factory=lambda: ["id"])
     incremental_overlap_minutes: int = 5
-    custom_filters: Dict[str, Any] = field(default_factory=dict)
-    custom_ordering: Optional[str] = None
+    custom_filters: dict[str, Any] = field(default_factory=dict)
+    custom_ordering: str | None = None
 
     def __post_init__(self) -> None:
         """Validate entity configuration."""
-        if self.replication_method not in ["INCREMENTAL", "FULL_TABLE"]:
-            raise ValueError(f"Invalid replication_method: {self.replication_method}")
+        if self.replication_method not in {"INCREMENTAL", "FULL_TABLE"}:
+            msg = f"Invalid replication_method: {self.replication_method}"
+            raise ValueError(msg)
         if self.incremental_overlap_minutes < 0:
-            raise ValueError("incremental_overlap_minutes cannot be negative")
+            msg = "incremental_overlap_minutes cannot be negative"
+            raise ValueError(msg)
 
 
 @dataclass
@@ -75,14 +80,14 @@ class APIConfig:
     endpoint_prefix: str = "/wms/lgfapi"
     entity_endpoint_pattern: str = "/{prefix}/{version}/entity"
     authentication_method: str = "basic"
-    custom_headers: Dict[str, str] = field(default_factory=dict)
+    custom_headers: dict[str, str] = field(default_factory=dict)
     ssl_verify: bool = True
 
     def get_entity_endpoint(self) -> str:
         """Get the full entity endpoint pattern."""
         return self.endpoint_prefix + f"/{self.api_version}/entity"
 
-    def get_standard_headers(self) -> Dict[str, str]:
+    def get_standard_headers(self) -> dict[str, str]:
         """Get standard WMS headers."""
         headers = {
             "Content-Type": "application/json",
@@ -98,28 +103,28 @@ class BusinessRulesConfig:
     """Business rules and field mapping configuration."""
 
     # Status mappings
-    allocation_status_mapping: Dict[str, str] = field(
+    allocation_status_mapping: dict[str, str] = field(
         default_factory=lambda: {
             "ALLOCATED": "Active",
             "RESERVED": "Active",
             "PICKED": "Fulfilled",
             "SHIPPED": "Fulfilled",
             "CANCELLED": "Cancelled",
-        }
+        },
     )
 
-    order_status_mapping: Dict[str, str] = field(
+    order_status_mapping: dict[str, str] = field(
         default_factory=lambda: {
             "NEW": "Created",
             "CONFIRMED": "Confirmed",
             "IN_PROGRESS": "Processing",
             "COMPLETED": "Completed",
             "CANCELLED": "Cancelled",
-        }
+        },
     )
 
     # Field type patterns
-    field_type_patterns: Dict[str, str] = field(
+    field_type_patterns: dict[str, str] = field(
         default_factory=lambda: {
             "_id$": "NUMBER",
             "_qty$": "NUMBER(15,3)",
@@ -127,12 +132,12 @@ class BusinessRulesConfig:
             "_ts$": "TIMESTAMP",
             "_code$": "VARCHAR2(50)",
             "_desc$": "VARCHAR2(500)",
-        }
+        },
     )
 
     # Required audit fields
-    audit_fields: List[str] = field(
-        default_factory=lambda: ["create_user", "create_ts", "mod_user", "mod_ts"]
+    audit_fields: list[str] = field(
+        default_factory=lambda: ["create_user", "create_ts", "mod_user", "mod_ts"],
     )
 
     # Company-specific business rules
@@ -167,9 +172,10 @@ class CompanyProfile:
     business_rules: BusinessRulesConfig = field(default_factory=BusinessRulesConfig)
 
     # Entity configuration
-    entities: Dict[str, EntityConfig] = field(default_factory=dict)
+    entities: dict[str, EntityConfig] = field(default_factory=dict)
 
-    # 🚨 CRITICAL: TAP must NOT know about destination schemas - only table prefixes for naming
+    # 🚨 CRITICAL: TAP must NOT know about destination schemas - only table prefixes
+    # for naming
     table_prefix: str = "WMS_"
 
     def __post_init__(self) -> None:
@@ -177,7 +183,7 @@ class CompanyProfile:
         if not self.entities:
             self.entities = self._get_default_entities()
 
-    def _get_default_entities(self) -> Dict[str, EntityConfig]:
+    def _get_default_entities(self) -> dict[str, EntityConfig]:
         """Get default WMS entities configuration."""
         return {
             "allocation": EntityConfig(
@@ -215,15 +221,15 @@ class CompanyProfile:
             ),
         }
 
-    def get_enabled_entities(self) -> List[str]:
+    def get_enabled_entities(self) -> list[str]:
         """Get list of enabled entity names."""
         return [name for name, config in self.entities.items() if config.enabled]
 
-    def get_entity_config(self, entity_name: str) -> Optional[EntityConfig]:
+    def get_entity_config(self, entity_name: str) -> EntityConfig | None:
         """Get configuration for specific entity."""
         return self.entities.get(entity_name)
 
-    def to_singer_config(self) -> Dict[str, Any]:
+    def to_singer_config(self) -> dict[str, Any]:
         """Convert to Singer tap configuration format."""
         config = {
             # Basic connection
@@ -259,7 +265,7 @@ class CompanyProfile:
             {
                 "username": f"${{TAP_ORACLE_WMS_USERNAME_{self.company_code.upper()}}}",
                 "password": f"${{TAP_ORACLE_WMS_PASSWORD_{self.company_code.upper()}}}",
-            }
+            },
         )
 
         return config
@@ -268,7 +274,7 @@ class CompanyProfile:
 class ConfigProfileManager:
     """Manages configuration profiles for different companies and environments."""
 
-    def __init__(self, config_dir: Optional[Path] = None):
+    def __init__(self, config_dir: Path | None = None) -> None:
         """Initialize configuration manager.
 
         Args:
@@ -283,7 +289,7 @@ class ConfigProfileManager:
             self.config_dir = Path(config_dir)
 
         self.config_dir.mkdir(exist_ok=True)
-        self._profiles: Dict[str, CompanyProfile] = {}
+        self._profiles: dict[str, CompanyProfile] = {}
 
     def load_profile(self, profile_name: str) -> CompanyProfile:
         """Load configuration profile from file or environment.
@@ -314,7 +320,9 @@ class ConfigProfileManager:
         return profile
 
     def save_profile(
-        self, profile: CompanyProfile, profile_name: Optional[str] = None
+        self,
+        profile: CompanyProfile,
+        profile_name: str | None = None,
     ) -> None:
         """Save configuration profile to file.
 
@@ -341,12 +349,16 @@ class ConfigProfileManager:
             "performance": profile.performance.__dict__,
             "api": profile.api.__dict__,
             "business_rules": {
-                "allocation_status_mapping": profile.business_rules.allocation_status_mapping,
+                "allocation_status_mapping": (
+                    profile.business_rules.allocation_status_mapping
+                ),
                 "order_status_mapping": profile.business_rules.order_status_mapping,
                 "field_type_patterns": profile.business_rules.field_type_patterns,
                 "audit_fields": profile.business_rules.audit_fields,
                 "company_timezone": profile.business_rules.company_timezone,
-                "fiscal_year_start_month": profile.business_rules.fiscal_year_start_month,
+                "fiscal_year_start_month": (
+                    profile.business_rules.fiscal_year_start_month
+                ),
                 "currency_code": profile.business_rules.currency_code,
             },
             "entities": {
@@ -364,14 +376,14 @@ class ConfigProfileManager:
             },
         }
 
-        with open(profile_file, "w") as f:
+        with profile_file.open("w", encoding="utf-8") as f:
             json.dump(profile_data, f, indent=2)
 
-        logger.info(f"Saved profile '{profile_name}' to {profile_file}")
+        logger.info("Saved profile '%s' to %s", profile_name, profile_file)
 
     def _load_from_file(self, profile_file: Path) -> CompanyProfile:
         """Load profile from JSON file."""
-        with open(profile_file) as f:
+        with profile_file.open(encoding="utf-8") as f:
             data = json.load(f)
 
         # Parse performance config
@@ -401,13 +413,19 @@ class ConfigProfileManager:
             entities=entities,
         )
 
+    def load_profile_from_environment(self, profile_name: str) -> CompanyProfile:
+        """Public method to load profile from environment."""
+        return self._load_from_environment(profile_name)
+
     def _load_from_environment(self, profile_name: str) -> CompanyProfile:
         """Create profile from environment variables."""
         company_name = os.getenv(
-            f"WMS_COMPANY_NAME_{profile_name.upper()}", profile_name.title()
+            f"WMS_COMPANY_NAME_{profile_name.upper()}",
+            profile_name.title(),
         )
         company_code = os.getenv(
-            f"WMS_COMPANY_CODE_{profile_name.upper()}", profile_name.upper()
+            f"WMS_COMPANY_CODE_{profile_name.upper()}",
+            profile_name.upper(),
         )
         domain = os.getenv(f"WMS_DOMAIN_{profile_name.upper()}", "example.com")
         environment = os.getenv("WMS_ENVIRONMENT", "dev")
@@ -435,7 +453,7 @@ class ConfigProfileManager:
             api=api,
         )
 
-    def list_available_profiles(self) -> List[str]:
+    def list_available_profiles(self) -> list[str]:
         """List all available configuration profiles."""
         profiles_dir = self.config_dir / "profiles"
         if not profiles_dir.exists():
@@ -535,14 +553,17 @@ def load_profile_for_environment() -> CompanyProfile:
     try:
         return manager.load_profile(profile_name)
     except FileNotFoundError:
-        logger.warning(f"Profile '{profile_name}' not found, creating from environment")
-        return manager._load_from_environment(profile_name)
+        logger.warning(
+            "Profile '%s' not found, creating from environment", profile_name
+        )
+        # Create from environment using load_profile method recursively
+        return manager.load_profile_from_environment(profile_name)
 
 
 # Convenience function for tap configuration
 def get_singer_config_from_profile(
-    profile_name: Optional[str] = None,
-) -> Dict[str, Any]:
+    profile_name: str | None = None,
+) -> dict[str, Any]:
     """Get Singer tap configuration from profile.
 
     Args:
@@ -577,11 +598,5 @@ if __name__ == "__main__":
     )
     manager.save_profile(template_profile, "template")
 
-    print("Created example profiles:")
-    print("- client-b.json")
-    print("- template.json")
-
     # Show Singer configuration
     config = get_singer_config_from_profile("client-b")
-    print("\nSinger config for client-b:")
-    print(json.dumps(config, indent=2))

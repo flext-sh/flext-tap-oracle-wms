@@ -3,6 +3,8 @@
 Sem exceções, sem desculpas - vai corrigir TUDO.
 """
 
+from __future__ import annotations
+
 import os
 import re
 

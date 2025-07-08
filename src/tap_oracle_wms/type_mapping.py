@@ -31,10 +31,10 @@ API_METADATA_TO_SINGER: dict[str, dict[str, Any]] = {
     "date": {"type": ["string", "null"], "format": "date"},
     "time": {"type": ["string", "null"], "format": "time"},
     "text": {
-        "type": ["string", "null"]
+        "type": ["string", "null"],
     },  # NO maxLength - unlimited per Singer SDK specification
     "clob": {
-        "type": ["string", "null"]
+        "type": ["string", "null"],
     },  # NO maxLength - unlimited per Singer SDK specification
     "relation": {
         "type": ["string", "null"],
@@ -126,16 +126,18 @@ def convert_metadata_type_to_singer(
         return pattern_schema
 
     # 🚨 CRITICAL: NO fallbacks allowed - ABORT if metadata and pattern both fail
-    raise SystemExit(
+    msg = (
         f"🚨 ABORT: Cannot determine type for field '{column_name}' - "
         f"metadata_type='{metadata_type}' not found and no pattern match. "
         "Schema discovery MUST use ONLY API metadata!"
+    )
+    raise SystemExit(
+        msg,
     )
 
 
 def _create_schema_from_metadata(
     metadata_type: str,
-    max_length: int | None,
 ) -> dict[str, Any]:
     """Create schema from WMS metadata type."""
     base_schema = API_METADATA_TO_SINGER[metadata_type.lower()]
@@ -176,7 +178,7 @@ def _pattern_matches(pattern: str, column_lower: str) -> bool:
     )
 
 
-def _create_pattern_schema(pattern_key: str, max_length: int | None) -> dict[str, Any]:
+def _create_pattern_schema(pattern_key: str) -> dict[str, Any]:
     """Create schema from pattern key."""
     pattern_schema = FIELD_PATTERNS_TO_SINGER[pattern_key]
     schema = {
@@ -230,10 +232,13 @@ def infer_type_enhanced(
             inferred_from = "pattern"
         else:
             # 🚨 CRITICAL: ABORT if no metadata and no pattern
-            raise SystemExit(
+            msg = (
                 f"🚨 ABORT: Cannot infer type for field '{column_name}' - "
                 "no metadata_type and no column_name for pattern matching. "
                 "Schema discovery MUST use ONLY API metadata!"
+            )
+            raise SystemExit(
+                msg,
             )
 
     # Add WMS metadata for traceability (Singer SDK allows custom properties)

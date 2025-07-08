@@ -36,7 +36,7 @@ class SchemaGeneratorInterface(ABC):
     def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         """Generate schema from API metadata."""
 
-    # REMOVED: generate_from_sample and generate_hybrid_schema
+    # Note: Sample-based generation is forbidden for security
     # These methods are FORBIDDEN and have been permanently deleted
     # Any implementation attempting to use samples will fail
 
@@ -49,11 +49,11 @@ class CacheManagerInterface(ABC):
     """Interface for cache management operations."""
 
     @abstractmethod
-    def get_cached_value(self, key: str) -> Any | None:
+    def get_cached_value(self, key: str) -> object | None:
         """Get value from cache."""
 
     @abstractmethod
-    def set_cached_value(self, key: str, value: Any, ttl: int | None = None) -> None:
+    def set_cached_value(self, key: str, value: object, ttl: int | None = None) -> None:
         """Set value in cache with optional TTL."""
 
     @abstractmethod
@@ -99,8 +99,11 @@ class StreamFactoryInterface(ABC):
 
     @abstractmethod
     def create_stream(
-        self, entity_name: str, schema: dict[str, Any], tap_instance: Any
-    ) -> Any:
+        self,
+        entity_name: str,
+        schema: dict[str, Any],
+        tap_instance: object,
+    ) -> object:
         """Create a stream instance for the given entity."""
 
     @abstractmethod

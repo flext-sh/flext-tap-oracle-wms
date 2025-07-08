@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Complete Singer Protocol Compliance Validator for Oracle WMS Tap."""
 
+from __future__ import annotations
+
 import contextlib
 import json
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
-from typing import Optional
 
 import jsonschema
 
@@ -30,8 +31,6 @@ def validate_singer_compliance() -> bool:
         try:
             if test():
                 passed += 1
-            else:
-                pass
         except Exception:
             pass
 
@@ -65,7 +64,7 @@ def test_cli_commands() -> bool:
     return True
 
 
-def test_discovery_output() -> Optional[bool]:
+def test_discovery_output() -> bool | None:
     """Test discovery output format."""
     try:
         # Create test config
@@ -76,7 +75,9 @@ def test_discovery_output() -> Optional[bool]:
             "verify_ssl": False,
         }
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
             json.dump(test_config, f)
             config_file = f.name
 
@@ -139,7 +140,7 @@ def test_discovery_output() -> Optional[bool]:
         return False
 
 
-def test_catalog_format() -> Optional[bool]:
+def test_catalog_format() -> bool | None:
     """Test catalog format compliance."""
     # Singer catalog schema (simplified)
     catalog_schema = {
@@ -180,7 +181,9 @@ def test_catalog_format() -> Optional[bool]:
         }
 
         # Mock the discovery to avoid network calls
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
+        ) as f:
             json.dump(config, f)
             config_file = f.name
 
@@ -212,7 +215,7 @@ def test_catalog_format() -> Optional[bool]:
         return False
 
 
-def test_record_output() -> Optional[bool]:
+def test_record_output() -> bool | None:
     """Test record output format."""
     try:
         # Test that records follow Singer format
@@ -256,7 +259,7 @@ def test_record_output() -> Optional[bool]:
         return False
 
 
-def test_state_handling() -> Optional[bool]:
+def test_state_handling() -> bool | None:
     """Test state handling."""
     try:
         from tap_oracle_wms.tap import TapOracleWMS
@@ -287,7 +290,7 @@ def test_state_handling() -> Optional[bool]:
         return False
 
 
-def test_error_handling() -> Optional[bool]:
+def test_error_handling() -> bool | None:
     """Test error handling."""
     try:
         # Test with invalid config

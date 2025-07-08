@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Mock Oracle WMS Server for real testing."""
 
+from __future__ import annotations
+
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import threading
 import time
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
 

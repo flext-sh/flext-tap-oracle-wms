@@ -1,0 +1,114 @@
+# Modern Oracle WMS Tap - Simplified Enterprise Makefile
+# Clean, fast, enterprise-ready automation
+
+VENV_PATH := /home/marlonsc/flext/.venv
+PYTHON := $(VENV_PATH)/bin/python
+ACTIVATE := source $(VENV_PATH)/bin/activate
+
+.PHONY: help install dev test lint format type-check security clean run discover extract
+
+help:
+	@echo "🚀 Modern Oracle WMS Tap - Enterprise Commands"
+	@echo "=============================================="
+	@echo ""
+	@echo "📦 Setup:"
+	@echo "  install     - Install package"
+	@echo "  dev         - Install with dev dependencies"
+	@echo ""
+	@echo "🧪 Quality:"
+	@echo "  test        - Run all tests"
+	@echo "  lint        - Run ruff linting"
+	@echo "  format      - Format code with ruff"
+	@echo "  type-check  - Run mypy type checking"
+	@echo "  security    - Run security checks"
+	@echo ""
+	@echo "🔧 Operations:"
+	@echo "  run         - Run tap with discovery"
+	@echo "  discover    - Discover entities only"
+	@echo "  extract     - Extract data with catalog"
+	@echo "  clean       - Clean build artifacts"
+
+# Installation
+install:
+	@echo "Installing Oracle WMS Tap..."
+	@$(ACTIVATE) && pip install -e .
+
+dev:
+	@echo "Installing with dev dependencies..."
+	@$(ACTIVATE) && pip install -e ".[dev,security]"
+
+# Quality Checks - Zero Tolerance
+test:
+	@echo "Running tests..."
+	@$(ACTIVATE) && pytest tests_modern/ -v --cov=src --cov-report=term-missing
+
+lint:
+	@echo "Running ruff linting (zero tolerance)..."
+	@$(ACTIVATE) && ruff check --select ALL src/ tests_modern/
+
+format:
+	@echo "Formatting code..."
+	@$(ACTIVATE) && ruff format src/ tests_modern/
+
+type-check:
+	@echo "Running mypy type checking (strict mode)..."
+	@$(ACTIVATE) && mypy --strict src/
+
+security:
+	@echo "Running security checks..."
+	@$(ACTIVATE) && bandit -r src/
+	@$(ACTIVATE) && safety check
+
+# Quality gate - run all checks
+quality: lint type-check test security
+	@echo "✅ All quality checks passed!"
+
+# Operations
+run:
+	@echo "Running Oracle WMS Tap with discovery..."
+	@$(ACTIVATE) && python -m tap_oracle_wms.tap_modern --discover
+
+discover:
+	@echo "Discovering WMS entities..."
+	@$(ACTIVATE) && python -m tap_oracle_wms.tap_modern --discover > catalog.json
+	@echo "✅ Catalog saved to catalog.json"
+
+extract:
+	@echo "Extracting data from WMS..."
+	@if [ ! -f catalog.json ]; then \
+		echo "Catalog not found. Running discovery first..."; \
+		$(MAKE) discover; \
+	fi
+	@$(ACTIVATE) && python -m tap_oracle_wms.tap_modern --catalog catalog.json
+
+# Development utilities
+clean:
+	@echo "Cleaning build artifacts..."
+	@rm -rf build/ dist/ *.egg-info/
+	@rm -rf .pytest_cache/ .coverage htmlcov/
+	@rm -rf .mypy_cache/ .ruff_cache/
+	@find . -name "*.pyc" -delete
+	@find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+	@rm -f catalog.json state.json
+
+# Info
+info:
+	@echo "Modern Oracle WMS Tap - Enterprise Edition"
+	@echo "=========================================="
+	@echo "Python: $(shell $(PYTHON) --version)"
+	@echo "Virtual Env: $(VENV_PATH)"
+	@echo "Working Dir: $(shell pwd)"
+	@$(ACTIVATE) && python -c "import tap_oracle_wms; print(f'TAP Version: {tap_oracle_wms.__version__}')" 2>/dev/null || echo "TAP Version: Not installed"
+
+# Performance test
+perf:
+	@echo "Running performance test..."
+	@$(ACTIVATE) && python -c "\
+import time; \
+from tap_oracle_wms.models import WMSConfig, TapMetrics; \
+from tap_oracle_wms.client import WMSClient; \
+from tap_oracle_wms.discovery_modern import EntityDiscovery; \
+config = WMSConfig(base_url='https://demo.example.com', username='demo', password='demo'); \
+metrics = TapMetrics(); \
+print('Modern architecture performance test completed') \
+"

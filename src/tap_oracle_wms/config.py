@@ -5,6 +5,8 @@ parameters for maximum flexibility and control.
 """
 
 # Oracle WMS API constants - UNLIMITED by default, configurable only for optimization
+from __future__ import annotations
+
 import os
 from typing import Any
 
@@ -19,23 +21,23 @@ WMS_DEFAULT_REPLICATION_KEY = os.getenv("WMS_DEFAULT_REPLICATION_KEY", "mod_ts")
 
 # WMS API limits - THESE ARE THE REAL API LIMITS, NOT ARTIFICIAL RESTRICTIONS
 WMS_MAX_PAGE_SIZE = int(
-    os.getenv("WMS_MAX_PAGE_SIZE", "1250")
+    os.getenv("WMS_MAX_PAGE_SIZE", "1250"),
 )  # Oracle WMS API real limit
 WMS_DEFAULT_PAGE_SIZE = int(
-    os.getenv("WMS_DEFAULT_PAGE_SIZE", "100")
+    os.getenv("WMS_DEFAULT_PAGE_SIZE", "100"),
 )  # TAP default, meltano project can override
 
 # Performance and reliability constants - for optimization, not limitation
 DEFAULT_REQUEST_TIMEOUT = int(os.getenv("WMS_REQUEST_TIMEOUT", "0"))  # 0 = UNLIMITED
 DEFAULT_MAX_RETRIES = int(
-    os.getenv("WMS_MAX_RETRIES", "10")
+    os.getenv("WMS_MAX_RETRIES", "10"),
 )  # High default for reliability
 DEFAULT_RETRY_WAIT_MULTIPLIER = float(os.getenv("WMS_RETRY_WAIT_MULTIPLIER", "2.0"))
 DEFAULT_RETRY_MAX_WAIT = int(
-    os.getenv("WMS_RETRY_MAX_WAIT", "300")
+    os.getenv("WMS_RETRY_MAX_WAIT", "300"),
 )  # 5 minutes max wait
 DEFAULT_HTTP_CLIENT_TIMEOUT = int(
-    os.getenv("WMS_HTTP_CLIENT_TIMEOUT", "300")
+    os.getenv("WMS_HTTP_CLIENT_TIMEOUT", "300"),
 )  # 5 minutes
 
 # OAuth and security constants
@@ -55,7 +57,8 @@ DEFAULT_LOOKBACK_MINUTES = int(os.getenv("WMS_LOOKBACK_MINUTES", "5"))
 # NO MAX_STRING_LENGTH - Oracle supports up to 32KB in VARCHAR2, CLOB is unlimited
 # NO MAX_TEXT_LENGTH - CLOB is unlimited
 # NO SIMPLE_OBJECT_MAX_FIELDS - unlimited fields allowed
-# 🚨 SCHEMA DISCOVERY: HARD-CODED to use ONLY API metadata describe - no other methods exist
+# 🚨 SCHEMA DISCOVERY: HARD-CODED to use ONLY API metadata describe
+# No other methods exist
 
 # REMOVED ALL ARTIFICIAL LIMITATIONS - SISTEMA COMPLETAMENTE ILIMITADO
 # NO MAX_PARAM_KEY_LENGTH - aceita qualquer tamanho
@@ -285,7 +288,8 @@ config_jsonschema = th.PropertiesList(
         description="Keys for partitioned state management",
     ),
     # 🚨 SCHEMA DISCOVERY: HARD-CODED to use ONLY API metadata describe
-    # This functionality is not configurable - no environment variables or config options exist
+    # This functionality is not configurable
+    # No environment variables or config options exist
     # === DISCOVERY SETTINGS ===
     th.Property(
         "discover_catalog",

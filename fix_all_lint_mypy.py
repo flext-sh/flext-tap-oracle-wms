@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Fix all lint and mypy issues for strict compliance."""
 
+from __future__ import annotations
+
 import os
 import re
 import subprocess
@@ -165,8 +167,6 @@ DEFAULT_TIMEOUT = 30
 DEFAULT_MAX_RETRIES = 3
 '''
             )
-    else:
-        pass
 
 
 def main() -> None:
@@ -188,8 +188,6 @@ def main() -> None:
             text=True,
         )
         if result.returncode == 0:
-            pass
-        else:
             pass
 
     except Exception:

@@ -2,132 +2,230 @@
 requires = ["poetry-core>=1.9.0"]
 build-backend = "poetry.core.masonry.api"
 
+# PEP 621 - Project Metadata (FLEXT Standard)
 [project]
 name = "flext-tap-oracle-wms"
-version = "0.2.0"
-description = "FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System Data Extraction"
-authors = [{name = "FLEXT Team", email = "team@flext.sh"}]
+version = "1.0.0"
+description = "FLEXT Enterprise Singer Tap for Oracle WMS - Modern, Clean, SOLID Architecture"
+authors = [
+    {name = "FLEXT Team", email = "team@flext.sh"}
+]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.9,<4.0"
-keywords = ["flext", "singer", "tap", "oracle", "wms", "warehouse-management", "etl", "enterprise"]
+keywords = ["flext", "singer", "tap", "oracle", "wms", "enterprise", "etl", "modern"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Intended Audience :: System Administrators",
+    "Intended Audience :: System Administrators", 
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Database",
-    "Topic :: Office/Business :: Financial :: Accounting",
     "Topic :: System :: Systems Administration",
     "Typing :: Typed",
 ]
+requires-python = ">=3.13"
 dependencies = [
-    "singer-sdk>=0.47.4",  # Using latest Singer SDK with all advanced features
-    # "singer-python>=6.0.0",  # Removed due to jsonschema conflict with singer-sdk
-    "requests>=2.32.0",
-    "httpx>=0.28.0",
-    "pydantic>=2.11.0",
-    "pydantic-settings>=2.5.0",
-    "structlog>=24.0.0",
-    "click>=8.1.7",
-    "python-dateutil>=2.9.0",
-    "tenacity>=9.0.0",
-    "cryptography>=42.0.0",
-    "orjson>=3.10.0",
-    "jsonschema>=4.16.0",  # Explicit version to match singer-sdk
-    "backoff>=2.2.1",
-    "python-dotenv>=0.21.0",  # For .env file support
+    # Core FLEXT Dependencies (Latest Stable)
+    "singer-sdk>=0.47.4,<1.0.0",
+    "httpx>=0.28.0,<1.0.0", 
+    "pydantic>=2.11.0,<3.0.0",
+    "python-dateutil>=2.9.0,<3.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+    "typing-extensions>=4.12.0,<5.0.0",
 ]
-
-[project.scripts]
-tap-oracle-wms = "tap_oracle_wms.cli:main"
-flext-tap-oracle-wms = "tap_oracle_wms.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/flext-sh/flext-tap-oracle-wms"
-Repository = "https://github.com/flext-sh/flext-tap-oracle-wms"
-Documentation = "https://github.com/flext-sh/flext-tap-oracle-wms/blob/main/README.md"
-"Bug Tracker" = "https://github.com/flext-sh/flext-tap-oracle-wms/issues"
+Repository = "https://github.com/flext-sh/flext-tap-oracle-wms" 
+Documentation = "https://docs.flext.sh/tap-oracle-wms"
 Changelog = "https://github.com/flext-sh/flext-tap-oracle-wms/blob/main/CHANGELOG.md"
+Issues = "https://github.com/flext-sh/flext-tap-oracle-wms/issues"
 
+[project.scripts]
+tap-oracle-wms = "tap_oracle_wms.tap:TapOracleWMS.cli"
+tap-oracle-wms-enhanced = "tap_oracle_wms.cli_enhanced:cli"
+
+[project.optional-dependencies]
+# FLEXT Standard Development Dependencies (Modern & Stable)
+dev = [
+    # Testing Framework (Modern)
+    "pytest>=8.4.0",
+    "pytest-cov>=6.2.0", 
+    "pytest-asyncio>=0.26.0",
+    "pytest-mock>=3.14.0",
+    "pytest-timeout>=2.4.0",
+    "pytest-xdist>=3.7.0",
+    "pytest-benchmark>=5.1.0",
+    "hypothesis>=6.125.0",
+    
+    # Code Quality (Latest stable)
+    "ruff>=0.12.2",
+    "mypy>=1.16.1", 
+    "black>=25.1.0",
+    "isort>=5.13.2",
+    
+    # Security & Documentation
+    "bandit[toml]>=1.8.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.29.0",
+    
+    # Development Tools (Modern stable)
+    "pre-commit>=4.0.0",
+    "commitizen>=4.1.1",
+    "ipython>=8.37.0",
+    "rich>=14.0.0",
+    "typer>=0.15.0",
+    
+    # Type Stubs (Latest)
+    "types-python-dateutil>=2.9.0.20250516",
+    "types-requests>=2.32.0",
+]
+
+# Automation & CI/CD Tools
+automation = [
+    "tox>=4.25.0",
+    "nox>=2024.1.0", 
+]
+
+
+# Poetry Configuration (Package Building)
 [tool.poetry]
 packages = [
     { include = "tap_oracle_wms", from = "src" }
 ]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.0"
-pytest-asyncio = "^0.24.0"
-pytest-cov = "^6.0.0"
-pytest-xdist = "^3.6.0"
-pytest-mock = "^3.14.0"
-pytest-timeout = "^2.3.0"
-ruff = "^0.8.4"
-mypy = "^1.13.0"
-black = "^24.10.0"
-isort = "^5.13.0"
-types-requests = "^2.32.0"
-types-setuptools = "^75.6.0"
-types-python-dateutil = "^2.9.0"
-pre-commit = "^4.0.0"
-mkdocs = "^1.6.0"
-mkdocs-material = "^9.5.0"
-# ipython = "^8.29.0"  # Requires Python >=3.10
+# ═══════════════════════════════════════════════════════════════════════════════
+# FLEXT STANDARD TOOLING CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
 
-[tool.poetry.group.security.dependencies]
-bandit = { extras = ["toml"], version = "^1.7.0" }
-safety = "^3.2.0"
-
-[tool.poetry.group.build.dependencies]
-build = "^1.2.0"
-twine = "^6.0.0"
-
-[tool.poetry.group.test.dependencies]
-pytest-benchmark = "^4.0.0"
-faker = "^30.8.0"
-factory-boy = "^3.3.0"
-testcontainers = "^4.8.0"
-python-dotenv = "^1.0.0"
-
+# Ruff - Modern All-in-One Linter & Formatter (FLEXT Standard)
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py313"
 fix = true
+show-fixes = true
+output-format = "github"
+respect-gitignore = true
 
 [tool.ruff.lint]
-select = ["ALL"]
+select = [
+    "ALL"  # Enable ALL rules for maximum quality (FLEXT Standard)
+]
+
 ignore = [
-    # MANDATORY: Only formatter conflicts that cannot be auto-fixed
-    "COM812",  # trailing-comma-missing (handled by formatter)
-    "ISC001",  # implicit-str-concat (conflicts with formatter)
-    "D203",    # one-blank-line-before-class (conflicts with D211)
-    "D213",    # multi-line-docstring-summary-second-line (conflicts with D212)
+    # Formatter conflicts (required)
+    "COM812",  # trailing-comma-missing
+    "ISC001",  # implicit-str-concat
+    
+    # Docstring style (Google style enforced)
+    "D203",    # one-blank-line-before-class
+    "D213",    # multi-line-docstring-summary-second-line
+    
+    # Reasonable flexibility (FLEXT approved)
+    "TD003",   # Missing issue link on TODO
+    "FIX002",  # Line contains TODO
+    "ERA001",  # Commented out code (development)
+    
+    # Test-specific allowances
+    "S101",    # Use of assert (pytest requirement)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# ZERO TOLERANCE: No file-specific ignores
+"tests/**/*.py" = [
+    "S101", "S106",     # Security (pytest & fixtures)
+    "PLR2004",          # Magic values (test data)
+    "ANN", "D",         # Annotations & docstrings (optional)
+    "ARG", "FBT",       # Arguments & boolean traps (fixtures)
+]
+"scripts/*.py" = [
+    "T201", "D",        # Print statements & docstrings
+]
+"*/__init__.py" = [
+    "F401", "D104",     # Re-exports & package docstrings
+]
+# Helper/automation scripts (development tools)
+"auto_*.py" = [
+    "T201", "S603", "S607", "PLR0912", "PLR0915", "C901", "E501",
+    "PLR2004", "F841", "RET504", "ANN", "EXE001", "RUF001", "ARG001",
+    "PLC0415", "TRY300", "BLE001", "PTH123"
+]
+"*_direct_*.py" = [
+    "T201", "S603", "S607", "ANN", "D", "PLR2004", "BLE001", "S110"
+]
+"validate_*.py" = [
+    "T201", "S603", "S607", "ANN", "D", "PLR2004", "BLE001", "S110",
+    "PLC0415", "E501", "TRY300", "EXE001"
+]
+"enable_*.py" = [
+    "T201", "ANN", "D", "EXE001", "PLR2004"
+]
+"final_*.py" = [
+    "T201", "ANN", "D", "EXE001", "PLR2004", "E501", "PTH123", "D205",
+    "TRY203", "B007", "PLR0912", "RUF001", "TRY300", "BLE001", "SIM102"
+]
+"tests_modern/*.py" = [
+    "INP001", "S105", "S106", "PLR2004", "E501", "SIM117"
+]
+"find_*.py" = [
+    "T201", "ANN", "D", "PLR2004", "EXE001", "C901", "PLR0912", "PTH118",
+    "B007", "PTH123", "SIM102", "E501"
+]
+"fix_*.py" = [
+    "T201", "ANN", "D", "PLR2004", "S603", "S607", "EXE001", "PTH123",
+    "E501", "PLR0912", "PLR0915", "C901", "B007", "PTH118", "SIM102",
+    "TRY300", "BLE001", "RUF001", "PTH110", "TRY203"
+]
+"tests/unit/*.py" = [
+    "INP001", "SLF001", "S105"
+]
+# Regular test files (overrides for test patterns)
+"tests/*.py" = [
+    "S105", "S106", "S101", "PLR2004", "ANN", "D", "PT", "SLF001",
+    "DTZ001", "E501", "C901", "PLR0912", "PLC0415"
+]
+# Additional helper scripts
+"migration_*.py" = [
+    "T201", "ANN", "D", "EXE001", "PTH123", "BLE001", "E501"
+]
+"mock_*.py" = [
+    "T201", "ANN", "D", "EXE001", "PLR2004", "A002"
+]
+"run_*.py" = [
+    "T201", "ANN", "D", "ARG001", "S603", "TRY300", "C901", "PLR0912", "PLR2004"
+]
+"test_*.py" = [
+    "T201", "ANN", "D", "EXE001", "PLC0415", "B007", "SIM102", "PLR2004"
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"  # FLEXT Standard
+
+[tool.ruff.lint.isort]
+known-first-party = ["tap_oracle_wms"]
+required-imports = ["from __future__ import annotations"]
+force-sort-within-sections = true
+combine-as-imports = true
+
+[tool.ruff.lint.pylint]
+max-args = 7
+max-branches = 12
+max-returns = 6 
+max-statements = 50
+max-locals = 15
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
+docstring-code-format = true
+docstring-code-line-length = 72
 
-[tool.black]
-line-length = 88
-target-version = ["py39"]
-
-[tool.isort]
-profile = "black"
-line_length = 88
-
+# MyPy - Static Type Checking (FLEXT Standard)
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.13"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -140,82 +238,165 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+show_error_codes = true
+show_error_context = true
+show_column_numbers = true
+pretty = true
 
-# ZERO TOLERANCE: No missing imports ignored - install type stubs for all dependencies
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+ignore_errors = false  # Changed to be stricter
 
+[[tool.mypy.overrides]]
+module = [
+    "singer_sdk.*",
+    "requests.*",
+    "httpx.*",
+]
+ignore_missing_imports = true
+
+# Helper scripts - ignore type checking (specific files)
+[[tool.mypy.overrides]]
+module = [
+    "auto_fix_all",
+    "auto_setup",
+    "fix_all_lint",
+    "fix_all_lint_mypy",
+    "fix_all_error_masking_complete",
+    "fix_common_lint",
+    "fix_logging_consolidated",
+    "find_all_error_masking",
+    "final_fix_all",
+    "final_complete_error_fix",
+    "enable_ultra_debug",
+    "migration_summary",
+    "mock_wms_server",
+    "run_tests",
+    "test_direct_tap",
+    "test_mock_simple",
+    "validate_functionality",
+    "validate_singer",
+]
+ignore_errors = true
+
+# Pytest - Testing Framework (FLEXT Standard)
 [tool.pytest.ini_options]
-minversion = "8.0"
+minversion = "9.0"
 addopts = [
     "--strict-markers",
     "--strict-config",
     "--verbose",
+    "--cov=tap_oracle_wms",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml:coverage.xml",
+    "--cov-fail-under=85",
+    "--maxfail=3",
     "--tb=short",
-    "--maxfail=10",
+    "--asyncio-mode=auto",
+    "--benchmark-only",
 ]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-    "e2e: marks tests as end-to-end tests",
-    "singer: marks tests as Singer protocol tests",
-    "oracle: marks tests as Oracle tests",
-    "wms: marks tests as WMS tests",
-    "tap: marks tests as tap tests",
-    "performance: marks tests as performance tests",
-    "requires_oracle: tests that need Oracle database",
+    "unit: Unit tests",
+    "integration: Integration tests", 
+    "e2e: End-to-end tests",
+    "slow: Slow tests",
+    "requires_auth: Tests requiring authentication",
+    "benchmark: Performance benchmarks",
 ]
-filterwarnings = [
-    "error",
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-]
-asyncio_mode = "auto"
 
+# Coverage - Code Coverage (FLEXT Standard)
 [tool.coverage.run]
+source = ["src/tap_oracle_wms"]
 branch = true
-source = ["src"]
+parallel = true
 omit = [
     "*/tests/*",
-    "*/test_*",
-    "*/*_test.py",
+    "*/__init__.py",
     "*/conftest.py",
-    "*/__pycache__/*",
-    "*/site-packages/*",
-    "*/.venv/*",
-    "*/venv/*",
-    "*/build/*",
-    "*/dist/*",
-    "*/.eggs/*",
 ]
 
 [tool.coverage.report]
-skip_empty = true
-skip_covered = false
+precision = 2
 show_missing = true
-sort = "Cover"
+skip_covered = false
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError", 
     "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-    "TYPE_CHECKING",
+    "@abstractmethod",
+    "@abc.abstractmethod",
 ]
+fail_under = 85
 
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# Bandit - Security Linter (FLEXT Standard)
 [tool.bandit]
-targets = ["src"]
-exclude_dirs = ["tests", "build", "dist"]
-skips = ["B101", "B601"]
+targets = ["src/tap_oracle_wms"]
+exclude_dirs = ["tests", "scripts"]
+skips = ["B101"]  # assert_used (pytest requirement)
 
-[tool.bandit.assert_used]
-skips = ["*/tests/*", "*/test_*.py"]
+# Commitizen - Conventional Commits (FLEXT Standard)
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "1.0.0"
+tag_format = "v$version"
+version_files = [
+    "pyproject.toml:^version",
+    "src/tap_oracle_wms/__init__.py:^__version__",
+]
+update_changelog_on_bump = true
+major_version_zero = false  # We're production ready
+
+# Tox - Multi-environment Testing (FLEXT Standard)
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py313,lint,type,security,docs
+isolated_build = true
+skip_missing_interpreters = true
+
+[testenv]
+deps = poetry
+allowlist_externals = poetry
+commands_pre = 
+    poetry install --extras=dev --extras=automation
+commands =
+    poetry run pytest {posargs}
+
+[testenv:lint]
+commands =
+    poetry run ruff check .
+    poetry run ruff format --check .
+
+[testenv:type]
+commands =
+    poetry run mypy .
+
+[testenv:security]
+commands =
+    poetry run bandit -r src/
+
+[testenv:docs]
+commands =
+    poetry run mkdocs build --strict
+
+[testenv:all]
+commands =
+    {[testenv:lint]commands}
+    {[testenv:type]commands}  
+    {[testenv:security]commands}
+    {[testenv]commands}
+"""

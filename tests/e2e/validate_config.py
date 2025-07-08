@@ -4,9 +4,11 @@
 This script checks if the environment is properly configured for E2E tests.
 """
 
+from __future__ import annotations
+
 import os
-import sys
 from pathlib import Path
+import sys
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
@@ -44,8 +46,6 @@ def validate_e2e_config():
                     if len(value) > 2
                     else "*" * len(value)
                 )
-            else:
-                pass
 
             # Validate URL format
             if var == "TAP_ORACLE_WMS_BASE_URL":
@@ -89,8 +89,6 @@ def validate_e2e_config():
 
     # Summary
     if all_valid:
-        pass
-    else:
         pass
 
     return all_valid

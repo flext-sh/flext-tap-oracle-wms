@@ -17,13 +17,12 @@ Designed specifically for Oracle WMS REST API integration.
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime
 import os
 import sys
-from datetime import datetime, timezone
 from typing import Any
 
-from singer_sdk import Stream, Tap
-from singer_sdk import typing as th
+from singer_sdk import Stream, Tap, typing as th
 
 from .config_mapper import ConfigMapper
 from .config_profiles import ConfigProfileManager
@@ -41,6 +40,12 @@ from .discovery import (
 
 # Error logging functionality removed for simplicity
 from .streams import WMSStream
+
+# API and Performance Constants
+MAX_PAGE_SIZE = 1250
+MAX_REQUEST_TIMEOUT = 600
+MAX_RETRIES = 10
+MAX_FIELD_DISPLAY = 10  # Maximum fields to display in logs
 
 
 class TapOracleWMS(Tap):
@@ -111,7 +116,9 @@ class TapOracleWMS(Tap):
         th.Property(
             "entities",
             th.ArrayType(th.StringType),
-            description="Specific WMS entities to extract (e.g., allocation, order_hdr)",
+            description=(
+                "Specific WMS entities to extract (e.g., allocation, order_hdr)"
+            ),
         ),
         th.Property(
             "entity_patterns",
@@ -132,7 +139,7 @@ class TapOracleWMS(Tap):
         th.Property(
             "max_page_size",
             th.IntegerType,
-            default=1250,
+            default=1250,  # Oracle WMS API limit
             description="Maximum page size supported by WMS API",
         ),
         # Performance settings
@@ -170,7 +177,8 @@ class TapOracleWMS(Tap):
             "replication_key",
             th.StringType,
             default="mod_ts",
-            description="Field to use for incremental replication (WMS typically uses mod_ts)",
+            description="Field to use for incremental replication (WMS typically uses"
+            " mod_ts)",
         ),
         th.Property(
             "replication_key_format",
@@ -221,7 +229,8 @@ class TapOracleWMS(Tap):
             description="HTTP timeout for authentication operations in seconds",
         ),
         # 🚨 SCHEMA DISCOVERY: HARD-CODED to use ONLY API metadata describe
-        # This functionality is not configurable - no environment variables exist for this
+        # This functionality is not configurable - no environment variables exist for
+        # this
         # OAuth2 settings (if using OAuth2)
         th.Property("oauth_client_id", th.StringType, secret=True),
         th.Property("oauth_client_secret", th.StringType, secret=True),
@@ -290,21 +299,21 @@ class TapOracleWMS(Tap):
             profile = manager.load_profile(profile_name)
             config = profile.to_singer_config()
 
-            self.logger.info(f"Loaded configuration from profile: {profile_name}")
+            self.logger.info("Loaded configuration from profile: %s", profile_name)
             self.logger.debug(
-                f"Profile config: company={profile.company_name}, "
-                f"environment={profile.environment}, "
-                f"entities={len(profile.get_enabled_entities())}"
+                "Profile config: company=%s, environment=%s, entities=%d",
+                profile.company_name,
+                profile.environment,
+                len(profile.get_enabled_entities()),
             )
-
-            return config
-        except Exception as e:
-            self.logger.warning(f"Failed to load profile '{profile_name}': {e}")
+        except (ValueError, KeyError, TypeError, RuntimeError) as e:
+            self.logger.warning("Failed to load profile '%s': %s", profile_name, e)
             return None
+        else:
+            return config
 
     def _validate_configuration(self) -> None:
         """Validate configuration using ConfigMapper and profiles."""
-        
         # CRITICAL: Enforce mandatory environment variables FIRST
         enforce_mandatory_environment_variables()
 
@@ -317,11 +326,11 @@ class TapOracleWMS(Tap):
 
             self.logger.info("✅ Configuration validation passed")
 
-        except ConfigValidationError as e:
-            self.logger.error(f"❌ Configuration validation failed: {e}")
+        except ConfigValidationError:
+            self.logger.exception("❌ Configuration validation failed")
             raise
-        except Exception as e:
-            self.logger.warning(f"Configuration validation encountered an error: {e}")
+        except (ValueError, KeyError, TypeError, RuntimeError) as e:
+            self.logger.warning("Configuration validation encountered an error: %s", e)
             # Don't fail the entire tap for validation errors, just warn
 
     @property
@@ -423,12 +432,15 @@ class TapOracleWMS(Tap):
                     len(schema.get("properties", {})),
                 )
                 return stream
-        except Exception:
+        except (ValueError, KeyError, TypeError, RuntimeError) as e:
             # 🚨 CRITICAL: NO FALLBACK HARDCODED SCHEMAS ALLOWED - ABORT INSTEAD
-            error_msg = f"❌ CRITICAL FAILURE: Schema generation failed for {entity_name} - ABORTING! NO fallback schemas allowed!"
-            self.logger.error(error_msg)
+            error_msg = (
+                f"❌ CRITICAL FAILURE: Schema generation failed for {entity_name} - "
+                f"ABORTING! NO fallback schemas allowed!"
+            )
+            self.logger.exception(error_msg)
             self.logger.exception("Schema generation failed - this is FATAL:")
-            raise ValueError(error_msg)
+            raise ValueError(error_msg) from e
 
     # 🚨 CRITICAL: _get_predefined_schema METHOD PERMANENTLY DELETED
     # NEVER, NEVER, NEVER use fallback hardcoded schemas - THIS IS FORBIDDEN
@@ -467,23 +479,23 @@ class TapOracleWMS(Tap):
             metadata = await self.discovery.describe_entity(entity_name)
 
             if not metadata:
-                error_msg = f"❌ CRITICAL FAILURE: Cannot get metadata for entity: {entity_name}. This is a fatal error - aborting!"
-                self.logger.error(error_msg)
-                raise ValueError(error_msg)
+                self._raise_metadata_error(entity_name)
 
             # 🚀 METADATA-ONLY MODE: HARD-CODED BEHAVIOR
             self.logger.info(
-                "🚀 METADATA-ONLY MODE (HARD-CODED): Using ONLY API metadata for entity: %s",
+                "🚀 METADATA-ONLY MODE (HARD-CODED): Using ONLY API metadata "
+                "for entity: %s",
                 entity_name,
             )
 
             # Generate schema from metadata ONLY - flattening support if enabled
             if flattening_enabled:
                 schema = self.schema_generator.generate_metadata_schema_with_flattening(
-                    metadata
+                    metadata,
                 )
                 self.logger.info(
-                    "✅ Generated metadata schema with flattening for %s with %d total fields",
+                    "✅ Generated metadata schema with flattening for %s with "
+                    "%d total fields",
                     entity_name,
                     len(schema.get("properties", {})),
                 )
@@ -500,7 +512,11 @@ class TapOracleWMS(Tap):
             self.logger.info(
                 "📋 Schema fields for %s: %s",
                 entity_name,
-                field_names[:10] + ["..."] if len(field_names) > 10 else field_names,
+                (
+                    [*field_names[:MAX_FIELD_DISPLAY], "..."]
+                    if len(field_names) > MAX_FIELD_DISPLAY
+                    else field_names
+                ),
             )
         except (
             EntityDiscoveryError,
@@ -512,7 +528,7 @@ class TapOracleWMS(Tap):
             error_msg = f"WMS error during schema generation for {entity_name}: {e}"
             self.logger.exception(error_msg)
             raise SchemaGenerationError(error_msg) from e
-        except Exception as e:
+        except (ValueError, KeyError, TypeError, RuntimeError) as e:
             # Unexpected errors
             error_msg = (
                 f"Unexpected error during schema generation for {entity_name}: {e}"
@@ -539,7 +555,7 @@ class TapOracleWMS(Tap):
         - Filtering
         """
         # Add extraction metadata
-        row["_extracted_at"] = datetime.now(timezone.utc).isoformat()
+        row["_extracted_at"] = datetime.now(UTC).isoformat()
         return row
 
     @property
@@ -554,6 +570,15 @@ class TapOracleWMS(Tap):
 
     def _raise_schema_error(self, error_msg: str) -> None:
         """Raise schema generation errors."""
+        raise ValueError(error_msg)
+
+    def _raise_metadata_error(self, entity_name: str) -> None:
+        """Raise metadata retrieval errors."""
+        error_msg = (
+            f"❌ CRITICAL FAILURE: Cannot get metadata for entity: "
+            f"{entity_name}. This is a fatal error - aborting!"
+        )
+        self.logger.error(error_msg)
         raise ValueError(error_msg)
 
 
