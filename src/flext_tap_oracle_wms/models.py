@@ -8,16 +8,17 @@ Uses flext-core base classes, types, and constants. Zero tolerance for code dupl
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-
-from pydantic import Field, field_validator
-
-from flext_core.domain.pydantic_base import DomainBaseModel, DomainValueObject
+from typing import TYPE_CHECKING
+from typing import Any
 
 if TYPE_CHECKING:
     from datetime import datetime
 
-    from pydantic import HttpUrl
+from flext_core.domain.pydantic_base import DomainBaseModel
+from flext_core.domain.pydantic_base import DomainValueObject
+from pydantic import Field
+from pydantic import HttpUrl
+from pydantic import field_validator
 
 
 # Simple constants for compatibility

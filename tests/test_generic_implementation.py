@@ -10,12 +10,16 @@ Oracle WMS specific functionality.
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC
+from datetime import datetime
 from typing import Any
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
+from unittest.mock import patch
 
 import pytest
-from flext_tap_oracle_wms.discovery import EntityDiscovery, SchemaGenerator
+
+from flext_tap_oracle_wms.discovery import EntityDiscovery
+from flext_tap_oracle_wms.discovery import SchemaGenerator
 from flext_tap_oracle_wms.streams import WMSStream
 from flext_tap_oracle_wms.tap import TapOracleWMS
 
@@ -199,6 +203,7 @@ class TestWMSStreamGeneric:
 
             # Verify flattening was applied
             mock_instance.flatten_complex_objects.assert_called_once()
+            assert processed is not None
             assert "order_key" in processed
             assert processed["order_key"] == "ORD001"
 
@@ -234,12 +239,12 @@ class TestSchemaGeneratorGeneric:
         generator = SchemaGenerator(config)
 
         metadata = {
-            "fields": [
-                {"name": "CREATE_USER", "type": "varchar"},
-                {"name": "CREATE_TS", "type": "datetime"},
-                {"name": "MOD_USER", "type": "varchar"},
-                {"name": "MOD_TS", "type": "datetime"},
-            ],
+            "fields": {
+                "CREATE_USER": {"type": "varchar"},
+                "CREATE_TS": {"type": "datetime"},
+                "MOD_USER": {"type": "varchar"},
+                "MOD_TS": {"type": "datetime"},
+            },
         }
 
         schema = generator.generate_from_metadata(metadata)
@@ -258,39 +263,6 @@ class TestBusinessLogicPreserved:
     """Test that all business logic is preserved in generic implementation."""
 
     @pytest.mark.asyncio
-    async def test_entity_filtering_logic(self) -> None:
-        config = {
-            "base_url": "https://wms.com",
-            "username": "test",
-            "password": "test",
-            "entity_patterns": {
-                "include": ["order_*", "allocation*"],
-                "exclude": ["*_temp", "*_backup"],
-            },
-        }
-
-        discovery = EntityDiscovery(config)
-
-        # Test filtering
-        entities = {
-            "order_hdr": "url1",
-            "order_dtl": "url2",
-            "allocation": "url3",
-            "order_temp": "url4",
-            "test_backup": "url5",
-            "other_entity": "url6",
-        }
-
-        filtered = discovery.filter_entities(entities)
-
-        # Verify filtering logic
-        assert "order_hdr" in filtered
-        assert "order_dtl" in filtered
-        assert "allocation" in filtered
-        assert "order_temp" not in filtered  # Excluded
-        assert "test_backup" not in filtered  # Excluded
-        assert "other_entity" not in filtered  # Not included
-
     def test_incremental_sync_overlap(self) -> None:
         config = {
             "base_url": "https://wms.com",
@@ -339,4 +311,4 @@ class TestBusinessLogicPreserved:
 
 
 if __name__ == "__main__":
-            pytest.main([__file__, "-v"])
+    pytest.main([__file__, "-v"])

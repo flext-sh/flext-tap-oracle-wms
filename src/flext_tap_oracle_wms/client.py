@@ -5,32 +5,20 @@
 from __future__ import annotations
 
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Self
 
 import httpx
 
-# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
-try:
-    from flext_observability.logging import get_logger
-except ImportError:
-    # Fallback to standard logging if flext_observability is not available
-    import logging
-    def get_logger(name: str) -> logging.Logger:
-        """Fallback logger function.
-
-        Args:
-            name: Logger name
-
-        Returns:
-            Configured logger instance
-
-        """
-        return logging.getLogger(name)
+# Use centralized logger from flext-observability - NO FALLBACKS
+from flext_observability.logging import get_logger
 
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from flext_tap_oracle_wms.models import TapMetrics, WMSConfig
+    from flext_tap_oracle_wms.models import TapMetrics
+    from flext_tap_oracle_wms.models import WMSConfig
 
 logger = get_logger(__name__)
 

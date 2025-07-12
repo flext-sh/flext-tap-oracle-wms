@@ -11,9 +11,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import Field, field_validator
-
-from flext_core.domain.pydantic_base import DomainBaseModel, DomainValueObject
+from flext_core.domain.pydantic_base import DomainBaseModel
+from flext_core.domain.pydantic_base import DomainValueObject
+from pydantic import Field
+from pydantic import field_validator
 
 
 def _default_discovery_config() -> WMSDiscoveryConfig:

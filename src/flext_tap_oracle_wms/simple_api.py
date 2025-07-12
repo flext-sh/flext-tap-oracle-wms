@@ -9,11 +9,10 @@ from __future__ import annotations
 
 # Use centralized ServiceResult from flext-core - ELIMINATE DUPLICATION
 from flext_core.domain.types import ServiceResult
-from flext_tap_oracle_wms.config import (
-    TapOracleWMSConfig,
-    WMSAuthConfig,
-    WMSConnectionConfig,
-)
+
+from flext_tap_oracle_wms.config import TapOracleWMSConfig
+from flext_tap_oracle_wms.config import WMSAuthConfig
+from flext_tap_oracle_wms.config import WMSConnectionConfig
 
 
 def setup_wms_tap(
@@ -40,7 +39,7 @@ def setup_wms_tap(
 
         return ServiceResult.ok(config)
 
-    except Exception as e:
+    except (ValueError, TypeError, AttributeError) as e:
         return ServiceResult.fail(f"Failed to setup WMS tap: {e}")
 
 
@@ -148,9 +147,9 @@ def validate_wms_config(config: TapOracleWMSConfig) -> ServiceResult[bool]:
         if not config.connection.base_url:
             return ServiceResult.fail("Base URL is required")
 
-        return ServiceResult.ok(True)
+        return ServiceResult.ok(data=True)
 
-    except Exception as e:
+    except (ValueError, TypeError, AttributeError) as e:
         return ServiceResult.fail(f"Configuration validation failed: {e}")
 
 

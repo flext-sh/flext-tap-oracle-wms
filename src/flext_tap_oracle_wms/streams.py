@@ -5,20 +5,25 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from datetime import UTC
+from datetime import datetime
+from datetime import timedelta
+from typing import TYPE_CHECKING
+from typing import Any
 from urllib.parse import parse_qs
 
-from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
+from flext_observability.logging import get_logger
+from singer_sdk.exceptions import FatalAPIError
+from singer_sdk.exceptions import RetriableAPIError
 from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
 
-from flext_observability.logging import get_logger
 from flext_tap_oracle_wms.auth import get_wms_authenticator
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping
+    from collections.abc import Iterable
+    from collections.abc import Mapping
 
     import requests
 
@@ -102,6 +107,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
             name: Stream name.
             schema: JSON schema for the stream.
 
+        Raises:
+            ValueError: If replication key configuration is invalid.
+
         """
         # Store entity-specific information
         self._entity_name = name
@@ -137,18 +145,20 @@ class WMSStream(RESTStream[dict[str, Any]]):
         enable_incremental = self.config.get("enable_incremental", True)
 
         if force_full_table or not enable_incremental:
-            # Forced full sync via config
+            # Forced full sync via config - no state management
             self.replication_method = "FULL_TABLE"
-            # Use primary key for bookmark tracking in full sync
-            self.replication_key = self.primary_keys[0] if self.primary_keys else "id"
+            self.replication_key = None  # No replication key for full table
         elif configured_rep_key in schema_props:
             # Use incremental sync with configured key
             self.replication_method = "INCREMENTAL"
             self.replication_key = configured_rep_key
         else:
-            # Fall back to full table sync if replication key not found
-            self.replication_method = "FULL_TABLE"
-            self.replication_key = self.primary_keys[0] if self.primary_keys else "id"
+            # No fallback - fail explicitly if configuration is invalid
+            msg = (
+                f"Incremental sync enabled but replication key '{configured_rep_key}' "
+                f"not found in schema properties: {list(schema_props.keys())}"
+            )
+            raise ValueError(msg)
 
     @property
     def url_base(self) -> str:
@@ -392,6 +402,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 yield from self._yield_direct_array(data)
             elif isinstance(data, dict) and not data:
                 # Handle empty dict response - this is valid (no data available)
+                # Must yield nothing to maintain generator contract
                 return
             else:
                 self._log_unexpected_format(data)
@@ -460,7 +471,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             msg = f"Unexpected status {status}: {response.text}"
             raise FatalAPIError(msg)
 
-    def post_process(  # noqa: PLR6301
+    def post_process(
         self,
         row: dict[str, Any],
         _context: Mapping[str, Any] | None = None,

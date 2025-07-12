@@ -9,7 +9,7 @@ from flext_tap_oracle_wms.tap import TapOracleWMS
 
 def main() -> None:
     """CLI entry point for Oracle WMS tap."""
-    TapOracleWMS().cli()
+    TapOracleWMS.cli()
 
 
 if __name__ == "__main__":

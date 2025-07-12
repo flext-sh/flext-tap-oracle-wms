@@ -6,31 +6,28 @@
 from __future__ import annotations
 
 import sys
-from datetime import UTC, datetime
+from datetime import UTC
+from datetime import datetime
 from typing import Any
-
-from singer_sdk import Tap
-from singer_sdk import typing as th
 
 # Import logger at top level
 from flext_observability.logging import get_logger
+from singer_sdk import Tap
+from singer_sdk import singer_typing as th
+
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
-from flext_tap_oracle_wms.config_validator import (
-    ConfigValidationError,
-    validate_config_with_mapper,
-)
+from flext_tap_oracle_wms.config_validator import ConfigValidationError
+from flext_tap_oracle_wms.config_validator import validate_config_with_mapper
 from flext_tap_oracle_wms.critical_validation import (
     enforce_mandatory_environment_variables,
 )
-from flext_tap_oracle_wms.discovery import (
-    AuthenticationError,
-    EntityDescriptionError,
-    EntityDiscovery,
-    EntityDiscoveryError,
-    NetworkError,
-    SchemaGenerationError,
-    SchemaGenerator,
-)
+from flext_tap_oracle_wms.discovery import AuthenticationError
+from flext_tap_oracle_wms.discovery import EntityDescriptionError
+from flext_tap_oracle_wms.discovery import EntityDiscovery
+from flext_tap_oracle_wms.discovery import EntityDiscoveryError
+from flext_tap_oracle_wms.discovery import NetworkError
+from flext_tap_oracle_wms.discovery import SchemaGenerationError
+from flext_tap_oracle_wms.discovery import SchemaGenerator
 from flext_tap_oracle_wms.streams import WMSStream
 
 # API and Performance Constants
@@ -353,9 +350,6 @@ class TapOracleWMS(Tap):
 
         Returns:
             List of discovered stream definitions with schemas and metadata.
-
-        Raises:
-            ValueError: If no entities are configured for discovery.
 
         """
         # Enable discovery mode when this method is called

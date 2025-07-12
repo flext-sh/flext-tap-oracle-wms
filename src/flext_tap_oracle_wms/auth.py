@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import base64
 import threading
-from typing import TYPE_CHECKING, Any
-
-from singer_sdk.authenticators import SimpleAuthenticator
+from typing import TYPE_CHECKING
+from typing import Any
 
 from flext_observability.logging import get_logger
+from singer_sdk.authenticators import SimpleAuthenticator
 
 # Use flext_auth without fallback - proper enterprise standard
 # BasicAuthService is not available in flext_auth, will use direct implementation
@@ -43,24 +43,11 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
 
         """
         _ = stream  # Mark as intentionally unused
-        logger.debug("Initializing basic authenticator facade for user: %s", username)
+        logger.debug("Initializing basic authenticator for user: %s", username)
         self.username = username
         self.password = password
         self._auth_headers: dict[str, str] | None = None
         self._auth_lock = threading.RLock()
-
-        # Try to initialize enterprise authentication service
-        self._enterprise_auth = None
-        if BasicAuthService is not None:
-            try:
-                self._enterprise_auth = BasicAuthService()
-                logger.debug(
-                    "Enterprise authentication service initialized successfully",
-                )
-            except (ImportError, AttributeError, TypeError, ValueError, RuntimeError):
-                logger.warning("Failed to initialize enterprise auth, using fallback")
-        else:
-            logger.info("flext-auth not available, using fallback implementation")
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Apply authentication headers to request.
