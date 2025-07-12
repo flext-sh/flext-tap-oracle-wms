@@ -58,7 +58,7 @@ repos:
   # SECURITY SCANNING (FLEXT Standard)
   # ═══════════════════════════════════════════════════════════════════════════════
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.0 # Latest Bandit
+    rev: 1.8.6 # Latest Bandit
     hooks:
       - id: bandit
         name: "🔒 Bandit Security Linter"
