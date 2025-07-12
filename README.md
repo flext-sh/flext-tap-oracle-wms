@@ -1,27 +1,26 @@
-# tap-oracle-wms
+# FLEXT Tap Oracle WMS
 
-Singer tap for Oracle Warehouse Management System (WMS) built with the [Singer SDK](https://sdk.meltano.com) 0.47.4+.
+Enterprise Singer tap for Oracle Warehouse Management System (WMS) built with [Singer SDK](https://sdk.meltano.com) 0.47.4+ and FLEXT standards.
 
-This tap extracts data from Oracle WMS REST API with automatic entity discovery, dynamic schema generation, and full incremental sync support.
+Extracts data from Oracle WMS REST APIs with automatic entity discovery, dynamic schema generation, and incremental sync support.
 
 ## Features
 
-- 🔍 **Automatic Entity Discovery** - Discovers all available WMS entities dynamically
-- 📊 **Dynamic Schema Generation** - Generates schemas from API metadata or sample data
-- 🔄 **Incremental Sync** - Efficient data extraction using MOD_TS timestamps
-- 📄 **HATEOAS Pagination** - Follows next_page URLs for efficient data retrieval
-- 🛡️ **Resilient** - Built-in retry logic and error handling
-- 🚀 **High Performance** - Optimized for large datasets with configurable page sizes
-- 🔧 **Fully Configurable** - Extensive configuration options via Singer SDK
-- 🐍 **Python 3.9+** - Compatible with Python 3.9, 3.10, 3.11, and 3.12
+- 🔍 **Dynamic Entity Discovery** - Auto-discovers WMS entities from API
+- 📊 **Schema Generation** - Creates schemas from API metadata  
+- 🔄 **Incremental Sync** - Efficient extraction using `mod_ts` timestamps
+- 📄 **HATEOAS Pagination** - Follows WMS API pagination patterns
+- 🛡️ **Enterprise Ready** - Built-in retry, error handling, and observability
+- 🏗️ **FLEXT Standards** - Clean Architecture with flext-core integration
+- 🐍 **Python 3.13** - Modern Python with strict typing
 
 ## Installation
 
 ```bash
-pip install tap-oracle-wms
+pip install flext-tap-oracle-wms
 ```
 
-Or install from source:
+Or from source:
 
 ```bash
 git clone https://github.com/flext-sh/flext-tap-oracle-wms.git
@@ -31,111 +30,99 @@ pip install -e .
 
 ## Configuration
 
-### Using config.JSON
+### Basic Configuration
 
-Create a `config.json` file with your Oracle WMS credentials:
+Create a `config.json` file:
 
 ```json
 {
   "base_url": "https://your-wms-instance.com",
-  "username": "your_username",
+  "username": "your_username", 
   "password": "your_password",
-  "company_code": "*",
-  "facility_code": "*",
-  "page_size": 100
+  "entities": ["allocation", "order_hdr", "order_dtl", "item_master"]
 }
 ```
 
-See [config.JSON.example](config.json.example) for all available options.
+### Environment Variables
 
-### Using Environment Variables
-
-Copy `.env.example` to `.env` and configure:
+Set environment variables:
 
 ```bash
-cp .env.example .env
-# Edit .env with your WMS credentials
+export TAP_ORACLE_WMS_BASE_URL="https://your-wms-instance.com"
+export TAP_ORACLE_WMS_USERNAME="your_username"
+export TAP_ORACLE_WMS_PASSWORD="your_password"
+export TAP_ORACLE_WMS_ENTITIES="allocation,order_hdr,order_dtl,item_master"
 ```
 
 ## Usage
 
-### Discover available entities
+### Discovery
 
 ```bash
-tap-oracle-wms --config config.json --discover > catalog.json
+flext-tap-oracle-wms --config config.json --discover > catalog.json
 ```
 
-### Run a sync
+### Extract Data
 
 ```bash
-tap-oracle-wms --config config.json --catalog catalog.json
+flext-tap-oracle-wms --config config.json --catalog catalog.json > data.jsonl
 ```
 
-### Incremental sync
-
-The tap automatically performs incremental sync for entities with `mod_ts` field:
+### Incremental Sync
 
 ```bash
-tap-oracle-wms --config config.json --catalog catalog.json --state state.json
+flext-tap-oracle-wms --config config.json --catalog catalog.json --state state.json > data.jsonl
 ```
 
 ### With Meltano
 
+Add to your `meltano.yml`:
+
 ```yaml
-# meltano.yml
 plugins:
   extractors:
-    - name: tap-oracle-wms
+    - name: flext-tap-oracle-wms
       namespace: tap_oracle_wms
-      pip_url: tap-oracle-wms
+      pip_url: flext-tap-oracle-wms
       config:
-        base_url: ${ORACLE_WMS_BASE_URL}
-        username: ${ORACLE_WMS_USERNAME}
-        password: ${ORACLE_WMS_PASSWORD}
+        base_url: ${TAP_ORACLE_WMS_BASE_URL}
+        username: ${TAP_ORACLE_WMS_USERNAME}
+        password: ${TAP_ORACLE_WMS_PASSWORD}
+        entities: ["allocation", "order_hdr", "order_dtl"]
 ```
 
-## Key Configuration Options
+## Configuration Options
 
-### Core Settings
+### Required Settings
 
-- `base_url` - Oracle WMS instance URL (required)
-- `username` - Username for basic authentication (required)
-- `password` - Password for basic authentication (required)
-- `company_code` - WMS company code (default: "\*" for all)
-- `facility_code` - WMS facility code (default: "\*" for all)
+- `base_url` - Oracle WMS REST API URL
+- `username` - Authentication username
+- `password` - Authentication password  
+- `entities` - List of WMS entities to extract
 
-### Performance Settings
+### Optional Settings
 
-- `page_size` - Records per page, 1-1250 (default: 100)
-- `request_timeout` - Request timeout in seconds (default: 120)
-- `max_retries` - Maximum retry attempts (default: 3)
-
-### Entity Selection
-
-- `entities` - List of specific entities to extract
-- `entity_patterns` - Include/exclude patterns for entity filtering
-- `entity_filters` - Entity-specific filters
+- `company_code` - WMS company scope (default: "*")
+- `facility_code` - WMS facility scope (default: "*") 
+- `page_size` - Records per page (default: 500, max: 10000)
+- `timeout` - Request timeout seconds (default: 30)
+- `max_retries` - Retry attempts (default: 3)
 
 ### Incremental Sync
 
 - `enable_incremental` - Enable incremental sync (default: true)
-- `start_date` - Initial extraction date for incremental sync
-- `incremental_overlap_minutes` - Safety overlap for incremental sync (default: 5)
+- `replication_key` - Timestamp field for incremental sync (default: "mod_ts")
+- `start_date` - Initial extraction date (ISO format)
 
-### Advanced Features
+## Architecture
 
-- `stream_maps` - Singer SDK stream maps for transformations
-- `flattening_enabled` - Enable automatic schema flattening (default: true)
-- `flattening_max_depth` - Maximum depth for flattening (default: 3)
+The tap follows FLEXT standards with clean architecture:
 
-## Incremental Sync Strategy
-
-The tap implements intelligent incremental sync:
-
-1. **Filter Rule**: `mod_ts > max(mod_ts from state) - 5 minutes`
-2. **Ordering**: Records are processed in chronological order (`mod_ts ASC`)
-3. **State Management**: Automatically tracks latest `mod_ts` for next sync
-4. **Safety Overlap**: 5-minute overlap prevents missing records due to clock skew
+- **TapOracleWMS** - Main tap class using Singer SDK
+- **WMSStream** - Dynamic REST stream with HATEOAS pagination  
+- **WMSClient** - HTTP client with retry and error handling
+- **ConfigMapper** - Configuration mapping and validation
+- **EntityDiscovery** - Dynamic entity discovery from WMS API
 
 ## Testing
 

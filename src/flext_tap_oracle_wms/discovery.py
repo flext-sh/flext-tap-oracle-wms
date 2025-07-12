@@ -15,6 +15,7 @@ from typing import Any
 
 # Use centralized logger from flext-observability - ELIMINATE DUPLICATION
 from flext_observability.logging import get_logger
+
 from flext_tap_oracle_wms.auth import get_wms_headers
 from flext_tap_oracle_wms.cache_manager import CacheManager
 from flext_tap_oracle_wms.entity_discovery import EntityDiscovery as EntityDiscoveryCore

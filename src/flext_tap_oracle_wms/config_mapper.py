@@ -24,7 +24,7 @@ MAX_RETRIES = 10
 logger = get_logger(__name__)
 
 
-class ConfigMapper:  # noqa: PLR0904
+class ConfigMapper:
     """Maps hardcoded specifications to configurable parameters.
 
     This class has many methods due to the extensive WMS configuration options.

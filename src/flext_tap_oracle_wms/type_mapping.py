@@ -146,57 +146,68 @@ def get_full_singer_schema(
         Complete Singer schema definition.
 
     """
-    # Normalize type name
+    # Get base schema from different sources
+    schema = _get_base_schema_for_type(wms_type, format_hint)
+
+    # Apply nullable setting and return
+    return _apply_nullable_to_schema(schema, nullable=nullable)
+
+
+def _get_base_schema_for_type(wms_type: str, format_hint: str | None) -> dict[str, Any]:
+    """Get base schema from different type mapping sources.
+
+    Args:
+        wms_type: Type from Oracle WMS API metadata
+        format_hint: Optional format hint for better type detection
+
+    Returns:
+        Base schema dictionary for the specified type
+
+    """
     normalized_type = wms_type.lower().strip()
 
     # Check format hint first
     if format_hint:
         format_mapping = FORMAT_TO_SINGER.get(format_hint.lower())
         if format_mapping:
-            schema = format_mapping.copy()
-            if (
-                not nullable
-                and isinstance(schema["type"], list)
-                and "null" in schema["type"]
-            ):
-                # Remove null from type array
-                schema["type"] = [t for t in schema["type"] if t != "null"]
-                if len(schema["type"]) == 1:
-                    schema["type"] = schema["type"][0]
-            return schema
+            return format_mapping.copy()
 
     # Check WMS-specific types
     if normalized_type in WMS_SPECIFIC_TYPES:
-        schema = WMS_SPECIFIC_TYPES[normalized_type].copy()
-        if (
-            not nullable
-            and isinstance(schema["type"], list)
-            and "null" in schema["type"]
-        ):
-            schema["type"] = [t for t in schema["type"] if t != "null"]
-            if len(schema["type"]) == 1:
-                schema["type"] = schema["type"][0]
-        return schema
+        return WMS_SPECIFIC_TYPES[normalized_type].copy()
 
     # Check general API metadata mappings
     if normalized_type in API_METADATA_TO_SINGER:
-        schema = API_METADATA_TO_SINGER[normalized_type].copy()
-        if (
-            not nullable
-            and isinstance(schema["type"], list)
-            and "null" in schema["type"]
-        ):
-            schema["type"] = [t for t in schema["type"] if t != "null"]
-            if len(schema["type"]) == 1:
-                schema["type"] = schema["type"][0]
-        return schema
+        return API_METADATA_TO_SINGER[normalized_type].copy()
 
     # Fallback to basic type conversion
     base_type = convert_metadata_type_to_singer(wms_type, format_hint)
-
-    if nullable:
-        return {"type": [base_type, "null"]}
     return {"type": base_type}
+
+
+def _apply_nullable_to_schema(
+    schema: dict[str, Any], *, nullable: bool,
+) -> dict[str, Any]:
+    """Apply nullable setting to schema.
+
+    Args:
+        schema: Base schema dictionary to modify
+        nullable: Whether the field should be nullable
+
+    Returns:
+        Schema dictionary with nullable setting applied
+
+    """
+    if not nullable and isinstance(schema["type"], list) and "null" in schema["type"]:
+        # Remove null from type array
+        schema["type"] = [t for t in schema["type"] if t != "null"]
+        if len(schema["type"]) == 1:
+            schema["type"] = schema["type"][0]
+    elif nullable and isinstance(schema["type"], str):
+        # Add null to single type
+        schema["type"] = [schema["type"], "null"]
+
+    return schema
 
 
 def is_timestamp_field(field_name: str) -> bool:

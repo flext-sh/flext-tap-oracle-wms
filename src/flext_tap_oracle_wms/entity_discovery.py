@@ -10,20 +10,17 @@ from __future__ import annotations
 
 import base64
 import re
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
+from typing import Any
 
 import httpx
-
 from flext_observability.logging import get_logger
+
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
-from flext_tap_oracle_wms.interfaces import (
-    EntityDiscoveryInterface,
-)
+from flext_tap_oracle_wms.interfaces import EntityDiscoveryInterface
 
 if TYPE_CHECKING:
-    from flext_tap_oracle_wms.interfaces import (
-        CacheManagerInterface,
-    )
+    from flext_tap_oracle_wms.interfaces import CacheManagerInterface
 
 logger = get_logger(__name__)
 
@@ -158,12 +155,6 @@ class EntityDiscovery(EntityDiscoveryInterface):
         include_patterns = entity_patterns.get("include", [])
         exclude_patterns = entity_patterns.get("exclude", [])
 
-        # Backward compatibility for legacy config
-        legacy_includes = self.config.get("entity_includes", [])
-        legacy_excludes = self.config.get("entity_excludes", [])
-        include_patterns.extend(legacy_includes)
-        exclude_patterns.extend(legacy_excludes)
-
         # If no patterns, return all entities
         if not include_patterns and not exclude_patterns:
             return entities
@@ -207,7 +198,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         """
         entities = {}
 
-        try:  # noqa: PLR1702
+        try:
             auth_headers = self._prepare_auth_headers()
 
             async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
@@ -216,65 +207,10 @@ class EntityDiscovery(EntityDiscoveryInterface):
                     headers=auth_headers,
                 )
                 response.raise_for_status()
-
                 data = response.json()
 
-                # Handle Oracle WMS API response format
-                # Oracle WMS returns: {entity_name: entity_url, ...}
-                if isinstance(data, dict):
-                    # Check if it's a direct entity mapping (Oracle WMS format)
-                    if all(isinstance(v, str) for v in data.values()):
-                        # Direct mapping format - use as-is
-                        entities = data
-                        logger.info(
-                            "Using direct entity mapping format (%d entities)",
-                            len(entities),
-                        )
-                    elif "entities" in data:
-                        # Nested entities format
-                        entity_list = data["entities"]
-                        if isinstance(entity_list, dict):
-                            entities = entity_list
-                        elif isinstance(entity_list, list):
-                            # Build entity mapping from list
-                            for entity_info in entity_list:
-                                if isinstance(entity_info, dict):
-                                    name = entity_info.get("name")
-                                    url = entity_info.get("url") or entity_info.get(
-                                        "href",
-                                    )
-                                    if name and url:
-                                        entities[name] = url
-                                elif isinstance(entity_info, str):
-                                    # Simple entity name - construct URL
-                                    entities[entity_info] = (
-                                        f"{self.entity_endpoint}/{entity_info}"
-                                    )
-                        logger.info(
-                            "Using nested entities format (%d entities)", len(entities),
-                        )
-                    else:
-                        logger.warning(
-                            "Unexpected dictionary response format for entities",
-                        )
-                        return entities
-                elif isinstance(data, list):
-                    # List format - build entity mapping
-                    for entity_info in data:
-                        if isinstance(entity_info, dict):
-                            name = entity_info.get("name")
-                            url = entity_info.get("url") or entity_info.get("href")
-                            if name and url:
-                                entities[name] = url
-                        elif isinstance(entity_info, str):
-                            # Simple entity name - construct URL
-                            entities[entity_info] = (
-                                f"{self.entity_endpoint}/{entity_info}"
-                            )
-                    logger.info("Using list format (%d entities)", len(entities))
-                else:
-                    logger.warning("Unexpected API response format for entities")
-                    return entities
+                # Delegate complex processing to existing helper method
+                entities = self._process_api_response(data)
 
         except httpx.HTTPError as e:
             logger.exception("Failed to fetch entities from API")
@@ -308,7 +244,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         return auth_headers
 
     def _process_api_response(
-        self, data: dict[str, object] | list[object],
+        self, data: dict[str, object] | list[object] | object,
     ) -> dict[str, str]:
         """Process Oracle WMS API response and extract entity mapping.
 

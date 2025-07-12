@@ -12,6 +12,7 @@ import re
 from typing import Any
 
 from flext_observability.logging import get_logger
+
 from flext_tap_oracle_wms.interfaces import SchemaGeneratorInterface
 from flext_tap_oracle_wms.type_mapping import convert_metadata_type_to_singer
 
@@ -39,7 +40,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         self.enable_flattening = config.get("flattening_enabled", True)
         self.max_flatten_depth = config.get("flattening_max_depth", 3)
 
-    def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:  # noqa: PLR6301
+    def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
         """Generate JSON schema from Oracle WMS API metadata.
 
         Args:
@@ -47,9 +48,6 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
         Returns:
             JSON schema dictionary for Singer protocol.
-
-        Raises:
-            SchemaGenerationError: If schema generation fails
 
         """
         try:
@@ -84,6 +82,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             schema = {
                 "type": "object",
                 "properties": properties,
+                "additionalProperties": True,  # Allow extra fields like 'url'
             }
 
             if required_fields:
@@ -284,24 +283,59 @@ class SchemaGenerator(SchemaGeneratorInterface):
         if isinstance(value, float):
             return {"type": "number"}
         if isinstance(value, str):
-            # Try to detect date/datetime patterns
-            if SchemaGenerator._looks_like_datetime(value):
-                return {"type": "string", "format": "date-time"}
-            if SchemaGenerator._looks_like_date(value):
-                return {"type": "string", "format": "date"}
-            return {"type": "string"}
+            return self._infer_string_schema(value)
         if isinstance(value, list):
-            if value:
-                # Infer from first item
-                item_type = self._infer_field_type(value[0])
-                return {"type": "array", "items": item_type}
-            return {"type": "array", "items": {"type": "string"}}
+            return self._infer_array_schema(value)
         if isinstance(value, dict):
-            # Recursively infer object schema
-            properties = {k: self._infer_field_type(v) for k, v in value.items()}
-            return {"type": "object", "properties": properties}
+            return self._infer_object_schema(value)
         # Unknown type - default to string
         return {"type": "string"}
+
+    @staticmethod
+    def _infer_string_schema(value: str) -> dict[str, Any]:
+        """Infer string type with format detection.
+
+        Args:
+            value: String value to analyze for format detection
+
+        Returns:
+            Schema dictionary with string type and optional format
+
+        """
+        if SchemaGenerator._looks_like_datetime(value):
+            return {"type": "string", "format": "date-time"}
+        if SchemaGenerator._looks_like_date(value):
+            return {"type": "string", "format": "date"}
+        return {"type": "string"}
+
+    def _infer_array_schema(self, value: list[Any]) -> dict[str, Any]:
+        """Infer array type schema.
+
+        Args:
+            value: Array value to analyze for schema inference
+
+        Returns:
+            Schema dictionary with array type and item type
+
+        """
+        if value:
+            # Infer from first item
+            item_type = self._infer_field_type(value[0])
+            return {"type": "array", "items": item_type}
+        return {"type": "array", "items": {"type": "string"}}
+
+    def _infer_object_schema(self, value: dict[str, Any]) -> dict[str, Any]:
+        """Infer object type schema.
+
+        Args:
+            value: Object value to analyze for schema inference
+
+        Returns:
+            Schema dictionary with object type and properties
+
+        """
+        properties = {k: self._infer_field_type(v) for k, v in value.items()}
+        return {"type": "object", "properties": properties}
 
     @staticmethod
     def _looks_like_datetime(value: str) -> bool:

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Test module."""
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
