@@ -125,6 +125,9 @@ security: ## Run security analysis
 quality: format lint type-check security ## Run all quality checks (FLEXT standard)
 	@echo "${GREEN}✅ All FLEXT quality checks passed!${NC}"
 
+check: lint type-check test ## Run all quality checks (lint, type-check, test)
+	@echo "${GREEN}✅ All quality checks passed!${NC}"
+
 pre-commit: ## Run pre-commit hooks
 	@echo "${BLUE}🪝 Running pre-commit hooks...${NC}"
 	$(POETRY) run pre-commit run --all-files
