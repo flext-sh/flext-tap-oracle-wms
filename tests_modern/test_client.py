@@ -1,18 +1,20 @@
 """Modern unit tests for WMS client."""
+# Copyright (c) 2025 FLEXT Team
+# Licensed under the MIT License
 
 from __future__ import annotations
 
 from unittest.mock import Mock, patch
 
 import httpx
-import pytest
 
-from tap_oracle_wms.client import (
+import pytest
+from flext_tap_oracle_wms.client import (
     AuthenticationError,
     WMSClient,
     WMSConnectionError,
 )
-from tap_oracle_wms.models import TapMetrics, WMSConfig
+from flext_tap_oracle_wms.models import TapMetrics, WMSConfig
 
 
 class TestWMSClient:
@@ -20,7 +22,6 @@ class TestWMSClient:
 
     @pytest.fixture
     def config(self) -> WMSConfig:
-        """Create test config."""
         return WMSConfig(
             base_url="https://wms.example.com",
             username="test_user",
@@ -29,26 +30,25 @@ class TestWMSClient:
 
     @pytest.fixture
     def metrics(self) -> TapMetrics:
-        """Create test metrics."""
         return TapMetrics()
 
     def test_client_initialization(
-        self, config: WMSConfig, metrics: TapMetrics
+        self,
+        config: WMSConfig,
+        metrics: TapMetrics,
     ) -> None:
-        """Test client initialization."""
         with WMSClient(config, metrics) as client:
             assert client.config == config
             assert client.metrics == metrics
             assert client.client.base_url == "https://wms.example.com"
 
-    @patch("tap_oracle_wms.client.httpx.Client")
+    @patch("flext_tap_oracle_wms.client.httpx.Client")
     def test_successful_get_request(
         self,
         mock_client_class: Mock,
         config: WMSConfig,
         metrics: TapMetrics,
     ) -> None:
-        """Test successful GET request."""
         # Setup mock
         mock_client = Mock()
         mock_response = Mock()
@@ -63,14 +63,13 @@ class TestWMSClient:
         assert result == {"data": "test"}
         assert metrics.api_calls_made == 1
 
-    @patch("tap_oracle_wms.client.httpx.Client")
+    @patch("flext_tap_oracle_wms.client.httpx.Client")
     def test_authentication_error(
         self,
         mock_client_class: Mock,
         config: WMSConfig,
         metrics: TapMetrics,
     ) -> None:
-        """Test authentication error handling."""
         # Setup mock
         mock_client = Mock()
         mock_response = Mock()
@@ -82,14 +81,13 @@ class TestWMSClient:
             with WMSClient(config, metrics) as client:
                 client.get("/test")
 
-    @patch("tap_oracle_wms.client.httpx.Client")
+    @patch("flext_tap_oracle_wms.client.httpx.Client")
     def test_connection_error(
         self,
         mock_client_class: Mock,
         config: WMSConfig,
         metrics: TapMetrics,
     ) -> None:
-        """Test connection error handling."""
         # Setup mock
         mock_client = Mock()
         mock_client.get.side_effect = httpx.ConnectError("Connection failed")
@@ -99,14 +97,13 @@ class TestWMSClient:
             with WMSClient(config, metrics) as client:
                 client.get("/test")
 
-    @patch("tap_oracle_wms.client.httpx.Client")
+    @patch("flext_tap_oracle_wms.client.httpx.Client")
     def test_discover_entities_success(
         self,
         mock_client_class: Mock,
         config: WMSConfig,
         metrics: TapMetrics,
     ) -> None:
-        """Test successful entity discovery."""
         # Setup mock
         mock_client = Mock()
         mock_response = Mock()
@@ -124,14 +121,13 @@ class TestWMSClient:
         assert len(entities) == 2
         assert entities[0]["name"] == "item_master"
 
-    @patch("tap_oracle_wms.client.httpx.Client")
+    @patch("flext_tap_oracle_wms.client.httpx.Client")
     def test_get_entity_data(
         self,
         mock_client_class: Mock,
         config: WMSConfig,
         metrics: TapMetrics,
     ) -> None:
-        """Test getting entity data."""
         # Setup mock
         mock_client = Mock()
         mock_response = Mock()

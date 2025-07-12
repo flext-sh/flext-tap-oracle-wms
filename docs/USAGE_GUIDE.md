@@ -134,6 +134,7 @@ Use patterns to include/exclude entities:
 ### Automatic Schema Generation
 
 Schemas are generated from:
+
 1. WMS API metadata
 2. Sample data inference
 3. Hybrid approach (both)
@@ -157,6 +158,7 @@ Flatten nested objects for easier consumption:
 ```
 
 **Example transformation:**
+
 ```json
 // Before flattening
 {
@@ -186,11 +188,13 @@ Flatten nested objects for easier consumption:
 ### Setting Up Incremental Sync
 
 1. **Initial Full Sync**:
+
 ```bash
 tap-oracle-wms --config config.json > state.json
 ```
 
 2. **Subsequent Incremental Syncs**:
+
 ```bash
 tap-oracle-wms --config config.json --state state.json > new_state.json
 mv new_state.json state.json
@@ -208,6 +212,7 @@ mv new_state.json state.json
 ### State Management
 
 State format example:
+
 ```json
 {
   "bookmarks": {
@@ -236,6 +241,7 @@ Adjust based on API performance:
 ```
 
 **Guidelines:**
+
 - Small entities: 5000 records/page
 - Large entities: 1000 records/page
 - Complex entities: 500 records/page
@@ -251,6 +257,7 @@ Enable concurrent page fetching:
 ```
 
 **Guidelines:**
+
 - API rate limits permitting
 - Monitor API response times
 - Adjust based on network conditions
@@ -286,6 +293,7 @@ Configure caching for better performance:
 ### Token Management
 
 The tap automatically:
+
 - Obtains access tokens
 - Refreshes expired tokens
 - Retries on 401 errors
@@ -305,6 +313,7 @@ The tap automatically:
 ### Error Recovery
 
 The tap implements:
+
 - Exponential backoff
 - Circuit breaker pattern
 - Automatic reconnection
@@ -312,6 +321,7 @@ The tap implements:
 ### Common Errors
 
 **Rate Limiting (429)**:
+
 ```json
 {
   "rate_limit_backoff": 60,
@@ -320,6 +330,7 @@ The tap implements:
 ```
 
 **Timeout Errors**:
+
 ```json
 {
   "request_timeout": 600,
@@ -342,6 +353,7 @@ The tap implements:
 ### Metrics
 
 Monitor key metrics:
+
 - Records extracted per entity
 - API requests per second
 - Cache hit rate
@@ -350,6 +362,7 @@ Monitor key metrics:
 ### Progress Tracking
 
 The tap logs progress:
+
 ```
 INFO Starting sync for entity: customer
 INFO Extracted 1000 records from customer (page 1/10)
@@ -362,6 +375,7 @@ INFO Completed sync for customer: 10000 records in 45.3s
 ### 1. Start with Discovery
 
 Always run discovery first:
+
 ```bash
 tap-oracle-wms --config config.json --discover > catalog.json
 # Review and edit catalog.json
@@ -370,6 +384,7 @@ tap-oracle-wms --config config.json --discover > catalog.json
 ### 2. Test with Small Datasets
 
 Start with limited entities:
+
 ```json
 {
   "entities": ["customer"],
@@ -380,6 +395,7 @@ Start with limited entities:
 ### 3. Monitor API Usage
 
 Track API consumption:
+
 ```json
 {
   "log_api_usage": true,
@@ -390,6 +406,7 @@ Track API consumption:
 ### 4. Use Incremental Sync
 
 For large datasets:
+
 ```json
 {
   "start_date": "2024-01-01T00:00:00Z",
@@ -400,6 +417,7 @@ For large datasets:
 ### 5. Optimize for Your Use Case
 
 **Real-time sync**:
+
 ```json
 {
   "page_size": 500,
@@ -409,6 +427,7 @@ For large datasets:
 ```
 
 **Batch sync**:
+
 ```json
 {
   "page_size": 5000,
@@ -424,6 +443,7 @@ For large datasets:
 **Error**: `ConnectionError: Failed to connect to WMS API`
 
 **Solutions**:
+
 1. Verify base_url is correct
 2. Check network connectivity
 3. Verify firewall rules
@@ -433,6 +453,7 @@ For large datasets:
 **Error**: `401 Unauthorized`
 
 **Solutions**:
+
 1. Verify client credentials
 2. Check OAuth scopes
 3. Ensure token endpoint is correct
@@ -442,6 +463,7 @@ For large datasets:
 **Error**: `Schema validation failed`
 
 **Solutions**:
+
 1. Enable schema inference
 2. Increase sample size
 3. Check for data type mismatches
@@ -451,6 +473,7 @@ For large datasets:
 **Symptom**: Slow extraction
 
 **Solutions**:
+
 1. Increase page size
 2. Enable parallel processing
 3. Use caching
@@ -511,6 +534,7 @@ tap-oracle-wms --config config.json
 ```
 
 Config file:
+
 ```json
 {
   "base_url": "${WMS_BASE_URL}",

@@ -3,7 +3,7 @@
 **Version**: 0.2.0  
 **Singer SDK**: 0.47.4+  
 **Type**: Singer TAP (Data Extraction)  
-**Source**: Oracle WMS REST API  
+**Source**: Oracle WMS REST API
 
 ---
 
@@ -46,14 +46,14 @@ graph TB
     B --> C[Stream Layer]
     C --> D[Tap Layer]
     D --> E[Singer Messages Output]
-    
+
     B --> F[Pagination Handler]
     B --> G[Circuit Breaker]
     C --> H[WMS Entity Mapping]
     C --> I[Schema Discovery]
     D --> J[Configuration Layer]
     D --> K[Monitoring Layer]
-    
+
     style A fill:#fff3e0
     style B fill:#e8f5e8
     style C fill:#f3e5f5
@@ -63,13 +63,13 @@ graph TB
 
 ### Layer Responsibilities
 
-| Layer | Component | Responsibility |
-|-------|-----------|---------------|
-| **Source** | Oracle WMS API | WMS data endpoints, authentication |
-| **Transport** | HTTP/Auth | Request handling, authentication, retries |
-| **Processing** | Streams | Data extraction, pagination, transformation |
-| **Protocol** | Tap | Singer message generation, state management |
-| **Output** | Singer Messages | SCHEMA, RECORD, STATE message emission |
+| Layer          | Component       | Responsibility                              |
+| -------------- | --------------- | ------------------------------------------- |
+| **Source**     | Oracle WMS API  | WMS data endpoints, authentication          |
+| **Transport**  | HTTP/Auth       | Request handling, authentication, retries   |
+| **Processing** | Streams         | Data extraction, pagination, transformation |
+| **Protocol**   | Tap             | Singer message generation, state management |
+| **Output**     | Singer Messages | SCHEMA, RECORD, STATE message emission      |
 
 ---
 
@@ -81,13 +81,14 @@ graph TB
 # src/tap_oracle_wms/tap.py
 class TapOracleWMS(Tap):
     """Main tap class implementing Singer SDK 0.47.4+ Tap interface"""
-    
+
     name = "tap-oracle-wms"
     config_jsonschema = config_schema.to_dict()
     default_stream_class = WMSAdvancedStream
 ```
 
 **Key Features**:
+
 - Singer SDK 0.47.4+ Tap compliance
 - WMS-specific configuration validation
 - Stream discovery and catalog generation
@@ -100,10 +101,10 @@ class TapOracleWMS(Tap):
 # src/tap_oracle_wms/streams.py
 class WMSAdvancedStream(RESTStream):
     """Advanced WMS stream with REST API integration"""
-    
+
     # Modern pagination support
     next_page_token_jsonpath = "$.next"
-    
+
     # WMS-specific configurations
     records_jsonpath = "$.results[*]"
     replication_method = "INCREMENTAL"
@@ -111,6 +112,7 @@ class WMSAdvancedStream(RESTStream):
 ```
 
 **Key Features**:
+
 - RESTStream-based architecture for HTTP APIs
 - HATEOAS pagination with ParseResult objects
 - WMS entity mapping and transformation
@@ -130,6 +132,7 @@ WMS_API_CONFIG = {
 ```
 
 **Key Features**:
+
 - Oracle WMS REST API client integration
 - Multiple authentication methods (Basic, OAuth2)
 - Adaptive rate limiting and backoff
@@ -142,15 +145,16 @@ WMS_API_CONFIG = {
 ### Modern Tap Implementation
 
 #### Enhanced Capabilities Declaration
+
 ```python
 from singer_sdk.helpers.capabilities import TapCapabilities
 
 class TapOracleWMS(Tap):
     """Modern tap with enhanced capabilities"""
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
         # Declare modern Singer capabilities
         self.capabilities = [
             TapCapabilities.DISCOVER,      # Schema discovery
@@ -161,19 +165,20 @@ class TapOracleWMS(Tap):
 ```
 
 #### Modern Stream Discovery
+
 ```python
 def discover_streams(self) -> list[Stream]:
     """Dynamic stream discovery using WMS API introspection"""
-    
+
     # Use WMS API metadata endpoints
     wms_entities = self._discover_wms_entities()
-    
+
     streams = []
     for entity in wms_entities:
         # Generate stream class dynamically
         stream_class = self._create_stream_class(entity)
         streams.append(stream_class(tap=self))
-    
+
     return streams
 
 def _discover_wms_entities(self) -> list[dict]:
@@ -183,6 +188,7 @@ def _discover_wms_entities(self) -> list[dict]:
 ```
 
 #### Configuration Schema with Modern Typing
+
 ```python
 from singer_sdk import typing as th
 
@@ -196,7 +202,7 @@ config_schema = th.PropertiesList(
         examples=["https://wms.company.com/api/v1"],
         pattern=r"^https?://.*",
     ),
-    
+
     # === AUTHENTICATION ===
     th.Property(
         "auth_method",
@@ -205,7 +211,7 @@ config_schema = th.PropertiesList(
         allowed_values=["basic", "oauth2"],
         description="Authentication method for WMS API",
     ),
-    
+
     # === PERFORMANCE TUNING ===
     th.Property(
         "page_size",
@@ -215,7 +221,7 @@ config_schema = th.PropertiesList(
         maximum=5000,
         description="Number of records per API page",
     ),
-    
+
     # === WMS-SPECIFIC SETTINGS ===
     th.Property(
         "wms_entities",
@@ -233,19 +239,20 @@ config_schema = th.PropertiesList(
 ### REST API Client Architecture
 
 #### HTTP Client Configuration
+
 ```python
 class WMSAPIClient:
     """Oracle WMS REST API client with enterprise features"""
-    
+
     def __init__(self, config: dict):
         self.base_url = config["base_url"]
         self.auth_handler = self._create_auth_handler(config)
         self.session = self._create_http_session(config)
-        
+
     def _create_http_session(self, config: dict) -> requests.Session:
         """Create HTTP session with WMS-specific optimizations"""
         session = requests.Session()
-        
+
         # Connection pooling for performance
         adapter = HTTPAdapter(
             pool_connections=config.get("max_connections", 10),
@@ -256,36 +263,37 @@ class WMSAPIClient:
                 status_forcelist=[500, 502, 503, 504],
             )
         )
-        
+
         session.mount("http://", adapter)
         session.mount("https://", adapter)
-        
+
         return session
 ```
 
 #### Authentication Handlers
+
 ```python
 class WMSBasicAuth(requests.auth.AuthBase):
     """Basic authentication for Oracle WMS"""
-    
+
     def __init__(self, username: str, password: str):
         self.username = username
         self.password = password
-        
+
     def __call__(self, r: requests.PreparedRequest) -> requests.PreparedRequest:
         r.headers["Authorization"] = f"Basic {self._encode_credentials()}"
         return r
 
 class WMSOAuth2Handler:
     """OAuth2 authentication for Oracle WMS"""
-    
+
     def __init__(self, client_id: str, client_secret: str, token_url: str):
         self.client_id = client_id
         self.client_secret = client_secret
         self.token_url = token_url
         self.access_token = None
         self.token_expires_at = None
-        
+
     def get_access_token(self) -> str:
         """Get valid access token, refreshing if necessary"""
         if self._is_token_expired():
@@ -296,6 +304,7 @@ class WMSOAuth2Handler:
 ### WMS Entity Mapping
 
 #### Entity Configuration
+
 ```python
 WMS_ENTITIES = {
     "allocation": {
@@ -306,7 +315,7 @@ WMS_ENTITIES = {
         "schema_path": "schemas/allocation.json",
     },
     "order_hdr": {
-        "endpoint": "/orders/headers", 
+        "endpoint": "/orders/headers",
         "primary_key": ["order_id"],
         "replication_key": "mod_ts",
         "replication_method": "INCREMENTAL",
@@ -315,7 +324,7 @@ WMS_ENTITIES = {
     "order_dtl": {
         "endpoint": "/orders/details",
         "primary_key": ["order_id", "line_number"],
-        "replication_key": "mod_ts", 
+        "replication_key": "mod_ts",
         "replication_method": "INCREMENTAL",
         "schema_path": "schemas/order_detail.json",
     },
@@ -330,7 +339,7 @@ WMS_ENTITIES = {
         "endpoint": "/locations",
         "primary_key": ["location_id"],
         "replication_key": "mod_ts",
-        "replication_method": "INCREMENTAL", 
+        "replication_method": "INCREMENTAL",
         "schema_path": "schemas/location.json",
     },
 }
@@ -345,28 +354,28 @@ WMS_ENTITIES = {
 ```python
 class WMSAdvancedStream(RESTStream):
     """Advanced WMS stream with modern Singer SDK patterns"""
-    
+
     # Singer SDK 0.47.4+ stream configuration
     rest_method = "GET"
     records_jsonpath = "$.results[*]"
     next_page_token_jsonpath = "$.next"
-    
+
     # WMS-specific configuration
     @property
     def url_base(self) -> str:
         """Base URL for WMS API"""
         return self.config["base_url"]
-    
+
     @property
     def path(self) -> str:
         """API endpoint path for this WMS entity"""
         return WMS_ENTITIES[self.name]["endpoint"]
-    
+
     @property
     def primary_keys(self) -> list[str]:
         """Primary key fields for this WMS entity"""
         return WMS_ENTITIES[self.name]["primary_key"]
-    
+
     @property
     def replication_key(self) -> str:
         """Replication key for incremental sync"""
@@ -376,104 +385,106 @@ class WMSAdvancedStream(RESTStream):
 ### Pagination Patterns
 
 #### HATEOAS Pagination (Cursor-based)
+
 ```python
 def get_next_page_token(
-    self, 
-    response: requests.Response, 
+    self,
+    response: requests.Response,
     previous_token: Any
 ) -> Any | None:
     """Extract next page token from HATEOAS links"""
-    
+
     try:
         data = response.json()
-        
+
         # Oracle WMS uses HATEOAS links in response
         links = data.get("_links", {})
         next_link = links.get("next", {})
         next_href = next_link.get("href")
-        
+
         if next_href:
             # Extract page token from URL
             parsed_url = urlparse(next_href)
             params = parse_qs(parsed_url.query)
             return params.get("page_token", [None])[0]
-            
+
         return None
-        
+
     except (ValueError, KeyError) as e:
         self.logger.warning(f"Failed to parse next page token: {e}")
         return None
 
 def get_url_params(
-    self, 
-    context: dict | None, 
+    self,
+    context: dict | None,
     next_page_token: Any | None
 ) -> dict[str, Any]:
     """Build URL parameters for WMS API request"""
-    
+
     params = {
         "page_size": self.config.get("page_size", 1000),
         "order_by": self.replication_key,
     }
-    
+
     # Add pagination token
     if next_page_token:
         params["page_token"] = next_page_token
-    
+
     # Add incremental sync filter
     if self.replication_key and self.get_starting_replication_key_value(context):
         start_value = self.get_starting_replication_key_value(context)
         params[f"{self.replication_key}__gte"] = start_value
-    
+
     # Add WMS-specific filters
     wms_filters = self.config.get("wms_filters", {})
     params.update(wms_filters)
-    
+
     return params
 ```
 
 ### Record Processing
 
 #### WMS Record Transformation
+
 ```python
 def post_process(self, row: dict, context: dict | None = None) -> dict | None:
     """Transform WMS record for Singer output"""
-    
+
     # Apply WMS-specific transformations
     transformed_row = self._transform_wms_record(row)
-    
+
     # Validate record structure
     if self._should_validate_records():
         validation_result = self._validate_wms_record(transformed_row)
         if not validation_result.is_valid:
             self.logger.warning(f"Invalid WMS record: {validation_result.errors}")
             return None
-    
+
     # Add extraction metadata
     transformed_row["_sdc_extracted_at"] = datetime.utcnow().isoformat()
     transformed_row["_sdc_batched_at"] = datetime.utcnow().isoformat()
-    
+
     return transformed_row
 
 def _transform_wms_record(self, record: dict) -> dict:
     """Apply WMS-specific record transformations"""
-    
+
     # Handle WMS timestamp formats
     for field in ["mod_ts", "created_ts", "updated_ts"]:
         if field in record and record[field]:
             record[field] = self._normalize_wms_timestamp(record[field])
-    
+
     # Handle WMS composite keys
     if self.name == "allocation":
         record = self._handle_allocation_composite_key(record)
-    
+
     # Handle WMS hierarchical data
     if self.name == "location":
         record = self._handle_location_hierarchy(record)
-    
+
     # Convert WMS enums to standard values
     record = self._normalize_wms_enums(record)
-    
+
     return record
 ```
 
@@ -495,17 +506,17 @@ sequenceDiagram
     TAP->>API: GET /metadata/entities
     API->>TAP: entities list
     TAP->>OUT: SCHEMA messages
-    
+
     CLI->>TAP: sync
     TAP->>STM: get_records()
-    
+
     loop For each page
         STM->>API: GET /entity?page_token=X
         API->>STM: records + next_token
         STM->>STM: transform_records()
         STM->>OUT: RECORD messages
     end
-    
+
     STM->>OUT: STATE message
 ```
 
@@ -533,51 +544,53 @@ sequenceDiagram
 ### WMS API Performance Patterns
 
 #### Adaptive Page Sizing
+
 ```python
 class AdaptivePageSizer:
     """Dynamically adjust page size based on API performance"""
-    
+
     def __init__(self, initial_size: int = 1000):
         self.current_size = initial_size
         self.min_size = 100
         self.max_size = 5000
         self.performance_history = []
-        
+
     def adjust_page_size(self, response_time: float, record_count: int) -> int:
         """Adjust page size based on response performance"""
-        
+
         throughput = record_count / response_time if response_time > 0 else 0
         self.performance_history.append(throughput)
-        
+
         # Keep recent history only
         if len(self.performance_history) > 10:
             self.performance_history = self.performance_history[-10:]
-        
+
         avg_throughput = sum(self.performance_history) / len(self.performance_history)
-        
+
         # Increase page size if performing well
         if throughput > avg_throughput * 1.2 and self.current_size < self.max_size:
             self.current_size = min(self.max_size, int(self.current_size * 1.1))
         # Decrease if performing poorly
         elif throughput < avg_throughput * 0.8 and self.current_size > self.min_size:
             self.current_size = max(self.min_size, int(self.current_size * 0.9))
-            
+
         return self.current_size
 ```
 
 #### Request Caching and Deduplication
+
 ```python
 class WMSRequestCache:
     """Cache WMS API responses to avoid duplicate requests"""
-    
+
     def __init__(self, ttl: int = 300):  # 5 minute TTL
         self.cache = {}
         self.ttl = ttl
-        
+
     def get_cached_response(self, url: str, params: dict) -> dict | None:
         """Get cached response if available and valid"""
         cache_key = self._generate_cache_key(url, params)
-        
+
         if cache_key in self.cache:
             cached_item = self.cache[cache_key]
             if datetime.utcnow() - cached_item["timestamp"] < timedelta(seconds=self.ttl):
@@ -585,9 +598,9 @@ class WMSRequestCache:
             else:
                 # Remove expired item
                 del self.cache[cache_key]
-        
+
         return None
-    
+
     def cache_response(self, url: str, params: dict, data: dict) -> None:
         """Cache API response"""
         cache_key = self._generate_cache_key(url, params)
@@ -600,6 +613,7 @@ class WMSRequestCache:
 ### WMS Entity-Specific Optimizations
 
 #### High-Volume Entity Handling
+
 ```python
 WMS_PERFORMANCE_CONFIG = {
     "allocation": {
@@ -627,14 +641,15 @@ WMS_PERFORMANCE_CONFIG = {
 ### Multi-Authentication Support
 
 #### Basic Authentication
+
 ```python
 class WMSBasicAuth:
     """Basic authentication for Oracle WMS APIs"""
-    
+
     def __init__(self, username: str, password: str):
         self.username = username
         self.password = password
-        
+
     def apply_auth(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Apply basic auth to request"""
         credentials = f"{self.username}:{self.password}"
@@ -644,10 +659,11 @@ class WMSBasicAuth:
 ```
 
 #### OAuth2 with Token Refresh
+
 ```python
 class WMSOAuth2Handler:
     """OAuth2 handler with automatic token refresh"""
-    
+
     def __init__(self, client_id: str, client_secret: str, token_url: str):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -655,7 +671,7 @@ class WMSOAuth2Handler:
         self.access_token = None
         self.refresh_token = None
         self.token_expires_at = None
-        
+
     def get_valid_token(self) -> str:
         """Get valid access token, refreshing if necessary"""
         if self._is_token_expired():
@@ -663,9 +679,9 @@ class WMSOAuth2Handler:
                 self._refresh_access_token()
             else:
                 self._obtain_new_token()
-        
+
         return self.access_token
-    
+
     def _refresh_access_token(self) -> None:
         """Refresh access token using refresh token"""
         payload = {
@@ -674,10 +690,10 @@ class WMSOAuth2Handler:
             "client_id": self.client_id,
             "client_secret": self.client_secret,
         }
-        
+
         response = requests.post(self.token_url, data=payload)
         response.raise_for_status()
-        
+
         token_data = response.json()
         self._update_tokens(token_data)
 ```
@@ -685,20 +701,21 @@ class WMSOAuth2Handler:
 ### Security Best Practices
 
 #### Credential Management
+
 ```python
 SECURITY_CONFIG = {
     # Never log sensitive information
     "sensitive_fields": ["password", "client_secret", "access_token"],
-    
+
     # Use environment variables for credentials
     "credential_sources": ["env_vars", "config_file", "vault"],
-    
+
     # Encrypt credentials in configuration
     "encrypt_config": True,
-    
+
     # Use secure connections only
     "enforce_https": True,
-    
+
     # Token rotation
     "token_rotation_threshold": 0.8,  # Refresh at 80% of expiry
 }
@@ -721,41 +738,41 @@ class CircuitState(Enum):
 
 class WMSCircuitBreaker:
     """Circuit breaker for WMS API calls"""
-    
+
     def __init__(
-        self, 
-        failure_threshold: int = 5, 
+        self,
+        failure_threshold: int = 5,
         recovery_timeout: int = 60,
         success_threshold: int = 3
     ):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.success_threshold = success_threshold
-        
+
         self.failure_count = 0
         self.success_count = 0
         self.last_failure_time = None
         self.state = CircuitState.CLOSED
-        
+
     def call(self, func, *args, **kwargs):
         """Execute function with circuit breaker protection"""
-        
+
         if self.state == CircuitState.OPEN:
             if self._should_attempt_reset():
                 self.state = CircuitState.HALF_OPEN
                 self.success_count = 0
             else:
                 raise CircuitOpenError("WMS API circuit breaker is OPEN")
-        
+
         try:
             result = func(*args, **kwargs)
             self._on_success()
             return result
-            
+
         except Exception as e:
             self._on_failure()
             raise
-    
+
     def _on_success(self):
         """Handle successful API call"""
         if self.state == CircuitState.HALF_OPEN:
@@ -765,12 +782,12 @@ class WMSCircuitBreaker:
                 self.failure_count = 0
         elif self.state == CircuitState.CLOSED:
             self.failure_count = 0
-    
+
     def _on_failure(self):
         """Handle failed API call"""
         self.failure_count += 1
         self.last_failure_time = time.time()
-        
+
         if self.failure_count >= self.failure_threshold:
             self.state = CircuitState.OPEN
 ```
@@ -778,13 +795,14 @@ class WMSCircuitBreaker:
 ### Retry Mechanisms
 
 #### Exponential Backoff with Jitter
+
 ```python
 import backoff
 import random
 
 class WMSRetryHandler:
     """Advanced retry handling for WMS API calls"""
-    
+
     @backoff.on_exception(
         backoff.expo,
         (requests.exceptions.RequestException, requests.exceptions.Timeout),
@@ -794,21 +812,21 @@ class WMSRetryHandler:
     )
     def make_request_with_retry(self, method: str, url: str, **kwargs) -> requests.Response:
         """Make HTTP request with exponential backoff retry"""
-        
+
         # Add jitter to prevent thundering herd
         if hasattr(self, '_retry_attempt') and self._retry_attempt > 1:
             jitter_delay = random.uniform(0.1, 1.0)
             time.sleep(jitter_delay)
-        
+
         response = self.session.request(method, url, **kwargs)
-        
+
         # Check for rate limiting
         if response.status_code == 429:
             retry_after = int(response.headers.get('Retry-After', 60))
             self.logger.warning(f"Rate limited, waiting {retry_after} seconds")
             time.sleep(retry_after)
             raise requests.exceptions.RequestException("Rate limited")
-        
+
         response.raise_for_status()
         return response
 ```
@@ -832,7 +850,7 @@ config_schema = th.PropertiesList(
         description="Oracle WMS API base URL",
         examples=["https://wms.company.com/api/v1"],
     ),
-    
+
     # === AUTHENTICATION ===
     th.Property(
         "auth_method",
@@ -853,7 +871,7 @@ config_schema = th.PropertiesList(
         description="Password for basic authentication",
     ),
     th.Property(
-        "client_id", 
+        "client_id",
         th.StringType,
         description="OAuth2 client ID",
     ),
@@ -863,7 +881,7 @@ config_schema = th.PropertiesList(
         secret=True,
         description="OAuth2 client secret",
     ),
-    
+
     # === PERFORMANCE TUNING ===
     th.Property(
         "page_size",
@@ -885,7 +903,7 @@ config_schema = th.PropertiesList(
         default=3,
         description="Maximum retry attempts",
     ),
-    
+
     # === WMS-SPECIFIC CONFIGURATION ===
     th.Property(
         "wms_entities",
@@ -899,7 +917,7 @@ config_schema = th.PropertiesList(
         description="Additional WMS API filters",
         examples=[{"facility_id": "DC01", "status": "ACTIVE"}],
     ),
-    
+
     # === INCREMENTAL SYNC ===
     th.Property(
         "start_date",
@@ -912,7 +930,7 @@ config_schema = th.PropertiesList(
         default=300,
         description="Lookback window in seconds for incremental sync",
     ),
-    
+
     # === MONITORING & DEBUGGING ===
     th.Property(
         "debug_mode",
@@ -934,22 +952,23 @@ config_schema = th.PropertiesList(
 ## 🔌 Extension Points
 
 ### Custom Stream Implementation
+
 ```python
 class CustomWMSStream(WMSAdvancedStream):
     """Custom WMS stream with company-specific logic"""
-    
+
     def post_process(self, row: dict, context: dict | None = None) -> dict | None:
         """Apply company-specific transformations"""
-        
+
         # Call parent processing
         processed_row = super().post_process(row, context)
-        
+
         if processed_row:
             # Apply custom business rules
             processed_row = self._apply_company_transformations(processed_row)
-            
+
         return processed_row
-    
+
     def _apply_company_transformations(self, record: dict) -> dict:
         """Company-specific record transformations"""
         # Custom transformation logic
@@ -957,21 +976,22 @@ class CustomWMSStream(WMSAdvancedStream):
 ```
 
 ### Plugin Architecture
+
 ```python
 class WMSTransformationPlugin:
     """Plugin interface for custom transformations"""
-    
+
     def transform_record(self, stream_name: str, record: dict) -> dict:
         """Transform record for specific stream"""
         raise NotImplementedError
-    
+
     def validate_record(self, stream_name: str, record: dict) -> bool:
         """Validate record for specific stream"""
         raise NotImplementedError
 
 class CompanySpecificPlugin(WMSTransformationPlugin):
     """Company-specific transformation plugin"""
-    
+
     def transform_record(self, stream_name: str, record: dict) -> dict:
         if stream_name == "allocation":
             return self._transform_allocation(record)
@@ -983,6 +1003,7 @@ class CompanySpecificPlugin(WMSTransformationPlugin):
 ## 📊 Monitoring & Observability
 
 ### Built-in Metrics
+
 ```python
 TAP_METRICS = {
     "records_extracted": "Total records extracted from WMS API",
@@ -995,26 +1016,27 @@ TAP_METRICS = {
 ```
 
 ### Performance Monitoring
+
 ```python
 class WMSPerformanceMonitor:
     """Monitor WMS tap performance"""
-    
+
     def __init__(self):
         self.start_time = datetime.utcnow()
         self.request_times = []
         self.record_counts = []
-        
+
     def track_api_request(self, response_time: float, record_count: int):
         """Track API request performance"""
         self.request_times.append(response_time)
         self.record_counts.append(record_count)
-        
+
     def generate_performance_report(self) -> dict:
         """Generate performance summary"""
         total_time = (datetime.utcnow() - self.start_time).total_seconds()
         total_records = sum(self.record_counts)
         avg_response_time = sum(self.request_times) / len(self.request_times)
-        
+
         return {
             "total_extraction_time": total_time,
             "total_records_extracted": total_records,

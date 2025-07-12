@@ -5,14 +5,14 @@ name: 🚀 FLEXT CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
-    tags: [ 'v*' ]
+    branches: [main, develop]
+    tags: ["v*"]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
     inputs:
       debug_enabled:
-        description: 'Enable debug mode'
+        description: "Enable debug mode"
         required: false
         default: false
         type: boolean
@@ -22,8 +22,8 @@ on:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 env:
-  PYTHON_VERSION: '3.13'
-  POETRY_VERSION: '2.1.2'
+  PYTHON_VERSION: "3.13"
+  POETRY_VERSION: "2.1.2"
   POETRY_CACHE_DIR: ~/.cache/pypoetry
   POETRY_VENV_IN_PROJECT: true
   PYTHONPATH: src
@@ -58,31 +58,31 @@ jobs:
     name: 🏥 Pre-flight Checks
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    
+
     outputs:
       python-version: ${{ steps.setup.outputs.python-version }}
       poetry-version: ${{ steps.setup.outputs.poetry-version }}
       cache-key: ${{ steps.cache.outputs.cache-key }}
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: 🐍 Setup Python
         id: setup
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
+
       - name: 📦 Setup Poetry
         uses: snok/install-poetry@v1
         with:
           version: ${{ env.POETRY_VERSION }}
           virtualenvs-create: true
           virtualenvs-in-project: true
-      
+
       - name: 💾 Cache dependencies
         id: cache
         uses: actions/cache@v4
@@ -93,7 +93,7 @@ jobs:
           key: poetry-${{ runner.os }}-${{ steps.setup.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             poetry-${{ runner.os }}-${{ steps.setup.outputs.python-version }}-
-      
+
       - name: 🔍 Validate project structure
         run: |
           echo "🏗️ Checking FLEXT project structure..."
@@ -101,7 +101,7 @@ jobs:
           test -d src/ || { echo "❌ Missing src/ directory"; exit 1; }
           test -d tests/ || { echo "❌ Missing tests/ directory"; exit 1; }
           echo "✅ FLEXT project structure valid"
-      
+
       - name: 📋 Project validation
         run: |
           poetry check
@@ -116,25 +116,25 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre-flight
     timeout-minutes: 15
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
+
       - name: 📦 Setup Poetry
         uses: snok/install-poetry@v1
         with:
           version: ${{ env.POETRY_VERSION }}
           virtualenvs-create: true
           virtualenvs-in-project: true
-      
+
       - name: 💾 Restore cache
         uses: actions/cache@v4
         with:
@@ -142,25 +142,25 @@ jobs:
             ~/.cache/pypoetry
             .venv
           key: ${{ needs.pre-flight.outputs.cache-key }}
-      
+
       - name: 📦 Install dependencies
         run: poetry install --extras=dev --quiet
-      
+
       - name: 🎨 Ruff Format Check
         run: poetry run ruff format --check .
-      
+
       - name: 🔍 Ruff Linting
         run: poetry run ruff check . --output-format=github
-      
+
       - name: 🔍 MyPy Type Checking
         run: poetry run mypy . --show-error-codes
-      
+
       - name: 🔒 Security Analysis (Bandit)
         run: |
           mkdir -p reports
           poetry run bandit -r src/ -f json -o reports/bandit-report.json
           poetry run bandit -r src/ -f txt
-      
+
       - name: 📋 Upload security report
         if: always()
         uses: actions/upload-artifact@v4
@@ -176,35 +176,35 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: pre-flight
     timeout-minutes: 30
-    
+
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.13']
+        python-version: ["3.13"]
         include:
           - os: ubuntu-latest
-            python-version: '3.13'
+            python-version: "3.13"
             coverage: true
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: 🐍 Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      
+
       - name: 📦 Setup Poetry
         uses: snok/install-poetry@v1
         with:
           version: ${{ env.POETRY_VERSION }}
           virtualenvs-create: true
           virtualenvs-in-project: true
-      
+
       - name: 💾 Cache dependencies
         uses: actions/cache@v4
         with:
@@ -212,10 +212,10 @@ jobs:
             ~/.cache/pypoetry
             .venv
           key: poetry-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      
+
       - name: 📦 Install dependencies
         run: poetry install --extras=dev --extras=automation --quiet
-      
+
       - name: 🧪 Run tests
         run: |
           if [ "${{ matrix.coverage }}" = "true" ]; then
@@ -224,7 +224,7 @@ jobs:
             poetry run pytest -v
           fi
         shell: bash
-      
+
       - name: 📊 Upload coverage to Codecov
         if: matrix.coverage
         uses: codecov/codecov-action@v4
@@ -233,7 +233,7 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-      
+
       - name: 📋 Upload coverage artifacts
         if: matrix.coverage
         uses: actions/upload-artifact@v4
@@ -251,30 +251,30 @@ jobs:
     runs-on: ubuntu-latest
     needs: [quality]
     timeout-minutes: 45
-    
+
     strategy:
       matrix:
         env: [py313, lint, type, security]
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-      
+
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
+
       - name: 📦 Setup Poetry
         uses: snok/install-poetry@v1
         with:
           version: ${{ env.POETRY_VERSION }}
           virtualenvs-create: true
           virtualenvs-in-project: true
-      
+
       - name: 📦 Install dependencies
         run: poetry install --extras=automation --quiet
-      
+
       - name: 🔄 Run Tox environment
         run: poetry run tox -e ${{ matrix.env }}
 
@@ -286,33 +286,33 @@ jobs:
     runs-on: ubuntu-latest
     needs: [quality, test]
     timeout-minutes: 10
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
+
       - name: 📦 Setup Poetry
         uses: snok/install-poetry@v1
         with:
           version: ${{ env.POETRY_VERSION }}
           virtualenvs-create: true
           virtualenvs-in-project: true
-      
+
       - name: 🏗️ Build package
         run: poetry build
-      
+
       - name: 🔍 Verify package
         run: |
           pip install dist/*.whl
           python -c "import tap_oracle_wms; print('✅ Package import successful')"
-      
+
       - name: 📋 Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -327,28 +327,28 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre-flight
     timeout-minutes: 15
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
+
       - name: 📦 Setup Poetry
         uses: snok/install-poetry@v1
         with:
           version: ${{ env.POETRY_VERSION }}
           virtualenvs-create: true
           virtualenvs-in-project: true
-      
+
       - name: 📦 Install dependencies
         run: poetry install --extras=dev --quiet
-      
+
       - name: 📚 Build documentation
         run: |
           # Create basic docs structure if it doesn't exist
@@ -358,7 +358,7 @@ jobs:
             echo "Creating basic mkdocs.yml for documentation build"
           fi
           poetry run mkdocs build --strict || echo "⚠️ Documentation build skipped (no mkdocs.yml)"
-      
+
       - name: 📋 Upload documentation
         if: always()
         uses: actions/upload-artifact@v4
@@ -375,29 +375,29 @@ jobs:
     needs: [quality, test, build, docs]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     timeout-minutes: 15
-    
+
     environment:
       name: production
       url: https://pypi.org/project/flext-tap-oracle-wms/
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: 📋 Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist-packages
           path: dist/
-      
+
       - name: 🚀 Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
-      
+
       - name: 📝 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -415,7 +415,7 @@ jobs:
     needs: [pre-flight, quality, test, build, docs]
     if: always()
     timeout-minutes: 5
-    
+
     steps:
       - name: 📊 Generate summary
         run: |

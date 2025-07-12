@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., 1.2.3)'
+        description: "Version to release (e.g., 1.2.3)"
         required: true
         type: string
       prerelease:
-        description: 'Is this a pre-release?'
+        description: "Is this a pre-release?"
         required: false
         type: boolean
         default: false
@@ -51,7 +51,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: "3.13"
 
       - name: Install Poetry
         run: |
@@ -61,7 +61,7 @@ jobs:
       - name: Update version
         run: |
           poetry version ${{ github.event.inputs.version }}
-          
+
           # Update __version__ in __init__.py
           sed -i "s/__version__ = .*/__version__ = \"${{ github.event.inputs.version }}\"/" src/tap_oracle_wms/__init__.py
 
@@ -72,7 +72,7 @@ jobs:
           echo "" >> CHANGELOG_NEW.md
           echo "## [v${{ github.event.inputs.version }}] - $(date +%Y-%m-%d)" >> CHANGELOG_NEW.md
           echo "" >> CHANGELOG_NEW.md
-          
+
           # Get commits since last tag
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -n "$LAST_TAG" ]; then
@@ -80,7 +80,7 @@ jobs:
           else
             git log --pretty=format:"- %s (%h)" >> CHANGELOG_NEW.md
           fi
-          
+
           # Merge with existing changelog
           if [ -f CHANGELOG.md ]; then
             echo "" >> CHANGELOG_NEW.md
@@ -108,19 +108,19 @@ jobs:
           title: "chore: release v${{ github.event.inputs.version }}"
           body: |
             ## Release v${{ github.event.inputs.version }}
-            
+
             This PR prepares the release of version ${{ github.event.inputs.version }}.
-            
+
             ### Checklist
             - [ ] Version updated in pyproject.toml
             - [ ] Version updated in __init__.py
             - [ ] CHANGELOG.md updated
             - [ ] All CI checks pass
             - [ ] Documentation updated
-            
+
             ### Release Type
             - Pre-release: ${{ github.event.inputs.prerelease }}
-            
+
             Once this PR is merged, the release will be automatically created and published.
           labels: |
             release
@@ -137,7 +137,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: "3.13"
 
       - name: Install Poetry
         run: |

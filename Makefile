@@ -1,5 +1,6 @@
-# FLEXT Tap Oracle WMS - Modern Enterprise Makefile
-# FLEXT Standard Build Automation with Poetry & PEP 621
+# FLEXT Tap Oracle WMS - Ultra-Modern Enterprise Makefile v2.0.0
+# FLEXT Universal Standards Automation with Git-Enhanced Dependencies
+# Standards Reference: .flext-standards.toml v2.0.0
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FLEXT STANDARD CONFIGURATION
@@ -13,7 +14,7 @@ SHELL := /bin/bash
 PYTHON := python3.13
 POETRY := poetry
 PROJECT_NAME := flext-tap-oracle-wms
-SRC_DIR := src/tap_oracle_wms
+SRC_DIR := src/flext_tap_oracle_wms
 TEST_DIR := tests
 SCRIPTS_DIR := scripts
 
@@ -237,7 +238,7 @@ shell: ## Open IPython shell with project context
 
 debug: ## Run tap with debugger
 	@echo "${YELLOW}🐛 Running with debugger...${NC}"
-	$(POETRY) run python -m pdb -m tap_oracle_wms.tap
+	$(POETRY) run python -m pdb -m flext_tap_oracle_wms.tap
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DOCUMENTATION (FLEXT Standard)
@@ -280,7 +281,7 @@ tox: ## Run tox multi-environment testing
 	@echo "${BLUE}🔄 Running tox environments...${NC}"
 	$(POETRY) run tox
 
-nox: ## Run nox multi-environment testing  
+nox: ## Run nox multi-environment testing
 	@echo "${BLUE}🔄 Running nox sessions...${NC}"
 	$(POETRY) run nox
 
@@ -355,6 +356,79 @@ docker-push: ## Push FLEXT Docker image
 	docker push $(PROJECT_NAME):latest
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# FLEXT STANDARDS VALIDATION (v2.0.0)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+##@ FLEXT Standards
+
+flext-validate: ## Validate FLEXT Universal Standards compliance
+	@echo "${CYAN}🎯 Validating FLEXT Universal Standards v2.0.0...${NC}"
+	@test -f .flext-standards.toml && echo "${GREEN}✅ FLEXT standards file present${NC}" || echo "${RED}❌ Missing .flext-standards.toml${NC}"
+	@test -f pyproject.toml && echo "${GREEN}✅ pyproject.toml present${NC}" || echo "${RED}❌ Missing pyproject.toml${NC}"
+	@test -d src/ && echo "${GREEN}✅ src/ directory present${NC}" || echo "${RED}❌ Missing src/ directory${NC}"
+	@test -d tests/ && echo "${GREEN}✅ tests/ directory present${NC}" || echo "${RED}❌ Missing tests/ directory${NC}"
+	@test -f .pre-commit-config.yaml && echo "${GREEN}✅ pre-commit config present${NC}" || echo "${RED}❌ Missing pre-commit config${NC}"
+	@test -d .github/workflows/ && echo "${GREEN}✅ GitHub workflows present${NC}" || echo "${RED}❌ Missing GitHub workflows${NC}"
+	@test -d .vscode/ && echo "${GREEN}✅ VSCode config present${NC}" || echo "${RED}❌ Missing VSCode config${NC}"
+	@test -d .cursor/ && echo "${GREEN}✅ Cursor config present${NC}" || echo "${RED}❌ Missing Cursor config${NC}"
+	@echo "${CYAN}🏆 FLEXT Standards validation complete!${NC}"
+
+flext-audit: ## Audit project against FLEXT standards
+	@echo "${CYAN}🔍 FLEXT Standards Audit...${NC}"
+	@echo "${YELLOW}📋 Project Structure:${NC}"
+	@ls -la | grep -E '^d|\.toml$$|\.yaml$$|\.yml$$|\.md$$|Makefile$$' || true
+	@echo ""
+	@echo "${YELLOW}📦 Git Dependencies:${NC}"
+	@grep -A 20 "dev = \[" pyproject.toml | grep "git+" || echo "No git dependencies found"
+	@echo ""
+	@echo "${YELLOW}🛠️ Development Tools:${NC}"
+	@$(POETRY) show --only dev 2>/dev/null | head -10 || echo "Cannot show dev dependencies"
+	@echo ""
+	@echo "${YELLOW}⚙️ Configuration Files:${NC}"
+	@find . -maxdepth 2 -name "*.toml" -o -name "*.yaml" -o -name "*.yml" | head -10
+	@echo "${CYAN}📊 Audit complete!${NC}"
+
+flext-upgrade: ## Upgrade project to latest FLEXT standards
+	@echo "${CYAN}⬆️ Upgrading to latest FLEXT standards...${NC}"
+	@echo "${YELLOW}📦 Updating dependencies...${NC}"
+	$(POETRY) update
+	@echo "${YELLOW}🪝 Updating pre-commit hooks...${NC}"
+	$(POETRY) run pre-commit autoupdate
+	@echo "${YELLOW}🔧 Running maintenance...${NC}"
+	$(MAKE) clean
+	$(MAKE) format
+	$(MAKE) lint
+	@echo "${GREEN}✅ FLEXT upgrade complete!${NC}"
+
+flext-benchmark: ## Benchmark project against FLEXT performance targets
+	@echo "${CYAN}⚡ FLEXT Performance Benchmark...${NC}"
+	@echo "${YELLOW}🧪 Testing startup time...${NC}"
+	@time $(POETRY) run python -c "import flext_tap_oracle_wms; print('✅ Import successful')" 2>&1 | grep real || true
+	@echo "${YELLOW}📊 Running performance tests...${NC}"
+	$(POETRY) run pytest tests/ --benchmark-only --benchmark-min-rounds=3 2>/dev/null || echo "⚠️ No benchmark tests found"
+	@echo "${YELLOW}📈 Checking coverage...${NC}"
+	@$(MAKE) test-cov >/dev/null 2>&1 && echo "${GREEN}✅ Coverage target met${NC}" || echo "${YELLOW}⚠️ Coverage below target${NC}"
+	@echo "${CYAN}🏁 Benchmark complete!${NC}"
+
+flext-report: ## Generate comprehensive FLEXT project report
+	@echo "${CYAN}📋 FLEXT Project Report...${NC}"
+	@echo "# FLEXT Project Report - $(PROJECT_NAME)" > flext-report.md
+	@echo "Generated: $(shell date)" >> flext-report.md
+	@echo "" >> flext-report.md
+	@echo "## Project Information" >> flext-report.md
+	@echo "- Name: $(PROJECT_NAME)" >> flext-report.md
+	@echo "- Version: $(VERSION)" >> flext-report.md
+	@echo "- Branch: $(BRANCH)" >> flext-report.md
+	@echo "- Commit: $(COMMIT)" >> flext-report.md
+	@echo "" >> flext-report.md
+	@echo "## FLEXT Standards Compliance" >> flext-report.md
+	@$(MAKE) flext-validate >> flext-report.md 2>&1 || true
+	@echo "" >> flext-report.md
+	@echo "## Dependencies" >> flext-report.md
+	@$(POETRY) show >> flext-report.md 2>/dev/null || true
+	@echo "${GREEN}✅ Report generated: flext-report.md${NC}"
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # SPECIAL TARGETS
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -367,4 +441,7 @@ docker-push: ## Push FLEXT Docker image
 	docs docs-serve docs-deploy \
 	ci ci-local validate tox nox changelog commit \
 	tree deps deps-outdated env-info reset health-check \
-	docker-build docker-run docker-push status
+	docker-build docker-run docker-push status \
+	flext-validate flext-audit flext-upgrade flext-benchmark flext-report
+# Include standardized build system
+include Makefile.build

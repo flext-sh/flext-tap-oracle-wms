@@ -1,18 +1,19 @@
 """Modern unit tests for Pydantic models."""
+# Copyright (c) 2025 FLEXT Team
+# Licensed under the MIT License
 
 from __future__ import annotations
 
 from pydantic import ValidationError
-import pytest
 
-from tap_oracle_wms.models import TapMetrics, WMSConfig, WMSEntity
+import pytest
+from flext_tap_oracle_wms.models import TapMetrics, WMSConfig, WMSEntity
 
 
 class TestWMSConfig:
     """Test WMS configuration model."""
 
     def test_valid_config(self) -> None:
-        """Test valid configuration creation."""
         config = WMSConfig(
             base_url="https://wms.example.com",
             username="test_user",
@@ -27,7 +28,6 @@ class TestWMSConfig:
         assert config.page_size == 100  # Default
 
     def test_http_url_rejected(self) -> None:
-        """Test that HTTP URLs are rejected."""
         with pytest.raises(ValidationError, match="HTTP URLs not allowed"):
             WMSConfig(
                 base_url="http://insecure.example.com",
@@ -36,7 +36,6 @@ class TestWMSConfig:
             )
 
     def test_empty_credentials_rejected(self) -> None:
-        """Test that empty credentials are rejected."""
         with pytest.raises(ValidationError):
             WMSConfig(
                 base_url="https://wms.example.com",
@@ -45,7 +44,6 @@ class TestWMSConfig:
             )
 
     def test_invalid_page_size_rejected(self) -> None:
-        """Test that invalid page sizes are rejected."""
         with pytest.raises(ValidationError):
             WMSConfig(
                 base_url="https://wms.example.com",
@@ -55,7 +53,6 @@ class TestWMSConfig:
             )
 
     def test_config_immutable(self) -> None:
-        """Test that config is immutable after creation."""
         config = WMSConfig(
             base_url="https://wms.example.com",
             username="test",
@@ -70,7 +67,6 @@ class TestWMSEntity:
     """Test WMS entity model."""
 
     def test_valid_entity(self) -> None:
-        """Test valid entity creation."""
         entity = WMSEntity(
             name="item_master",
             endpoint="/api/item_master",
@@ -84,7 +80,6 @@ class TestWMSEntity:
         assert "id" in entity.fields
 
     def test_entity_defaults(self) -> None:
-        """Test entity with default values."""
         entity = WMSEntity(
             name="location",
             endpoint="/api/location",
@@ -98,7 +93,6 @@ class TestTapMetrics:
     """Test tap metrics model."""
 
     def test_metrics_initialization(self) -> None:
-        """Test metrics initialization."""
         metrics = TapMetrics()
 
         assert metrics.records_extracted == 0
@@ -108,7 +102,6 @@ class TestTapMetrics:
         assert metrics.last_activity is not None
 
     def test_add_records(self) -> None:
-        """Test adding records updates counts and activity."""
         metrics = TapMetrics()
         original_activity = metrics.last_activity
 
@@ -118,7 +111,6 @@ class TestTapMetrics:
         assert metrics.last_activity > original_activity
 
     def test_add_api_call(self) -> None:
-        """Test adding API call updates counts and activity."""
         metrics = TapMetrics()
         original_activity = metrics.last_activity
 

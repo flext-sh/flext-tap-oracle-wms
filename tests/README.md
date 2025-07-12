@@ -55,6 +55,7 @@ tests/
 - **Run by default** in CI/CD pipelines
 
 **NEW ENHANCED UNIT TESTS:**
+
 - ✅ **Configuration Validation**: Auth methods, pagination limits, schema validation
 - ✅ **HATEOAS Pagination**: Modern Singer SDK pagination with URL extraction
 - ✅ **Advanced Streams**: URL parameters, replication methods, optimization
@@ -68,6 +69,7 @@ tests/
 - **Run in staging environments**
 
 **NEW ENHANCED INTEGRATION TESTS:**
+
 - ✅ **Tap-Stream Integration**: Complete discovery and stream creation workflows
 - ✅ **Auth-Monitoring Integration**: Authentication with metrics collection
 - ✅ **HTTP Client Integration**: Request/response handling with auth headers
@@ -81,6 +83,7 @@ tests/
 - **CLI command simulation**
 
 **E2E TEST COVERAGE:**
+
 - ✅ **Complete Discovery Flow**: Entity discovery → Schema generation → Stream creation
 - ✅ **Full Extraction Pipeline**: Pagination → Data processing → State management
 - ✅ **CLI Interface Testing**: Discover/sync command simulation
@@ -95,6 +98,7 @@ tests/
 - **Run before releases**
 
 **PERFORMANCE TEST COVERAGE:**
+
 - ✅ **Initialization Benchmarks**: Tap creation, stream discovery scaling
 - ✅ **Memory Efficiency**: Memory usage, leak detection, large dataset handling
 - ✅ **Throughput Testing**: Pagination processing, URL parameter generation
@@ -196,7 +200,7 @@ pytest tests/test_live_comprehensive.py::TestComprehensiveLiveFlow::test_complet
 ```bash
 # Run by functional area (NEW)
 pytest -m auth                    # Authentication tests
-pytest -m pagination             # Pagination tests  
+pytest -m pagination             # Pagination tests
 pytest -m discovery              # Discovery tests
 pytest -m monitoring             # Monitoring tests
 pytest -m config                 # Configuration tests
@@ -204,7 +208,7 @@ pytest -m error                  # Error handling tests
 
 # Run by complexity (NEW)
 pytest -m "unit"                 # Fast unit tests only
-pytest -m "integration"          # Medium complexity tests  
+pytest -m "integration"          # Medium complexity tests
 pytest -m "e2e"                  # Complete workflow tests
 pytest -m "performance"          # Performance and benchmarks
 

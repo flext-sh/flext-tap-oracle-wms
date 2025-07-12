@@ -1,20 +1,21 @@
 """Unit tests for Oracle WMS tap."""
+# Copyright (c) 2025 FLEXT Team
+# Licensed under the MIT License
 
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
 
-from tap_oracle_wms.tap import TapOracleWMS
+from flext_tap_oracle_wms.tap import TapOracleWMS
 
 
 class TestTapOracleWMS:
     """Unit tests for TapOracleWMS class."""
 
-    @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
+    @patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams")
     def test_tap_initialization(self, mock_discover, mock_wms_config) -> None:
-        """Test tap initialization with config."""
         # Mock discover_streams to return empty list to avoid network calls
-        mock_discover.return_value = []
+        mock_discover.return_value = {}
 
         tap = TapOracleWMS(config=mock_wms_config)
 
@@ -23,20 +24,18 @@ class TestTapOracleWMS:
         assert hasattr(tap, "discovery")
         assert hasattr(tap, "schema_generator")
 
-    @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
+    @patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams")
     def test_config_validation(self, mock_discover) -> None:
-        """Test config validation."""
         # Mock discover_streams to return empty list to avoid network calls
-        mock_discover.return_value = []
+        mock_discover.return_value = {}
 
         # Valid minimal config
         config = {"base_url": "https://test.com"}
         tap = TapOracleWMS(config=config)
         assert tap.config["base_url"] == "https://test.com"
 
-    @patch("tap_oracle_wms.tap.asyncio.run")
+    @patch("flext_tap_oracle_wms.tap.asyncio.run")
     def test_discover_streams(self, mock_asyncio_run, mock_wms_config) -> None:
-        """Test stream discovery with mocked async calls."""
         # Setup mock data
         mock_entities = {
             "item": "/entity/item",
@@ -47,8 +46,8 @@ class TestTapOracleWMS:
         mock_asyncio_run.return_value = mock_entities
 
         # Create a mock tap
-        with patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams") as mock_discover:
-            mock_discover.return_value = []
+        with patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams") as mock_discover:
+            mock_discover.return_value = {}
             tap = TapOracleWMS(config=mock_wms_config)
 
             # Mock the internal methods
@@ -60,11 +59,10 @@ class TestTapOracleWMS:
             assert tap.name == "tap-oracle-wms"
             assert tap.config == mock_wms_config
 
-    @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
+    @patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams")
     def test_post_process(self, mock_discover, mock_wms_config) -> None:
-        """Test record post-processing."""
         # Mock discover_streams to return empty list to avoid network calls
-        mock_discover.return_value = []
+        mock_discover.return_value = {}
 
         tap = TapOracleWMS(config=mock_wms_config)
 
@@ -85,11 +83,10 @@ class TestTapOracleWMS:
             assert processed["id"] == 1
             assert processed["name"] == "Test"
 
-    @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
+    @patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams")
     def test_catalog_dict_property(self, mock_discover, mock_wms_config) -> None:
-        """Test catalog_dict property."""
         # Mock discover_streams to return empty list to avoid network calls
-        mock_discover.return_value = []
+        mock_discover.return_value = {}
 
         tap = TapOracleWMS(config=mock_wms_config)
 
@@ -97,11 +94,10 @@ class TestTapOracleWMS:
         catalog_dict = tap.catalog_dict
         assert isinstance(catalog_dict, dict)
 
-    @patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams")
+    @patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams")
     def test_state_dict_property(self, mock_discover, mock_wms_config) -> None:
-        """Test state_dict property."""
         # Mock discover_streams to return empty list to avoid network calls
-        mock_discover.return_value = []
+        mock_discover.return_value = {}
 
         tap = TapOracleWMS(config=mock_wms_config)
 
@@ -110,12 +106,11 @@ class TestTapOracleWMS:
         assert isinstance(state_dict, dict)
 
     def test_discover_entities_caching(self, mock_wms_config) -> None:
-        """Test that entity discovery uses caching."""
         mock_entities = {"item": "/entity/item"}
 
         # Create a mock tap with controlled initialization
-        with patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams") as mock_discover:
-            mock_discover.return_value = []
+        with patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams") as mock_discover:
+            mock_discover.return_value = {}
             tap = TapOracleWMS(config=mock_wms_config)
 
             # Mock the async method
@@ -129,12 +124,11 @@ class TestTapOracleWMS:
             assert tap._entity_cache == mock_entities
 
     def test_schema_generation_caching(self, mock_wms_config) -> None:
-        """Test that schema generation uses caching."""
         mock_schema = {"type": "object", "properties": {}}
 
         # Create a mock tap with controlled initialization
-        with patch("tap_oracle_wms.tap.TapOracleWMS.discover_streams") as mock_discover:
-            mock_discover.return_value = []
+        with patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams") as mock_discover:
+            mock_discover.return_value = {}
             tap = TapOracleWMS(config=mock_wms_config)
 
             # Mock the async method

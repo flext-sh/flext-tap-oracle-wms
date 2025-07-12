@@ -31,7 +31,7 @@ pip install -e .
 
 ## Configuration
 
-### Using config.json
+### Using config.JSON
 
 Create a `config.json` file with your Oracle WMS credentials:
 
@@ -46,7 +46,7 @@ Create a `config.json` file with your Oracle WMS credentials:
 }
 ```
 
-See [config.json.example](config.json.example) for all available options.
+See [config.JSON.example](config.json.example) for all available options.
 
 ### Using Environment Variables
 
@@ -97,28 +97,33 @@ plugins:
 ## Key Configuration Options
 
 ### Core Settings
+
 - `base_url` - Oracle WMS instance URL (required)
 - `username` - Username for basic authentication (required)
 - `password` - Password for basic authentication (required)
-- `company_code` - WMS company code (default: "*" for all)
-- `facility_code` - WMS facility code (default: "*" for all)
+- `company_code` - WMS company code (default: "\*" for all)
+- `facility_code` - WMS facility code (default: "\*" for all)
 
 ### Performance Settings
+
 - `page_size` - Records per page, 1-1250 (default: 100)
 - `request_timeout` - Request timeout in seconds (default: 120)
 - `max_retries` - Maximum retry attempts (default: 3)
 
 ### Entity Selection
+
 - `entities` - List of specific entities to extract
 - `entity_patterns` - Include/exclude patterns for entity filtering
 - `entity_filters` - Entity-specific filters
 
 ### Incremental Sync
+
 - `enable_incremental` - Enable incremental sync (default: true)
 - `start_date` - Initial extraction date for incremental sync
 - `incremental_overlap_minutes` - Safety overlap for incremental sync (default: 5)
 
 ### Advanced Features
+
 - `stream_maps` - Singer SDK stream maps for transformations
 - `flattening_enabled` - Enable automatic schema flattening (default: true)
 - `flattening_max_depth` - Maximum depth for flattening (default: 3)
@@ -160,7 +165,7 @@ cp .env.example .env
 # Edit with your WMS credentials
 # Required variables:
 # - TAP_ORACLE_WMS_BASE_URL
-# - TAP_ORACLE_WMS_USERNAME  
+# - TAP_ORACLE_WMS_USERNAME
 # - TAP_ORACLE_WMS_PASSWORD
 ```
 
@@ -190,6 +195,7 @@ pytest tests/e2e/test_wms_e2e.py::test_specific_entity_extraction -k "item" --ru
 ## Development
 
 ### Prerequisites
+
 - Python 3.9+
 - Poetry or pip
 - Access to Oracle WMS instance
@@ -236,11 +242,13 @@ The tap is built with Singer SDK 0.47.4+ for maximum simplicity and functionalit
 ### Common Issues
 
 1. **No entities discovered**
+
    - Check base_url is correct
    - Verify credentials have read access
    - Check company/facility codes
 
 2. **Incremental sync not working**
+
    - Ensure entity has `mod_ts` field
    - Check state file is being saved/loaded
    - Verify start_date is set correctly
