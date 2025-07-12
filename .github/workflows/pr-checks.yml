@@ -56,15 +56,15 @@ jobs:
       - uses: codelytv/pr-size-labeler@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          xs_label: 'size/xs'
-          xs_max_size: '10'
-          s_label: 'size/s'
-          s_max_size: '100'
-          m_label: 'size/m'
-          m_max_size: '500'
-          l_label: 'size/l'
-          l_max_size: '1000'
-          xl_label: 'size/xl'
+          xs_label: "size/xs"
+          xs_max_size: "10"
+          s_label: "size/s"
+          s_max_size: "100"
+          m_label: "size/m"
+          m_max_size: "500"
+          l_label: "size/l"
+          l_max_size: "1000"
+          xl_label: "size/xl"
           fail_if_xl: false
 
   # Check for conflicts
@@ -95,14 +95,14 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           pr-message: |
-            👋 Thanks for opening this pull request! 
-            
+            👋 Thanks for opening this pull request!
+
             We appreciate your contribution to the FLEXT Tap Oracle WMS project.
-            
+
             Please make sure you have:
             - [ ] Followed our contribution guidelines
             - [ ] Added/updated tests for your changes
             - [ ] Updated documentation if needed
             - [ ] Ensured all CI checks pass
-            
+
             A maintainer will review your PR soon!

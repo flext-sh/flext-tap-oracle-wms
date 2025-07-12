@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """Validate E2E test configuration without running tests.
 
-This script checks if the environment is properly configured for E2E tests.
+This script checks if the environment is properly configured for E2E tests.:
 """
+# Copyright (c) 2025 FLEXT Team
+# Licensed under the MIT License
 
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
 
-def validate_e2e_config():
-    """Validate E2E test configuration and provide feedback."""
+def validate_e2e_config() -> bool:
     # Check for .env file
     env_file = Path(__file__).parent.parent.parent / ".env"
     if not env_file.exists():

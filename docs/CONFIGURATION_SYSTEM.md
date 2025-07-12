@@ -27,7 +27,7 @@ page_size = mapper.get_page_size()      # Instead of hardcoded 100
 oauth_scope = mapper.get_oauth_scope()  # Instead of hardcoded URL
 ```
 
-#### Major Categories Externalized:
+#### Major Categories Externalized
 
 - **API Configuration**: versions, endpoints, authentication
 - **Performance Settings**: page sizes, timeouts, retries
@@ -71,7 +71,7 @@ from tap_oracle_wms.config_validator import validate_config_with_mapper
 validate_config_with_mapper(config_mapper)
 ```
 
-#### Validation Categories:
+#### Validation Categories
 
 - **Connection Settings**: URLs, authentication credentials
 - **API Settings**: versions, endpoints, page modes
@@ -84,11 +84,13 @@ validate_config_with_mapper(config_mapper)
 ### Basic Setup
 
 1. **Set Profile**:
+
    ```bash
    export WMS_PROFILE_NAME=gruponos
    ```
 
 2. **Core Connection**:
+
    ```bash
    export TAP_ORACLE_WMS_BASE_URL=https://wms.gruponos.com
    export TAP_ORACLE_WMS_USERNAME=api_user
@@ -96,6 +98,7 @@ validate_config_with_mapper(config_mapper)
    ```
 
 3. **Run Tap**:
+
    ```bash
    tap-oracle-wms --config config.json --discover
    ```
@@ -122,17 +125,17 @@ Simplified `meltano.yml` with ConfigMapper:
 ```yaml
 plugins:
   extractors:
-  - name: tap-oracle-wms-full
-    config:
-      # Only core connection settings needed
-      base_url: $TAP_ORACLE_WMS_BASE_URL
-      username: $TAP_ORACLE_WMS_USERNAME
-      password: $TAP_ORACLE_WMS_PASSWORD
-      entities: ["allocation", "order_hdr", "order_dtl"]
-      force_full_table: true
-    settings:
-      # All other configs come from profile system
-      WMS_PROFILE_NAME: $WMS_PROFILE_NAME
+    - name: tap-oracle-wms-full
+      config:
+        # Only core connection settings needed
+        base_url: $TAP_ORACLE_WMS_BASE_URL
+        username: $TAP_ORACLE_WMS_USERNAME
+        password: $TAP_ORACLE_WMS_PASSWORD
+        entities: ["allocation", "order_hdr", "order_dtl"]
+        force_full_table: true
+      settings:
+        # All other configs come from profile system
+        WMS_PROFILE_NAME: $WMS_PROFILE_NAME
 ```
 
 ## Configuration Reference
@@ -140,20 +143,24 @@ plugins:
 ### Environment Variables
 
 #### Core Connection
+
 - `TAP_ORACLE_WMS_BASE_URL` - WMS server URL
 - `TAP_ORACLE_WMS_USERNAME` - API username
 - `TAP_ORACLE_WMS_PASSWORD` - API password
 
 #### Profile System
+
 - `WMS_PROFILE_NAME` - Company profile to load
 
 #### API Configuration
+
 - `WMS_API_VERSION` - API version (default: "v10")
 - `WMS_ENDPOINT_PREFIX` - API endpoint prefix (default: "/wms/lgfapi")
 - `WMS_PAGE_MODE` - Pagination mode (default: "sequenced")
 - `WMS_AUTH_METHOD` - Authentication method (default: "basic")
 
 #### Performance Settings
+
 - `WMS_PAGE_SIZE` - Records per page (default: 100)
 - `WMS_MAX_PAGE_SIZE` - Maximum page size (default: 5000)
 - `WMS_REQUEST_TIMEOUT` - Request timeout seconds (default: 120)
@@ -161,32 +168,38 @@ plugins:
 - `WMS_CACHE_TTL_SECONDS` - Cache TTL (default: 3600)
 
 #### Business Logic
+
 - `WMS_REPLICATION_KEY` - Default replication key (default: "mod_ts")
 - `WMS_INCREMENTAL_OVERLAP_MINUTES` - Overlap for incremental sync (default: 5)
 - `WMS_LOOKBACK_MINUTES` - Lookback for initial state (default: 5)
-- `WMS_COMPANY_CODE` - WMS company code (default: "*")
-- `WMS_FACILITY_CODE` - WMS facility code (default: "*")
+- `WMS_COMPANY_CODE` - WMS company code (default: "\*")
+- `WMS_FACILITY_CODE` - WMS facility code (default: "\*")
 
 #### Entity Configuration
+
 - `WMS_ENTITIES` - Comma-separated entity list
 - `WMS_ENTITY_{ENTITY}_PRIMARY_KEYS` - Primary keys for specific entity
 
 #### Company Settings
+
 - `WMS_COMPANY_TIMEZONE` - Company timezone (default: "UTC")
 - `WMS_CURRENCY_CODE` - Currency code (default: "USD")
 - `WMS_FISCAL_YEAR_START_MONTH` - Fiscal year start (default: 1)
 
 #### Authentication (OAuth2)
+
 - `WMS_OAUTH_SCOPE` - OAuth2 scope
 - `WMS_OAUTH_CLIENT_ID` - OAuth2 client ID
 - `WMS_OAUTH_CLIENT_SECRET` - OAuth2 client secret
 - `WMS_OAUTH_TOKEN_URL` - OAuth2 token endpoint
 
 #### Status Mappings (JSON format)
+
 - `WMS_ALLOCATION_STATUS_MAPPING_JSON` - Allocation status mapping
 - `WMS_ORDER_STATUS_MAPPING_JSON` - Order status mapping
 
 #### Custom Headers
+
 - `WMS_USER_AGENT` - Custom user agent
 - `WMS_CUSTOM_HEADERS_JSON` - Additional headers (JSON format)
 
@@ -195,6 +208,7 @@ plugins:
 ### From Hardcoded to ConfigMapper
 
 **Before (Hardcoded)**:
+
 ```python
 # streams.py
 params = {
@@ -207,6 +221,7 @@ oauth_scope = "https://instance.wms.ocs.oraclecloud.com:443/..."  # Fixed
 ```
 
 **After (ConfigMapper)**:
+
 ```python
 # streams.py
 params = {
@@ -221,6 +236,7 @@ oauth_scope = config_mapper.get_oauth_scope()  # Company-specific
 ### Meltano Configuration Migration
 
 **Before (Explicit Configuration)**:
+
 ```yaml
 config:
   base_url: $TAP_ORACLE_WMS_BASE_URL
@@ -234,6 +250,7 @@ config:
 ```
 
 **After (Profile-Based)**:
+
 ```yaml
 config:
   # Only core connection settings
@@ -250,22 +267,27 @@ settings:
 ## Benefits
 
 ### 1. **Elimination of Hardcoded Values**
+
 - No more fixed API versions, endpoints, or timeouts in code
 - All specifications now configurable
 
 ### 2. **Company-Specific Configurations**
+
 - JSON profiles for different companies (GrupoNOS, Company A, etc.)
 - Business rules specific to each organization
 
 ### 3. **Environment Flexibility**
+
 - Development, staging, production configurations
 - Easy overrides via environment variables
 
 ### 4. **Simplified Maintenance**
+
 - Changes to configurations don't require code changes
 - Simplified `meltano.yml` files
 
 ### 5. **Validation and Safety**
+
 - Comprehensive configuration validation
 - Clear error messages for invalid settings
 
@@ -274,23 +296,29 @@ settings:
 ### Common Issues
 
 1. **Profile Not Found**:
+
    ```
    Failed to load profile 'company_x': Profile file not found
    ```
+
    - Ensure profile exists in `config/profiles/company_x.json`
    - Check `WMS_PROFILE_NAME` environment variable
 
 2. **Configuration Validation Errors**:
+
    ```
    Configuration validation failed: base_url is not a valid URL
    ```
+
    - Check environment variables for proper values
    - Refer to validation error messages for specific fixes
 
 3. **Missing Environment Variables**:
+
    ```
    username is required for basic authentication
    ```
+
    - Ensure required variables are set in `.env` file
    - Check variable names match exactly
 

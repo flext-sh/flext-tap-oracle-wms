@@ -4,25 +4,26 @@ This module tests that the tap is completely generic and has no
 hardcoded references to specific projects while preserving all
 Oracle WMS specific functionality.
 """
+# Copyright (c) 2025 FLEXT Team
+# Licensed under the MIT License
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 import json
+from datetime import UTC, datetime
+from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
-
-from tap_oracle_wms.discovery import EntityDiscovery, SchemaGenerator
-from tap_oracle_wms.streams import WMSStream
-from tap_oracle_wms.tap import TapOracleWMS
+from flext_tap_oracle_wms.discovery import EntityDiscovery, SchemaGenerator
+from flext_tap_oracle_wms.streams import WMSStream
+from flext_tap_oracle_wms.tap import TapOracleWMS
 
 
 class TestGenericImplementation:
     """Test that implementation is generic without project-specific references."""
 
     def test_no_gruponos_references(self) -> None:
-        """Test that there are no references to gruponos project."""
         # Check tap configuration
         config = TapOracleWMS.config_jsonschema
         config_str = json.dumps(config)
@@ -33,7 +34,6 @@ class TestGenericImplementation:
         assert TapOracleWMS.name == "tap-oracle-wms"
 
     def test_generic_configuration(self) -> None:
-        """Test that configuration is generic for any Oracle WMS instance."""
         config = {
             "base_url": "https://any-wms.company.com",
             "username": "any_user",
@@ -47,7 +47,6 @@ class TestGenericImplementation:
         assert tap.config["company_code"] == "COMP1"
 
     def test_wms_specific_features_preserved(self) -> None:
-        """Test that Oracle WMS specific features are preserved."""
         config_schema = TapOracleWMS.config_jsonschema
 
         # Check WMS-specific configuration options
@@ -63,7 +62,6 @@ class TestGenericImplementation:
         assert properties["page_mode"]["default"] == "sequenced"
 
     def test_entity_discovery_is_generic(self) -> None:
-        """Test entity discovery works for any WMS instance."""
         config = {
             "base_url": "https://wms.example.com",
             "username": "test",
@@ -83,7 +81,6 @@ class TestGenericImplementation:
         )
 
     def test_stream_generation_is_dynamic(self) -> None:
-        """Test that streams are generated dynamically for any entity."""
         config = {
             "base_url": "https://wms.example.com",
             "username": "test",
@@ -113,7 +110,6 @@ class TestWMSStreamGeneric:
     """Test WMS Stream is generic but preserves WMS functionality."""
 
     def test_wms_url_generation(self) -> None:
-        """Test URL generation follows WMS patterns."""
         config = {
             "base_url": "https://wms.company.com",
             "api_endpoint_prefix": "/wms/lgfapi/v10/entity",
@@ -129,8 +125,9 @@ class TestWMSStreamGeneric:
         assert stream.path == "/wms/lgfapi/v10/entity/allocation"
 
     def test_wms_pagination_preserved(self) -> None:
-        """Test WMS HATEOAS pagination is preserved."""
-        from tap_oracle_wms.streams import WMSPaginator
+        from flext_tap_oracle_wms.streams import (  # TODO: Move import to module level
+            WMSPaginator,
+        )
 
         # Mock response with WMS pagination
         mock_response = Mock()
@@ -152,7 +149,6 @@ class TestWMSStreamGeneric:
         assert paginator.has_more(mock_response) is False
 
     def test_wms_timestamp_handling(self) -> None:
-        """Test WMS timestamp fields (mod_ts) are handled correctly."""
         config = {
             "base_url": "https://wms.com",
             "enable_incremental": True,
@@ -174,7 +170,6 @@ class TestWMSStreamGeneric:
         assert stream.replication_key == "mod_ts"
 
     def test_wms_field_flattening(self) -> None:
-        """Test WMS complex object flattening is preserved."""
         config = {"base_url": "https://wms.com", "flattening_enabled": True}
 
         stream = WMSStream(
@@ -190,7 +185,7 @@ class TestWMSStreamGeneric:
             "mod_ts": "2024-01-01T00:00:00Z",
         }
 
-        with patch("tap_oracle_wms.streams.SchemaGenerator") as mock_gen:
+        with patch("flext_tap_oracle_wms.streams.SchemaGenerator") as mock_gen:
             mock_instance = Mock()
             mock_gen.return_value = mock_instance
             mock_instance.flatten_complex_objects.return_value = {
@@ -212,8 +207,7 @@ class TestSchemaGeneratorGeneric:
     """Test schema generator is generic but handles WMS metadata."""
 
     def test_wms_metadata_type_mapping(self) -> None:
-        """Test WMS metadata types are mapped correctly."""
-        config = {}
+        config: dict[str, Any] = {}
         generator = SchemaGenerator(config)
 
         # Test WMS metadata format
@@ -223,7 +217,7 @@ class TestSchemaGeneratorGeneric:
                 {"name": "code", "type": "varchar", "required": True},
                 {"name": "active_flg", "type": "boolean", "required": False},
                 {"name": "mod_ts", "type": "datetime", "required": True},
-            ]
+            ],
         }
 
         schema = generator.generate_from_metadata(metadata)
@@ -236,8 +230,7 @@ class TestSchemaGeneratorGeneric:
         assert props["mod_ts"]["format"] == "date-time"
 
     def test_audit_fields_recognized(self) -> None:
-        """Test WMS audit fields are properly typed."""
-        config = {}
+        config: dict[str, Any] = {}
         generator = SchemaGenerator(config)
 
         metadata = {
@@ -246,7 +239,7 @@ class TestSchemaGeneratorGeneric:
                 {"name": "CREATE_TS", "type": "datetime"},
                 {"name": "MOD_USER", "type": "varchar"},
                 {"name": "MOD_TS", "type": "datetime"},
-            ]
+            ],
         }
 
         schema = generator.generate_from_metadata(metadata)
@@ -266,7 +259,6 @@ class TestBusinessLogicPreserved:
 
     @pytest.mark.asyncio
     async def test_entity_filtering_logic(self) -> None:
-        """Test entity filtering logic is preserved."""
         config = {
             "base_url": "https://wms.com",
             "username": "test",
@@ -300,7 +292,6 @@ class TestBusinessLogicPreserved:
         assert "other_entity" not in filtered  # Not included
 
     def test_incremental_sync_overlap(self) -> None:
-        """Test incremental sync overlap logic is preserved."""
         config = {
             "base_url": "https://wms.com",
             "enable_incremental": True,
@@ -320,7 +311,7 @@ class TestBusinessLogicPreserved:
         # Mock starting timestamp
         start_time = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
         with patch.object(stream, "get_starting_timestamp", return_value=start_time):
-            params = {}
+            params: dict[str, Any] = {}
             stream._add_incremental_filter(params, {})
 
             # Verify overlap is applied (10 minutes before start_time)
@@ -328,7 +319,6 @@ class TestBusinessLogicPreserved:
             assert params["mod_ts__gte"] == expected.isoformat()
 
     def test_full_sync_recovery_logic(self) -> None:
-        """Test full sync recovery by ID logic is preserved."""
         config = {
             "base_url": "https://wms.com",
             "enable_incremental": False,  # Force full sync
@@ -343,10 +333,10 @@ class TestBusinessLogicPreserved:
         assert stream.replication_key == "id"
 
         # Test ordering for full sync
-        params = {}
+        params: dict[str, Any] = {}
         stream._add_full_table_ordering(params)
         assert params["ordering"] == "-id"  # Descending for recovery
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+            pytest.main([__file__, "-v"])

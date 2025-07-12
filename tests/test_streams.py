@@ -1,22 +1,24 @@
 """Unit tests for WMSStream."""
+# Copyright (c) 2025 FLEXT Team
+# Licensed under the MIT License
 
 from __future__ import annotations
 
-from datetime import datetime
 import json
+from datetime import datetime
+from typing import Any
 from unittest.mock import Mock, patch
 
-import pytest
 import requests
 
-from tap_oracle_wms.streams import WMSPaginator, WMSStream
+import pytest
+from flext_tap_oracle_wms.streams import WMSPaginator, WMSStream
 
 
 class TestWMSPaginator:
     """Test WMS HATEOAS paginator."""
 
     def test_get_next_url_with_next_page(self) -> None:
-        """Test extracting next page URL from response."""
         paginator = WMSPaginator()
 
         # Mock response with next_page
@@ -30,7 +32,6 @@ class TestWMSPaginator:
         assert next_url == "/api/v1/customers?page=2"
 
     def test_get_next_url_no_next_page(self) -> None:
-        """Test when there's no next page."""
         paginator = WMSPaginator()
 
         response = Mock(spec=requests.Response)
@@ -40,7 +41,6 @@ class TestWMSPaginator:
         assert next_url is None
 
     def test_get_next_url_json_error(self) -> None:
-        """Test handling of JSON parse errors."""
         paginator = WMSPaginator()
 
         response = Mock(spec=requests.Response)
@@ -53,7 +53,6 @@ class TestWMSPaginator:
         assert "Pagination JSON parsing failed" in str(exc_info.value)
 
     def test_has_more(self) -> None:
-        """Test checking if more pages exist."""
         paginator = WMSPaginator()
 
         # With next page
@@ -70,8 +69,7 @@ class TestWMSStream:
     """Test WMS stream functionality."""
 
     @pytest.fixture
-    def minimal_config(self):
-        """Minimal stream configuration."""
+    def minimal_config(self) -> dict[str, Any]:
         return {
             "base_url": "https://wms.example.com",
             "username": "test",
@@ -80,8 +78,7 @@ class TestWMSStream:
         }
 
     @pytest.fixture
-    def mock_tap(self, minimal_config):
-        """Mock tap instance."""
+    def mock_tap(self, minimal_config) -> Mock:
         tap = Mock()
         tap.config = minimal_config
         tap.logger = Mock()
@@ -91,8 +88,7 @@ class TestWMSStream:
         return tap
 
     @pytest.fixture
-    def basic_schema(self):
-        """Basic entity schema."""
+    def basic_schema(self) -> dict[str, Any]:
         return {
             "type": "object",
             "properties": {
@@ -103,7 +99,6 @@ class TestWMSStream:
         }
 
     def test_stream_initialization(self, mock_tap, basic_schema) -> None:
-        """Test stream initialization."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         assert stream._entity_name == "customer"
@@ -114,7 +109,6 @@ class TestWMSStream:
         assert stream.replication_key == "mod_ts"
 
     def test_stream_force_full_table(self, mock_tap, basic_schema) -> None:
-        """Test forcing full table sync."""
         mock_tap.config["force_full_table"] = True
 
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
@@ -123,7 +117,6 @@ class TestWMSStream:
         assert stream.replication_key == "id"
 
     def test_url_base_property(self, mock_tap, basic_schema) -> None:
-        """Test URL base property."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         assert stream.url_base == "https://wms.example.com"
@@ -133,7 +126,6 @@ class TestWMSStream:
         assert stream.url_base == "https://wms.example.com"
 
     def test_path_property(self, mock_tap, basic_schema) -> None:
-        """Test path generation."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # Default path
@@ -146,7 +138,9 @@ class TestWMSStream:
             "api_endpoint_prefix": "api/v1",
         }
         stream_with_prefix = WMSStream(
-            tap=mock_tap_with_prefix, name="customer", schema=basic_schema
+            tap=mock_tap_with_prefix,
+            name="customer",
+            schema=basic_schema,
         )
         assert stream_with_prefix.path == "/api/v1/customer"
 
@@ -158,12 +152,13 @@ class TestWMSStream:
             "path_pattern": "/entities/{entity}/data",
         }
         stream_with_pattern = WMSStream(
-            tap=mock_tap_with_pattern, name="customer", schema=basic_schema
+            tap=mock_tap_with_pattern,
+            name="customer",
+            schema=basic_schema,
         )
         assert stream_with_pattern.path == "/api/v1/entities/customer/data"
 
     def test_http_headers(self, mock_tap, basic_schema) -> None:
-        """Test HTTP headers generation."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         headers = stream.http_headers
@@ -178,13 +173,14 @@ class TestWMSStream:
             "custom_headers": {"X-API-Key": "secret"},
         }
         stream_with_headers = WMSStream(
-            tap=mock_tap_with_headers, name="customer", schema=basic_schema
+            tap=mock_tap_with_headers,
+            name="customer",
+            schema=basic_schema,
         )
         headers_with_custom = stream_with_headers.http_headers
         assert headers_with_custom["X-API-Key"] == "secret"
 
     def test_get_url_params_initial_request(self, mock_tap, basic_schema) -> None:
-        """Test URL parameter generation for initial request."""
         # Mock state properly for Singer SDK
         mock_tap.load_state = Mock(return_value={})
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
@@ -201,7 +197,6 @@ class TestWMSStream:
         assert "mod_ts__gte" in params  # Should have timestamp filter
 
     def test_get_url_params_pagination(self, mock_tap, basic_schema) -> None:
-        """Test URL parameter extraction from pagination token."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # Mock pagination token
@@ -214,7 +209,6 @@ class TestWMSStream:
         assert params["limit"] == "100"
 
     def test_parse_response_with_results(self, mock_tap, basic_schema) -> None:
-        """Test parsing response with results array."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         response = Mock(spec=requests.Response)
@@ -233,7 +227,6 @@ class TestWMSStream:
         assert records[1]["id"] == 2
 
     def test_parse_response_direct_array(self, mock_tap, basic_schema) -> None:
-        """Test parsing response with direct array."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         response = Mock(spec=requests.Response)
@@ -248,7 +241,6 @@ class TestWMSStream:
         assert records[0]["id"] == 1
 
     def test_parse_response_invalid_json(self, mock_tap, basic_schema) -> None:
-        """Test handling of invalid JSON responses."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         response = Mock(spec=requests.Response)
@@ -259,7 +251,6 @@ class TestWMSStream:
         assert "Invalid JSON response" in str(exc_info.value)
 
     def test_validate_response_success(self, mock_tap, basic_schema) -> None:
-        """Test successful response validation."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         response = Mock(spec=requests.Response)
@@ -269,7 +260,6 @@ class TestWMSStream:
         stream.validate_response(response)
 
     def test_validate_response_errors(self, mock_tap, basic_schema) -> None:
-        """Test response validation with various errors."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # 401 Unauthorized
@@ -292,11 +282,12 @@ class TestWMSStream:
             stream.validate_response(response)
         assert "Rate limit" in str(exc_info.value)
 
-    @patch("tap_oracle_wms.streams.SchemaGenerator")
-    def test_post_process_with_flattening(
-        self, mock_schema_gen_class, mock_tap, basic_schema
+    @patch("flext_tap_oracle_wms.streams.SchemaGenerator")
+    def test_post_process_with_flattening(self,
+        mock_schema_gen_class,
+        mock_tap,
+        basic_schema,
     ) -> None:
-        """Test record post-processing with flattening."""
         mock_tap.config["flattening_enabled"] = True
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -319,7 +310,6 @@ class TestWMSStream:
         assert "address_street" in processed
 
     def test_post_process_without_flattening(self, mock_tap, basic_schema) -> None:
-        """Test record post-processing without flattening."""
         mock_tap.config["flattening_enabled"] = False
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -334,12 +324,12 @@ class TestWMSStream:
         assert "123 Main St" in processed["address"]
 
     def test_get_starting_timestamp_from_state(self, mock_tap, basic_schema) -> None:
-        """Test getting starting timestamp from state."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # Mock state
         with patch.object(
-            stream, "get_starting_replication_key_value"
+            stream,
+            "get_starting_replication_key_value",
         ) as mock_get_state:
             mock_get_state.return_value = "2024-01-01T00:00:00Z"
 
@@ -351,13 +341,13 @@ class TestWMSStream:
             assert timestamp.day == 1
 
     def test_get_starting_timestamp_from_config(self, mock_tap, basic_schema) -> None:
-        """Test getting starting timestamp from config."""
         mock_tap.config["start_date"] = "2024-02-01T00:00:00Z"
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # Mock no state
         with patch.object(
-            stream, "get_starting_replication_key_value"
+            stream,
+            "get_starting_replication_key_value",
         ) as mock_get_state:
             mock_get_state.return_value = None
 
@@ -367,7 +357,6 @@ class TestWMSStream:
             assert timestamp.month == 2
 
     def test_normalize_timestamp(self, mock_tap, basic_schema) -> None:
-        """Test timestamp normalization."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # String without timezone
@@ -386,11 +375,12 @@ class TestWMSStream:
         # None
         assert stream._normalize_timestamp(None) is None
 
-    @patch("tap_oracle_wms.streams.get_wms_authenticator")
-    def test_authenticator_property(
-        self, mock_get_auth, mock_tap, basic_schema
+    @patch("flext_tap_oracle_wms.streams.get_wms_authenticator")
+    def test_authenticator_property(self,
+        mock_get_auth,
+        mock_tap,
+        basic_schema,
     ) -> None:
-        """Test authenticator property."""
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         mock_auth = Mock()
@@ -403,4 +393,4 @@ class TestWMSStream:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+            pytest.main([__file__, "-v"])
