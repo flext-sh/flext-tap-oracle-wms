@@ -216,6 +216,7 @@ known-first-party = ["flext_tap_oracle_wms"]
 force-single-line = true
 
 [tool.mypy]
+files = ["src/flext_tap_oracle_wms, "tests"]
 python_version = "3.13"
 strict = true
 warn_unreachable = true
