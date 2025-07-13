@@ -264,7 +264,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             logger.exception("Schema inference from sample failed")
             return SchemaGenerator._generate_empty_schema()
 
-    def _infer_field_type(self, value: Any) -> dict[str, Any]:  # noqa: ANN401, PLR0911
+    def _infer_field_type(self, value: Any) -> dict[str, Any]:  # noqa: PLR0911
         """Infer field type from sample value.
 
         Args:

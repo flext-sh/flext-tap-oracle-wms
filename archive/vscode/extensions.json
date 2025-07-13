@@ -1,0 +1,60 @@
+{
+  "recommendations": [
+    // Python
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.debugpy",
+    
+    // Linting and Formatting
+    "charliermarsh.ruff",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "ms-python.mypy-type-checker",
+    
+    // Testing
+    "littlefoxteam.vscode-python-test-adapter",
+    "ryanluker.vscode-coverage-gutters",
+    
+    // Development Tools
+    "tamasfe.even-better-toml",
+    "redhat.vscode-yaml",
+    "ms-vscode.makefile-tools",
+    "donjayamanne.githistory",
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "github.vscode-github-actions",
+    
+    // Documentation
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-mermaid",
+    "davidanson.vscode-markdownlint",
+    
+    // Code Quality
+    "sonarsource.sonarlint-vscode",
+    "aaron-bond.better-comments",
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+    
+    // Productivity
+    "gruntfuggly.todo-tree",
+    "alefragnani.bookmarks",
+    "sleistner.vscode-fileutils",
+    "tyriar.sort-lines",
+    
+    // Environment
+    "mikestead.dotenv",
+    "ms-vscode-remote.remote-containers",
+    "ms-vscode-remote.remote-ssh",
+    
+    // Optional but Useful
+    "njpwerner.autodocstring",
+    "visualstudioexptteam.vscodeintellicode",
+    "christian-kohler.path-intellisense",
+    "formulahendry.code-runner"
+  ],
+  "unwantedRecommendations": [
+    "ms-python.flake8",  // Using Ruff instead
+    "ms-python.pylint",  // Using Ruff instead
+    "ms-vsliveshare.vsliveshare"
+  ]
+}

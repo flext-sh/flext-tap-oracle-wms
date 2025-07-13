@@ -310,7 +310,7 @@ class ConfigValidator:
         }
 
 
-def validate_config_with_mapper(config_mapper: Any) -> bool:  # noqa: ANN401
+def validate_config_with_mapper(config_mapper: Any) -> bool:
     """Validate configuration using a config mapper.
 
     Args:

@@ -136,13 +136,37 @@ fix = true
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
+    # Formatting
+    "E501",     # line-too-long (handled by formatter)
     "COM812",   # missing-trailing-comma (conflicts with formatter)
     "ISC001",   # single-line-implicit-string-concatenation (conflicts with formatter)
     "CPY001",   # missing-copyright-notice (we have copyright headers)
+    
+    # Documentation - not strictly required for tap
+    "D100",     # missing-docstring-in-public-module
+    "D101",     # missing-docstring-in-public-class
+    "D102",     # missing-docstring-in-public-method
+    "D103",     # missing-docstring-in-public-function
     "D104",     # missing-docstring-in-public-package (unnecessary for __init__.py)
+    "D105",     # missing-docstring-in-magic-method
+    "D106",     # missing-docstring-in-public-nested-class
+    "D107",     # missing-docstring-in-__init__
+    "D203",     # blank-line-before-class-docstring (conflicts with D211)
+    "D213",     # multi-line-summary-second-line (conflicts with D212)
+    
+    # Type annotations
+    "ANN401",   # any-type (Singer SDK uses Any extensively)
+    
+    # Code style
+    "ERA001",   # commented-out-code (development annotations)
     "EM101",    # raw-string-in-exception (overly restrictive)
     "EM102",    # f-string-in-exception (overly restrictive)
     "TRY003",   # raise-vanilla-args (overly restrictive)
+    
+    # Complexity
+    "PLR0913",  # too-many-arguments (Singer SDK patterns)
+    "PLR0912",  # too-many-branches
+    "PLR0915",  # too-many-statements
 ]
 fixable = ["ALL"]
 unfixable = []

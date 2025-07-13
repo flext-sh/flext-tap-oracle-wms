@@ -1,0 +1,34 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Tap Discovery",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/tap_oracle_wms/__main__.py",
+            "args": ["--config", "config.json", "--discover"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "Run Tap Extraction",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/tap_oracle_wms/__main__.py",
+            "args": ["--config", "config.json", "--catalog", "catalog.json"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": ["tests/", "-v", "--tb=short"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
