@@ -167,7 +167,7 @@ class TapOracleWMS(Tap):
         ),
     ).to_dict()
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize tap with lazy loading - NO network calls during init."""
         # Call parent init first to get logger properly initialized
         super().__init__(*args, **kwargs)
@@ -319,7 +319,7 @@ class TapOracleWMS(Tap):
         self._is_discovery_mode = enabled
 
     @classmethod
-    def invoke(cls, *args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
+    def invoke(cls, *args: Any, **kwargs: Any) -> Any:
         """Override invoke to detect discovery mode.
 
         Args:

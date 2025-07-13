@@ -810,7 +810,7 @@ class ConfigMapper:
         return value
 
     @staticmethod
-    def _get_nested_value(data: dict[str, Any], path: str) -> Any:  # noqa: ANN401
+    def _get_nested_value(data: dict[str, Any], path: str) -> Any:
         """Get value from nested dictionary using dot notation.
 
         Args:
