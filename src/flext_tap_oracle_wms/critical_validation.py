@@ -34,7 +34,7 @@ def enforce_mandatory_environment_variables() -> None:
     validation_result = _wms_validator.enforce_critical_environment_variables()
 
     if not validation_result.is_success:
-        error_msg = validation_result.error
+        error_msg = validation_result.error or "Validation failed"
         logger.error(error_msg)
         raise SystemExit(error_msg)
 
@@ -53,7 +53,7 @@ def validate_schema_discovery_mode() -> ServiceResult[None]:
     return _wms_validator.enforce_critical_environment_variables()
 
 
-def validate_wms_record(record: dict) -> ServiceResult[list[str]]:
+def validate_wms_record(record: dict[str, object]) -> ServiceResult[list[str]]:
     """Validate WMS record using centralized validation.
 
     Args:

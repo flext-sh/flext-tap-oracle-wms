@@ -6,15 +6,17 @@ using flext-core patterns and Singer SDK compatibility.
 
 from http import HTTPStatus
 from types import TracebackType
-from typing import Any, Self
+from typing import (
+    Any,
+    Self,
+)
 
 import httpx
 
 # Use centralized logger from flext-infrastructure.monitoring.flext-observability - NO FALLBACKS
 from flext_observability.logging import get_logger
 
-from flext_tap_oracle_wms.config_mapper import WMSConfig
-from flext_tap_oracle_wms.metrics import TapMetrics
+from flext_tap_oracle_wms.models import WMSConfig
 
 logger = get_logger(__name__)
 
@@ -34,7 +36,7 @@ class WMSConnectionError(WMSClientError):
 class WMSClient:
     """HTTP client for Oracle WMS API operations."""
 
-    def __init__(self, config: WMSConfig, metrics: TapMetrics) -> None:
+    def __init__(self, config: WMSConfig, metrics: Any = None) -> None:
         """Initialize WMS client.
 
         Args:
@@ -47,9 +49,9 @@ class WMSClient:
 
         # Create HTTP client with configuration
         self.client = httpx.Client(
-            base_url=config.base_url.rstrip("/"),
+            base_url=str(config.base_url).rstrip("/"),
             timeout=config.timeout,
-            verify=config.verify_ssl,
+            verify=getattr(config, "verify_ssl", True),
             headers={
                 "Accept": "application/json",
                 "Content-Type": "application/json",

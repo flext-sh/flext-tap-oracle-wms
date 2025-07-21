@@ -578,7 +578,9 @@ class TestConfigValidation:
         )
 
     def _create_invalid_page_size_config(
-        self, auth: WMSAuthConfig, connection: WMSConnectionConfig,
+        self,
+        auth: WMSAuthConfig,
+        connection: WMSConnectionConfig,
     ) -> TapOracleWMSConfig:
         """Helper function to create WMS config with invalid page size for testing."""
         return TapOracleWMSConfig(

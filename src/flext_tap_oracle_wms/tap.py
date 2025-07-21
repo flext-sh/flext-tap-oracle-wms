@@ -28,8 +28,9 @@ from flext_tap_oracle_wms.discovery import (
     EntityDiscoveryError,
     NetworkError,
     SchemaGenerationError,
-    SchemaGenerator,
 )
+from flext_tap_oracle_wms.infrastructure.cache import CacheManager
+from flext_tap_oracle_wms.infrastructure.schema_generator import SchemaGenerator
 from flext_tap_oracle_wms.streams import WMSStream
 
 # API and Performance Constants
@@ -178,8 +179,12 @@ class TapOracleWMS(Tap):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize tap with lazy loading - NO network calls during init."""
-        # Call parent init first to get logger properly initialized
+        # Call parent init first to let Singer SDK handle config parsing
         super().__init__(*args, **kwargs)
+
+        # Apply type conversion to fix Meltano string-to-integer issue AFTER parent init
+        if hasattr(self, "config") and self.config:
+            self._config = self._convert_config_types(dict(self.config))
 
         # Now we can use self.logger safely
         self.logger.info("🔧 Initializing TapOracleWMS...")
@@ -194,8 +199,9 @@ class TapOracleWMS(Tap):
             self.logger.info("🔧 base_url: %s", self.config.get("base_url"))
             self.logger.info("🔧 entities: %s", self.config.get("entities"))
             self.logger.info(
-                "🔧 page_size: %s",
+                "🔧 page_size: %s (%s)",
                 self.config.get("page_size"),
+                type(self.config.get("page_size")).__name__,
             )
 
         # Cache for discovered entities and schemas - LAZY LOADED
@@ -227,23 +233,32 @@ class TapOracleWMS(Tap):
         ]
 
         for field in int_fields:
-            try:
-                converted[field] = int(converted[field])
-            except ValueError:
-                # Keep original value if conversion fails
-                continue
+            if field in converted:
+                value = converted[field]
+                try:
+                    # Handle both string and numeric values
+                    if isinstance(value, (str, int, float)):
+                        converted[field] = int(value)
+                except (ValueError, TypeError):
+                    # Keep original value if conversion fails
+                    continue
 
         # Boolean fields that might come as strings
         bool_fields = ["enable_incremental", "discover_catalog", "verify_ssl"]
 
         for field in bool_fields:
-            if field in converted and isinstance(converted[field], str):
-                converted[field] = converted[field].lower() in {
-                    "true",
-                    "1",
-                    "yes",
-                    "on",
-                }
+            if field in converted:
+                value = converted[field]
+                if isinstance(value, str):
+                    converted[field] = value.lower() in {
+                        "true",
+                        "1",
+                        "yes",
+                        "on",
+                    }
+                elif isinstance(value, bool):
+                    # Already boolean, keep as is
+                    pass
 
         return converted
 
@@ -300,7 +315,8 @@ class TapOracleWMS(Tap):
         if not hasattr(self, "_discovery") or self._discovery is None:
             # Validate configuration only when discovery is actually needed
             self._validate_configuration()
-            self._discovery = EntityDiscovery(dict(self.config))
+            cache_manager = CacheManager(dict(self.config))
+            self._discovery = EntityDiscovery(dict(self.config), cache_manager)
         return self._discovery
 
     @property

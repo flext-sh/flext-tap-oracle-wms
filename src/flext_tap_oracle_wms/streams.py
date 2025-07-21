@@ -168,11 +168,16 @@ class WMSStream(RESTStream[dict[str, Any]]):
     def path(self) -> str:  # type: ignore[override]
         """Generate entity-specific path."""
         # Build path from configuration using ConfigMapper
-        entity_path = self.config_mapper.get_entity_path(self._entity_name)
-        if not entity_path:
-            msg = f"No path configured for entity: {self._entity_name}"
-            raise ValueError(msg)
-        return entity_path
+        pattern = self.config_mapper.get_entity_endpoint_pattern()
+        prefix = self.config_mapper.get_endpoint_prefix()
+        version = self.config_mapper.get_api_version()
+
+        # Replace placeholders in pattern
+        return pattern.format(
+            prefix=prefix,
+            version=version,
+            entity=self._entity_name,
+        )
 
     @property
     def http_headers(self) -> dict[str, Any]:
@@ -266,7 +271,10 @@ class WMSStream(RESTStream[dict[str, Any]]):
         """
         params: dict[str, Any] = {}
         try:
-            parsed_params = parse_qs(next_page_token.query)
+            if hasattr(next_page_token, "query"):
+                parsed_params = parse_qs(next_page_token.query)
+            else:
+                parsed_params = {}
             # Validate and sanitize query parameters
             for key, value in parsed_params.items():
                 # Basic sanitization - allow only alphanumeric, underscore, dash
@@ -336,7 +344,10 @@ class WMSStream(RESTStream[dict[str, Any]]):
     ) -> None:
         bookmark = self.get_starting_replication_key_value(context)
         try:
-            bookmark_id = int(bookmark)
+            if bookmark is not None:
+                bookmark_id = int(bookmark)
+            else:
+                return  # No bookmark to use
 
             # Validate bookmark is reasonable
             if bookmark_id < 0:
@@ -523,13 +534,14 @@ class WMSStream(RESTStream[dict[str, Any]]):
             # Try to get from state
             state_value = self.get_starting_replication_key_value(context)
             try:
-                return datetime.fromisoformat(state_value)
+                if state_value is not None:
+                    return datetime.fromisoformat(str(state_value))
             except (ValueError, TypeError) as e:
                 msg = "Failed to parse starting timestamp from state"
                 raise ValueError(msg) from e
 
-            # Fall back to config start_date
-            if self.config.get("start_date"):
+        # Fall back to config start_date
+        if self.config.get("start_date"):
                 start_date_value = self.config["start_date"]
                 if isinstance(start_date_value, str):
                     return datetime.fromisoformat(start_date_value)
