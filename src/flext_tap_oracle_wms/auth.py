@@ -1,33 +1,29 @@
-"""Authentication module for Oracle WMS tap.
+"""Oracle WMS Authentication Module.
 
-This module provides authentication functionality using flext-core patterns.
+This module provides authentication capabilities for Oracle WMS API integration
+using flext-core patterns and Singer SDK compatibility.
 """
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
-
-from __future__ import annotations
 
 import base64
 import threading
-from typing import TYPE_CHECKING
 from typing import Any
 
 from flext_observability.logging import get_logger
 from singer_sdk.authenticators import SimpleAuthenticator
 
-# Use flext_auth without fallback - proper enterprise standard
-# BasicAuthService is not available in flext_auth, will use direct implementation
-BasicAuthService = None
-
-if TYPE_CHECKING:
+try:
     import requests
     from singer_sdk.streams import RESTStream
+except ImportError:
+    # Fallback for testing environments
+    requests = None
+    RESTStream = Any
 
 logger = get_logger(__name__)
 
 
 class WMSBasicAuthenticator(SimpleAuthenticator):
-    """Legacy WMS Basic authenticator - True Facade with Pure Delegation to flext-auth.
+    """Legacy WMS Basic authenticator - True Facade with Pure Delegation to flext-api.auth.flext-auth.
 
     Delegates entirely to enterprise authentication service while maintaining
     Singer SDK SimpleAuthenticator interface.
@@ -72,7 +68,8 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
 
 
 def get_wms_authenticator(
-    stream: RESTStream[Any], config: dict[str, Any],
+    stream: RESTStream[Any],
+    config: dict[str, Any],
 ) -> WMSBasicAuthenticator:
     """Get appropriate WMS authenticator based on configuration.
 
@@ -91,7 +88,7 @@ def get_wms_authenticator(
     password = config.get("password")
 
     if not username or not password:
-        msg = "Basic authentication requires username and password"
+        msg = "Username and password are required for WMS authentication"
         raise ValueError(msg)
 
     return WMSBasicAuthenticator(stream, username, password)
@@ -107,14 +104,15 @@ def get_wms_headers(config: dict[str, Any]) -> dict[str, str]:
         Dictionary of HTTP headers for WMS API requests
 
     """
-    headers = {
+    headers: dict[str, str] = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "User-Agent": "flext-tap-oracle-wms/1.0",
+        "User-Agent": "flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0",
     }
 
-    # Add any additional headers from config
+    # Add any additional headers from config, converting values to strings
     if "headers" in config:
-        headers.update(config["headers"])
+        for key, value in config["headers"].items():
+            headers[str(key)] = str(value)
 
     return headers

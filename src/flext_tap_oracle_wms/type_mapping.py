@@ -78,8 +78,9 @@ WMS_SPECIFIC_TYPES: dict[str, dict[str, Any]] = {
 }
 
 
-def convert_metadata_type_to_singer(  # noqa: PLR0911
-    wms_type: str, format_hint: str | None = None,
+def convert_metadata_type_to_singer(
+    wms_type: str,
+    format_hint: str | None = None,
 ) -> str:
     """Convert Oracle WMS metadata type to Singer schema type.
 
@@ -186,7 +187,9 @@ def _get_base_schema_for_type(wms_type: str, format_hint: str | None) -> dict[st
 
 
 def _apply_nullable_to_schema(
-    schema: dict[str, Any], *, nullable: bool,
+    schema: dict[str, Any],
+    *,
+    nullable: bool,
 ) -> dict[str, Any]:
     """Apply nullable setting to schema.
 

@@ -1,80 +1,66 @@
-"""Critical validation module for non-negotiable requirements.
+"""Critical validation module for Oracle WMS Tap.
 
-This module enforces mandatory environment variables that cannot be overridden
-or disabled. These validations are CRITICAL and will cause immediate abort
-if the required values are not set correctly.:
+This module enforces mandatory Oracle WMS tap requirements using the centralized
+Oracle validation patterns from flext-core. Eliminates code duplication across
+Oracle projects by using the base validation classes.
 """
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
 from __future__ import annotations
 
-import os
+from typing import TYPE_CHECKING
 
-# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
+from flext_core.config.oracle import OracleWMSValidator
 from flext_observability.logging import get_logger
+
+if TYPE_CHECKING:
+    from flext_core.domain.types import ServiceResult
 
 logger = get_logger(__name__)
 
+# Initialize Oracle WMS validator with project-specific prefix
+_wms_validator = OracleWMSValidator("TAP_ORACLE_WMS")
+
 
 def enforce_mandatory_environment_variables() -> None:
-    """Enforce mandatory environment variables.
+    """Enforce mandatory environment variables for Oracle WMS Tap.
 
     Raises:
         SystemExit: If mandatory environment variables are missing.
 
     """
-    # CRITICAL VALIDATION 1: USE_METADATA_ONLY must be 'true'
-    use_metadata_only = os.getenv("TAP_ORACLE_WMS_USE_METADATA_ONLY", "").lower()
-    if use_metadata_only != "true":
-        error_msg = (
-            f"❌ CRITICAL FAILURE: TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true' "
-            f"but got '{use_metadata_only}'. This is a NON-NEGOTIABLE "
-            f"requirement. ABORTING!"
-        )
-        logger.error(error_msg)
-        raise SystemExit(error_msg)
+    # Use centralized Oracle WMS validation
+    validation_result = _wms_validator.enforce_critical_environment_variables()
 
-    # CRITICAL VALIDATION 2: DISCOVERY_SAMPLE_SIZE must be '0'
-    try:
-        discovery_sample_size = int(
-            os.getenv("TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE", "-1"),
-        )
-    except (ValueError, TypeError):
-        discovery_sample_size = -1
-
-    if discovery_sample_size != 0:
-        error_msg = (
-            f"❌ CRITICAL FAILURE: TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE must be '0' "
-            f"but got '{discovery_sample_size}'. Sample-based discovery is "
-            f"FORBIDDEN. ABORTING!"
-        )
+    if not validation_result.is_success:
+        error_msg = validation_result.error
         logger.error(error_msg)
         raise SystemExit(error_msg)
 
     logger.info(
-        "🚨 CRITICAL VALIDATION PASSED: Mandatory schema discovery rules enforced",
+        "🚨 CRITICAL VALIDATION PASSED: Mandatory Oracle WMS tap environment variables validated"
     )
 
 
-def validate_schema_discovery_mode() -> None:
-    """Validate schema discovery mode configuration."""
-    # Log the current state for verification
-    use_metadata_only = os.getenv("TAP_ORACLE_WMS_USE_METADATA_ONLY", "not_set")
-    discovery_sample_size = os.getenv("TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE", "not_set")
+def validate_schema_discovery_mode() -> ServiceResult[None]:
+    """Validate schema discovery mode configuration.
 
-    logger.info(
-        "Schema discovery mode: USE_METADATA_ONLY=%s, DISCOVERY_SAMPLE_SIZE=%s",
-        use_metadata_only,
-        discovery_sample_size,
-    )
+    Returns:
+        ServiceResult indicating validation success or failure
 
-    # Ensure both values are correct
-    if use_metadata_only.lower() == "true" and discovery_sample_size == "0":
-        logger.info("✅ Schema discovery correctly configured for metadata-only mode")
-    else:
-        logger.warning(
-            "⚠️ Schema discovery configuration may not be optimal. "
-            "Ensure TAP_ORACLE_WMS_USE_METADATA_ONLY=true and "
-            "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE=0",
-        )
+    """
+    return _wms_validator.enforce_critical_environment_variables()
+
+
+def validate_wms_record(record: dict) -> ServiceResult[list[str]]:
+    """Validate WMS record using centralized validation.
+
+    Args:
+        record: WMS record to validate
+
+    Returns:
+        ServiceResult containing validation errors (empty list if valid)
+
+    """
+    return _wms_validator.validate_wms_record(record)

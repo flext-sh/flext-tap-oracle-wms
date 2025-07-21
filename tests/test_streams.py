@@ -6,14 +6,12 @@ from __future__ import annotations
 
 import json
 from typing import Any
-from unittest.mock import Mock
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 import requests
 
-from flext_tap_oracle_wms.streams import WMSPaginator
-from flext_tap_oracle_wms.streams import WMSStream
+from flext_tap_oracle_wms.streams import WMSPaginator, WMSStream
 
 
 class TestWMSPaginator:
@@ -49,9 +47,8 @@ class TestWMSPaginator:
         response.status_code = 200
         response.headers = {"Content-Type": "application/json"}
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(Exception, match="Pagination JSON parsing failed"):
             paginator.get_next_url(response)
-        assert "Pagination JSON parsing failed" in str(exc_info.value)
 
     def test_has_more(self) -> None:
         paginator = WMSPaginator()
@@ -99,7 +96,11 @@ class TestWMSStream:
             },
         }
 
-    def test_stream_initialization(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_stream_initialization(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         assert stream._entity_name == "customer"
@@ -109,7 +110,11 @@ class TestWMSStream:
         assert stream.replication_method == "INCREMENTAL"
         assert stream.replication_key == "mod_ts"
 
-    def test_stream_force_full_table(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_stream_force_full_table(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         mock_tap.config["force_full_table"] = True
 
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
@@ -117,7 +122,11 @@ class TestWMSStream:
         assert stream.replication_method == "FULL_TABLE"
         assert stream.replication_key is None  # FULL_TABLE doesn't use replication keys
 
-    def test_url_base_property(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_url_base_property(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         assert stream.url_base == "https://wms.example.com"
@@ -183,7 +192,11 @@ class TestWMSStream:
         headers_with_custom = stream_with_headers.http_headers
         assert headers_with_custom["X-API-Key"] == "secret"
 
-    def test_get_url_params_initial_request(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_get_url_params_initial_request(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         # Mock state properly for Singer SDK
         mock_tap.load_state = Mock(return_value={})
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
@@ -199,7 +212,11 @@ class TestWMSStream:
         assert params["ordering"] == "mod_ts"
         assert "mod_ts__gte" in params  # Should have timestamp filter
 
-    def test_get_url_params_pagination(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_get_url_params_pagination(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # Mock pagination token
@@ -211,7 +228,11 @@ class TestWMSStream:
         assert params["page"] == "2"
         assert params["limit"] == "100"
 
-    def test_parse_response_with_results(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_parse_response_with_results(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         response = Mock(spec=requests.Response)
@@ -229,7 +250,11 @@ class TestWMSStream:
         assert records[0]["id"] == 1
         assert records[1]["id"] == 2
 
-    def test_parse_response_direct_array(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_parse_response_direct_array(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         response = Mock(spec=requests.Response)
@@ -243,17 +268,24 @@ class TestWMSStream:
         assert len(records) == 2
         assert records[0]["id"] == 1
 
-    def test_parse_response_invalid_json(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_parse_response_invalid_json(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         response = Mock(spec=requests.Response)
         response.json.side_effect = json.JSONDecodeError("Invalid", "", 0)
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(Exception, match="Invalid JSON response"):
             list(stream.parse_response(response))
-        assert "Invalid JSON response" in str(exc_info.value)
 
-    def test_validate_response_success(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_validate_response_success(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         response = Mock(spec=requests.Response)
@@ -262,30 +294,35 @@ class TestWMSStream:
         # Should not raise
         stream.validate_response(response)
 
-    def test_validate_response_errors(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_validate_response_errors(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # 401 Unauthorized
         response = Mock(spec=requests.Response)
         response.status_code = 401
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(Exception, match="Authentication failed"):
             stream.validate_response(response)
-        assert "Authentication failed" in str(exc_info.value)
 
         # 404 Not Found
         response.status_code = 404
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(Exception, match="not found"):
             stream.validate_response(response)
-        assert "not found" in str(exc_info.value)
 
         # 429 Rate Limited
         response.status_code = 429
         response.headers = {"Retry-After": "60"}
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(Exception, match="Rate limit"):
             stream.validate_response(response)
-        assert "Rate limit" in str(exc_info.value)
 
-    def test_get_starting_timestamp_from_state(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_get_starting_timestamp_from_state(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # Mock state
@@ -302,7 +339,11 @@ class TestWMSStream:
             assert timestamp.month == 1
             assert timestamp.day == 1
 
-    def test_get_starting_timestamp_from_config(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_get_starting_timestamp_from_config(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
+    ) -> None:
         mock_tap.config["start_date"] = "2024-02-01T00:00:00Z"
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -320,7 +361,10 @@ class TestWMSStream:
 
     @patch("flext_tap_oracle_wms.streams.get_wms_authenticator")
     def test_authenticator_property(
-        self, mock_get_auth: Mock, mock_tap: Mock, basic_schema: dict[str, Any]
+        self,
+        mock_get_auth: Mock,
+        mock_tap: Mock,
+        basic_schema: dict[str, Any],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 

@@ -8,8 +8,7 @@ promoting loose coupling and high cohesion.
 
 from __future__ import annotations
 
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any
 
 
@@ -198,7 +197,10 @@ class StreamFactoryInterface(ABC):
 
     @abstractmethod
     def create_stream(
-        self, entity_name: str, schema: dict[str, Any], tap_instance: object,
+        self,
+        entity_name: str,
+        schema: dict[str, Any],
+        tap_instance: object,
     ) -> object:
         """Create a stream instance for the given entity.
 

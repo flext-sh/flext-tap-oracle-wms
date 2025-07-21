@@ -6,28 +6,30 @@
 from __future__ import annotations
 
 import sys
-from datetime import UTC
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 # Import logger at top level
 from flext_observability.logging import get_logger
-from singer_sdk import Tap
-from singer_sdk import singer_typing as th
+from singer_sdk import Tap, typing as th
 
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
-from flext_tap_oracle_wms.config_validator import ConfigValidationError
-from flext_tap_oracle_wms.config_validator import validate_config_with_mapper
+from flext_tap_oracle_wms.config_validator import (
+    ConfigValidationError,
+    validate_config_with_mapper,
+)
 from flext_tap_oracle_wms.critical_validation import (
     enforce_mandatory_environment_variables,
 )
-from flext_tap_oracle_wms.discovery import AuthenticationError
-from flext_tap_oracle_wms.discovery import EntityDescriptionError
-from flext_tap_oracle_wms.discovery import EntityDiscovery
-from flext_tap_oracle_wms.discovery import EntityDiscoveryError
-from flext_tap_oracle_wms.discovery import NetworkError
-from flext_tap_oracle_wms.discovery import SchemaGenerationError
-from flext_tap_oracle_wms.discovery import SchemaGenerator
+from flext_tap_oracle_wms.discovery import (
+    AuthenticationError,
+    EntityDescriptionError,
+    EntityDiscovery,
+    EntityDiscoveryError,
+    NetworkError,
+    SchemaGenerationError,
+    SchemaGenerator,
+)
 from flext_tap_oracle_wms.streams import WMSStream
 
 # API and Performance Constants
@@ -106,6 +108,13 @@ class TapOracleWMS(Tap):
         ),
         # Performance settings
         th.Property(
+            "page_mode",
+            th.StringType,
+            default="sequenced",
+            allowed_values=["sequenced", "paged"],
+            description="Pagination mode for WMS API requests",
+        ),
+        th.Property(
             "page_size",
             th.IntegerType,
             default=100,
@@ -176,7 +185,8 @@ class TapOracleWMS(Tap):
         self.logger.info("🔧 Initializing TapOracleWMS...")
         self.logger.info("🔧 Args: %s", args)
         self.logger.info(
-            "🔧 Kwargs keys: %s", list(kwargs.keys()) if kwargs else "None",
+            "🔧 Kwargs keys: %s",
+            list(kwargs.keys()) if kwargs else "None",
         )
 
         # Log some key config values (without secrets)
@@ -184,7 +194,8 @@ class TapOracleWMS(Tap):
             self.logger.info("🔧 base_url: %s", self.config.get("base_url"))
             self.logger.info("🔧 entities: %s", self.config.get("entities"))
             self.logger.info(
-                "🔧 page_size: %s", self.config.get("page_size"),
+                "🔧 page_size: %s",
+                self.config.get("page_size"),
             )
 
         # Cache for discovered entities and schemas - LAZY LOADED
@@ -216,12 +227,11 @@ class TapOracleWMS(Tap):
         ]
 
         for field in int_fields:
-            if field in converted and isinstance(converted[field], str):
-                try:
-                    converted[field] = int(converted[field])
-                except ValueError:
-                    # Keep original value if conversion fails
-                    continue
+            try:
+                converted[field] = int(converted[field])
+            except ValueError:
+                # Keep original value if conversion fails
+                continue
 
         # Boolean fields that might come as strings
         bool_fields = ["enable_incremental", "discover_catalog", "verify_ssl"]
@@ -243,7 +253,6 @@ class TapOracleWMS(Tap):
         # CRITICAL: Enforce mandatory environment variables FIRST
         # (only in non-discovery mode)
         if not getattr(self, "_is_discovery_mode", False):
-            self.logger.info("🔧 Enforcing mandatory environment variables...")
             try:
                 enforce_mandatory_environment_variables()
                 self.logger.info("✅ Mandatory environment variables validated")
@@ -254,7 +263,6 @@ class TapOracleWMS(Tap):
             self.logger.info(
                 "🔍 Skipping mandatory environment validation in discovery mode",
             )
-
         try:
             # Create ConfigMapper with merged configuration
             config_mapper = ConfigMapper(dict(self.config))
@@ -359,7 +367,6 @@ class TapOracleWMS(Tap):
         streams: list[Any] = []
 
         self.logger.info("🔍 Starting stream discovery...")
-
         try:
             # Get configured entities for basic discovery
             entities = self.config.get("entities")
@@ -383,11 +390,13 @@ class TapOracleWMS(Tap):
             raise
 
         self.logger.info(
-            "🔍 Discovery completed. Found %d streams total.", len(streams),
+            "🔍 Discovery completed. Found %d streams total.",
+            len(streams),
         )
         return streams
 
-    def _create_stream_minimal(self, entity_name: str) -> WMSStream | None:
+    def _create_stream_minimal(self, entity_name: str) -> Any | None:
+        """Create a minimal stream for discovery."""
         try:
             # Initialize cache if not exists
             if not hasattr(self, "_schema_cache"):
@@ -436,22 +445,26 @@ class TapOracleWMS(Tap):
         self.logger.info("🔍 Creating complete schema for entity: %s", entity_name)
 
         # Try to get a sample record to infer schema (only if online)
-        if self.config.get("base_url") and self.config.get("username"):
-            try:
-                # Get metadata from API if available
-                metadata = self.discovery.describe_entity_sync(entity_name)
-                if metadata:
-                    self.logger.info("✅ Using API metadata for %s", entity_name)
-                    # Generate schema from metadata
-                    schema = self.schema_generator.generate_from_metadata(metadata)
-                    if schema and schema.get("properties"):
-                        return schema
-            except (ValueError, KeyError, TypeError, RuntimeError) as e:
-                self.logger.warning(
-                    "⚠️ Could not get metadata for %s: %s", entity_name, e,
-                )
-        else:
-            self.logger.info("⚠️ Running in offline mode - using predefined schemas")
+        try:
+            metadata = self.discovery.describe_entity_sync(entity_name)
+            if metadata:
+                schema = self.schema_generator.generate_from_metadata(metadata)
+                if schema and schema.get("properties"):
+                    return schema
+        except (
+            ValueError,
+            KeyError,
+            TypeError,
+            RuntimeError,
+            ConnectionError,
+            TimeoutError,
+        ) as e:
+            # Catch all data access and network errors during testing
+            self.logger.warning(
+                "⚠️ Could not get metadata for %s: %s",
+                entity_name,
+                e,
+            )
 
         # If no metadata, create schema based on known entity structures
         if entity_name == "allocation":
@@ -557,12 +570,12 @@ class TapOracleWMS(Tap):
         # Check cache first
         if self._entity_cache is not None:
             self.logger.info(
-                "🔍 Using cached entities: %s", list(self._entity_cache.keys()),
+                "🔍 Using cached entities: %s",
+                list(self._entity_cache.keys()),
             )
             return self._entity_cache
 
         self.logger.info("🔍 Starting entity discovery from WMS API...")
-
         try:
             # Discover entities synchronously
             entities = self.discovery.discover_entities_sync()
@@ -582,7 +595,8 @@ class TapOracleWMS(Tap):
             self._entity_cache = filtered_entities
 
             self.logger.info(
-                "✅ Discovered %s entities from WMS API", len(filtered_entities),
+                "✅ Discovered %s entities from WMS API",
+                len(filtered_entities),
             )
         except Exception:
             self.logger.exception("❌ Error during entity discovery")
@@ -596,7 +610,6 @@ class TapOracleWMS(Tap):
             return self._schema_cache[entity_name]
 
         flattening_enabled = self.config.get("flattening_enabled")
-
         try:
             # Always get metadata first - this is fundamental and never optional
             metadata = self.discovery.describe_entity_sync(entity_name)
@@ -650,14 +663,12 @@ class TapOracleWMS(Tap):
         ) as e:
             # These are specific WMS errors - re-raise with context
             error_msg = f"WMS error during schema generation for {entity_name}: {e}"
-            self.logger.exception(error_msg)
             raise SchemaGenerationError(error_msg) from e
         except (ValueError, KeyError, TypeError, RuntimeError) as e:
             # Unexpected errors
             error_msg = (
                 f"Unexpected error during schema generation for {entity_name}: {e}"
             )
-            self.logger.exception(error_msg)
             raise SchemaGenerationError(error_msg) from e
 
         # Cache schema
@@ -706,16 +717,20 @@ class TapOracleWMS(Tap):
         """
         return dict(self.state) if self.state else {}
 
-    @staticmethod
-    def _raise_schema_error(error_msg: str) -> None:
-        raise ValueError(error_msg)
-
     def _raise_metadata_error(self, entity_name: str) -> None:
+        """Raise metadata error with proper error handling.
+
+        Args:
+            entity_name: Name of the entity that failed metadata retrieval
+
+        Raises:
+            ValueError: Always raises with descriptive error message
+
+        """
         error_msg = (
             f"❌ CRITICAL FAILURE: Cannot get metadata for entity: "
             f"{entity_name}. This is a fatal error - aborting!"
         )
-        self.logger.error(error_msg)
         raise ValueError(error_msg)
 
     def write_catalog(self) -> None:
@@ -754,7 +769,10 @@ class TapOracleWMS(Tap):
                     key_properties = ["company_code", "facility_code", "order_nbr"]
                 elif entity_name == "order_dtl":
                     key_properties = [
-                        "company_code", "facility_code", "order_nbr", "order_line_nbr",
+                        "company_code",
+                        "facility_code",
+                        "order_nbr",
+                        "order_line_nbr",
                     ]
 
                 stream_entry = {

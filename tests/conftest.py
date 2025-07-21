@@ -39,7 +39,8 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config, items: list[pytest.Item],
+    config: pytest.Config,
+    items: list[pytest.Item],
 ) -> None:
     """Modify test collection to skip E2E tests by default."""
     if not config.getoption("--run-e2e"):
@@ -64,6 +65,7 @@ def test_project_root() -> Path:
 def setup_test_environment() -> None:
     """Setup test environment variables."""
     import os
+
     # Set mandatory environment variables for tests
     os.environ["TAP_ORACLE_WMS_USE_METADATA_ONLY"] = "true"
     os.environ["TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE"] = "0"
@@ -73,6 +75,7 @@ def setup_test_environment() -> None:
 def mock_wms_config() -> dict[str, object]:
     """Mock WMS configuration for unit tests."""
     import os
+
     # Set additional environment for tests
     os.environ["TAP_ORACLE_WMS_ENTITIES"] = "allocation,order_hdr,order_dtl,item"
     return {

@@ -76,7 +76,6 @@ class ConfigValidator:
                 f"Configuration validation failed with {len(self.errors)} errors:\n"
                 + "\n".join(f"  - {error}" for error in self.errors)
             )
-            logger.error(error_msg)
             raise ConfigValidationError(error_msg)
 
         logger.info("Configuration validation passed successfully")
@@ -288,6 +287,7 @@ class ConfigValidator:
 
     @staticmethod
     def _is_valid_url(url: str) -> bool:
+        """Validate URL format."""
         try:
             result = urlparse(url)
             return all([result.scheme, result.netloc])

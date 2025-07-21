@@ -1,0 +1,10 @@
+{
+  "base_url": "https://mock-wms-api.example.com/test",
+  "auth_method": "basic",
+  "username": "test_user",
+  "password": "test_password",
+  "page_size": 100,
+  "entities": ["allocation"],
+  "enable_incremental": true,
+  "request_timeout": 300
+}

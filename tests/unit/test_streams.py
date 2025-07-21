@@ -5,8 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
-from unittest.mock import MagicMock
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -36,7 +35,11 @@ class TestWMSStream:
         }
 
     @pytest.fixture
-    def mock_wms_stream(self, mock_tap: TapOracleWMS, stream_schema: dict[str, Any]) -> MagicMock:
+    def mock_wms_stream(
+        self,
+        mock_tap: TapOracleWMS,
+        stream_schema: dict[str, Any],
+    ) -> MagicMock:
         # Create a hybrid mock that includes real methods we want to test
         # while mocking the complex dependencies
         stream = MagicMock(spec=WMSStream)
@@ -62,14 +65,22 @@ class TestWMSStream:
 
         return stream
 
-    def test_stream_basic_properties(self, mock_wms_stream: MagicMock, mock_wms_config: Any) -> None:
+    def test_stream_basic_properties(
+        self,
+        mock_wms_stream: MagicMock,
+        mock_wms_config: Any,
+    ) -> None:
         assert mock_wms_stream.name == "item"
         assert mock_wms_stream.path == "/entity/item"
         assert mock_wms_stream.primary_keys == ["id"]
         assert mock_wms_stream.replication_key == "mod_ts"
         assert mock_wms_stream.replication_method == "INCREMENTAL"
 
-    def test_stream_url_construction(self, mock_wms_stream: MagicMock, mock_wms_config: Any) -> None:
+    def test_stream_url_construction(
+        self,
+        mock_wms_stream: MagicMock,
+        mock_wms_config: Any,
+    ) -> None:
         # Test that stream can construct URLs properly using Singer SDK patterns
         assert hasattr(mock_wms_stream, "url_base")
         assert mock_wms_config["base_url"] in mock_wms_stream.url_base
@@ -114,7 +125,9 @@ class TestWMSStream:
         assert params["mod_ts_from"] == "2024-01-01T10:00:00Z"
 
     def test_parse_response_with_results(
-        self, mock_wms_stream: MagicMock, sample_wms_response: dict[str, Any]
+        self,
+        mock_wms_stream: MagicMock,
+        sample_wms_response: dict[str, Any],
     ) -> None:
         # Test real parse_response method with sample data
         mock_response = MagicMock()
@@ -163,7 +176,9 @@ class TestWMSStream:
         assert processed["id"] == 1
 
     def test_get_next_page_token_from_response(
-        self, mock_wms_stream: MagicMock, sample_wms_response: dict[str, Any]
+        self,
+        mock_wms_stream: MagicMock,
+        sample_wms_response: dict[str, Any],
     ) -> None:
         # Test that stream has Singer SDK pagination support
         # Singer SDK uses next_page_token_jsonpath for pagination
@@ -193,7 +208,10 @@ class TestWMSStream:
         assert len(records) == 1
         assert records[0]["id"] == 1
 
-    def test_stream_with_authentication_headers(self, mock_wms_stream: MagicMock) -> None:
+    def test_stream_with_authentication_headers(
+        self,
+        mock_wms_stream: MagicMock,
+    ) -> None:
         # Verify that tap config includes auth
         assert "username" in mock_wms_stream.tap.config
         assert "password" in mock_wms_stream.tap.config
@@ -201,7 +219,10 @@ class TestWMSStream:
         # Headers would be added by the request method via tap auth
         assert mock_wms_stream.tap.config["username"] == "test_user"
 
-    def test_stream_incremental_state_management(self, mock_wms_stream: MagicMock) -> None:
+    def test_stream_incremental_state_management(
+        self,
+        mock_wms_stream: MagicMock,
+    ) -> None:
         # Test that replication key is properly configured
         assert mock_wms_stream.replication_key == "mod_ts"
         assert mock_wms_stream.replication_method == "INCREMENTAL"
@@ -222,7 +243,10 @@ class TestWMSStream:
         assert "code" in schema["properties"]
         assert "mod_ts" in schema["properties"]
 
-    def test_stream_primary_keys_configuration(self, mock_wms_stream: MagicMock) -> None:
+    def test_stream_primary_keys_configuration(
+        self,
+        mock_wms_stream: MagicMock,
+    ) -> None:
         assert mock_wms_stream.primary_keys == ["id"]
         assert isinstance(mock_wms_stream.primary_keys, list)
 

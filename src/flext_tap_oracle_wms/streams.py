@@ -5,16 +5,11 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
-from typing import TYPE_CHECKING
-from typing import Any
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs
 
 from flext_observability.logging import get_logger
-from singer_sdk.exceptions import FatalAPIError
-from singer_sdk.exceptions import RetriableAPIError
 from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
 
@@ -22,8 +17,7 @@ from flext_tap_oracle_wms.auth import get_wms_authenticator
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-    from collections.abc import Mapping
+    from collections.abc import Iterable, Mapping
 
     import requests
 
@@ -73,8 +67,8 @@ class WMSPaginator(BaseHATEOASPaginator):
                 f"Content-Type: {response.headers.get('Content-Type', 'unknown')}"
             )
             logger.exception(error_msg, exc_info=e)
-            msg = f"Pagination JSON parsing failed: {e}"
-            raise RetriableAPIError(msg) from e
+            msg = "Critical pagination failure: Failed to parse JSON response"
+            raise ValueError(msg) from e
 
     def has_more(self, response: requests.Response) -> bool:
         """Check if more pages are available.
@@ -174,16 +168,11 @@ class WMSStream(RESTStream[dict[str, Any]]):
     def path(self) -> str:  # type: ignore[override]
         """Generate entity-specific path."""
         # Build path from configuration using ConfigMapper
-        prefix = self.config_mapper.get_endpoint_prefix()
-        api_version = self.config_mapper.get_api_version()
-
-        # Use pattern from ConfigMapper: /wms/lgfapi/v10/entity/{entity}
-        pattern = self.config_mapper.get_entity_endpoint_pattern()
-        return pattern.format(
-            prefix=prefix,
-            version=api_version,
-            entity=self._entity_name,
-        )
+        entity_path = self.config_mapper.get_entity_path(self._entity_name)
+        if not entity_path:
+            msg = f"No path configured for entity: {self._entity_name}"
+            raise ValueError(msg)
+        return entity_path
 
     @property
     def http_headers(self) -> dict[str, Any]:
@@ -266,24 +255,32 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     @staticmethod
     def _get_pagination_params(next_page_token: object) -> dict[str, Any]:
+        """Build URL parameters for WMS API requests.
+
+        Args:
+            next_page_token: Token for pagination (if continuing from previous page).
+
+        Returns:
+            Dictionary of URL parameters for the API request.
+
+        """
         params: dict[str, Any] = {}
-        if hasattr(next_page_token, "query") and next_page_token.query:
-            try:
-                parsed_params = parse_qs(next_page_token.query)
-                # Validate and sanitize query parameters
-                for key, value in parsed_params.items():
-                    # Basic sanitization - allow only alphanumeric, underscore, dash
-                    if not key.replace("_", "").replace("-", "").isalnum():
-                        continue
-                    # Handle value arrays safely
-                    if isinstance(value, list) and value:
-                        clean_values = [str(v)[:100] for v in value if v is not None]
-                        params[key] = (
-                            clean_values[0] if len(clean_values) == 1 else clean_values
-                        )
-            except (ValueError, KeyError, TypeError, RuntimeError) as e:
-                msg = f"Invalid pagination token query: {e}"
-                raise ValueError(msg) from e
+        try:
+            parsed_params = parse_qs(next_page_token.query)
+            # Validate and sanitize query parameters
+            for key, value in parsed_params.items():
+                # Basic sanitization - allow only alphanumeric, underscore, dash
+                if not key.replace("_", "").replace("-", "").isalnum():
+                    continue
+                # Handle value arrays safely
+                if isinstance(value, list) and value:
+                    clean_values = [str(v)[:100] for v in value if v is not None]
+                    params[key] = (
+                        clean_values[0] if len(clean_values) == 1 else clean_values
+                    )
+        except (ValueError, KeyError, TypeError, RuntimeError) as e:
+            msg = "Failed to parse pagination parameters"
+            raise ValueError(msg) from e
         return params
 
     def _get_base_params(self) -> dict[str, Any]:
@@ -338,20 +335,19 @@ class WMSStream(RESTStream[dict[str, Any]]):
         context: Mapping[str, Any] | None,
     ) -> None:
         bookmark = self.get_starting_replication_key_value(context)
-        if bookmark and "id" in self._schema.get("properties", {}):
-            try:
-                bookmark_id = int(bookmark)
+        try:
+            bookmark_id = int(bookmark)
 
-                # Validate bookmark is reasonable
-                if bookmark_id < 0:
-                    return  # No filter = start from beginning
+            # Validate bookmark is reasonable
+            if bookmark_id < 0:
+                return  # No filter = start from beginning
 
-                # Use id__lt (less than) to get records with ID lower than bookmark
-                params["id__lt"] = str(bookmark_id)
+            # Use id__lt (less than) to get records with ID lower than bookmark
+            params["id__lt"] = str(bookmark_id)
 
-            except (ValueError, TypeError):
-                # Don't add filter = start from highest ID
-                pass
+        except (ValueError, TypeError):
+            # Don't add filter = start from highest ID
+            pass
 
     def _add_ordering_params(self, params: dict[str, Any]) -> None:
         if self.replication_method == "FULL_TABLE":
@@ -409,8 +405,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         except json.JSONDecodeError as e:
             msg = f"Invalid JSON response from API for entity {self._entity_name}: {e}"
-            # This is likely a retriable error (server issue)
-            raise RetriableAPIError(msg) from e
+            raise ValueError(msg) from e
 
     def _yield_results_array(self, data: dict[str, object]) -> Iterable[dict[str, Any]]:
         results = data["results"]
@@ -423,7 +418,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 f"'results' exists but not a list (got {type(results).__name__}). "
                 "This indicates API format change that prevents data extraction."
             )
-            raise FatalAPIError(error_msg)
+            raise TypeError(error_msg)
 
     @staticmethod
     def _yield_direct_array(data: list[Any]) -> Iterable[dict[str, Any]]:
@@ -436,7 +431,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             f"Response data: {str(data)[:200]}... "
             "This indicates an API incompatibility that prevents data extraction."
         )
-        raise FatalAPIError(error_msg)
+        raise ValueError(error_msg)
 
     def validate_response(self, response: requests.Response) -> None:
         """Validate Oracle WMS API response and handle errors.
@@ -452,24 +447,27 @@ class WMSStream(RESTStream[dict[str, Any]]):
         status = response.status_code
 
         if status == STATUS_UNAUTHORIZED:
-            msg = "Authentication failed (HTTP_STATUS_UNAUTHORIZED)"
-            raise FatalAPIError(msg)
+            msg = "Unauthorized access to Oracle WMS API"
+            raise ValueError(msg)
         if status == STATUS_FORBIDDEN:
-            msg = f"Access forbidden to {self._entity_name} (HTTP_STATUS_FORBIDDEN)"
-            raise FatalAPIError(msg)
+            msg = "Forbidden access to Oracle WMS API"
+            raise ValueError(msg)
         if status == STATUS_NOT_FOUND:
-            msg = f"Entity {self._entity_name} not found (HTTP_STATUS_NOT_FOUND)"
-            raise FatalAPIError(msg)
+            msg = "Resource not found in Oracle WMS API"
+            raise ValueError(msg)
         if status == STATUS_TOO_MANY_REQUESTS:
             retry_after = response.headers.get("Retry-After", DEFAULT_RETRY_AFTER)
-            msg = f"Rate limit exceeded. Retry after {retry_after} seconds"
-            raise RetriableAPIError(msg)
+            msg = (
+                f"Too many requests to Oracle WMS API "
+                f"(retry after {retry_after} seconds)"
+            )
+            raise ValueError(msg)
         if STATUS_SERVER_ERROR_START <= status < STATUS_SERVER_ERROR_END:
-            msg = f"Server error {status}: {response.text}"
-            raise RetriableAPIError(msg)
+            msg = "Server error in Oracle WMS API"
+            raise ValueError(msg)
         if status != STATUS_OK:
-            msg = f"Unexpected status {status}: {response.text}"
-            raise FatalAPIError(msg)
+            msg = "Unexpected status code from Oracle WMS API"
+            raise ValueError(msg)
 
     def post_process(
         self,
@@ -524,12 +522,11 @@ class WMSStream(RESTStream[dict[str, Any]]):
         if self.replication_key:
             # Try to get from state
             state_value = self.get_starting_replication_key_value(context)
-            if state_value:
-                try:
-                    return datetime.fromisoformat(state_value)
-                except (ValueError, TypeError) as e:
-                    msg = f"Corrupted state timestamp '{state_value}': {e}"
-                    raise ValueError(msg) from e
+            try:
+                return datetime.fromisoformat(state_value)
+            except (ValueError, TypeError) as e:
+                msg = "Failed to parse starting timestamp from state"
+                raise ValueError(msg) from e
 
             # Fall back to config start_date
             if self.config.get("start_date"):
