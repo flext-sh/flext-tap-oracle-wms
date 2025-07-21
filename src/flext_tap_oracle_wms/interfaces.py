@@ -141,6 +141,16 @@ class CacheManagerInterface(ABC):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def get_cache_stats(self) -> dict[str, Any]:
+        """Get cache statistics.
+
+        Returns:
+            Dictionary containing cache hit/miss statistics and sizes.
+
+        """
+        raise NotImplementedError
+
 
 class TypeMapperInterface(ABC):
     """Interface for type mapping operations."""

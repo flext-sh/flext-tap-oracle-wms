@@ -261,7 +261,7 @@ class ConfigMapper:
         if isinstance(value, int | float):
             return float(value)
         try:
-            return float(value)
+            return float(str(value))
         except ValueError:
             pass
         return 1.5  # default
@@ -496,7 +496,7 @@ class ConfigMapper:
             profile_path="api.custom_headers",
         )
         try:
-            custom_headers = json.loads(custom_headers)
+            custom_headers = json.loads(str(custom_headers))
         except json.JSONDecodeError:
             logger.warning("Invalid JSON in WMS_CUSTOM_HEADERS_JSON, ignoring")
             custom_headers = {}
@@ -572,7 +572,7 @@ class ConfigMapper:
             profile_path="business_rules.allocation_status_mapping",
         )
         try:
-            mapping = json.loads(mapping)
+            mapping = json.loads(str(mapping))
         except json.JSONDecodeError:
             logger.warning(
                 "Invalid JSON in allocation status mapping, using defaults",
@@ -615,7 +615,7 @@ class ConfigMapper:
             profile_path="business_rules.order_status_mapping",
         )
         try:
-            mapping = json.loads(mapping)
+            mapping = json.loads(str(mapping))
         except json.JSONDecodeError:
             logger.warning("Invalid JSON in order status mapping, using defaults")
             mapping = {
@@ -659,7 +659,7 @@ class ConfigMapper:
             profile_path="business_rules.field_type_patterns",
         )
         try:
-            patterns = json.loads(patterns)
+            patterns = json.loads(str(patterns))
         except json.JSONDecodeError:
             logger.warning("Invalid JSON in field type patterns, using defaults")
             patterns = {

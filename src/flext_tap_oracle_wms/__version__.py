@@ -1,12 +1,15 @@
-"""Version information for tap-oracle-wms."""
+"""Version information for flext-tap-oracle-wms."""
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
 from __future__ import annotations
 
-__version__ = "0.7.0"
-__version_info__ = tuple(int(x) for x in __version__.split("."))
+# Import from centralized version management system
+from flext_core.version import get_version, get_version_info
 
-# PyAuto Enterprise - Unified Versioning System
-# This is the single source of truth for version information.
-# All references to version should import from this module.
+__version__ = get_version("flext-tap-oracle-wms")
+__version_info__ = get_version_info("flext-tap-oracle-wms")
+
+# FLEXT Enterprise - Unified Versioning System
+# Version is managed centrally in flext_core.version
+# This maintains backward compatibility while eliminating duplication.

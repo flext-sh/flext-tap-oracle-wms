@@ -9,10 +9,14 @@ from typing import Any
 
 from flext_observability.logging import get_logger
 
-from flext_tap_oracle_wms.infrastructure.cache import CacheManagerInterface
-from flext_tap_oracle_wms.infrastructure.entity_discovery import EntityDiscoveryCore
-from flext_tap_oracle_wms.infrastructure.schema_generator import SchemaGeneratorCore
+from flext_tap_oracle_wms.infrastructure.entity_discovery import (
+    EntityDiscovery as EntityDiscoveryCore,
+)
+from flext_tap_oracle_wms.infrastructure.schema_generator import (
+    SchemaGenerator as SchemaGeneratorCore,
+)
 from flext_tap_oracle_wms.interfaces import (
+    CacheManagerInterface,
     EntityDiscoveryInterface,
     SchemaGeneratorInterface,
 )

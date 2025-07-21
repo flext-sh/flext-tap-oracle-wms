@@ -16,8 +16,8 @@ try:
     from singer_sdk.streams import RESTStream
 except ImportError:
     # Fallback for testing environments
-    requests = None
-    RESTStream = Any
+    requests = None  # type: ignore[assignment]
+    RESTStream = Any  # type: ignore[misc,assignment]
 
 logger = get_logger(__name__)
 

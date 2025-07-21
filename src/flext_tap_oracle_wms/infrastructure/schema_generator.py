@@ -180,7 +180,8 @@ class SchemaGenerator(SchemaGeneratorInterface):
         return {}  # Unreachable but satisfies mypy
 
     def _build_schema_properties(
-        self, fields: dict[str, Any],
+        self,
+        fields: dict[str, Any],
     ) -> tuple[dict[str, Any], list[str]]:
         """Build schema properties and required fields list.
 
@@ -209,7 +210,8 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     @staticmethod
     def _build_complete_schema(
-        properties: dict[str, Any], required_fields: list[str],
+        properties: dict[str, Any],
+        required_fields: list[str],
     ) -> dict[str, Any]:
         """Build complete schema from properties and required fields.
 
