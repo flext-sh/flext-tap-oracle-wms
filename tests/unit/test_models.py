@@ -4,21 +4,21 @@
 
 from __future__ import annotations
 
-from datetime import UTC
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
-from pydantic import HttpUrl
-from pydantic import ValidationError
+from pydantic import HttpUrl, ValidationError
 
-from flext_tap_oracle_wms.models import FlextConstants
-from flext_tap_oracle_wms.models import TapMetrics
-from flext_tap_oracle_wms.models import WMSConfig
-from flext_tap_oracle_wms.models import WMSDiscoveryResult
-from flext_tap_oracle_wms.models import WMSEntity
-from flext_tap_oracle_wms.models import WMSError
-from flext_tap_oracle_wms.models import WMSRecord
-from flext_tap_oracle_wms.models import WMSStreamMetadata
+from flext_tap_oracle_wms.models import (
+    FlextConstants,
+    TapMetrics,
+    WMSConfig,
+    WMSDiscoveryResult,
+    WMSEntity,
+    WMSError,
+    WMSRecord,
+    WMSStreamMetadata,
+)
 
 # Rebuild models to handle forward references
 WMSConfig.model_rebuild()

@@ -11,8 +11,6 @@ from __future__ import annotations
 from flext_core.domain.types import ServiceResult
 
 from flext_tap_oracle_wms.config import TapOracleWMSConfig
-from flext_tap_oracle_wms.config import WMSAuthConfig
-from flext_tap_oracle_wms.config import WMSConnectionConfig
 
 
 def setup_wms_tap(
@@ -55,30 +53,19 @@ def create_development_wms_config(**overrides: object) -> TapOracleWMSConfig:
     """
     # Development defaults
     defaults = {
-        "auth": WMSAuthConfig(
-            username=str(overrides.get("username", "test_user")),
-            password=str(overrides.get("password", "test_password")),
-            auth_method="basic",
-        ),
-        "connection": WMSConnectionConfig(
-            base_url=str(overrides.get("base_url", "https://test-wms.oracle.com")),
-            timeout=30,
-            max_retries=3,
-            verify_ssl=False,  # Development setting
-        ),
+        "username": str(overrides.get("username", "test_user")),
+        "password": str(overrides.get("password", "test_password")),
+        "base_url": str(overrides.get("base_url", "https://test-wms.oracle.com")),
+        "auth_method": "basic",
+        "timeout": 30,
+        "max_retries": 3,
+        "verify_ssl": False,  # Development setting
         "debug": True,
         "log_level": "DEBUG",
     }
 
     # Override with provided values
-    # These are handled above
-    defaults.update(
-        {
-            key: value
-            for key, value in overrides.items()
-            if key not in {"username", "password", "base_url"}
-        },
-    )
+    defaults.update(overrides)
 
     return TapOracleWMSConfig.from_singer_config(defaults)
 
@@ -95,29 +82,20 @@ def create_production_wms_config(**overrides: object) -> TapOracleWMSConfig:
     """
     # Production defaults
     defaults = {
-        "auth": WMSAuthConfig(
-            username=str(overrides.get("username", "")),
-            password=str(overrides.get("password", "")),
-            auth_method="basic",
-        ),
-        "connection": WMSConnectionConfig(
-            base_url=str(overrides.get("base_url", "")),
-            timeout=60,
-            max_retries=5,
-            verify_ssl=True,  # Production setting
-        ),
+        "username": str(overrides.get("username", "")),
+        "password": str(overrides.get("password", "")),
+        "base_url": str(overrides.get("base_url", "")),
+        "auth_method": "basic",
+        "timeout": 60,
+        "max_retries": 5,
+        "verify_ssl": True,  # Production setting
         "debug": False,
         "log_level": "INFO",
     }
 
     # Override with provided values
-    # These are handled above
     defaults.update(
-        {
-            key: value
-            for key, value in overrides.items()
-            if key not in {"username", "password", "base_url"}
-        },
+        dict(overrides.items()),
     )
 
     return TapOracleWMSConfig.from_singer_config(defaults)

@@ -105,7 +105,7 @@ class ConfigMapper:
                 "api_version",
                 env_var="WMS_API_VERSION",
                 default="v10",
-                profile_path="api.api_version",
+                profile_path="api.version",
             ),
         )
 
@@ -169,10 +169,12 @@ class ConfigMapper:
         value = self._get_config_value(
             "page_size",
             env_var="WMS_PAGE_SIZE",
-            default=100,  # TAP standard default (project can configure to 10)
+            default=500,  # WMS performance default
             profile_path="performance.page_size",
         )
-        return self._safe_int_conversion(value, 100)
+        result = self._safe_int_conversion(value, 100)
+        # Cap at maximum page size
+        return min(result, MAX_PAGE_SIZE)
 
     def get_max_page_size(self) -> int:
         """Get maximum page size allowed by Oracle WMS API.
@@ -258,11 +260,10 @@ class ConfigMapper:
         )
         if isinstance(value, int | float):
             return float(value)
-        if isinstance(value, str):
-            try:
-                return float(value)
-            except ValueError:
-                pass
+        try:
+            return float(value)
+        except ValueError:
+            pass
         return 1.5  # default
 
     def get_cache_ttl_seconds(self) -> int:
@@ -366,7 +367,7 @@ class ConfigMapper:
         value = self._get_config_value(
             "lookback_minutes",
             env_var="WMS_LOOKBACK_MINUTES",
-            default=5,
+            default=60,
             profile_path="business_rules.lookback_minutes",
         )
         if isinstance(value, int | float):
@@ -494,13 +495,11 @@ class ConfigMapper:
             default={},
             profile_path="api.custom_headers",
         )
-
-        if isinstance(custom_headers, str):
-            try:
-                custom_headers = json.loads(custom_headers)
-            except json.JSONDecodeError:
-                logger.warning("Invalid JSON in WMS_CUSTOM_HEADERS_JSON, ignoring")
-                custom_headers = {}
+        try:
+            custom_headers = json.loads(custom_headers)
+        except json.JSONDecodeError:
+            logger.warning("Invalid JSON in WMS_CUSTOM_HEADERS_JSON, ignoring")
+            custom_headers = {}
 
         if isinstance(custom_headers, dict):
             # Ensure all custom header values are strings
@@ -572,21 +571,19 @@ class ConfigMapper:
             },
             profile_path="business_rules.allocation_status_mapping",
         )
-
-        if isinstance(mapping, str):
-            try:
-                mapping = json.loads(mapping)
-            except json.JSONDecodeError:
-                logger.warning(
-                    "Invalid JSON in allocation status mapping, using defaults",
-                )
-                mapping = {
-                    "ALLOCATED": "Active",
-                    "RESERVED": "Active",
-                    "PICKED": "Fulfilled",
-                    "SHIPPED": "Fulfilled",
-                    "CANCELLED": "Cancelled",
-                }
+        try:
+            mapping = json.loads(mapping)
+        except json.JSONDecodeError:
+            logger.warning(
+                "Invalid JSON in allocation status mapping, using defaults",
+            )
+            mapping = {
+                "ALLOCATED": "Active",
+                "RESERVED": "Active",
+                "PICKED": "Fulfilled",
+                "SHIPPED": "Fulfilled",
+                "CANCELLED": "Cancelled",
+            }
 
         if isinstance(mapping, dict):
             return mapping
@@ -617,19 +614,17 @@ class ConfigMapper:
             },
             profile_path="business_rules.order_status_mapping",
         )
-
-        if isinstance(mapping, str):
-            try:
-                mapping = json.loads(mapping)
-            except json.JSONDecodeError:
-                logger.warning("Invalid JSON in order status mapping, using defaults")
-                mapping = {
-                    "NEW": "Created",
-                    "CONFIRMED": "Confirmed",
-                    "IN_PROGRESS": "Processing",
-                    "COMPLETED": "Completed",
-                    "CANCELLED": "Cancelled",
-                }
+        try:
+            mapping = json.loads(mapping)
+        except json.JSONDecodeError:
+            logger.warning("Invalid JSON in order status mapping, using defaults")
+            mapping = {
+                "NEW": "Created",
+                "CONFIRMED": "Confirmed",
+                "IN_PROGRESS": "Processing",
+                "COMPLETED": "Completed",
+                "CANCELLED": "Cancelled",
+            }
 
         if isinstance(mapping, dict):
             return mapping
@@ -663,20 +658,18 @@ class ConfigMapper:
             },
             profile_path="business_rules.field_type_patterns",
         )
-
-        if isinstance(patterns, str):
-            try:
-                patterns = json.loads(patterns)
-            except json.JSONDecodeError:
-                logger.warning("Invalid JSON in field type patterns, using defaults")
-                patterns = {
-                    "_id$": "INTEGER",
-                    "_qty$": "DECIMAL(15,3)",
-                    "_flg$": "CHAR(1)",
-                    "_ts$": "TIMESTAMP",
-                    "_code$": "VARCHAR(50)",
-                    "_desc$": "VARCHAR(500)",
-                }
+        try:
+            patterns = json.loads(patterns)
+        except json.JSONDecodeError:
+            logger.warning("Invalid JSON in field type patterns, using defaults")
+            patterns = {
+                "_id$": "INTEGER",
+                "_qty$": "DECIMAL(15,3)",
+                "_flg$": "CHAR(1)",
+                "_ts$": "TIMESTAMP",
+                "_code$": "VARCHAR(50)",
+                "_desc$": "VARCHAR(500)",
+            }
 
         if isinstance(patterns, dict):
             return patterns
@@ -788,12 +781,11 @@ class ConfigMapper:
 
         value = default
 
-        # Check direct key in profile configuration first
+        # Check direct key in profile configuration first (highest precedence)
         if self.profile_config and key in self.profile_config:
             value = self.profile_config[key]
-
-        # Check nested profile configuration path
-        if profile_path and self.profile_config:
+        # Check nested profile configuration path only if direct key not found
+        elif profile_path and self.profile_config:
             nested_value = self._get_nested_value(self.profile_config, profile_path)
             if nested_value is not None:
                 value = nested_value
@@ -810,7 +802,7 @@ class ConfigMapper:
         return value
 
     @staticmethod
-    def _get_nested_value(data: dict[str, Any], path: str) -> Any:
+    def _get_nested_value(data: dict[str, object], path: str) -> object | None:
         """Get value from nested dictionary using dot notation.
 
         Args:
@@ -822,8 +814,7 @@ class ConfigMapper:
 
         """
         path_keys = path.split(".")
-        current: Any = data
-
+        current: object = data
         try:
             for key in path_keys:
                 if isinstance(current, dict) and key in current:

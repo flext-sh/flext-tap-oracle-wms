@@ -1,78 +1,74 @@
-"""Enterprise HTTP client for Oracle WMS - Clean, simple, performant."""
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
+"""Oracle WMS Client Module.
 
-from __future__ import annotations
+This module provides HTTP client functionality for Oracle WMS API integration
+using flext-core patterns and Singer SDK compatibility.
+"""
 
 from http import HTTPStatus
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Self
+from types import TracebackType
+from typing import Any, Self
 
 import httpx
 
-# Use centralized logger from flext-observability - NO FALLBACKS
+# Use centralized logger from flext-infrastructure.monitoring.flext-observability - NO FALLBACKS
 from flext_observability.logging import get_logger
 
-if TYPE_CHECKING:
-    from types import TracebackType
-
-    from flext_tap_oracle_wms.models import TapMetrics
-    from flext_tap_oracle_wms.models import WMSConfig
+from flext_tap_oracle_wms.config_mapper import WMSConfig
+from flext_tap_oracle_wms.metrics import TapMetrics
 
 logger = get_logger(__name__)
 
 
 class WMSClientError(Exception):
-    """Base WMS client error."""
+    """Base exception for WMS client errors."""
 
 
 class AuthenticationError(WMSClientError):
-    """Authentication failed."""
+    """Exception raised for authentication errors."""
 
 
 class WMSConnectionError(WMSClientError):
-    """Connection to WMS failed."""
+    """Exception raised for connection errors."""
 
 
 class WMSClient:
-    """Clean, simple Oracle WMS HTTP client.
-
-    Replaces the over-engineered multi-layer authentication and request system
-    with a single, focused client using modern httpx.
-    """
+    """HTTP client for Oracle WMS API operations."""
 
     def __init__(self, config: WMSConfig, metrics: TapMetrics) -> None:
         """Initialize WMS client.
 
         Args:
             config: WMS configuration
-            metrics: Metrics tracker
+            metrics: Metrics tracking instance
 
         """
         self.config = config
         self.metrics = metrics
 
-        # Create httpx client with sensible defaults
+        # Create HTTP client with configuration
         self.client = httpx.Client(
-            base_url=str(config.base_url),
+            base_url=config.base_url.rstrip("/"),
             timeout=config.timeout,
-            verify=True,  # Always verify SSL in production
-            auth=(config.username, config.password),  # Basic auth
+            verify=config.verify_ssl,
             headers={
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "User-Agent": "flext-tap-oracle-wms/1.0",
+                "User-Agent": "flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0",
             },
         )
 
+        # Apply authentication if configured
+        if config.username and config.password:
+            import base64
+
+            credentials = f"{config.username}:{config.password}"
+            encoded = base64.b64encode(credentials.encode()).decode()
+            self.client.headers["Authorization"] = f"Basic {encoded}"
+
+        logger.debug("WMS client initialized for %s", config.base_url)
+
     def __enter__(self) -> Self:
-        """Context manager entry.
-
-        Returns:
-            Self instance for context management
-
-        """
+        """Context manager entry."""
         return self
 
     def __exit__(
@@ -81,13 +77,13 @@ class WMSClient:
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        """Context manager exit."""
-        # Mark exception parameters as intentionally unused
-        _ = exc_type, exc_val, exc_tb
+        """Context manager exit - close client."""
         self.client.close()
 
     def get(
-        self, endpoint: str, params: dict[str, Any] | None = None,
+        self,
+        endpoint: str,
+        params: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Make GET request to WMS API.
 
@@ -96,7 +92,7 @@ class WMSClient:
             params: Query parameters
 
         Returns:
-            JSON response data
+            API response data
 
         Raises:
             WMSConnectionError: Connection or timeout errors
@@ -104,7 +100,6 @@ class WMSClient:
 
         """
         self.metrics.add_api_call()
-
         try:
             response = self.client.get(endpoint, params=params or {})
 
@@ -116,7 +111,7 @@ class WMSClient:
             return result if isinstance(result, dict) else {"data": result}
 
         except httpx.ConnectError as e:
-            msg = f"Failed to connect to WMS: {e}"
+            msg = f"Connection failed: {e}"
             raise WMSConnectionError(msg) from e
         except httpx.TimeoutException as e:
             msg = f"Request timeout: {e}"
@@ -140,7 +135,14 @@ class WMSClient:
         logger.info("Discovering WMS entities")
 
         # Try common WMS entity discovery endpoints
-        for endpoint in ["/entities", "/api/entities", "/rest/entities"]:
+        endpoints = [
+            "/api/entities",
+            "/api/v1/entities",
+            "/wms/lgfapi/v10/entity",
+            "/wms/lgfapi/v11/entity",
+        ]
+
+        for endpoint in endpoints:
             try:
                 result = self.get(endpoint)
                 # Check if result contains data key with list:
@@ -202,17 +204,9 @@ class WMSClient:
         try:
             # Try a simple endpoint to test connectivity
             self.get("/api/ping")
+            return True
         except (AuthenticationError, WMSConnectionError, WMSClientError):
-            # Try alternative health check endpoints
-            for endpoint in ["/health", "/status", "/api/health"]:
-                try:
-                    self.get(endpoint)
-                except (AuthenticationError, WMSConnectionError, WMSClientError):
-                    continue
-                else:
-                    return True
             return False
-        return True
 
     @staticmethod
     def _handle_response_errors(response: httpx.Response) -> None:
@@ -228,14 +222,14 @@ class WMSClient:
 
         """
         if response.status_code == HTTPStatus.UNAUTHORIZED:
-            msg = "Invalid credentials"
+            msg = "Authentication failed: Invalid credentials"
             raise AuthenticationError(msg)
         if response.status_code == HTTPStatus.FORBIDDEN:
-            msg = "Access forbidden"
+            msg = "Authentication failed: Access denied"
             raise AuthenticationError(msg)
         if response.status_code >= HTTPStatus.INTERNAL_SERVER_ERROR:
             msg = f"Server error: {response.status_code}"
             raise WMSConnectionError(msg)
         if response.status_code >= HTTPStatus.BAD_REQUEST:
-            msg = f"Client error: {response.status_code} - {response.text}"
+            msg = f"Client error: {response.status_code}"
             raise WMSClientError(msg)

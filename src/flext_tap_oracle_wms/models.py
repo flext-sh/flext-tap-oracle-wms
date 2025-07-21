@@ -8,17 +8,13 @@ Uses flext-core base classes, types, and constants. Zero tolerance for code dupl
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from datetime import datetime
 
-from flext_core.domain.pydantic_base import DomainBaseModel
-from flext_core.domain.pydantic_base import DomainValueObject
-from pydantic import Field
-from pydantic import HttpUrl
-from pydantic import field_validator
+from flext_core.domain.pydantic_base import DomainBaseModel, DomainValueObject
+from pydantic import Field, HttpUrl, field_validator
 
 
 # Simple constants for compatibility
@@ -52,15 +48,20 @@ class WMSConfig(DomainBaseModel):
         description="Request timeout",
     )
     max_retries: int = Field(
-        default=3, ge=0, le=10, description="Maximum retry attempts",
+        default=3,
+        ge=0,
+        le=10,
+        description="Maximum retry attempts",
     )
 
     # Discovery settings (simplified)
     auto_discover: bool = Field(
-        default=True, description="Enable automatic entity discovery",
+        default=True,
+        description="Enable automatic entity discovery",
     )
     include_metadata: bool = Field(
-        default=True, description="Include metadata in responses",
+        default=True,
+        description="Include metadata in responses",
     )
 
     @field_validator("base_url")
@@ -80,7 +81,7 @@ class WMSConfig(DomainBaseModel):
         """
         url_str = str(v)
         if not url_str.startswith(("http://", "https://")):
-            msg = "Base URL must start with http:// or https://"
+            msg = f"Invalid URL: {url_str}. Must start with http:// or https://"
             raise ValueError(msg)
         return v
 
@@ -89,26 +90,33 @@ class WMSEntity(DomainValueObject):
     """WMS entity metadata using flext-core value object patterns."""
 
     name: str = Field(
-        ..., min_length=1, max_length=FlextConstants.MAX_ENTITY_NAME_LENGTH,
+        ...,
+        min_length=1,
+        max_length=FlextConstants.MAX_ENTITY_NAME_LENGTH,
     )
     description: str | None = Field(
-        None, max_length=FlextConstants.MAX_ERROR_MESSAGE_LENGTH,
+        None,
+        max_length=FlextConstants.MAX_ERROR_MESSAGE_LENGTH,
     )
     endpoint: str = Field(..., min_length=1, description="API endpoint path")
 
     # Entity characteristics
     supports_incremental: bool = Field(
-        default=False, description="Supports incremental sync",
+        default=False,
+        description="Supports incremental sync",
     )
     primary_key: str | None = Field(None, description="Primary key field name")
     timestamp_field: str | None = Field(
-        None, description="Timestamp field for incremental sync",
+        None,
+        description="Timestamp field for incremental sync",
     )
 
     # Metadata
     fields: list[str] = Field(default_factory=list, description="Available field names")
     total_records: int | None = Field(
-        None, ge=0, description="Total record count if known",
+        None,
+        ge=0,
+        description="Total record count if known",
     )
 
 
@@ -116,20 +124,25 @@ class WMSStreamMetadata(DomainValueObject):
     """Stream metadata for Singer protocol compliance."""
 
     stream_name: str = Field(
-        ..., min_length=1, max_length=FlextConstants.MAX_ENTITY_NAME_LENGTH,
+        ...,
+        min_length=1,
+        max_length=FlextConstants.MAX_ENTITY_NAME_LENGTH,
     )
     key_properties: list[str] = Field(
-        default_factory=list, description="Primary key fields",
+        default_factory=list,
+        description="Primary key fields",
     )
     replication_method: str = Field(
-        default="FULL_TABLE", description="Replication method",
+        default="FULL_TABLE",
+        description="Replication method",
     )
     replication_key: str | None = Field(None, description="Incremental replication key")
 
     # Schema information
     json_schema: dict[str, Any] = Field(default_factory=dict, description="JSON schema")
     metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Stream metadata",
+        default_factory=dict,
+        description="Stream metadata",
     )
 
 
@@ -174,13 +187,18 @@ class WMSError(DomainValueObject):
 
     error_type: str = Field(..., min_length=1, description="Error type classification")
     message: str = Field(
-        ..., min_length=1, max_length=FlextConstants.MAX_ERROR_MESSAGE_LENGTH,
+        ...,
+        min_length=1,
+        max_length=FlextConstants.MAX_ERROR_MESSAGE_LENGTH,
     )
     endpoint: str | None = Field(None, description="Related API endpoint")
 
     # Error context
     status_code: int | None = Field(
-        None, ge=100, le=599, description="HTTP status code",
+        None,
+        ge=100,
+        le=599,
+        description="HTTP status code",
     )
     timestamp: datetime = Field(..., description="Error occurrence time")
     retryable: bool = Field(default=False, description="Whether error is retryable")
@@ -188,7 +206,8 @@ class WMSError(DomainValueObject):
     # Additional context
     request_id: str | None = Field(None, description="Request identifier")
     details: dict[str, Any] = Field(
-        default_factory=dict, description="Additional error details",
+        default_factory=dict,
+        description="Additional error details",
     )
 
 
@@ -199,12 +218,15 @@ class WMSDiscoveryResult(DomainBaseModel):
     discovered_at: datetime = Field(..., description="Discovery timestamp")
     base_url: str = Field(..., description="WMS base URL")
     total_entities: int = Field(
-        default=0, ge=0, description="Number of entities discovered",
+        default=0,
+        ge=0,
+        description="Number of entities discovered",
     )
 
     # Discovered entities
     entities: list[WMSEntity] = Field(
-        default_factory=list, description="Discovered entities",
+        default_factory=list,
+        description="Discovered entities",
     )
     errors: list[WMSError] = Field(default_factory=list, description="Discovery errors")
 
@@ -238,13 +260,19 @@ class TapMetrics(DomainBaseModel):
     """Metrics tracking for the tap operations."""
 
     api_calls: int = Field(
-        default=0, ge=0, description="Number of API calls made",
+        default=0,
+        ge=0,
+        description="Number of API calls made",
     )
     records_processed: int = Field(
-        default=0, ge=0, description="Number of records processed",
+        default=0,
+        ge=0,
+        description="Number of records processed",
     )
     errors_encountered: int = Field(
-        default=0, ge=0, description="Number of errors encountered",
+        default=0,
+        ge=0,
+        description="Number of errors encountered",
     )
     start_time: datetime | None = Field(None, description="Tap start time")
 

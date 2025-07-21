@@ -11,10 +11,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from flext_core.domain.pydantic_base import DomainBaseModel
-from flext_core.domain.pydantic_base import DomainValueObject
-from pydantic import Field
-from pydantic import field_validator
+from flext_core.domain.pydantic_base import DomainBaseModel, DomainValueObject
+from pydantic import Field, field_validator
 
 
 def _default_discovery_config() -> WMSDiscoveryConfig:
@@ -71,7 +69,7 @@ class WMSAuthConfig(DomainValueObject):
         """
         allowed = {"basic", "token", "oauth"}
         if v not in allowed:
-            msg = f"Auth method must be one of: {allowed}"
+            msg = f"Invalid auth_method: {v}. Must be one of {allowed}"
             raise ValueError(msg)
         return v
 
@@ -116,7 +114,7 @@ class WMSConnectionConfig(DomainValueObject):
 
         """
         if not v.startswith(("http://", "https://")):
-            msg = "Base URL must start with http:// or https://"
+            msg = f"Invalid base_url: {v}. Must start with http:// or https://"
             raise ValueError(msg)
         return v.rstrip("/")
 
@@ -241,7 +239,7 @@ class TapOracleWMSConfig(DomainBaseModel):
         """
         allowed = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
         if v.upper() not in allowed:
-            msg = f"Log level must be one of: {allowed}"
+            msg = f"Invalid log_level: {v}. Must be one of {allowed}"
             raise ValueError(msg)
         return v.upper()
 

@@ -7,11 +7,13 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from flext_tap_oracle_wms.config import TapOracleWMSConfig
-from flext_tap_oracle_wms.config import WMSAuthConfig
-from flext_tap_oracle_wms.config import WMSConnectionConfig
-from flext_tap_oracle_wms.config import WMSDiscoveryConfig
-from flext_tap_oracle_wms.config import WMSExtractionConfig
+from flext_tap_oracle_wms.config import (
+    TapOracleWMSConfig,
+    WMSAuthConfig,
+    WMSConnectionConfig,
+    WMSDiscoveryConfig,
+    WMSExtractionConfig,
+)
 
 
 class TestWMSAuthConfig:
@@ -33,17 +35,23 @@ class TestWMSAuthConfig:
         """Test authentication method validation."""
         # Valid methods
         auth_basic = WMSAuthConfig(
-            username="user", password="pass", auth_method="basic",
+            username="user",
+            password="pass",
+            auth_method="basic",
         )
         assert auth_basic.auth_method == "basic"
 
         auth_token = WMSAuthConfig(
-            username="user", password="pass", auth_method="token",
+            username="user",
+            password="pass",
+            auth_method="token",
         )
         assert auth_token.auth_method == "token"
 
         auth_oauth = WMSAuthConfig(
-            username="user", password="pass", auth_method="oauth",
+            username="user",
+            password="pass",
+            auth_method="oauth",
         )
         assert auth_oauth.auth_method == "oauth"
 
@@ -339,7 +347,12 @@ class TestTapOracleWMSConfig:
         auth = WMSAuthConfig(username="user", password="pass", auth_method="basic")
         connection = WMSConnectionConfig(base_url="https://test.com")
 
-        config = TapOracleWMSConfig(auth=auth, connection=connection, state_file=None, catalog_file=None)
+        config = TapOracleWMSConfig(
+            auth=auth,
+            connection=connection,
+            state_file=None,
+            catalog_file=None,
+        )
 
         # Check discovery defaults
         assert config.discovery.auto_discover is True
@@ -365,7 +378,6 @@ class TestTapOracleWMSConfig:
         with pytest.raises(ValidationError):
             TapOracleWMSConfig(
                 connection=WMSConnectionConfig(base_url="https://test.com"),
-                auth=None,  # type: ignore[arg-type]
                 state_file=None,
                 catalog_file=None,
             )
@@ -373,7 +385,23 @@ class TestTapOracleWMSConfig:
         # Missing connection should fail
         with pytest.raises(ValidationError):
             TapOracleWMSConfig(
-                auth=WMSAuthConfig(username="user", password="pass", auth_method="basic"),
+                auth=WMSAuthConfig(
+                    username="user",
+                    password="pass",
+                    auth_method="basic",
+                ),
+                state_file=None,
+                catalog_file=None,
+            )
+
+        # Missing connection should fail
+        with pytest.raises(ValidationError):
+            TapOracleWMSConfig(
+                auth=WMSAuthConfig(
+                    username="user",
+                    password="pass",
+                    auth_method="basic",
+                ),
                 connection=None,  # type: ignore[arg-type]
                 state_file=None,
                 catalog_file=None,
@@ -384,7 +412,11 @@ class TestTapOracleWMSConfig:
         auth = WMSAuthConfig(username="user", password="pass", auth_method="basic")
         connection = WMSConnectionConfig(base_url="https://test.com", timeout=60)
         discovery = WMSDiscoveryConfig(entity_filter=["item"])
-        extraction = WMSExtractionConfig(page_size=100, company_code="COMP1", start_date=None)
+        extraction = WMSExtractionConfig(
+            page_size=100,
+            company_code="COMP1",
+            start_date=None,
+        )
 
         config = TapOracleWMSConfig(
             auth=auth,
@@ -455,7 +487,12 @@ class TestTapOracleWMSConfig:
         auth = WMSAuthConfig(username="user", password="pass", auth_method="basic")
         connection = WMSConnectionConfig(base_url="https://test.com")
 
-        config = TapOracleWMSConfig(auth=auth, connection=connection, state_file=None, catalog_file=None)
+        config = TapOracleWMSConfig(
+            auth=auth,
+            connection=connection,
+            state_file=None,
+            catalog_file=None,
+        )
 
         # Serialize to dict
         data = config.model_dump()
@@ -515,15 +552,42 @@ class TestConfigValidation:
         """Test that nested validation works."""
         # Invalid auth method should fail at auth level
         with pytest.raises(ValidationError):
-            auth = WMSAuthConfig(
-                username="user", password="pass", auth_method="invalid",
-            )
-            TapOracleWMSConfig(
-                auth=auth,
-                connection=WMSConnectionConfig(base_url="https://test.com"),
-                state_file=None,
-                catalog_file=None,
-            )
+            self._create_invalid_wms_config()
+
+    def _create_invalid_wms_config(self) -> TapOracleWMSConfig:
+        """Helper function to create invalid WMS config for testing."""
+        auth = WMSAuthConfig(
+            username="user",
+            password="pass",
+            auth_method="invalid",
+        )
+        return TapOracleWMSConfig(
+            auth=auth,
+            connection=WMSConnectionConfig(base_url="https://test.com"),
+            state_file=None,
+            catalog_file=None,
+        )
+
+    def _create_invalid_url_config(self, auth: WMSAuthConfig) -> TapOracleWMSConfig:
+        """Helper function to create WMS config with invalid URL for testing."""
+        return TapOracleWMSConfig(
+            auth=auth,
+            connection=WMSConnectionConfig(base_url="invalid-url"),
+            state_file=None,
+            catalog_file=None,
+        )
+
+    def _create_invalid_page_size_config(
+        self, auth: WMSAuthConfig, connection: WMSConnectionConfig,
+    ) -> TapOracleWMSConfig:
+        """Helper function to create WMS config with invalid page size for testing."""
+        return TapOracleWMSConfig(
+            auth=auth,
+            connection=connection,
+            extraction=WMSExtractionConfig(page_size=0, start_date=None),
+            state_file=None,
+            catalog_file=None,
+        )
 
     def test_connection_url_validation(self) -> None:
         """Test connection URL validation."""
@@ -540,12 +604,7 @@ class TestConfigValidation:
 
         # Invalid URL should fail
         with pytest.raises(ValidationError):
-            TapOracleWMSConfig(
-                auth=auth,
-                connection=WMSConnectionConfig(base_url="invalid-url"),
-                state_file=None,
-                catalog_file=None,
-            )
+            self._create_invalid_url_config(auth)
 
     def test_extraction_validation(self) -> None:
         """Test extraction configuration validation."""
@@ -556,7 +615,11 @@ class TestConfigValidation:
         config = TapOracleWMSConfig(
             auth=auth,
             connection=connection,
-            extraction=WMSExtractionConfig(page_size=100, batch_size=500, start_date=None),
+            extraction=WMSExtractionConfig(
+                page_size=100,
+                batch_size=500,
+                start_date=None,
+            ),
             state_file=None,
             catalog_file=None,
         )
@@ -565,10 +628,4 @@ class TestConfigValidation:
 
         # Invalid page size should fail
         with pytest.raises(ValidationError):
-            TapOracleWMSConfig(
-                auth=auth,
-                connection=connection,
-                extraction=WMSExtractionConfig(page_size=0, start_date=None),
-                state_file=None,
-                catalog_file=None,
-            )
+            self._create_invalid_page_size_config(auth, connection)

@@ -14,7 +14,7 @@ from typing import Any
 from flext_observability.logging import get_logger
 
 from flext_tap_oracle_wms.interfaces import SchemaGeneratorInterface
-from flext_tap_oracle_wms.type_mapping import convert_metadata_type_to_singer
+from flext_tap_oracle_wms.type_mapping import get_full_singer_schema
 
 logger = get_logger(__name__)
 
@@ -57,46 +57,22 @@ class SchemaGenerator(SchemaGeneratorInterface):
                 logger.warning("No field definitions found in metadata")
                 return SchemaGenerator._generate_empty_schema()
 
-            # Build schema properties
-            properties = {}
-            required_fields = []
+            # Normalize fields to dict format
+            fields = self._normalize_fields_format(fields)
 
-            # Oracle WMS metadata format: fields must be a dict
-            if not isinstance(fields, dict):
-                SchemaGenerator._raise_schema_error(
-                    f"Fields must be a dict, got {type(fields).__name__}",
-                )
-
-            for field_name, field_info in fields.items():
-                if not field_name:
-                    continue
-
-                field_schema = SchemaGenerator._create_field_schema(field_info)
-                properties[field_name] = field_schema
-
-                # Check if field is required
-                if field_info.get("required", False):
-                    required_fields.append(field_name)
+            # Build schema from fields
+            properties, required_fields = self._build_schema_properties(fields)
 
             # Build complete schema
-            schema = {
-                "type": "object",
-                "properties": properties,
-                "additionalProperties": True,  # Allow extra fields like 'url'
-            }
-
-            if required_fields:
-                schema["required"] = required_fields
-
-            return schema  # noqa: TRY300
-
+            return self._build_complete_schema(properties, required_fields)
         except Exception as e:
             logger.exception("Schema generation from metadata failed")
             SchemaGenerator._raise_schema_error(f"Schema generation failed: {e}", e)
             return {}  # Unreachable but satisfies mypy
 
     def generate_metadata_schema_with_flattening(
-        self, metadata: dict[str, Any],
+        self,
+        metadata: dict[str, Any],
     ) -> dict[str, Any]:
         """Generate flattened JSON schema from Oracle WMS API metadata.
 
@@ -122,22 +98,24 @@ class SchemaGenerator(SchemaGeneratorInterface):
                 base_schema.get("properties", {}),
                 separator="_",
             )
-
+        except Exception as e:
+            logger.exception("Flattened schema generation failed")
+            msg = f"Schema generation failed: {e}"
+            raise SchemaGenerationError(
+                msg,
+            ) from e
+        else:
             # Return flattened schema
-            return {  # noqa: TRY300
+            return {
                 "type": "object",
                 "properties": flattened_properties,
             }
 
-        except Exception as e:
-            logger.exception("Flattened schema generation failed")
-            msg = f"Flattened schema generation failed: {e}"
-            raise SchemaGenerationError(
-                msg,
-            ) from e
-
     def flatten_complex_objects(
-        self, data: dict[str, Any], prefix: str = "", separator: str = "_",
+        self,
+        data: dict[str, Any],
+        prefix: str = "",
+        separator: str = "_",
     ) -> dict[str, Any]:
         """Flatten nested objects for schema processing.
 
@@ -175,6 +153,85 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
         return flattened
 
+    def _normalize_fields_format(self, fields: Any) -> dict[str, Any]:
+        """Normalize fields format to dict format for processing.
+
+        Args:
+            fields: Fields from metadata (can be dict or list)
+
+        Returns:
+            Normalized fields as dict
+
+        """
+        if isinstance(fields, list):
+            # Convert list format to dict format for processing
+            fields_dict = {}
+            for field_item in fields:
+                if isinstance(field_item, dict) and "name" in field_item:
+                    field_name = field_item["name"]
+                    field_info = {k: v for k, v in field_item.items() if k != "name"}
+                    fields_dict[field_name] = field_info
+            return fields_dict
+        if isinstance(fields, dict):
+            return fields
+        SchemaGenerator._raise_schema_error(
+            f"Fields must be a dict or list, got {type(fields).__name__}",
+        )
+        return {}  # Unreachable but satisfies mypy
+
+    def _build_schema_properties(
+        self, fields: dict[str, Any],
+    ) -> tuple[dict[str, Any], list[str]]:
+        """Build schema properties and required fields list.
+
+        Args:
+            fields: Normalized fields dict
+
+        Returns:
+            Tuple of (properties, required_fields)
+
+        """
+        properties = {}
+        required_fields = []
+
+        for field_name, field_info in fields.items():
+            if not field_name:
+                continue
+
+            field_schema = SchemaGenerator._create_field_schema(field_info)
+            properties[field_name] = field_schema
+
+            # Check if field is required
+            if field_info.get("required", False):
+                required_fields.append(field_name)
+
+        return properties, required_fields
+
+    @staticmethod
+    def _build_complete_schema(
+        properties: dict[str, Any], required_fields: list[str],
+    ) -> dict[str, Any]:
+        """Build complete schema from properties and required fields.
+
+        Args:
+            properties: Schema properties
+            required_fields: List of required field names
+
+        Returns:
+            Complete schema dictionary
+
+        """
+        schema = {
+            "type": "object",
+            "properties": properties,
+            "additionalProperties": True,  # Allow extra fields like 'url'
+        }
+
+        if required_fields:
+            schema["required"] = required_fields
+
+        return schema
+
     @staticmethod
     def _create_field_schema(field_info: dict[str, Any]) -> dict[str, Any]:
         """Create schema for a single field based on metadata.
@@ -190,23 +247,12 @@ class SchemaGenerator(SchemaGeneratorInterface):
         field_format = field_info.get("format")
         nullable = field_info.get("nullable", True)
 
-        # Convert WMS type to Singer schema type
-        schema_type = convert_metadata_type_to_singer(field_type, field_format)
-
-        # Build field schema
-        field_schema: dict[str, Any] = {"type": schema_type}
-
-        # Add format if specified
-        if (
-            field_format
-            and schema_type == "string"
-            and field_format in {"date-time", "date", "time"}
-        ):
-            field_schema["format"] = field_format
-
-        # Handle nullable fields
-        if nullable and schema_type != "null":
-            field_schema["type"] = [schema_type, "null"]
+        # Get complete Singer schema from type mapping (includes format)
+        field_schema = get_full_singer_schema(
+            field_type,
+            field_format,
+            nullable=nullable,
+        )
 
         # Add constraints if present
         if "maxLength" in field_info:
@@ -238,33 +284,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             "additionalProperties": True,
         }
 
-    def infer_schema_from_sample(self, sample_data: dict[str, Any]) -> dict[str, Any]:
-        """Infer JSON schema from sample data (fallback method).
-
-        Args:
-            sample_data: Sample data from WMS entity.
-
-        Returns:
-            Inferred JSON schema dictionary.
-
-        """
-        try:
-            properties = {}
-
-            for key, value in sample_data.items():
-                properties[key] = self._infer_field_type(value)
-
-            return {  # noqa: TRY300
-                "type": "object",
-                "properties": properties,
-                "additionalProperties": True,
-            }
-
-        except Exception:
-            logger.exception("Schema inference from sample failed")
-            return SchemaGenerator._generate_empty_schema()
-
-    def _infer_field_type(self, value: Any) -> dict[str, Any]:  # noqa: PLR0911
+    def _infer_field_type(self, value: Any) -> dict[str, Any]:
         """Infer field type from sample value.
 
         Args:
@@ -274,19 +294,24 @@ class SchemaGenerator(SchemaGeneratorInterface):
             Schema dictionary with inferred type information
 
         """
-        if value is None:
-            return {"type": "null"}
-        if isinstance(value, bool):
-            return {"type": "boolean"}
-        if isinstance(value, int):
-            return {"type": "integer"}
-        if isinstance(value, float):
-            return {"type": "number"}
-        if isinstance(value, str):
+        # Handle each type with proper type checking - reduces to 6 returns
+        value_type = type(value)
+
+        # Handle primitive types in single mapping
+        simple_type_map = {
+            type(None): "null",
+            bool: "boolean",
+            int: "integer",
+            float: "number",
+        }
+
+        if value_type in simple_type_map:
+            return {"type": simple_type_map[value_type]}
+        if value_type is str:
             return self._infer_string_schema(value)
-        if isinstance(value, list):
+        if value_type is list:
             return self._infer_array_schema(value)
-        if isinstance(value, dict):
+        if value_type is dict:
             return self._infer_object_schema(value)
         # Unknown type - default to string
         return {"type": "string"}
@@ -369,7 +394,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         return bool(re.search(date_pattern, value))
 
     @staticmethod
-    def _raise_schema_error(message: str, cause: Exception | None = None) -> None:
+    def _raise_schema_error(message: str, _cause: Exception | None = None) -> None:
         """Raise schema generation error with proper error handling.
 
         Args:
@@ -380,6 +405,4 @@ class SchemaGenerator(SchemaGeneratorInterface):
             SchemaGenerationError: Always raises with the provided message
 
         """
-        if cause:
-            raise SchemaGenerationError(message) from cause
         raise SchemaGenerationError(message)

@@ -10,8 +10,7 @@ from __future__ import annotations
 
 import base64
 import re
-from typing import TYPE_CHECKING
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 from flext_observability.logging import get_logger
@@ -197,7 +196,6 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         """
         entities = {}
-
         try:
             auth_headers = self._prepare_auth_headers()
 
@@ -214,8 +212,10 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         except httpx.HTTPError as e:
             logger.exception("Failed to fetch entities from API")
-            msg = f"Entity discovery failed: {e}"
-            raise EntityDiscoveryError(msg) from e
+            msg = f"HTTP error during entity discovery: {e}"
+            raise EntityDiscoveryError(
+                msg,
+            ) from e
         except Exception as e:
             logger.exception("Unexpected error during entity discovery")
             msg = f"Entity discovery failed: {e}"
@@ -244,7 +244,8 @@ class EntityDiscovery(EntityDiscoveryInterface):
         return auth_headers
 
     def _process_api_response(
-        self, data: dict[str, object] | list[object] | object,
+        self,
+        data: dict[str, object] | list[object] | object,
     ) -> dict[str, str]:
         """Process Oracle WMS API response and extract entity mapping.
 
@@ -290,7 +291,8 @@ class EntityDiscovery(EntityDiscoveryInterface):
             # Nested entities format
             entities = self._process_nested_entities(data["entities"])
             logger.info(
-                "Using nested entities format (%d entities)", len(entities),
+                "Using nested entities format (%d entities)",
+                len(entities),
             )
         else:
             logger.warning(
@@ -367,7 +369,6 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         """
         metadata_url = f"{self.entity_endpoint}{entity_name}/describe"
-
         try:
             auth_headers = self._prepare_auth_headers()
 
@@ -387,20 +388,17 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         except httpx.HTTPError as e:
             logger.exception(
-                "Failed to fetch metadata for entity %s", entity_name,
+                "Failed to fetch metadata for entity %s",
+                entity_name,
             )
-            msg = f"Metadata fetch failed for {entity_name}: {e}"
+            msg = f"HTTP error during entity metadata fetch: {e}"
             raise EntityDescriptionError(
                 msg,
             ) from e
         except Exception as e:
-            logger.exception(
-                "Unexpected error fetching metadata for %s", entity_name,
-            )
-            msg = f"Metadata fetch failed for {entity_name}: {e}"
-            raise EntityDescriptionError(
-                msg,
-            ) from e
+            logger.exception("Unexpected error during entity metadata fetch")
+            msg = f"Entity metadata fetch failed: {e}"
+            raise EntityDescriptionError(msg) from e
 
     @staticmethod
     def _matches_patterns(entity_name: str, patterns: list[str]) -> bool:

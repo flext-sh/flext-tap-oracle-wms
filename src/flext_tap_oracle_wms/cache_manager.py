@@ -1,12 +1,10 @@
-"""Cache management for Oracle WMS tap.
+"""Cache Manager for Oracle WMS Tap.
 
-This module provides thread-safe caching functionality with TTL support.
+This module provides caching functionality for Oracle WMS API operations
+using flext-core patterns and thread-safe operations.
 """
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
 
-from __future__ import annotations
-
+import logging
 import threading
 import time
 from typing import Any
@@ -15,8 +13,7 @@ try:
     from flext_observability.logging import get_logger
 except ImportError:
     # Fallback to standard logging if flext_observability is not available
-    import logging
-    def get_logger(name: str) -> logging.Logger:
+    def get_logger(name: str) -> logging.Logger:  # type: ignore[misc]
         """Fallback logger function.
 
         Args:
@@ -27,6 +24,8 @@ except ImportError:
 
         """
         return logging.getLogger(name)
+
+
 from flext_tap_oracle_wms.interfaces import CacheManagerInterface
 
 CacheValueType = str | dict[str, Any] | bool
@@ -72,7 +71,8 @@ class CacheManager(CacheManagerInterface):
         self._cache_misses = 0
 
         logger.debug(
-            "Cache manager initialized with TTL: %d seconds", self._default_ttl,
+            "Cache manager initialized with TTL: %d seconds",
+            self._default_ttl,
         )
 
     def get_entity(self, entity_name: str) -> dict[str, Any] | None:
@@ -96,7 +96,10 @@ class CacheManager(CacheManagerInterface):
             return None
 
     def set_entity(
-        self, entity_name: str, data: dict[str, Any], ttl: int | None = None,
+        self,
+        entity_name: str,
+        data: dict[str, Any],
+        ttl: int | None = None,
     ) -> None:
         """Cache entity data with TTL.
 
@@ -138,7 +141,10 @@ class CacheManager(CacheManagerInterface):
             return None
 
     def set_schema(
-        self, entity_name: str, schema: dict[str, Any], ttl: int | None = None,
+        self,
+        entity_name: str,
+        schema: dict[str, Any],
+        ttl: int | None = None,
     ) -> None:
         """Cache schema data with TTL.
 
@@ -180,7 +186,10 @@ class CacheManager(CacheManagerInterface):
             return None
 
     def set_metadata(
-        self, entity_name: str, metadata: dict[str, Any], ttl: int | None = None,
+        self,
+        entity_name: str,
+        metadata: dict[str, Any],
+        ttl: int | None = None,
     ) -> None:
         """Cache metadata with TTL.
 
@@ -200,7 +209,9 @@ class CacheManager(CacheManagerInterface):
             self._metadata_cache_expires[entity_name] = expiry_time
 
             logger.debug(
-                "Cached metadata: %s (TTL: %d seconds)", entity_name, cache_ttl,
+                "Cached metadata: %s (TTL: %d seconds)",
+                entity_name,
+                cache_ttl,
             )
 
     def clear_cache(self, cache_type: str = "all") -> None:
@@ -398,7 +409,9 @@ class CacheManager(CacheManagerInterface):
                 self._entity_cache_expires[key] = expiry_time
 
                 logger.debug(
-                    "Cached generic value: %s (TTL: %d seconds)", key, cache_ttl,
+                    "Cached generic value: %s (TTL: %d seconds)",
+                    key,
+                    cache_ttl,
                 )
 
     def is_cache_valid(self, key: str, ttl: int) -> bool:
@@ -441,9 +454,11 @@ class CacheManager(CacheManagerInterface):
             return key[9:], self._metadata_cache_expires
 
         # Check all caches for generic key
-        if (key in self._entity_cache_expires
+        if (
+            key in self._entity_cache_expires
             or key in self._schema_cache_expires
-            or key in self._metadata_cache_expires):
+            or key in self._metadata_cache_expires
+        ):
             # Default to entity cache for generic keys
             return key, self._entity_cache_expires
 

@@ -1,151 +1,234 @@
-# FLEXT Standard Pre-Commit Configuration v2.0.0
-# Ultra-Modern, Strategic, and Zero-Exception Hooks
+# ============================================================================
+# FLEXT STANDARD PRE-COMMIT CONFIGURATION TEMPLATE
+# Python 3.13 | Poetry-managed | Strict Quality Gates
+# Zero tolerance for quality violations
+# ============================================================================
 
-repos:
-  # ═══════════════════════════════════════════════════════════════════════════════
-  # CORE PRE-COMMIT HOOKS (Essential FLEXT Standards)
-  # ═══════════════════════════════════════════════════════════════════════════════
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0 # Latest stable
-    hooks:
-      - id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
-      - id: end-of-file-fixer
-      - id: check-yaml
-        args: [--allow-multiple-documents]
-      - id: check-toml
-      - id: check-json
-      - id: check-merge-conflict
-      - id: check-case-conflict
-      - id: check-symlinks
-      - id: check-added-large-files
-        args: [--maxkb=1024]
-      - id: debug-statements
-      - id: mixed-line-ending
-        args: [--fix=lf]
-
-  # ═══════════════════════════════════════════════════════════════════════════════
-  # RUFF - Modern All-in-One Linter & Formatter (FLEXT Standard)
-  # ═══════════════════════════════════════════════════════════════════════════════
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.2 # Stable working version
-    hooks:
-      # Linting with auto-fix
-      - id: ruff
-        name: "🔍 Ruff Linter"
-        args: [--fix, --exit-non-zero-on-fix, --show-fixes]
-
-      # Formatting
-      - id: ruff-format
-        name: "🎨 Ruff Formatter"
-
-  # ═══════════════════════════════════════════════════════════════════════════════
-  # MYPY - Static Type Checking (FLEXT Standard)
-  # ═══════════════════════════════════════════════════════════════════════════════
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.16.1 # Latest MyPy
-    hooks:
-      - id: mypy
-        name: "🔍 MyPy Type Checker"
-        additional_dependencies:
-          - types-python-dateutil
-          - types-requests
-          - pydantic
-          - httpx
-        args: [--strict, --show-error-codes]
-
-  # ═══════════════════════════════════════════════════════════════════════════════
-  # SECURITY SCANNING (FLEXT Standard)
-  # ═══════════════════════════════════════════════════════════════════════════════
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.6 # Latest Bandit
-    hooks:
-      - id: bandit
-        name: "🔒 Bandit Security Linter"
-        args: [-r, src/, --format, custom, --skip, B101]
-        exclude: ^tests/
-
-  # ═══════════════════════════════════════════════════════════════════════════════
-  # LOCAL HOOKS (FLEXT Custom & Essential)
-  # ═══════════════════════════════════════════════════════════════════════════════
-  - repo: local
-    hooks:
-      # Poetry Project Validation
-      - id: poetry-check
-        name: "📦 Poetry Check"
-        entry: poetry check
-        language: system
-        pass_filenames: false
-        files: ^pyproject\\.toml$
-
-      # FLEXT Project Structure Validation
-      - id: flext-structure-check
-        name: "🏗️ FLEXT Structure Check"
-        entry: bash -c 'test -f pyproject.toml && test -d src/ && test -d tests/ && echo "✅ FLEXT structure valid"'
-        language: system
-        pass_filenames: false
-        always_run: true
-
-      # FLEXT Standards Validation
-      - id: flext-standards-check
-        name: "🎯 FLEXT Standards Check"
-        entry: bash -c 'test -f .flext-standards.toml && echo "✅ FLEXT standards compliant"'
-        language: system
-        pass_filenames: false
-        always_run: true
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# FLEXT STANDARD CONFIGURATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Global Configuration
-ci:
-  autofix_commit_msg: |
-    🤖 auto-fix: FLEXT pre-commit hooks
-
-    Auto-applied fixes from FLEXT pre-commit hooks.
-
-    [skip ci]
-  autofix_prs: true
-  autoupdate_branch: "main"
-  autoupdate_commit_msg: |
-    🤖 auto-update: FLEXT pre-commit hooks
-
-    Updated FLEXT pre-commit hook versions automatically.
-  autoupdate_schedule: weekly
-  skip: []
-
-# Default stages for all hooks
+minimum_pre_commit_version: "3.5.0"
+fail_fast: false
 default_stages: [pre-commit, pre-push]
-
-# Default language versions (FLEXT Standard)
 default_language_version:
   python: python3.13
 
-# Exclude patterns (FLEXT Standard)
-exclude: |
-  (?x)^(
-    \.git/|
-    \.venv/|
-    \.tox/|
-    \.mypy_cache/|
-    \.pytest_cache/|
-    \.ruff_cache/|
-    build/|
-    dist/|
-    .*\.egg-info/|
-    htmlcov/|
-    node_modules/|
-    \.idea/|
-    \.vscode/(?!settings\.json$|extensions\.json$)|
-    \.coverage.*|
-    coverage\.xml|
-    reports/|
-    poetry\.lock
-  )$
+repos:
+  # ===== SECURITY SCANNING FIRST - FAIL FAST ON VULNERABILITIES =====
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: "🔒 Detect Secrets"
+        args: ["--baseline", ".secrets.baseline"]
+        exclude: .*\.lock$|.*\.lockb$
 
-# Fail fast on first error for efficiency
-fail_fast: true
+  # ===== POETRY-MANAGED TOOLS VIA LOCAL REPO =====
+  - repo: local
+    hooks:
+      # Black formatting (primary formatter)
+      - id: black
+        name: "⚫ Black Format"
+        entry: poetry run black
+        language: system
+        types: [python]
+        require_serial: true
+        args: [--check, --diff]
 
-# Minimum pre-commit version
-minimum_pre_commit_version: "3.6.0"
+      # Ruff linting and formatting
+      - id: ruff-format
+        name: "⚡ Ruff Format"
+        entry: poetry run ruff format
+        language: system
+        types: [python]
+        require_serial: true
+        args: [--check, --diff]
+
+      - id: ruff-lint
+        name: "🔥 Ruff Lint"
+        entry: poetry run ruff check
+        language: system
+        types: [python]
+        require_serial: true
+        args: [--fix, --exit-non-zero-on-fix]
+
+      # isort import sorting
+      - id: isort
+        name: "📦 Import Sort"
+        entry: poetry run isort
+        language: system
+        types: [python]
+        require_serial: true
+        args: [--check-only, --diff]
+
+      # MyPy type checking - STRICT MODE
+      - id: mypy
+        name: "🛡️ MyPy Strict"
+        entry: poetry run mypy
+        language: system
+        types: [python]
+        require_serial: true
+        pass_filenames: false
+        args: [src/, tests/, --config-file=pyproject.toml]
+
+      # Bandit security
+      - id: bandit
+        name: "🔒 Bandit Security"
+        entry: poetry run bandit
+        language: system
+        types: [python]
+        require_serial: true
+        args: [-r, src/, --severity-level=medium]
+        exclude: tests/
+
+      # Vulture dead code detection
+      - id: vulture
+        name: "🦅 Dead Code Detection"
+        entry: poetry run vulture
+        language: system
+        types: [python]
+        pass_filenames: false
+        args: [src/, --min-confidence=80]
+
+      # Radon complexity metrics
+      - id: radon-cc
+        name: "📊 Cyclomatic Complexity"
+        entry: poetry run radon cc
+        language: system
+        types: [python]
+        pass_filenames: false
+        args: [src/, -a, -nb, --total-average]
+
+      - id: radon-mi
+        name: "📊 Maintainability Index"
+        entry: poetry run radon mi
+        language: system
+        types: [python]
+        pass_filenames: false
+        args: [src/, -nb]
+
+      # Poetry dependency checks
+      - id: poetry-check
+        name: "📋 Poetry Check"
+        entry: poetry check
+        language: system
+        pass_filenames: false
+
+      - id: poetry-lock
+        name: "🔒 Poetry Lock"
+        entry: poetry lock
+        language: system
+        pass_filenames: false
+        args: [--no-update]
+
+  # ===== FILE VALIDATION AND QUALITY =====
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+        name: "📋 YAML Syntax Check"
+        args: [--unsafe]
+      - id: check-toml
+        name: "📋 TOML Syntax Check"
+      - id: check-json
+        name: "📋 JSON Syntax Check"
+      - id: end-of-file-fixer
+        name: "📄 EOF Fixer"
+      - id: trailing-whitespace
+        name: "✂️ Trailing Whitespace"
+        args: [--markdown-linebreak-ext=md]
+      - id: check-added-large-files
+        name: "📦 Large File Check"
+        args: [--maxkb=1000]
+      - id: check-case-conflict
+        name: "🔤 Case Conflict Check"
+      - id: check-merge-conflict
+        name: "⚔️ Merge Conflict Check"
+      - id: mixed-line-ending
+        name: "📏 Line Ending Check"
+        args: [--fix=lf]
+      - id: debug-statements
+        name: "🐛 Debug Statement Check"
+      - id: check-ast
+        name: "🐍 Python AST Check"
+      - id: check-docstring-first
+        name: "📝 Docstring First Check"
+      - id: detect-private-key
+        name: "🔑 Private Key Detection"
+      - id: check-executables-have-shebangs
+        name: "📜 Executable Shebang Check"
+      - id: check-shebang-scripts-are-executable
+        name: "⚡ Shebang Executable Check"
+
+  # ===== PYTHON-SPECIFIC CHECKS =====
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+        name: "🚫 Blanket noqa Check"
+      - id: python-check-blanket-type-ignore
+        name: "🚫 Blanket type: ignore Check"
+      - id: python-no-eval
+        name: "🚫 No eval() Check"
+      - id: python-no-log-warn
+        name: "⚠️ No log.warn Check"
+      - id: python-use-type-annotations
+        name: "📝 Type Annotations Check"
+
+  # ===== PYTHON VERSION UPGRADE =====
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.20.0
+    hooks:
+      - id: pyupgrade
+        name: "⬆️ Python Upgrade"
+        args: [--py313-plus]
+
+  # ===== AUTOFLAKE - REMOVE UNUSED IMPORTS =====
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.3.1
+    hooks:
+      - id: autoflake
+        name: "🧹 Remove Unused Imports"
+        args:
+          [
+            "--remove-all-unused-imports",
+            "--remove-unused-variables",
+            "--in-place",
+            "--recursive",
+          ]
+
+  # ===== CODESPELL - SPELL CHECKING =====
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        name: "📝 Spell Check"
+        args:
+          [
+            "--skip=*.json,*.lock,*.toml,*.yaml,*.yml,poetry.lock",
+            "--ignore-words-list=flext,meltano,dbt,oracle,ldap,ldif,grpc,pydantic,jsonl",
+          ]
+
+  # ===== VALIDATE PYPROJECT.TOML =====
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.16
+    hooks:
+      - id: validate-pyproject
+        name: "📋 Validate pyproject.toml"
+
+# ===== CI CONFIGURATION =====
+ci:
+  autofix_prs: false # No automatic fixes - must be intentional
+  autoupdate_schedule: weekly
+  skip: [
+      # Local Poetry hooks don't work in CI
+      black,
+      ruff-format,
+      ruff-lint,
+      isort,
+      mypy,
+      bandit,
+      vulture,
+      radon-cc,
+      radon-mi,
+      poetry-check,
+      poetry-lock,
+    ]
+  submodules: false
