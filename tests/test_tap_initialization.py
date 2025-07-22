@@ -1,7 +1,7 @@
 """Test tap initialization without network calls."""
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
-
 from unittest.mock import MagicMock, patch
 
 from flext_tap_oracle_wms.tap import TapOracleWMS
@@ -14,14 +14,12 @@ class TestTapInitialization:
     def test_tap_init_no_network_calls(self, mock_discover: MagicMock) -> None:
         # Mock discover_streams to return empty list during initialization
         mock_discover.return_value = []
-
         config = {
             "base_url": "https://test.example.com",
             "username": "test",
             "password": "test",
             "entities": ["allocation", "order_hdr"],
         }
-
         # Mock external network calls to ensure they're not made
         with (
             patch("httpx.AsyncClient.get") as mock_get,
@@ -30,12 +28,10 @@ class TestTapInitialization:
         ):
             # Initialize tap - should not trigger external network calls
             tap = TapOracleWMS(config=config)
-
             # Verify no external network calls were made
             mock_get.assert_not_called()
             mock_client_get.assert_not_called()
             mock_requests_get.assert_not_called()
-
             # Verify tap is properly initialized
             assert tap.config["base_url"] == "https://test.example.com"
             assert tap.config["entities"] == ["allocation", "order_hdr"]
@@ -47,7 +43,6 @@ class TestTapInitialization:
             "password": "test",
             "entities": ["allocation", "order_hdr"],
         }
-
         # Mock both async and sync HTTP calls
         with (
             patch("httpx.AsyncClient") as mock_async_client,
@@ -63,17 +58,13 @@ class TestTapInitialization:
                     "mod_ts": {"type": "string", "format": "date-time"},
                 },
             }
-
             tap = TapOracleWMS(config=config)
-
             # Discover streams in sync mode
             streams = tap.discover_streams()
-
             # Should create minimal streams without API calls
             assert len(streams) == 2
             assert streams[0].name == "allocation"
             assert streams[1].name == "order_hdr"
-
             # Verify no network calls were made
             mock_async_client.assert_not_called()
             mock_sync_client.assert_not_called()
@@ -88,7 +79,6 @@ class TestTapInitialization:
             "entities": ["test_entity"],
             "enable_incremental": False,  # Disable incremental for simpler test
         }
-
         with (
             patch("httpx.AsyncClient"),
             patch("flext_tap_oracle_wms.tap.TapOracleWMS.discovery") as mock_discovery,
@@ -100,15 +90,11 @@ class TestTapInitialization:
                     "name": {"type": "string", "nullable": True},
                 },
             }
-
             tap = TapOracleWMS(config=config)
-
             # Set discovery mode
             tap.set_discovery_mode(enabled=True)
-
             # Now discovery should work
             streams = tap.discover_streams()
-
             assert len(streams) == 1
             assert streams[0].name == "test_entity"
 
@@ -117,29 +103,24 @@ class TestTapInitialization:
         """Test lazy loading discovery behavior."""
         # Mock discover_streams to return empty list during initialization
         mock_discover.return_value = []
-
         config = {
             "base_url": "https://test.example.com",
             "username": "test",
             "password": "test",
             "entities": ["allocation", "order_hdr"],
         }
-
         tap = TapOracleWMS(config=config)
-
         # Initially, discovery should be None
         assert tap._discovery is None
         assert tap._schema_generator is None
-
         # Mock validation to avoid network calls
         with patch.object(tap, "_validate_configuration"):
             # Access discovery property - should create instance
             discovery = tap.discovery
             assert discovery is not None
             assert tap._discovery is discovery
-
             # Access schema_generator - should create instance
-            schema_gen = tap.schema_generator  # type: ignore[unreachable]
+            schema_gen = tap.schema_generator
             # Verify schema generator is properly initialized
             _ = schema_gen  # Used to satisfy mypy
 
@@ -147,7 +128,6 @@ class TestTapInitialization:
     def test_config_type_conversion(self, mock_discover: MagicMock) -> None:
         # Mock discover_streams to return empty list during initialization
         mock_discover.return_value = []
-
         config = {
             "base_url": "https://test.example.com",
             "username": "test",
@@ -157,7 +137,6 @@ class TestTapInitialization:
             "enable_incremental": True,  # Boolean
             "verify_ssl": False,  # Boolean
         }
-
         # Mock all network calls to prevent real API calls during initialization
         with (
             patch("httpx.AsyncClient"),
@@ -165,7 +144,6 @@ class TestTapInitialization:
             patch("requests.get"),
         ):
             tap = TapOracleWMS(config=config)
-
             # Verify types are correct
             assert isinstance(tap.config["page_size"], int)
             assert tap.config["page_size"] == 100
@@ -181,7 +159,6 @@ class TestTapInitialization:
             "password": "test",
             "entities": ["test_entity"],
         }
-
         # Mock all network calls completely
         with (
             patch("httpx.AsyncClient"),
@@ -192,12 +169,9 @@ class TestTapInitialization:
         ):
             mock_entities.return_value = {"test_entity": "http://test.url"}
             mock_discovery.describe_entity_sync.return_value = None
-
             tap = TapOracleWMS(config=config)
-
             # Create minimal schema
             schema = tap._create_minimal_schema("test_entity")
-
             assert schema["type"] == "object"
             assert "properties" in schema
             assert "id" in schema["properties"]

@@ -2,7 +2,6 @@
 
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
-
 from __future__ import annotations
 
 import sys
@@ -46,7 +45,6 @@ class TapOracleWMS(Tap):
     name = "tap-oracle-wms"
     # Set environment prefix for automatic env var loading
     config_prefix = "TAP_ORACLE_WMS_"
-
     # Configuration schema using Singer SDK typing
     config_jsonschema = th.PropertiesList(
         # Core connection settings
@@ -181,11 +179,9 @@ class TapOracleWMS(Tap):
         """Initialize tap with lazy loading - NO network calls during init."""
         # Call parent init first to let Singer SDK handle config parsing
         super().__init__(*args, **kwargs)
-
         # Apply type conversion to fix Meltano string-to-integer issue AFTER parent init
         if hasattr(self, "config") and self.config:
             self._config = self._convert_config_types(dict(self.config))
-
         # Now we can use self.logger safely
         self.logger.info("🔧 Initializing TapOracleWMS...")
         self.logger.info("🔧 Args: %s", args)
@@ -193,7 +189,6 @@ class TapOracleWMS(Tap):
             "🔧 Kwargs keys: %s",
             list(kwargs.keys()) if kwargs else "None",
         )
-
         # Log some key config values (without secrets)
         if hasattr(self, "config") and self.config:
             self.logger.info("🔧 base_url: %s", self.config.get("base_url"))
@@ -203,24 +198,19 @@ class TapOracleWMS(Tap):
                 self.config.get("page_size"),
                 type(self.config.get("page_size")).__name__,
             )
-
         # Cache for discovered entities and schemas - LAZY LOADED
         self._entity_cache: dict[str, str] | None = None
         self._schema_cache: dict[str, dict[str, Any]] = {}
-
         # Lazy-load discovery system - NO INITIALIZATION HERE
         self._discovery: EntityDiscovery | None = None
         self._schema_generator: SchemaGenerator | None = None
-
         # Detection for discovery mode vs sync mode
         self._is_discovery_mode = False
-
         self.logger.info("🔧 TapOracleWMS initialization completed.")
 
     @staticmethod
     def _convert_config_types(config: dict[str, Any]) -> dict[str, Any]:
         converted = config.copy()
-
         # Integer fields that might come as strings from Meltano
         int_fields = [
             "page_size",
@@ -231,7 +221,6 @@ class TapOracleWMS(Tap):
             "discovery_timeout",
             "auth_timeout",
         ]
-
         for field in int_fields:
             if field in converted:
                 value = converted[field]
@@ -242,10 +231,8 @@ class TapOracleWMS(Tap):
                 except (ValueError, TypeError):
                     # Keep original value if conversion fails
                     continue
-
         # Boolean fields that might come as strings
         bool_fields = ["enable_incremental", "discover_catalog", "verify_ssl"]
-
         for field in bool_fields:
             if field in converted:
                 value = converted[field]
@@ -259,12 +246,10 @@ class TapOracleWMS(Tap):
                 elif isinstance(value, bool):
                     # Already boolean, keep as is
                     pass
-
         return converted
 
     def _validate_configuration(self) -> None:
         self.logger.info("🔧 Starting configuration validation...")
-
         # CRITICAL: Enforce mandatory environment variables FIRST
         # (only in non-discovery mode)
         if not getattr(self, "_is_discovery_mode", False):
@@ -282,14 +267,12 @@ class TapOracleWMS(Tap):
             # Create ConfigMapper with merged configuration
             config_mapper = ConfigMapper(dict(self.config))
             self.logger.info("🔧 ConfigMapper created successfully")
-
             # Validate configuration (skip in discovery mode for basic functionality)
             if not getattr(self, "_is_discovery_mode", False):
                 validate_config_with_mapper(config_mapper)
                 self.logger.info("✅ Full configuration validation passed")
             else:
                 self.logger.info("🔍 Skipping full config validation in discovery mode")
-
         except ConfigValidationError:
             self.logger.exception("❌ Configuration validation failed")
             if not getattr(self, "_is_discovery_mode", False):
@@ -356,16 +339,13 @@ class TapOracleWMS(Tap):
         """
         # Initialize logger for debugging
         logger = get_logger(__name__)
-
         # Check if this is a discovery command to enable discovery mode
         if "--discover" in sys.argv:
             logger.info(
                 "🔍 Discovery mode detected - creating instance for catalog generation",
             )
-
             # For discovery, we'll handle it ourselves to ensure proper catalog output
             return super().invoke(*args, **kwargs)
-
         # Use the standard Singer SDK CLI handling for other commands
         return super().invoke(*args, **kwargs)
 
@@ -379,9 +359,7 @@ class TapOracleWMS(Tap):
         # Enable discovery mode when this method is called
         self._is_discovery_mode = True
         self.logger.info("🔍 Discovery mode enabled via discover_streams")
-
         streams: list[Any] = []
-
         self.logger.info("🔍 Starting stream discovery...")
         try:
             # Get configured entities for basic discovery
@@ -391,20 +369,16 @@ class TapOracleWMS(Tap):
                     "No entities configured for discovery",
                 )
             self.logger.info("🔍 Using entities from config: %s", entities)
-
             for entity_name in entities or []:
                 self.logger.info("🔍 Creating stream for entity: %s", entity_name)
-
                 # Create minimal stream for discovery
                 stream = self._create_stream_minimal(entity_name)
                 if stream:
                     streams.append(stream)
                     self.logger.info("✅ Created stream: %s", entity_name)
-
         except Exception:
             self.logger.exception("❌ Error during stream discovery")
             raise
-
         self.logger.info(
             "🔍 Discovery completed. Found %d streams total.",
             len(streams),
@@ -417,7 +391,6 @@ class TapOracleWMS(Tap):
             # Initialize cache if not exists
             if not hasattr(self, "_schema_cache"):
                 self._schema_cache = {}
-
             # Use cached schema if available, otherwise create minimal schema
             if (
                 hasattr(self, "_schema_cache")
@@ -430,13 +403,11 @@ class TapOracleWMS(Tap):
                 schema = self._create_minimal_schema(entity_name)
                 if hasattr(self, "_schema_cache") and self._schema_cache is not None:
                     self._schema_cache[entity_name] = schema
-
             stream = WMSStream(
                 tap=self,
                 name=entity_name,
                 schema=schema,
             )
-
             self.logger.info(
                 "Created stream: %s with minimal schema (%s properties)",
                 entity_name,
@@ -453,13 +424,11 @@ class TapOracleWMS(Tap):
 
         Args:
             entity_name: Name of the entity to create schema for
-
         Returns:
-            Complete JSON schema dictionary for the entity
+            Complete JSON schema dictionary for the entity.
 
         """
         self.logger.info("🔍 Creating complete schema for entity: %s", entity_name)
-
         # Try to get a sample record to infer schema (only if online)
         try:
             metadata = self.discovery.describe_entity_sync(entity_name)
@@ -481,7 +450,6 @@ class TapOracleWMS(Tap):
                 entity_name,
                 e,
             )
-
         # If no metadata, create schema based on known entity structures
         if entity_name == "allocation":
             return {
@@ -590,7 +558,6 @@ class TapOracleWMS(Tap):
                 list(self._entity_cache.keys()),
             )
             return self._entity_cache
-
         self.logger.info("🔍 Starting entity discovery from WMS API...")
         try:
             # Discover entities synchronously
@@ -599,17 +566,14 @@ class TapOracleWMS(Tap):
                 "🔍 Raw entities discovered: %s",
                 list(entities.keys()) if entities else "None",
             )
-
             # Apply filtering
             filtered_entities = self.discovery.filter_entities(entities)
             self.logger.info(
                 "🔍 Filtered entities: %s",
                 list(filtered_entities.keys()) if filtered_entities else "None",
             )
-
             # Cache results
             self._entity_cache = filtered_entities
-
             self.logger.info(
                 "✅ Discovered %s entities from WMS API",
                 len(filtered_entities),
@@ -624,25 +588,21 @@ class TapOracleWMS(Tap):
         # Check cache first
         if self._schema_cache and entity_name in self._schema_cache:
             return self._schema_cache[entity_name]
-
         flattening_enabled = self.config.get("flattening_enabled")
         try:
             # Always get metadata first - this is fundamental and never optional
             metadata = self.discovery.describe_entity_sync(entity_name)
-
             if not metadata:
                 self._raise_metadata_error(entity_name)
-
             self.logger.info(
                 "🚀 METADATA-ONLY MODE (HARD-CODED): Using ONLY API metadata "
                 "for entity: %s",
                 entity_name,
             )
-
             # Generate schema from metadata ONLY - flattening support if enabled
             if flattening_enabled:
                 schema = self.schema_generator.generate_metadata_schema_with_flattening(
-                    metadata,  # type: ignore[arg-type]
+                    metadata,
                 )
                 self.logger.info(
                     "✅ Generated metadata schema with flattening for %s with "
@@ -652,14 +612,13 @@ class TapOracleWMS(Tap):
                 )
             else:
                 schema = self.schema_generator.generate_from_metadata(
-                    metadata,  # type: ignore[arg-type]
+                    metadata,
                 )
                 self.logger.info(
                     "✅ Generated basic metadata schema for %s with %d fields",
                     entity_name,
                     len(schema.get("properties", {})),
                 )
-
             # Log schema field names for verification
             field_names = list(schema.get("properties", {}).keys())
             self.logger.info(
@@ -686,14 +645,12 @@ class TapOracleWMS(Tap):
                 f"Unexpected error during schema generation for {entity_name}: {e}"
             )
             raise SchemaGenerationError(error_msg) from e
-
         # Cache schema
         if self._schema_cache is not None:
             self._schema_cache[entity_name] = schema
         return schema
 
     # Singer SDK hooks for advanced functionality
-
     @staticmethod
     def post_process(
         row: dict[str, Any],
@@ -738,9 +695,8 @@ class TapOracleWMS(Tap):
 
         Args:
             entity_name: Name of the entity that failed metadata retrieval
-
         Raises:
-            ValueError: Always raises with descriptive error message
+            ValueError: Always raises with descriptive error message.
 
         """
         error_msg = (
@@ -751,7 +707,6 @@ class TapOracleWMS(Tap):
 
     def write_catalog(self) -> None:
         """Write the catalog to stdout in Singer format for discovery.
-
         This method creates a complete catalog with proper schemas for the
         configured entities.
 
@@ -760,23 +715,18 @@ class TapOracleWMS(Tap):
 
         """
         self.logger.info("🔍 Creating complete catalog with proper schemas...")
-
         # Get configured entities
         entities = self.config.get("entities")
         if not entities:
             msg = "No entities configured for catalog creation"
             raise ValueError(msg)
-
         catalog: dict[str, Any] = {"version": 1, "streams": []}
-
         streams_list = catalog["streams"]
         if isinstance(streams_list, list):
             for entity_name in entities:
                 self.logger.info("🔍 Creating catalog entry for: %s", entity_name)
-
                 # Create a complete schema for each entity
                 stream_schema = self._create_minimal_schema(entity_name)
-
                 # Determine key properties based on entity
                 key_properties = []
                 if entity_name == "allocation":
@@ -790,7 +740,6 @@ class TapOracleWMS(Tap):
                         "order_nbr",
                         "order_line_nbr",
                     ]
-
                 stream_entry = {
                     "tap_stream_id": entity_name,
                     "stream": entity_name,
@@ -809,9 +758,7 @@ class TapOracleWMS(Tap):
                         },
                     ],
                 }
-
                 streams_list.append(stream_entry)
-
         # Output the catalog
         self.logger.info(
             "✅ Catalog output completed with %d streams",
@@ -824,9 +771,8 @@ class TapOracleWMS(Tap):
 
         Args:
             message: Error message to include
-
         Raises:
-            ValueError: Always raises with the provided message
+            ValueError: Always raises with the provided message.
 
         """
         raise ValueError(message)

@@ -10,11 +10,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-if TYPE_CHECKING:
-    from datetime import datetime
-
 from flext_core.domain.pydantic_base import DomainBaseModel, DomainValueObject
 from pydantic import Field, HttpUrl, field_validator
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 # Simple constants for compatibility

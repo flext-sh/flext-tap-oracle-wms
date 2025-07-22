@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from flext_tap_oracle_wms.cache_manager import CacheManager
+from flext_tap_oracle_wms.infrastructure.cache import CacheManager
 
 
 class TestCacheManagerComprehensive:
@@ -411,7 +411,7 @@ class TestCacheManagerComprehensive:
         result = cache_manager.get_entity("short_ttl")
         assert result is None
 
-    @patch("flext_tap_oracle_wms.cache_manager.logger")
+    @patch("flext_tap_oracle_wms.infrastructure.cache.logger")
     def test_cache_logging(self, mock_logger: MagicMock) -> None:
         """Test cache logging functionality."""
         cache_manager = CacheManager({"cache_ttl_seconds": 3600})

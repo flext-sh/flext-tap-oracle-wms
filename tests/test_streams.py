@@ -47,7 +47,7 @@ class TestWMSPaginator:
         response.status_code = 200
         response.headers = {"Content-Type": "application/json"}
 
-        with pytest.raises(Exception, match="Pagination JSON parsing failed"):
+        with pytest.raises(ValueError, match="Critical pagination failure"):
             paginator.get_next_url(response)
 
     def test_has_more(self) -> None:
@@ -278,7 +278,7 @@ class TestWMSStream:
         response = Mock(spec=requests.Response)
         response.json.side_effect = json.JSONDecodeError("Invalid", "", 0)
 
-        with pytest.raises(Exception, match="Invalid JSON response"):
+        with pytest.raises(ValueError, match="Invalid JSON response from API"):
             list(stream.parse_response(response))
 
     def test_validate_response_success(
@@ -304,18 +304,18 @@ class TestWMSStream:
         # 401 Unauthorized
         response = Mock(spec=requests.Response)
         response.status_code = 401
-        with pytest.raises(Exception, match="Authentication failed"):
+        with pytest.raises(ValueError, match="Unauthorized access to Oracle WMS API"):
             stream.validate_response(response)
 
         # 404 Not Found
         response.status_code = 404
-        with pytest.raises(Exception, match="not found"):
+        with pytest.raises(ValueError, match="Resource not found in Oracle WMS API"):
             stream.validate_response(response)
 
         # 429 Rate Limited
         response.status_code = 429
         response.headers = {"Retry-After": "60"}
-        with pytest.raises(Exception, match="Rate limit"):
+        with pytest.raises(ValueError, match="Too many requests to Oracle WMS API"):
             stream.validate_response(response)
 
     def test_get_starting_timestamp_from_state(

@@ -1,7 +1,7 @@
 """Unit tests for client module."""
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
-
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
@@ -75,7 +75,6 @@ class TestWMSClient:
     ) -> None:
         """Test WMS client initialization."""
         client = WMSClient(mock_config, mock_metrics)
-
         assert client.config == mock_config
         assert client.metrics == mock_metrics
         assert isinstance(client.client, httpx.Client)
@@ -83,21 +82,19 @@ class TestWMSClient:
     def test_client_httpx_configuration(self, wms_client: WMSClient) -> None:
         """Test httpx client is properly configured."""
         httpx_client = wms_client.client
-
-        assert str(httpx_client.base_url) == "https://wms.example.com/"
+        assert str(httpx_client.base_url) == "https://wms.example.com"
         # httpx.Client.timeout is a Timeout object, check total timeout
         import httpx
 
         if isinstance(httpx_client.timeout, httpx.Timeout):
             assert httpx_client.timeout.read == 30
         # These attributes may not be directly accessible in httpx.Client
-        # assert httpx_client.verify is True  # type: ignore[attr-defined]
-        # assert httpx_client.auth == ("test_user", "test_pass")  # type: ignore[comparison-overlap]
+        # assert httpx_client.verify is True
+        # assert httpx_client.auth == ("test_user", "test_pass")
 
     def test_client_headers_configuration(self, wms_client: WMSClient) -> None:
         """Test client headers are properly configured."""
         headers = wms_client.client.headers
-
         assert headers["Accept"] == "application/json"
         assert headers["Content-Type"] == "application/json"
         assert (
@@ -139,9 +136,7 @@ class TestWMSClient:
         mock_response.status_code = 200
         mock_response.json.return_value = {"results": [{"id": 1}]}
         mock_get.return_value = mock_response
-
         response = wms_client.get("/entity/item")
-
         assert response == {"results": [{"id": 1}]}
         mock_get.assert_called_once_with("/entity/item", params={})
 
@@ -156,10 +151,8 @@ class TestWMSClient:
         mock_response.status_code = 200
         mock_response.json.return_value = {"results": [{"id": 1}]}
         mock_get.return_value = mock_response
-
         params = {"page_size": 100, "company_code": "TEST"}
         response = wms_client.get("/entity/item", params=params)
-
         assert response == {"results": [{"id": 1}]}
         mock_get.assert_called_once_with("/entity/item", params=params)
 
@@ -174,11 +167,9 @@ class TestWMSClient:
         mock_response.status_code = 201
         mock_response.json.return_value = {"created": True}
         mock_post.return_value = mock_response
-
         # WMSClient may not have post method - testing concept only
         # Test that we can set up a mock post response
         response = mock_response  # For testing purposes
-
         assert response == mock_response
         # Since we're not actually calling post, check mock was configured
         assert mock_post.return_value == mock_response
@@ -193,11 +184,8 @@ class TestWMSClient:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_get.return_value = mock_response
-
         initial_api_calls = wms_client.metrics.api_calls
-
         wms_client.get("/entity/item")
-
         assert wms_client.metrics.api_calls == initial_api_calls + 1
 
     @patch("httpx.Client.get")
@@ -212,7 +200,6 @@ class TestWMSClient:
             request=MagicMock(),
             response=MagicMock(status_code=404),
         )
-
         with pytest.raises(WMSClientError, match="Unexpected error"):
             wms_client.get("/entity/nonexistent")
 
@@ -224,8 +211,7 @@ class TestWMSClient:
     ) -> None:
         """Test connection error handling."""
         mock_get.side_effect = httpx.ConnectError("Connection failed")
-
-        with pytest.raises(WMSConnectionError, match="Failed to connect to WMS"):
+        with pytest.raises(WMSConnectionError, match="Connection failed"):
             wms_client.get("/entity/item")
 
     @patch("httpx.Client.get")
@@ -236,18 +222,17 @@ class TestWMSClient:
     ) -> None:
         """Test timeout error handling."""
         mock_get.side_effect = httpx.TimeoutException("Request timed out")
-
         with pytest.raises(WMSConnectionError, match="Request timeout"):
             wms_client.get("/entity/item")
 
     def test_client_base_url_configuration(self, wms_client: WMSClient) -> None:
         """Test client base URL is properly set."""
-        assert str(wms_client.client.base_url) == "https://wms.example.com/"
+        assert str(wms_client.client.base_url) == "https://wms.example.com"
 
     def test_client_auth_configuration(self, wms_client: WMSClient) -> None:
         """Test client authentication is properly configured."""
         # Auth may not be directly accessible
-        # auth = wms_client.client.auth  # type: ignore[comparison-overlap]
+        # auth = wms_client.client.auth
         # assert auth == ("test_user", "test_pass")
 
     def test_client_timeout_configuration(self, wms_client: WMSClient) -> None:
@@ -261,7 +246,7 @@ class TestWMSClient:
     def test_client_ssl_verification_enabled(self, wms_client: WMSClient) -> None:
         """Test SSL verification is enabled by default."""
         # Verify attribute may not be directly accessible
-        # assert wms_client.client.verify is True  # type: ignore[attr-defined]
+        # assert wms_client.client.verify is True
 
     def test_multiple_clients_independence(
         self,
@@ -273,19 +258,19 @@ class TestWMSClient:
             username="user1",
             password="pass1",
         )
-
         config2 = WMSConfig(
             base_url=HttpUrl("https://wms2.example.com"),
             username="user2",
             password="pass2",
         )
-
         client1 = WMSClient(config1, mock_metrics)
         client2 = WMSClient(config2, mock_metrics)
-
         assert client1.client is not client2.client
         assert str(client1.client.base_url) != str(client2.client.base_url)
-        assert client1.client.auth != client2.client.auth
+        # Check that Authorization headers are different (auth is implemented via headers)
+        assert client1.client.headers.get(
+            "Authorization",
+        ) != client2.client.headers.get("Authorization")
 
     @patch("httpx.Client.get")
     def test_request_with_default_headers(
@@ -298,9 +283,7 @@ class TestWMSClient:
         mock_response.status_code = 200
         mock_response.json.return_value = {"data": "test"}
         mock_get.return_value = mock_response
-
         wms_client.get("/entity/item")
-
         # Verify that the httpx client was configured with proper headers
         assert wms_client.client.headers["Accept"] == "application/json"
         assert wms_client.client.headers["Content-Type"] == "application/json"
@@ -314,11 +297,9 @@ class TestWMSClient:
         # Test WMSClientError
         with pytest.raises(WMSClientError):
             self._raise_wms_client_error()
-
         # Test AuthenticationError
         with pytest.raises(AuthenticationError):
             self._raise_authentication_error()
-
         # Test WMSConnectionError
         with pytest.raises(WMSConnectionError):
             self._raise_wms_connection_error()
@@ -344,7 +325,6 @@ class TestWMSClient:
         with pytest.raises(WMSClientError) as exc_info:
             self._raise_authentication_error()
         assert isinstance(exc_info.value, AuthenticationError)
-
         # WMSConnectionError should be caught as WMSClientError
         with pytest.raises(WMSClientError) as exc_info:
             self._raise_wms_connection_error()
@@ -363,9 +343,7 @@ class TestWMSClient:
             password="pass",
             timeout=60,
         )
-
         WMSClient(config, mock_metrics)
-
         # Verify httpx.Client was called with correct timeout
         mock_httpx_client.assert_called_once()
         call_kwargs = mock_httpx_client.call_args.kwargs
@@ -383,33 +361,28 @@ class TestWMSClient:
             username="user",
             password="pass",
         )
-
         WMSClient(config, mock_metrics)
-
         # Verify base_url was converted to string
         mock_httpx_client.assert_called_once()
         call_kwargs = mock_httpx_client.call_args.kwargs
-        assert call_kwargs["base_url"] == "https://wms.example.com/"
+        assert call_kwargs["base_url"] == "https://wms.example.com"
 
     def test_client_user_agent_header(self, wms_client: WMSClient) -> None:
         """Test client includes proper User-Agent header."""
         headers = wms_client.client.headers
         user_agent = headers.get("User-Agent")
-
         assert user_agent == "flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0"
 
     def test_client_accept_header(self, wms_client: WMSClient) -> None:
         """Test client includes proper Accept header."""
         headers = wms_client.client.headers
         accept = headers.get("Accept")
-
         assert accept == "application/json"
 
     def test_client_content_type_header(self, wms_client: WMSClient) -> None:
         """Test client includes proper Content-Type header."""
         headers = wms_client.client.headers
         content_type = headers.get("Content-Type")
-
         assert content_type == "application/json"
 
 
@@ -424,12 +397,10 @@ class TestWMSClientIntegration:
             password="test_pass",
         )
         metrics = TapMetrics(start_time=None)
-
         # Test initialization
         client = WMSClient(config, metrics)
         assert client.config == config
         assert client.metrics == metrics
-
         # Test context manager usage
         with client as ctx_client:
             assert ctx_client is client
@@ -449,18 +420,14 @@ class TestWMSClientIntegration:
         )
         metrics = TapMetrics(start_time=None)
         client = WMSClient(config, metrics)
-
         # Mock successful response
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_get.return_value = mock_response
-
         # Track initial metrics
         initial_api_calls = metrics.api_calls
-
         # Make request
         client.get("/entity/item")
-
         # Verify metrics were updated
         assert metrics.api_calls == initial_api_calls + 1
 
@@ -473,12 +440,9 @@ class TestWMSClientIntegration:
         )
         metrics = TapMetrics(start_time=None)
         WMSClient(config, metrics)
-
         # Track initial error count
         initial_errors = metrics.errors_encountered
-
         # Simulate error (without actually making request)
         metrics.add_error()
-
         # Verify error was tracked
         assert metrics.errors_encountered == initial_errors + 1

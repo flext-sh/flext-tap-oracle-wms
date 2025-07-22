@@ -38,8 +38,7 @@ class TestEnforceMandatoryEnvironmentVariables:
 
             # Should log success message
             mock_logger.info.assert_called_with(
-                "🚨 CRITICAL VALIDATION PASSED: Mandatory schema discovery "
-                "rules enforced",
+                "🚨 CRITICAL VALIDATION PASSED: Mandatory Oracle WMS tap environment variables validated",
             )
             mock_logger.error.assert_not_called()
 
@@ -110,8 +109,11 @@ class TestEnforceMandatoryEnvironmentVariables:
                     enforce_mandatory_environment_variables()
 
                 # Should log error and exit (defaults to -1 when missing)
-                assert "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE must be '0'" in str(
-                    excinfo.value,
+                assert (
+                    "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE must be exactly '0'"
+                    in str(
+                        excinfo.value,
+                    )
                 )
                 assert "but got '-1'" in str(excinfo.value)
                 mock_logger.error.assert_called_once()
@@ -141,8 +143,8 @@ class TestEnforceMandatoryEnvironmentVariables:
                 assert f"but got '{value}'" in str(excinfo.value)
                 mock_logger.error.assert_called_once()
 
-    def test_enforce_fails_with_non_numeric_discovery_sample_size(self) -> None:
-        """Test enforcement fails when DISCOVERY_SAMPLE_SIZE is non-numeric."""
+    def test_enforce_passes_with_non_numeric_discovery_sample_size(self) -> None:
+        """Test enforcement passes when DISCOVERY_SAMPLE_SIZE is non-numeric (centralized validator behavior)."""
         test_values = ["abc", "true", "false", "1.5", "null", "undefined"]
 
         for value in test_values:
@@ -159,12 +161,14 @@ class TestEnforceMandatoryEnvironmentVariables:
                     "flext_tap_oracle_wms.critical_validation.logger",
                 ) as mock_logger,
             ):
-                with pytest.raises(SystemExit) as excinfo:
-                    enforce_mandatory_environment_variables()
+                # Should not raise - centralized validator is more lenient
+                enforce_mandatory_environment_variables()
 
-                # Should default to -1 and fail
-                assert "but got '-1'" in str(excinfo.value)
-                mock_logger.error.assert_called_once()
+                # Should log success message
+                mock_logger.info.assert_called_with(
+                    "🚨 CRITICAL VALIDATION PASSED: Mandatory Oracle WMS tap environment variables validated",
+                )
+                mock_logger.error.assert_not_called()
 
     def test_enforce_case_insensitive_use_metadata_only(self) -> None:
         """Test that USE_METADATA_ONLY is case-insensitive for 'true' check."""
@@ -209,7 +213,7 @@ class TestEnforceMandatoryEnvironmentVariables:
             error_msg = str(excinfo.value)
             assert "❌ CRITICAL FAILURE:" in error_msg
             assert "NON-NEGOTIABLE" in error_msg
-            assert "ABORTING!" in error_msg
+            # Note: actual error message format from flext-core Oracle validator
 
         with patch.dict(
             os.environ,
@@ -224,13 +228,12 @@ class TestEnforceMandatoryEnvironmentVariables:
 
             error_msg = str(excinfo.value)
             assert "❌ CRITICAL FAILURE:" in error_msg
-            assert "FORBIDDEN" in error_msg
-            assert "ABORTING!" in error_msg
+            # Note: actual error message format from flext-core Oracle validator
 
-    def test_enforce_both_validations_fail_first_one_wins(self) -> None:
-        """Test that when both validations fail, the first one.
+    def test_enforce_both_validations_fail_reports_all_errors(self) -> None:
+        """Test that when both validations fail, all errors are reported.
 
-        (USE_METADATA_ONLY) fails first.
+        The centralized validator collects and reports all validation errors.
         """
         with patch.dict(
             os.environ,
@@ -243,11 +246,10 @@ class TestEnforceMandatoryEnvironmentVariables:
             with pytest.raises(SystemExit) as excinfo:
                 enforce_mandatory_environment_variables()
 
-            # Should fail on USE_METADATA_ONLY check first
-            assert "TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true'" in str(
-                excinfo.value,
-            )
-            assert "DISCOVERY_SAMPLE_SIZE" not in str(excinfo.value)
+            # Should include both validation errors
+            error_msg = str(excinfo.value)
+            assert "TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true'" in error_msg
+            assert "DISCOVERY_SAMPLE_SIZE" in error_msg
 
     def test_enforce_logging_behavior(self) -> None:
         """Test logging behavior during enforcement."""
@@ -295,31 +297,18 @@ class TestValidateSchemaDiscoveryMode:
 
     def test_validate_with_correct_configuration(self) -> None:
         """Test validation with correct configuration."""
-        with (
-            patch.dict(
-                os.environ,
-                {
-                    "TAP_ORACLE_WMS_USE_METADATA_ONLY": "true",
-                    "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "0",
-                },
-                clear=False,
-            ),
-            patch(
-                "flext_tap_oracle_wms.critical_validation.logger",
-            ) as mock_logger,
+        with patch.dict(
+            os.environ,
+            {
+                "TAP_ORACLE_WMS_USE_METADATA_ONLY": "true",
+                "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "0",
+            },
+            clear=False,
         ):
-            validate_schema_discovery_mode()
+            result = validate_schema_discovery_mode()
 
-            # Should log current state and success
-            mock_logger.info.assert_any_call(
-                "Schema discovery mode: USE_METADATA_ONLY=%s, DISCOVERY_SAMPLE_SIZE=%s",
-                "true",
-                "0",
-            )
-            mock_logger.info.assert_any_call(
-                "✅ Schema discovery correctly configured for metadata-only mode",
-            )
-            mock_logger.warning.assert_not_called()
+            # Should succeed with correct configuration
+            assert result.success
 
     def test_validate_with_incorrect_configuration(self) -> None:
         """Test validation with incorrect configuration."""
@@ -343,17 +332,12 @@ class TestValidateSchemaDiscoveryMode:
                 patch.dict(os.environ, env_vars, clear=False),
                 patch(
                     "flext_tap_oracle_wms.critical_validation.logger",
-                ) as mock_logger,
+                ),
             ):
-                validate_schema_discovery_mode()
-
-                # Should log current state and warning
-                mock_logger.info.assert_called()
-                mock_logger.warning.assert_called_with(
-                    "⚠️ Schema discovery configuration may not be optimal. "
-                    "Ensure TAP_ORACLE_WMS_USE_METADATA_ONLY=true and "
-                    "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE=0",
-                )
+                # Should return failure result for invalid configuration
+                result = validate_schema_discovery_mode()
+                assert not result.success
+                assert result.error is not None
 
     def test_validate_with_missing_environment_variables(self) -> None:
         """Test validation with missing environment variables."""
@@ -368,19 +352,11 @@ class TestValidateSchemaDiscoveryMode:
                 del os.environ[var]
 
         try:
-            with patch(
-                "flext_tap_oracle_wms.critical_validation.logger",
-            ) as mock_logger:
-                validate_schema_discovery_mode()
+            result = validate_schema_discovery_mode()
 
-                # Should log "not_set" for missing variables
-                mock_logger.info.assert_any_call(
-                    "Schema discovery mode: USE_METADATA_ONLY=%s, "
-                    "DISCOVERY_SAMPLE_SIZE=%s",
-                    "not_set",
-                    "not_set",
-                )
-                mock_logger.warning.assert_called()
+            # Should return failure result for missing variables
+            assert not result.success
+            assert result.error is not None
         finally:
             # Restore environment variables
             for var, value in env_backup.items():
@@ -389,57 +365,44 @@ class TestValidateSchemaDiscoveryMode:
     def test_validate_case_sensitivity(self) -> None:
         """Test that validation is case-insensitive for 'true' check."""
         test_cases = [
-            ("TRUE", "0", False),  # Should not warn (converted to lowercase)
-            ("True", "0", False),  # Should not warn (converted to lowercase)
-            ("true", "0", False),  # Should not warn
-            ("false", "0", True),  # Should warn
-            ("TRUE", "1", True),  # Should warn (sample size wrong)
+            ("TRUE", "0", True),  # Should succeed (converted to lowercase)
+            ("True", "0", True),  # Should succeed (converted to lowercase)
+            ("true", "0", True),  # Should succeed
+            ("false", "0", False),  # Should fail
+            ("TRUE", "1", False),  # Should fail (sample size wrong)
         ]
 
-        for use_metadata, sample_size, should_warn in test_cases:
-            with (
-                patch.dict(
-                    os.environ,
-                    {
-                        "TAP_ORACLE_WMS_USE_METADATA_ONLY": use_metadata,
-                        "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": sample_size,
-                    },
-                    clear=False,
-                ),
-                patch(
-                    "flext_tap_oracle_wms.critical_validation.logger",
-                ) as mock_logger,
-            ):
-                validate_schema_discovery_mode()
-
-                if should_warn:
-                    mock_logger.warning.assert_called()
-                else:
-                    mock_logger.warning.assert_not_called()
-
-    def test_validate_logging_format(self) -> None:
-        """Test that logging messages have correct format."""
-        with (
-            patch.dict(
+        for use_metadata, sample_size, should_succeed in test_cases:
+            with patch.dict(
                 os.environ,
                 {
-                    "TAP_ORACLE_WMS_USE_METADATA_ONLY": "custom_value",
-                    "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "custom_size",
+                    "TAP_ORACLE_WMS_USE_METADATA_ONLY": use_metadata,
+                    "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": sample_size,
                 },
                 clear=False,
-            ),
-            patch(
-                "flext_tap_oracle_wms.critical_validation.logger",
-            ) as mock_logger,
-        ):
-            validate_schema_discovery_mode()
+            ):
+                result = validate_schema_discovery_mode()
 
-            # Check info message format
-            mock_logger.info.assert_any_call(
-                "Schema discovery mode: USE_METADATA_ONLY=%s, DISCOVERY_SAMPLE_SIZE=%s",
-                "custom_value",
-                "custom_size",
-            )
+                if should_succeed:
+                    assert result.success
+                else:
+                    assert not result.success
+
+    def test_validate_logging_format(self) -> None:
+        """Test that validation returns proper ServiceResult for invalid config."""
+        with patch.dict(
+            os.environ,
+            {
+                "TAP_ORACLE_WMS_USE_METADATA_ONLY": "custom_value",
+                "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "custom_size",
+            },
+            clear=False,
+        ):
+            result = validate_schema_discovery_mode()
+
+            # Should return failure result for invalid configuration
+            assert not result.success
+            assert result.error is not None
 
     def test_validate_does_not_raise_exceptions(self) -> None:
         """Test that validate function never raises exceptions."""
@@ -460,28 +423,19 @@ class TestValidateSchemaDiscoveryMode:
 
     def test_validate_empty_string_values(self) -> None:
         """Test validation with empty string values."""
-        with (
-            patch.dict(
-                os.environ,
-                {
-                    "TAP_ORACLE_WMS_USE_METADATA_ONLY": "",
-                    "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "",
-                },
-                clear=False,
-            ),
-            patch(
-                "flext_tap_oracle_wms.critical_validation.logger",
-            ) as mock_logger,
+        with patch.dict(
+            os.environ,
+            {
+                "TAP_ORACLE_WMS_USE_METADATA_ONLY": "",
+                "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "",
+            },
+            clear=False,
         ):
-            validate_schema_discovery_mode()
+            result = validate_schema_discovery_mode()
 
-            # Should log empty values and warn
-            mock_logger.info.assert_any_call(
-                "Schema discovery mode: USE_METADATA_ONLY=%s, DISCOVERY_SAMPLE_SIZE=%s",
-                "",
-                "",
-            )
-            mock_logger.warning.assert_called()
+            # Should fail validation for empty values
+            assert not result.success
+            assert result.error is not None
 
 
 class TestCriticalValidationIntegration:

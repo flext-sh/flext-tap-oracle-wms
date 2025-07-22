@@ -16,7 +16,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from flext_tap_oracle_wms.discovery import EntityDiscovery, SchemaGenerator
+from flext_tap_oracle_wms.infrastructure.entity_discovery import EntityDiscovery
+from flext_tap_oracle_wms.infrastructure.schema_generator import SchemaGenerator
 from flext_tap_oracle_wms.streams import WMSStream
 from flext_tap_oracle_wms.tap import TapOracleWMS
 
@@ -72,13 +73,16 @@ class TestGenericImplementation:
         assert properties["page_mode"]["default"] == "sequenced"
 
     def test_entity_discovery_is_generic(self) -> None:
+        from flext_tap_oracle_wms.infrastructure.cache import CacheManager
+
         config = {
             "base_url": "https://wms.example.com",
             "username": "test",
             "password": "test",
         }
+        cache_manager = CacheManager({})
 
-        discovery = EntityDiscovery(config)
+        discovery = EntityDiscovery(config, cache_manager)
 
         # Check base configuration
         assert discovery.base_url == "https://wms.example.com"

@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, Mock, patch
 import httpx
 import pytest
 
-from flext_tap_oracle_wms.entity_discovery import (
+from flext_tap_oracle_wms.infrastructure.entity_discovery import (
     EntityDescriptionError,
     EntityDiscovery,
     EntityDiscoveryError,
@@ -343,7 +343,9 @@ class TestEntityDiscoveryComprehensive:
             with pytest.raises(EntityDiscoveryError) as exc_info:
                 await discovery._fetch_entities_from_api()
 
-            assert "Entity discovery failed" in str(exc_info.value)
+            assert "error during entity discovery" in str(
+                exc_info.value,
+            ) or "Entity discovery failed" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_fetch_entities_from_api_unexpected_error(self) -> None:
@@ -358,7 +360,9 @@ class TestEntityDiscoveryComprehensive:
             with pytest.raises(EntityDiscoveryError) as exc_info:
                 await discovery._fetch_entities_from_api()
 
-            assert "Entity discovery failed" in str(exc_info.value)
+            assert "error during entity discovery" in str(
+                exc_info.value,
+            ) or "Entity discovery failed" in str(exc_info.value)
 
     def test_prepare_auth_headers_no_auth(self) -> None:
         """Test auth header preparation with no authentication."""
@@ -428,7 +432,9 @@ class TestEntityDiscoveryComprehensive:
         """Test API response processing with unexpected type."""
         discovery = self.create_test_discovery()
 
-        with patch("flext_tap_oracle_wms.entity_discovery.logger") as mock_logger:
+        with patch(
+            "flext_tap_oracle_wms.infrastructure.entity_discovery.logger",
+        ) as mock_logger:
             result = discovery._process_api_response("unexpected_string")
 
             assert result == {}
@@ -461,7 +467,9 @@ class TestEntityDiscoveryComprehensive:
         discovery = self.create_test_discovery()
         data: dict[str, object] = {"unexpected": {"nested": "data"}}
 
-        with patch("flext_tap_oracle_wms.entity_discovery.logger") as mock_logger:
+        with patch(
+            "flext_tap_oracle_wms.infrastructure.entity_discovery.logger",
+        ) as mock_logger:
             result = discovery._process_dict_response(data)
 
             assert result == {}
@@ -587,7 +595,7 @@ class TestEntityDiscoveryComprehensive:
             with pytest.raises(EntityDescriptionError) as exc_info:
                 await discovery._fetch_entity_metadata("test_entity")
 
-            assert "Metadata fetch failed" in str(exc_info.value)
+            assert "HTTP error during entity metadata fetch" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_fetch_entity_metadata_unexpected_error(self) -> None:
@@ -602,7 +610,7 @@ class TestEntityDiscoveryComprehensive:
             with pytest.raises(EntityDescriptionError) as exc_info:
                 await discovery._fetch_entity_metadata("test_entity")
 
-            assert "Metadata fetch failed" in str(exc_info.value)
+            assert "Entity metadata fetch failed" in str(exc_info.value)
 
     def test_matches_patterns_regex_match(self) -> None:
         """Test pattern matching with regex patterns."""

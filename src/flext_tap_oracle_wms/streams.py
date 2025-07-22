@@ -1,7 +1,7 @@
 """Oracle WMS Stream - Enterprise implementation using Singer SDK REST capabilities."""
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
-
 from __future__ import annotations
 
 import json
@@ -20,10 +20,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
     import requests
-
 # Type alias for value parameters that can accept various types
 ValueType = object | str | int | float | bool | dict[str, object] | list[object] | None
-
 # HTTP status code constants
 STATUS_OK = 200
 STATUS_UNAUTHORIZED = 401
@@ -33,7 +31,6 @@ STATUS_TOO_MANY_REQUESTS = 429
 STATUS_SERVER_ERROR_START = 500
 STATUS_SERVER_ERROR_END = 600
 DEFAULT_RETRY_AFTER = 60
-
 # Logging constants
 MAX_LOG_DATA_LENGTH = 200
 
@@ -88,7 +85,6 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     # Use HATEOAS paginator
     pagination_class = WMSPaginator
-
     # Default replication settings (will be overridden in __init__)
     replication_method = "INCREMENTAL"
     replication_key = None
@@ -108,17 +104,14 @@ class WMSStream(RESTStream[dict[str, Any]]):
         # Store entity-specific information
         self._entity_name = name
         self._schema = schema
-
         # Call parent with correct Singer SDK types
         super().__init__(
             tap=tap,
             name=name,
             schema=schema,
         )
-
         # Initialize configuration mapper for flexible configuration
         self.config_mapper = ConfigMapper(dict(self.config))
-
         # Set primary keys using configurable logic
         entity_primary_keys = self.config_mapper.get_entity_primary_keys(
             self._entity_name,
@@ -127,17 +120,13 @@ class WMSStream(RESTStream[dict[str, Any]]):
             self.primary_keys = entity_primary_keys
         elif "id" in self._schema.get("properties", {}):
             self.primary_keys = ["id"]
-
         # Determine replication method
         schema_props = self._schema.get("properties", {})
-
         # Get configured replication key from mapper
         configured_rep_key = self.config_mapper.get_replication_key()
-
         # Check for forced full sync in config
         force_full_table = self.config.get("force_full_table", False)
         enable_incremental = self.config.get("enable_incremental", True)
-
         if force_full_table or not enable_incremental:
             # Forced full sync via config - no state management
             self.replication_method = "FULL_TABLE"
@@ -165,13 +154,12 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return str(self.config["base_url"]).rstrip("/")
 
     @property
-    def path(self) -> str:  # type: ignore[override]
+    def path(self) -> str:
         """Generate entity-specific path."""
         # Build path from configuration using ConfigMapper
         pattern = self.config_mapper.get_entity_endpoint_pattern()
         prefix = self.config_mapper.get_endpoint_prefix()
         version = self.config_mapper.get_api_version()
-
         # Replace placeholders in pattern
         return pattern.format(
             prefix=prefix,
@@ -188,11 +176,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         """
         headers = super().http_headers
-
         # Get headers from configuration mapper (no longer hardcoded)
         configured_headers = self.config_mapper.get_custom_headers()
         headers.update(configured_headers)
-
         return headers
 
     @property
@@ -205,12 +191,10 @@ class WMSStream(RESTStream[dict[str, Any]]):
         """
         if not self.replication_key:
             return False
-
         # Check if this is a known timestamp field
         timestamp_fields = {"mod_ts", "created_at", "updated_at", "last_modified"}
         if self.replication_key in timestamp_fields:
             return True
-
         # Check schema for timestamp types
         schema_props = self._schema.get("properties", {})
         if self.replication_key in schema_props:
@@ -228,7 +212,6 @@ class WMSStream(RESTStream[dict[str, Any]]):
                             return True
                 elif field_type in {"timestamp", "datetime"}:
                     return True
-
         return False
 
     def get_url_params(
@@ -249,13 +232,11 @@ class WMSStream(RESTStream[dict[str, Any]]):
         # Handle pagination first
         if next_page_token:
             return self._get_pagination_params(next_page_token)
-
         # Build initial request parameters
         params = self._get_base_params()
         self._add_replication_filters(params, context)
         self._add_ordering_params(params)
         self._add_entity_filters(params)
-
         return params
 
     @staticmethod
@@ -313,17 +294,14 @@ class WMSStream(RESTStream[dict[str, Any]]):
         context: Mapping[str, Any] | None,
     ) -> None:
         start_date = self.get_starting_timestamp(context)
-
         # Se não há estado inicial, usar hora_atual - 5m
         if not start_date:
             overlap_minutes = self.config_mapper.get_lookback_minutes()
             now = datetime.now(UTC)
             start_date = now - timedelta(minutes=overlap_minutes)
-
         # Validate timestamp has timezone information
         if start_date.tzinfo is None:
             start_date = start_date.replace(tzinfo=UTC)
-
         # Validate overlap configuration para estado existente
         if self.get_starting_timestamp(context):
             # Só se tem estado
@@ -334,7 +312,6 @@ class WMSStream(RESTStream[dict[str, Any]]):
         else:
             # Para estado inicial, já calculamos acima
             adjusted_date = start_date
-
         params[f"{self.replication_key}__gte"] = adjusted_date.isoformat()
 
     def _add_full_table_filter(
@@ -348,14 +325,11 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 bookmark_id = int(bookmark)
             else:
                 return  # No bookmark to use
-
             # Validate bookmark is reasonable
             if bookmark_id < 0:
                 return  # No filter = start from beginning
-
             # Use id__lt (less than) to get records with ID lower than bookmark
             params["id__lt"] = str(bookmark_id)
-
         except (ValueError, TypeError):
             # Don't add filter = start from highest ID
             pass
@@ -391,17 +365,14 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         Args:
             response: HTTP response from WMS API
-
         Yields:
             Dictionary records from the response data
-
         Raises:
-            RetriableAPIError: If response parsing fails
+            RetriableAPIError: If response parsing fails.
 
         """
         try:
             data = response.json()
-
             # Extract records from results array
             if isinstance(data, dict) and "results" in data:
                 yield from self._yield_results_array(data)
@@ -413,7 +384,6 @@ class WMSStream(RESTStream[dict[str, Any]]):
                 return
             else:
                 self._log_unexpected_format(data)
-
         except json.JSONDecodeError as e:
             msg = f"Invalid JSON response from API for entity {self._entity_name}: {e}"
             raise ValueError(msg) from e
@@ -456,7 +426,6 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
         """
         status = response.status_code
-
         if status == STATUS_UNAUTHORIZED:
             msg = "Unauthorized access to Oracle WMS API"
             raise ValueError(msg)
@@ -539,14 +508,12 @@ class WMSStream(RESTStream[dict[str, Any]]):
             except (ValueError, TypeError) as e:
                 msg = "Failed to parse starting timestamp from state"
                 raise ValueError(msg) from e
-
         # Fall back to config start_date
         if self.config.get("start_date"):
-                start_date_value = self.config["start_date"]
-                if isinstance(start_date_value, str):
-                    return datetime.fromisoformat(start_date_value)
-                if isinstance(start_date_value, datetime):
-                    return start_date_value
-                return datetime.fromisoformat(str(start_date_value))
-
+            start_date_value = self.config["start_date"]
+            if isinstance(start_date_value, str):
+                return datetime.fromisoformat(start_date_value)
+            if isinstance(start_date_value, datetime):
+                return start_date_value
+            return datetime.fromisoformat(str(start_date_value))
         return None

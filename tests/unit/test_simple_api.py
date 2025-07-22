@@ -1,11 +1,11 @@
 """Test simple API functionality."""
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
-
 from __future__ import annotations
 
 import pytest
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_tap_oracle_wms.config import TapOracleWMSConfig
 from flext_tap_oracle_wms.simple_api import (
@@ -22,9 +22,8 @@ class TestSimpleAPI:
     def test_setup_wms_tap_without_config(self) -> None:
         """Test setup WMS tap without providing config."""
         result = setup_wms_tap()
-
         assert isinstance(result, ServiceResult)
-        assert result.is_success
+        assert result.success
         assert isinstance(result.data, TapOracleWMSConfig)
 
     def test_setup_wms_tap_with_config(self) -> None:
@@ -33,10 +32,8 @@ class TestSimpleAPI:
             username="test_user",
             password="test_pass",
         )
-
         result = setup_wms_tap(config)
-
-        assert result.is_success
+        assert result.success
         assert result.data == config
 
     def test_setup_wms_tap_missing_username(self) -> None:
@@ -52,10 +49,8 @@ class TestSimpleAPI:
                 "verify_ssl": False,
             },
         )
-
         result = setup_wms_tap(config)
-
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Username is required" in result.error
 
@@ -63,17 +58,14 @@ class TestSimpleAPI:
         """Test setup WMS tap handles exceptions."""
         # Create an invalid config that will cause an exception
         invalid_config = object()  # Not a TapOracleWMSConfig
-
-        result = setup_wms_tap(invalid_config)  # type: ignore[arg-type]
-
-        assert not result.is_success
+        result = setup_wms_tap(invalid_config)
+        assert not result.success
         assert result.error is not None
         assert "Failed to setup WMS tap" in result.error
 
     def test_create_development_wms_config_defaults(self) -> None:
         """Test creating development config with defaults."""
         config = create_development_wms_config()
-
         assert config.auth.username == "test_user"
         assert config.auth.password == "test_password"
         assert config.auth.auth_method == "basic"
@@ -93,7 +85,6 @@ class TestSimpleAPI:
             debug=False,
             log_level="INFO",
         )
-
         assert config.auth.username == "custom_user"
         assert config.auth.password == "custom_pass"
         assert config.connection.base_url == "https://custom.com"
@@ -106,7 +97,6 @@ class TestSimpleAPI:
             username="partial_user",
             custom_field="custom_value",
         )
-
         assert config.auth.username == "partial_user"
         assert config.auth.password == "test_password"  # Default preserved
         # Custom fields are not preserved in config structure
@@ -128,7 +118,6 @@ class TestSimpleAPI:
             debug=True,
             log_level="DEBUG",
         )
-
         assert config.auth.username == "prod_user"
         assert config.auth.password == "prod_pass"
         assert config.connection.base_url == "https://prod.oracle.com"
@@ -142,7 +131,6 @@ class TestSimpleAPI:
             password="prod_pass",
             base_url="https://prod.oracle.com",
         )
-
         # Production should have secure defaults
         assert config.connection.verify_ssl is True
         assert config.debug is False
@@ -156,10 +144,8 @@ class TestSimpleAPI:
             password="valid_pass",
             base_url="https://valid.com",
         )
-
         result = validate_wms_config(config)
-
-        assert result.is_success
+        assert result.success
         assert result.data is True
 
     def test_validate_wms_config_missing_username(self) -> None:
@@ -175,10 +161,8 @@ class TestSimpleAPI:
                 "verify_ssl": False,
             },
         )
-
         result = validate_wms_config(config)
-
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Username is required" in result.error
 
@@ -195,10 +179,8 @@ class TestSimpleAPI:
                 "verify_ssl": False,
             },
         )
-
         result = validate_wms_config(config)
-
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Password is required" in result.error
 
@@ -216,7 +198,6 @@ class TestSimpleAPI:
                 "verify_ssl": False,
             },
         )
-
         # Now test that validation catches empty base_url by modifying the config
         # Test validation logic with mock config since model is frozen
         from unittest.mock import Mock
@@ -227,8 +208,7 @@ class TestSimpleAPI:
         mock_config.connection.base_url = ""
         config = mock_config
         result = validate_wms_config(config)
-
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Base URL is required" in result.error
 
@@ -236,10 +216,8 @@ class TestSimpleAPI:
         """Test validation handles exceptions."""
         # Create a mock config that will cause validation to fail
         invalid_config = object()  # Not a TapOracleWMSConfig
-
-        result = validate_wms_config(invalid_config)  # type: ignore[arg-type]
-
-        assert not result.is_success
+        result = validate_wms_config(invalid_config)
+        assert not result.success
         assert result.error is not None
         assert "Configuration validation failed" in result.error
 
@@ -253,7 +231,6 @@ class TestSimpleAPI:
         assert hasattr(simple_api, "create_production_wms_config")
         assert hasattr(simple_api, "validate_wms_config")
         assert hasattr(simple_api, "ServiceResult")
-
         # Check __all__ list
         expected_exports = [
             "ServiceResult",
@@ -262,7 +239,6 @@ class TestSimpleAPI:
             "setup_wms_tap",
             "validate_wms_config",
         ]
-
         for export in expected_exports:
             assert export in simple_api.__all__
 
@@ -270,12 +246,12 @@ class TestSimpleAPI:
         """Test integration with ServiceResult from flext-core."""
         # Test success case
         success_result = ServiceResult.ok("test_data")
-        assert success_result.is_success
+        assert success_result.success
         assert success_result.data == "test_data"
-
         # Test failure case
-        fail_result: ServiceResult[None] = ServiceResult.fail("test_error")
-        assert not fail_result.is_success
+        fail_result: ServiceResult[None] = ServiceResult.fail("test_error",
+        )
+        assert not fail_result.success
         assert fail_result.error == "test_error"
 
     def test_config_from_singer_integration(self) -> None:
@@ -291,9 +267,7 @@ class TestSimpleAPI:
             "debug": True,
             "log_level": "INFO",
         }
-
         config = TapOracleWMSConfig.from_singer_config(singer_config)
-
         assert config.auth.username == "singer_user"
         assert config.auth.password == "singer_pass"
         assert config.connection.base_url == "https://singer.oracle.com"
