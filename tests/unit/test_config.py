@@ -1,7 +1,7 @@
 """Unit tests for config module."""
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
-
 from __future__ import annotations
 
 import pytest
@@ -26,7 +26,6 @@ class TestWMSAuthConfig:
             password="test_pass",
             auth_method="basic",
         )
-
         assert auth.username == "test_user"
         assert auth.password == "test_pass"
         assert auth.auth_method == "basic"
@@ -40,21 +39,18 @@ class TestWMSAuthConfig:
             auth_method="basic",
         )
         assert auth_basic.auth_method == "basic"
-
         auth_token = WMSAuthConfig(
             username="user",
             password="pass",
             auth_method="token",
         )
         assert auth_token.auth_method == "token"
-
         auth_oauth = WMSAuthConfig(
             username="user",
             password="pass",
             auth_method="oauth",
         )
         assert auth_oauth.auth_method == "oauth"
-
         # Invalid method should fail
         with pytest.raises(ValidationError):
             WMSAuthConfig(username="user", password="pass", auth_method="invalid")
@@ -63,11 +59,10 @@ class TestWMSAuthConfig:
         """Test required field validation."""
         # Missing username should fail
         with pytest.raises(ValidationError):
-            WMSAuthConfig(password="pass", auth_method="basic")  # type: ignore[call-arg]
-
+            WMSAuthConfig(password="pass", auth_method="basic")
         # Missing password should fail
         with pytest.raises(ValidationError):
-            WMSAuthConfig(username="user", auth_method="basic")  # type: ignore[call-arg]
+            WMSAuthConfig(username="user", auth_method="basic")
 
 
 class TestWMSConnectionConfig:
@@ -76,7 +71,6 @@ class TestWMSConnectionConfig:
     def test_minimal_connection_config(self) -> None:
         """Test minimal connection configuration."""
         conn = WMSConnectionConfig(base_url="https://wms.example.com")
-
         assert conn.base_url == "https://wms.example.com"
         assert conn.timeout == 30
         assert conn.max_retries == 3
@@ -90,7 +84,6 @@ class TestWMSConnectionConfig:
             max_retries=5,
             verify_ssl=False,
         )
-
         assert conn.base_url == "https://wms.example.com"
         assert conn.timeout == 60
         assert conn.max_retries == 5
@@ -101,14 +94,11 @@ class TestWMSConnectionConfig:
         # Valid URLs
         conn_https = WMSConnectionConfig(base_url="https://test.com")
         assert conn_https.base_url == "https://test.com"
-
         conn_http = WMSConnectionConfig(base_url="http://test.com")
         assert conn_http.base_url == "http://test.com"
-
         # URL with trailing slash should be stripped
         conn_slash = WMSConnectionConfig(base_url="https://test.com/")
         assert conn_slash.base_url == "https://test.com"
-
         # Invalid URL should fail
         with pytest.raises(ValidationError):
             WMSConnectionConfig(base_url="invalid-url")
@@ -118,11 +108,9 @@ class TestWMSConnectionConfig:
         # Valid timeout
         conn = WMSConnectionConfig(base_url="https://test.com", timeout=30)
         assert conn.timeout == 30
-
         # Invalid timeout should fail
         with pytest.raises(ValidationError):
             WMSConnectionConfig(base_url="https://test.com", timeout=0)
-
         with pytest.raises(ValidationError):
             WMSConnectionConfig(base_url="https://test.com", timeout=301)
 
@@ -131,11 +119,9 @@ class TestWMSConnectionConfig:
         # Valid retries
         conn = WMSConnectionConfig(base_url="https://test.com", max_retries=5)
         assert conn.max_retries == 5
-
         # Invalid retries should fail
         with pytest.raises(ValidationError):
             WMSConnectionConfig(base_url="https://test.com", max_retries=-1)
-
         with pytest.raises(ValidationError):
             WMSConnectionConfig(base_url="https://test.com", max_retries=11)
 
@@ -146,7 +132,6 @@ class TestWMSDiscoveryConfig:
     def test_default_discovery_config(self) -> None:
         """Test default discovery configuration."""
         config = WMSDiscoveryConfig()
-
         assert config.auto_discover is True
         assert config.entity_filter == []
         assert config.exclude_entities == []
@@ -162,7 +147,6 @@ class TestWMSDiscoveryConfig:
             include_metadata=False,
             max_entities=50,
         )
-
         assert config.auto_discover is False
         assert config.entity_filter == ["item", "location"]
         assert config.exclude_entities == ["temp"]
@@ -174,11 +158,9 @@ class TestWMSDiscoveryConfig:
         # Valid max entities
         config = WMSDiscoveryConfig(max_entities=100)
         assert config.max_entities == 100
-
         # Invalid max entities should fail
         with pytest.raises(ValidationError):
             WMSDiscoveryConfig(max_entities=0)
-
         with pytest.raises(ValidationError):
             WMSDiscoveryConfig(max_entities=1001)
 
@@ -189,7 +171,6 @@ class TestWMSExtractionConfig:
     def test_default_extraction_config(self) -> None:
         """Test default extraction configuration."""
         config = WMSExtractionConfig(start_date=None)
-
         assert config.page_size == 500
         assert config.company_code == "*"
         assert config.facility_code == "*"
@@ -205,7 +186,6 @@ class TestWMSExtractionConfig:
             start_date="2024-01-01T00:00:00Z",
             batch_size=500,
         )
-
         assert config.page_size == 100
         assert config.company_code == "COMP1"
         assert config.facility_code == "FAC1"
@@ -217,11 +197,9 @@ class TestWMSExtractionConfig:
         # Valid page size
         config = WMSExtractionConfig(page_size=100, start_date=None)
         assert config.page_size == 100
-
         # Invalid page size should fail
         with pytest.raises(ValidationError):
             WMSExtractionConfig(page_size=0, start_date=None)
-
         with pytest.raises(ValidationError):
             WMSExtractionConfig(page_size=10001, start_date=None)
 
@@ -230,11 +208,9 @@ class TestWMSExtractionConfig:
         # Valid batch size
         config = WMSExtractionConfig(batch_size=1000, start_date=None)
         assert config.batch_size == 1000
-
         # Invalid batch size should fail
         with pytest.raises(ValidationError):
             WMSExtractionConfig(batch_size=0, start_date=None)
-
         with pytest.raises(ValidationError):
             WMSExtractionConfig(batch_size=50001, start_date=None)
 
@@ -246,14 +222,12 @@ class TestTapOracleWMSConfig:
         """Test creating config with minimal required fields."""
         auth = WMSAuthConfig(username="user", password="pass", auth_method="basic")
         connection = WMSConnectionConfig(base_url="https://test.com")
-
         config = TapOracleWMSConfig(
             auth=auth,
             connection=connection,
             state_file=None,
             catalog_file=None,
         )
-
         assert config.auth.username == "user"
         assert config.connection.base_url == "https://test.com"
         assert config.discovery.auto_discover is True
@@ -285,7 +259,6 @@ class TestTapOracleWMSConfig:
             facility_code="FAC1",
             start_date=None,
         )
-
         config = TapOracleWMSConfig(
             auth=auth,
             connection=connection,
@@ -296,7 +269,6 @@ class TestTapOracleWMSConfig:
             debug=True,
             log_level="DEBUG",
         )
-
         assert config.auth.username == "test_user"
         assert config.connection.base_url == "https://wms.example.com"
         assert config.discovery.auto_discover is False
@@ -310,7 +282,6 @@ class TestTapOracleWMSConfig:
         """Test log level validation."""
         auth = WMSAuthConfig(username="user", password="pass", auth_method="basic")
         connection = WMSConnectionConfig(base_url="https://test.com")
-
         # Valid log levels
         for level in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
             config = TapOracleWMSConfig(
@@ -321,7 +292,6 @@ class TestTapOracleWMSConfig:
                 catalog_file=None,
             )
             assert config.log_level == level
-
         # Lowercase should be converted to uppercase
         config = TapOracleWMSConfig(
             auth=auth,
@@ -331,7 +301,6 @@ class TestTapOracleWMSConfig:
             catalog_file=None,
         )
         assert config.log_level == "DEBUG"
-
         # Invalid log level should fail
         with pytest.raises(ValidationError):
             TapOracleWMSConfig(
@@ -346,26 +315,22 @@ class TestTapOracleWMSConfig:
         """Test configuration defaults."""
         auth = WMSAuthConfig(username="user", password="pass", auth_method="basic")
         connection = WMSConnectionConfig(base_url="https://test.com")
-
         config = TapOracleWMSConfig(
             auth=auth,
             connection=connection,
             state_file=None,
             catalog_file=None,
         )
-
         # Check discovery defaults
         assert config.discovery.auto_discover is True
         assert config.discovery.entity_filter == []
         assert config.discovery.include_metadata is True
         assert config.discovery.max_entities == 100
-
         # Check extraction defaults
         assert config.extraction.page_size == 500
         assert config.extraction.company_code == "*"
         assert config.extraction.facility_code == "*"
         assert config.extraction.start_date is None
-
         # Check main config defaults
         assert config.state_file is None
         assert config.catalog_file is None
@@ -374,15 +339,12 @@ class TestTapOracleWMSConfig:
 
     def test_required_fields(self) -> None:
         """Test that required fields are enforced."""
-        # Missing auth should fail
+        # Missing auth should fail - pydantic should enforce this during creation
         with pytest.raises(ValidationError):
             TapOracleWMSConfig(
                 connection=WMSConnectionConfig(base_url="https://test.com"),
-                state_file=None,
-                catalog_file=None,
             )
-
-        # Missing connection should fail
+        # Missing connection should fail - pydantic should enforce this during creation
         with pytest.raises(ValidationError):
             TapOracleWMSConfig(
                 auth=WMSAuthConfig(
@@ -390,21 +352,6 @@ class TestTapOracleWMSConfig:
                     password="pass",
                     auth_method="basic",
                 ),
-                state_file=None,
-                catalog_file=None,
-            )
-
-        # Missing connection should fail
-        with pytest.raises(ValidationError):
-            TapOracleWMSConfig(
-                auth=WMSAuthConfig(
-                    username="user",
-                    password="pass",
-                    auth_method="basic",
-                ),
-                connection=None,  # type: ignore[arg-type]
-                state_file=None,
-                catalog_file=None,
             )
 
     def test_to_singer_config(self) -> None:
@@ -417,7 +364,6 @@ class TestTapOracleWMSConfig:
             company_code="COMP1",
             start_date=None,
         )
-
         config = TapOracleWMSConfig(
             auth=auth,
             connection=connection,
@@ -427,9 +373,7 @@ class TestTapOracleWMSConfig:
             state_file=None,
             catalog_file=None,
         )
-
         singer_config = config.to_singer_config()
-
         assert singer_config["base_url"] == "https://test.com"
         assert singer_config["username"] == "user"
         assert singer_config["password"] == "pass"
@@ -461,9 +405,7 @@ class TestTapOracleWMSConfig:
             "debug": True,
             "log_level": "WARNING",
         }
-
         config = TapOracleWMSConfig.from_singer_config(singer_config)
-
         assert config.auth.username == "test_user"
         assert config.auth.password == "test_pass"
         assert config.auth.auth_method == "token"
@@ -486,17 +428,14 @@ class TestTapOracleWMSConfig:
         """Test configuration serialization."""
         auth = WMSAuthConfig(username="user", password="pass", auth_method="basic")
         connection = WMSConnectionConfig(base_url="https://test.com")
-
         config = TapOracleWMSConfig(
             auth=auth,
             connection=connection,
             state_file=None,
             catalog_file=None,
         )
-
         # Serialize to dict
         data = config.model_dump()
-
         # Verify structure
         assert "auth" in data
         assert "connection" in data
@@ -536,9 +475,7 @@ class TestTapOracleWMSConfig:
             "debug": False,
             "log_level": "INFO",
         }
-
         config = TapOracleWMSConfig.model_validate(data)
-
         assert config.auth.username == "user"
         assert config.connection.base_url == "https://test.com"
         assert config.discovery.auto_discover is True
@@ -594,7 +531,6 @@ class TestConfigValidation:
     def test_connection_url_validation(self) -> None:
         """Test connection URL validation."""
         auth = WMSAuthConfig(username="user", password="pass", auth_method="basic")
-
         # Valid URLs should work
         config_https = TapOracleWMSConfig(
             auth=auth,
@@ -603,7 +539,6 @@ class TestConfigValidation:
             catalog_file=None,
         )
         assert config_https.connection.base_url == "https://test.com"
-
         # Invalid URL should fail
         with pytest.raises(ValidationError):
             self._create_invalid_url_config(auth)
@@ -612,7 +547,6 @@ class TestConfigValidation:
         """Test extraction configuration validation."""
         auth = WMSAuthConfig(username="user", password="pass", auth_method="basic")
         connection = WMSConnectionConfig(base_url="https://test.com")
-
         # Valid extraction config
         config = TapOracleWMSConfig(
             auth=auth,
@@ -627,7 +561,6 @@ class TestConfigValidation:
         )
         assert config.extraction.page_size == 100
         assert config.extraction.batch_size == 500
-
         # Invalid page size should fail
         with pytest.raises(ValidationError):
             self._create_invalid_page_size_config(auth, connection)

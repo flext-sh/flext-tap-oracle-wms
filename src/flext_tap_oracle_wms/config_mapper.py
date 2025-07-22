@@ -495,11 +495,14 @@ class ConfigMapper:
             default={},
             profile_path="api.custom_headers",
         )
-        try:
-            custom_headers = json.loads(str(custom_headers))
-        except json.JSONDecodeError:
-            logger.warning("Invalid JSON in WMS_CUSTOM_HEADERS_JSON, ignoring")
-            custom_headers = {}
+
+        # If already a dict, use directly; otherwise try to parse JSON
+        if not isinstance(custom_headers, dict):
+            try:
+                custom_headers = json.loads(str(custom_headers))
+            except json.JSONDecodeError:
+                logger.warning("Invalid JSON in WMS_CUSTOM_HEADERS_JSON, ignoring")
+                custom_headers = {}
 
         if isinstance(custom_headers, dict):
             # Ensure all custom header values are strings

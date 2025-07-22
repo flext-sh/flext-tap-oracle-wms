@@ -8,14 +8,14 @@ Provides a simple interface for setting up Oracle WMS data extraction.
 from __future__ import annotations
 
 # Use centralized ServiceResult from flext-core - ELIMINATE DUPLICATION
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_tap_oracle_wms.config import TapOracleWMSConfig
 
 
 def setup_wms_tap(
     config: TapOracleWMSConfig | None = None,
-) -> ServiceResult[TapOracleWMSConfig]:
+) -> ServiceResult[Any]:
     """Set up WMS tap with configuration.
 
     Args:
@@ -33,7 +33,8 @@ def setup_wms_tap(
         # Basic validation
         config_dict = config.model_dump()
         if not config_dict.get("auth", {}).get("username"):
-            return ServiceResult.fail("Username is required for WMS authentication")
+            return ServiceResult.fail("Username is required for WMS authentication",
+            )
 
         return ServiceResult.ok(config)
 
@@ -101,7 +102,7 @@ def create_production_wms_config(**overrides: object) -> TapOracleWMSConfig:
     return TapOracleWMSConfig.from_singer_config(defaults)
 
 
-def validate_wms_config(config: TapOracleWMSConfig) -> ServiceResult[bool]:
+def validate_wms_config(config: TapOracleWMSConfig) -> ServiceResult[Any]:
     """Validate WMS configuration.
 
     Args:
@@ -125,10 +126,11 @@ def validate_wms_config(config: TapOracleWMSConfig) -> ServiceResult[bool]:
         if not config.connection.base_url:
             return ServiceResult.fail("Base URL is required")
 
-        return ServiceResult.ok(data=True)
+        return ServiceResult.ok(True)
 
     except (ValueError, TypeError, AttributeError) as e:
-        return ServiceResult.fail(f"Configuration validation failed: {e}")
+        return ServiceResult.fail(f"Configuration validation failed: {e}",
+        )
 
 
 # Export convenience functions

@@ -44,8 +44,9 @@ class TestConnectionConfiguration:
 
     def test_get_base_url_default(self) -> None:
         """Test get_base_url with default value."""
-        mapper = ConfigMapper()
-        assert mapper.get_base_url() == ""
+        with patch.dict(os.environ, {}, clear=True):
+            mapper = ConfigMapper()
+            assert mapper.get_base_url() == ""
 
     def test_get_base_url_from_env(self) -> None:
         """Test get_base_url from environment variable."""
@@ -74,8 +75,10 @@ class TestConnectionConfiguration:
 
     def test_get_username_default(self) -> None:
         """Test get_username with default value."""
-        mapper = ConfigMapper()
-        assert mapper.get_username() == ""
+        # Clear environment to test default
+        with patch.dict(os.environ, {}, clear=True):
+            mapper = ConfigMapper()
+            assert mapper.get_username() == ""
 
     def test_get_username_from_env(self) -> None:
         """Test get_username from environment variable."""
@@ -86,13 +89,15 @@ class TestConnectionConfiguration:
     def test_get_username_from_profile(self) -> None:
         """Test get_username from profile configuration."""
         profile = {"api": {"username": "profileuser"}}
-        mapper = ConfigMapper(profile)
-        assert mapper.get_username() == "profileuser"
+        with patch.dict(os.environ, {}, clear=True):
+            mapper = ConfigMapper(profile)
+            assert mapper.get_username() == "profileuser"
 
     def test_get_password_default(self) -> None:
         """Test get_password with default value."""
-        mapper = ConfigMapper()
-        assert mapper.get_password() == ""
+        with patch.dict(os.environ, {}, clear=True):
+            mapper = ConfigMapper()
+            assert mapper.get_password() == ""
 
     def test_get_password_from_env(self) -> None:
         """Test get_password from environment variable."""
@@ -103,8 +108,9 @@ class TestConnectionConfiguration:
     def test_get_password_from_profile(self) -> None:
         """Test get_password from profile configuration."""
         profile = {"api": {"password": "profilepass"}}
-        mapper = ConfigMapper(profile)
-        assert mapper.get_password() == "profilepass"
+        with patch.dict(os.environ, {}, clear=True):
+            mapper = ConfigMapper(profile)
+            assert mapper.get_password() == "profilepass"
 
 
 class TestAPIConfiguration:
@@ -112,8 +118,9 @@ class TestAPIConfiguration:
 
     def test_get_api_version_default(self) -> None:
         """Test get_api_version with default value."""
-        mapper = ConfigMapper()
-        assert mapper.get_api_version() == "v10"
+        with patch.dict(os.environ, {}, clear=True):
+            mapper = ConfigMapper()
+            assert mapper.get_api_version() == "v10"
 
     def test_get_api_version_from_env(self) -> None:
         """Test get_api_version from environment variable."""
@@ -123,8 +130,9 @@ class TestAPIConfiguration:
 
     def test_get_endpoint_prefix_default(self) -> None:
         """Test get_endpoint_prefix with default value."""
-        mapper = ConfigMapper()
-        assert mapper.get_endpoint_prefix() == "/wms/lgfapi"
+        with patch.dict(os.environ, {}, clear=True):
+            mapper = ConfigMapper()
+            assert mapper.get_endpoint_prefix() == "/wms/lgfapi"
 
     def test_get_endpoint_prefix_from_env(self) -> None:
         """Test get_endpoint_prefix from environment variable."""
@@ -370,12 +378,14 @@ class TestNestedProfileConfiguration:
                 "cache_ttl_seconds": 7200,
             },
         }
-        mapper = ConfigMapper(profile)
+        # Clear environment to test profile configuration only
+        with patch.dict(os.environ, {}, clear=True):
+            mapper = ConfigMapper(profile)
 
-        assert mapper.get_base_url() == "https://nested.example.com"
-        assert mapper.get_username() == "nesteduser"
-        assert mapper.get_page_size() == 1000
-        assert mapper.get_cache_ttl_seconds() == 7200
+            assert mapper.get_base_url() == "https://nested.example.com"
+            assert mapper.get_username() == "nesteduser"
+            assert mapper.get_page_size() == 1000
+            assert mapper.get_cache_ttl_seconds() == 7200
 
     def test_direct_key_overrides_nested_path(self) -> None:
         """Test that direct keys override nested paths."""
