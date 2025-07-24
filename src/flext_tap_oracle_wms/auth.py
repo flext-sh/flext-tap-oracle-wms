@@ -1,27 +1,27 @@
 """Oracle WMS Authentication Module.
+
 This module provides authentication capabilities for Oracle WMS API integration
 using flext-core patterns and Singer SDK compatibility.
 """
 
 import base64
+
+# Removed circular dependency - use DI pattern
+import logging
 import threading
 from typing import Any
 
-from flext_observability.logging import get_logger
+# Direct imports (ZERO TOLERANCE for fallbacks)
+import requests
 from singer_sdk.authenticators import SimpleAuthenticator
+from singer_sdk.streams import RESTStream
 
-try:
-    import requests
-    from singer_sdk.streams import RESTStream
-except ImportError:
-    # Fallback for testing environments
-    requests = None
-    RESTStream = Any
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class WMSBasicAuthenticator(SimpleAuthenticator):
     """Legacy WMS Basic authenticator - True Facade with Pure Delegation to flext-api.auth.flext-auth.
+
     Delegates entirely to enterprise authentication service while maintaining
     Singer SDK SimpleAuthenticator interface.
     """

@@ -5,9 +5,10 @@ for Oracle WMS API integration using flext-core patterns.
 """
 
 import asyncio
-from typing import Any
 
-from flext_observability.logging import get_logger
+# Removed circular dependency - use DI pattern
+import logging
+from typing import Any
 
 from flext_tap_oracle_wms.infrastructure.entity_discovery import (
     EntityDiscovery as EntityDiscoveryCore,
@@ -21,7 +22,7 @@ from flext_tap_oracle_wms.interfaces import (
     SchemaGeneratorInterface,
 )
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class WMSDiscoveryError(Exception):

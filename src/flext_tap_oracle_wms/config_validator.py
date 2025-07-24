@@ -3,17 +3,19 @@
 This module validates configuration values to ensure they meet the requirements
 for successful Oracle WMS API integration.
 """
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
 from __future__ import annotations
 
 import contextlib
+
+# Removed circular dependency - use DI pattern
+import logging
 import re
 from typing import Any
 from urllib.parse import urlparse
-
-from flext_observability.logging import get_logger
 
 # API and Performance Constants
 MAX_PAGE_SIZE = 1250
@@ -22,7 +24,7 @@ MAX_RETRIES = 10
 MAX_OVERLAP_MINUTES = 1440  # 24 hours
 CURRENCY_CODE_LENGTH = 3  # ISO 4217 standard
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ConfigValidationError(Exception):

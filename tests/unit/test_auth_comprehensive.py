@@ -1,4 +1,5 @@
 """Comprehensive tests for WMS Authentication module.
+
 This module tests all authentication scenarios including:
 - Basic authentication success/failure
 - Token refresh mechanisms

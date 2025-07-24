@@ -1,4 +1,5 @@
 """Cache Manager for Oracle WMS Tap.
+
 This module provides caching functionality for Oracle WMS API operations
 using flext-core patterns and thread-safe operations.
 """
@@ -8,30 +9,30 @@ import threading
 import time
 from typing import Any
 
-try:
-    from flext_observability.logging import get_logger
-except ImportError:
-    # Fallback to standard logging if flext_observability is not available
-    def get_logger(name: str) -> logging.Logger:
-        """Fallback logger function.
-
-        Args:
-            name: Logger name
-        Returns:
-            Configured logger instance.
-
-        """
-        return logging.getLogger(name)
-
-
 from flext_tap_oracle_wms.interfaces import CacheManagerInterface
 
+# Removed circular dependency - use DI pattern
+
+
+def get_logger(name: str) -> Any:
+    """Fallback logger function.
+
+    Args:
+        name: Logger name
+    Returns:
+        Configured logger instance.
+
+    """
+    return logging.getLogger(name)
+
+
 CacheValueType = str | dict[str, Any] | bool
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class CacheManager(CacheManagerInterface):
     """Thread-safe cache manager for Oracle WMS tap operations.
+
     Handles all caching operations with TTL support and cache statistics.
     Follows SRP by focusing solely on cache management.
     """

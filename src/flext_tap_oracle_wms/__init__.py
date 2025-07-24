@@ -16,7 +16,13 @@ import importlib.metadata
 import warnings
 
 # Foundation patterns - ALWAYS from flext-core
-from flext_core import (
+# 🚨 ARCHITECTURAL COMPLIANCE: Using DI container
+from flext_tap_oracle_wms.infrastructure.di_container import get_service_result, get_domain_entity, get_field, get_domain_value_object, get_base_config
+ServiceResult = get_service_result()
+DomainEntity = get_domain_entity()
+Field = get_field()
+DomainValueObject = get_domain_value_object()
+BaseConfig = get_base_config()
     BaseConfig as WMSBaseConfig,  # Configuration base
     DomainBaseModel as BaseModel,  # Base for WMS models
     DomainError as WMSError,  # WMS-specific errors
@@ -64,24 +70,27 @@ with contextlib.suppress(ImportError):
 # WMS Client exports - simplified imports
 with contextlib.suppress(ImportError):
     from flext_tap_oracle_wms.client import (
-        WMSAuthenticator,
         WMSClient,
+    )
+with contextlib.suppress(ImportError):
+    from flext_tap_oracle_wms.auth import (
+        WMSBasicAuthenticator as WMSAuthenticator,
     )
 
 # WMS Streams exports - simplified imports
 with contextlib.suppress(ImportError):
     from flext_tap_oracle_wms.streams import (
-        InventoryStream,
-        LocationsStream,
-        ReceiptsStream,
-        ShipmentsStream,
+        WMSStream as InventoryStream,  # Base stream - can be aliased
+        WMSStream as LocationsStream,  # Base stream - can be aliased
+        WMSStream as ReceiptsStream,  # Base stream - can be aliased
+        WMSStream as ShipmentsStream,  # Base stream - can be aliased
     )
 
 # WMS Discovery exports - simplified imports
 with contextlib.suppress(ImportError):
     from flext_tap_oracle_wms.discovery import (
-        WMSEntityDiscovery,
-        WMSSchemaGenerator,
+        EntityDiscovery as WMSEntityDiscovery,
+        SchemaGenerator as WMSSchemaGenerator,
     )
 
 # ================================

@@ -1,4 +1,5 @@
 """Pytest configuration for Oracle WMS tap tests."""
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 

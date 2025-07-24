@@ -7,17 +7,24 @@ to access Oracle validation services. Follows Clean Architecture principles.
 # Licensed under the MIT License
 
 from __future__ import annotations
+from flext_db_oracle.patterns.oracle_patterns import (
+    OracleWMSValidator as OracleValidationProvider,
+)
 
+# Removed circular dependency - use DI pattern
+import logging
 from typing import TYPE_CHECKING
 
-from flext_core import OracleValidationProvider
-from flext_observability.logging import get_logger
-from flext_core.domain.shared_types import ServiceResult
-
 if TYPE_CHECKING:
-    pass
+    # 🚨 ARCHITECTURAL COMPLIANCE: Using DI container
+from flext_tap_oracle_wms.infrastructure.di_container import get_service_result, get_domain_entity, get_field, get_domain_value_object, get_base_config
+ServiceResult = get_service_result()
+DomainEntity = get_domain_entity()
+Field = get_field()
+DomainValueObject = get_domain_value_object()
+BaseConfig = get_base_config()
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 # Oracle validation provider will be injected at runtime
 _validation_provider: OracleValidationProvider | None = None
@@ -25,9 +32,10 @@ _validation_provider: OracleValidationProvider | None = None
 
 def set_validation_provider(provider: OracleValidationProvider) -> None:
     """Set the Oracle validation provider via dependency injection.
-    
+
     Args:
         provider: Oracle validation provider implementation
+
     """
     global _validation_provider
     _validation_provider = provider
@@ -35,12 +43,13 @@ def set_validation_provider(provider: OracleValidationProvider) -> None:
 
 def _get_validation_provider() -> OracleValidationProvider:
     """Get validation provider or raise error if not set.
-    
+
     Returns:
         Oracle validation provider
-        
+
     Raises:
         RuntimeError: If no validation provider has been injected
+
     """
     if _validation_provider is None:
         error_msg = "Oracle validation provider not injected - call set_validation_provider() first"

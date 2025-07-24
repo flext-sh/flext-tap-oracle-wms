@@ -5,11 +5,13 @@
 from __future__ import annotations
 
 import json
+
+# Removed circular dependency - use DI pattern
+import logging
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs
 
-from flext_observability.logging import get_logger
 from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
 
@@ -56,7 +58,7 @@ class WMSPaginator(BaseHATEOASPaginator):
             data = response.json()
             return data.get("next_page") if isinstance(data, dict) else None
         except (ValueError, json.JSONDecodeError) as e:
-            logger = get_logger(__name__)
+            logger = logging.getLogger(__name__)
             error_msg = (
                 "Critical pagination failure: Failed to parse JSON response. "
                 "This will terminate extraction and may cause incomplete datasets. "
@@ -160,12 +162,14 @@ class WMSStream(RESTStream[dict[str, Any]]):
         pattern = self.config_mapper.get_entity_endpoint_pattern()
         prefix = self.config_mapper.get_endpoint_prefix()
         version = self.config_mapper.get_api_version()
-        # Replace placeholders in pattern
-        return pattern.format(
+        # Replace placeholders in pattern and fix double slashes
+        path = pattern.format(
             prefix=prefix,
             version=version,
             entity=self._entity_name,
         )
+        # Remove leading slash if present to avoid double slashes with url_base
+        return path.removeprefix("/")
 
     @property
     def http_headers(self) -> dict[str, Any]:
