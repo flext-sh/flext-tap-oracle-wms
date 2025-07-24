@@ -4,6 +4,10 @@ This module provides HTTP client functionality for Oracle WMS API integration
 using flext-core patterns and Singer SDK compatibility.
 """
 
+# Use centralized logger from flext-infrastructure.monitoring.flext-observability - NO FALLBACKS
+# Removed circular dependency - use DI pattern
+
+import logging
 from http import HTTPStatus
 from types import TracebackType
 from typing import (
@@ -13,12 +17,9 @@ from typing import (
 
 import httpx
 
-# Use centralized logger from flext-infrastructure.monitoring.flext-observability - NO FALLBACKS
-from flext_observability.logging import get_logger
-
 from flext_tap_oracle_wms.models import WMSConfig
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class WMSClientError(Exception):

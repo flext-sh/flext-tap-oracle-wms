@@ -3,6 +3,7 @@
 This module defines the contracts (interfaces) that components must implement,
 promoting loose coupling and high cohesion.
 """
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 

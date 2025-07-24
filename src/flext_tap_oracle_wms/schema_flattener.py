@@ -1,14 +1,15 @@
 """Schema flattener functionality for Oracle WMS tap."""
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
 from __future__ import annotations
 
+# Removed circular dependency - use DI pattern
+import logging
 from typing import Any
 
-from flext_observability.logging import get_logger
-
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class SchemaFlattener:

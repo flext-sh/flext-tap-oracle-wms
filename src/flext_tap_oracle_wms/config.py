@@ -4,6 +4,7 @@ REFACTORED:
 Uses flext-core base models for declarative configuration.
 Zero tolerance for code duplication.
 """
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
@@ -11,7 +12,20 @@ from __future__ import annotations
 
 from typing import Any
 
-from flext_core.domain.pydantic_base import DomainBaseModel, DomainValueObject
+# 🚨 ARCHITECTURAL COMPLIANCE: Using DI container
+from flext_tap_oracle_wms.infrastructure.di_container import (
+    get_base_config,
+    get_domain_entity,
+    get_domain_value_object,
+    get_field,
+    get_service_result,
+)
+
+ServiceResult = get_service_result()
+DomainEntity = get_domain_entity()
+Field = get_field()
+DomainValueObject = get_domain_value_object()
+BaseConfig = get_base_config()
 from pydantic import Field, field_validator
 
 

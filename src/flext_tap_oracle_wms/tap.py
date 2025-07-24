@@ -4,12 +4,13 @@
 # Licensed under the MIT License
 from __future__ import annotations
 
+# Import logger at top level
+# Removed circular dependency - use DI pattern
+import logging
 import sys
 from datetime import UTC, datetime
 from typing import Any
 
-# Import logger at top level
-from flext_observability.logging import get_logger
 from singer_sdk import Tap, typing as th
 
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
@@ -338,7 +339,7 @@ class TapOracleWMS(Tap):
 
         """
         # Initialize logger for debugging
-        logger = get_logger(__name__)
+        logger = logging.getLogger(__name__)
         # Check if this is a discovery command to enable discovery mode
         if "--discover" in sys.argv:
             logger.info(
@@ -601,6 +602,9 @@ class TapOracleWMS(Tap):
             )
             # Generate schema from metadata ONLY - flattening support if enabled
             if flattening_enabled:
+                if metadata is None:
+                    msg = f"Metadata is None for entity {entity_name}"
+                    raise ValueError(msg)
                 schema = self.schema_generator.generate_metadata_schema_with_flattening(
                     metadata,
                 )
@@ -611,6 +615,9 @@ class TapOracleWMS(Tap):
                     len(schema.get("properties", {})),
                 )
             else:
+                if metadata is None:
+                    msg = f"Metadata is None for entity {entity_name}"
+                    raise ValueError(msg)
                 schema = self.schema_generator.generate_from_metadata(
                     metadata,
                 )
@@ -707,6 +714,7 @@ class TapOracleWMS(Tap):
 
     def write_catalog(self) -> None:
         """Write the catalog to stdout in Singer format for discovery.
+
         This method creates a complete catalog with proper schemas for the
         configured entities.
 

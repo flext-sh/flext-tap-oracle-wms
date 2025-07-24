@@ -3,20 +3,21 @@
 This module focuses solely on schema generation operations,
 following the Single Responsibility Principle.
 """
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
 from __future__ import annotations
 
+# Removed circular dependency - use DI pattern
+import logging
 import re
 from typing import Any
-
-from flext_observability.logging import get_logger
 
 from flext_tap_oracle_wms.interfaces import SchemaGeneratorInterface
 from flext_tap_oracle_wms.type_mapping import get_full_singer_schema
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class SchemaGenerationError(Exception):

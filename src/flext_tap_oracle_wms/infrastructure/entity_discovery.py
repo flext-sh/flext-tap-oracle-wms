@@ -3,17 +3,20 @@
 This module focuses solely on discovering entities from Oracle WMS API,
 following the Single Responsibility Principle.
 """
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
 from __future__ import annotations
 
 import base64
+
+# Removed circular dependency - use DI pattern
+import logging
 import re
 from typing import TYPE_CHECKING, Any
 
 import httpx
-from flext_observability.logging import get_logger
 
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
 from flext_tap_oracle_wms.interfaces import EntityDiscoveryInterface
@@ -21,7 +24,7 @@ from flext_tap_oracle_wms.interfaces import EntityDiscoveryInterface
 if TYPE_CHECKING:
     from flext_tap_oracle_wms.interfaces import CacheManagerInterface
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 # HTTP status codes
 HTTP_NOT_FOUND = 404

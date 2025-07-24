@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import pytest
-from flext_core.domain.shared_types import ServiceResult
+from flext_core import ServiceResult
 
 from flext_tap_oracle_wms.config import TapOracleWMSConfig
 from flext_tap_oracle_wms.simple_api import (

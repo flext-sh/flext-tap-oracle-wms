@@ -5,23 +5,25 @@ Transforms hardcoded values into configurable parameters.
 This module identifies and externalizes hardcoded values throughout the codebase,
 making them configurable through environment variables or profile settings.
 """
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
 from __future__ import annotations
 
 import json
+
+# Removed circular dependency - use DI pattern
+import logging
 import os
 from typing import Any
-
-from flext_observability.logging import get_logger
 
 # Configuration constants
 MAX_PAGE_SIZE = 1250
 MAX_REQUEST_TIMEOUT = 600
 MAX_RETRIES = 10
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ConfigMapper:

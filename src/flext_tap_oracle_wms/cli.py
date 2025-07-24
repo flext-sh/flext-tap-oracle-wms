@@ -1,4 +1,5 @@
 """CLI entry point for Oracle WMS tap."""
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 

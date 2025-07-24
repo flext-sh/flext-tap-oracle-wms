@@ -2,13 +2,29 @@
 
 Provides a simple interface for setting up Oracle WMS data extraction.
 """
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
 from __future__ import annotations
 
+from typing import Any
+
 # Use centralized ServiceResult from flext-core - ELIMINATE DUPLICATION
-from flext_core.domain.shared_types import ServiceResult
+# 🚨 ARCHITECTURAL COMPLIANCE: Using DI container
+from flext_tap_oracle_wms.infrastructure.di_container import (
+    get_base_config,
+    get_domain_entity,
+    get_domain_value_object,
+    get_field,
+    get_service_result,
+)
+
+ServiceResult = get_service_result()
+DomainEntity = get_domain_entity()
+Field = get_field()
+DomainValueObject = get_domain_value_object()
+BaseConfig = get_base_config()
 
 from flext_tap_oracle_wms.config import TapOracleWMSConfig
 
@@ -33,7 +49,8 @@ def setup_wms_tap(
         # Basic validation
         config_dict = config.model_dump()
         if not config_dict.get("auth", {}).get("username"):
-            return ServiceResult.fail("Username is required for WMS authentication",
+            return ServiceResult.fail(
+                "Username is required for WMS authentication",
             )
 
         return ServiceResult.ok(config)
@@ -129,7 +146,8 @@ def validate_wms_config(config: TapOracleWMSConfig) -> ServiceResult[Any]:
         return ServiceResult.ok(True)
 
     except (ValueError, TypeError, AttributeError) as e:
-        return ServiceResult.fail(f"Configuration validation failed: {e}",
+        return ServiceResult.fail(
+            f"Configuration validation failed: {e}",
         )
 
 

@@ -3,6 +3,7 @@
 Ensures consistent type conversion across discovery, table creation, and data sync.
 Singer SDK compatible format.
 """
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
