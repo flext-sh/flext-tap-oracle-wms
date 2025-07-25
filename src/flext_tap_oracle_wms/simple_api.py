@@ -10,35 +10,25 @@ from __future__ import annotations
 
 from typing import Any
 
-# Use centralized ServiceResult from flext-core - ELIMINATE DUPLICATION
-# 🚨 ARCHITECTURAL COMPLIANCE: Using DI container
-from flext_tap_oracle_wms.infrastructure.di_container import (
-    get_base_config,
-    get_domain_entity,
-    get_domain_value_object,
-    get_field,
-    get_service_result,
+# Import from flext-core for foundational patterns (standardized)
+from flext_core import (
+    FlextResult,
 )
 
-ServiceResult = get_service_result()
-DomainEntity = get_domain_entity()
-Field = get_field()
-DomainValueObject = get_domain_value_object()
-BaseConfig = get_base_config()
-
+# Import from flext-oracle-wms for centralized patterns
 from flext_tap_oracle_wms.config import TapOracleWMSConfig
 
 
 def setup_wms_tap(
     config: TapOracleWMSConfig | None = None,
-) -> ServiceResult[Any]:
+) -> FlextResult[Any]:
     """Set up WMS tap with configuration.
 
     Args:
         config: WMS tap configuration
 
     Returns:
-        ServiceResult containing the configuration
+        FlextResult containing the configuration
 
     """
     try:
@@ -49,14 +39,14 @@ def setup_wms_tap(
         # Basic validation
         config_dict = config.model_dump()
         if not config_dict.get("auth", {}).get("username"):
-            return ServiceResult.fail(
+            return FlextResult.fail(
                 "Username is required for WMS authentication",
             )
 
-        return ServiceResult.ok(config)
+        return FlextResult.ok(config)
 
     except (ValueError, TypeError, AttributeError) as e:
-        return ServiceResult.fail(f"Failed to setup WMS tap: {e}")
+        return FlextResult.fail(f"Failed to setup WMS tap: {e}")
 
 
 def create_development_wms_config(**overrides: object) -> TapOracleWMSConfig:
@@ -119,14 +109,14 @@ def create_production_wms_config(**overrides: object) -> TapOracleWMSConfig:
     return TapOracleWMSConfig.from_singer_config(defaults)
 
 
-def validate_wms_config(config: TapOracleWMSConfig) -> ServiceResult[Any]:
+def validate_wms_config(config: TapOracleWMSConfig) -> FlextResult[Any]:
     """Validate WMS configuration.
 
     Args:
         config: Configuration to validate
 
     Returns:
-        ServiceResult indicating validation success
+        FlextResult indicating validation success
 
     """
     try:
@@ -135,25 +125,25 @@ def validate_wms_config(config: TapOracleWMSConfig) -> ServiceResult[Any]:
 
         # Additional business validation
         if not config.auth.username:
-            return ServiceResult.fail("Username is required")
+            return FlextResult.fail("Username is required")
 
         if not config.auth.password:
-            return ServiceResult.fail("Password is required")
+            return FlextResult.fail("Password is required")
 
         if not config.connection.base_url:
-            return ServiceResult.fail("Base URL is required")
+            return FlextResult.fail("Base URL is required")
 
-        return ServiceResult.ok(True)
+        return FlextResult.ok(True)
 
     except (ValueError, TypeError, AttributeError) as e:
-        return ServiceResult.fail(
+        return FlextResult.fail(
             f"Configuration validation failed: {e}",
         )
 
 
 # Export convenience functions
 __all__ = [
-    "ServiceResult",
+    "FlextResult",
     "create_development_wms_config",
     "create_production_wms_config",
     "setup_wms_tap",

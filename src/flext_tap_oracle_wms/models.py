@@ -9,23 +9,14 @@ Uses flext-core base classes, types, and constants. Zero tolerance for code dupl
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
-# 🚨 ARCHITECTURAL COMPLIANCE: Using DI container
-from flext_tap_oracle_wms.infrastructure.di_container import (
-    get_base_config,
-    get_domain_entity,
-    get_domain_value_object,
-    get_field,
-    get_service_result,
+# Import from flext-core for foundational patterns (standardized)
+from flext_core import (
+    FlextCoreSettings as BaseConfig,
+    FlextEntity as DomainEntity,
 )
-
-ServiceResult = get_service_result()
-DomainEntity = get_domain_entity()
-Field = get_field()
-DomainValueObject = get_domain_value_object()
-BaseConfig = get_base_config()
-from pydantic import Field, HttpUrl, field_validator
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -41,7 +32,7 @@ class FlextConstants:
     FRAMEWORK_VERSION = "0.7.0"
 
 
-class WMSConfig(DomainBaseModel):
+class WMSConfig(BaseConfig):
     """Simplified, enterprise-ready WMS configuration using flext-core patterns."""
 
     # Core connection settings
@@ -100,7 +91,7 @@ class WMSConfig(DomainBaseModel):
         return v
 
 
-class WMSEntity(DomainValueObject):
+class WMSEntity(BaseModel):
     """WMS entity metadata using flext-core value object patterns."""
 
     name: str = Field(
@@ -134,7 +125,7 @@ class WMSEntity(DomainValueObject):
     )
 
 
-class WMSStreamMetadata(DomainValueObject):
+class WMSStreamMetadata(BaseModel):
     """Stream metadata for Singer protocol compliance."""
 
     stream_name: str = Field(
@@ -160,7 +151,7 @@ class WMSStreamMetadata(DomainValueObject):
     )
 
 
-class WMSRecord(DomainBaseModel):
+class WMSRecord(DomainEntity):
     """WMS record with tracking and validation using flext-core patterns."""
 
     # Core data
@@ -196,7 +187,7 @@ class WMSRecord(DomainBaseModel):
         return v
 
 
-class WMSError(DomainValueObject):
+class WMSError(BaseModel):
     """WMS error information using flext-core value object patterns."""
 
     error_type: str = Field(..., min_length=1, description="Error type classification")
@@ -225,8 +216,10 @@ class WMSError(DomainValueObject):
     )
 
 
-class WMSDiscoveryResult(DomainBaseModel):
+class WMSDiscoveryResult(DomainEntity):
     """Discovery operation result using flext-core patterns."""
+
+    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=False)
 
     # Discovery metadata
     discovered_at: datetime = Field(..., description="Discovery timestamp")
@@ -270,8 +263,10 @@ class WMSDiscoveryResult(DomainBaseModel):
             self.success = False
 
 
-class TapMetrics(DomainBaseModel):
+class TapMetrics(DomainEntity):
     """Metrics tracking for the tap operations."""
+
+    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=False)
 
     api_calls: int = Field(
         default=0,

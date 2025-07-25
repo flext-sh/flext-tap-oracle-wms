@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import pytest
-from flext_core import ServiceResult
+from flext_core import FlextResult
 
 from flext_tap_oracle_wms.config import TapOracleWMSConfig
 from flext_tap_oracle_wms.simple_api import (
@@ -22,7 +22,7 @@ class TestSimpleAPI:
     def test_setup_wms_tap_without_config(self) -> None:
         """Test setup WMS tap without providing config."""
         result = setup_wms_tap()
-        assert isinstance(result, ServiceResult)
+        assert isinstance(result, FlextResult)
         assert result.success
         assert isinstance(result.data, TapOracleWMSConfig)
 
@@ -230,10 +230,10 @@ class TestSimpleAPI:
         assert hasattr(simple_api, "create_development_wms_config")
         assert hasattr(simple_api, "create_production_wms_config")
         assert hasattr(simple_api, "validate_wms_config")
-        assert hasattr(simple_api, "ServiceResult")
+        assert hasattr(simple_api, "FlextResult")
         # Check __all__ list
         expected_exports = [
-            "ServiceResult",
+            "FlextResult",
             "create_development_wms_config",
             "create_production_wms_config",
             "setup_wms_tap",
@@ -243,13 +243,14 @@ class TestSimpleAPI:
             assert export in simple_api.__all__
 
     def test_service_result_integration(self) -> None:
-        """Test integration with ServiceResult from flext-core."""
+        """Test integration with FlextResult from flext-core."""
         # Test success case
-        success_result = ServiceResult.ok("test_data")
+        success_result = FlextResult.ok("test_data")
         assert success_result.success
         assert success_result.data == "test_data"
         # Test failure case
-        fail_result: ServiceResult[None] = ServiceResult.fail("test_error",
+        fail_result: FlextResult[None] = FlextResult.fail(
+            "test_error",
         )
         assert not fail_result.success
         assert fail_result.error == "test_error"

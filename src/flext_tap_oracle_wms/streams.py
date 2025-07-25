@@ -5,15 +5,16 @@
 from __future__ import annotations
 
 import json
-
-# Removed circular dependency - use DI pattern
-import logging
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs
 
-from singer_sdk.pagination import BaseHATEOASPaginator
-from singer_sdk.streams import RESTStream
+# Removed circular dependency - use DI pattern
+from flext_core import get_logger
+
+# MIGRATED: Singer SDK imports centralized via flext-meltano
+from flext_meltano import BaseHATEOASPaginator
+from flext_meltano.singer import FlextMeltanoStream as RESTStream
 
 from flext_tap_oracle_wms.auth import get_wms_authenticator
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
@@ -58,7 +59,7 @@ class WMSPaginator(BaseHATEOASPaginator):
             data = response.json()
             return data.get("next_page") if isinstance(data, dict) else None
         except (ValueError, json.JSONDecodeError) as e:
-            logger = logging.getLogger(__name__)
+            logger = get_logger(__name__)
             error_msg = (
                 "Critical pagination failure: Failed to parse JSON response. "
                 "This will terminate extraction and may cause incomplete datasets. "
@@ -157,7 +158,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     @property
     def path(self) -> str:
-        """Generate entity-specific path."""
+        """Generate entity-specific path for REST endpoint."""
         # Build path from configuration using ConfigMapper
         pattern = self.config_mapper.get_entity_endpoint_pattern()
         prefix = self.config_mapper.get_endpoint_prefix()

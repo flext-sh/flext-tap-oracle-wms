@@ -82,9 +82,9 @@ class TestWMSBasicAuthenticator:
         """Test that auth headers are cached after first call."""
         authenticator = self.create_test_authenticator()
         request1 = requests.PreparedRequest()
-        request1.headers = {}
+        request1.headers = requests.structures.CaseInsensitiveDict()
         request2 = requests.PreparedRequest()
-        request2.headers = {}
+        request2.headers = requests.structures.CaseInsensitiveDict()
         # First call should create headers
         authenticator(request1)
         assert authenticator._auth_headers is not None
@@ -102,7 +102,7 @@ class TestWMSBasicAuthenticator:
         def worker() -> None:
             try:
                 request = requests.PreparedRequest()
-                request.headers = {}
+                request.headers = requests.structures.CaseInsensitiveDict()
                 result = authenticator(request)
                 results.append(result.headers.get("Authorization"))
             except Exception as e:
@@ -158,9 +158,9 @@ class TestWMSBasicAuthenticator:
         with patch("flext_tap_oracle_wms.auth.logger") as mock_logger:
             authenticator = self.create_test_authenticator()
             request1 = requests.PreparedRequest()
-            request1.headers = {}
+            request1.headers = requests.structures.CaseInsensitiveDict()
             request2 = requests.PreparedRequest()
-            request2.headers = {}
+            request2.headers = requests.structures.CaseInsensitiveDict()
             # First call should log
             authenticator(request1)
             assert mock_logger.debug.call_count >= 1
@@ -175,9 +175,9 @@ class TestWMSBasicAuthenticator:
         auth1 = self.create_test_authenticator("user1", "pass1")
         auth2 = self.create_test_authenticator("user2", "pass2")
         request1 = requests.PreparedRequest()
-        request1.headers = {}
+        request1.headers = requests.structures.CaseInsensitiveDict()
         request2 = requests.PreparedRequest()
-        request2.headers = {}
+        request2.headers = requests.structures.CaseInsensitiveDict()
         auth1(request1)
         auth2(request2)
         assert request1.headers["Authorization"] != request2.headers["Authorization"]
@@ -455,9 +455,9 @@ class TestAuthIntegration:
         auth1 = get_wms_authenticator(stream1, config1)
         auth2 = get_wms_authenticator(stream2, config2)
         request1 = requests.PreparedRequest()
-        request1.headers = {}
+        request1.headers = requests.structures.CaseInsensitiveDict()
         request2 = requests.PreparedRequest()
-        request2.headers = {}
+        request2.headers = requests.structures.CaseInsensitiveDict()
         auth1(request1)
         auth2(request2)
         # Should have different auth headers
