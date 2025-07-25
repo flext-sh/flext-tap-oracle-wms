@@ -1,4 +1,4 @@
-"""FLEXT Tap Oracle WMS - Oracle Warehouse Management System Data Extraction with simplified imports.
+"""FLEXT Tap Oracle WMS - Oracle WMS Data Extraction with simplified imports.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -6,28 +6,36 @@ SPDX-License-Identifier: MIT
 Version 0.7.0 - Tap Oracle WMS with simplified public API:
 - All common imports available from root: from flext_tap_oracle_wms import TapOracleWMS
 - Built on flext-core foundation for robust Oracle WMS data extraction
-- Deprecation warnings for internal imports
+- Modern namespace imports from flext-core
 """
 
 from __future__ import annotations
 
 import contextlib
 import importlib.metadata
-import warnings
 
-# Foundation patterns - ALWAYS from flext-core
-# 🚨 ARCHITECTURAL COMPLIANCE: Using DI container
-from flext_tap_oracle_wms.infrastructure.di_container import get_service_result, get_domain_entity, get_field, get_domain_value_object, get_base_config
-ServiceResult = get_service_result()
-DomainEntity = get_domain_entity()
-Field = get_field()
-DomainValueObject = get_domain_value_object()
-BaseConfig = get_base_config()
-    BaseConfig as WMSBaseConfig,  # Configuration base
-    DomainBaseModel as BaseModel,  # Base for WMS models
-    DomainError as WMSError,  # WMS-specific errors
-    ServiceResult,  # WMS operation results
-    ValidationError,  # Validation errors
+# Import from flext-core for foundational patterns (standardized)
+from flext_core import (
+    FlextCoreSettings as BaseConfig,
+    FlextEntity as DomainEntity,
+    FlextField as Field,
+    FlextResult as FlextResult,
+    FlextValueObject as BaseModel,
+    FlextValueObject as FlextDomainBaseModel,
+    FlextValueObject as FlextValueObject,
+)
+
+# Import from flext-oracle-wms for centralized Oracle WMS patterns
+from flext_oracle_wms import (
+    FlextOracleWmsAuth,
+    FlextOracleWmsClient,
+    FlextOracleWmsConfig,
+    FlextOracleWmsDeflattener,
+    FlextOracleWmsFlattener,
+    FlextOracleWmsTypeMapper,
+    flext_oracle_wms_format_wms_record,
+    flext_oracle_wms_sanitize_entity_name,
+    flext_oracle_wms_validate_connection,
 )
 
 try:
@@ -38,30 +46,9 @@ except importlib.metadata.PackageNotFoundError:
 __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
 
-class FlextTapOracleWmsDeprecationWarning(DeprecationWarning):
-    """Custom deprecation warning for FLEXT TAP ORACLE WMS import changes."""
-
-
-def _show_deprecation_warning(old_import: str, new_import: str) -> None:
-    """Show deprecation warning for import paths."""
-    message_parts = [
-        f"⚠️  DEPRECATED IMPORT: {old_import}",
-        f"✅ USE INSTEAD: {new_import}",
-        "🔗 This will be removed in version 1.0.0",
-        "📖 See FLEXT TAP ORACLE WMS docs for migration guide",
-    ]
-    warnings.warn(
-        "\n".join(message_parts),
-        FlextTapOracleWmsDeprecationWarning,
-        stacklevel=3,
-    )
-
-
 # ================================
 # SIMPLIFIED PUBLIC API EXPORTS
 # ================================
-
-# Foundation patterns - imported at top of file
 
 # Singer Tap exports - simplified imports
 with contextlib.suppress(ImportError):
@@ -69,58 +56,77 @@ with contextlib.suppress(ImportError):
 
 # WMS Client exports - simplified imports
 with contextlib.suppress(ImportError):
-    from flext_tap_oracle_wms.client import (
-        WMSClient,
-    )
+    from flext_tap_oracle_wms.client import WMSClient
+
+# WMS Auth exports - simplified imports
 with contextlib.suppress(ImportError):
-    from flext_tap_oracle_wms.auth import (
-        WMSBasicAuthenticator as WMSAuthenticator,
-    )
+    from flext_tap_oracle_wms.auth import WMSBasicAuthenticator as WMSAuthenticator
 
 # WMS Streams exports - simplified imports
 with contextlib.suppress(ImportError):
     from flext_tap_oracle_wms.streams import (
-        WMSStream as InventoryStream,  # Base stream - can be aliased
-        WMSStream as LocationsStream,  # Base stream - can be aliased
-        WMSStream as ReceiptsStream,  # Base stream - can be aliased
-        WMSStream as ShipmentsStream,  # Base stream - can be aliased
+        WMSStream,
+        WMSStream as InventoryStream,
+        WMSStream as LocationsStream,
+        WMSStream as ReceiptsStream,
+        WMSStream as ShipmentsStream,
     )
 
 # WMS Discovery exports - simplified imports
 with contextlib.suppress(ImportError):
-    from flext_tap_oracle_wms.discovery import (
+    from flext_tap_oracle_wms.infrastructure.entity_discovery import (
         EntityDiscovery as WMSEntityDiscovery,
+    )
+    from flext_tap_oracle_wms.infrastructure.schema_generator import (
         SchemaGenerator as WMSSchemaGenerator,
     )
+
+# Simple API
+with contextlib.suppress(ImportError):
+    from flext_tap_oracle_wms.simple_api import setup_wms_tap as create_wms_tap
 
 # ================================
 # PUBLIC API EXPORTS
 # ================================
 
 __all__ = [
-    "BaseModel",  # from flext_tap_oracle_wms import BaseModel
-    # Deprecation utilities
-    "FlextTapOracleWmsDeprecationWarning",
-    # WMS Streams (simplified access)
-    "InventoryStream",  # from flext_tap_oracle_wms import InventoryStream
-    "LocationsStream",  # from flext_tap_oracle_wms import LocationsStream
-    "ReceiptsStream",  # from flext_tap_oracle_wms import ReceiptsStream
-    "ServiceResult",  # from flext_tap_oracle_wms import ServiceResult
-    "ShipmentsStream",  # from flext_tap_oracle_wms import ShipmentsStream
-    # Main Singer Tap (simplified access)
-    "TapOracleWMS",  # from flext_tap_oracle_wms import TapOracleWMS
-    "ValidationError",  # from flext_tap_oracle_wms import ValidationError
-    # WMS Authentication (simplified access)
-    "WMSAuthenticator",  # from flext_tap_oracle_wms import WMSAuthenticator
-    # Core Patterns (from flext-core)
-    "WMSBaseConfig",  # from flext_tap_oracle_wms import WMSBaseConfig
-    # WMS Client (simplified access)
-    "WMSClient",  # from flext_tap_oracle_wms import WMSClient
-    # WMS Discovery (simplified access)
-    "WMSEntityDiscovery",  # from flext_tap_oracle_wms import WMSEntityDiscovery
-    "WMSError",  # from flext_tap_oracle_wms import WMSError
-    "WMSSchemaGenerator",  # from flext_tap_oracle_wms import WMSSchemaGenerator
-    # Version
+    # Core patterns from flext-core
+    "BaseConfig",
+    "BaseModel",
+    "DomainEntity",
+    "Field",
+    "FlextDomainBaseModel",
+    # Centralized Oracle WMS patterns from flext-oracle-wms
+    "FlextOracleWmsAuth",
+    "FlextOracleWmsClient",
+    "FlextOracleWmsConfig",
+    "FlextOracleWmsDeflattener",
+    "FlextOracleWmsFlattener",
+    "FlextOracleWmsTypeMapper",
+    "FlextResult",
+    "FlextValueObject",
+    # WMS Streams
+    "InventoryStream",
+    "LocationsStream",
+    "ReceiptsStream",
+    "ShipmentsStream",
+    # Main Singer Tap
+    "TapOracleWMS",
+    # WMS Authentication (legacy)
+    "WMSAuthenticator",
+    # WMS Client (legacy)
+    "WMSClient",
+    # WMS Discovery
+    "WMSEntityDiscovery",
+    "WMSSchemaGenerator",
+    "WMSStream",
+    # Metadata
     "__version__",
     "__version_info__",
+    # Simple API
+    "create_wms_tap",
+    # Helper functions from flext-oracle-wms
+    "flext_oracle_wms_format_wms_record",
+    "flext_oracle_wms_sanitize_entity_name",
+    "flext_oracle_wms_validate_connection",
 ]

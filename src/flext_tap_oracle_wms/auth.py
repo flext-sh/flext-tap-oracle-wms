@@ -7,20 +7,23 @@ using flext-core patterns and Singer SDK compatibility.
 import base64
 
 # Removed circular dependency - use DI pattern
-import logging
 import threading
 from typing import Any
 
 # Direct imports (ZERO TOLERANCE for fallbacks)
 import requests
-from singer_sdk.authenticators import SimpleAuthenticator
-from singer_sdk.streams import RESTStream
+from flext_core import get_logger
 
-logger = logging.getLogger(__name__)
+# Direct imports from flext-oracle-wms (centralized patterns)
+# MIGRATED: Singer SDK imports centralized via flext-meltano
+from flext_meltano import SimpleAuthenticator
+from flext_meltano.singer import FlextMeltanoStream as RESTStream
+
+logger = get_logger(__name__)
 
 
 class WMSBasicAuthenticator(SimpleAuthenticator):
-    """Legacy WMS Basic authenticator - True Facade with Pure Delegation to flext-api.auth.flext-auth.
+    """Legacy WMS Basic authenticator - True Facade with Pure Delegation.
 
     Delegates entirely to enterprise authentication service while maintaining
     Singer SDK SimpleAuthenticator interface.

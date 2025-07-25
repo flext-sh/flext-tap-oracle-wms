@@ -12,10 +12,18 @@ from __future__ import annotations
 import contextlib
 
 # Removed circular dependency - use DI pattern
-import logging
 import re
 from typing import Any
 from urllib.parse import urlparse
+
+from flext_core import get_logger
+
+# Use consolidated validation patterns from flext-meltano
+# MIGRATED: Singer SDK imports centralized via flext-meltano
+from flext_meltano import (
+    FlextMeltanoCommonValidationError,
+    FlextMeltanoConfigValidator,
+)
 
 # API and Performance Constants
 MAX_PAGE_SIZE = 1250
@@ -24,19 +32,19 @@ MAX_RETRIES = 10
 MAX_OVERLAP_MINUTES = 1440  # 24 hours
 CURRENCY_CODE_LENGTH = 3  # ISO 4217 standard
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
-class ConfigValidationError(Exception):
-    """Exception raised when configuration validation fails."""
+# CONSOLIDATED: Use FlextMeltanoCommonValidationError instead of local exception
+ConfigValidationError = FlextMeltanoCommonValidationError
 
 
-class ConfigValidator:
-    """Validates Oracle WMS tap configuration."""
+class ConfigValidator(FlextMeltanoConfigValidator):
+    """Validates Oracle WMS tap configuration using consolidated patterns."""
 
     def __init__(self) -> None:
         """Initialize ConfigValidator."""
-        self.errors: list[str] = []
+        super().__init__(strict_mode=False)
         self.warnings: list[str] = []
 
     def validate_config(self, config: dict[str, Any]) -> bool:

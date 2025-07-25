@@ -12,21 +12,15 @@ from __future__ import annotations
 
 from typing import Any
 
-# 🚨 ARCHITECTURAL COMPLIANCE: Using DI container
-from flext_tap_oracle_wms.infrastructure.di_container import (
-    get_base_config,
-    get_domain_entity,
-    get_domain_value_object,
-    get_field,
-    get_service_result,
+# CONSOLIDATED: Import from flext-meltano common patterns (eliminating duplication)
+# MIGRATED: Singer SDK imports centralized via flext-meltano
+from flext_meltano import (
+    FlextMeltanoAuthConfig,
+    FlextMeltanoBaseConfig as BaseConfig,
+    FlextMeltanoConnectionConfig,
 )
-
-ServiceResult = get_service_result()
-DomainEntity = get_domain_entity()
-Field = get_field()
-DomainValueObject = get_domain_value_object()
-BaseConfig = get_base_config()
-from pydantic import Field, field_validator
+from flext_meltano.common import validate_base_url, validate_log_level
+from pydantic import BaseModel, Field, field_validator
 
 
 def _default_discovery_config() -> WMSDiscoveryConfig:
@@ -49,63 +43,18 @@ def _default_extraction_config() -> WMSExtractionConfig:
     return WMSExtractionConfig(start_date=None)
 
 
-class WMSAuthConfig(DomainValueObject):
-    """WMS authentication configuration value object."""
-
-    username: str = Field(
-        ...,
-        description="Authentication username",
-    )
-    password: str = Field(
-        ...,
-        description="Authentication password",
-        json_schema_extra={"secret": True},
-    )
-    auth_method: str = Field(
-        "basic",
-        description="Authentication method (basic, token, oauth)",
-    )
-
-    @field_validator("auth_method")
-    @classmethod
-    def validate_auth_method(cls, v: str) -> str:
-        """Validate authentication method.
-
-        Args:
-            v: Authentication method to validate
-
-        Returns:
-            Validated authentication method
-
-        Raises:
-            ValueError: If authentication method is not supported
-
-        """
-        allowed = {"basic", "token", "oauth"}
-        if v not in allowed:
-            msg = f"Invalid auth_method: {v}. Must be one of {allowed}"
-            raise ValueError(msg)
-        return v
+# CONSOLIDATED: Use FlextMeltanoAuthConfig from common patterns
+class WMSAuthConfig(FlextMeltanoAuthConfig):
+    """WMS authentication configuration using consolidated patterns."""
 
 
-class WMSConnectionConfig(DomainValueObject):
-    """WMS connection configuration value object."""
+# CONSOLIDATED: Extend FlextMeltanoConnectionConfig with WMS-specific fields
+class WMSConnectionConfig(FlextMeltanoConnectionConfig):
+    """WMS connection configuration using consolidated patterns."""
 
     base_url: str = Field(
         ...,
         description="Oracle WMS base URL",
-    )
-    timeout: int = Field(
-        default=30,
-        ge=1,
-        le=300,
-        description="Request timeout in seconds",
-    )
-    max_retries: int = Field(
-        default=3,
-        ge=0,
-        le=10,
-        description="Maximum retry attempts",
     )
     verify_ssl: bool = Field(
         default=True,
@@ -114,26 +63,12 @@ class WMSConnectionConfig(DomainValueObject):
 
     @field_validator("base_url")
     @classmethod
-    def validate_base_url(cls, v: str) -> str:
-        """Validate base URL format.
-
-        Args:
-            v: Base URL to validate
-
-        Returns:
-            Validated and normalized base URL
-
-        Raises:
-            ValueError: If URL format is invalid
-
-        """
-        if not v.startswith(("http://", "https://")):
-            msg = f"Invalid base_url: {v}. Must start with http:// or https://"
-            raise ValueError(msg)
-        return v.rstrip("/")
+    def validate_base_url_field(cls, v: str) -> str:
+        """Use consolidated base URL validation."""
+        return validate_base_url(v)
 
 
-class WMSDiscoveryConfig(DomainValueObject):
+class WMSDiscoveryConfig(BaseModel):
     """WMS entity discovery configuration value object."""
 
     auto_discover: bool = Field(
@@ -160,7 +95,7 @@ class WMSDiscoveryConfig(DomainValueObject):
     )
 
 
-class WMSExtractionConfig(DomainValueObject):
+class WMSExtractionConfig(BaseModel):
     """WMS data extraction configuration value object."""
 
     page_size: int = Field(
@@ -189,7 +124,7 @@ class WMSExtractionConfig(DomainValueObject):
     )
 
 
-class TapOracleWMSConfig(DomainBaseModel):
+class TapOracleWMSConfig(BaseConfig):
     """Main configuration for Oracle WMS tap using flext-core patterns."""
 
     # Authentication
@@ -238,24 +173,9 @@ class TapOracleWMSConfig(DomainBaseModel):
 
     @field_validator("log_level")
     @classmethod
-    def validate_log_level(cls, v: str) -> str:
-        """Validate logging level.
-
-        Args:
-            v: Log level to validate
-
-        Returns:
-            Validated and normalized log level
-
-        Raises:
-            ValueError: If log level is not supported
-
-        """
-        allowed = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
-        if v.upper() not in allowed:
-            msg = f"Invalid log_level: {v}. Must be one of {allowed}"
-            raise ValueError(msg)
-        return v.upper()
+    def validate_log_level_field(cls, v: str) -> str:
+        """Validate logging level using imported function."""
+        return validate_log_level(v)
 
     def to_singer_config(self) -> dict[str, Any]:
         """Convert to Singer protocol configuration format.

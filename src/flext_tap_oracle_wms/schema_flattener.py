@@ -5,11 +5,12 @@
 
 from __future__ import annotations
 
-# Removed circular dependency - use DI pattern
-import logging
 from typing import Any
 
-logger = logging.getLogger(__name__)
+# Removed circular dependency - use DI pattern
+from flext_core import get_logger
+
+logger = get_logger(__name__)
 
 
 class SchemaFlattener:

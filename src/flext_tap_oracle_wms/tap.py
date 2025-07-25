@@ -6,12 +6,15 @@ from __future__ import annotations
 
 # Import logger at top level
 # Removed circular dependency - use DI pattern
-import logging
 import sys
 from datetime import UTC, datetime
 from typing import Any
 
-from singer_sdk import Tap, typing as th
+from flext_core import get_logger
+
+# Import from flext-meltano for centralized patterns (CONSOLIDATED)
+# MIGRATED: Singer SDK imports centralized via flext-meltano
+from flext_meltano import FlextMeltanoBaseTap as Tap, typing as th
 
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
 from flext_tap_oracle_wms.config_validator import (
@@ -176,7 +179,7 @@ class TapOracleWMS(Tap):
         ),
     ).to_dict()
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, **kwargs: object) -> None:
         """Initialize tap with lazy loading - NO network calls during init."""
         # Call parent init first to let Singer SDK handle config parsing
         super().__init__(*args, **kwargs)
@@ -327,7 +330,7 @@ class TapOracleWMS(Tap):
         self._is_discovery_mode = enabled
 
     @classmethod
-    def invoke(cls, *args: Any, **kwargs: Any) -> Any:
+    def invoke(cls, *args: Any, **kwargs: object) -> Any:
         """Override invoke to detect discovery mode.
 
         Args:
@@ -339,7 +342,7 @@ class TapOracleWMS(Tap):
 
         """
         # Initialize logger for debugging
-        logger = logging.getLogger(__name__)
+        logger = get_logger(__name__)
         # Check if this is a discovery command to enable discovery mode
         if "--discover" in sys.argv:
             logger.info(

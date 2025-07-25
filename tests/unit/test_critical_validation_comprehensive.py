@@ -389,7 +389,7 @@ class TestValidateSchemaDiscoveryMode:
                     assert not result.success
 
     def test_validate_logging_format(self) -> None:
-        """Test that validation returns proper ServiceResult for invalid config."""
+        """Test that validation returns proper FlextResult for invalid config."""
         with patch.dict(
             os.environ,
             {

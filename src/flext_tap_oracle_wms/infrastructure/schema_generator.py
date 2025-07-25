@@ -10,14 +10,15 @@ following the Single Responsibility Principle.
 from __future__ import annotations
 
 # Removed circular dependency - use DI pattern
-import logging
 import re
 from typing import Any
+
+from flext_core import get_logger
 
 from flext_tap_oracle_wms.interfaces import SchemaGeneratorInterface
 from flext_tap_oracle_wms.type_mapping import get_full_singer_schema
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class SchemaGenerationError(Exception):

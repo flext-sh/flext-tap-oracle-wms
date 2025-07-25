@@ -12,11 +12,11 @@ from __future__ import annotations
 import base64
 
 # Removed circular dependency - use DI pattern
-import logging
 import re
 from typing import TYPE_CHECKING, Any
 
 import httpx
+from flext_core import get_logger
 
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
 from flext_tap_oracle_wms.interfaces import EntityDiscoveryInterface
@@ -24,7 +24,7 @@ from flext_tap_oracle_wms.interfaces import EntityDiscoveryInterface
 if TYPE_CHECKING:
     from flext_tap_oracle_wms.interfaces import CacheManagerInterface
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # HTTP status codes
 HTTP_NOT_FOUND = 404

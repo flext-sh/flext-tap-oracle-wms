@@ -2,17 +2,20 @@
 
 This module provides entity discovery and schema generation capabilities
 for Oracle WMS API integration using flext-core patterns.
+
+REFACTORED: Uses centralized flext-oracle-wms discovery - NO DUPLICATION.
 """
 
 import asyncio
-
-# Removed circular dependency - use DI pattern
-import logging
 from typing import Any
 
-from flext_tap_oracle_wms.infrastructure.entity_discovery import (
-    EntityDiscovery as EntityDiscoveryCore,
+from flext_observability.structured_logging import get_logger
+from flext_oracle_wms import (
+    FlextOracleWmsEntityDiscovery,
+    FlextOracleWmsEntityNotFoundError,
+    FlextOracleWmsError,
 )
+
 from flext_tap_oracle_wms.infrastructure.schema_generator import (
     SchemaGenerator as SchemaGeneratorCore,
 )
@@ -22,15 +25,12 @@ from flext_tap_oracle_wms.interfaces import (
     SchemaGeneratorInterface,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
-
-class WMSDiscoveryError(Exception):
-    """Base exception for WMS discovery errors."""
-
-
-class EntityDiscoveryError(WMSDiscoveryError):
-    """Exception raised when entity discovery fails."""
+# Use centralized discovery and exceptions - NO DUPLICATION
+EntityDiscoveryCore = FlextOracleWmsEntityDiscovery
+WMSDiscoveryError = FlextOracleWmsError
+EntityDiscoveryError = FlextOracleWmsEntityNotFoundError
 
 
 class EntityDescriptionError(WMSDiscoveryError):

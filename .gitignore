@@ -1,10 +1,62 @@
 # ============================================================================
-# FLEXT PYTHON PROJECT STANDARD .gitignore TEMPLATE
-# Python 3.13 | Poetry | Testing | Development Tools
+# FLEXT-TAP-ORACLE-WMS - PROFESSIONAL .gitignore TEMPLATE
+# Python 3.13 | Poetry | Singer | Oracle WMS | Anti-Junk Protection
 # ============================================================================
 
 # ============================================================================
-# PYTHON BUILD AND RUNTIME ARTIFACTS
+# JUNK FILES AND ANTI-PATTERNS - ZERO TOLERANCE
+# ============================================================================
+
+# Archive directories - Block all junk accumulation
+archive/
+archives/
+temp_*/
+temp/
+tmp/
+.tmp/
+backup/
+backups/
+.bak/
+old/
+obsolete/
+deprecated/
+
+# AI-generated reports and analysis files - FORBIDDEN
+*_REPORT.md
+*_REPORT_*.md
+*_ANALYSIS*.md
+*_SUMMARY*.md
+CONFIG_MIGRATION*.md
+FLEXT_*_MIGRATION*.md
+DEVELOPMENT_STANDARDS.md
+FLEXT_*_PATTERNS.md
+LOGGING_MIGRATION.md
+STRICT_COMPLIANCE.md
+LEVEL1_*.md
+DUPLICATION_REPORT.md
+DUPLICATE_CODE_*.md
+LINT_CORRECTIONS_*.md
+
+# Fix scripts and validation files - FORBIDDEN
+fix_*.py
+*_fix.py
+*_validation.py
+validate_*.py
+investigate_*.py
+debug_*.py
+test_fix_*.py
+migrate_*.py
+*_migration.py
+
+# Timestamped files and temporary analysis
+*_20[0-9][0-9]*.py
+*_20[0-9][0-9]*.md
+*_20[0-9][0-9]*.json
+*_backup_*
+*_temp_*
+
+# ============================================================================
+# PYTHON ARTIFACTS
 # ============================================================================
 
 # Python cache and compiled files
@@ -42,15 +94,11 @@ pip-wheel-metadata/
 *.manifest
 *.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
 # ============================================================================
 # TESTING AND COVERAGE
 # ============================================================================
 
-# Unit test / coverage reports
+# Test results and coverage
 htmlcov/
 .tox/
 .nox/
@@ -69,37 +117,36 @@ junit.xml
 coverage.json
 .benchmarks/
 
+# Test artifacts
+test_output/
+test_data/
+e2e_results/
+test_*.py
+*_test.py
+
 # ============================================================================
-# DEVELOPMENT TOOLS AND CACHE
+# DEVELOPMENT TOOLS
 # ============================================================================
 
-# mypy
+# Type checkers
 .mypy_cache/
 .dmypy.json
 dmypy.json
-
-# Pyre type checker
 .pyre/
-
-# pytype static type analyzer
 .pytype/
 
-# Ruff
+# Linting and formatting
 .ruff_cache/
-
-# Bandit
 .bandit
-
-# pylint
 .pylint.d/
 
 # ============================================================================
 # VIRTUAL ENVIRONMENTS AND DEPENDENCIES
 # ============================================================================
 
-# virtualenv
+# Virtual environments
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
@@ -109,13 +156,108 @@ venv.bak/
 # Poetry - keep lock file for reproducible builds
 # poetry.lock  # KEEP THIS FILE COMMENTED OUT
 
-# Pipenv
+# Other dependency managers
 Pipfile.lock.bak
-
-# PDM
 .pdm.toml
 .pdm-python
 .pdm-build/
+__pypackages__/
+
+# ============================================================================
+# SINGER TAP SPECIFIC
+# ============================================================================
+
+# Singer tap artifacts
+*.state
+*.state.json
+state.json
+*_state.json
+catalog.json
+*.catalog.json
+properties.json
+schemas/
+tap_config.json
+tap_config_*.json
+
+# Singer output and logs
+*.singer
+singer_output/
+tap_output/
+extraction_logs/
+sync_logs/
+sync_state/
+
+# Meltano integration
+.meltano/
+.secrets/
+catalog.json
+tap_done
+meltano.db
+meltano-*.db
+
+# ============================================================================
+# ORACLE WMS SPECIFIC
+# ============================================================================
+
+# Oracle WMS configuration
+wms_config.json
+wms_config_*.json
+wms_connection.json
+warehouse_config.json
+
+# Oracle WMS data files
+wms_inventory_*.json
+wms_shipments_*.json
+wms_receipts_*.json
+wms_labor_*.json
+wms_locations_*.json
+wms_items_*.json
+
+# Oracle WMS export files
+wms_export/
+wms_data_export/
+inventory_export/
+shipment_export/
+receipt_export/
+
+# Oracle WMS integration logs
+wms_debug.log
+wms_trace_*.log
+wms_sync_*.log
+wms_integration_*.log
+warehouse_*.log
+
+# Oracle WMS temporary processing
+wms_temp/
+wms_processing/
+wms_cache/
+inventory_cache/
+location_cache/
+
+# Oracle WMS reports and analytics
+wms_reports/
+inventory_reports/
+shipment_reports/
+labor_reports/
+performance_reports/
+wms_analytics/
+
+# Oracle WMS API artifacts
+wms_api_cache/
+wms_responses/
+api_schemas/
+wms_metadata/
+
+# Oracle Base Oracle files (inherited)
+tnsnames.ora
+sqlnet.ora
+wallet/
+cwallet.sso
+ewallet.p12
+*.trc
+*.trm
+*.dmp
+*.exp
 
 # ============================================================================
 # IDEs AND EDITORS
@@ -131,23 +273,12 @@ Pipfile.lock.bak
 *.ipr
 *.iws
 
-# Sublime Text
+# Other editors
 *.sublime-project
 *.sublime-workspace
-
-# Vim
 *.swp
 *.swo
 *~
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
 .\#*
 
 # ============================================================================
@@ -165,36 +296,13 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
 *.lnk
 
 # Linux
-*~
 .fuse_hidden*
 .directory
 .Trash-*
 .nfs*
-
-# ============================================================================
-# DOCUMENTATION AND REPORTS
-# ============================================================================
-
-# Sphinx documentation
-docs/_build/
-docs/build/
-.buildinfo
-
-# MkDocs
-site/
-
-# Reports
-reports/
-*.report
-*.json.report
 
 # ============================================================================
 # LOGS AND TEMPORARY FILES
@@ -204,6 +312,7 @@ reports/
 *.log
 logs/
 log/
+.flext_logs/
 
 # Temporary files
 *.tmp
@@ -212,8 +321,63 @@ log/
 *.backup
 *.swp
 *.swo
-.tmp/
-tmp/
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+cache/
+.cache/
+
+# ============================================================================
+# SECURITY AND CREDENTIALS
+# ============================================================================
+
+# Environment variables
+.env
+.env.*
+!.env.example
+.envrc
+
+# Secrets and credentials
+.secrets
+*.key
+*.pem
+*.crt
+*.csr
+*_key
+*_secret
+.credentials
+secrets/
+wallet/
+
+# Configuration backups
+*.conf.bak
+*.config.bak
+*.toml.bak
+
+# ============================================================================
+# DOCUMENTATION AND REPORTS
+# ============================================================================
+
+# Generated documentation
+docs/_build/
+docs/build/
+.buildinfo
+site/
+
+# Reports
+reports/
+*.report
+*.json.report
+
+# ============================================================================
+# DOCKER AND CONTAINERS
+# ============================================================================
+
+# Docker
+.dockerignore.bak
+docker-compose.override.yml
 
 # ============================================================================
 # DATABASE AND DATA FILES
@@ -233,131 +397,25 @@ data/
 *.data
 
 # ============================================================================
-# SINGER/MELTANO SPECIFIC
-# ============================================================================
-
-# Meltano
-.meltano/
-.secrets/
-catalog.json
-tap_done
-target_done
-state.json
-output/
-
-# DBT
-target/
-dbt_packages/
-logs/
-
-# ============================================================================
-# DOCKER AND CONTAINERS
-# ============================================================================
-
-# Docker
-.dockerignore.bak
-docker-compose.override.yml
-
-# ============================================================================
-# CONFIGURATION AND SECRETS
-# ============================================================================
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-.envrc
-
-# Secrets and credentials
-.secrets
-*.key
-*.pem
-*.crt
-*.csr
-*_key
-*_secret
-.credentials
-secrets/
-
-# Configuration backups
-*.conf.bak
-*.config.bak
-*.toml.bak
-
-# ============================================================================
-# PROJECT SPECIFIC - FORBID ANTI-PATTERNS
-# ============================================================================
-
-# Archive directory (for moved junk files)
-archive/
-
-# Reports directory (for metrics, coverage, etc.)
-reports/
-
-# Old requirements.txt (use pyproject.toml)
-
-# Manual fix scripts - FORBIDDEN
-fix_*.py
-*_fix.py
-*_validation.py
-validate_*.py
-
-# AI-generated reports and migration files - FORBIDDEN
-*_REPORT.md
-*_REPORT_*.md
-CONFIG_MIGRATION*.md
-FLEXT_*_MIGRATION*.md
-DEVELOPMENT_STANDARDS.md
-FLEXT_*_PATTERNS.md
-LOGGING_MIGRATION.md
-STRICT_COMPLIANCE.md
-LEVEL1_*.md
-DUPLICATION_REPORT.md
-
-# ============================================================================
 # MISCELLANEOUS
 # ============================================================================
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb
 
 # IPython
 profile_default/
 ipython_config.py
 
-# pyenv
+# Version managers
 .python-version
-
-# pipenv
-Pipfile.lock
-
-# PEP 582
-__pypackages__/
 
 # Celery
 celerybeat-schedule
 celerybeat.pid
 
-# SageMath parsed files
-*.sage.py
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# Custom additions
-*.local
-*.user 
-
-# ============================================================================
-# AI ASSISTANT FILES
-# ============================================================================
+# AI Assistant files
 CLAUDE.md
 CLAUDE.local.md
 .claude/
@@ -367,9 +425,13 @@ CLAUDE.local.md
 # ALWAYS INCLUDE EXCEPTIONS
 # ============================================================================
 
-# Important: Force include critical files
+# Force include critical files
 !pyproject.toml
 !Makefile
 !README.md
 !.pre-commit-config.yaml
 !.env.example
+!config.json.example
+!meltano.yml
+!singer-config.json.example
+!wms_config.json.example
