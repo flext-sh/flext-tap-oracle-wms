@@ -1,21 +1,19 @@
 """Simple API for FLEXT tap-oracle-wms setup and configuration.
 
+Copyright (c) 2025 FLEXT Team
+Licensed under the MIT License
+
 Provides a simple interface for setting up Oracle WMS data extraction.
 """
-
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
 
 from __future__ import annotations
 
 from typing import Any
 
-# Import from flext-core for foundational patterns (standardized)
 from flext_core import (
     FlextResult,
 )
 
-# Import from flext-oracle-wms for centralized patterns
 from flext_tap_oracle_wms.config import TapOracleWMSConfig
 
 

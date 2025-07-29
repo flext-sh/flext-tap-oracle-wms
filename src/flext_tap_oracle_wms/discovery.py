@@ -12,13 +12,13 @@ from flext_oracle_wms import (
     flext_oracle_wms_create_entity_discovery,
 )
 
-from flext_tap_oracle_wms.infrastructure.schema_generator import (
-    SchemaGenerator as SchemaGeneratorCore,
-)
 from flext_tap_oracle_wms.interfaces import (
     CacheManagerInterface,
     EntityDiscoveryInterface,
     SchemaGeneratorInterface,
+)
+from flext_tap_oracle_wms.schema_generator import (
+    SchemaGenerator as SchemaGeneratorCore,
 )
 
 logger = get_logger(__name__)
@@ -74,22 +74,23 @@ class EntityDiscovery(EntityDiscoveryInterface):
         from flext_oracle_wms import FlextOracleWmsCacheManager
 
         # Create real HTTP client as required by library
+        timeout_value = config.get("request_timeout", config.get("timeout", 30))
+        # Ensure timeout is numeric (fix for type error)
+        if isinstance(timeout_value, str):
+            timeout_value = float(timeout_value)
+
         client = httpx.Client(
             base_url=config.get("base_url", ""),
             headers=headers or {},
-            timeout=config.get("timeout", 30),
+            timeout=timeout_value,
         )
-
-        # Create real WMS cache manager
-        wms_cache_manager = FlextOracleWmsCacheManager({
-            "cache_ttl_seconds": config.get("cache_ttl_seconds", 300),
-            "max_cache_entries": config.get("max_cache_entries", 1000),
-        })
 
         # Use ONLY the library creation function with correct signature
         self._entity_discovery = flext_oracle_wms_create_entity_discovery(
-            client=client,
-            cache_manager=wms_cache_manager,
+            api_client=client,
+            environment=config.get("environment", "default"),
+            enable_caching=True,
+            cache_ttl=config.get("cache_ttl_seconds", 300),
         )
 
     @property
@@ -107,7 +108,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         """
         # Use ONLY the library discovery method - NO CUSTOM LOGIC
-        entities_result = self._entity_discovery.flext_oracle_wms_discover_all_entities()
+        entities_result = await self._entity_discovery.discover_all_entities()
 
         # Convert FlextResult to dict format expected by interface
         if entities_result.is_success:
@@ -147,8 +148,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         entity_filter = self.config.get("entities")
         if entity_filter:
             return {
-                name: url for name, url in entities.items()
-                if name in entity_filter
+                name: url for name, url in entities.items() if name in entity_filter
             }
         return entities
 
@@ -167,7 +167,9 @@ class EntityDiscovery(EntityDiscoveryInterface):
         """
         try:
             # Use library method to get entity details
-            entity_result = self._entity_discovery.flext_oracle_wms_discover_entity_details(entity_name)
+            entity_result = await self._entity_discovery.discover_entity_schema(
+                entity_name
+            )
             if entity_result.is_success and entity_result.data:
                 # Convert FlextOracleWmsEntity to dict format
                 entity = entity_result.data
@@ -195,7 +197,9 @@ class EntityDiscovery(EntityDiscoveryInterface):
         """
         try:
             # Use library method directly (no async needed)
-            entity_result = self._entity_discovery.flext_oracle_wms_discover_entity_details(entity_name)
+            entity_result = asyncio.run(self._entity_discovery.discover_entity_schema(
+                entity_name
+            ))
             if entity_result.is_success and entity_result.data:
                 # Convert FlextOracleWmsEntity to dict format
                 entity = entity_result.data

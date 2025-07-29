@@ -3,6 +3,7 @@
 REFACTORED: Uses centralized flext-oracle-wms cache - NO DUPLICATION.
 """
 
+import asyncio
 from typing import Any
 
 from flext_core import get_logger
@@ -33,8 +34,14 @@ class CacheManager(CacheManagerInterface):
             "enable_cache": config.get("enable_cache", True),
         }
 
-        # Use real WMS cache manager instance
-        self._cache_manager = FlextOracleWmsCacheManager(cache_config)
+        # Use real WMS cache manager with proper FlextOracleWmsCacheConfig
+        from flext_oracle_wms.cache import FlextOracleWmsCacheConfig
+        wms_config = FlextOracleWmsCacheConfig(
+            default_ttl_seconds=cache_config.get("cache_ttl_seconds", 300),
+            max_cache_entries=cache_config.get("max_cache_entries", 1000),
+            enable_statistics=True,
+        )
+        self._cache_manager = FlextOracleWmsCacheManager(wms_config)
         self.config = config
         logger.info("Initialized cache manager with real FlextOracleWmsCacheManager")
 
@@ -48,8 +55,12 @@ class CacheManager(CacheManagerInterface):
             Cached value or None if not found.
 
         """
-        # Use real cache manager method
-        return self._cache_manager.flext_oracle_wms_get_entity(key)
+        # Use real cache manager method (async)
+        try:
+            result = asyncio.run(self._cache_manager.get_entity(key))
+            return result.data if result.is_success else None
+        except Exception:
+            return None
 
     def set_cached_value(self, key: str, value: object, ttl: int | None = None) -> None:
         """Store a value in cache with optional TTL.
@@ -61,7 +72,10 @@ class CacheManager(CacheManagerInterface):
 
         """
         # Use real cache manager method with proper signature and default TTL
-        self._cache_manager.flext_oracle_wms_set_entity(key, value, ttl or 300)
+        try:
+            asyncio.run(self._cache_manager.set_entity(key, value, ttl or 300))
+        except Exception:
+            logger.warning(f"Failed to cache value for key: {key}")
 
     def delete(self, key: str) -> bool:
         """Delete value from cache.
@@ -77,10 +91,13 @@ class CacheManager(CacheManagerInterface):
         # In production, this would need a proper delete method implementation
         try:
             # Check if key exists first
-            if self._cache_manager.flext_oracle_wms_get_entity(key) is not None:
+            result = asyncio.run(self._cache_manager.get_entity(key))
+            if result.is_success and result.data is not None:
                 # For now, we can't delete individual keys with the current API
                 # This would need to be implemented in the real cache manager
-                logger.warning(f"Cannot delete individual key {key} - real cache API limitation")
+                logger.warning(
+                    f"Cannot delete individual key {key} - real cache API limitation"
+                )
                 return False
             return False
         except Exception:
@@ -89,7 +106,10 @@ class CacheManager(CacheManagerInterface):
     def clear(self) -> None:
         """Clear all cache entries."""
         # Use real cache manager clear method
-        self._cache_manager.flext_oracle_wms_clear_all()
+        try:
+            asyncio.run(self._cache_manager.clear_all())
+        except Exception:
+            logger.warning("Failed to clear cache")
 
     def get_stats(self) -> dict[str, int]:
         """Get cache statistics.
@@ -99,13 +119,23 @@ class CacheManager(CacheManagerInterface):
 
         """
         # Use real cache manager stats method
-        stats = self._cache_manager.flext_oracle_wms_get_stats()
-        # Convert to expected return type format
+        try:
+            stats_result = asyncio.run(self._cache_manager.get_statistics())
+            if stats_result.is_success and stats_result.data:
+                stats = stats_result.data
+                return {
+                    "hits": stats.hits,
+                    "misses": stats.misses,
+                    "entries": len(getattr(stats, "stats", {})),
+                    "size": len(getattr(stats, "stats", {})),
+                }
+        except Exception as e:
+            logger.warning(f"Failed to get cache statistics: {e}")
         return {
-            "hits": int(stats.get("cache_hits", 0)),
-            "misses": int(stats.get("cache_misses", 0)),
-            "entries": int(stats.get("total_entries", 0)),
-            "size": int(stats.get("cache_size", 0)),
+            "hits": 0,
+            "misses": 0,
+            "entries": 0,
+            "size": 0,
         }
 
     def exists(self, key: str) -> bool:
@@ -130,19 +160,29 @@ class CacheManagerAdapter(CacheManagerInterface):
 
     def __init__(self, config: dict[str, Any]) -> None:
         """Initialize adapter with FlextOracleWmsCacheManager."""
-        cache_config = {
-            "cache_ttl_seconds": config.get("cache_ttl_seconds", 300),
-            "max_cache_entries": config.get("max_cache_entries", 1000),
-        }
-        self._cache_manager = FlextOracleWmsCacheManager(cache_config)
+        # Use real WMS cache manager with proper FlextOracleWmsCacheConfig
+        from flext_oracle_wms.cache import FlextOracleWmsCacheConfig
+        wms_config = FlextOracleWmsCacheConfig(
+            default_ttl_seconds=config.get("cache_ttl_seconds", 300),
+            max_cache_entries=config.get("max_cache_entries", 1000),
+            enable_statistics=True,
+        )
+        self._cache_manager = FlextOracleWmsCacheManager(wms_config)
 
     def get_cached_value(self, key: str) -> Any:
         """Get cached value by key."""
-        return self._cache_manager.flext_oracle_wms_get_metadata(key)
+        try:
+            result = asyncio.run(self._cache_manager.get_metadata(key))
+            return result.data if result.is_success else None
+        except Exception:
+            return None
 
     def set_cached_value(self, key: str, value: object, ttl: int | None = None) -> None:
         """Set cached value with optional TTL."""
-        self._cache_manager.flext_oracle_wms_set_metadata(key, value, ttl or 300)
+        try:
+            asyncio.run(self._cache_manager.set_metadata(key, value, ttl or 300))
+        except Exception:
+            logger.warning(f"Failed to cache metadata for key: {key}")
 
     def is_cache_valid(self, key: str, ttl: int) -> bool:
         """Check if cache entry is valid."""
