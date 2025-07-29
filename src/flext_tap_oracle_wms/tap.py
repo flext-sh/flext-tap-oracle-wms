@@ -179,7 +179,7 @@ class TapOracleWMS(Tap):
         ),
     ).to_dict()
 
-    def __init__(self, *args: Any, **kwargs: object) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:
         """Initialize tap with lazy loading - NO network calls during init."""
         # Call parent init first to let Singer SDK handle config parsing
         super().__init__(*args, **kwargs)
@@ -330,7 +330,7 @@ class TapOracleWMS(Tap):
         self._is_discovery_mode = enabled
 
     @classmethod
-    def invoke(cls, *args: Any, **kwargs: object) -> Any:
+    def invoke(cls, *args: object, **kwargs: object) -> object:
         """Override invoke to detect discovery mode.
 
         Args:
@@ -380,7 +380,7 @@ class TapOracleWMS(Tap):
                 if stream:
                     streams.append(stream)
                     self.logger.info("✅ Created stream: %s", entity_name)
-        except Exception:
+        except (RuntimeError, ValueError, TypeError):
             self.logger.exception("❌ Error during stream discovery")
             raise
         self.logger.info(
@@ -389,7 +389,7 @@ class TapOracleWMS(Tap):
         )
         return streams
 
-    def _create_stream_minimal(self, entity_name: str) -> Any | None:
+    def _create_stream_minimal(self, entity_name: str) -> object | None:
         """Create a minimal stream for discovery."""
         try:
             # Initialize cache if not exists
@@ -582,7 +582,7 @@ class TapOracleWMS(Tap):
                 "✅ Discovered %s entities from WMS API",
                 len(filtered_entities),
             )
-        except Exception:
+        except (RuntimeError, ValueError, TypeError):
             self.logger.exception("❌ Error during entity discovery")
             raise
         else:

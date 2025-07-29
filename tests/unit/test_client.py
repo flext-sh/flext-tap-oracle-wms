@@ -1,5 +1,10 @@
 """Unit tests for client module."""
 
+from datetime import UTC, datetime
+import httpx
+import httpx
+
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 from __future__ import annotations
@@ -11,6 +16,9 @@ import pytest
 from pydantic import HttpUrl
 
 from flext_tap_oracle_wms.client import (
+# Constants
+EXPECTED_DATA_COUNT = 3
+
     AuthenticationError,
     WMSClient,
     WMSClientError,
@@ -26,21 +34,24 @@ class TestWMSClientErrors:
         """Test WMSClientError is base exception."""
         error = WMSClientError("Base error")
         assert isinstance(error, Exception)
-        assert str(error) == "Base error"
+        if str(error) != "Base error":
+            raise AssertionError(f"Expected {"Base error"}, got {str(error)}")
 
     def test_authentication_error_inheritance(self) -> None:
         """Test AuthenticationError inherits from WMSClientError."""
         error = AuthenticationError("Auth failed")
         assert isinstance(error, WMSClientError)
         assert isinstance(error, Exception)
-        assert str(error) == "Auth failed"
+        if str(error) != "Auth failed":
+            raise AssertionError(f"Expected {"Auth failed"}, got {str(error)}")
 
     def test_connection_error_inheritance(self) -> None:
         """Test WMSConnectionError inherits from WMSClientError."""
         error = WMSConnectionError("Connection failed")
         assert isinstance(error, WMSClientError)
         assert isinstance(error, Exception)
-        assert str(error) == "Connection failed"
+        if str(error) != "Connection failed":
+            raise AssertionError(f"Expected {"Connection failed"}, got {str(error)}")
 
 
 class TestWMSClient:
@@ -59,7 +70,7 @@ class TestWMSClient:
     @pytest.fixture
     def mock_metrics(self) -> TapMetrics:
         """Create mock metrics."""
-        from datetime import UTC, datetime
+
 
         return TapMetrics(start_time=datetime.now(UTC))
 
@@ -75,19 +86,22 @@ class TestWMSClient:
     ) -> None:
         """Test WMS client initialization."""
         client = WMSClient(mock_config, mock_metrics)
-        assert client.config == mock_config
+        if client.config != mock_config:
+            raise AssertionError(f"Expected {mock_config}, got {client.config}")
         assert client.metrics == mock_metrics
         assert isinstance(client.client, httpx.Client)
 
     def test_client_httpx_configuration(self, wms_client: WMSClient) -> None:
         """Test httpx client is properly configured."""
         httpx_client = wms_client.client
-        assert str(httpx_client.base_url) == "https://wms.example.com"
+        if str(httpx_client.base_url) != "https://wms.example.com":
+            raise AssertionError(f"Expected {"https://wms.example.com"}, got {str(httpx_client.base_url)}")
         # httpx.Client.timeout is a Timeout object, check total timeout
-        import httpx
+
 
         if isinstance(httpx_client.timeout, httpx.Timeout):
-            assert httpx_client.timeout.read == 30
+            if httpx_client.timeout.read != 30:
+                raise AssertionError(f"Expected {30}, got {httpx_client.timeout.read}")
         # These attributes may not be directly accessible in httpx.Client
         # assert httpx_client.verify is True
         # assert httpx_client.auth == ("test_user", "test_pass")
@@ -95,7 +109,8 @@ class TestWMSClient:
     def test_client_headers_configuration(self, wms_client: WMSClient) -> None:
         """Test client headers are properly configured."""
         headers = wms_client.client.headers
-        assert headers["Accept"] == "application/json"
+        if headers["Accept"] != "application/json":
+            raise AssertionError(f"Expected {"application/json"}, got {headers["Accept"]}")
         assert headers["Content-Type"] == "application/json"
         assert (
             headers["User-Agent"]
@@ -137,7 +152,8 @@ class TestWMSClient:
         mock_response.json.return_value = {"results": [{"id": 1}]}
         mock_get.return_value = mock_response
         response = wms_client.get("/entity/item")
-        assert response == {"results": [{"id": 1}]}
+        if response != {"results": [{"id": 1}]}:
+            raise AssertionError(f"Expected {{"results": [{"id": 1}]}}, got {response}")
         mock_get.assert_called_once_with("/entity/item", params={})
 
     @patch("httpx.Client.get")
@@ -153,7 +169,8 @@ class TestWMSClient:
         mock_get.return_value = mock_response
         params = {"page_size": 100, "company_code": "TEST"}
         response = wms_client.get("/entity/item", params=params)
-        assert response == {"results": [{"id": 1}]}
+        if response != {"results": [{"id": 1}]}:
+            raise AssertionError(f"Expected {{"results": [{"id": 1}]}}, got {response}")
         mock_get.assert_called_once_with("/entity/item", params=params)
 
     @patch("httpx.Client.post")
@@ -170,9 +187,11 @@ class TestWMSClient:
         # WMSClient may not have post method - testing concept only
         # Test that we can set up a mock post response
         response = mock_response  # For testing purposes
-        assert response == mock_response
+        if response != mock_response:
+            raise AssertionError(f"Expected {mock_response}, got {response}")
         # Since we're not actually calling post, check mock was configured
-        assert mock_post.return_value == mock_response
+        if mock_post.return_value != mock_response:
+            raise AssertionError(f"Expected {mock_response}, got {mock_post.return_value}")
 
     @patch("httpx.Client.get")
     def test_request_metrics_tracking(
@@ -186,7 +205,9 @@ class TestWMSClient:
         mock_get.return_value = mock_response
         initial_api_calls = wms_client.metrics.api_calls
         wms_client.get("/entity/item")
-        assert wms_client.metrics.api_calls == initial_api_calls + 1
+        if wms_client.metrics.api_calls != initial_api_calls + 1:
+            raise AssertionError(f"Expected
+            {initial_api_calls + 1}, got {wms_client.metrics.api_calls}")
 
     @patch("httpx.Client.get")
     def test_http_error_handling(
@@ -227,7 +248,8 @@ class TestWMSClient:
 
     def test_client_base_url_configuration(self, wms_client: WMSClient) -> None:
         """Test client base URL is properly set."""
-        assert str(wms_client.client.base_url) == "https://wms.example.com"
+        if str(wms_client.client.base_url) != "https://wms.example.com":
+            raise AssertionError(f"Expected {"https://wms.example.com"}, got {str(wms_client.client.base_url)}")
 
     def test_client_auth_configuration(self, wms_client: WMSClient) -> None:
         """Test client authentication is properly configured."""
@@ -238,10 +260,11 @@ class TestWMSClient:
     def test_client_timeout_configuration(self, wms_client: WMSClient) -> None:
         """Test client timeout is properly configured."""
         # Check timeout configuration - httpx Timeout doesn't have .timeout attribute
-        import httpx
+
 
         if isinstance(wms_client.client.timeout, httpx.Timeout):
-            assert wms_client.client.timeout.read == 30
+            if wms_client.client.timeout.read != 30:
+                raise AssertionError(f"Expected {30}, got {wms_client.client.timeout.read}")
 
     def test_client_ssl_verification_enabled(self, wms_client: WMSClient) -> None:
         """Test SSL verification is enabled by default."""
@@ -285,7 +308,8 @@ class TestWMSClient:
         mock_get.return_value = mock_response
         wms_client.get("/entity/item")
         # Verify that the httpx client was configured with proper headers
-        assert wms_client.client.headers["Accept"] == "application/json"
+        if wms_client.client.headers["Accept"] != "application/json":
+            raise AssertionError(f"Expected {"application/json"}, got {wms_client.client.headers["Accept"]}")
         assert wms_client.client.headers["Content-Type"] == "application/json"
         assert (
             wms_client.client.headers["User-Agent"]
@@ -347,7 +371,8 @@ class TestWMSClient:
         # Verify httpx.Client was called with correct timeout
         mock_httpx_client.assert_called_once()
         call_kwargs = mock_httpx_client.call_args.kwargs
-        assert call_kwargs["timeout"] == 60
+        if call_kwargs["timeout"] != 60:
+            raise AssertionError(f"Expected {60}, got {call_kwargs["timeout"]}")
 
     @patch("httpx.Client")
     def test_client_configuration_base_url_conversion(
@@ -365,25 +390,29 @@ class TestWMSClient:
         # Verify base_url was converted to string
         mock_httpx_client.assert_called_once()
         call_kwargs = mock_httpx_client.call_args.kwargs
-        assert call_kwargs["base_url"] == "https://wms.example.com"
+        if call_kwargs["base_url"] != "https://wms.example.com":
+            raise AssertionError(f"Expected {"https://wms.example.com"}, got {call_kwargs["base_url"]}")
 
     def test_client_user_agent_header(self, wms_client: WMSClient) -> None:
         """Test client includes proper User-Agent header."""
         headers = wms_client.client.headers
         user_agent = headers.get("User-Agent")
-        assert user_agent == "flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0"
+        if user_agent != "flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0":
+            raise AssertionError(f"Expected {"flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0"}, got {user_agent}")
 
     def test_client_accept_header(self, wms_client: WMSClient) -> None:
         """Test client includes proper Accept header."""
         headers = wms_client.client.headers
         accept = headers.get("Accept")
-        assert accept == "application/json"
+        if accept != "application/json":
+            raise AssertionError(f"Expected {"application/json"}, got {accept}")
 
     def test_client_content_type_header(self, wms_client: WMSClient) -> None:
         """Test client includes proper Content-Type header."""
         headers = wms_client.client.headers
         content_type = headers.get("Content-Type")
-        assert content_type == "application/json"
+        if content_type != "application/json":
+            raise AssertionError(f"Expected {"application/json"}, got {content_type}")
 
 
 class TestWMSClientIntegration:
@@ -399,7 +428,8 @@ class TestWMSClientIntegration:
         metrics = TapMetrics(start_time=None)
         # Test initialization
         client = WMSClient(config, metrics)
-        assert client.config == config
+        if client.config != config:
+            raise AssertionError(f"Expected {config}, got {client.config}")
         assert client.metrics == metrics
         # Test context manager usage
         with client as ctx_client:
@@ -429,7 +459,8 @@ class TestWMSClientIntegration:
         # Make request
         client.get("/entity/item")
         # Verify metrics were updated
-        assert metrics.api_calls == initial_api_calls + 1
+        if metrics.api_calls != initial_api_calls + 1:
+            raise AssertionError(f"Expected {initial_api_calls + 1}, got {metrics.api_calls}")
 
     def test_error_tracking_in_metrics(self) -> None:
         """Test that errors are tracked in metrics."""
@@ -445,4 +476,5 @@ class TestWMSClientIntegration:
         # Simulate error (without actually making request)
         metrics.add_error()
         # Verify error was tracked
-        assert metrics.errors_encountered == initial_errors + 1
+        if metrics.errors_encountered != initial_errors + 1:
+            raise AssertionError(f"Expected {initial_errors + 1}, got {metrics.errors_encountered}")

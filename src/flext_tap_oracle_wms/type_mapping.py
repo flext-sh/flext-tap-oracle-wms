@@ -36,7 +36,11 @@ def convert_metadata_type_to_singer(
     # Use centralized mapping function
     singer_schema = flext_oracle_wms_map_oracle_to_singer(wms_type)
     # Return the primary type (first in the type array)
-    return singer_schema["type"][0] if isinstance(singer_schema["type"], list) else singer_schema["type"]
+    return (
+        singer_schema["type"][0]
+        if isinstance(singer_schema["type"], list)
+        else singer_schema["type"]
+    )
 
 
 def get_singer_type_with_metadata(

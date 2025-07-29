@@ -8,6 +8,11 @@ import pytest
 from pydantic import ValidationError
 
 from flext_tap_oracle_wms.config import (
+# Constants
+HTTP_OK = 200
+EXPECTED_BULK_SIZE = 2
+EXPECTED_DATA_COUNT = 3
+
     TapOracleWMSConfig,
     WMSAuthConfig,
     WMSConnectionConfig,
@@ -26,9 +31,11 @@ class TestWMSAuthConfig:
             password="test_pass",
             auth_method="basic",
         )
-        assert auth.username == "test_user"
+        if auth.username != "test_user":
+            raise AssertionError(f"Expected {"test_user"}, got {auth.username}")
         assert auth.password == "test_pass"
-        assert auth.auth_method == "basic"
+        if auth.auth_method != "basic":
+            raise AssertionError(f"Expected {"basic"}, got {auth.auth_method}")
 
     def test_auth_method_validation(self) -> None:
         """Test authentication method validation."""
@@ -38,19 +45,22 @@ class TestWMSAuthConfig:
             password="pass",
             auth_method="basic",
         )
-        assert auth_basic.auth_method == "basic"
+        if auth_basic.auth_method != "basic":
+            raise AssertionError(f"Expected {"basic"}, got {auth_basic.auth_method}")
         auth_token = WMSAuthConfig(
             username="user",
             password="pass",
             auth_method="token",
         )
-        assert auth_token.auth_method == "token"
+        if auth_token.auth_method != "token":
+            raise AssertionError(f"Expected {"token"}, got {auth_token.auth_method}")
         auth_oauth = WMSAuthConfig(
             username="user",
             password="pass",
             auth_method="oauth",
         )
-        assert auth_oauth.auth_method == "oauth"
+        if auth_oauth.auth_method != "oauth":
+            raise AssertionError(f"Expected {"oauth"}, got {auth_oauth.auth_method}")
         # Invalid method should fail
         with pytest.raises(ValidationError):
             WMSAuthConfig(username="user", password="pass", auth_method="invalid")
@@ -71,10 +81,13 @@ class TestWMSConnectionConfig:
     def test_minimal_connection_config(self) -> None:
         """Test minimal connection configuration."""
         conn = WMSConnectionConfig(base_url="https://wms.example.com")
-        assert conn.base_url == "https://wms.example.com"
+        if conn.base_url != "https://wms.example.com":
+            raise AssertionError(f"Expected {"https://wms.example.com"}, got {conn.base_url}")
         assert conn.timeout == 30
-        assert conn.max_retries == 3
-        assert conn.verify_ssl is True
+        if conn.max_retries != EXPECTED_DATA_COUNT:
+            raise AssertionError(f"Expected {3}, got {conn.max_retries}")
+        if not (conn.verify_ssl):
+            raise AssertionError(f"Expected True, got {conn.verify_ssl}")
 
     def test_full_connection_config(self) -> None:
         """Test full connection configuration."""
@@ -84,21 +97,26 @@ class TestWMSConnectionConfig:
             max_retries=5,
             verify_ssl=False,
         )
-        assert conn.base_url == "https://wms.example.com"
+        if conn.base_url != "https://wms.example.com":
+            raise AssertionError(f"Expected {"https://wms.example.com"}, got {conn.base_url}")
         assert conn.timeout == 60
-        assert conn.max_retries == 5
-        assert conn.verify_ssl is False
-
+        if conn.max_retries != 5:
+            raise AssertionError(f"Expected {5}, got {conn.max_retries}")
+        if conn.verify_ssl:
+            raise AssertionError(f"Expected False, got {conn.verify_ssl}")\ n
     def test_base_url_validation(self) -> None:
         """Test base URL validation."""
         # Valid URLs
         conn_https = WMSConnectionConfig(base_url="https://test.com")
-        assert conn_https.base_url == "https://test.com"
+        if conn_https.base_url != "https://test.com":
+            raise AssertionError(f"Expected {"https://test.com"}, got {conn_https.base_url}")
         conn_http = WMSConnectionConfig(base_url="http://test.com")
-        assert conn_http.base_url == "http://test.com"
+        if conn_http.base_url != "http://test.com":
+            raise AssertionError(f"Expected {"http://test.com"}, got {conn_http.base_url}")
         # URL with trailing slash should be stripped
         conn_slash = WMSConnectionConfig(base_url="https://test.com/")
-        assert conn_slash.base_url == "https://test.com"
+        if conn_slash.base_url != "https://test.com":
+            raise AssertionError(f"Expected {"https://test.com"}, got {conn_slash.base_url}")
         # Invalid URL should fail
         with pytest.raises(ValidationError):
             WMSConnectionConfig(base_url="invalid-url")
@@ -107,7 +125,8 @@ class TestWMSConnectionConfig:
         """Test timeout validation."""
         # Valid timeout
         conn = WMSConnectionConfig(base_url="https://test.com", timeout=30)
-        assert conn.timeout == 30
+        if conn.timeout != 30:
+            raise AssertionError(f"Expected {30}, got {conn.timeout}")
         # Invalid timeout should fail
         with pytest.raises(ValidationError):
             WMSConnectionConfig(base_url="https://test.com", timeout=0)
@@ -118,7 +137,8 @@ class TestWMSConnectionConfig:
         """Test max retries validation."""
         # Valid retries
         conn = WMSConnectionConfig(base_url="https://test.com", max_retries=5)
-        assert conn.max_retries == 5
+        if conn.max_retries != 5:
+            raise AssertionError(f"Expected {5}, got {conn.max_retries}")
         # Invalid retries should fail
         with pytest.raises(ValidationError):
             WMSConnectionConfig(base_url="https://test.com", max_retries=-1)
@@ -132,11 +152,15 @@ class TestWMSDiscoveryConfig:
     def test_default_discovery_config(self) -> None:
         """Test default discovery configuration."""
         config = WMSDiscoveryConfig()
-        assert config.auto_discover is True
-        assert config.entity_filter == []
+        if not (config.auto_discover):
+            raise AssertionError(f"Expected True, got {config.auto_discover}")
+        if config.entity_filter != []:
+            raise AssertionError(f"Expected {[]}, got {config.entity_filter}")
         assert config.exclude_entities == []
-        assert config.include_metadata is True
-        assert config.max_entities == 100
+        if not (config.include_metadata):
+            raise AssertionError(f"Expected True, got {config.include_metadata}")
+        if config.max_entities != 100:
+            raise AssertionError(f"Expected {100}, got {config.max_entities}")
 
     def test_custom_discovery_config(self) -> None:
         """Test custom discovery configuration."""
@@ -147,17 +171,19 @@ class TestWMSDiscoveryConfig:
             include_metadata=False,
             max_entities=50,
         )
-        assert config.auto_discover is False
-        assert config.entity_filter == ["item", "location"]
-        assert config.exclude_entities == ["temp"]
-        assert config.include_metadata is False
-        assert config.max_entities == 50
+        if config.auto_discover:
+            raise AssertionError(f"Expected False, got {config.auto_discover}")\ n        assert config.entity_filter == ["item", "location"]
+        if config.exclude_entities != ["temp"]:
+            raise AssertionError(f"Expected {["temp"]}, got {config.exclude_entities}")
+        if config.include_metadata:
+            raise AssertionError(f"Expected False, got {config.include_metadata}")\ n        assert config.max_entities == 50
 
     def test_max_entities_validation(self) -> None:
         """Test max entities validation."""
         # Valid max entities
         config = WMSDiscoveryConfig(max_entities=100)
-        assert config.max_entities == 100
+        if config.max_entities != 100:
+            raise AssertionError(f"Expected {100}, got {config.max_entities}")
         # Invalid max entities should fail
         with pytest.raises(ValidationError):
             WMSDiscoveryConfig(max_entities=0)
@@ -171,11 +197,14 @@ class TestWMSExtractionConfig:
     def test_default_extraction_config(self) -> None:
         """Test default extraction configuration."""
         config = WMSExtractionConfig(start_date=None)
-        assert config.page_size == 500
+        if config.page_size != 500:
+            raise AssertionError(f"Expected {500}, got {config.page_size}")
         assert config.company_code == "*"
-        assert config.facility_code == "*"
+        if config.facility_code != "*":
+            raise AssertionError(f"Expected {"*"}, got {config.facility_code}")
         assert config.start_date is None
-        assert config.batch_size == 1000
+        if config.batch_size != 1000:
+            raise AssertionError(f"Expected {1000}, got {config.batch_size}")
 
     def test_custom_extraction_config(self) -> None:
         """Test custom extraction configuration."""
@@ -186,17 +215,21 @@ class TestWMSExtractionConfig:
             start_date="2024-01-01T00:00:00Z",
             batch_size=500,
         )
-        assert config.page_size == 100
+        if config.page_size != 100:
+            raise AssertionError(f"Expected {100}, got {config.page_size}")
         assert config.company_code == "COMP1"
-        assert config.facility_code == "FAC1"
+        if config.facility_code != "FAC1":
+            raise AssertionError(f"Expected {"FAC1"}, got {config.facility_code}")
         assert config.start_date == "2024-01-01T00:00:00Z"
-        assert config.batch_size == 500
+        if config.batch_size != 500:
+            raise AssertionError(f"Expected {500}, got {config.batch_size}")
 
     def test_page_size_validation(self) -> None:
         """Test page size validation."""
         # Valid page size
         config = WMSExtractionConfig(page_size=100, start_date=None)
-        assert config.page_size == 100
+        if config.page_size != 100:
+            raise AssertionError(f"Expected {100}, got {config.page_size}")
         # Invalid page size should fail
         with pytest.raises(ValidationError):
             WMSExtractionConfig(page_size=0, start_date=None)
@@ -207,7 +240,8 @@ class TestWMSExtractionConfig:
         """Test batch size validation."""
         # Valid batch size
         config = WMSExtractionConfig(batch_size=1000, start_date=None)
-        assert config.batch_size == 1000
+        if config.batch_size != 1000:
+            raise AssertionError(f"Expected {1000}, got {config.batch_size}")
         # Invalid batch size should fail
         with pytest.raises(ValidationError):
             WMSExtractionConfig(batch_size=0, start_date=None)
@@ -228,12 +262,15 @@ class TestTapOracleWMSConfig:
             state_file=None,
             catalog_file=None,
         )
-        assert config.auth.username == "user"
+        if config.auth.username != "user":
+            raise AssertionError(f"Expected {"user"}, got {config.auth.username}")
         assert config.connection.base_url == "https://test.com"
-        assert config.discovery.auto_discover is True
-        assert config.extraction.page_size == 500
-        assert config.debug is False
-        assert config.log_level == "INFO"
+        if not (config.discovery.auto_discover):
+            raise AssertionError(f"Expected True, got {config.discovery.auto_discover}")
+        if config.extraction.page_size != 500:
+            raise AssertionError(f"Expected {500}, got {config.extraction.page_size}")
+        if config.debug:
+            raise AssertionError(f"Expected False, got {config.debug}")\ n        assert config.log_level == "INFO"
 
     def test_full_config_creation(self) -> None:
         """Test creating config with all fields."""
@@ -269,14 +306,18 @@ class TestTapOracleWMSConfig:
             debug=True,
             log_level="DEBUG",
         )
-        assert config.auth.username == "test_user"
+        if config.auth.username != "test_user":
+            raise AssertionError(f"Expected {"test_user"}, got {config.auth.username}")
         assert config.connection.base_url == "https://wms.example.com"
-        assert config.discovery.auto_discover is False
-        assert config.extraction.page_size == 100
-        assert config.state_file == "/path/to/state.json"
+        if config.discovery.auto_discover:
+            raise AssertionError(f"Expected False, got {config.discovery.auto_discover}")\ n        assert config.extraction.page_size == 100
+        if config.state_file != "/path/to/state.json":
+            raise AssertionError(f"Expected {"/path/to/state.json"}, got {config.state_file}")
         assert config.catalog_file == "/path/to/catalog.json"
-        assert config.debug is True
-        assert config.log_level == "DEBUG"
+        if not (config.debug):
+            raise AssertionError(f"Expected True, got {config.debug}")
+        if config.log_level != "DEBUG":
+            raise AssertionError(f"Expected {"DEBUG"}, got {config.log_level}")
 
     def test_log_level_validation(self) -> None:
         """Test log level validation."""
@@ -291,7 +332,8 @@ class TestTapOracleWMSConfig:
                 state_file=None,
                 catalog_file=None,
             )
-            assert config.log_level == level
+            if config.log_level != level:
+                raise AssertionError(f"Expected {level}, got {config.log_level}")
         # Lowercase should be converted to uppercase
         config = TapOracleWMSConfig(
             auth=auth,
@@ -300,7 +342,8 @@ class TestTapOracleWMSConfig:
             state_file=None,
             catalog_file=None,
         )
-        assert config.log_level == "DEBUG"
+        if config.log_level != "DEBUG":
+            raise AssertionError(f"Expected {"DEBUG"}, got {config.log_level}")
         # Invalid log level should fail
         with pytest.raises(ValidationError):
             TapOracleWMSConfig(
@@ -322,20 +365,26 @@ class TestTapOracleWMSConfig:
             catalog_file=None,
         )
         # Check discovery defaults
-        assert config.discovery.auto_discover is True
-        assert config.discovery.entity_filter == []
-        assert config.discovery.include_metadata is True
-        assert config.discovery.max_entities == 100
+        if not (config.discovery.auto_discover):
+            raise AssertionError(f"Expected True, got {config.discovery.auto_discover}")
+        if config.discovery.entity_filter != []:
+            raise AssertionError(f"Expected {[]}, got {config.discovery.entity_filter}")
+        if not (config.discovery.include_metadata):
+            raise AssertionError(f"Expected True, got {config.discovery.include_metadata}")
+        if config.discovery.max_entities != 100:
+            raise AssertionError(f"Expected {100}, got {config.discovery.max_entities}")
         # Check extraction defaults
-        assert config.extraction.page_size == 500
+        if config.extraction.page_size != 500:
+            raise AssertionError(f"Expected {500}, got {config.extraction.page_size}")
         assert config.extraction.company_code == "*"
-        assert config.extraction.facility_code == "*"
+        if config.extraction.facility_code != "*":
+            raise AssertionError(f"Expected {"*"}, got {config.extraction.facility_code}")
         assert config.extraction.start_date is None
         # Check main config defaults
         assert config.state_file is None
         assert config.catalog_file is None
-        assert config.debug is False
-        assert config.log_level == "INFO"
+        if config.debug:
+            raise AssertionError(f"Expected False, got {config.debug}")\ n        assert config.log_level == "INFO"
 
     def test_required_fields(self) -> None:
         """Test that required fields are enforced."""
@@ -374,15 +423,20 @@ class TestTapOracleWMSConfig:
             catalog_file=None,
         )
         singer_config = config.to_singer_config()
-        assert singer_config["base_url"] == "https://test.com"
+        if singer_config["base_url"] != "https://test.com":
+            raise AssertionError(f"Expected {"https://test.com"}, got {singer_config["base_url"]}")
         assert singer_config["username"] == "user"
-        assert singer_config["password"] == "pass"
+        if singer_config["password"] != "pass":
+            raise AssertionError(f"Expected {"pass"}, got {singer_config["password"]}")
         assert singer_config["auth_method"] == "basic"
-        assert singer_config["timeout"] == 60
+        if singer_config["timeout"] != 60:
+            raise AssertionError(f"Expected {60}, got {singer_config["timeout"]}")
         assert singer_config["page_size"] == 100
-        assert singer_config["company_code"] == "COMP1"
+        if singer_config["company_code"] != "COMP1":
+            raise AssertionError(f"Expected {"COMP1"}, got {singer_config["company_code"]}")
         assert singer_config["entity_filter"] == ["item"]
-        assert singer_config["debug"] is True
+        if not (singer_config["debug"]):
+            raise AssertionError(f"Expected True, got {singer_config["debug"]}")
 
     def test_from_singer_config(self) -> None:
         """Test creating from Singer configuration format."""
@@ -406,23 +460,31 @@ class TestTapOracleWMSConfig:
             "log_level": "WARNING",
         }
         config = TapOracleWMSConfig.from_singer_config(singer_config)
-        assert config.auth.username == "test_user"
+        if config.auth.username != "test_user":
+            raise AssertionError(f"Expected {"test_user"}, got {config.auth.username}")
         assert config.auth.password == "test_pass"
-        assert config.auth.auth_method == "token"
+        if config.auth.auth_method != "token":
+            raise AssertionError(f"Expected {"token"}, got {config.auth.auth_method}")
         assert config.connection.base_url == "https://wms.example.com"
-        assert config.connection.timeout == 90
+        if config.connection.timeout != 90:
+            raise AssertionError(f"Expected {90}, got {config.connection.timeout}")
         assert config.connection.max_retries == 4
-        assert config.connection.verify_ssl is False
-        assert config.extraction.page_size == 200
-        assert config.extraction.company_code == "COMP2"
+        if config.connection.verify_ssl:
+            raise AssertionError(f"Expected False, got {config.connection.verify_ssl}")\ n        assert config.extraction.page_size == HTTP_OK
+        if config.extraction.company_code != "COMP2":
+            raise AssertionError(f"Expected {"COMP2"}, got {config.extraction.company_code}")
         assert config.extraction.facility_code == "FAC2"
-        assert config.discovery.auto_discover is False
-        assert config.discovery.entity_filter == ["location"]
-        assert config.discovery.max_entities == 75
+        if config.discovery.auto_discover:
+            raise AssertionError(f"Expected False, got {config.discovery.auto_discover}")\ n        assert config.discovery.entity_filter == ["location"]
+        if config.discovery.max_entities != 75:
+            raise AssertionError(f"Expected {75}, got {config.discovery.max_entities}")
         assert config.extraction.start_date == "2024-01-01T00:00:00Z"
-        assert config.extraction.batch_size == 2000
-        assert config.debug is True
-        assert config.log_level == "WARNING"
+        if config.extraction.batch_size != 2000:
+            raise AssertionError(f"Expected {2000}, got {config.extraction.batch_size}")
+        if not (config.debug):
+            raise AssertionError(f"Expected True, got {config.debug}")
+        if config.log_level != "WARNING":
+            raise AssertionError(f"Expected {"WARNING"}, got {config.log_level}")
 
     def test_config_serialization(self) -> None:
         """Test configuration serialization."""
@@ -437,11 +499,14 @@ class TestTapOracleWMSConfig:
         # Serialize to dict
         data = config.model_dump()
         # Verify structure
-        assert "auth" in data
+        if "auth" not in data:
+            raise AssertionError(f"Expected {"auth"} in {data}")
         assert "connection" in data
-        assert "discovery" in data
+        if "discovery" not in data:
+            raise AssertionError(f"Expected {"discovery"} in {data}")
         assert "extraction" in data
-        assert data["auth"]["username"] == "user"
+        if data["auth"]["username"] != "user":
+            raise AssertionError(f"Expected {"user"}, got {data["auth"]["username"]}")
         assert data["connection"]["base_url"] == "https://test.com"
 
     def test_config_deserialization(self) -> None:
@@ -476,10 +541,13 @@ class TestTapOracleWMSConfig:
             "log_level": "INFO",
         }
         config = TapOracleWMSConfig.model_validate(data)
-        assert config.auth.username == "user"
+        if config.auth.username != "user":
+            raise AssertionError(f"Expected {"user"}, got {config.auth.username}")
         assert config.connection.base_url == "https://test.com"
-        assert config.discovery.auto_discover is True
-        assert config.extraction.page_size == 500
+        if not (config.discovery.auto_discover):
+            raise AssertionError(f"Expected True, got {config.discovery.auto_discover}")
+        if config.extraction.page_size != 500:
+            raise AssertionError(f"Expected {500}, got {config.extraction.page_size}")
 
 
 class TestConfigValidation:
@@ -538,7 +606,8 @@ class TestConfigValidation:
             state_file=None,
             catalog_file=None,
         )
-        assert config_https.connection.base_url == "https://test.com"
+        if config_https.connection.base_url != "https://test.com":
+            raise AssertionError(f"Expected {"https://test.com"}, got {config_https.connection.base_url}")
         # Invalid URL should fail
         with pytest.raises(ValidationError):
             self._create_invalid_url_config(auth)
@@ -559,7 +628,8 @@ class TestConfigValidation:
             state_file=None,
             catalog_file=None,
         )
-        assert config.extraction.page_size == 100
+        if config.extraction.page_size != 100:
+            raise AssertionError(f"Expected {100}, got {config.extraction.page_size}")
         assert config.extraction.batch_size == 500
         # Invalid page size should fail
         with pytest.raises(ValidationError):

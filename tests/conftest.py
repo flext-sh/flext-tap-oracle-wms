@@ -2,9 +2,9 @@
 
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
-
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -65,8 +65,6 @@ def test_project_root() -> Path:
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment() -> None:
     """Setup test environment variables."""
-    import os
-
     # Set mandatory environment variables for tests
     os.environ["TAP_ORACLE_WMS_USE_METADATA_ONLY"] = "true"
     os.environ["TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE"] = "0"
@@ -75,8 +73,6 @@ def setup_test_environment() -> None:
 @pytest.fixture(scope="session")
 def mock_wms_config() -> dict[str, object]:
     """Mock WMS configuration for unit tests."""
-    import os
-
     # Set additional environment for tests
     os.environ["TAP_ORACLE_WMS_ENTITIES"] = "allocation,order_hdr,order_dtl,item"
     return {

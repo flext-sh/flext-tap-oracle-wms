@@ -125,7 +125,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         """
         try:
             return await self._entity_discovery.describe_entity(entity_name)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Entity description failed for %s", entity_name)
             msg = f"Entity description failed: {e}"
             raise EntityDescriptionError(msg) from e
@@ -142,7 +142,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         """
         try:
             return asyncio.run(self.describe_entity(entity_name))
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Entity description failed for %s", entity_name)
             msg = f"Entity description failed: {e}"
             raise EntityDescriptionError(msg) from e
@@ -207,7 +207,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         logger.info("Generating schema using ONLY API metadata describe")
         try:
             return self._schema_generator.generate_from_metadata(metadata)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Schema generation from metadata failed")
             msg = f"Schema generation failed: {e}"
             raise SchemaGenerationError(msg) from e
@@ -234,7 +234,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             return self._schema_generator.generate_metadata_schema_with_flattening(
                 metadata,
             )
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Schema generation with flattening failed")
             msg = f"Schema generation failed: {e}"
             raise SchemaGenerationError(msg) from e
@@ -262,7 +262,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
                 prefix,
                 separator,
             )
-        except Exception:
+        except (RuntimeError, ValueError, TypeError):
             logger.exception("Object flattening failed")
             # Return original data if flattening fails
             return data
