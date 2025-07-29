@@ -1,19 +1,15 @@
-"""Oracle WMS Discovery Module.
+"""Oracle WMS Discovery Module - Uses ONLY flext-oracle-wms library.
 
-This module provides entity discovery and schema generation capabilities
-for Oracle WMS API integration using flext-core patterns.
-
-REFACTORED: Uses centralized flext-oracle-wms discovery - NO DUPLICATION.
+ZERO DUPLICATION: Uses flext-oracle-wms discovery functions directly.
 """
 
 import asyncio
 from typing import Any
 
-from flext_observability.structured_logging import get_logger
+from flext_core import get_logger
 from flext_oracle_wms import (
-    FlextOracleWmsEntityDiscovery,
-    FlextOracleWmsEntityNotFoundError,
     FlextOracleWmsError,
+    flext_oracle_wms_create_entity_discovery,
 )
 
 from flext_tap_oracle_wms.infrastructure.schema_generator import (
@@ -27,10 +23,9 @@ from flext_tap_oracle_wms.interfaces import (
 
 logger = get_logger(__name__)
 
-# Use centralized discovery and exceptions - NO DUPLICATION
-EntityDiscoveryCore = FlextOracleWmsEntityDiscovery
+# Use ONLY library functions - NO DUPLICATION
 WMSDiscoveryError = FlextOracleWmsError
-EntityDiscoveryError = FlextOracleWmsEntityNotFoundError
+EntityDiscoveryError = FlextOracleWmsError
 
 
 class EntityDescriptionError(WMSDiscoveryError):
@@ -73,21 +68,61 @@ class EntityDiscovery(EntityDiscoveryInterface):
         self.config = config
         self._cache_manager = cache_manager
         self.headers = headers or {}
-        self._entity_discovery = EntityDiscoveryCore(config, cache_manager, headers)
+
+        # Use ONLY the library creation function with REAL parameters
+        import httpx
+        from flext_oracle_wms import FlextOracleWmsCacheManager
+
+        # Create real HTTP client as required by library
+        client = httpx.Client(
+            base_url=config.get("base_url", ""),
+            headers=headers or {},
+            timeout=config.get("timeout", 30),
+        )
+
+        # Create real WMS cache manager
+        wms_cache_manager = FlextOracleWmsCacheManager({
+            "cache_ttl_seconds": config.get("cache_ttl_seconds", 300),
+            "max_cache_entries": config.get("max_cache_entries", 1000),
+        })
+
+        # Use ONLY the library creation function with correct signature
+        self._entity_discovery = flext_oracle_wms_create_entity_discovery(
+            client=client,
+            cache_manager=wms_cache_manager,
+        )
 
     @property
     def entity_endpoint(self) -> str:
         """Get entity endpoint URL."""
-        return self._entity_discovery.entity_endpoint
+        # Entity discovery doesn't have entity_endpoint property, construct from base URL
+        base_url = self.config.get("base_url", "")
+        return f"{base_url}/api/entities" if base_url else "/api/entities"
 
     async def discover_entities(self) -> dict[str, str]:
-        """Discover available entities from Oracle WMS API.
+        """Discover available entities using ONLY flext-oracle-wms library.
 
         Returns:
             Dictionary mapping entity names to their URLs
 
         """
-        return await self._entity_discovery.discover_entities()
+        # Use ONLY the library discovery method - NO CUSTOM LOGIC
+        entities_result = self._entity_discovery.flext_oracle_wms_discover_all_entities()
+
+        # Convert FlextResult to dict format expected by interface
+        if entities_result.is_success:
+            discovery_result = entities_result.data
+            if discovery_result and hasattr(discovery_result, "entities"):
+                entity_list: list[Any] = discovery_result.entities or []
+                return {
+                    entity.name: f"{self.entity_endpoint}/{entity.name}"
+                    for entity in entity_list
+                    if hasattr(entity, "name")
+                }
+
+        # Return empty dict if discovery failed
+        logger.warning(f"Entity discovery failed: {entities_result.error}")
+        return {}
 
     def discover_entities_sync(self) -> dict[str, str]:
         """Discover entities using synchronous wrapper.
@@ -108,7 +143,14 @@ class EntityDiscovery(EntityDiscoveryInterface):
             Filtered dictionary of entities
 
         """
-        return self._entity_discovery.filter_entities(entities)
+        # Simple filtering based on configuration
+        entity_filter = self.config.get("entities")
+        if entity_filter:
+            return {
+                name: url for name, url in entities.items()
+                if name in entity_filter
+            }
+        return entities
 
     async def describe_entity(self, entity_name: str) -> dict[str, Any] | None:
         """Get metadata description for a specific entity.
@@ -124,7 +166,18 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         """
         try:
-            return await self._entity_discovery.describe_entity(entity_name)
+            # Use library method to get entity details
+            entity_result = self._entity_discovery.flext_oracle_wms_discover_entity_details(entity_name)
+            if entity_result.is_success and entity_result.data:
+                # Convert FlextOracleWmsEntity to dict format
+                entity = entity_result.data
+                return {
+                    "name": entity.name,
+                    "description": entity.description,
+                    "fields": entity.fields or {},
+                    "endpoint": entity.endpoint,
+                }
+            return None
         except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Entity description failed for %s", entity_name)
             msg = f"Entity description failed: {e}"
@@ -141,7 +194,18 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         """
         try:
-            return asyncio.run(self.describe_entity(entity_name))
+            # Use library method directly (no async needed)
+            entity_result = self._entity_discovery.flext_oracle_wms_discover_entity_details(entity_name)
+            if entity_result.is_success and entity_result.data:
+                # Convert FlextOracleWmsEntity to dict format
+                entity = entity_result.data
+                return {
+                    "name": entity.name,
+                    "description": entity.description,
+                    "fields": entity.fields or {},
+                    "endpoint": entity.endpoint,
+                }
+            return None
         except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Entity description failed for %s", entity_name)
             msg = f"Entity description failed: {e}"

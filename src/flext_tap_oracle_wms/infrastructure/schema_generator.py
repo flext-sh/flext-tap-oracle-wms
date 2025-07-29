@@ -16,7 +16,6 @@ from typing import Any
 from flext_core import get_logger
 
 from flext_tap_oracle_wms.interfaces import SchemaGeneratorInterface
-from flext_tap_oracle_wms.type_mapping import get_full_singer_schema
 
 logger = get_logger(__name__)
 
@@ -237,11 +236,12 @@ class SchemaGenerator(SchemaGeneratorInterface):
         return schema
 
     @staticmethod
-    def _create_field_schema(field_info: dict[str, Any]) -> dict[str, Any]:
+    def _create_field_schema(field_info: dict[str, Any], field_name: str | None = None) -> dict[str, Any]:
         """Create schema for a single field based on metadata.
 
         Args:
             field_info: Field metadata from Oracle WMS API.
+            field_name: Optional field name for type inference.
 
         Returns:
             JSON schema definition for the field.
@@ -252,11 +252,21 @@ class SchemaGenerator(SchemaGeneratorInterface):
         nullable = field_info.get("nullable", True)
 
         # Get complete Singer schema from type mapping (includes format)
-        field_schema = get_full_singer_schema(
+        from flext_tap_oracle_wms.type_mapping import get_singer_type_with_metadata
+
+        field_schema = get_singer_type_with_metadata(
             field_type,
-            field_format,
-            nullable=nullable,
+            field_name=field_name,
+            format_hint=field_format,
         )
+
+        # Apply nullable constraint if needed
+        if nullable and "type" in field_schema:
+            current_type = field_schema["type"]
+            if isinstance(current_type, str) and current_type != "null":
+                field_schema["type"] = [current_type, "null"]
+            elif isinstance(current_type, list) and "null" not in current_type:
+                field_schema["type"] = [*current_type, "null"]
 
         # Add constraints if present
         if "maxLength" in field_info:

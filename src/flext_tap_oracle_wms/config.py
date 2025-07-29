@@ -12,14 +12,8 @@ from __future__ import annotations
 
 from typing import Any
 
-# CONSOLIDATED: Import from flext-meltano common patterns (eliminating duplication)
-# MIGRATED: Singer SDK imports centralized via flext-meltano
-from flext_meltano import (
-    FlextMeltanoAuthConfig,
-    FlextMeltanoBaseConfig as BaseConfig,
-    FlextMeltanoConnectionConfig,
-)
-from flext_meltano.common import validate_base_url, validate_log_level
+# Use FlextBaseSettings from flext-core
+from flext_core import FlextBaseSettings
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -43,13 +37,17 @@ def _default_extraction_config() -> WMSExtractionConfig:
     return WMSExtractionConfig(start_date=None)
 
 
-# CONSOLIDATED: Use FlextMeltanoAuthConfig from common patterns
-class WMSAuthConfig(FlextMeltanoAuthConfig):
+# Simple auth config using BaseModel
+class WMSAuthConfig(BaseModel):
     """WMS authentication configuration using consolidated patterns."""
 
+    username: str = Field(..., description="WMS username")
+    password: str = Field(..., description="WMS password")
+    auth_method: str = Field(default="basic", description="Authentication method")
 
-# CONSOLIDATED: Extend FlextMeltanoConnectionConfig with WMS-specific fields
-class WMSConnectionConfig(FlextMeltanoConnectionConfig):
+
+# Simple connection config using BaseModel
+class WMSConnectionConfig(BaseModel):
     """WMS connection configuration using consolidated patterns."""
 
     base_url: str = Field(
@@ -60,12 +58,22 @@ class WMSConnectionConfig(FlextMeltanoConnectionConfig):
         default=True,
         description="Verify SSL certificates",
     )
+    timeout: int = Field(
+        default=30,
+        description="Request timeout in seconds",
+    )
+    max_retries: int = Field(
+        default=3,
+        description="Maximum number of retries",
+    )
 
     @field_validator("base_url")
     @classmethod
     def validate_base_url_field(cls, v: str) -> str:
-        """Use consolidated base URL validation."""
-        return validate_base_url(v)
+        """Validate base URL format."""
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("Base URL must start with http:// or https://")
+        return v
 
 
 class WMSDiscoveryConfig(BaseModel):
@@ -124,7 +132,7 @@ class WMSExtractionConfig(BaseModel):
     )
 
 
-class TapOracleWMSConfig(BaseConfig):
+class TapOracleWMSConfig(FlextBaseSettings):
     """Main configuration for Oracle WMS tap using flext-core patterns."""
 
     # Authentication
@@ -174,8 +182,11 @@ class TapOracleWMSConfig(BaseConfig):
     @field_validator("log_level")
     @classmethod
     def validate_log_level_field(cls, v: str) -> str:
-        """Validate logging level using imported function."""
-        return validate_log_level(v)
+        """Validate log level format."""
+        valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+        if v.upper() not in valid_levels:
+            raise ValueError(f"Invalid log level: {v}. Must be one of: {valid_levels}")
+        return v.upper()
 
     def to_singer_config(self) -> dict[str, Any]:
         """Convert to Singer protocol configuration format.

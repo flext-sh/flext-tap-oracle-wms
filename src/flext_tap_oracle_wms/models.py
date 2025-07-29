@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 # Import from flext-core for foundational patterns (standardized)
 from flext_core import (
-    FlextCoreSettings as BaseConfig,
+    FlextBaseSettings as BaseConfig,
     FlextEntity as DomainEntity,
 )
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
