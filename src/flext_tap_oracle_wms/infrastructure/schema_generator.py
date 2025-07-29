@@ -67,7 +67,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
             # Build complete schema
             return self._build_complete_schema(properties, required_fields)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Schema generation from metadata failed")
             SchemaGenerator._raise_schema_error(f"Schema generation failed: {e}", e)
             return {}  # Unreachable but satisfies mypy
@@ -100,7 +100,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
                 base_schema.get("properties", {}),
                 separator="_",
             )
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Flattened schema generation failed")
             msg = f"Schema generation failed: {e}"
             raise SchemaGenerationError(

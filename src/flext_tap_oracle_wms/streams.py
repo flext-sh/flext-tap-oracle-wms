@@ -92,7 +92,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
     replication_method = "INCREMENTAL"
     replication_key = None
 
-    def __init__(self, tap: Any, name: str, schema: dict[str, Any]) -> None:
+    def __init__(self, tap: object, name: str, schema: dict[str, Any]) -> None:
         """Initialize WMS stream with tap, name and schema.
 
         Args:
@@ -474,7 +474,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return row
 
     @property
-    def authenticator(self) -> Any:
+    def authenticator(self) -> object:
         """Return authenticator for API requests."""
         return get_wms_authenticator(self, dict(self.config))
 

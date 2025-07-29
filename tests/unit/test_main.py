@@ -1,4 +1,8 @@
 """Test __main__.py module entry point."""
+
+import flext_tap_oracle_wms.__main__ as main_module
+import flext_tap_oracle_wms.__main__ as main_module
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
@@ -24,7 +28,7 @@ class TestMainModule:
         # Import and execute the main module logic
 
         # Import the main module and verify its content
-        import flext_tap_oracle_wms.__main__ as main_module
+
 
         # Test that main function is available and callable
         assert hasattr(main_module, "main")
@@ -49,19 +53,22 @@ class TestMainModule:
         )
 
         # Should not crash (exit code should be 0 for help)
-        assert result.returncode == 0
-        assert "usage:" in result.stdout.lower() or "help" in result.stdout.lower()
+        if result.returncode != 0:
+            raise AssertionError(f"Expected {0}, got {result.returncode}")
+        if "usage:" in result.stdout.lower() or "help" not in result.stdout.lower():
+            raise AssertionError(f"Expected {"usage:" in result.stdout.lower() or "help"} in {result.stdout.lower()}")
 
     def test_main_module_structure(self) -> None:
         """Test that __main__ module has expected structure."""
-        import flext_tap_oracle_wms.__main__ as main_module
+
 
         # Check that module has the main import
         assert hasattr(main_module, "main")
 
         # Check module docstring
         assert main_module.__doc__ is not None
-        assert "running as python -m" in main_module.__doc__.lower()
+        if "running as python -m" not in main_module.__doc__.lower():
+            raise AssertionError(f"Expected {"running as python -m"} in {main_module.__doc__.lower()}")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,16 @@
 """Test generic implementation of Oracle WMS Tap.
 
+# Constants
+EXPECTED_BULK_SIZE = 2
+
 This module tests that the tap is completely generic and has no
 hardcoded references to specific projects while preserving all
 Oracle WMS specific functionality.
 """
+
+from flext_tap_oracle_wms.infrastructure.cache import CacheManager
+from flext_tap_oracle_wms.streams import WMSPaginator
+
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
@@ -29,11 +36,13 @@ class TestGenericImplementation:
         # Check tap configuration
         config = TapOracleWMS.config_jsonschema
         config_str = json.dumps(config)
-        assert "gruponos" not in config_str.lower()
+        if "gruponos" not not in config_str.lower():
+            raise AssertionError(f"Expected {"gruponos" not} in {config_str.lower()}")
         assert "grupo_nos" not in config_str.lower()
 
         # Check tap name
-        assert TapOracleWMS.name == "tap-oracle-wms"
+        if TapOracleWMS.name != "tap-oracle-wms":
+            raise AssertionError(f"Expected {"tap-oracle-wms"}, got {TapOracleWMS.name}")
 
     def test_generic_configuration(self) -> None:
         config = {
@@ -54,7 +63,8 @@ class TestGenericImplementation:
             mock_discovery_class.return_value = mock_discovery
 
             tap = TapOracleWMS(config=config)
-            assert tap.config["base_url"] == "https://any-wms.company.com"
+            if tap.config["base_url"] != "https://any-wms.company.com":
+                raise AssertionError(f"Expected {"https://any-wms.company.com"}, got {tap.config["base_url"]}")
             assert tap.config["company_code"] == "COMP1"
 
     def test_wms_specific_features_preserved(self) -> None:
@@ -62,18 +72,23 @@ class TestGenericImplementation:
 
         # Check WMS-specific configuration options
         properties = config_schema["properties"]
-        assert "company_code" in properties
+        if "company_code" not in properties:
+            raise AssertionError(f"Expected {"company_code"} in {properties}")
         assert "facility_code" in properties
-        assert "wms_api_version" in properties
-        assert properties["wms_api_version"]["default"] == "v10"
+        if "wms_api_version" not in properties:
+            raise AssertionError(f"Expected {"wms_api_version"} in {properties}")
+        if properties["wms_api_version"]["default"] != "v10":
+            raise AssertionError(f"Expected {"v10"}, got {properties["wms_api_version"]["default"]}")
 
         # Check WMS pagination modes
-        assert "page_mode" in properties
-        assert properties["page_mode"]["enum"] == ["sequenced", "paged"]
+        if "page_mode" not in properties:
+            raise AssertionError(f"Expected {"page_mode"} in {properties}")
+        if properties["page_mode"]["enum"] != ["sequenced", "paged"]:
+            raise AssertionError(f"Expected {["sequenced", "paged"]}, got {properties["page_mode"]["enum"]}")
         assert properties["page_mode"]["default"] == "sequenced"
 
     def test_entity_discovery_is_generic(self) -> None:
-        from flext_tap_oracle_wms.infrastructure.cache import CacheManager
+
 
         config = {
             "base_url": "https://wms.example.com",
@@ -85,7 +100,8 @@ class TestGenericImplementation:
         discovery = EntityDiscovery(config, cache_manager)
 
         # Check base configuration
-        assert discovery.base_url == "https://wms.example.com"
+        if discovery.base_url != "https://wms.example.com":
+            raise AssertionError(f"Expected {"https://wms.example.com"}, got {discovery.base_url}")
         assert discovery.api_version == "v10"  # Default WMS version
 
         # Check entity endpoint format
@@ -115,9 +131,11 @@ class TestGenericImplementation:
             streams = tap.discover_streams()
 
             # Verify streams are created for configured entities
-            assert len(streams) == 2
+            if len(streams) != EXPECTED_BULK_SIZE:
+                raise AssertionError(f"Expected {2}, got {len(streams)}")
             stream_names = [s.name for s in streams]
-            assert "custom_entity" in stream_names
+            if "custom_entity" not in stream_names:
+                raise AssertionError(f"Expected {"custom_entity"} in {stream_names}")
             assert "another_entity" in stream_names
 
 
@@ -138,10 +156,11 @@ class TestWMSStreamGeneric:
         )
 
         # Default path pattern
-        assert stream.path == "//wms/lgfapi/v10/entity/allocation"
+        if stream.path != "//wms/lgfapi/v10/entity/allocation":
+            raise AssertionError(f"Expected {"//wms/lgfapi/v10/entity/allocation"}, got {stream.path}")
 
     def test_wms_pagination_preserved(self) -> None:
-        from flext_tap_oracle_wms.streams import WMSPaginator
+
 
         # Mock response with WMS pagination
         mock_response = Mock()
@@ -154,14 +173,16 @@ class TestWMSStreamGeneric:
         paginator = WMSPaginator()
 
         # Test next URL extraction
-        assert paginator.get_next_url(mock_response) == "https://wms.com/api?page=2"
-        assert paginator.has_more(mock_response) is True
+        if paginator.get_next_url(mock_response) != "https://wms.com/api?page=2":
+            raise AssertionError(f"Expected {"https://wms.com/api?page=2"}, got {paginator.get_next_url(mock_response)}")
+        if not (paginator.has_more(mock_response)):
+            raise AssertionError(f"Expected True, got {paginator.has_more(mock_response)}")
 
         # Test no more pages
         mock_response.json.return_value = {"results": [], "page_nbr": 2}
         assert paginator.get_next_url(mock_response) is None
-        assert paginator.has_more(mock_response) is False
-
+        if paginator.has_more(mock_response):
+            raise AssertionError(f"Expected False, got {paginator.has_more(mock_response)}")\ n
     def test_wms_timestamp_handling(self) -> None:
         config = {
             "base_url": "https://wms.com",
@@ -180,7 +201,8 @@ class TestWMSStreamGeneric:
         stream = WMSStream(tap=Mock(config=config), name="order_hdr", schema=schema)
 
         # Verify incremental sync is configured
-        assert stream.replication_method == "INCREMENTAL"
+        if stream.replication_method != "INCREMENTAL":
+            raise AssertionError(f"Expected {"INCREMENTAL"}, got {stream.replication_method}")
         assert stream.replication_key == "mod_ts"
 
     def test_wms_field_post_processing(self) -> None:
@@ -207,9 +229,11 @@ class TestWMSStreamGeneric:
 
         # Verify record is returned unchanged (Singer SDK handles metadata)
         assert processed is not None
-        assert processed == record
+        if processed != record:
+            raise AssertionError(f"Expected {record}, got {processed}")
         assert processed["id"] == 123
-        assert processed["order"]["key"] == "ORD001"
+        if processed["order"]["key"] != "ORD001":
+            raise AssertionError(f"Expected {"ORD001"}, got {processed["order"]["key"]}")
 
 
 class TestSchemaGeneratorGeneric:
@@ -233,9 +257,11 @@ class TestSchemaGeneratorGeneric:
 
         # Verify WMS types are mapped correctly
         props = schema["properties"]
-        assert props["id"]["type"] == ["integer", "null"]
+        if props["id"]["type"] != ["integer", "null"]:
+            raise AssertionError(f"Expected {["integer", "null"]}, got {props["id"]["type"]}")
         assert props["code"]["type"] == ["string", "null"]
-        assert props["active_flg"]["type"] == ["boolean", "null"]
+        if props["active_flg"]["type"] != ["boolean", "null"]:
+            raise AssertionError(f"Expected {["boolean", "null"]}, got {props["active_flg"]["type"]}")
         assert props["mod_ts"]["format"] == "date-time"
 
     def test_audit_fields_recognized(self) -> None:
@@ -255,12 +281,16 @@ class TestSchemaGeneratorGeneric:
         props = schema["properties"]
 
         # Verify audit fields are recognized
-        assert "CREATE_USER" in props
+        if "CREATE_USER" not in props:
+            raise AssertionError(f"Expected {"CREATE_USER"} in {props}")
         assert "CREATE_TS" in props
-        assert props["CREATE_TS"]["format"] == "date-time"
-        assert "MOD_USER" in props
+        if props["CREATE_TS"]["format"] != "date-time":
+            raise AssertionError(f"Expected {"date-time"}, got {props["CREATE_TS"]["format"]}")
+        if "MOD_USER" not in props:
+            raise AssertionError(f"Expected {"MOD_USER"} in {props}")
         assert "MOD_TS" in props
-        assert props["MOD_TS"]["format"] == "date-time"
+        if props["MOD_TS"]["format"] != "date-time":
+            raise AssertionError(f"Expected {"date-time"}, got {props["MOD_TS"]["format"]}")
 
 
 class TestBusinessLogicPreserved:
@@ -291,7 +321,8 @@ class TestBusinessLogicPreserved:
 
             # Verify overlap is applied (10 minutes before start_time)
             expected = datetime(2024, 1, 1, 11, 50, 0, tzinfo=UTC)
-            assert params["mod_ts__gte"] == expected.isoformat()
+            if params["mod_ts__gte"] != expected.isoformat():
+                raise AssertionError(f"Expected {expected.isoformat()}, got {params["mod_ts__gte"]}")
 
     def test_full_sync_recovery_logic(self) -> None:
         config = {
@@ -304,13 +335,15 @@ class TestBusinessLogicPreserved:
         stream = WMSStream(tap=Mock(config=config), name="test", schema=schema)
 
         # Verify full sync configuration
-        assert stream.replication_method == "FULL_TABLE"
+        if stream.replication_method != "FULL_TABLE":
+            raise AssertionError(f"Expected {"FULL_TABLE"}, got {stream.replication_method}")
         assert stream.replication_key is None  # Full table sync has no replication key
 
         # Test ordering for full sync
         params: dict[str, Any] = {}
         stream._add_full_table_ordering(params)
-        assert params["ordering"] == "-id"  # Descending for recovery
+        if params["ordering"] != "-id"  # Descending for recovery:
+            raise AssertionError(f"Expected {"-id"  # Descending for recovery}, got {params["ordering"]}")
 
 
 if __name__ == "__main__":

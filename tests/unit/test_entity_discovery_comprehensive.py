@@ -55,11 +55,15 @@ class TestEntityDiscoveryComprehensive:
 
         discovery = EntityDiscovery(config, cache_manager, headers)
 
-        assert discovery.config == config
+        if discovery.config != config:
+
+            raise AssertionError(f"Expected {config}, got {discovery.config}")
         assert discovery.cache_manager == cache_manager
-        assert discovery.headers == headers
+        if discovery.headers != headers:
+            raise AssertionError(f"Expected {headers}, got {discovery.headers}")
         assert discovery.base_url == "https://test-wms.oracle.com"
-        assert "entity/" in discovery.entity_endpoint
+        if "entity/" not in discovery.entity_endpoint:
+            raise AssertionError(f"Expected {"entity/"} in {discovery.entity_endpoint}")
 
     def test_entity_discovery_default_headers(self) -> None:
         """Test entity discovery with default headers."""
@@ -68,7 +72,9 @@ class TestEntityDiscoveryComprehensive:
 
         discovery = EntityDiscovery(config, cache_manager)
 
-        assert discovery.headers == {}
+        if discovery.headers != {}:
+
+            raise AssertionError(f"Expected {{}}, got {discovery.headers}")
 
     @pytest.mark.asyncio
     async def test_discover_entities_from_cache(self) -> None:
@@ -81,7 +87,9 @@ class TestEntityDiscoveryComprehensive:
 
         result = await discovery.discover_entities()
 
-        assert result == cached_entities
+        if result != cached_entities:
+
+            raise AssertionError(f"Expected {cached_entities}, got {result}")
         cache_manager.get_cached_value.assert_called_once_with("entity:all")
         cache_manager.set_cached_value.assert_not_called()
 
@@ -105,7 +113,9 @@ class TestEntityDiscoveryComprehensive:
 
             result = await discovery.discover_entities()
 
-            assert result == api_response
+            if result != api_response:
+
+                raise AssertionError(f"Expected {api_response}, got {result}")
             cache_manager.set_cached_value.assert_called_once_with(
                 "entity:all",
                 api_response,
@@ -130,7 +140,9 @@ class TestEntityDiscoveryComprehensive:
 
             result = await discovery.discover_entities()
 
-            assert result == api_response
+            if result != api_response:
+
+                raise AssertionError(f"Expected {api_response}, got {result}")
             mock_fetch.assert_called_once()
 
     @pytest.mark.asyncio
@@ -144,7 +156,9 @@ class TestEntityDiscoveryComprehensive:
 
         result = await discovery.describe_entity("test_entity")
 
-        assert result == cached_metadata
+        if result != cached_metadata:
+
+            raise AssertionError(f"Expected {cached_metadata}, got {result}")
         cache_manager.get_cached_value.assert_called_once_with("metadata:test_entity")
 
     @pytest.mark.asyncio
@@ -166,7 +180,9 @@ class TestEntityDiscoveryComprehensive:
 
             result = await discovery.describe_entity("test_entity")
 
-            assert result == api_metadata
+            if result != api_metadata:
+
+                raise AssertionError(f"Expected {api_metadata}, got {result}")
             cache_manager.set_cached_value.assert_called_once_with(
                 "metadata:test_entity",
                 api_metadata,
@@ -211,7 +227,9 @@ class TestEntityDiscoveryComprehensive:
 
             result = await discovery.describe_entity("test_entity")
 
-            assert result == api_metadata
+            if result != api_metadata:
+
+                raise AssertionError(f"Expected {api_metadata}, got {result}")
             mock_fetch.assert_called_once()
 
     def test_filter_entities_no_filters(self) -> None:
@@ -221,7 +239,9 @@ class TestEntityDiscoveryComprehensive:
 
         result = discovery.filter_entities(entities)
 
-        assert result == entities
+        if result != entities:
+
+            raise AssertionError(f"Expected {entities}, got {result}")
 
     def test_filter_entities_configured_list(self) -> None:
         """Test entity filtering with configured entity list."""
@@ -235,7 +255,8 @@ class TestEntityDiscoveryComprehensive:
         result = discovery.filter_entities(entities)
 
         expected = {"entity1": "url1", "entity3": "url3"}
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     def test_filter_entities_include_patterns(self) -> None:
         """Test entity filtering with include patterns."""
@@ -260,7 +281,8 @@ class TestEntityDiscoveryComprehensive:
             "order_line": "url2",
             "item_master": "url3",
         }
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     def test_filter_entities_exclude_patterns(self) -> None:
         """Test entity filtering with exclude patterns."""
@@ -284,7 +306,8 @@ class TestEntityDiscoveryComprehensive:
             "order_header": "url1",
             "customer": "url4",
         }
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     def test_filter_entities_combined_patterns(self) -> None:
         """Test entity filtering with both include and exclude patterns."""
@@ -309,7 +332,8 @@ class TestEntityDiscoveryComprehensive:
             "order_header": "url1",
             "order_line": "url4",
         }
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     @pytest.mark.asyncio
     async def test_fetch_entities_from_api_success(self) -> None:
@@ -328,7 +352,8 @@ class TestEntityDiscoveryComprehensive:
             result = await discovery._fetch_entities_from_api()
 
             expected = {"entity1": "url1", "entity2": "url2"}
-            assert result == expected
+            if result != expected:
+                raise AssertionError(f"Expected {expected}, got {result}")
 
     @pytest.mark.asyncio
     async def test_fetch_entities_from_api_http_error(self) -> None:
@@ -343,7 +368,9 @@ class TestEntityDiscoveryComprehensive:
             with pytest.raises(EntityDiscoveryError) as exc_info:
                 await discovery._fetch_entities_from_api()
 
-            assert "error during entity discovery" in str(
+            if "error during entity discovery" not in str(:
+
+                raise AssertionError(f"Expected {"error during entity discovery"} in {str(}")
                 exc_info.value,
             ) or "Entity discovery failed" in str(exc_info.value)
 
@@ -360,7 +387,9 @@ class TestEntityDiscoveryComprehensive:
             with pytest.raises(EntityDiscoveryError) as exc_info:
                 await discovery._fetch_entities_from_api()
 
-            assert "error during entity discovery" in str(
+            if "error during entity discovery" not in str(:
+
+                raise AssertionError(f"Expected {"error during entity discovery"} in {str(}")
                 exc_info.value,
             ) or "Entity discovery failed" in str(exc_info.value)
 
@@ -372,8 +401,11 @@ class TestEntityDiscoveryComprehensive:
 
         result = discovery._prepare_auth_headers()
 
-        assert result == {"Custom": "value"}
-        assert "Authorization" not in result
+        if result != {"Custom": "value"}:
+
+            raise AssertionError(f"Expected {{"Custom": "value"}}, got {result}")
+        if "Authorization" not not in result:
+            raise AssertionError(f"Expected {"Authorization" not} in {result}")
 
     def test_prepare_auth_headers_basic_auth(self) -> None:
         """Test auth header preparation with basic authentication."""
@@ -389,7 +421,8 @@ class TestEntityDiscoveryComprehensive:
         result = discovery._prepare_auth_headers()
 
         expected_credentials = base64.b64encode(b"test_user:test_pass").decode()
-        assert result["Authorization"] == f"Basic {expected_credentials}"
+        if result["Authorization"] != f"Basic {expected_credentials}":
+            raise AssertionError(f"Expected {f"Basic {expected_credentials}"}, got {result["Authorization"]}")
         assert result["Custom"] == "value"
 
     def test_prepare_auth_headers_basic_auth_missing_credentials(self) -> None:
@@ -404,7 +437,9 @@ class TestEntityDiscoveryComprehensive:
 
         result = discovery._prepare_auth_headers()
 
-        assert "Authorization" not in result
+        if "Authorization" not not in result:
+
+            raise AssertionError(f"Expected {"Authorization" not} in {result}")
 
     def test_process_api_response_dict(self) -> None:
         """Test API response processing with dictionary format."""
@@ -413,7 +448,9 @@ class TestEntityDiscoveryComprehensive:
 
         result = discovery._process_api_response(data)
 
-        assert result == data
+        if result != data:
+
+            raise AssertionError(f"Expected {data}, got {result}")
 
     def test_process_api_response_list(self) -> None:
         """Test API response processing with list format."""
@@ -426,7 +463,8 @@ class TestEntityDiscoveryComprehensive:
         result = discovery._process_api_response(data)
 
         expected = {"entity1": "url1", "entity2": "url2"}
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     def test_process_api_response_unexpected_type(self) -> None:
         """Test API response processing with unexpected type."""
@@ -437,7 +475,9 @@ class TestEntityDiscoveryComprehensive:
         ) as mock_logger:
             result = discovery._process_api_response("unexpected_string")
 
-            assert result == {}
+            if result != {}:
+
+                raise AssertionError(f"Expected {{}}, got {result}")
             mock_logger.warning.assert_called_once()
 
     def test_process_dict_response_direct_mapping(self) -> None:
@@ -447,7 +487,9 @@ class TestEntityDiscoveryComprehensive:
 
         result = discovery._process_dict_response(data)
 
-        assert result == data
+        if result != data:
+
+            raise AssertionError(f"Expected {data}, got {result}")
 
     def test_process_dict_response_nested_entities(self) -> None:
         """Test dictionary response processing with nested entities."""
@@ -460,7 +502,8 @@ class TestEntityDiscoveryComprehensive:
         result = discovery._process_dict_response(data)
 
         expected = {"entity1": "url1", "entity2": "url2"}
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     def test_process_dict_response_unexpected_format(self) -> None:
         """Test dictionary response processing with unexpected format."""
@@ -472,7 +515,9 @@ class TestEntityDiscoveryComprehensive:
         ) as mock_logger:
             result = discovery._process_dict_response(data)
 
-            assert result == {}
+            if result != {}:
+
+                raise AssertionError(f"Expected {{}}, got {result}")
             mock_logger.warning.assert_called_once()
 
     def test_process_nested_entities_dict(self) -> None:
@@ -482,7 +527,9 @@ class TestEntityDiscoveryComprehensive:
 
         result = discovery._process_nested_entities(entity_list)
 
-        assert result == entity_list
+        if result != entity_list:
+
+            raise AssertionError(f"Expected {entity_list}, got {result}")
 
     def test_process_nested_entities_list_with_dicts(self) -> None:
         """Test nested entities processing with list of dictionaries."""
@@ -495,7 +542,8 @@ class TestEntityDiscoveryComprehensive:
         result = discovery._process_nested_entities(entity_list)
 
         expected = {"entity1": "url1", "entity2": "url2"}
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     def test_process_nested_entities_list_with_strings(self) -> None:
         """Test nested entities processing with list of strings."""
@@ -508,7 +556,8 @@ class TestEntityDiscoveryComprehensive:
             "entity1": f"{discovery.entity_endpoint}/entity1",
             "entity2": f"{discovery.entity_endpoint}/entity2",
         }
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     def test_process_nested_entities_mixed_list(self) -> None:
         """Test nested entities processing with mixed list format."""
@@ -525,7 +574,8 @@ class TestEntityDiscoveryComprehensive:
             "entity1": "url1",
             "entity2": f"{discovery.entity_endpoint}/entity2",
         }
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     def test_process_list_response(self) -> None:
         """Test list response processing."""
@@ -543,7 +593,8 @@ class TestEntityDiscoveryComprehensive:
             "entity2": f"{discovery.entity_endpoint}/entity2",
             "entity3": "url3",
         }
-        assert result == expected
+        if result != expected:
+            raise AssertionError(f"Expected {expected}, got {result}")
 
     @pytest.mark.asyncio
     async def test_fetch_entity_metadata_success(self) -> None:
@@ -563,7 +614,8 @@ class TestEntityDiscoveryComprehensive:
             result = await discovery._fetch_entity_metadata("test_entity")
 
             expected = {"fields": ["id", "name"], "type": "object"}
-            assert result == expected
+            if result != expected:
+                raise AssertionError(f"Expected {expected}, got {result}")
 
     @pytest.mark.asyncio
     async def test_fetch_entity_metadata_not_found(self) -> None:
@@ -595,7 +647,9 @@ class TestEntityDiscoveryComprehensive:
             with pytest.raises(EntityDescriptionError) as exc_info:
                 await discovery._fetch_entity_metadata("test_entity")
 
-            assert "HTTP error during entity metadata fetch" in str(exc_info.value)
+            if "HTTP error during entity metadata fetch" not in str(exc_info.value):
+
+                raise AssertionError(f"Expected {"HTTP error during entity metadata fetch"} in {str(exc_info.value)}")
 
     @pytest.mark.asyncio
     async def test_fetch_entity_metadata_unexpected_error(self) -> None:
@@ -610,40 +664,50 @@ class TestEntityDiscoveryComprehensive:
             with pytest.raises(EntityDescriptionError) as exc_info:
                 await discovery._fetch_entity_metadata("test_entity")
 
-            assert "Entity metadata fetch failed" in str(exc_info.value)
+            if "Entity metadata fetch failed" not in str(exc_info.value):
+
+                raise AssertionError(f"Expected {"Entity metadata fetch failed"} in {str(exc_info.value)}")
 
     def test_matches_patterns_regex_match(self) -> None:
         """Test pattern matching with regex patterns."""
         patterns = ["^order", ".*item.*", "customer$"]
 
-        assert EntityDiscovery._matches_patterns("order_header", patterns) is True
-        assert EntityDiscovery._matches_patterns("item_master", patterns) is True
-        assert EntityDiscovery._matches_patterns("main_customer", patterns) is True
-        assert EntityDiscovery._matches_patterns("supplier", patterns) is False
+        if not (EntityDiscovery._matches_patterns("order_header", patterns)):
 
+            raise AssertionError(f"Expected True, got {EntityDiscovery._matches_patterns("order_header", patterns)}")
+        assert EntityDiscovery._matches_patterns("item_master", patterns) is True
+        if not (EntityDiscovery._matches_patterns("main_customer", patterns)):
+            raise AssertionError(f"Expected True, got {EntityDiscovery._matches_patterns("main_customer", patterns)}")
+        if EntityDiscovery._matches_patterns("supplier", patterns):
+            raise AssertionError(f"Expected False, got {EntityDiscovery._matches_patterns("supplier", patterns)}")\ n
     def test_matches_patterns_case_insensitive(self) -> None:
         """Test pattern matching is case insensitive."""
         patterns = ["ORDER", "Item"]
 
-        assert EntityDiscovery._matches_patterns("order_header", patterns) is True
+        if not (EntityDiscovery._matches_patterns("order_header", patterns)):
+
+            raise AssertionError(f"Expected True, got {EntityDiscovery._matches_patterns("order_header", patterns)}")
         assert EntityDiscovery._matches_patterns("item_master", patterns) is True
-        assert EntityDiscovery._matches_patterns("ORDER_LINE", patterns) is True
+        if not (EntityDiscovery._matches_patterns("ORDER_LINE", patterns)):
+            raise AssertionError(f"Expected True, got {EntityDiscovery._matches_patterns("ORDER_LINE", patterns)}")
 
     def test_matches_patterns_invalid_regex(self) -> None:
         """Test pattern matching with invalid regex falls back to literal match."""
         patterns = ["[invalid", "item"]  # Invalid regex pattern
 
         # Should fall back to literal string matching
-        assert EntityDiscovery._matches_patterns("[invalid", patterns) is True
+        if not (EntityDiscovery._matches_patterns("[invalid", patterns)):
+            raise AssertionError(f"Expected True, got {EntityDiscovery._matches_patterns("[invalid", patterns)}")
         assert EntityDiscovery._matches_patterns("item_master", patterns) is True
-        assert EntityDiscovery._matches_patterns("other", patterns) is False
-
+        if EntityDiscovery._matches_patterns("other", patterns):
+            raise AssertionError(f"Expected False, got {EntityDiscovery._matches_patterns("other", patterns)}")\ n
     def test_matches_patterns_empty_patterns(self) -> None:
         """Test pattern matching with empty pattern list."""
         patterns: list[str] = []
 
-        assert EntityDiscovery._matches_patterns("any_entity", patterns) is False
+        if EntityDiscovery._matches_patterns("any_entity", patterns):
 
+            raise AssertionError(f"Expected False, got {EntityDiscovery._matches_patterns("any_entity", patterns)}")\ n
     def test_exception_classes(self) -> None:
         """Test custom exception classes."""
         # Test that exceptions can be raised and inherit from Exception
@@ -684,8 +748,10 @@ class TestEntityDiscoveryComprehensive:
         discovery = self.create_test_discovery(config)
 
         # ConfigMapper should be used for API version and endpoint prefix
-        assert discovery.api_version == "v11"
-        assert "/custom/api" in discovery.entity_endpoint
+        if discovery.api_version != "v11":
+            raise AssertionError(f"Expected {"v11"}, got {discovery.api_version}")
+        if "/custom/api" not in discovery.entity_endpoint:
+            raise AssertionError(f"Expected {"/custom/api"} in {discovery.entity_endpoint}")
 
 
 if __name__ == "__main__":

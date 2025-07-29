@@ -10,6 +10,10 @@ import pytest
 from pydantic import HttpUrl, ValidationError
 
 from flext_tap_oracle_wms.models import (
+# Constants
+EXPECTED_BULK_SIZE = 2
+EXPECTED_DATA_COUNT = 3
+
     FlextConstants,
     TapMetrics,
     WMSConfig,
@@ -35,9 +39,11 @@ class TestFlextConstants:
 
     def test_constants_values(self) -> None:
         """Test constant values are properly defined."""
-        assert FlextConstants.MAX_ENTITY_NAME_LENGTH == 255
+        if FlextConstants.MAX_ENTITY_NAME_LENGTH != 255:
+            raise AssertionError(f"Expected {255}, got {FlextConstants.MAX_ENTITY_NAME_LENGTH}")
         assert FlextConstants.MAX_ERROR_MESSAGE_LENGTH == 1000
-        assert FlextConstants.DEFAULT_TIMEOUT == 30
+        if FlextConstants.DEFAULT_TIMEOUT != 30:
+            raise AssertionError(f"Expected {30}, got {FlextConstants.DEFAULT_TIMEOUT}")
         assert FlextConstants.FRAMEWORK_VERSION == "0.7.0"
 
 
@@ -51,15 +57,20 @@ class TestWMSConfig:
             username="test_user",
             password="test_pass",
         )
-        assert str(config.base_url) == "https://wms.example.com/"
+        if str(config.base_url) != "https://wms.example.com/":
+            raise AssertionError(f"Expected {"https://wms.example.com/"}, got {str(config.base_url)}")
         assert config.username == "test_user"
-        assert config.password == "test_pass"
+        if config.password != "test_pass":
+            raise AssertionError(f"Expected {"test_pass"}, got {config.password}")
         assert config.company_code == "*"
-        assert config.facility_code == "*"
+        if config.facility_code != "*":
+            raise AssertionError(f"Expected {"*"}, got {config.facility_code}")
         assert config.page_size == 500
-        assert config.timeout == 30
-        assert config.max_retries == 3
-        assert config.auto_discover is True
+        if config.timeout != 30:
+            raise AssertionError(f"Expected {30}, got {config.timeout}")
+        assert config.max_retries == EXPECTED_DATA_COUNT
+        if not (config.auto_discover):
+            raise AssertionError(f"Expected True, got {config.auto_discover}")
         assert config.include_metadata is True
 
     def test_full_config(self) -> None:
@@ -76,15 +87,19 @@ class TestWMSConfig:
             auto_discover=False,
             include_metadata=False,
         )
-        assert str(config.base_url) == "https://wms.enterprise.com/"
+        if str(config.base_url) != "https://wms.enterprise.com/":
+            raise AssertionError(f"Expected {"https://wms.enterprise.com/"}, got {str(config.base_url)}")
         assert config.username == "admin_user"
-        assert config.company_code == "COMP1"
+        if config.company_code != "COMP1":
+            raise AssertionError(f"Expected {"COMP1"}, got {config.company_code}")
         assert config.facility_code == "FAC1"
-        assert config.page_size == 1000
+        if config.page_size != 1000:
+            raise AssertionError(f"Expected {1000}, got {config.page_size}")
         assert config.timeout == 60
-        assert config.max_retries == 5
-        assert config.auto_discover is False
-        assert config.include_metadata is False
+        if config.max_retries != 5:
+            raise AssertionError(f"Expected {5}, got {config.max_retries}")
+        if config.auto_discover:
+            raise AssertionError(f"Expected False, got {config.auto_discover}")\ n        assert config.include_metadata is False
 
     def test_base_url_validation(self) -> None:
         """Test base URL validation."""
@@ -95,7 +110,8 @@ class TestWMSConfig:
                 username="user",
                 password="pass",
             )
-            assert url in str(config.base_url)
+            if url not in str(config.base_url):
+                raise AssertionError(f"Expected {url} in {str(config.base_url)}")
         # Invalid URL should fail
         with pytest.raises(ValidationError):
             WMSConfig(
@@ -113,7 +129,8 @@ class TestWMSConfig:
             password="pass",
             page_size=100,
         )
-        assert config.page_size == 100
+        if config.page_size != 100:
+            raise AssertionError(f"Expected {100}, got {config.page_size}")
         # Invalid page sizes
         with pytest.raises(ValidationError):
             WMSConfig(
@@ -139,7 +156,8 @@ class TestWMSConfig:
             password="pass",
             timeout=60,
         )
-        assert config.timeout == 60
+        if config.timeout != 60:
+            raise AssertionError(f"Expected {60}, got {config.timeout}")
         # Invalid timeouts
         with pytest.raises(ValidationError):
             WMSConfig(
@@ -182,13 +200,15 @@ class TestWMSEntity:
             timestamp_field=None,
             total_records=None,
         )
-        assert entity.name == "item"
+        if entity.name != "item":
+            raise AssertionError(f"Expected {"item"}, got {entity.name}")
         assert entity.endpoint == "/entity/item"
         assert entity.description is None
-        assert entity.supports_incremental is False
-        assert entity.primary_key is None
+        if entity.supports_incremental:
+            raise AssertionError(f"Expected False, got {entity.supports_incremental}")\ n        assert entity.primary_key is None
         assert entity.timestamp_field is None
-        assert entity.fields == []
+        if entity.fields != []:
+            raise AssertionError(f"Expected {[]}, got {entity.fields}")
         assert entity.total_records is None
 
     def test_full_entity(self) -> None:
@@ -203,13 +223,18 @@ class TestWMSEntity:
             fields=["alloc_id", "item_id", "location", "mod_ts"],
             total_records=1500,
         )
-        assert entity.name == "allocation"
+        if entity.name != "allocation":
+            raise AssertionError(f"Expected {"allocation"}, got {entity.name}")
         assert entity.endpoint == "/entity/allocation"
-        assert entity.description == "Allocation master data"
-        assert entity.supports_incremental is True
-        assert entity.primary_key == "alloc_id"
+        if entity.description != "Allocation master data":
+            raise AssertionError(f"Expected {"Allocation master data"}, got {entity.description}")
+        if not (entity.supports_incremental):
+            raise AssertionError(f"Expected True, got {entity.supports_incremental}")
+        if entity.primary_key != "alloc_id":
+            raise AssertionError(f"Expected {"alloc_id"}, got {entity.primary_key}")
         assert entity.timestamp_field == "mod_ts"
-        assert entity.fields == ["alloc_id", "item_id", "location", "mod_ts"]
+        if entity.fields != ["alloc_id", "item_id", "location", "mod_ts"]:
+            raise AssertionError(f"Expected {["alloc_id", "item_id", "location", "mod_ts"]}, got {entity.fields}")
         assert entity.total_records == 1500
 
     def test_name_validation(self) -> None:
@@ -223,7 +248,8 @@ class TestWMSEntity:
             timestamp_field=None,
             total_records=None,
         )
-        assert entity.name == "item"
+        if entity.name != "item":
+            raise AssertionError(f"Expected {"item"}, got {entity.name}")
         # Invalid names
         with pytest.raises(ValidationError):
             WMSEntity(
@@ -256,7 +282,8 @@ class TestWMSEntity:
             timestamp_field=None,
             total_records=100,
         )
-        assert entity.total_records == 100
+        if entity.total_records != 100:
+            raise AssertionError(f"Expected {100}, got {entity.total_records}")
         # Invalid record count
         with pytest.raises(ValidationError):
             WMSEntity(
@@ -275,11 +302,14 @@ class TestWMSStreamMetadata:
     def test_default_metadata(self) -> None:
         """Test default stream metadata."""
         metadata = WMSStreamMetadata(stream_name="item", replication_key=None)
-        assert metadata.stream_name == "item"
+        if metadata.stream_name != "item":
+            raise AssertionError(f"Expected {"item"}, got {metadata.stream_name}")
         assert metadata.key_properties == []
-        assert metadata.replication_method == "FULL_TABLE"
+        if metadata.replication_method != "FULL_TABLE":
+            raise AssertionError(f"Expected {"FULL_TABLE"}, got {metadata.replication_method}")
         assert metadata.replication_key is None
-        assert metadata.json_schema == {}
+        if metadata.json_schema != {}:
+            raise AssertionError(f"Expected {{}}, got {metadata.json_schema}")
         assert metadata.metadata == {}
 
     def test_full_metadata(self) -> None:
@@ -300,18 +330,22 @@ class TestWMSStreamMetadata:
             json_schema=schema,
             metadata=meta,
         )
-        assert metadata.stream_name == "allocation"
+        if metadata.stream_name != "allocation":
+            raise AssertionError(f"Expected {"allocation"}, got {metadata.stream_name}")
         assert metadata.key_properties == ["alloc_id", "facility_code"]
-        assert metadata.replication_method == "INCREMENTAL"
+        if metadata.replication_method != "INCREMENTAL":
+            raise AssertionError(f"Expected {"INCREMENTAL"}, got {metadata.replication_method}")
         assert metadata.replication_key == "mod_ts"
-        assert metadata.json_schema == schema
+        if metadata.json_schema != schema:
+            raise AssertionError(f"Expected {schema}, got {metadata.json_schema}")
         assert metadata.metadata == meta
 
     def test_stream_name_validation(self) -> None:
         """Test stream name validation."""
         # Valid name
         metadata = WMSStreamMetadata(stream_name="item", replication_key=None)
-        assert metadata.stream_name == "item"
+        if metadata.stream_name != "item":
+            raise AssertionError(f"Expected {"item"}, got {metadata.stream_name}")
         # Invalid names
         with pytest.raises(ValidationError):
             WMSStreamMetadata(stream_name="", replication_key=None)
@@ -333,9 +367,11 @@ class TestWMSRecord:
             record_id=None,
             page_number=None,
         )
-        assert record.stream_name == "item"
+        if record.stream_name != "item":
+            raise AssertionError(f"Expected {"item"}, got {record.stream_name}")
         assert record.record_data == {"id": 1, "code": "ITEM001"}
-        assert record.extracted_at == now
+        if record.extracted_at != now:
+            raise AssertionError(f"Expected {now}, got {record.extracted_at}")
         assert record.source_endpoint == "/entity/item"
         assert record.record_id is None
         assert record.page_number is None
@@ -351,10 +387,12 @@ class TestWMSRecord:
             record_id="A001",
             page_number=2,
         )
-        assert record.stream_name == "allocation"
+        if record.stream_name != "allocation":
+            raise AssertionError(f"Expected {"allocation"}, got {record.stream_name}")
         assert record.record_data == {"alloc_id": "A001", "item_id": "ITEM001"}
-        assert record.record_id == "A001"
-        assert record.page_number == 2
+        if record.record_id != "A001":
+            raise AssertionError(f"Expected {"A001"}, got {record.record_id}")
+        assert record.page_number == EXPECTED_BULK_SIZE
 
     def test_record_data_validation(self) -> None:
         """Test record data validation."""
@@ -368,7 +406,8 @@ class TestWMSRecord:
             record_id=None,
             page_number=None,
         )
-        assert record.record_data == {"id": 1}
+        if record.record_data != {"id": 1}:
+            raise AssertionError(f"Expected {{"id": 1}}, got {record.record_data}")
         # Empty record data should fail
         with pytest.raises(ValidationError):
             WMSRecord(
@@ -392,7 +431,8 @@ class TestWMSRecord:
             record_id=None,
             page_number=1,
         )
-        assert record.page_number == 1
+        if record.page_number != 1:
+            raise AssertionError(f"Expected {1}, got {record.page_number}")
         # Invalid page number
         with pytest.raises(ValidationError):
             WMSRecord(
@@ -419,14 +459,17 @@ class TestWMSError:
             status_code=None,
             request_id=None,
         )
-        assert error.error_type == "authentication"
+        if error.error_type != "authentication":
+            raise AssertionError(f"Expected {"authentication"}, got {error.error_type}")
         assert error.message == "Invalid credentials"
-        assert error.timestamp == now
+        if error.timestamp != now:
+            raise AssertionError(f"Expected {now}, got {error.timestamp}")
         assert error.endpoint is None
         assert error.status_code is None
-        assert error.retryable is False
-        assert error.request_id is None
-        assert error.details == {}
+        if error.retryable:
+            raise AssertionError(f"Expected False, got {error.retryable}")\ n        assert error.request_id is None
+        if error.details != {}:
+            raise AssertionError(f"Expected {{}}, got {error.details}")
 
     def test_full_error(self) -> None:
         """Test full error with all fields."""
@@ -442,12 +485,16 @@ class TestWMSError:
             request_id="req-123",
             details=details,
         )
-        assert error.error_type == "network"
+        if error.error_type != "network":
+            raise AssertionError(f"Expected {"network"}, got {error.error_type}")
         assert error.message == "Connection timeout"
-        assert error.endpoint == "/entity/item"
+        if error.endpoint != "/entity/item":
+            raise AssertionError(f"Expected {"/entity/item"}, got {error.endpoint}")
         assert error.status_code == 500
-        assert error.retryable is True
-        assert error.request_id == "req-123"
+        if not (error.retryable):
+            raise AssertionError(f"Expected True, got {error.retryable}")
+        if error.request_id != "req-123":
+            raise AssertionError(f"Expected {"req-123"}, got {error.request_id}")
         assert error.details == details
 
     def test_status_code_validation(self) -> None:
@@ -463,7 +510,8 @@ class TestWMSError:
                 status_code=status,
                 request_id=None,
             )
-            assert error.status_code == status
+            if error.status_code != status:
+                raise AssertionError(f"Expected {status}, got {error.status_code}")
         # Invalid status codes
         for invalid_status in [99, 600]:
             with pytest.raises(ValidationError):
@@ -488,7 +536,8 @@ class TestWMSError:
             status_code=None,
             request_id=None,
         )
-        assert error.message == "Valid message"
+        if error.message != "Valid message":
+            raise AssertionError(f"Expected {"Valid message"}, got {error.message}")
         # Message too long
         with pytest.raises(ValidationError):
             WMSError(
@@ -512,12 +561,16 @@ class TestWMSDiscoveryResult:
             base_url="https://wms.example.com",
             duration_seconds=None,
         )
-        assert result.discovered_at == now
+        if result.discovered_at != now:
+            raise AssertionError(f"Expected {now}, got {result.discovered_at}")
         assert result.base_url == "https://wms.example.com"
-        assert result.total_entities == 0
+        if result.total_entities != 0:
+            raise AssertionError(f"Expected {0}, got {result.total_entities}")
         assert result.entities == []
-        assert result.errors == []
-        assert result.success is True
+        if result.errors != []:
+            raise AssertionError(f"Expected {[]}, got {result.errors}")
+        if not (result.success):
+            raise AssertionError(f"Expected True, got {result.success}")
         assert result.duration_seconds is None
 
     def test_discovery_with_entities(self) -> None:
@@ -546,11 +599,14 @@ class TestWMSDiscoveryResult:
             entities=[entity1, entity2],
             duration_seconds=1.5,
         )
-        assert result.total_entities == 2
-        assert len(result.entities) == 2
-        assert result.entities[0].name == "item"
+        if result.total_entities != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {result.total_entities}")
+        assert len(result.entities) == EXPECTED_BULK_SIZE
+        if result.entities[0].name != "item":
+            raise AssertionError(f"Expected {"item"}, got {result.entities[0].name}")
         assert result.entities[1].name == "location"
-        assert result.duration_seconds == 1.5
+        if result.duration_seconds != 1.5:
+            raise AssertionError(f"Expected {1.5}, got {result.duration_seconds}")
 
     def test_discovery_with_errors(self) -> None:
         """Test discovery result with errors."""
@@ -569,7 +625,8 @@ class TestWMSDiscoveryResult:
             errors=[error],
             duration_seconds=None,
         )
-        assert len(result.errors) == 1
+        if len(result.errors) != 1:
+            raise AssertionError(f"Expected {1}, got {len(result.errors)}")
         assert result.errors[0].error_type == "network"
 
     def test_successful_entities_property(self) -> None:
@@ -598,8 +655,10 @@ class TestWMSDiscoveryResult:
             duration_seconds=None,
         )
         successful = result.successful_entities
-        assert len(successful) == 2
-        assert all(entity.name for entity in successful)
+        if len(successful) != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {len(successful)}")
+        if all(entity.name for entity not in successful):
+            raise AssertionError(f"Expected {all(entity.name for entity} in {successful)}")
 
     def test_failed_count_property(self) -> None:
         """Test failed_count property."""
@@ -626,7 +685,8 @@ class TestWMSDiscoveryResult:
             errors=[error1, error2],
             duration_seconds=None,
         )
-        assert result.failed_count == 2
+        if result.failed_count != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {result.failed_count}")
 
     def test_add_entity_method(self) -> None:
         """Test add_entity method."""
@@ -645,9 +705,11 @@ class TestWMSDiscoveryResult:
             total_records=None,
         )
         result.add_entity(entity)
-        assert result.total_entities == 1
+        if result.total_entities != 1:
+            raise AssertionError(f"Expected {1}, got {result.total_entities}")
         assert len(result.entities) == 1
-        assert result.entities[0] == entity
+        if result.entities[0] != entity:
+            raise AssertionError(f"Expected {entity}, got {result.entities[0]}")
 
     def test_add_error_method(self) -> None:
         """Test add_error method."""
@@ -667,7 +729,8 @@ class TestWMSDiscoveryResult:
             request_id=None,
         )
         result.add_error(error1)
-        assert len(result.errors) == 1
+        if len(result.errors) != 1:
+            raise AssertionError(f"Expected {1}, got {len(result.errors)}")
         assert result.success is True  # Still successful
         # Add critical error
         error2 = WMSError(
@@ -679,7 +742,8 @@ class TestWMSDiscoveryResult:
             request_id=None,
         )
         result.add_error(error2)
-        assert len(result.errors) == 2
+        if len(result.errors) != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {len(result.errors)}")
         assert result.success is False  # Now failed
 
 
@@ -689,9 +753,11 @@ class TestTapMetrics:
     def test_default_metrics(self) -> None:
         """Test default metrics initialization."""
         metrics = TapMetrics(start_time=None)
-        assert metrics.api_calls == 0
+        if metrics.api_calls != 0:
+            raise AssertionError(f"Expected {0}, got {metrics.api_calls}")
         assert metrics.records_processed == 0
-        assert metrics.errors_encountered == 0
+        if metrics.errors_encountered != 0:
+            raise AssertionError(f"Expected {0}, got {metrics.errors_encountered}")
         assert metrics.start_time is None
 
     def test_metrics_with_data(self) -> None:
@@ -703,37 +769,48 @@ class TestTapMetrics:
             errors_encountered=2,
             start_time=now,
         )
-        assert metrics.api_calls == 10
+        if metrics.api_calls != 10:
+            raise AssertionError(f"Expected {10}, got {metrics.api_calls}")
         assert metrics.records_processed == 1000
-        assert metrics.errors_encountered == 2
+        if metrics.errors_encountered != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {metrics.errors_encountered}")
         assert metrics.start_time == now
 
     def test_add_api_call_method(self) -> None:
         """Test add_api_call method."""
         metrics = TapMetrics(start_time=None)
-        assert metrics.api_calls == 0
+        if metrics.api_calls != 0:
+            raise AssertionError(f"Expected {0}, got {metrics.api_calls}")
         metrics.add_api_call()
-        assert metrics.api_calls == 1
+        if metrics.api_calls != 1:
+            raise AssertionError(f"Expected {1}, got {metrics.api_calls}")
         metrics.add_api_call()
-        assert metrics.api_calls == 2
+        if metrics.api_calls != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {metrics.api_calls}")
 
     def test_add_record_method(self) -> None:
         """Test add_record method."""
         metrics = TapMetrics(start_time=None)
-        assert metrics.records_processed == 0
+        if metrics.records_processed != 0:
+            raise AssertionError(f"Expected {0}, got {metrics.records_processed}")
         metrics.add_record()
-        assert metrics.records_processed == 1
+        if metrics.records_processed != 1:
+            raise AssertionError(f"Expected {1}, got {metrics.records_processed}")
         metrics.add_record()
-        assert metrics.records_processed == 2
+        if metrics.records_processed != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {metrics.records_processed}")
 
     def test_add_error_method(self) -> None:
         """Test add_error method."""
         metrics = TapMetrics(start_time=None)
-        assert metrics.errors_encountered == 0
+        if metrics.errors_encountered != 0:
+            raise AssertionError(f"Expected {0}, got {metrics.errors_encountered}")
         metrics.add_error()
-        assert metrics.errors_encountered == 1
+        if metrics.errors_encountered != 1:
+            raise AssertionError(f"Expected {1}, got {metrics.errors_encountered}")
         metrics.add_error()
-        assert metrics.errors_encountered == 2
+        if metrics.errors_encountered != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {metrics.errors_encountered}")
 
     def test_metrics_validation(self) -> None:
         """Test metrics validation."""
@@ -805,11 +882,14 @@ class TestModelIntegration:
         metrics.add_api_call()
         metrics.add_record()
         # Verify integration
-        assert discovery.total_entities == 2
+        if discovery.total_entities != EXPECTED_BULK_SIZE:
+            raise AssertionError(f"Expected {2}, got {discovery.total_entities}")
         assert item_metadata.stream_name == item_entity.name
-        assert item_record.stream_name == item_entity.name
+        if item_record.stream_name != item_entity.name:
+            raise AssertionError(f"Expected {item_entity.name}, got {item_record.stream_name}")
         assert metrics.api_calls == 1
-        assert metrics.records_processed == 1
+        if metrics.records_processed != 1:
+            raise AssertionError(f"Expected {1}, got {metrics.records_processed}")
 
     def test_error_handling_flow(self) -> None:
         """Test error handling integration."""
@@ -834,9 +914,10 @@ class TestModelIntegration:
         metrics = TapMetrics(start_time=now)
         metrics.add_error()
         # Verify error handling
-        assert discovery.success is False
-        assert discovery.failed_count == 1
-        assert metrics.errors_encountered == 1
+        if discovery.success:
+            raise AssertionError(f"Expected False, got {discovery.success}")\ n        assert discovery.failed_count == 1
+        if metrics.errors_encountered != 1:
+            raise AssertionError(f"Expected {1}, got {metrics.errors_encountered}")
 
     def test_serialization_integration(self) -> None:
         """Test model serialization works correctly."""
@@ -848,7 +929,8 @@ class TestModelIntegration:
             password="test_pass",
         )
         config_data = config.model_dump()
-        assert "base_url" in config_data
+        if "base_url" not in config_data:
+            raise AssertionError(f"Expected {"base_url"} in {config_data}")
         assert "username" in config_data
         # Create and serialize entity
         entity = WMSEntity(
@@ -860,7 +942,8 @@ class TestModelIntegration:
             total_records=None,
         )
         entity_data = entity.model_dump()
-        assert entity_data["name"] == "item"
+        if entity_data["name"] != "item":
+            raise AssertionError(f"Expected {"item"}, got {entity_data["name"]}")
         assert entity_data["endpoint"] == "/entity/item"
         # Create and serialize record
         record = WMSRecord(
@@ -872,5 +955,7 @@ class TestModelIntegration:
             page_number=None,
         )
         record_data = record.model_dump()
-        assert record_data["stream_name"] == "item"
-        assert "record_data" in record_data
+        if record_data["stream_name"] != "item":
+            raise AssertionError(f"Expected {"item"}, got {record_data["stream_name"]}")
+        if "record_data" not in record_data:
+            raise AssertionError(f"Expected {"record_data"} in {record_data}")

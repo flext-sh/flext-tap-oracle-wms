@@ -219,7 +219,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
             raise EntityDiscoveryError(
                 msg,
             ) from e
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Unexpected error during entity discovery")
             msg = f"Entity discovery failed: {e}"
             raise EntityDiscoveryError(msg) from e
@@ -398,7 +398,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
             raise EntityDescriptionError(
                 msg,
             ) from e
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Unexpected error during entity metadata fetch")
             msg = f"Entity metadata fetch failed: {e}"
             raise EntityDescriptionError(msg) from e
