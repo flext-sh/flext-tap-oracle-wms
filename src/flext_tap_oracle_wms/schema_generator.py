@@ -236,7 +236,9 @@ class SchemaGenerator(SchemaGeneratorInterface):
         return schema
 
     @staticmethod
-    def _create_field_schema(field_info: dict[str, Any], field_name: str | None = None) -> dict[str, Any]:
+    def _create_field_schema(
+        field_info: dict[str, Any], field_name: str | None = None
+    ) -> dict[str, Any]:
         """Create schema for a single field based on metadata.
 
         Args:

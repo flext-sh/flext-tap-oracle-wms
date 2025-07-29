@@ -15,6 +15,7 @@ from flext_core import get_logger
 # Import generic interfaces from flext-meltano
 from flext_meltano import Tap, singer_typing as th
 
+from flext_tap_oracle_wms.cache import CacheManager, WMSCacheManager
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
 from flext_tap_oracle_wms.config_validator import (
     ConfigValidationError,
@@ -31,8 +32,7 @@ from flext_tap_oracle_wms.discovery import (
     NetworkError,
     SchemaGenerationError,
 )
-from flext_tap_oracle_wms.infrastructure.cache import CacheManager, WMSCacheManager
-from flext_tap_oracle_wms.infrastructure.schema_generator import SchemaGenerator
+from flext_tap_oracle_wms.schema_generator import SchemaGenerator
 from flext_tap_oracle_wms.streams import WMSStream
 
 # API and Performance Constants
@@ -316,7 +316,8 @@ class TapOracleWMS(Tap):
         if not hasattr(self, "_discovery") or self._discovery is None:
             # Validate configuration only when discovery is actually needed
             self._validate_configuration()
-            from flext_tap_oracle_wms.infrastructure.cache import CacheManagerAdapter
+            from flext_tap_oracle_wms.cache import CacheManagerAdapter
+
             cache_manager = CacheManagerAdapter(dict(self.config))
             self._discovery = EntityDiscovery(dict(self.config), cache_manager)
         return self._discovery
@@ -362,10 +363,40 @@ class TapOracleWMS(Tap):
             # Get configured entities for basic discovery
             entities = self.config.get("entities")
             if not entities:
-                TapOracleWMS._raise_discovery_error(
-                    "No entities configured for discovery",
+                # Auto-discover entities if none configured
+                self.logger.info(
+                    "🔍 No entities configured, auto-discovering from WMS API..."
                 )
-            self.logger.info("🔍 Using entities from config: %s", entities)
+                try:
+                    discovered_entities = self._discover_entities_sync()
+                    entities = (
+                        list(discovered_entities.keys()) if discovered_entities else []
+                    )
+                    self.logger.info(
+                        "🔍 Auto-discovered %d entities: %s",
+                        len(entities),
+                        entities[:10],
+                    )
+                except Exception as e:
+                    self.logger.warning(
+                        "⚠️ Auto-discovery failed: %s, using fallback entities", e
+                    )
+                    # Use common WMS entities as fallback
+                    entities = [
+                        "company",
+                        "facility",
+                        "item",
+                        "container",
+                        "inventory",
+                        "location",
+                        "order_hdr",
+                        "order_dtl",
+                        "allocation",
+                        "pick_hdr",
+                        "pick_dtl",
+                        "wave_hdr",
+                    ]
+            self.logger.info("🔍 Using entities: %s", entities)
             for entity_name in entities or []:
                 self.logger.info("🔍 Creating stream for entity: %s", entity_name)
                 # Create minimal stream for discovery

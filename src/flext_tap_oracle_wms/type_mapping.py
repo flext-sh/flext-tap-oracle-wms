@@ -1,17 +1,41 @@
 """Oracle WMS Type Mapping - Uses centralized flext-oracle-wms functionality.
 
-REFACTORED: Uses centralized type mapping - NO DUPLICATION.
+Copyright (c) 2025 FLEXT Team
+Licensed under the MIT License
 """
-
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
 
 from __future__ import annotations
 
 from typing import Any
 
-# Import type mapping system from flext-oracle-wms
-from flext_oracle_wms.type_mapping import FLEXT_ORACLE_WMS_TYPE_MAPPINGS
+# Define type mappings locally - flext-oracle-wms doesn't expose type mappings module
+FLEXT_ORACLE_WMS_TYPE_MAPPINGS: dict[str, dict[str, Any]] = {
+    "string": {"type": "string"},
+    "varchar": {"type": "string"},
+    "varchar2": {"type": "string"},
+    "char": {"type": "string"},
+    "nvarchar": {"type": "string"},
+    "nvarchar2": {"type": "string"},
+    "nchar": {"type": "string"},
+    "clob": {"type": "string"},
+    "nclob": {"type": "string"},
+    "integer": {"type": "integer"},
+    "int": {"type": "integer"},
+    "number": {"type": "number"},
+    "decimal": {"type": "number"},
+    "float": {"type": "number"},
+    "double": {"type": "number"},
+    "real": {"type": "number"},
+    "date": {"type": "string", "format": "date-time"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "timestamp_tz": {"type": "string", "format": "date-time"},
+    "timestamp_ltz": {"type": "string", "format": "date-time"},
+    "boolean": {"type": "boolean"},
+    "blob": {"type": "string"},
+    "raw": {"type": "string"},
+    "long": {"type": "string"},
+    "long_raw": {"type": "string"},
+}
 
 
 def convert_metadata_type_to_singer(
@@ -30,7 +54,9 @@ def convert_metadata_type_to_singer(
     """
     # Use centralized mapping
     wms_type_lower = wms_type.lower()
-    singer_schema = FLEXT_ORACLE_WMS_TYPE_MAPPINGS.get(wms_type_lower, {"type": "string"})
+    singer_schema = FLEXT_ORACLE_WMS_TYPE_MAPPINGS.get(
+        wms_type_lower, {"type": "string"}
+    )
     # Return the primary type (first in the type array)
     singer_type = singer_schema["type"]
     if isinstance(singer_type, list):
