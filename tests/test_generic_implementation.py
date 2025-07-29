@@ -1,20 +1,16 @@
 """Test generic implementation of Oracle WMS Tap.
 
-# Constants
-EXPECTED_BULK_SIZE = 2
-
 This module tests that the tap is completely generic and has no
 hardcoded references to specific projects while preserving all
 Oracle WMS specific functionality.
 """
-
-from flext_tap_oracle_wms.infrastructure.cache import CacheManager
-from flext_tap_oracle_wms.streams import WMSPaginator
-
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
 from __future__ import annotations
+
+# Constants
+EXPECTED_BULK_SIZE = 2
 
 import json
 from datetime import UTC, datetime
@@ -36,8 +32,8 @@ class TestGenericImplementation:
         # Check tap configuration
         config = TapOracleWMS.config_jsonschema
         config_str = json.dumps(config)
-        if "client-b" not not in config_str.lower():
-            raise AssertionError(f"Expected {"client-b" not} in {config_str.lower()}")
+        if "client-b" in config_str.lower():
+            raise AssertionError(f"Expected no 'client-b' reference in {config_str.lower()}")
         assert "client-b" not in config_str.lower()
 
         # Check tap name
@@ -182,7 +178,8 @@ class TestWMSStreamGeneric:
         mock_response.json.return_value = {"results": [], "page_nbr": 2}
         assert paginator.get_next_url(mock_response) is None
         if paginator.has_more(mock_response):
-            raise AssertionError(f"Expected False, got {paginator.has_more(mock_response)}")\ n
+            raise AssertionError(f"Expected False, got {paginator.has_more(mock_response)}")
+    
     def test_wms_timestamp_handling(self) -> None:
         config = {
             "base_url": "https://wms.com",
@@ -342,8 +339,8 @@ class TestBusinessLogicPreserved:
         # Test ordering for full sync
         params: dict[str, Any] = {}
         stream._add_full_table_ordering(params)
-        if params["ordering"] != "-id"  # Descending for recovery:
-            raise AssertionError(f"Expected {"-id"  # Descending for recovery}, got {params["ordering"]}")
+        if params["ordering"] != "-id":  # Descending for recovery
+            raise AssertionError(f"Expected '-id', got {params['ordering']}")
 
 
 if __name__ == "__main__":

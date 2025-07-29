@@ -11,8 +11,7 @@ from flext_core import get_logger
 from flext_oracle_wms import (
     FlextOracleWmsAuthenticationError,
     FlextOracleWmsClient,
-    FlextOracleWmsClientError,
-    FlextOracleWmsConnectionError,
+    FlextOracleWmsError,
 )
 
 logger = get_logger(__name__)
@@ -21,9 +20,9 @@ logger = get_logger(__name__)
 WMSClient = FlextOracleWmsClient
 
 # Re-export exceptions from library for backward compatibility
-WMSClientError = FlextOracleWmsClientError
+WMSClientError = FlextOracleWmsError
 AuthenticationError = FlextOracleWmsAuthenticationError
-WMSConnectionError = FlextOracleWmsConnectionError
+WMSConnectionError = FlextOracleWmsError
 
 __all__ = [
     "AuthenticationError",

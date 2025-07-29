@@ -16,9 +16,9 @@ import importlib.metadata
 
 # Import from flext-core for foundational patterns (standardized)
 from flext_core import (
-    FlextCoreSettings as BaseConfig,
+    FlextBaseSettings as BaseConfig,
     FlextEntity as DomainEntity,
-    FlextField as Field,
+    FlextFields as Field,
     FlextResult as FlextResult,
     FlextValueObject as BaseModel,
     FlextValueObject as FlextDomainBaseModel,
@@ -27,15 +27,9 @@ from flext_core import (
 
 # Import from flext-oracle-wms for centralized Oracle WMS patterns
 from flext_oracle_wms import (
-    FlextOracleWmsAuth,
     FlextOracleWmsClient,
-    FlextOracleWmsConfig,
     FlextOracleWmsDeflattener,
     FlextOracleWmsFlattener,
-    FlextOracleWmsTypeMapper,
-    flext_oracle_wms_format_wms_record,
-    flext_oracle_wms_sanitize_entity_name,
-    flext_oracle_wms_validate_connection,
 )
 
 try:

@@ -10,13 +10,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from flext_oracle_wms import (
-    flext_oracle_wms_create_type_mapper,
-    flext_oracle_wms_map_oracle_to_singer,
-)
-
-# Use centralized type mapping - NO DUPLICATION
-_type_mapper = flext_oracle_wms_create_type_mapper()
+# Import type mapping system from flext-oracle-wms
+from flext_oracle_wms.type_mapping import FLEXT_ORACLE_WMS_TYPE_MAPPINGS
 
 
 def convert_metadata_type_to_singer(
@@ -33,14 +28,14 @@ def convert_metadata_type_to_singer(
         Singer schema type string.
 
     """
-    # Use centralized mapping function
-    singer_schema = flext_oracle_wms_map_oracle_to_singer(wms_type)
+    # Use centralized mapping
+    wms_type_lower = wms_type.lower()
+    singer_schema = FLEXT_ORACLE_WMS_TYPE_MAPPINGS.get(wms_type_lower, {"type": "string"})
     # Return the primary type (first in the type array)
-    return (
-        singer_schema["type"][0]
-        if isinstance(singer_schema["type"], list)
-        else singer_schema["type"]
-    )
+    singer_type = singer_schema["type"]
+    if isinstance(singer_type, list):
+        return str(singer_type[0])
+    return str(singer_type)
 
 
 def get_singer_type_with_metadata(
@@ -59,10 +54,9 @@ def get_singer_type_with_metadata(
         Complete Singer schema type definition.
 
     """
-    # Use centralized type mapper
-    if field_name:
-        return _type_mapper.flext_oracle_wms_map_field_by_name(field_name, wms_type)
-    return _type_mapper.flext_oracle_wms_map_oracle_type(wms_type)
+    # Use centralized type mapping
+    wms_type_lower = wms_type.lower()
+    return FLEXT_ORACLE_WMS_TYPE_MAPPINGS.get(wms_type_lower, {"type": "string"})
 
 
 def get_oracle_to_singer_mapping() -> dict[str, dict[str, Any]]:
@@ -73,7 +67,7 @@ def get_oracle_to_singer_mapping() -> dict[str, dict[str, Any]]:
 
     """
     # Use centralized mapping
-    return _type_mapper.type_mappings
+    return FLEXT_ORACLE_WMS_TYPE_MAPPINGS
 
 
 # Backward compatibility aliases for existing code

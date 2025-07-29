@@ -16,14 +16,8 @@ import re
 from typing import Any
 from urllib.parse import urlparse
 
-from flext_core import get_logger
-
-# Use consolidated validation patterns from flext-meltano
-# MIGRATED: Singer SDK imports centralized via flext-meltano
-from flext_meltano import (
-    FlextMeltanoCommonValidationError,
-    FlextMeltanoConfigValidator,
-)
+# Use simple validation patterns
+from flext_core import FlextError, get_logger
 
 # API and Performance Constants
 MAX_PAGE_SIZE = 1250
@@ -35,17 +29,18 @@ CURRENCY_CODE_LENGTH = 3  # ISO 4217 standard
 logger = get_logger(__name__)
 
 
-# CONSOLIDATED: Use FlextMeltanoCommonValidationError instead of local exception
-ConfigValidationError = FlextMeltanoCommonValidationError
+# Simple validation error
+class ConfigValidationError(FlextError):
+    """Configuration validation error."""
 
 
-class ConfigValidator(FlextMeltanoConfigValidator):
+class ConfigValidator:
     """Validates Oracle WMS tap configuration using consolidated patterns."""
 
     def __init__(self) -> None:
         """Initialize ConfigValidator."""
-        super().__init__(strict_mode=False)
         self.warnings: list[str] = []
+        self.errors: list[str] = []
 
     def validate_config(self, config: dict[str, Any]) -> bool:
         """Validate complete Oracle WMS tap configuration.

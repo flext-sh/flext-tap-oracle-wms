@@ -12,9 +12,8 @@ from typing import Any
 
 from flext_core import get_logger
 
-# Import from flext-meltano for centralized patterns (CONSOLIDATED)
-# MIGRATED: Singer SDK imports centralized via flext-meltano
-from flext_meltano import FlextMeltanoBaseTap as Tap, typing as th
+# Import generic interfaces from flext-meltano
+from flext_meltano import Tap, singer_typing as th
 
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
 from flext_tap_oracle_wms.config_validator import (
@@ -32,7 +31,7 @@ from flext_tap_oracle_wms.discovery import (
     NetworkError,
     SchemaGenerationError,
 )
-from flext_tap_oracle_wms.infrastructure.cache import CacheManager
+from flext_tap_oracle_wms.infrastructure.cache import CacheManager, WMSCacheManager
 from flext_tap_oracle_wms.infrastructure.schema_generator import SchemaGenerator
 from flext_tap_oracle_wms.streams import WMSStream
 
@@ -179,20 +178,35 @@ class TapOracleWMS(Tap):
         ),
     ).to_dict()
 
-    def __init__(self, *args: object, **kwargs: object) -> None:
+    def __init__(
+        self,
+        *,
+        config: dict[str, Any] | None = None,
+        catalog: dict[str, Any] | None = None,
+        state: dict[str, Any] | None = None,
+        parse_env_config: bool = False,
+        validate_config: bool = True,
+        setup_mapper: bool = True,
+        message_writer: Any | None = None,
+    ) -> None:
         """Initialize tap with lazy loading - NO network calls during init."""
         # Call parent init first to let Singer SDK handle config parsing
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            config=config,
+            catalog=catalog,
+            state=state,
+            parse_env_config=parse_env_config,
+            validate_config=validate_config,
+            setup_mapper=setup_mapper,
+            message_writer=message_writer,
+        )
         # Apply type conversion to fix Meltano string-to-integer issue AFTER parent init
         if hasattr(self, "config") and self.config:
             self._config = self._convert_config_types(dict(self.config))
         # Now we can use self.logger safely
         self.logger.info("🔧 Initializing TapOracleWMS...")
-        self.logger.info("🔧 Args: %s", args)
-        self.logger.info(
-            "🔧 Kwargs keys: %s",
-            list(kwargs.keys()) if kwargs else "None",
-        )
+        self.logger.info("🔧 Config provided: %s", config is not None)
+        self.logger.info("🔧 Catalog provided: %s", catalog is not None)
         # Log some key config values (without secrets)
         if hasattr(self, "config") and self.config:
             self.logger.info("🔧 base_url: %s", self.config.get("base_url"))
@@ -302,7 +316,8 @@ class TapOracleWMS(Tap):
         if not hasattr(self, "_discovery") or self._discovery is None:
             # Validate configuration only when discovery is actually needed
             self._validate_configuration()
-            cache_manager = CacheManager(dict(self.config))
+            from flext_tap_oracle_wms.infrastructure.cache import CacheManagerAdapter
+            cache_manager = CacheManagerAdapter(dict(self.config))
             self._discovery = EntityDiscovery(dict(self.config), cache_manager)
         return self._discovery
 
@@ -329,29 +344,7 @@ class TapOracleWMS(Tap):
         """
         self._is_discovery_mode = enabled
 
-    @classmethod
-    def invoke(cls, *args: object, **kwargs: object) -> object:
-        """Override invoke to detect discovery mode.
-
-        Args:
-            *args: Positional arguments passed to parent invoke.
-            **kwargs: Keyword arguments passed to parent invoke.
-
-        Returns:
-            Discovery results if in discovery mode, otherwise parent invoke result.
-
-        """
-        # Initialize logger for debugging
-        logger = get_logger(__name__)
-        # Check if this is a discovery command to enable discovery mode
-        if "--discover" in sys.argv:
-            logger.info(
-                "🔍 Discovery mode detected - creating instance for catalog generation",
-            )
-            # For discovery, we'll handle it ourselves to ensure proper catalog output
-            return super().invoke(*args, **kwargs)
-        # Use the standard Singer SDK CLI handling for other commands
-        return super().invoke(*args, **kwargs)
+    # Use standard Singer SDK CLI - no customization needed
 
     def discover_streams(self) -> list[Any]:
         """Discover available streams from Oracle WMS API.

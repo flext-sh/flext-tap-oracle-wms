@@ -14,10 +14,9 @@ from typing import Any
 import requests
 from flext_core import get_logger
 
-# Direct imports from flext-oracle-wms (centralized patterns)
-# MIGRATED: Singer SDK imports centralized via flext-meltano
-from flext_meltano import SimpleAuthenticator
-from flext_meltano.singer import FlextMeltanoStream as RESTStream
+# Import authenticator from Singer SDK directly
+from singer_sdk.authenticators import SimpleAuthenticator
+from singer_sdk.streams import RESTStream
 
 logger = get_logger(__name__)
 

@@ -12,9 +12,9 @@ from urllib.parse import parse_qs
 # Removed circular dependency - use DI pattern
 from flext_core import get_logger
 
-# MIGRATED: Singer SDK imports centralized via flext-meltano
-from flext_meltano import BaseHATEOASPaginator
-from flext_meltano.singer import FlextMeltanoStream as RESTStream
+# Import generic interfaces from flext-meltano
+from singer_sdk.pagination import BaseHATEOASPaginator
+from singer_sdk.streams import RESTStream
 
 from flext_tap_oracle_wms.auth import get_wms_authenticator
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
@@ -92,7 +92,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
     replication_method = "INCREMENTAL"
     replication_key = None
 
-    def __init__(self, tap: object, name: str, schema: dict[str, Any]) -> None:
+    def __init__(self, tap: Any, name: str, schema: dict[str, Any]) -> None:
         """Initialize WMS stream with tap, name and schema.
 
         Args:
@@ -112,6 +112,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             tap=tap,
             name=name,
             schema=schema,
+            path=self._generate_api_path(name),
         )
         # Initialize configuration mapper for flexible configuration
         self.config_mapper = ConfigMapper(dict(self.config))
@@ -156,21 +157,10 @@ class WMSStream(RESTStream[dict[str, Any]]):
         """
         return str(self.config["base_url"]).rstrip("/")
 
-    @property
-    def path(self) -> str:
+    def _generate_api_path(self, entity_name: str) -> str:
         """Generate entity-specific path for REST endpoint."""
-        # Build path from configuration using ConfigMapper
-        pattern = self.config_mapper.get_entity_endpoint_pattern()
-        prefix = self.config_mapper.get_endpoint_prefix()
-        version = self.config_mapper.get_api_version()
-        # Replace placeholders in pattern and fix double slashes
-        path = pattern.format(
-            prefix=prefix,
-            version=version,
-            entity=self._entity_name,
-        )
-        # Remove leading slash if present to avoid double slashes with url_base
-        return path.removeprefix("/")
+        # Simple path generation for now
+        return f"/wms/lgfapi/v10/entity/{entity_name}"
 
     @property
     def http_headers(self) -> dict[str, Any]:
@@ -474,7 +464,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return row
 
     @property
-    def authenticator(self) -> object:
+    def authenticator(self) -> Any:
         """Return authenticator for API requests."""
         return get_wms_authenticator(self, dict(self.config))
 
