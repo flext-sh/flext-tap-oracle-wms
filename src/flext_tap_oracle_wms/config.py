@@ -72,7 +72,8 @@ class WMSConnectionConfig(BaseModel):
     def validate_base_url_field(cls, v: str) -> str:
         """Validate base URL format."""
         if not v.startswith(("http://", "https://")):
-            raise ValueError("Base URL must start with http:// or https://")
+            msg = "Base URL must start with http:// or https://"
+            raise ValueError(msg)
         return v
 
 
@@ -185,7 +186,8 @@ class TapOracleWMSConfig(FlextBaseSettings):
         """Validate log level format."""
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if v.upper() not in valid_levels:
-            raise ValueError(f"Invalid log level: {v}. Must be one of: {valid_levels}")
+            msg = f"Invalid log level: {v}. Must be one of: {valid_levels}"
+            raise ValueError(msg)
         return v.upper()
 
     def to_singer_config(self) -> dict[str, Any]:

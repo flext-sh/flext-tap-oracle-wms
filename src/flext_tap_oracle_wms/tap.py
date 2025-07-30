@@ -6,16 +6,12 @@ from __future__ import annotations
 
 # Import logger at top level
 # Removed circular dependency - use DI pattern
-import sys
 from datetime import UTC, datetime
 from typing import Any
-
-from flext_core import get_logger
 
 # Import generic interfaces from flext-meltano
 from flext_meltano import Tap, singer_typing as th
 
-from flext_tap_oracle_wms.cache import CacheManager, WMSCacheManager
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
 from flext_tap_oracle_wms.config_validator import (
     ConfigValidationError,
@@ -365,7 +361,7 @@ class TapOracleWMS(Tap):
             if not entities:
                 # Auto-discover entities if none configured
                 self.logger.info(
-                    "🔍 No entities configured, auto-discovering from WMS API..."
+                    "🔍 No entities configured, auto-discovering from WMS API...",
                 )
                 try:
                     discovered_entities = self._discover_entities_sync()
@@ -379,7 +375,7 @@ class TapOracleWMS(Tap):
                     )
                 except Exception as e:
                     self.logger.warning(
-                        "⚠️ Auto-discovery failed: %s, using fallback entities", e
+                        "⚠️ Auto-discovery failed: %s, using fallback entities", e,
                     )
                     # Use common WMS entities as fallback
                     entities = [
