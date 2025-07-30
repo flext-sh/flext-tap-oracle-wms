@@ -72,7 +72,9 @@ class TestWMSClientComprehensive:
             wms_client.get("/test")
 
         if "Unexpected error: Unexpected error" not in str(excinfo.value):
-            msg = f"Expected {'Unexpected error: Unexpected error'} in {excinfo.value!s}"
+            msg = (
+                f"Expected {'Unexpected error: Unexpected error'} in {excinfo.value!s}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -397,7 +399,9 @@ class TestWMSClientComprehensive:
         wms_client.get("/test")
 
         if wms_client.metrics.api_calls != initial_api_calls + 1:
-            msg = f"Expected {initial_api_calls + 1}, got {wms_client.metrics.api_calls}"
+            msg = (
+                f"Expected {initial_api_calls + 1}, got {wms_client.metrics.api_calls}"
+            )
             raise AssertionError(
                 msg,
             )

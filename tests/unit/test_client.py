@@ -216,7 +216,9 @@ class TestWMSClient:
         initial_api_calls = wms_client.metrics.api_calls
         wms_client.get("/entity/item")
         if wms_client.metrics.api_calls != initial_api_calls + 1:
-            msg = f"Expected {initial_api_calls + 1}, got {wms_client.metrics.api_calls}"
+            msg = (
+                f"Expected {initial_api_calls + 1}, got {wms_client.metrics.api_calls}"
+            )
             raise AssertionError(
                 msg,
             )

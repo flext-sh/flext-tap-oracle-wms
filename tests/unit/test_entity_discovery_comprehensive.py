@@ -376,7 +376,9 @@ class TestEntityDiscoveryComprehensive:
                 await discovery._fetch_entities_from_api()
 
             if "error during entity discovery" not in str(exc_info.value):
-                msg = f"Expected {'error during entity discovery'} in {exc_info.value!s}"
+                msg = (
+                    f"Expected {'error during entity discovery'} in {exc_info.value!s}"
+                )
                 raise AssertionError(
                     msg,
                 )
@@ -395,7 +397,9 @@ class TestEntityDiscoveryComprehensive:
                 await discovery._fetch_entities_from_api()
 
             if "error during entity discovery" not in str(exc_info.value):
-                msg = f"Expected {'error during entity discovery'} in {exc_info.value!s}"
+                msg = (
+                    f"Expected {'error during entity discovery'} in {exc_info.value!s}"
+                )
                 raise AssertionError(
                     msg,
                 )
