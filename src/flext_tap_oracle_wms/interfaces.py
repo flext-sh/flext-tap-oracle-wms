@@ -24,7 +24,7 @@ class EntityDiscoveryInterface(ABC):
             Dictionary mapping entity names to their API endpoints.
 
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     async def describe_entity(self, entity_name: str) -> dict[str, Any] | None:
@@ -37,7 +37,7 @@ class EntityDiscoveryInterface(ABC):
             Entity metadata dictionary or None if not found.
 
         """
-        raise NotImplementedError
+        ...
 
     # 🚨 METHOD PERMANENTLY DELETED: get_entity_sample
     # This method is FORBIDDEN - schema discovery uses ONLY API metadata describe
@@ -53,7 +53,7 @@ class EntityDiscoveryInterface(ABC):
             Filtered dictionary of entities.
 
         """
-        raise NotImplementedError
+        ...
 
 
 class SchemaGeneratorInterface(ABC):
@@ -70,7 +70,7 @@ class SchemaGeneratorInterface(ABC):
             JSON schema dictionary for Singer protocol.
 
         """
-        raise NotImplementedError
+        ...
 
     # Note: Sample-based generation is forbidden for security
     # These methods are FORBIDDEN and have been permanently deleted
@@ -87,7 +87,7 @@ class SchemaGeneratorInterface(ABC):
             Flattened data structure.
 
         """
-        raise NotImplementedError
+        ...
 
 
 class CacheManagerInterface(ABC):
@@ -104,7 +104,7 @@ class CacheManagerInterface(ABC):
             Cached value or None if not found.
 
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def set_cached_value(self, key: str, value: object, ttl: int | None = None) -> None:
@@ -116,7 +116,7 @@ class CacheManagerInterface(ABC):
             ttl: Optional time-to-live in seconds.
 
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def clear_cache(self, cache_type: str = "all") -> None:
@@ -126,7 +126,7 @@ class CacheManagerInterface(ABC):
             cache_type: Type of cache to clear, defaults to "all".
 
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def is_cache_valid(self, key: str, ttl: int) -> bool:
@@ -140,7 +140,7 @@ class CacheManagerInterface(ABC):
             True if cache entry is valid, False otherwise.
 
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def get_cache_stats(self) -> dict[str, Any]:
@@ -150,7 +150,7 @@ class CacheManagerInterface(ABC):
             Dictionary containing cache hit/miss statistics and sizes.
 
         """
-        raise NotImplementedError
+        ...
 
 
 class TypeMapperInterface(ABC):
@@ -176,7 +176,7 @@ class TypeMapperInterface(ABC):
         """
         # REMOVED: infer_type_from_sample - FORBIDDEN METHOD
         # This method is FORBIDDEN and has been permanently deleted
-        raise NotImplementedError
+        ...
 
 
 class AuthenticatorInterface(ABC):
@@ -190,7 +190,7 @@ class AuthenticatorInterface(ABC):
             Dictionary of authentication headers.
 
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def refresh_credentials(self) -> bool:
@@ -200,7 +200,7 @@ class AuthenticatorInterface(ABC):
             True if credentials were refreshed successfully.
 
         """
-        raise NotImplementedError
+        ...
 
 
 class StreamFactoryInterface(ABC):
@@ -226,7 +226,7 @@ class StreamFactoryInterface(ABC):
         """
         # Abstract method - parameters intentionally unused in interface
         _ = entity_name, schema, tap_instance
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def validate_stream_config(self, config: dict[str, Any]) -> bool:
@@ -239,7 +239,7 @@ class StreamFactoryInterface(ABC):
             True if configuration is valid.
 
         """
-        raise NotImplementedError
+        ...
 
 
 class MetricsCollectorInterface(ABC):
@@ -256,7 +256,7 @@ class MetricsCollectorInterface(ABC):
         """
         # Abstract method - parameters intentionally unused in interface
         _ = entity, duration
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def record_record_count(self, entity: str, count: int) -> None:
@@ -267,7 +267,7 @@ class MetricsCollectorInterface(ABC):
             count: Number of records extracted.
 
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def get_metrics_summary(self) -> dict[str, Any]:
@@ -277,4 +277,4 @@ class MetricsCollectorInterface(ABC):
             Dictionary containing metrics summary data.
 
         """
-        raise NotImplementedError
+        ...
