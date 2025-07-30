@@ -97,7 +97,9 @@ class TestWMSStream:
         # Test that stream can construct URLs properly using Singer SDK patterns
         assert hasattr(mock_wms_stream, "url_base")
         if mock_wms_config["base_url"] not in mock_wms_stream.url_base:
-            msg = f"Expected {mock_wms_config['base_url']} in {mock_wms_stream.url_base}"
+            msg = (
+                f"Expected {mock_wms_config['base_url']} in {mock_wms_stream.url_base}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -267,7 +269,9 @@ class TestWMSStream:
 
         # Headers would be added by the request method via tap auth
         if mock_wms_stream.tap.config["username"] != "test_user":
-            msg = f"Expected {'test_user'}, got {mock_wms_stream.tap.config['username']}"
+            msg = (
+                f"Expected {'test_user'}, got {mock_wms_stream.tap.config['username']}"
+            )
             raise AssertionError(
                 msg,
             )

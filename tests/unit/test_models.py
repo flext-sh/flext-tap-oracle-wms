@@ -731,7 +731,9 @@ class TestWMSDiscoveryResult:
             msg = f"Expected {2}, got {len(successful)}"
             raise AssertionError(msg)
         if not all(entity.name for entity in successful):
-            msg = f"Expected {all(entity.name for entity in successful)} in {successful}"
+            msg = (
+                f"Expected {all(entity.name for entity in successful)} in {successful}"
+            )
             raise AssertionError(
                 msg,
             )

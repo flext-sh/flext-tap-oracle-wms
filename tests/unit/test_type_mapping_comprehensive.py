@@ -92,7 +92,9 @@ class TestTypeMapping:
     def test_format_mappings(self) -> None:
         """Test format-specific mappings."""
         if FORMAT_TO_SINGER["date-time"]["format"] != "date-time":
-            msg = f"Expected {'date-time'}, got {FORMAT_TO_SINGER['date-time']['format']}"
+            msg = (
+                f"Expected {'date-time'}, got {FORMAT_TO_SINGER['date-time']['format']}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -114,7 +116,9 @@ class TestTypeMapping:
         """Test WMS-specific type mappings."""
         # Test length constraints
         if WMS_SPECIFIC_TYPES["facility_code"]["maxLength"] != 10:
-            msg = f"Expected {10}, got {WMS_SPECIFIC_TYPES['facility_code']['maxLength']}"
+            msg = (
+                f"Expected {10}, got {WMS_SPECIFIC_TYPES['facility_code']['maxLength']}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -128,7 +132,9 @@ class TestTypeMapping:
 
         # Test timestamp fields
         if WMS_SPECIFIC_TYPES["mod_ts"]["format"] != "date-time":
-            msg = f"Expected {'date-time'}, got {WMS_SPECIFIC_TYPES['mod_ts']['format']}"
+            msg = (
+                f"Expected {'date-time'}, got {WMS_SPECIFIC_TYPES['mod_ts']['format']}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -143,13 +149,17 @@ class TestTypeMapping:
         """Test basic type conversion to Singer format."""
         # String types
         if convert_metadata_type_to_singer("varchar") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('varchar')}"
+            msg = (
+                f"Expected {'string'}, got {convert_metadata_type_to_singer('varchar')}"
+            )
             raise AssertionError(
                 msg,
             )
         assert convert_metadata_type_to_singer("text") == "string"
         if convert_metadata_type_to_singer("string") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('string')}"
+            msg = (
+                f"Expected {'string'}, got {convert_metadata_type_to_singer('string')}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -162,14 +172,18 @@ class TestTypeMapping:
             )
         assert convert_metadata_type_to_singer("int") == "integer"
         if convert_metadata_type_to_singer("bigint") != "integer":
-            msg = f"Expected {'integer'}, got {convert_metadata_type_to_singer('bigint')}"
+            msg = (
+                f"Expected {'integer'}, got {convert_metadata_type_to_singer('bigint')}"
+            )
             raise AssertionError(
                 msg,
             )
 
         # Number types
         if convert_metadata_type_to_singer("number") != "number":
-            msg = f"Expected {'number'}, got {convert_metadata_type_to_singer('number')}"
+            msg = (
+                f"Expected {'number'}, got {convert_metadata_type_to_singer('number')}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -270,7 +284,9 @@ class TestTypeMapping:
     def test_convert_metadata_type_to_singer_case_insensitive(self) -> None:
         """Test case-insensitive type conversion."""
         if convert_metadata_type_to_singer("VARCHAR") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('VARCHAR')}"
+            msg = (
+                f"Expected {'string'}, got {convert_metadata_type_to_singer('VARCHAR')}"
+            )
             raise AssertionError(
                 msg,
             )

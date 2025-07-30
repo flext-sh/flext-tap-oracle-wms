@@ -69,7 +69,9 @@ class TestConnectionConfiguration:
         ):
             mapper = ConfigMapper()
             if mapper.get_base_url() != "https://env.example.com":
-                msg = f"Expected {'https://env.example.com'}, got {mapper.get_base_url()}"
+                msg = (
+                    f"Expected {'https://env.example.com'}, got {mapper.get_base_url()}"
+                )
                 raise AssertionError(
                     msg,
                 )
@@ -79,7 +81,9 @@ class TestConnectionConfiguration:
         profile = {"api": {"base_url": "https://profile.example.com"}}
         mapper = ConfigMapper(profile)
         if mapper.get_base_url() != "https://profile.example.com":
-            msg = f"Expected {'https://profile.example.com'}, got {mapper.get_base_url()}"
+            msg = (
+                f"Expected {'https://profile.example.com'}, got {mapper.get_base_url()}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -93,7 +97,9 @@ class TestConnectionConfiguration:
         ):
             mapper = ConfigMapper(profile)
             if mapper.get_base_url() != "https://env.example.com":
-                msg = f"Expected {'https://env.example.com'}, got {mapper.get_base_url()}"
+                msg = (
+                    f"Expected {'https://env.example.com'}, got {mapper.get_base_url()}"
+                )
                 raise AssertionError(
                     msg,
                 )
@@ -566,7 +572,9 @@ class TestNestedProfileConfiguration:
         }
         mapper = ConfigMapper(profile)
         if mapper.get_base_url() != "https://direct.example.com":
-            msg = f"Expected {'https://direct.example.com'}, got {mapper.get_base_url()}"
+            msg = (
+                f"Expected {'https://direct.example.com'}, got {mapper.get_base_url()}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -673,7 +681,9 @@ class TestConfigMapperAllMethods:
 
         # Test that complex nested access works
         if mapper.get_base_url() != "https://complex.example.com":
-            msg = f"Expected {'https://complex.example.com'}, got {mapper.get_base_url()}"
+            msg = (
+                f"Expected {'https://complex.example.com'}, got {mapper.get_base_url()}"
+            )
             raise AssertionError(
                 msg,
             )

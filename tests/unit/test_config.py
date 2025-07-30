@@ -712,7 +712,9 @@ class TestConfigValidation:
             catalog_file=None,
         )
         if config_https.connection.base_url != "https://test.com":
-            msg = f"Expected {'https://test.com'}, got {config_https.connection.base_url}"
+            msg = (
+                f"Expected {'https://test.com'}, got {config_https.connection.base_url}"
+            )
             raise AssertionError(
                 msg,
             )
