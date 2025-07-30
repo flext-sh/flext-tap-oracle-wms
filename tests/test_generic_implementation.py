@@ -34,15 +34,17 @@ class TestGenericImplementation:
         config = TapOracleWMS.config_jsonschema
         config_str = json.dumps(config)
         if "client-b" in config_str.lower():
+            msg = f"Expected no 'client-b' reference in {config_str.lower()}"
             raise AssertionError(
-                f"Expected no 'client-b' reference in {config_str.lower()}"
+                msg,
             )
         assert "client-b" not in config_str.lower()
 
         # Check tap name
         if TapOracleWMS.name != "tap-oracle-wms":
+            msg = f"Expected {'tap-oracle-wms'}, got {TapOracleWMS.name}"
             raise AssertionError(
-                f"Expected {'tap-oracle-wms'}, got {TapOracleWMS.name}"
+                msg,
             )
 
     def test_generic_configuration(self) -> None:
@@ -65,8 +67,9 @@ class TestGenericImplementation:
 
             tap = TapOracleWMS(config=config)
             if tap.config["base_url"] != "https://any-wms.company.com":
+                msg = f"Expected {'https://any-wms.company.com'}, got {tap.config['base_url']}"
                 raise AssertionError(
-                    f"Expected {'https://any-wms.company.com'}, got {tap.config['base_url']}"
+                    msg,
                 )
             assert tap.config["company_code"] == "COMP1"
 
@@ -76,21 +79,26 @@ class TestGenericImplementation:
         # Check WMS-specific configuration options
         properties = config_schema["properties"]
         if "company_code" not in properties:
-            raise AssertionError(f"Expected {'company_code'} in {properties}")
+            msg = f"Expected {'company_code'} in {properties}"
+            raise AssertionError(msg)
         assert "facility_code" in properties
         if "wms_api_version" not in properties:
-            raise AssertionError(f"Expected {'wms_api_version'} in {properties}")
+            msg = f"Expected {'wms_api_version'} in {properties}"
+            raise AssertionError(msg)
         if properties["wms_api_version"]["default"] != "v10":
+            msg = f"Expected {'v10'}, got {properties['wms_api_version']['default']}"
             raise AssertionError(
-                f"Expected {'v10'}, got {properties['wms_api_version']['default']}"
+                msg,
             )
 
         # Check WMS pagination modes
         if "page_mode" not in properties:
-            raise AssertionError(f"Expected {'page_mode'} in {properties}")
+            msg = f"Expected {'page_mode'} in {properties}"
+            raise AssertionError(msg)
         if properties["page_mode"]["enum"] != ["sequenced", "paged"]:
+            msg = f"Expected {['sequenced', 'paged']}, got {properties['page_mode']['enum']}"
             raise AssertionError(
-                f"Expected {['sequenced', 'paged']}, got {properties['page_mode']['enum']}"
+                msg,
             )
         assert properties["page_mode"]["default"] == "sequenced"
 
@@ -106,8 +114,9 @@ class TestGenericImplementation:
 
         # Check base configuration
         if discovery.base_url != "https://wms.example.com":
+            msg = f"Expected {'https://wms.example.com'}, got {discovery.base_url}"
             raise AssertionError(
-                f"Expected {'https://wms.example.com'}, got {discovery.base_url}"
+                msg,
             )
         assert discovery.api_version == "v10"  # Default WMS version
 
@@ -139,10 +148,12 @@ class TestGenericImplementation:
 
             # Verify streams are created for configured entities
             if len(streams) != EXPECTED_BULK_SIZE:
-                raise AssertionError(f"Expected {2}, got {len(streams)}")
+                msg = f"Expected {2}, got {len(streams)}"
+                raise AssertionError(msg)
             stream_names = [s.name for s in streams]
             if "custom_entity" not in stream_names:
-                raise AssertionError(f"Expected {'custom_entity'} in {stream_names}")
+                msg = f"Expected {'custom_entity'} in {stream_names}"
+                raise AssertionError(msg)
             assert "another_entity" in stream_names
 
 
@@ -164,8 +175,9 @@ class TestWMSStreamGeneric:
 
         # Default path pattern
         if stream.path != "//wms/lgfapi/v10/entity/allocation":
+            msg = f"Expected {'//wms/lgfapi/v10/entity/allocation'}, got {stream.path}"
             raise AssertionError(
-                f"Expected {'//wms/lgfapi/v10/entity/allocation'}, got {stream.path}"
+                msg,
             )
 
     def test_wms_pagination_preserved(self) -> None:
@@ -181,20 +193,23 @@ class TestWMSStreamGeneric:
 
         # Test next URL extraction
         if paginator.get_next_url(mock_response) != "https://wms.com/api?page=2":
+            msg = f"Expected {'https://wms.com/api?page=2'}, got {paginator.get_next_url(mock_response)}"
             raise AssertionError(
-                f"Expected {'https://wms.com/api?page=2'}, got {paginator.get_next_url(mock_response)}"
+                msg,
             )
         if not (paginator.has_more(mock_response)):
+            msg = f"Expected True, got {paginator.has_more(mock_response)}"
             raise AssertionError(
-                f"Expected True, got {paginator.has_more(mock_response)}"
+                msg,
             )
 
         # Test no more pages
         mock_response.json.return_value = {"results": [], "page_nbr": 2}
         assert paginator.get_next_url(mock_response) is None
         if paginator.has_more(mock_response):
+            msg = f"Expected False, got {paginator.has_more(mock_response)}"
             raise AssertionError(
-                f"Expected False, got {paginator.has_more(mock_response)}"
+                msg,
             )
 
     def test_wms_timestamp_handling(self) -> None:
@@ -216,8 +231,9 @@ class TestWMSStreamGeneric:
 
         # Verify incremental sync is configured
         if stream.replication_method != "INCREMENTAL":
+            msg = f"Expected {'INCREMENTAL'}, got {stream.replication_method}"
             raise AssertionError(
-                f"Expected {'INCREMENTAL'}, got {stream.replication_method}"
+                msg,
             )
         assert stream.replication_key == "mod_ts"
 
@@ -246,11 +262,13 @@ class TestWMSStreamGeneric:
         # Verify record is returned unchanged (Singer SDK handles metadata)
         assert processed is not None
         if processed != record:
-            raise AssertionError(f"Expected {record}, got {processed}")
+            msg = f"Expected {record}, got {processed}"
+            raise AssertionError(msg)
         assert processed["id"] == 123
         if processed["order"]["key"] != "ORD001":
+            msg = f"Expected {'ORD001'}, got {processed['order']['key']}"
             raise AssertionError(
-                f"Expected {'ORD001'}, got {processed['order']['key']}"
+                msg,
             )
 
 
@@ -276,13 +294,15 @@ class TestSchemaGeneratorGeneric:
         # Verify WMS types are mapped correctly
         props = schema["properties"]
         if props["id"]["type"] != ["integer", "null"]:
+            msg = f"Expected {['integer', 'null']}, got {props['id']['type']}"
             raise AssertionError(
-                f"Expected {['integer', 'null']}, got {props['id']['type']}"
+                msg,
             )
         assert props["code"]["type"] == ["string", "null"]
         if props["active_flg"]["type"] != ["boolean", "null"]:
+            msg = f"Expected {['boolean', 'null']}, got {props['active_flg']['type']}"
             raise AssertionError(
-                f"Expected {['boolean', 'null']}, got {props['active_flg']['type']}"
+                msg,
             )
         assert props["mod_ts"]["format"] == "date-time"
 
@@ -304,18 +324,22 @@ class TestSchemaGeneratorGeneric:
 
         # Verify audit fields are recognized
         if "CREATE_USER" not in props:
-            raise AssertionError(f"Expected {'CREATE_USER'} in {props}")
+            msg = f"Expected {'CREATE_USER'} in {props}"
+            raise AssertionError(msg)
         assert "CREATE_TS" in props
         if props["CREATE_TS"]["format"] != "date-time":
+            msg = f"Expected {'date-time'}, got {props['CREATE_TS']['format']}"
             raise AssertionError(
-                f"Expected {'date-time'}, got {props['CREATE_TS']['format']}"
+                msg,
             )
         if "MOD_USER" not in props:
-            raise AssertionError(f"Expected {'MOD_USER'} in {props}")
+            msg = f"Expected {'MOD_USER'} in {props}"
+            raise AssertionError(msg)
         assert "MOD_TS" in props
         if props["MOD_TS"]["format"] != "date-time":
+            msg = f"Expected {'date-time'}, got {props['MOD_TS']['format']}"
             raise AssertionError(
-                f"Expected {'date-time'}, got {props['MOD_TS']['format']}"
+                msg,
             )
 
 
@@ -348,8 +372,9 @@ class TestBusinessLogicPreserved:
             # Verify overlap is applied (10 minutes before start_time)
             expected = datetime(2024, 1, 1, 11, 50, 0, tzinfo=UTC)
             if params["mod_ts__gte"] != expected.isoformat():
+                msg = f"Expected {expected.isoformat()}, got {params['mod_ts__gte']}"
                 raise AssertionError(
-                    f"Expected {expected.isoformat()}, got {params['mod_ts__gte']}"
+                    msg,
                 )
 
     def test_full_sync_recovery_logic(self) -> None:
@@ -364,8 +389,9 @@ class TestBusinessLogicPreserved:
 
         # Verify full sync configuration
         if stream.replication_method != "FULL_TABLE":
+            msg = f"Expected {'FULL_TABLE'}, got {stream.replication_method}"
             raise AssertionError(
-                f"Expected {'FULL_TABLE'}, got {stream.replication_method}"
+                msg,
             )
         assert stream.replication_key is None  # Full table sync has no replication key
 
@@ -373,7 +399,8 @@ class TestBusinessLogicPreserved:
         params: dict[str, Any] = {}
         stream._add_full_table_ordering(params)
         if params["ordering"] != "-id":  # Descending for recovery
-            raise AssertionError(f"Expected '-id', got {params['ordering']}")
+            msg = f"Expected '-id', got {params['ordering']}"
+            raise AssertionError(msg)
 
 
 if __name__ == "__main__":

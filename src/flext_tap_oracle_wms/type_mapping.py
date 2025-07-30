@@ -55,7 +55,8 @@ def convert_metadata_type_to_singer(
     # Use centralized mapping
     wms_type_lower = wms_type.lower()
     singer_schema = FLEXT_ORACLE_WMS_TYPE_MAPPINGS.get(
-        wms_type_lower, {"type": "string"},
+        wms_type_lower,
+        {"type": "string"},
     )
     # Return the primary type (first in the type array)
     singer_type = singer_schema["type"]

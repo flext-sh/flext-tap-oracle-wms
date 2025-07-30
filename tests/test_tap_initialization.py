@@ -6,9 +6,9 @@ from unittest.mock import MagicMock, patch
 
 from flext_tap_oracle_wms.tap import TapOracleWMS
 
-
 # Constants
 EXPECTED_BULK_SIZE = 2
+
 
 class TestTapInitialization:
     """Test tap initialization behavior."""
@@ -37,7 +37,10 @@ class TestTapInitialization:
             mock_requests_get.assert_not_called()
             # Verify tap is properly initialized
             if tap.config["base_url"] != "https://test.example.com":
-                raise AssertionError(f"Expected {"https://test.example.com"}, got {tap.config["base_url"]}")
+                msg = f"Expected {'https://test.example.com'}, got {tap.config['base_url']}"
+                raise AssertionError(
+                    msg,
+                )
             assert tap.config["entities"] == ["allocation", "order_hdr"]
 
     def test_discover_streams_sync_mode_no_api_calls(self) -> None:
@@ -67,10 +70,12 @@ class TestTapInitialization:
             streams = tap.discover_streams()
             # Should create minimal streams without API calls
             if len(streams) != EXPECTED_BULK_SIZE:
-                raise AssertionError(f"Expected {2}, got {len(streams)}")
+                msg = f"Expected {2}, got {len(streams)}"
+                raise AssertionError(msg)
             assert streams[0].name == "allocation"
             if streams[1].name != "order_hdr":
-                raise AssertionError(f"Expected {"order_hdr"}, got {streams[1].name}")
+                msg = f"Expected {'order_hdr'}, got {streams[1].name}"
+                raise AssertionError(msg)
             # Verify no network calls were made
             mock_async_client.assert_not_called()
             mock_sync_client.assert_not_called()
@@ -102,7 +107,8 @@ class TestTapInitialization:
             # Now discovery should work
             streams = tap.discover_streams()
             if len(streams) != 1:
-                raise AssertionError(f"Expected {1}, got {len(streams)}")
+                msg = f"Expected {1}, got {len(streams)}"
+                raise AssertionError(msg)
             assert streams[0].name == "test_entity"
 
     @patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams")
@@ -154,13 +160,19 @@ class TestTapInitialization:
             # Verify types are correct
             assert isinstance(tap.config["page_size"], int)
             if tap.config["page_size"] != 100:
-                raise AssertionError(f"Expected {100}, got {tap.config["page_size"]}")
+                msg = f"Expected {100}, got {tap.config['page_size']}"
+                raise AssertionError(msg)
             assert isinstance(tap.config["enable_incremental"], bool)
             if not (tap.config["enable_incremental"]):
-                raise AssertionError(f"Expected True, got {tap.config["enable_incremental"]}")
+                msg = f"Expected True, got {tap.config['enable_incremental']}"
+                raise AssertionError(
+                    msg,
+                )
             assert isinstance(tap.config["verify_ssl"], bool)
             if tap.config["verify_ssl"]:
-                raise AssertionError(f"Expected False, got {tap.config["verify_ssl"]}")\ n
+                msg = f"Expected False, got {tap.config['verify_ssl']}"
+                raise AssertionError(msg)
+
     def test_minimal_schema_creation(self) -> None:
         config = {
             "base_url": "https://test.example.com",
@@ -182,12 +194,20 @@ class TestTapInitialization:
             # Create minimal schema
             schema = tap._create_minimal_schema("test_entity")
             if schema["type"] != "object":
-                raise AssertionError(f"Expected {"object"}, got {schema["type"]}")
+                msg = f"Expected {'object'}, got {schema['type']}"
+                raise AssertionError(msg)
             if "properties" not in schema:
-                raise AssertionError(f"Expected {"properties"} in {schema}")
+                msg = f"Expected {'properties'} in {schema}"
+                raise AssertionError(msg)
             assert "id" in schema["properties"]
             if "_sdc_extracted_at" not in schema["properties"]:
-                raise AssertionError(f"Expected {"_sdc_extracted_at"} in {schema["properties"]}")
+                msg = f"Expected {'_sdc_extracted_at'} in {schema['properties']}"
+                raise AssertionError(
+                    msg,
+                )
             assert "_sdc_entity" in schema["properties"]
             if not (schema["additionalProperties"]):
-                raise AssertionError(f"Expected True, got {schema["additionalProperties"]}")
+                msg = f"Expected True, got {schema['additionalProperties']}"
+                raise AssertionError(
+                    msg,
+                )

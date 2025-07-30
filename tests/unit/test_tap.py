@@ -25,8 +25,8 @@ class TestTapOracleWMS:
         tap = TapOracleWMS(config=mock_wms_config)
 
         if tap.name != "tap-oracle-wms":
-
-            raise AssertionError(f"Expected {"tap-oracle-wms"}, got {tap.name}")
+            msg = f"Expected {'tap-oracle-wms'}, got {tap.name}"
+            raise AssertionError(msg)
         assert tap.config == mock_wms_config
         assert hasattr(tap, "discovery")
         assert hasattr(tap, "schema_generator")
@@ -40,7 +40,10 @@ class TestTapOracleWMS:
         config = {"base_url": "https://test.com"}
         tap = TapOracleWMS(config=config)
         if tap.config["base_url"] != "https://test.com":
-            raise AssertionError(f"Expected {"https://test.com"}, got {tap.config["base_url"]}")
+            msg = f"Expected {'https://test.com'}, got {tap.config['base_url']}"
+            raise AssertionError(
+                msg,
+            )
 
     @patch("asyncio.run")
     def test_discover_streams(
@@ -66,7 +69,8 @@ class TestTapOracleWMS:
 
             # Test basic functionality
             if tap.name != "tap-oracle-wms":
-                raise AssertionError(f"Expected {"tap-oracle-wms"}, got {tap.name}")
+                msg = f"Expected {'tap-oracle-wms'}, got {tap.name}"
+                raise AssertionError(msg)
             assert tap.config == mock_wms_config
 
     @patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams")
@@ -90,10 +94,11 @@ class TestTapOracleWMS:
             processed = mock_post_process(record)
 
             if "_extracted_at" not in processed:
-
-                raise AssertionError(f"Expected {"_extracted_at"} in {processed}")
+                msg = f"Expected {'_extracted_at'} in {processed}"
+                raise AssertionError(msg)
             if processed["id"] != 1:
-                raise AssertionError(f"Expected {1}, got {processed["id"]}")
+                msg = f"Expected {1}, got {processed['id']}"
+                raise AssertionError(msg)
             assert processed["name"] == "Test"
 
     @patch("flext_tap_oracle_wms.tap.TapOracleWMS.discover_streams")
@@ -150,7 +155,10 @@ class TestTapOracleWMS:
             # Test cache functionality by setting it manually
             tap._entity_cache = mock_entities
             if tap._entity_cache != mock_entities:
-                raise AssertionError(f"Expected {mock_entities}, got {tap._entity_cache}")
+                msg = f"Expected {mock_entities}, got {tap._entity_cache}"
+                raise AssertionError(
+                    msg,
+                )
 
     def test_schema_generation_caching(self, mock_wms_config: Any) -> None:
         mock_schema = {"type": "object", "properties": {}}
@@ -172,4 +180,7 @@ class TestTapOracleWMS:
             # Test cache functionality by setting it manually
             tap._schema_cache["item"] = mock_schema
             if tap._schema_cache["item"] != mock_schema:
-                raise AssertionError(f"Expected {mock_schema}, got {tap._schema_cache["item"]}")
+                msg = f"Expected {mock_schema}, got {tap._schema_cache['item']}"
+                raise AssertionError(
+                    msg,
+                )

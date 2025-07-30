@@ -13,10 +13,10 @@ import pytest
 
 from flext_tap_oracle_wms.infrastructure.cache import CacheManager
 
-
 # Constants
 EXPECTED_BULK_SIZE = 2
 EXPECTED_DATA_COUNT = 3
+
 
 class TestCacheManagerComprehensive:
     """Comprehensive tests for cache manager functionality."""
@@ -31,22 +31,24 @@ class TestCacheManagerComprehensive:
         cache_manager = CacheManager(config)
 
         if cache_manager.config != config:
-
-            raise AssertionError(f"Expected {config}, got {cache_manager.config}")
+            msg = f"Expected {config}, got {cache_manager.config}"
+            raise AssertionError(msg)
         assert cache_manager._default_ttl == 1800
         if cache_manager._max_cache_size != 500:
-            raise AssertionError(f"Expected {500}, got {cache_manager._max_cache_size}")
+            msg = f"Expected {500}, got {cache_manager._max_cache_size}"
+            raise AssertionError(msg)
         assert cache_manager._cache_hits == 0
         if cache_manager._cache_misses != 0:
-            raise AssertionError(f"Expected {0}, got {cache_manager._cache_misses}")
+            msg = f"Expected {0}, got {cache_manager._cache_misses}"
+            raise AssertionError(msg)
 
     def test_cache_manager_default_settings(self) -> None:
         """Test cache manager with default settings."""
         cache_manager = CacheManager({})
 
-        if cache_manager._default_ttl != 3600  # Default 1 hour:
-
-            raise AssertionError(f"Expected {3600  # Default 1 hour}, got {cache_manager._default_ttl}")
+        if cache_manager._default_ttl != 3600:  # Default 1 hour:
+            msg = f"Expected {3600}, got {cache_manager._default_ttl}"
+            raise AssertionError(msg)
         assert cache_manager._max_cache_size == 1000  # Default size
 
     def test_entity_cache_operations(self) -> None:
@@ -58,7 +60,8 @@ class TestCacheManagerComprehensive:
         result = cache_manager.get_entity("test_entity")
         assert result is None
         if cache_manager._cache_misses != 1:
-            raise AssertionError(f"Expected {1}, got {cache_manager._cache_misses}")
+            msg = f"Expected {1}, got {cache_manager._cache_misses}"
+            raise AssertionError(msg)
 
         # Set entity in cache
         cache_manager.set_entity("test_entity", entity_data)
@@ -66,7 +69,8 @@ class TestCacheManagerComprehensive:
         # Test cache hit
         result = cache_manager.get_entity("test_entity")
         if result != entity_data:
-            raise AssertionError(f"Expected {entity_data}, got {result}")
+            msg = f"Expected {entity_data}, got {result}"
+            raise AssertionError(msg)
         assert cache_manager._cache_hits == 1
 
     def test_entity_cache_with_custom_ttl(self) -> None:
@@ -80,7 +84,8 @@ class TestCacheManagerComprehensive:
         # Should be cached immediately
         result = cache_manager.get_entity("test_entity")
         if result != entity_data:
-            raise AssertionError(f"Expected {entity_data}, got {result}")
+            msg = f"Expected {entity_data}, got {result}"
+            raise AssertionError(msg)
 
         # Wait for TTL to expire
         time.sleep(1.1)
@@ -104,7 +109,8 @@ class TestCacheManagerComprehensive:
         # Test cache hit
         result = cache_manager.get_schema("test_schema")
         if result != schema_data:
-            raise AssertionError(f"Expected {schema_data}, got {result}")
+            msg = f"Expected {schema_data}, got {result}"
+            raise AssertionError(msg)
 
     def test_schema_cache_with_custom_ttl(self) -> None:
         """Test schema cache with custom TTL."""
@@ -117,7 +123,8 @@ class TestCacheManagerComprehensive:
         # Should be cached immediately
         result = cache_manager.get_schema("test_schema")
         if result != schema_data:
-            raise AssertionError(f"Expected {schema_data}, got {result}")
+            msg = f"Expected {schema_data}, got {result}"
+            raise AssertionError(msg)
 
         # Wait for TTL to expire
         time.sleep(1.1)
@@ -141,7 +148,8 @@ class TestCacheManagerComprehensive:
         # Test cache hit
         result = cache_manager.get_metadata("test_metadata")
         if result != metadata:
-            raise AssertionError(f"Expected {metadata}, got {result}")
+            msg = f"Expected {metadata}, got {result}"
+            raise AssertionError(msg)
 
     def test_metadata_cache_with_custom_ttl(self) -> None:
         """Test metadata cache with custom TTL."""
@@ -154,7 +162,8 @@ class TestCacheManagerComprehensive:
         # Should be cached immediately
         result = cache_manager.get_metadata("test_metadata")
         if result != metadata:
-            raise AssertionError(f"Expected {metadata}, got {result}")
+            msg = f"Expected {metadata}, got {result}"
+            raise AssertionError(msg)
 
         # Wait for TTL to expire
         time.sleep(1.1)
@@ -249,14 +258,16 @@ class TestCacheManagerComprehensive:
         stats = cache_manager.get_cache_stats()
 
         if stats["cache_hits"] != EXPECTED_BULK_SIZE:
-
-            raise AssertionError(f"Expected {2}, got {stats["cache_hits"]}")
+            msg = f"Expected {2}, got {stats['cache_hits']}"
+            raise AssertionError(msg)
         assert stats["cache_misses"] == EXPECTED_BULK_SIZE
         if stats["hit_rate"] != 0.5:
-            raise AssertionError(f"Expected {0.5}, got {stats["hit_rate"]}")
+            msg = f"Expected {0.5}, got {stats['hit_rate']}"
+            raise AssertionError(msg)
         assert stats["entity_cache_size"] == 1
         if stats["schema_cache_size"] != 1:
-            raise AssertionError(f"Expected {1}, got {stats["schema_cache_size"]}")
+            msg = f"Expected {1}, got {stats['schema_cache_size']}"
+            raise AssertionError(msg)
         assert stats["metadata_cache_size"] == 1
 
     def test_cache_stats_empty(self) -> None:
@@ -266,14 +277,16 @@ class TestCacheManagerComprehensive:
         stats = cache_manager.get_cache_stats()
 
         if stats["cache_hits"] != 0:
-
-            raise AssertionError(f"Expected {0}, got {stats["cache_hits"]}")
+            msg = f"Expected {0}, got {stats['cache_hits']}"
+            raise AssertionError(msg)
         assert stats["cache_misses"] == 0
         if stats["hit_rate"] != 0.0:
-            raise AssertionError(f"Expected {0.0}, got {stats["hit_rate"]}")
+            msg = f"Expected {0.0}, got {stats['hit_rate']}"
+            raise AssertionError(msg)
         assert stats["entity_cache_size"] == 0
         if stats["schema_cache_size"] != 0:
-            raise AssertionError(f"Expected {0}, got {stats["schema_cache_size"]}")
+            msg = f"Expected {0}, got {stats['schema_cache_size']}"
+            raise AssertionError(msg)
         assert stats["metadata_cache_size"] == 0
 
     def test_cache_expiry_cleanup(self) -> None:
@@ -309,10 +322,16 @@ class TestCacheManagerComprehensive:
 
         # Test retrieval
         if cache_manager.get_cached_value("entity:test") != {"type": "entity"}:
-            raise AssertionError(f"Expected {{"type": "entity"}}, got {cache_manager.get_cached_value("entity:test")}")
+            msg = f"Expected {{'type': 'entity'}}, got {cache_manager.get_cached_value('entity:test')}"
+            raise AssertionError(
+                msg,
+            )
         assert cache_manager.get_cached_value("schema:test") == {"type": "schema"}
         if cache_manager.get_cached_value("metadata:test") != {"type": "metadata"}:
-            raise AssertionError(f"Expected {{"type": "metadata"}}, got {cache_manager.get_cached_value("metadata:test")}")
+            msg = f"Expected {{'type': 'metadata'}}, got {cache_manager.get_cached_value('metadata:test')}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_generic_cache_fallback(self) -> None:
         """Test generic cache fallback."""
@@ -324,7 +343,8 @@ class TestCacheManagerComprehensive:
         # Should be retrievable via generic lookup
         result = cache_manager.get_cached_value("generic_key")
         if result != {"data": "generic"}:
-            raise AssertionError(f"Expected {{"data": "generic"}}, got {result}")
+            msg = f"Expected {{'data': 'generic'}}, got {result}"
+            raise AssertionError(msg)
 
     def test_cache_validation_methods(self) -> None:
         """Test cache validation methods."""
@@ -335,9 +355,16 @@ class TestCacheManagerComprehensive:
 
         # Test validation
         if not (cache_manager.is_cache_valid("entity:test_entity", 5)):
-            raise AssertionError(f"Expected True, got {cache_manager.is_cache_valid("entity:test_entity", 5)}")
+            msg = f"Expected True, got {cache_manager.is_cache_valid('entity:test_entity', 5)}"
+            raise AssertionError(
+                msg,
+            )
         if cache_manager.is_cache_valid("entity:test_entity", 15):
-            raise AssertionError(f"Expected False, got {cache_manager.is_cache_valid("entity:test_entity", 15)}")\ n        assert cache_manager.is_cache_valid("entity:nonexistent", 5) is False
+            msg = f"Expected False, got {cache_manager.is_cache_valid('entity:test_entity', 15)}"
+            raise AssertionError(
+                msg,
+            )
+        assert cache_manager.is_cache_valid("entity:nonexistent", 5) is False
 
     def test_cache_validation_parse_key(self) -> None:
         """Test cache key parsing."""
@@ -346,22 +373,26 @@ class TestCacheManagerComprehensive:
         # Test various key formats
         key, expires_dict = cache_manager._parse_cache_key("entity:test")
         if key != "test":
-            raise AssertionError(f"Expected {"test"}, got {key}")
+            msg = f"Expected {'test'}, got {key}"
+            raise AssertionError(msg)
         assert expires_dict is cache_manager._entity_cache_expires
 
         key, expires_dict = cache_manager._parse_cache_key("schema:test")
         if key != "test":
-            raise AssertionError(f"Expected {"test"}, got {key}")
+            msg = f"Expected {'test'}, got {key}"
+            raise AssertionError(msg)
         assert expires_dict is cache_manager._schema_cache_expires
 
         key, expires_dict = cache_manager._parse_cache_key("metadata:test")
         if key != "test":
-            raise AssertionError(f"Expected {"test"}, got {key}")
+            msg = f"Expected {'test'}, got {key}"
+            raise AssertionError(msg)
         assert expires_dict is cache_manager._metadata_cache_expires
 
         key, expires_dict = cache_manager._parse_cache_key("unknown:test")
         if key != "unknown:test":
-            raise AssertionError(f"Expected {"unknown:test"}, got {key}")
+            msg = f"Expected {'unknown:test'}, got {key}"
+            raise AssertionError(msg)
         assert expires_dict is None
 
     def test_thread_safety(self) -> None:
@@ -391,15 +422,17 @@ class TestCacheManagerComprehensive:
             thread.join()
 
         # Check results
-        if len(errors) != 0, f"Thread safety errors: {errors}":
-            raise AssertionError(f"Expected {0, f"Thread safety errors: {errors}"}, got {len(errors)}")
+        if len(errors) != 0:
+            msg = f"Expected {0}, got {len(errors)}"
+            raise AssertionError(msg)
         assert len(results) == 10
 
         # Verify each worker's data is correct
         for i, result in enumerate(results):
             if result is not None:  # Some might be None due to timing
                 if result["worker"] != i:
-                    raise AssertionError(f"Expected {i}, got {result["worker"]}")
+                    msg = f"Expected {i}, got {result['worker']}"
+                    raise AssertionError(msg)
 
     def test_cache_invalid_key_types(self) -> None:
         """Test cache with invalid key types."""
@@ -427,7 +460,8 @@ class TestCacheManagerComprehensive:
         # Generic lookup should return from entity cache (priority order)
         result = cache_manager.get_cached_value("conflict_key")
         if result != {"type": "entity"}:
-            raise AssertionError(f"Expected {{"type": "entity"}}, got {result}")
+            msg = f"Expected {{'type': 'entity'}}, got {result}"
+            raise AssertionError(msg)
 
     def test_cache_ttl_edge_cases(self) -> None:
         """Test cache TTL edge cases."""
@@ -467,8 +501,9 @@ class TestCacheManagerComprehensive:
         cache_manager.get_entity("nonexistent")  # miss
 
         # Verify debug logs were called
-        if mock_logger.debug.call_count < 3  # At least set, hit, miss logs:
-            raise AssertionError(f"Expected {mock_logger.debug.call_count} >= {3  # At least set, hit, miss logs}")
+        if mock_logger.debug.call_count < 3:  # At least set, hit, miss logs:
+            msg = f"Expected {mock_logger.debug.call_count} >= {3}"
+            raise AssertionError(msg)
 
 
 if __name__ == "__main__":

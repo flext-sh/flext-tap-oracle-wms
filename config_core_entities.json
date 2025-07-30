@@ -1,1 +1,22 @@
-{"base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test", "username": "USER_WMS_INTEGRA", "password": "jmCyS7BK94YvhS@", "auth_method": "basic", "wms_api_version": "v10", "entities": ["company", "facility", "item", "container", "inventory", "location", "order_hdr", "order_dtl", "allocation"], "page_size": 5, "request_timeout": 60, "max_retries": 3, "verify_ssl": true}
+{
+  "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+  "username": "USER_WMS_INTEGRA",
+  "password": "jmCyS7BK94YvhS@",
+  "auth_method": "basic",
+  "wms_api_version": "v10",
+  "entities": [
+    "company",
+    "facility",
+    "item",
+    "container",
+    "inventory",
+    "location",
+    "order_hdr",
+    "order_dtl",
+    "allocation"
+  ],
+  "page_size": 5,
+  "request_timeout": 60,
+  "max_retries": 3,
+  "verify_ssl": true
+}

@@ -12,9 +12,9 @@ import pytest
 from flext_tap_oracle_wms.streams import WMSStream
 from flext_tap_oracle_wms.tap import TapOracleWMS
 
-
 # Constants
 EXPECTED_BULK_SIZE = 2
+
 
 class TestWMSStream:
     """Test WMSStream class."""
@@ -74,13 +74,20 @@ class TestWMSStream:
         mock_wms_config: Any,
     ) -> None:
         if mock_wms_stream.name != "item":
-            raise AssertionError(f"Expected {"item"}, got {mock_wms_stream.name}")
+            msg = f"Expected {'item'}, got {mock_wms_stream.name}"
+            raise AssertionError(msg)
         assert mock_wms_stream.path == "/entity/item"
         if mock_wms_stream.primary_keys != ["id"]:
-            raise AssertionError(f"Expected {["id"]}, got {mock_wms_stream.primary_keys}")
+            msg = f"Expected {['id']}, got {mock_wms_stream.primary_keys}"
+            raise AssertionError(
+                msg,
+            )
         assert mock_wms_stream.replication_key == "mod_ts"
         if mock_wms_stream.replication_method != "INCREMENTAL":
-            raise AssertionError(f"Expected {"INCREMENTAL"}, got {mock_wms_stream.replication_method}")
+            msg = f"Expected {'INCREMENTAL'}, got {mock_wms_stream.replication_method}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_stream_url_construction(
         self,
@@ -90,7 +97,10 @@ class TestWMSStream:
         # Test that stream can construct URLs properly using Singer SDK patterns
         assert hasattr(mock_wms_stream, "url_base")
         if mock_wms_config["base_url"] not in mock_wms_stream.url_base:
-            raise AssertionError(f"Expected {mock_wms_config["base_url"]} in {mock_wms_stream.url_base}")
+            msg = f"Expected {mock_wms_config['base_url']} in {mock_wms_stream.url_base}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_get_url_params_basic(self, mock_wms_stream: MagicMock) -> None:
         # Mock the method to return expected parameters
@@ -105,14 +115,17 @@ class TestWMSStream:
         params = mock_wms_stream.get_url_params(context, state)
 
         if "page_size" not in params:
-
-            raise AssertionError(f"Expected {"page_size"} in {params}")
+            msg = f"Expected {'page_size'} in {params}"
+            raise AssertionError(msg)
         if params["page_size"] != 100:
-            raise AssertionError(f"Expected {100}, got {params["page_size"]}")
+            msg = f"Expected {100}, got {params['page_size']}"
+            raise AssertionError(msg)
         if "page_mode" not in params:
-            raise AssertionError(f"Expected {"page_mode"} in {params}")
+            msg = f"Expected {'page_mode'} in {params}"
+            raise AssertionError(msg)
         if params["page_mode"] != "sequenced":
-            raise AssertionError(f"Expected {"sequenced"}, got {params["page_mode"]}")
+            msg = f"Expected {'sequenced'}, got {params['page_mode']}"
+            raise AssertionError(msg)
 
     def test_get_url_params_with_bookmark(self, mock_wms_stream: MagicMock) -> None:
         # Mock the method to return parameters with bookmark
@@ -134,10 +147,13 @@ class TestWMSStream:
         params = mock_wms_stream.get_url_params(context, state)
 
         if "mod_ts_from" not in params:
-
-            raise AssertionError(f"Expected {"mod_ts_from"} in {params}")
+            msg = f"Expected {'mod_ts_from'} in {params}"
+            raise AssertionError(msg)
         if params["mod_ts_from"] != "2024-01-01T10:00:00Z":
-            raise AssertionError(f"Expected {"2024-01-01T10:00:00Z"}, got {params["mod_ts_from"]}")
+            msg = f"Expected {'2024-01-01T10:00:00Z'}, got {params['mod_ts_from']}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_parse_response_with_results(
         self,
@@ -152,11 +168,12 @@ class TestWMSStream:
         records = list(mock_wms_stream.parse_response(mock_response))
 
         if len(records) != EXPECTED_BULK_SIZE:
-
-            raise AssertionError(f"Expected {2}, got {len(records)}")
+            msg = f"Expected {2}, got {len(records)}"
+            raise AssertionError(msg)
         assert records[0]["id"] == 1
         if records[0]["code"] != "ITEM001":
-            raise AssertionError(f"Expected {"ITEM001"}, got {records[0]["code"]}")
+            msg = f"Expected {'ITEM001'}, got {records[0]['code']}"
+            raise AssertionError(msg)
 
     def test_parse_response_empty(self, mock_wms_stream: MagicMock) -> None:
         # Test with real method (not mocked) to verify empty response handling
@@ -167,8 +184,8 @@ class TestWMSStream:
         records = list(mock_wms_stream.parse_response(mock_response))
 
         if len(records) != 0:
-
-            raise AssertionError(f"Expected {0}, got {len(records)}")
+            msg = f"Expected {0}, got {len(records)}"
+            raise AssertionError(msg)
 
     def test_post_process_record(self, mock_wms_stream: MagicMock) -> None:
         # Mock the post_process method
@@ -191,10 +208,12 @@ class TestWMSStream:
 
         # Check that metadata was added
         if "_extracted_at" not in processed:
-            raise AssertionError(f"Expected {"_extracted_at"} in {processed}")
+            msg = f"Expected {'_extracted_at'} in {processed}"
+            raise AssertionError(msg)
         assert "_entity" in processed
         if processed["_entity"] != "item":
-            raise AssertionError(f"Expected {"item"}, got {processed["_entity"]}")
+            msg = f"Expected {'item'}, got {processed['_entity']}"
+            raise AssertionError(msg)
         assert processed["id"] == 1
 
     def test_get_next_page_token_from_response(
@@ -212,8 +231,9 @@ class TestWMSStream:
 
         # Parse response should work without errors
         records = list(mock_wms_stream.parse_response(mock_response))
-        if len(records) < 0  # Should not error:
-            raise AssertionError(f"Expected {len(records)} >= {0  # Should not error}")
+        if len(records) < 0:  # Should not error:
+            msg = f"Expected {len(records)} >= {0}"
+            raise AssertionError(msg)  # Should not error
 
     def test_get_next_page_token_no_next_page(self, mock_wms_stream: MagicMock) -> None:
         # Test parsing response without next page
@@ -229,7 +249,8 @@ class TestWMSStream:
         # Parse response should work for last page
         records = list(mock_wms_stream.parse_response(mock_response))
         if len(records) != 1:
-            raise AssertionError(f"Expected {1}, got {len(records)}")
+            msg = f"Expected {1}, got {len(records)}"
+            raise AssertionError(msg)
         assert records[0]["id"] == 1
 
     def test_stream_with_authentication_headers(
@@ -238,12 +259,18 @@ class TestWMSStream:
     ) -> None:
         # Verify that tap config includes auth
         if "username" not in mock_wms_stream.tap.config:
-            raise AssertionError(f"Expected {"username"} in {mock_wms_stream.tap.config}")
+            msg = f"Expected {'username'} in {mock_wms_stream.tap.config}"
+            raise AssertionError(
+                msg,
+            )
         assert "password" in mock_wms_stream.tap.config
 
         # Headers would be added by the request method via tap auth
         if mock_wms_stream.tap.config["username"] != "test_user":
-            raise AssertionError(f"Expected {"test_user"}, got {mock_wms_stream.tap.config["username"]}")
+            msg = f"Expected {'test_user'}, got {mock_wms_stream.tap.config['username']}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_stream_incremental_state_management(
         self,
@@ -251,14 +278,19 @@ class TestWMSStream:
     ) -> None:
         # Test that replication key is properly configured
         if mock_wms_stream.replication_key != "mod_ts":
-            raise AssertionError(f"Expected {"mod_ts"}, got {mock_wms_stream.replication_key}")
+            msg = f"Expected {'mod_ts'}, got {mock_wms_stream.replication_key}"
+            raise AssertionError(
+                msg,
+            )
         assert mock_wms_stream.replication_method == "INCREMENTAL"
 
     def test_stream_name_and_path_consistency(self, mock_wms_stream: MagicMock) -> None:
         if mock_wms_stream.name != "item":
-            raise AssertionError(f"Expected {"item"}, got {mock_wms_stream.name}")
+            msg = f"Expected {'item'}, got {mock_wms_stream.name}"
+            raise AssertionError(msg)
         if "item" not in mock_wms_stream.path:
-            raise AssertionError(f"Expected {"item"} in {mock_wms_stream.path}")
+            msg = f"Expected {'item'} in {mock_wms_stream.path}"
+            raise AssertionError(msg)
 
         # URL base should be accessible
         assert hasattr(mock_wms_stream, "url_base")
@@ -267,13 +299,15 @@ class TestWMSStream:
         schema = mock_wms_stream.schema
 
         if schema["type"] != "object":
-
-            raise AssertionError(f"Expected {"object"}, got {schema["type"]}")
+            msg = f"Expected {'object'}, got {schema['type']}"
+            raise AssertionError(msg)
         if "properties" not in schema:
-            raise AssertionError(f"Expected {"properties"} in {schema}")
+            msg = f"Expected {'properties'} in {schema}"
+            raise AssertionError(msg)
         assert "id" in schema["properties"]
         if "code" not in schema["properties"]:
-            raise AssertionError(f"Expected {"code"} in {schema["properties"]}")
+            msg = f"Expected {'code'} in {schema['properties']}"
+            raise AssertionError(msg)
         assert "mod_ts" in schema["properties"]
 
     def test_stream_primary_keys_configuration(
@@ -281,10 +315,16 @@ class TestWMSStream:
         mock_wms_stream: MagicMock,
     ) -> None:
         if mock_wms_stream.primary_keys != ["id"]:
-            raise AssertionError(f"Expected {["id"]}, got {mock_wms_stream.primary_keys}")
+            msg = f"Expected {['id']}, got {mock_wms_stream.primary_keys}"
+            raise AssertionError(
+                msg,
+            )
         assert isinstance(mock_wms_stream.primary_keys, list)
 
     def test_stream_replication_configuration(self, mock_wms_stream: MagicMock) -> None:
         if mock_wms_stream.replication_key != "mod_ts":
-            raise AssertionError(f"Expected {"mod_ts"}, got {mock_wms_stream.replication_key}")
+            msg = f"Expected {'mod_ts'}, got {mock_wms_stream.replication_key}"
+            raise AssertionError(
+                msg,
+            )
         assert mock_wms_stream.replication_method == "INCREMENTAL"
