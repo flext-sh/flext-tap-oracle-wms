@@ -96,7 +96,7 @@ class CacheManager(CacheManagerInterface):
                 # For now, we can't delete individual keys with the current API
                 # This would need to be implemented in the real cache manager
                 logger.warning(
-                    f"Cannot delete individual key {key} - real cache API limitation"
+                    f"Cannot delete individual key {key} - real cache API limitation",
                 )
                 return False
             return False

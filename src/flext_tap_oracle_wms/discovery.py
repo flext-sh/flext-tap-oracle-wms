@@ -71,7 +71,6 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         # Use ONLY the library creation function with REAL parameters
         import httpx
-        from flext_oracle_wms import FlextOracleWmsCacheManager
 
         # Create real HTTP client as required by library
         timeout_value = config.get("request_timeout", config.get("timeout", 30))
@@ -168,7 +167,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         try:
             # Use library method to get entity details
             entity_result = await self._entity_discovery.discover_entity_schema(
-                entity_name
+                entity_name,
             )
             if entity_result.is_success and entity_result.data:
                 # Convert FlextOracleWmsEntity to dict format
@@ -198,7 +197,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         try:
             # Use library method directly (no async needed)
             entity_result = asyncio.run(self._entity_discovery.discover_entity_schema(
-                entity_name
+                entity_name,
             ))
             if entity_result.is_success and entity_result.data:
                 # Convert FlextOracleWmsEntity to dict format
