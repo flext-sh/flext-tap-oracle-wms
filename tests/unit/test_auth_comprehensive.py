@@ -46,7 +46,8 @@ class TestWMSBasicAuthenticator:
         password = "test_password"
         authenticator = WMSBasicAuthenticator(stream, username, password)
         if authenticator.username != username:
-            raise AssertionError(f"Expected {username}, got {authenticator.username}")
+            msg = f"Expected {username}, got {authenticator.username}"
+            raise AssertionError(msg)
         assert authenticator.password == password
         assert authenticator._auth_headers is None
         assert isinstance(authenticator._auth_lock, type(threading.RLock()))
@@ -59,7 +60,10 @@ class TestWMSBasicAuthenticator:
             password = "test_password"
             authenticator = WMSBasicAuthenticator(stream, username, password)
             if authenticator.username != username:
-                raise AssertionError(f"Expected {username}, got {authenticator.username}")
+                msg = f"Expected {username}, got {authenticator.username}"
+                raise AssertionError(
+                    msg,
+                )
             mock_logger.debug.assert_called_with(
                 "Initializing basic authenticator for user: %s",
                 username,
@@ -73,14 +77,18 @@ class TestWMSBasicAuthenticator:
         result = authenticator(request)
         # Verify auth header is created
         if "Authorization" not in result.headers:
-            raise AssertionError(f"Expected {"Authorization"} in {result.headers}")
+            msg = f"Expected {'Authorization'} in {result.headers}"
+            raise AssertionError(msg)
         auth_header = result.headers["Authorization"]
         assert auth_header.startswith("Basic ")
         # Verify encoding is correct
         expected_creds = "user123:pass456"
         expected_encoded = base64.b64encode(expected_creds.encode()).decode()
         if auth_header != f"Basic {expected_encoded}":
-            raise AssertionError(f"Expected {f"Basic {expected_encoded}"}, got {auth_header}")
+            msg = f"Expected {f'Basic {expected_encoded}'}, got {auth_header}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_call_caches_auth_headers(self) -> None:
         """Test that auth headers are cached after first call."""
@@ -96,7 +104,10 @@ class TestWMSBasicAuthenticator:
         # Second call should use cached headers
         authenticator(request2)
         if authenticator._auth_headers != cached_headers:
-            raise AssertionError(f"Expected {cached_headers}, got {authenticator._auth_headers}")
+            msg = f"Expected {cached_headers}, got {authenticator._auth_headers}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_call_thread_safety(self) -> None:
         """Test thread safety of authenticator calls."""
@@ -121,10 +132,10 @@ class TestWMSBasicAuthenticator:
             thread.join()
         # All threads should succeed with same auth header
         if len(errors) != 0:
-            raise AssertionError(f"Expected {0}, got {len(errors)}")
+            msg = f"Expected {0}, got {len(errors)}"
+            raise AssertionError(msg)
         assert len(results) == 10
-        if all(auth != results[0] for auth in results):
-            raise AssertionError(f"Expected {results[0] for auth in results)}, got {all(auth}")
+
         assert results[0] is not None
 
     def test_call_with_existing_headers(self) -> None:
@@ -137,9 +148,13 @@ class TestWMSBasicAuthenticator:
         result = authenticator(request)
         # Should preserve existing headers and add auth
         if result.headers["Custom-Header"] != "custom-value":
-            raise AssertionError(f"Expected {"custom-value"}, got {result.headers["Custom-Header"]}")
+            msg = f"Expected {'custom-value'}, got {result.headers['Custom-Header']}"
+            raise AssertionError(
+                msg,
+            )
         if "Authorization" not in result.headers:
-            raise AssertionError(f"Expected {"Authorization"} in {result.headers}")
+            msg = f"Expected {'Authorization'} in {result.headers}"
+            raise AssertionError(msg)
 
     def test_call_updates_request_headers_in_place(self) -> None:
         """Test that authenticator updates request headers in place."""
@@ -151,7 +166,8 @@ class TestWMSBasicAuthenticator:
         # Should be same object, modified in place
         assert result.headers is original_headers
         if "Authorization" not in original_headers:
-            raise AssertionError(f"Expected {"Authorization"} in {original_headers}")
+            msg = f"Expected {'Authorization'} in {original_headers}"
+            raise AssertionError(msg)
 
     def test_call_with_debug_logging(self) -> None:
         """Test authenticator call with debug logging."""
@@ -174,7 +190,8 @@ class TestWMSBasicAuthenticator:
             # First call should log
             authenticator(request1)
             if mock_logger.debug.call_count < 1:
-                raise AssertionError(f"Expected {mock_logger.debug.call_count} >= {1}")
+                msg = f"Expected {mock_logger.debug.call_count} >= {1}"
+                raise AssertionError(msg)
             # Reset and make second call
             mock_logger.reset_mock()
             authenticator(request2)
@@ -201,9 +218,13 @@ class TestWMSBasicAuthenticator:
         result = auth(request)
         # Should create basic auth header even with empty creds
         if "Authorization" not in result.headers:
-            raise AssertionError(f"Expected {"Authorization"} in {result.headers}")
-        if result.headers["Authorization"] != "Basic Og=="  # base64 of ":":
-            raise AssertionError(f"Expected {"Basic Og=="  # base64 of ":"}, got {result.headers["Authorization"]}")
+            msg = f"Expected {'Authorization'} in {result.headers}"
+            raise AssertionError(msg)
+        if result.headers["Authorization"] != "Basic Og==":  # base64 of ":":
+            msg = f"Expected {'Basic Og=='} in {result.headers['Authorization']}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_special_characters_in_credentials(self) -> None:
         """Test handling of special characters in credentials."""
@@ -217,7 +238,10 @@ class TestWMSBasicAuthenticator:
         expected_creds = f"{username}:{password}"
         expected_encoded = base64.b64encode(expected_creds.encode()).decode()
         if result.headers["Authorization"] != f"Basic {expected_encoded}":
-            raise AssertionError(f"Expected {f"Basic {expected_encoded}"}, got {result.headers["Authorization"]}")
+            msg = f"Expected {f'Basic {expected_encoded}'}, got {result.headers['Authorization']}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_unicode_credentials(self) -> None:
         """Test handling of unicode characters in credentials."""
@@ -231,7 +255,10 @@ class TestWMSBasicAuthenticator:
         expected_creds = f"{username}:{password}"
         expected_encoded = base64.b64encode(expected_creds.encode()).decode()
         if result.headers["Authorization"] != f"Basic {expected_encoded}":
-            raise AssertionError(f"Expected {f"Basic {expected_encoded}"}, got {result.headers["Authorization"]}")
+            msg = f"Expected {f'Basic {expected_encoded}'}, got {result.headers['Authorization']}"
+            raise AssertionError(
+                msg,
+            )
 
 
 class TestGetWMSAuthenticator:
@@ -247,7 +274,10 @@ class TestGetWMSAuthenticator:
         authenticator = get_wms_authenticator(stream, config)
         assert isinstance(authenticator, WMSBasicAuthenticator)
         if authenticator.username != "test_user":
-            raise AssertionError(f"Expected {"test_user"}, got {authenticator.username}")
+            msg = f"Expected {'test_user'}, got {authenticator.username}"
+            raise AssertionError(
+                msg,
+            )
         assert authenticator.password == "test_password"
 
     def test_get_authenticator_missing_username(self) -> None:
@@ -331,7 +361,10 @@ class TestGetWMSAuthenticator:
         authenticator = get_wms_authenticator(stream, config)
         assert isinstance(authenticator, WMSBasicAuthenticator)
         if authenticator.username != "test_user":
-            raise AssertionError(f"Expected {"test_user"}, got {authenticator.username}")
+            msg = f"Expected {'test_user'}, got {authenticator.username}"
+            raise AssertionError(
+                msg,
+            )
         assert authenticator.password == "test_password"
 
 
@@ -348,7 +381,8 @@ class TestGetWMSHeaders:
             "User-Agent": "flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0",
         }
         if headers != expected:
-            raise AssertionError(f"Expected {expected}, got {headers}")
+            msg = f"Expected {expected}, got {headers}"
+            raise AssertionError(msg)
 
     def test_get_headers_with_custom_headers(self) -> None:
         """Test getting headers with custom headers from config."""
@@ -361,14 +395,20 @@ class TestGetWMSHeaders:
         headers = get_wms_headers(config)
         # Should include both default and custom headers
         if headers["Accept"] != "application/json":
-            raise AssertionError(f"Expected {"application/json"}, got {headers["Accept"]}")
+            msg = f"Expected {'application/json'}, got {headers['Accept']}"
+            raise AssertionError(
+                msg,
+            )
         assert headers["Content-Type"] == "application/json"
         assert (
             headers["User-Agent"]
             == "flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0"
         )
         if headers["Custom-Header"] != "custom-value":
-            raise AssertionError(f"Expected {"custom-value"}, got {headers["Custom-Header"]}")
+            msg = f"Expected {'custom-value'}, got {headers['Custom-Header']}"
+            raise AssertionError(
+                msg,
+            )
         assert headers["Another-Header"] == "another-value"
 
     def test_get_headers_overrides_default(self) -> None:
@@ -382,10 +422,14 @@ class TestGetWMSHeaders:
         headers = get_wms_headers(config)
         # Custom headers should override defaults
         if headers["Accept"] != "text/plain":
-            raise AssertionError(f"Expected {"text/plain"}, got {headers["Accept"]}")
+            msg = f"Expected {'text/plain'}, got {headers['Accept']}"
+            raise AssertionError(msg)
         assert headers["User-Agent"] == "custom-agent/2.0"
-        if headers["Content-Type"] != "application/json"  # Not overridden:
-            raise AssertionError(f"Expected {"application/json"  # Not overridden}, got {headers["Content-Type"]}")
+        if headers["Content-Type"] != "application/json":  # Not overridden:
+            msg = f"Expected {'application/json'} in {headers['Content-Type']}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_get_headers_empty_custom_headers(self) -> None:
         """Test getting headers with empty custom headers."""
@@ -397,7 +441,8 @@ class TestGetWMSHeaders:
             "User-Agent": "flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0",
         }
         if headers != expected:
-            raise AssertionError(f"Expected {expected}, got {headers}")
+            msg = f"Expected {expected}, got {headers}"
+            raise AssertionError(msg)
 
     def test_get_headers_no_headers_key(self) -> None:
         """Test getting headers when config has no headers key."""
@@ -409,7 +454,8 @@ class TestGetWMSHeaders:
             "User-Agent": "flext-data.taps.flext-data.taps.flext-tap-oracle-wms/1.0",
         }
         if headers != expected:
-            raise AssertionError(f"Expected {expected}, got {headers}")
+            msg = f"Expected {expected}, got {headers}"
+            raise AssertionError(msg)
 
     def test_get_headers_preserves_original_config(self) -> None:
         """Test that getting headers doesn't modify original config."""
@@ -423,7 +469,8 @@ class TestGetWMSHeaders:
         headers = get_wms_headers(config)
         # Config should be unchanged
         if config != original_config:
-            raise AssertionError(f"Expected {original_config}, got {config}")
+            msg = f"Expected {original_config}, got {config}"
+            raise AssertionError(msg)
         # But headers should include both default and custom
         assert len(headers) > len(config["headers"])
 
@@ -440,10 +487,14 @@ class TestGetWMSHeaders:
         headers = get_wms_headers(config)
         # All header values should be converted to strings
         if headers["String-Header"] != "string-value":
-            raise AssertionError(f"Expected {"string-value"}, got {headers["String-Header"]}")
+            msg = f"Expected {'string-value'}, got {headers['String-Header']}"
+            raise AssertionError(
+                msg,
+            )
         assert headers["Int-Header"] == "123"
         if headers["Bool-Header"] != "True":
-            raise AssertionError(f"Expected {"True"}, got {headers["Bool-Header"]}")
+            msg = f"Expected {'True'}, got {headers['Bool-Header']}"
+            raise AssertionError(msg)
         assert headers["Float-Header"] == "45.67"
 
 
@@ -470,11 +521,20 @@ class TestAuthIntegration:
         auth_request = authenticator(request)
         # Should have both custom and auth headers
         if auth_request.headers["Custom-Header"] != "custom-value":
-            raise AssertionError(f"Expected {"custom-value"}, got {auth_request.headers["Custom-Header"]}")
+            msg = f"Expected {'custom-value'}, got {auth_request.headers['Custom-Header']}"
+            raise AssertionError(
+                msg,
+            )
         if "Authorization" not in auth_request.headers:
-            raise AssertionError(f"Expected {"Authorization"} in {auth_request.headers}")
+            msg = f"Expected {'Authorization'} in {auth_request.headers}"
+            raise AssertionError(
+                msg,
+            )
         if auth_request.headers["Accept"] != "application/json":
-            raise AssertionError(f"Expected {"application/json"}, got {auth_request.headers["Accept"]}")
+            msg = f"Expected {'application/json'}, got {auth_request.headers['Accept']}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_multiple_authenticators_independence(self) -> None:
         """Test that multiple authenticators work independently."""

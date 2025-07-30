@@ -1,20 +1,16 @@
 """Test CLI module functionality."""
 
-import flext_tap_oracle_wms.cli as cli_module
-import flext_tap_oracle_wms.cli as cli_module
-import flext_tap_oracle_wms.cli as cli_module
-from flext_tap_oracle_wms.tap import TapOracleWMS
-
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
-
 from __future__ import annotations
 
 from unittest.mock import Mock, patch
 
 import pytest
 
+import flext_tap_oracle_wms.cli as cli_module
 from flext_tap_oracle_wms.cli import main
+from flext_tap_oracle_wms.tap import TapOracleWMS
 
 
 class TestCLI:
@@ -37,8 +33,6 @@ class TestCLI:
 
     def test_cli_module_structure(self) -> None:
         """Test CLI module has expected structure."""
-
-
         # Check main function exists
         assert hasattr(cli_module, "main")
         assert callable(cli_module.main)
@@ -46,18 +40,21 @@ class TestCLI:
         # Check docstring
         assert cli_module.__doc__ is not None
         if "CLI entry point" not in cli_module.__doc__:
-            raise AssertionError(f"Expected {"CLI entry point"} in {cli_module.__doc__}")
+            msg = f"Expected {'CLI entry point'} in {cli_module.__doc__}"
+            raise AssertionError(
+                msg,
+            )
 
         # Check main function docstring
         assert main.__doc__ is not None
         if "CLI entry point" not in main.__doc__:
-            raise AssertionError(f"Expected {"CLI entry point"} in {main.__doc__}")
+            msg = f"Expected {'CLI entry point'} in {main.__doc__}"
+            raise AssertionError(msg)
 
     @patch("flext_tap_oracle_wms.cli.main")
     def test_cli_main_execution(self, mock_main: Mock) -> None:
         """Test CLI main execution when run as script."""
         # Import the CLI module
-
 
         # Test that main function is available
         assert hasattr(cli_module, "main")
@@ -91,11 +88,8 @@ class TestCLI:
 
     def test_module_imports(self) -> None:
         """Test that CLI module imports are correct."""
-
-
         # Check that TapOracleWMS is imported
         assert hasattr(cli_module, "TapOracleWMS")
-
 
         assert cli_module.TapOracleWMS is TapOracleWMS
 

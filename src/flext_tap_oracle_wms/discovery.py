@@ -196,9 +196,11 @@ class EntityDiscovery(EntityDiscoveryInterface):
         """
         try:
             # Use library method directly (no async needed)
-            entity_result = asyncio.run(self._entity_discovery.discover_entity_schema(
-                entity_name,
-            ))
+            entity_result = asyncio.run(
+                self._entity_discovery.discover_entity_schema(
+                    entity_name,
+                ),
+            )
             if entity_result.is_success and entity_result.data:
                 # Convert FlextOracleWmsEntity to dict format
                 entity = entity_result.data

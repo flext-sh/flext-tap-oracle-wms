@@ -375,7 +375,8 @@ class TapOracleWMS(Tap):
                     )
                 except Exception as e:
                     self.logger.warning(
-                        "⚠️ Auto-discovery failed: %s, using fallback entities", e,
+                        "⚠️ Auto-discovery failed: %s, using fallback entities",
+                        e,
                     )
                     # Use common WMS entities as fallback
                     entities = [

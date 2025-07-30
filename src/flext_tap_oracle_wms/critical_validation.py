@@ -9,10 +9,8 @@ to access Oracle validation services. Follows Clean Architecture principles.
 from __future__ import annotations
 
 # Removed circular dependency - use DI pattern
-from typing import TYPE_CHECKING
-
 # Import from flext-core for foundational patterns (standardized)
-from flext_core import FlextError, FlextResult, get_logger
+from flext_core import FlextResult, get_logger
 
 # Import from flext-oracle-wms for WMS-specific validation
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsClientConfig
@@ -38,10 +36,7 @@ def enforce_mandatory_environment_variables() -> None:
         "ORACLE_WMS_PASSWORD",
     ]
 
-    missing_vars = []
-    for var in required_vars:
-        if not os.getenv(var):
-            missing_vars.append(var)
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
 
     if missing_vars:
         error_msg = f"Missing required environment variables: {', '.join(missing_vars)}"
@@ -49,7 +44,7 @@ def enforce_mandatory_environment_variables() -> None:
         raise SystemExit(error_msg)
 
     logger.info(
-        "🚨 CRITICAL VALIDATION PASSED: Mandatory Oracle WMS tap environment variables validated"
+        "🚨 CRITICAL VALIDATION PASSED: Mandatory Oracle WMS tap environment variables validated",
     )
 
 
@@ -99,7 +94,7 @@ def validate_schema_discovery_mode() -> FlextResult[None]:
     # The new client uses discover_entities (async) method
     if hasattr(client, "discover_entities"):
         logger.info(
-            "WMS schema discovery mode validated successfully - client has discover_entities method"
+            "WMS schema discovery mode validated successfully - client has discover_entities method",
         )
         return FlextResult.ok(None)
 

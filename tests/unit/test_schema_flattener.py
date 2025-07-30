@@ -11,9 +11,9 @@ import pytest
 
 from flext_tap_oracle_wms.schema_flattener import SchemaFlattener
 
-
 # Constants
 EXPECTED_DATA_COUNT = 3
+
 
 class TestSchemaFlattener:
     """Test schema flattener functionality."""
@@ -23,31 +23,38 @@ class TestSchemaFlattener:
         flattener = SchemaFlattener(enabled=True, max_depth=5, separator="_")
 
         if not (flattener.enabled):
-
-            raise AssertionError(f"Expected True, got {flattener.enabled}")
+            msg = f"Expected True, got {flattener.enabled}"
+            raise AssertionError(msg)
         if flattener.max_depth != 5:
-            raise AssertionError(f"Expected {5}, got {flattener.max_depth}")
+            msg = f"Expected {5}, got {flattener.max_depth}"
+            raise AssertionError(msg)
         assert flattener.separator == "_"
         if flattener.flatten_arrays:
-            raise AssertionError(f"Expected False, got {flattener.flatten_arrays}")\ n
+            msg = f"Expected False, got {flattener.flatten_arrays}"
+            raise AssertionError(msg)
+
     def test_flattener_initialization_disabled(self) -> None:
         """Test flattener initialization when disabled."""
         with patch("flext_tap_oracle_wms.schema_flattener.logger") as mock_logger:
             flattener = SchemaFlattener(enabled=False)
 
             if flattener.enabled:
-
-                raise AssertionError(f"Expected False, got {flattener.enabled}")\ n            mock_logger.warning.assert_called()
+                msg = f"Expected False, got {flattener.enabled}"
+                raise AssertionError(msg)
+            mock_logger.warning.assert_called()
             if "DISABLED" not in str(mock_logger.warning.call_args):
-                raise AssertionError(f"Expected {"DISABLED"} in {str(mock_logger.warning.call_args)}")
+                msg = f"Expected {'DISABLED'} in {mock_logger.warning.call_args!s}"
+                raise AssertionError(
+                    msg,
+                )
 
     def test_flattener_initialization_with_arrays(self) -> None:
         """Test flattener initialization with array flattening."""
         flattener = SchemaFlattener(enabled=True, flatten_arrays=True)
 
         if not (flattener.flatten_arrays):
-
-            raise AssertionError(f"Expected True, got {flattener.flatten_arrays}")
+            msg = f"Expected True, got {flattener.flatten_arrays}"
+            raise AssertionError(msg)
 
     def test_flatten_schema_disabled(self) -> None:
         """Test schema flattening when disabled."""
@@ -64,7 +71,8 @@ class TestSchemaFlattener:
 
         result = flattener.flatten_schema(schema)
         if result != schema:
-            raise AssertionError(f"Expected {schema}, got {result}")
+            msg = f"Expected {schema}, got {result}"
+            raise AssertionError(msg)
 
     def test_flatten_schema_no_properties(self) -> None:
         """Test schema flattening with no properties."""
@@ -73,7 +81,8 @@ class TestSchemaFlattener:
 
         result = flattener.flatten_schema(schema)
         if result != schema:
-            raise AssertionError(f"Expected {schema}, got {result}")
+            msg = f"Expected {schema}, got {result}"
+            raise AssertionError(msg)
 
     def test_flatten_schema_simple(self) -> None:
         """Test simple schema flattening."""
@@ -95,13 +104,17 @@ class TestSchemaFlattener:
         result = flattener.flatten_schema(schema)
 
         if "id" not in result["properties"]:
-
-            raise AssertionError(f"Expected {"id"} in {result["properties"]}")
+            msg = f"Expected {'id'} in {result['properties']}"
+            raise AssertionError(msg)
         assert "nested_field" in result["properties"]
         if "nested_value" not in result["properties"]:
-            raise AssertionError(f"Expected {"nested_value"} in {result["properties"]}")
+            msg = f"Expected {'nested_value'} in {result['properties']}"
+            raise AssertionError(msg)
         if result["properties"]["nested_field"]["type"] != "string":
-            raise AssertionError(f"Expected {"string"}, got {result["properties"]["nested_field"]["type"]}")
+            msg = f"Expected {'string'}, got {result['properties']['nested_field']['type']}"
+            raise AssertionError(
+                msg,
+            )
         assert result["properties"]["nested_value"]["type"] == "number"
 
     def test_flatten_schema_with_metadata(self) -> None:
@@ -120,11 +133,15 @@ class TestSchemaFlattener:
         result = flattener.flatten_schema(schema)
 
         if result["title"] != "Test Schema":
-
-            raise AssertionError(f"Expected {"Test Schema"}, got {result["title"]}")
+            msg = f"Expected {'Test Schema'}, got {result['title']}"
+            raise AssertionError(msg)
         assert result["description"] == "A test schema"
         if result["additionalProperties"]:
-            raise AssertionError(f"Expected False, got {result["additionalProperties"]}")\ n
+            msg = f"Expected False, got {result['additionalProperties']}"
+            raise AssertionError(
+                msg,
+            )
+
     def test_flatten_schema_max_depth(self) -> None:
         """Test schema flattening respects max depth."""
         flattener = SchemaFlattener(enabled=True, max_depth=1)
@@ -151,7 +168,10 @@ class TestSchemaFlattener:
             # Should stop at max depth and log warning
             mock_logger.warning.assert_called()
             if "Maximum flattening depth" not in str(mock_logger.warning.call_args):
-                raise AssertionError(f"Expected {"Maximum flattening depth"} in {str(mock_logger.warning.call_args)}")
+                msg = f"Expected {'Maximum flattening depth'} in {mock_logger.warning.call_args!s}"
+                raise AssertionError(
+                    msg,
+                )
 
     def test_flatten_schema_arrays_disabled(self) -> None:
         """Test schema flattening with arrays when array flattening is disabled."""
@@ -173,9 +193,13 @@ class TestSchemaFlattener:
 
         # Array should be kept as-is
         if "items" not in result["properties"]:
-            raise AssertionError(f"Expected {"items"} in {result["properties"]}")
+            msg = f"Expected {'items'} in {result['properties']}"
+            raise AssertionError(msg)
         if result["properties"]["items"]["type"] != "array":
-            raise AssertionError(f"Expected {"array"}, got {result["properties"]["items"]["type"]}")
+            msg = f"Expected {'array'}, got {result['properties']['items']['type']}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_flatten_schema_arrays_enabled(self) -> None:
         """Test schema flattening with arrays when array flattening is enabled."""
@@ -197,7 +221,10 @@ class TestSchemaFlattener:
 
         # Array items should be flattened
         if "items_items_value" not in result["properties"]:
-            raise AssertionError(f"Expected {"items_items_value"} in {result["properties"]}")
+            msg = f"Expected {'items_items_value'} in {result['properties']}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_flatten_schema_simple_array(self) -> None:
         """Test schema flattening with simple array items."""
@@ -216,9 +243,13 @@ class TestSchemaFlattener:
 
         # Simple array should be kept as-is
         if "tags" not in result["properties"]:
-            raise AssertionError(f"Expected {"tags"} in {result["properties"]}")
+            msg = f"Expected {'tags'} in {result['properties']}"
+            raise AssertionError(msg)
         if result["properties"]["tags"]["type"] != "array":
-            raise AssertionError(f"Expected {"array"}, got {result["properties"]["tags"]["type"]}")
+            msg = f"Expected {'array'}, got {result['properties']['tags']['type']}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_flatten_record_disabled(self) -> None:
         """Test record flattening when disabled."""
@@ -227,7 +258,8 @@ class TestSchemaFlattener:
 
         result = flattener.flatten_record(record)
         if result != record:
-            raise AssertionError(f"Expected {record}, got {result}")
+            msg = f"Expected {record}, got {result}"
+            raise AssertionError(msg)
 
     def test_flatten_record_simple(self) -> None:
         """Test simple record flattening."""
@@ -243,11 +275,12 @@ class TestSchemaFlattener:
         result = flattener.flatten_record(record)
 
         if result["id"] != 123:
-
-            raise AssertionError(f"Expected {123}, got {result["id"]}")
+            msg = f"Expected {123}, got {result['id']}"
+            raise AssertionError(msg)
         assert result["nested_field"] == "value"
         if result["nested_number"] != 42:
-            raise AssertionError(f"Expected {42}, got {result["nested_number"]}")
+            msg = f"Expected {42}, got {result['nested_number']}"
+            raise AssertionError(msg)
 
     def test_flatten_record_max_depth(self) -> None:
         """Test record flattening respects max depth."""
@@ -267,9 +300,11 @@ class TestSchemaFlattener:
         # So level0 should be there, but level1 won't be processed, so result might be empty
         # except for leaf values at depth 0
         if "level0" not in result:
-            raise AssertionError(f"Expected {"level0"} in {result}")
+            msg = f"Expected {'level0'} in {result}"
+            raise AssertionError(msg)
         if result["level0"] != "value0":
-            raise AssertionError(f"Expected {"value0"}, got {result["level0"]}")
+            msg = f"Expected {'value0'}, got {result['level0']}"
+            raise AssertionError(msg)
 
     def test_flatten_record_arrays_disabled(self) -> None:
         """Test record flattening with arrays when disabled."""
@@ -285,7 +320,8 @@ class TestSchemaFlattener:
 
         # Array should be kept as-is
         if result["items"] != record["items"]:
-            raise AssertionError(f"Expected {record["items"]}, got {result["items"]}")
+            msg = f"Expected {record['items']}, got {result['items']}"
+            raise AssertionError(msg)
 
     def test_flatten_record_arrays_enabled(self) -> None:
         """Test record flattening with arrays when enabled."""
@@ -301,7 +337,10 @@ class TestSchemaFlattener:
 
         # Array items should be flattened
         if result["items_items_0_value"] != "item1":
-            raise AssertionError(f"Expected {"item1"}, got {result["items_items_0_value"]}")
+            msg = f"Expected {'item1'}, got {result['items_items_0_value']}"
+            raise AssertionError(
+                msg,
+            )
         assert result["items_items_1_value"] == "item2"
 
     def test_flatten_record_empty_array(self) -> None:
@@ -313,7 +352,8 @@ class TestSchemaFlattener:
 
         # Empty array should be kept as-is
         if result["empty_items"] != []:
-            raise AssertionError(f"Expected {[]}, got {result["empty_items"]}")
+            msg = f"Expected {[]}, got {result['empty_items']}"
+            raise AssertionError(msg)
 
     def test_flatten_record_array_primitives(self) -> None:
         """Test record flattening with array of primitives."""
@@ -324,10 +364,12 @@ class TestSchemaFlattener:
 
         # Primitive array items should be indexed
         if result["tags_items_0"] != "tag1":
-            raise AssertionError(f"Expected {"tag1"}, got {result["tags_items_0"]}")
+            msg = f"Expected {'tag1'}, got {result['tags_items_0']}"
+            raise AssertionError(msg)
         assert result["tags_items_1"] == "tag2"
         if result["tags_items_2"] != "tag3":
-            raise AssertionError(f"Expected {"tag3"}, got {result["tags_items_2"]}")
+            msg = f"Expected {'tag3'}, got {result['tags_items_2']}"
+            raise AssertionError(msg)
 
     def test_deflate_record_disabled(self) -> None:
         """Test record deflation when disabled."""
@@ -336,7 +378,8 @@ class TestSchemaFlattener:
 
         result = flattener.deflate_record(record)
         if result != record:
-            raise AssertionError(f"Expected {record}, got {result}")
+            msg = f"Expected {record}, got {result}"
+            raise AssertionError(msg)
 
     def test_deflate_record_simple(self) -> None:
         """Test simple record deflation."""
@@ -350,11 +393,12 @@ class TestSchemaFlattener:
         result = flattener.deflate_record(flattened_record)
 
         if result["id"] != 123:
-
-            raise AssertionError(f"Expected {123}, got {result["id"]}")
+            msg = f"Expected {123}, got {result['id']}"
+            raise AssertionError(msg)
         assert result["nested"]["field"] == "value"
         if result["nested"]["number"] != 42:
-            raise AssertionError(f"Expected {42}, got {result["nested"]["number"]}")
+            msg = f"Expected {42}, got {result['nested']['number']}"
+            raise AssertionError(msg)
 
     def test_deflate_record_conflict(self) -> None:
         """Test record deflation with key conflicts."""
@@ -370,7 +414,10 @@ class TestSchemaFlattener:
             # Should log warning about conflict
             mock_logger.warning.assert_called()
             if "Key conflict" not in str(mock_logger.warning.call_args):
-                raise AssertionError(f"Expected {"Key conflict"} in {str(mock_logger.warning.call_args)}")
+                msg = f"Expected {'Key conflict'} in {mock_logger.warning.call_args!s}"
+                raise AssertionError(
+                    msg,
+                )
 
     def test_get_flattening_config(self) -> None:
         """Test getting flattening configuration."""
@@ -384,13 +431,15 @@ class TestSchemaFlattener:
         config = flattener.get_flattening_config()
 
         if not (config["enabled"]):
-
-            raise AssertionError(f"Expected True, got {config["enabled"]}")
+            msg = f"Expected True, got {config['enabled']}"
+            raise AssertionError(msg)
         if config["max_depth"] != EXPECTED_DATA_COUNT:
-            raise AssertionError(f"Expected {3}, got {config["max_depth"]}")
+            msg = f"Expected {3}, got {config['max_depth']}"
+            raise AssertionError(msg)
         assert config["separator"] == "."
         if not (config["flatten_arrays"]):
-            raise AssertionError(f"Expected True, got {config["flatten_arrays"]}")
+            msg = f"Expected True, got {config['flatten_arrays']}"
+            raise AssertionError(msg)
 
     def test_validate_schema_compatibility_disabled(self) -> None:
         """Test schema validation when flattening is disabled."""
@@ -399,7 +448,8 @@ class TestSchemaFlattener:
 
         warnings = flattener.validate_schema_compatibility(schema)
         if warnings != []:
-            raise AssertionError(f"Expected {[]}, got {warnings}")
+            msg = f"Expected {[]}, got {warnings}"
+            raise AssertionError(msg)
 
     def test_validate_schema_compatibility_no_properties(self) -> None:
         """Test schema validation with no properties."""
@@ -408,7 +458,8 @@ class TestSchemaFlattener:
 
         warnings = flattener.validate_schema_compatibility(schema)
         if warnings != []:
-            raise AssertionError(f"Expected {[]}, got {warnings}")
+            msg = f"Expected {[]}, got {warnings}"
+            raise AssertionError(msg)
 
     def test_validate_schema_compatibility_separator_conflict(self) -> None:
         """Test schema validation with separator conflicts."""
@@ -422,10 +473,11 @@ class TestSchemaFlattener:
         warnings = flattener.validate_schema_compatibility(schema)
 
         if len(warnings) != 1:
-
-            raise AssertionError(f"Expected {1}, got {len(warnings)}")
+            msg = f"Expected {1}, got {len(warnings)}"
+            raise AssertionError(msg)
         if "contains separator" not in warnings[0]:
-            raise AssertionError(f"Expected {"contains separator"} in {warnings[0]}")
+            msg = f"Expected {'contains separator'} in {warnings[0]}"
+            raise AssertionError(msg)
 
     def test_validate_schema_compatibility_depth_warning(self) -> None:
         """Test schema validation with depth warnings."""
@@ -449,8 +501,11 @@ class TestSchemaFlattener:
         warnings = flattener.validate_schema_compatibility(schema)
 
         assert len(warnings) > 0
-        if any("exceeds max_depth" in warning for warning not in warnings):
-            raise AssertionError(f"Expected {any("exceeds max_depth" in warning for warning} in {warnings)}")
+        if any("exceeds max_depth" in warning for warning in warnings):
+            msg = f"Expected {any('exceeds max_depth' in warning for warning in warnings)} in {warnings}"
+            raise AssertionError(
+                msg,
+            )
 
 
 if __name__ == "__main__":

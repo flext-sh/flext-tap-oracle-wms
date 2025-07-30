@@ -1,13 +1,10 @@
 """Comprehensive test suite for client module covering missing lines."""
 
-from flext_tap_oracle_wms import client
-import base64
-
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
-
 from __future__ import annotations
 
+import base64
 from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
@@ -15,6 +12,7 @@ import httpx
 import pytest
 from pydantic import HttpUrl
 
+from flext_tap_oracle_wms import client
 from flext_tap_oracle_wms.client import (
     AuthenticationError,
     WMSClient,
@@ -54,7 +52,6 @@ class TestWMSClientComprehensive:
         """Test that client module imports are correct (lines 17-20)."""
         # Import the client module to test TYPE_CHECKING imports
 
-
         # Verify the client module imports correctly
         assert hasattr(client, "WMSClient")
         assert hasattr(client, "WMSClientError")
@@ -75,8 +72,10 @@ class TestWMSClientComprehensive:
             wms_client.get("/test")
 
         if "Unexpected error: Unexpected error" not in str(excinfo.value):
-
-            raise AssertionError(f"Expected {"Unexpected error: Unexpected error"} in {str(excinfo.value)}")
+            msg = f"Expected {'Unexpected error: Unexpected error'} in {excinfo.value!s}"
+            raise AssertionError(
+                msg,
+            )
 
     @patch("httpx.Client.get")
     def test_discover_entities_multiple_endpoints_success(
@@ -104,8 +103,10 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != [{"id": 1, "name": "item"}]:
-
-            raise AssertionError(f"Expected {[{"id": 1, "name": "item"}]}, got {result}")
+            msg = f"Expected {[{'id': 1, 'name': 'item'}]}, got {result}"
+            raise AssertionError(
+                msg,
+            )
         mock_logger.info.assert_any_call("Discovering WMS entities")
         # Check that some success message was logged (endpoint path may vary)
         success_calls = [
@@ -131,8 +132,8 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != [{"id": 1}, {"id": 2}]:
-
-            raise AssertionError(f"Expected {[{"id": 1}, {"id": 2}]}, got {result}")
+            msg = f"Expected {[{'id': 1}, {'id': 2}]}, got {result}"
+            raise AssertionError(msg)
         mock_logger.info.assert_any_call("Found %d entities via %s", 2, "/api/entities")
 
     @patch("httpx.Client.get")
@@ -149,8 +150,8 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != []:
-
-            raise AssertionError(f"Expected {[]}, got {result}")
+            msg = f"Expected {[]}, got {result}"
+            raise AssertionError(msg)
         mock_logger.warning.assert_called_with(
             "No entities discovered - will try common WMS endpoints",
         )
@@ -170,7 +171,8 @@ class TestWMSClientComprehensive:
             }
             mock_get.assert_called_once_with("/api/items", expected_params)
             if result != {"data": "test"}:
-                raise AssertionError(f"Expected {{"data": "test"}}, got {result}")
+                msg = f"Expected {{'data': 'test'}}, got {result}"
+                raise AssertionError(msg)
 
     def test_get_entity_data_without_params(self, wms_client: WMSClient) -> None:
         """Test get_entity_data without additional params."""
@@ -201,8 +203,8 @@ class TestWMSClientComprehensive:
         result = wms_client.test_connection()
 
         if not (result):
-
-            raise AssertionError(f"Expected True, got {result}")
+            msg = f"Expected True, got {result}"
+            raise AssertionError(msg)
         mock_get.assert_called_once_with("/api/ping", params={})
 
     @patch("httpx.Client.get")
@@ -218,8 +220,9 @@ class TestWMSClientComprehensive:
         result = wms_client.test_connection()
 
         if result:
-
-            raise AssertionError(f"Expected False, got {result}")\ n        assert mock_get.call_count == 1
+            msg = f"Expected False, got {result}"
+            raise AssertionError(msg)
+        assert mock_get.call_count == 1
         mock_get.assert_called_once_with("/api/ping", params={})
 
     @patch("httpx.Client.get")
@@ -235,10 +238,12 @@ class TestWMSClientComprehensive:
         result = wms_client.test_connection()
 
         if result:
-
-            raise AssertionError(f"Expected False, got {result}")\ n        # Should try only /api/ping endpoint
+            msg = f"Expected False, got {result}"
+            raise AssertionError(msg)
+        # Should try only /api/ping endpoint
         if mock_get.call_count != 1:
-            raise AssertionError(f"Expected {1}, got {mock_get.call_count}")
+            msg = f"Expected {1}, got {mock_get.call_count}"
+            raise AssertionError(msg)
 
     def test_handle_response_errors_unauthorized(self) -> None:
         """Test _handle_response_errors for 401 status (lines 230-231)."""
@@ -249,8 +254,10 @@ class TestWMSClientComprehensive:
             WMSClient._handle_response_errors(mock_response)
 
         if str(excinfo.value) != "Authentication failed: Invalid credentials":
-
-            raise AssertionError(f"Expected {"Authentication failed: Invalid credentials"}, got {str(excinfo.value)}")
+            msg = f"Expected {'Authentication failed: Invalid credentials'}, got {excinfo.value!s}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_handle_response_errors_forbidden(self) -> None:
         """Test _handle_response_errors for 403 status (lines 233-234)."""
@@ -261,8 +268,10 @@ class TestWMSClientComprehensive:
             WMSClient._handle_response_errors(mock_response)
 
         if str(excinfo.value) != "Authentication failed: Access denied":
-
-            raise AssertionError(f"Expected {"Authentication failed: Access denied"}, got {str(excinfo.value)}")
+            msg = f"Expected {'Authentication failed: Access denied'}, got {excinfo.value!s}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_handle_response_errors_server_error(self) -> None:
         """Test _handle_response_errors for server errors (lines 236-237)."""
@@ -273,8 +282,10 @@ class TestWMSClientComprehensive:
             WMSClient._handle_response_errors(mock_response)
 
         if str(excinfo.value) != "Server error: 500":
-
-            raise AssertionError(f"Expected {"Server error: 500"}, got {str(excinfo.value)}")
+            msg = f"Expected {'Server error: 500'}, got {excinfo.value!s}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_handle_response_errors_client_error(self) -> None:
         """Test _handle_response_errors for client errors (lines 239-240)."""
@@ -286,8 +297,10 @@ class TestWMSClientComprehensive:
             WMSClient._handle_response_errors(mock_response)
 
         if str(excinfo.value) != "Client error: 400":
-
-            raise AssertionError(f"Expected {"Client error: 400"}, got {str(excinfo.value)}")
+            msg = f"Expected {'Client error: 400'}, got {excinfo.value!s}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_handle_response_errors_success_status(self) -> None:
         """Test _handle_response_errors for success status (no error)."""
@@ -324,8 +337,10 @@ class TestWMSClientComprehensive:
             wms_client.get("/test")
 
         if "Connection failed: Connection refused" not in str(excinfo.value):
-
-            raise AssertionError(f"Expected {"Connection failed: Connection refused"} in {str(excinfo.value)}")
+            msg = f"Expected {'Connection failed: Connection refused'} in {excinfo.value!s}"
+            raise AssertionError(
+                msg,
+            )
 
     @patch("httpx.Client.get")
     def test_get_method_httpx_timeout_error(
@@ -340,8 +355,10 @@ class TestWMSClientComprehensive:
             wms_client.get("/test")
 
         if "Request timeout: Request timeout" not in str(excinfo.value):
-
-            raise AssertionError(f"Expected {"Request timeout: Request timeout"} in {str(excinfo.value)}")
+            msg = f"Expected {'Request timeout: Request timeout'} in {excinfo.value!s}"
+            raise AssertionError(
+                msg,
+            )
 
     @patch("httpx.Client.get")
     def test_get_method_non_dict_response_wrapping(
@@ -358,8 +375,10 @@ class TestWMSClientComprehensive:
         result = wms_client.get("/test")
 
         if result != {"data": ["item1", "item2"]}:
-
-            raise AssertionError(f"Expected {{"data": ["item1", "item2"]}}, got {result}")
+            msg = f"Expected {{'data': ['item1', 'item2']}}, got {result}"
+            raise AssertionError(
+                msg,
+            )
 
     @patch("httpx.Client.get")
     def test_get_method_metrics_tracking(
@@ -378,9 +397,10 @@ class TestWMSClientComprehensive:
         wms_client.get("/test")
 
         if wms_client.metrics.api_calls != initial_api_calls + 1:
-
-            raise AssertionError(f"Expected
-            {initial_api_calls + 1}, got {wms_client.metrics.api_calls}")
+            msg = f"Expected {initial_api_calls + 1}, got {wms_client.metrics.api_calls}"
+            raise AssertionError(
+                msg,
+            )
 
     def test_client_ssl_verification_enabled(self, wms_client: WMSClient) -> None:
         """Test that SSL verification is always enabled."""
@@ -399,12 +419,12 @@ class TestWMSClientComprehensive:
         assert auth_header.startswith("Basic ")
         # Verify it's a valid base64 encoded credential
 
-
         encoded_part = auth_header[6:]  # Remove "Basic " prefix
         try:
             decoded = base64.b64decode(encoded_part).decode()
             if decoded != "test_user:test_pass":
-                raise AssertionError(f"Expected {"test_user:test_pass"}, got {decoded}")
+                msg = f"Expected {'test_user:test_pass'}, got {decoded}"
+                raise AssertionError(msg)
         except (RuntimeError, ValueError, TypeError):
             pytest.fail("Invalid base64 encoding in Authorization header")
 
@@ -431,8 +451,8 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != []:
-
-            raise AssertionError(f"Expected {[]}, got {result}")
+            msg = f"Expected {[]}, got {result}"
+            raise AssertionError(msg)
         mock_logger.warning.assert_called_with(
             "No entities discovered - will try common WMS endpoints",
         )
@@ -460,8 +480,8 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != []:
-
-            raise AssertionError(f"Expected {[]}, got {result}")
+            msg = f"Expected {[]}, got {result}"
+            raise AssertionError(msg)
 
 
 if __name__ == "__main__":

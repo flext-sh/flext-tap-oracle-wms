@@ -29,7 +29,7 @@ class FlextConstants:
     MAX_ENTITY_NAME_LENGTH = 255
     MAX_ERROR_MESSAGE_LENGTH = 1000
     DEFAULT_TIMEOUT = 30
-    FRAMEWORK_VERSION = "0.7.0"
+    FRAMEWORK_VERSION = "0.9.0"
 
 
 class WMSConfig(BaseConfig):

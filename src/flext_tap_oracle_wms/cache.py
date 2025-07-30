@@ -36,6 +36,7 @@ class CacheManager(CacheManagerInterface):
 
         # Use real WMS cache manager with proper FlextOracleWmsCacheConfig
         from flext_oracle_wms.cache import FlextOracleWmsCacheConfig
+
         wms_config = FlextOracleWmsCacheConfig(
             default_ttl_seconds=cache_config.get("cache_ttl_seconds", 300),
             max_cache_entries=cache_config.get("max_cache_entries", 1000),
@@ -162,6 +163,7 @@ class CacheManagerAdapter(CacheManagerInterface):
         """Initialize adapter with FlextOracleWmsCacheManager."""
         # Use real WMS cache manager with proper FlextOracleWmsCacheConfig
         from flext_oracle_wms.cache import FlextOracleWmsCacheConfig
+
         wms_config = FlextOracleWmsCacheConfig(
             default_ttl_seconds=config.get("cache_ttl_seconds", 300),
             max_cache_entries=config.get("max_cache_entries", 1000),

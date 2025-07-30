@@ -60,10 +60,13 @@ class TestEnforceMandatoryEnvironmentVariables:
                     enforce_mandatory_environment_variables()
 
                 # Should log error and exit
-                if "TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true'" not in str(:
-                    raise AssertionError(f"Expected {"TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true'"} in {str(}")
+                if "TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true'" not in str(
                     excinfo.value,
-                )
+                ):
+                    msg = f"Expected {'TAP_ORACLE_WMS_USE_METADATA_ONLY must be true'} in {excinfo.value!s}"
+                    raise AssertionError(
+                        msg,
+                    )
                 mock_logger.error.assert_called_once()
                 mock_logger.info.assert_not_called()
 
@@ -90,7 +93,10 @@ class TestEnforceMandatoryEnvironmentVariables:
 
                 # Should log error and exit (value is converted to lowercase)
                 if f"but got '{value.lower()}'" not in str(excinfo.value):
-                    raise AssertionError(f"Expected {f"but got '{value.lower()}'"} in {str(excinfo.value)}")
+                    msg = f"Expected {'but got {value.lower()}'} in {excinfo.value!s}"
+                    raise AssertionError(
+                        msg,
+                    )
                 mock_logger.error.assert_called_once()
 
     def test_enforce_fails_with_missing_discovery_sample_size(self) -> None:
@@ -118,7 +124,10 @@ class TestEnforceMandatoryEnvironmentVariables:
                     )
                 )
                 if "but got '-1'" not in str(excinfo.value):
-                    raise AssertionError(f"Expected {"but got '-1'"} in {str(excinfo.value)}")
+                    msg = f"Expected {'but got -1'} in {excinfo.value!s}"
+                    raise AssertionError(
+                        msg,
+                    )
                 mock_logger.error.assert_called_once()
 
     def test_enforce_fails_with_incorrect_discovery_sample_size(self) -> None:
@@ -144,7 +153,10 @@ class TestEnforceMandatoryEnvironmentVariables:
 
                 # Should log error and exit
                 if f"but got '{value}'" not in str(excinfo.value):
-                    raise AssertionError(f"Expected {f"but got '{value}'"} in {str(excinfo.value)}")
+                    msg = f"Expected {f'but got {value}'} in {excinfo.value!s}"
+                    raise AssertionError(
+                        msg,
+                    )
                 mock_logger.error.assert_called_once()
 
     def test_enforce_passes_with_non_numeric_discovery_sample_size(self) -> None:
@@ -216,7 +228,10 @@ class TestEnforceMandatoryEnvironmentVariables:
 
             error_msg = str(excinfo.value)
             if "❌ CRITICAL FAILURE:" not in error_msg:
-                raise AssertionError(f"Expected {"❌ CRITICAL FAILURE:"} in {error_msg}")
+                msg = f"Expected {'❌ CRITICAL FAILURE:'} in {error_msg}"
+                raise AssertionError(
+                    msg,
+                )
             assert "NON-NEGOTIABLE" in error_msg
             # Note: actual error message format from flext-core Oracle validator
 
@@ -233,7 +248,10 @@ class TestEnforceMandatoryEnvironmentVariables:
 
             error_msg = str(excinfo.value)
             if "❌ CRITICAL FAILURE:" not in error_msg:
-                raise AssertionError(f"Expected {"❌ CRITICAL FAILURE:"} in {error_msg}")
+                msg = f"Expected {'❌ CRITICAL FAILURE:'} in {error_msg}"
+                raise AssertionError(
+                    msg,
+                )
             # Note: actual error message format from flext-core Oracle validator
 
     def test_enforce_both_validations_fail_reports_all_errors(self) -> None:
@@ -255,7 +273,10 @@ class TestEnforceMandatoryEnvironmentVariables:
             # Should include both validation errors
             error_msg = str(excinfo.value)
             if "TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true'" not in error_msg:
-                raise AssertionError(f"Expected {"TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true'"} in {error_msg}")
+                msg = f"Expected {'TAP_ORACLE_WMS_USE_METADATA_ONLY must be true'} in {error_msg}"
+                raise AssertionError(
+                    msg,
+                )
             assert "DISCOVERY_SAMPLE_SIZE" in error_msg
 
     def test_enforce_logging_behavior(self) -> None:

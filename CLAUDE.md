@@ -11,12 +11,14 @@ This is `flext-tap-oracle-wms`, a Singer tap for extracting data from Oracle War
 ### Core Components
 
 **Singer Tap Implementation:**
+
 - `src/flext_tap_oracle_wms/tap.py` - Main tap class inheriting from Singer SDK's `Tap`
 - `src/flext_tap_oracle_wms/streams.py` - Stream definitions using `RESTStream` with WMS-specific pagination
 - `src/flext_tap_oracle_wms/client.py` - HTTP client with Oracle WMS API integration
 - `src/flext_tap_oracle_wms/auth.py` - Authentication handling (Basic Auth and OAuth2)
 
 **Configuration and Discovery:**
+
 - `src/flext_tap_oracle_wms/config.py` - Configuration models using Pydantic
 - `src/flext_tap_oracle_wms/config_mapper.py` - Maps config to internal models
 - `src/flext_tap_oracle_wms/config_validator.py` - Validates configuration with business rules
@@ -24,11 +26,13 @@ This is `flext-tap-oracle-wms`, a Singer tap for extracting data from Oracle War
 - `src/flext_tap_oracle_wms/entity_discovery.py` - WMS entity discovery logic
 
 **Schema and Type Handling:**
+
 - `src/flext_tap_oracle_wms/schema_generator.py` - Generates Singer schemas from WMS metadata
 - `src/flext_tap_oracle_wms/schema_flattener.py` - Flattens nested WMS data structures
 - `src/flext_tap_oracle_wms/type_mapping.py` - Maps WMS data types to Singer types
 
 **Specialized Features:**
+
 - `src/flext_tap_oracle_wms/cache.py` - Response caching for performance
 - `src/flext_tap_oracle_wms/simple_api.py` - Simplified API interface
 - `src/flext_tap_oracle_wms/critical_validation.py` - Validates critical environment variables
@@ -36,14 +40,16 @@ This is `flext-tap-oracle-wms`, a Singer tap for extracting data from Oracle War
 ### Dependencies
 
 The project depends on several FLEXT ecosystem libraries:
+
 - `flext-core` - Base patterns, logging, result handling
-- `flext-meltano` - Singer/Meltano integration and generic interfaces  
+- `flext-meltano` - Singer/Meltano integration and generic interfaces
 - `flext-oracle-wms` - Oracle WMS API connectivity and data models
 - `flext-observability` - Monitoring, metrics, health checks
 
 ## Development Commands
 
 ### Installation and Setup
+
 ```bash
 make setup                   # Complete project setup with pre-commit hooks
 make install                 # Install project dependencies only
@@ -92,6 +98,7 @@ make install-dev             # Install with development dependencies
 ```
 
 ### Quality Gates (Always run before committing)
+
 ```bash
 make validate               # Complete validation (lint + type + security + test)
 make check                  # Quick health check (lint + type-check)
@@ -103,16 +110,18 @@ make fix                    # Auto-fix linting issues + format
 ```
 
 ### Testing
+
 ```bash
 make test                   # Run all tests with 90% coverage requirement
 make test-unit              # Run unit tests only (exclude integration tests)
-make test-integration       # Run integration tests only  
+make test-integration       # Run integration tests only
 make test-singer            # Run Singer-specific protocol tests
 make test-fast              # Run tests without coverage (faster)
 make coverage-html          # Generate HTML coverage report
 ```
 
 ### Singer Tap Operations
+
 ```bash
 make discover               # Run tap discovery mode, generates catalog.json
 make run                    # Run tap extraction with config.json and catalog.json
@@ -122,6 +131,7 @@ make sync                   # Alias for run
 ```
 
 ### WMS-Specific Operations
+
 ```bash
 make wms-test               # Test Oracle WMS connectivity
 make wms-entities           # List available WMS entities for extraction
@@ -129,6 +139,7 @@ make wms-performance        # Run WMS performance benchmarks
 ```
 
 ### Building and Distribution
+
 ```bash
 make build                  # Build distribution packages
 make build-clean            # Clean build artifacts and rebuild
@@ -136,6 +147,7 @@ make publish-test           # Publish to test PyPI
 ```
 
 ### Development Tools
+
 ```bash
 make shell                  # Open Python shell with project loaded
 make diagnose               # Run project diagnostics and health checks
@@ -145,9 +157,10 @@ make clean-all              # Deep clean including virtual environment
 ```
 
 ### Convenience Aliases
+
 ```bash
 make t                      # test
-make l                      # lint  
+make l                      # lint
 make f                      # format
 make tc                     # type-check
 make v                      # validate
@@ -159,15 +172,18 @@ make c                      # clean
 ## Configuration
 
 ### Basic Configuration Structure
+
 The tap uses JSON configuration files. Key settings include:
 
 **Connection Settings:**
+
 - `base_url` - Oracle WMS instance URL
 - `auth_method` - "basic" or "oauth2"
 - `company_code` / `facility_code` - WMS organizational identifiers
 - `username` / `password` or OAuth credentials
 
 **Extraction Settings:**
+
 - `entities` - List of WMS entities to extract (item, location, inventory, etc.)
 - `page_size` - Records per page (max 1250)
 - `start_date` - ISO8601 date for incremental extraction
@@ -175,11 +191,14 @@ The tap uses JSON configuration files. Key settings include:
 - `field_selection` - Specific fields to extract per entity
 
 **Examples:**
+
 - `config.json.example` - Basic configuration template
 - `examples/configs/` - Various configuration examples for different use cases
 
 ### Meltano Integration
+
 The project includes `meltano.yml` with:
+
 - Environment-specific configurations (dev, staging, prod)
 - Comprehensive setting definitions with validation
 - Example job and schedule definitions
@@ -188,13 +207,16 @@ The project includes `meltano.yml` with:
 ## Testing Strategy
 
 ### Test Organization
+
 - `tests/unit/` - Unit tests for individual components
 - `tests/integration/` - Integration tests (some disabled in production)
 - `tests/e2e/` - End-to-end tests (disabled in production)
 - Test configuration in `tests/config.json`
 
 ### Test Markers
+
 Use pytest markers to run specific test types:
+
 ```bash
 pytest -m unit              # Unit tests only
 pytest -m integration       # Integration tests only
@@ -203,6 +225,7 @@ pytest -m singer           # Singer protocol tests
 ```
 
 ### Coverage Requirements
+
 - Minimum 90% code coverage enforced
 - HTML reports generated in `reports/coverage/`
 - XML reports for CI/CD in `reports/coverage.xml`
@@ -210,23 +233,27 @@ pytest -m singer           # Singer protocol tests
 ## Architecture Patterns
 
 ### Singer SDK Integration
+
 - Inherits from `singer_sdk.Tap` and `singer_sdk.streams.RESTStream`
 - Implements custom `WMSPaginator` for Oracle WMS HATEOAS pagination
 - Uses Singer SDK typing (`singer_typing`) for schema definitions
 - Supports both full table and incremental replication
 
 ### Error Handling and Validation
+
 - Multi-layer validation: config validation, critical validation, business rules
 - Custom exception hierarchy in `src/flext_tap_oracle_wms/exceptions.py`
 - Comprehensive error handling for authentication, network, and API errors
 
 ### Performance Optimizations
+
 - Response caching system with configurable TTL
 - Configurable request concurrency and retry logic
 - Circuit breaker patterns for resilient API interactions
 - Schema flattening for complex nested WMS data structures
 
 ### Enterprise Features
+
 - OAuth2 and Basic Authentication support
 - Comprehensive configuration validation with business rules
 - Environment variable loading with prefixes (`TAP_ORACLE_WMS_`)
@@ -236,6 +263,7 @@ pytest -m singer           # Singer protocol tests
 ## Quality Standards
 
 ### Zero Tolerance Quality Gates
+
 - **Python 3.13** - Latest Python version with strict typing
 - **MyPy Strict Mode** - All code must be fully typed
 - **Ruff with ALL rules** - Comprehensive linting (specific ignores in pyproject.toml)
@@ -244,6 +272,7 @@ pytest -m singer           # Singer protocol tests
 - **Pre-commit Hooks** - Automated quality checks on every commit
 
 ### Code Standards
+
 - All code uses type hints with strict mypy configuration
 - Pydantic models for configuration and data validation
 - Comprehensive docstrings following Google style
@@ -253,6 +282,7 @@ pytest -m singer           # Singer protocol tests
 ## Common Development Workflows
 
 ### Adding a New WMS Entity
+
 1. Add entity configuration to `meltano.yml` settings
 2. Implement entity discovery in `entity_discovery.py`
 3. Define schema mapping in `schema_generator.py`
@@ -261,6 +291,7 @@ pytest -m singer           # Singer protocol tests
 6. Update example configurations
 
 ### Running the Tap Locally
+
 1. Copy `config.json.example` to `config.json`
 2. Configure WMS connection settings
 3. Run `make discover` to generate catalog
@@ -268,6 +299,7 @@ pytest -m singer           # Singer protocol tests
 5. Monitor logs for extraction progress
 
 ### Debugging Issues
+
 1. Use `make diagnose` to check project health
 2. Run `make wms-test` to verify WMS connectivity
 3. Use `make test-unit` for isolated component testing
@@ -277,6 +309,7 @@ pytest -m singer           # Singer protocol tests
 ## Integration with FLEXT Ecosystem
 
 This tap integrates with other FLEXT components:
+
 - **flext-core** - Provides logging, error handling, and base patterns
 - **flext-observability** - Monitoring and health check capabilities
 - **flext-oracle-wms** - Oracle WMS API client and data models
