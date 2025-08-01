@@ -62,106 +62,107 @@ class TapOracleWMS(Tap):
                 allowed_values=["basic", "oauth2"],
                 description="Authentication method",
             ),
-        # WMS-specific settings
-        th.Property(
-            "company_code",
-            th.StringType,
-            default="*",
-            description="WMS company code (* for all companies)",
-        ),
-        th.Property(
-            "facility_code",
-            th.StringType,
-            default="*",
-            description="WMS facility code (* for all facilities)",
-        ),
-        th.Property(
-            "custom_headers",
-            th.ObjectType(),
-            description="Additional headers to send with WMS API requests",
-        ),
-        # Entity configuration
-        th.Property(
-            "wms_api_version",
-            th.StringType,
-            default="v10",
-            description="WMS API version (e.g., v10, v11)",
-        ),
-        th.Property(
-            "entities",
-            th.ArrayType(th.StringType),
-            description=(
-                "Specific WMS entities to extract (e.g., allocation, order_hdr)"
+            # WMS-specific settings
+            th.Property(
+                "company_code",
+                th.StringType,
+                default="*",
+                description="WMS company code (* for all companies)",
             ),
-        ),
-        # Performance settings
-        th.Property(
-            "page_mode",
-            th.StringType,
-            default="sequenced",
-            allowed_values=["sequenced", "paged"],
-            description="Pagination mode for WMS API requests",
-        ),
-        th.Property(
-            "page_size",
-            th.IntegerType,
-            default=100,
-            description="Records per page",
-        ),
-        th.Property(
-            "request_timeout",
-            th.IntegerType,
-            default=120,
-            description="Request timeout in seconds",
-        ),
-        th.Property(
-            "max_retries",
-            th.IntegerType,
-            default=3,
-            description="Maximum retry attempts",
-        ),
-        # Incremental sync settings
-        th.Property(
-            "start_date",
-            th.DateTimeType,
-            description="Start date for incremental sync",
-        ),
-        th.Property(
-            "enable_incremental",
-            th.BooleanType,
-            default=True,
-            description="Enable incremental sync using replication key",
-        ),
-        th.Property(
-            "replication_key",
-            th.StringType,
-            default="mod_ts",
-            description="Field to use for incremental replication",
-        ),
-        # Discovery settings
-        th.Property(
-            "discover_catalog",
-            th.BooleanType,
-            default=True,
-            description="Auto-discover catalog on startup",
-        ),
-        # OAuth2 settings (if using OAuth2)
-        th.Property("oauth_client_id", th.StringType, secret=True),
-        th.Property("oauth_client_secret", th.StringType, secret=True),
-        th.Property("oauth_token_url", th.StringType),
-        th.Property("oauth_scope", th.StringType, default="wms.read"),
-        # SSL/TLS settings
-        th.Property(
-            "verify_ssl",
-            th.BooleanType,
-            default=True,
-            description="Verify SSL certificates",
-        ),
-        th.Property(
-            "ssl_ca_file",
-            th.StringType,
-            description="Path to CA bundle file",
-        ),
+            th.Property(
+                "facility_code",
+                th.StringType,
+                default="*",
+                description="WMS facility code (* for all facilities)",
+            ),
+            th.Property(
+                "custom_headers",
+                th.ObjectType(),
+                description="Additional headers to send with WMS API requests",
+            ),
+            # Entity configuration
+            th.Property(
+                "wms_api_version",
+                th.StringType,
+                default="v10",
+                description="WMS API version (e.g., v10, v11)",
+            ),
+            th.Property(
+                "entities",
+                th.ArrayType(th.StringType),
+                description=(
+                    "Specific WMS entities to extract (e.g., allocation, order_hdr)"
+                ),
+            ),
+            # Performance settings
+            th.Property(
+                "page_mode",
+                th.StringType,
+                default="sequenced",
+                allowed_values=["sequenced", "paged"],
+                description="Pagination mode for WMS API requests",
+            ),
+            th.Property(
+                "page_size",
+                th.IntegerType,
+                default=100,
+                description="Records per page",
+            ),
+            th.Property(
+                "request_timeout",
+                th.IntegerType,
+                default=120,
+                description="Request timeout in seconds",
+            ),
+            th.Property(
+                "max_retries",
+                th.IntegerType,
+                default=3,
+                description="Maximum retry attempts",
+            ),
+            # Incremental sync settings
+            th.Property(
+                "start_date",
+                th.DateTimeType,
+                description="Start date for incremental sync",
+            ),
+            th.Property(
+                "enable_incremental",
+                th.BooleanType,
+                default=True,
+                description="Enable incremental sync using replication key",
+            ),
+            th.Property(
+                "replication_key",
+                th.StringType,
+                default="mod_ts",
+                description="Field to use for incremental replication",
+            ),
+            # Discovery settings
+            th.Property(
+                "discover_catalog",
+                th.BooleanType,
+                default=True,
+                description="Auto-discover catalog on startup",
+            ),
+            # OAuth2 settings (if using OAuth2)
+            th.Property("oauth_client_id", th.StringType, secret=True),
+            th.Property("oauth_client_secret", th.StringType, secret=True),
+            th.Property("oauth_token_url", th.StringType),
+            th.Property("oauth_scope", th.StringType, default="wms.read"),
+            # SSL/TLS settings
+            th.Property(
+                "verify_ssl",
+                th.BooleanType,
+                default=True,
+                description="Verify SSL certificates",
+            ),
+            th.Property(
+                "ssl_ca_file",
+                th.StringType,
+                description="Path to CA bundle file",
+            ),
+        )
     ).to_dict()
 
     def __init__(

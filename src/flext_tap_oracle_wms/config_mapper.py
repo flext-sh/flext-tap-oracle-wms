@@ -27,7 +27,7 @@ logger = get_logger(__name__)
 
 
 # =============================================================================
-# SOLID REFACTORING: Parameter Object Pattern for reducing method complexity
+# REFACTORING: Parameter Object Pattern for reducing method complexity
 # =============================================================================
 
 
@@ -84,8 +84,9 @@ def _safe_int_conversion_with_validation(value: object, default: int) -> int:
     SOLID REFACTORING: Eliminates duplication by using centralized utility
     from flext-core across all FLEXT ecosystem projects.
     """
-    # SOLID REFACTORING: Use centralized utility from flext-core
+    # REFACTORING: Use centralized utility from flext-core
     from flext_core.utilities import safe_int_conversion_with_default
+
     return safe_int_conversion_with_default(value, default)
 
 
@@ -286,8 +287,9 @@ class ConfigMapper:
             Integer value or default if conversion fails.
 
         """
-        # SOLID REFACTORING: Use centralized utility from flext-core
+        # REFACTORING: Use centralized utility from flext-core
         from flext_core.utilities import safe_int_conversion_with_default
+
         return safe_int_conversion_with_default(value, default)
 
     def get_max_retries(self) -> int:
@@ -297,7 +299,7 @@ class ConfigMapper:
             Maximum retry attempts for HTTP requests.
 
         """
-        # SOLID REFACTORING: Use Template Method Pattern - DRY principle
+        # REFACTORING: Use Template Method Pattern - DRY principle
         config_request = _create_int_config_template(
             "max_retries",
             "WMS_MAX_RETRIES",
@@ -340,7 +342,7 @@ class ConfigMapper:
             Duration in seconds for caching API responses.
 
         """
-        # SOLID REFACTORING: Use Template Method Pattern - DRY principle
+        # REFACTORING: Use Template Method Pattern - DRY principle
         config_request = _create_int_config_template(
             "cache_ttl_seconds",
             "WMS_CACHE_TTL_SECONDS",
@@ -362,7 +364,7 @@ class ConfigMapper:
             Maximum number of concurrent connections to maintain.
 
         """
-        # SOLID REFACTORING: Use Template Method Pattern - DRY principle
+        # REFACTORING: Use Template Method Pattern - DRY principle
         config_request = _create_int_config_template(
             "connection_pool_size",
             "WMS_CONNECTION_POOL_SIZE",
@@ -418,7 +420,7 @@ class ConfigMapper:
             Minutes to overlap with previous sync to avoid missed records.
 
         """
-        # SOLID REFACTORING: Use Template Method Pattern - DRY principle
+        # REFACTORING: Use Template Method Pattern - DRY principle
         config_request = _create_int_config_template(
             "incremental_overlap_minutes",
             "WMS_INCREMENTAL_OVERLAP_MINUTES",
@@ -440,7 +442,7 @@ class ConfigMapper:
             Minutes to look back from last bookmark for safety margin.
 
         """
-        # SOLID REFACTORING: Use Template Method Pattern - DRY principle
+        # REFACTORING: Use Template Method Pattern - DRY principle
         config_request = _create_int_config_template(
             "lookback_minutes",
             "WMS_LOOKBACK_MINUTES",
@@ -641,7 +643,7 @@ class ConfigMapper:
             Dictionary mapping WMS allocation statuses to standardized status names.
 
         """
-        # SOLID REFACTORING: Use Template Method Pattern - DRY principle
+        # REFACTORING: Use Template Method Pattern - DRY principle
         mapping_config = WmsStatusMappingConfig(
             mapping_name="allocation_status_mapping",
             env_var="WMS_ALLOCATION_STATUS_MAPPING_JSON",
@@ -663,7 +665,7 @@ class ConfigMapper:
             Dictionary mapping WMS order statuses to standardized status names.
 
         """
-        # SOLID REFACTORING: Use Template Method Pattern - DRY principle
+        # REFACTORING: Use Template Method Pattern - DRY principle
         mapping_config = WmsStatusMappingConfig(
             mapping_name="order_status_mapping",
             env_var="WMS_ORDER_STATUS_MAPPING_JSON",
@@ -765,7 +767,7 @@ class ConfigMapper:
             Month number (1-12) when fiscal year begins.
 
         """
-        # SOLID REFACTORING: Use Template Method Pattern - DRY principle
+        # REFACTORING: Use Template Method Pattern - DRY principle
         config_request = _create_int_config_template(
             "fiscal_year_start_month",
             "WMS_FISCAL_YEAR_START_MONTH",
