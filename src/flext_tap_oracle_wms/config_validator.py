@@ -32,7 +32,7 @@ logger = get_logger(__name__)
 
 
 # =============================================================================
-# SOLID REFACTORING: Strategy Pattern for reducing validation complexity
+# REFACTORING: Strategy Pattern for reducing validation complexity
 # =============================================================================
 
 

@@ -19,7 +19,7 @@ from flext_core.exceptions import (
 )
 
 # =============================================================================
-# SOLID REFACTORING: DRY Principle - Centralized context building pattern
+# REFACTORING: DRY Principle - Centralized context building pattern
 # =============================================================================
 
 
@@ -78,7 +78,7 @@ class FlextTapOracleWmsConnectionError(FlextConnectionError):
         **kwargs: object,
     ) -> None:
         """Initialize Oracle WMS tap connection error with context."""
-        # SOLID REFACTORING: Use DRY principle - centralized context building
+        # REFACTORING: Use DRY principle - centralized context building
         context = _build_exception_context(
             kwargs,
             wms_endpoint=wms_endpoint,
@@ -98,7 +98,7 @@ class FlextTapOracleWmsAuthenticationError(FlextAuthenticationError):
         **kwargs: object,
     ) -> None:
         """Initialize Oracle WMS tap authentication error with context."""
-        # SOLID REFACTORING: Use DRY principle - centralized context building
+        # REFACTORING: Use DRY principle - centralized context building
         context = _build_exception_context(
             kwargs,
             username=username,
@@ -146,7 +146,7 @@ class FlextTapOracleWmsConfigurationError(FlextConfigurationError):
         **kwargs: object,
     ) -> None:
         """Initialize Oracle WMS tap configuration error with context."""
-        # SOLID REFACTORING: Use DRY principle - centralized context building
+        # REFACTORING: Use DRY principle - centralized context building
         context = _build_exception_context(kwargs, config_key=config_key)
         super().__init__(f"Oracle WMS tap config: {message}", **context)
 
@@ -162,7 +162,7 @@ class FlextTapOracleWmsProcessingError(FlextProcessingError):
         **kwargs: object,
     ) -> None:
         """Initialize Oracle WMS tap processing error with context."""
-        # SOLID REFACTORING: Use DRY principle - centralized context building
+        # REFACTORING: Use DRY principle - centralized context building
         context = _build_exception_context(
             kwargs,
             entity_type=entity_type,
@@ -182,7 +182,7 @@ class FlextTapOracleWmsInventoryError(FlextTapOracleWmsError):
         **kwargs: object,
     ) -> None:
         """Initialize Oracle WMS tap inventory error with context."""
-        # SOLID REFACTORING: Use DRY principle - centralized context building
+        # REFACTORING: Use DRY principle - centralized context building
         context = _build_exception_context(
             kwargs,
             item_code=item_code,
@@ -202,7 +202,7 @@ class FlextTapOracleWmsShipmentError(FlextTapOracleWmsError):
         **kwargs: object,
     ) -> None:
         """Initialize Oracle WMS tap shipment error with context."""
-        # SOLID REFACTORING: Use DRY principle - centralized context building
+        # REFACTORING: Use DRY principle - centralized context building
         context = _build_exception_context(
             kwargs,
             shipment_id=shipment_id,
@@ -222,7 +222,7 @@ class FlextTapOracleWmsTimeoutError(FlextTimeoutError):
         **kwargs: object,
     ) -> None:
         """Initialize Oracle WMS tap timeout error with context."""
-        # SOLID REFACTORING: Use DRY principle - centralized context building
+        # REFACTORING: Use DRY principle - centralized context building
         context = _build_exception_context(
             kwargs,
             operation=operation,
@@ -242,7 +242,7 @@ class FlextTapOracleWmsStreamError(FlextTapOracleWmsError):
         **kwargs: object,
     ) -> None:
         """Initialize Oracle WMS tap stream error with context."""
-        # SOLID REFACTORING: Use DRY principle - centralized context building
+        # REFACTORING: Use DRY principle - centralized context building
         context = _build_exception_context(
             kwargs,
             stream_name=stream_name,
