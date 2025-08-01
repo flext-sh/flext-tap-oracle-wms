@@ -83,7 +83,7 @@ class WMSPaginator(BaseHATEOASPaginator):
         return self.get_next_url(response) is not None
 
 
-class WMSStream(RESTStream[dict[str, Any]]):
+class WMSStream(RESTStream[dict[str, object]]):
     """Oracle WMS API stream using Singer SDK capabilities."""
 
     # Use HATEOAS paginator
@@ -92,7 +92,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
     replication_method = "INCREMENTAL"
     replication_key = None
 
-    def __init__(self, tap: Any, name: str, schema: dict[str, Any]) -> None:
+    def __init__(self, tap: Any, name: str, schema: dict[str, object]) -> None:
         """Initialize WMS stream with tap, name and schema.
 
         Args:
@@ -163,7 +163,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return f"/wms/lgfapi/v10/entity/{entity_name}"
 
     @property
-    def http_headers(self) -> dict[str, Any]:
+    def http_headers(self) -> dict[str, object]:
         """Get HTTP headers for WMS API requests.
 
         Returns:
@@ -211,9 +211,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     def get_url_params(
         self,
-        context: Mapping[str, Any] | None,
+        context: Mapping[str, object] | None,
         next_page_token: object | None,
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """Build URL parameters for WMS API requests.
 
         Args:
@@ -235,7 +235,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return params
 
     @staticmethod
-    def _get_pagination_params(next_page_token: object) -> dict[str, Any]:
+    def _get_pagination_params(next_page_token: object) -> dict[str, object]:
         """Build URL parameters for WMS API requests.
 
         Args:
@@ -245,7 +245,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             Dictionary of URL parameters for the API request.
 
         """
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         try:
             if hasattr(next_page_token, "query"):
                 parsed_params = parse_qs(next_page_token.query)
@@ -267,7 +267,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             raise ValueError(msg) from e
         return params
 
-    def _get_base_params(self) -> dict[str, Any]:
+    def _get_base_params(self) -> dict[str, object]:
         return {
             "page_size": self.config_mapper.get_page_size(),
             "page_mode": self.config_mapper.get_pagination_mode(),
@@ -275,8 +275,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     def _add_replication_filters(
         self,
-        params: dict[str, Any],
-        context: Mapping[str, Any] | None,
+        params: dict[str, object],
+        context: Mapping[str, object] | None,
     ) -> None:
         if self.replication_method == "INCREMENTAL" and self.replication_key:
             self._add_incremental_filter(params, context)
@@ -285,8 +285,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     def _add_incremental_filter(
         self,
-        params: dict[str, Any],
-        context: Mapping[str, Any] | None,
+        params: dict[str, object],
+        context: Mapping[str, object] | None,
     ) -> None:
         start_date = self.get_starting_timestamp(context)
         # Se não há estado inicial, usar hora_atual - 5m
@@ -311,8 +311,8 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     def _add_full_table_filter(
         self,
-        params: dict[str, Any],
-        context: Mapping[str, Any] | None,
+        params: dict[str, object],
+        context: Mapping[str, object] | None,
     ) -> None:
         bookmark = self.get_starting_replication_key_value(context)
         try:
@@ -329,20 +329,20 @@ class WMSStream(RESTStream[dict[str, Any]]):
             # Don't add filter = start from highest ID
             pass
 
-    def _add_ordering_params(self, params: dict[str, Any]) -> None:
+    def _add_ordering_params(self, params: dict[str, object]) -> None:
         if self.replication_method == "FULL_TABLE":
             self._add_full_table_ordering(params)
         else:
             self._add_incremental_ordering(params)
 
-    def _add_full_table_ordering(self, params: dict[str, Any]) -> None:
+    def _add_full_table_ordering(self, params: dict[str, object]) -> None:
         if "id" in self._schema.get("properties", {}):
             params["ordering"] = "-id"  # CRITICAL: Descending for full sync recovery
         # Fallback if no ID field
         elif self.replication_key:
             params["ordering"] = f"-{self.replication_key}"
 
-    def _add_incremental_ordering(self, params: dict[str, Any]) -> None:
+    def _add_incremental_ordering(self, params: dict[str, object]) -> None:
         if self.replication_key == "mod_ts":
             params["ordering"] = "mod_ts"  # CRITICAL: Ascending temporal order
         elif self.replication_key:
@@ -350,12 +350,12 @@ class WMSStream(RESTStream[dict[str, Any]]):
         elif "id" in self._schema.get("properties", {}):
             params["ordering"] = "id"  # Fallback to ID if no replication key
 
-    def _add_entity_filters(self, params: dict[str, Any]) -> None:
+    def _add_entity_filters(self, params: dict[str, object]) -> None:
         entity_filters = self.config.get("entity_filters", {})
         if self._entity_name in entity_filters:
             params.update(entity_filters[self._entity_name])
 
-    def parse_response(self, response: requests.Response) -> Iterable[dict[str, Any]]:
+    def parse_response(self, response: requests.Response) -> Iterable[dict[str, object]]:
         """Parse records from API response.
 
         Args:
@@ -383,7 +383,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             msg = f"Invalid JSON response from API for entity {self._entity_name}: {e}"
             raise ValueError(msg) from e
 
-    def _yield_results_array(self, data: dict[str, object]) -> Iterable[dict[str, Any]]:
+    def _yield_results_array(self, data: dict[str, object]) -> Iterable[dict[str, object]]:
         results = data["results"]
         if isinstance(results, list):
             yield from results
@@ -397,7 +397,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
             raise TypeError(error_msg)
 
     @staticmethod
-    def _yield_direct_array(data: list[Any]) -> Iterable[dict[str, Any]]:
+    def _yield_direct_array(data: list[Any]) -> Iterable[dict[str, object]]:
         yield from data
 
     def _log_unexpected_format(self, data: object) -> None:
@@ -446,9 +446,9 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     def post_process(
         self,
-        row: dict[str, Any],
-        _context: Mapping[str, Any] | None = None,
-    ) -> dict[str, Any] | None:
+        row: dict[str, object],
+        _context: Mapping[str, object] | None = None,
+    ) -> dict[str, object] | None:
         """Post-process WMS data records with extraction metadata.
 
         Args:
@@ -469,7 +469,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
         return get_wms_authenticator(self, dict(self.config))
 
     @property
-    def schema(self) -> dict[str, Any]:
+    def schema(self) -> dict[str, object]:
         """Get JSON schema for this WMS entity stream.
 
         Returns:
@@ -480,7 +480,7 @@ class WMSStream(RESTStream[dict[str, Any]]):
 
     def get_starting_timestamp(
         self,
-        context: Mapping[str, Any] | None,
+        context: Mapping[str, object] | None,
     ) -> datetime | None:
         """Get starting timestamp for incremental data extraction.
 

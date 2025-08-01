@@ -66,7 +66,7 @@ class WMSBasicAuthenticator(SimpleAuthenticator):
 
 def get_wms_authenticator(
     stream: RESTStream[Any],
-    config: dict[str, Any],
+    config: dict[str, object],
 ) -> WMSBasicAuthenticator:
     """Get appropriate WMS authenticator based on configuration.
 
@@ -87,7 +87,7 @@ def get_wms_authenticator(
     return WMSBasicAuthenticator(stream, username, password)
 
 
-def get_wms_headers(config: dict[str, Any]) -> dict[str, str]:
+def get_wms_headers(config: dict[str, object]) -> dict[str, str]:
     """Get WMS API headers for requests.
 
     Args:
