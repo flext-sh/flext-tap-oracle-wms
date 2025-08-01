@@ -162,6 +162,13 @@ class TapOracleWMS(Tap):
                 th.StringType,
                 description="Path to CA bundle file",
             ),
+            # Mock mode for testing without credentials
+            th.Property(
+                "mock_mode",
+                th.BooleanType,
+                default=False,
+                description="Enable mock mode for testing without valid credentials",
+            ),
         )
     ).to_dict()
 
@@ -191,7 +198,9 @@ class TapOracleWMS(Tap):
         if hasattr(self, "config") and self.config:
             self._config = self._convert_config_types(dict(self.config))
         # Now we can use self.logger safely
-        self.logger.info("🔧 Initializing TapOracleWMS...")
+        mock_mode = self.config.get("mock_mode", False) if hasattr(self, "config") and self.config else False
+        mode_msg = "MOCK MODE - using realistic test data" if mock_mode else "REAL MODE - using Oracle WMS API"
+        self.logger.info(f"🔧 Initializing TapOracleWMS - {mode_msg}")
         self.logger.info("🔧 Config provided: %s", config is not None)
         self.logger.info("🔧 Catalog provided: %s", catalog is not None)
         # Log some key config values (without secrets)

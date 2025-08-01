@@ -30,7 +30,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
     Follows SRP by focusing solely on schema generation operations.
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize schema generator with configuration.
 
         Args:
@@ -41,7 +41,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         self.enable_flattening = config.get("flattening_enabled", True)
         self.max_flatten_depth = config.get("flattening_max_depth", 3)
 
-    def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
+    def generate_from_metadata(self, metadata: dict[str, object]) -> dict[str, object]:
         """Generate JSON schema from Oracle WMS API metadata.
 
         Args:
@@ -73,8 +73,8 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     def generate_metadata_schema_with_flattening(
         self,
-        metadata: dict[str, Any],
-    ) -> dict[str, Any]:
+        metadata: dict[str, object],
+    ) -> dict[str, object]:
         """Generate flattened JSON schema from Oracle WMS API metadata.
 
         Args:
@@ -114,10 +114,10 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     def flatten_complex_objects(
         self,
-        data: dict[str, Any],
+        data: dict[str, object],
         prefix: str = "",
         separator: str = "_",
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """Flatten nested objects for schema processing.
 
         Args:
@@ -154,7 +154,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
         return flattened
 
-    def _normalize_fields_format(self, fields: Any) -> dict[str, Any]:
+    def _normalize_fields_format(self, fields: Any) -> dict[str, object]:
         """Normalize fields format to dict format for processing.
 
         Args:
@@ -182,8 +182,8 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     def _build_schema_properties(
         self,
-        fields: dict[str, Any],
-    ) -> tuple[dict[str, Any], list[str]]:
+        fields: dict[str, object],
+    ) -> tuple[dict[str, object], list[str]]:
         """Build schema properties and required fields list.
 
         Args:
@@ -211,9 +211,9 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     @staticmethod
     def _build_complete_schema(
-        properties: dict[str, Any],
+        properties: dict[str, object],
         required_fields: list[str],
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """Build complete schema from properties and required fields.
 
         Args:
@@ -237,9 +237,9 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     @staticmethod
     def _create_field_schema(
-        field_info: dict[str, Any],
+        field_info: dict[str, object],
         field_name: str | None = None,
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """Create schema for a single field based on metadata.
 
         Args:
@@ -282,7 +282,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         return field_schema
 
     @staticmethod
-    def _generate_empty_schema() -> dict[str, Any]:
+    def _generate_empty_schema() -> dict[str, object]:
         """Generate empty schema for entities without field metadata.
 
         Returns:
@@ -301,7 +301,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             "additionalProperties": True,
         }
 
-    def _infer_field_type(self, value: Any) -> dict[str, Any]:
+    def _infer_field_type(self, value: Any) -> dict[str, object]:
         """Infer field type from sample value.
 
         Args:
@@ -334,7 +334,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         return {"type": "string"}
 
     @staticmethod
-    def _infer_string_schema(value: str) -> dict[str, Any]:
+    def _infer_string_schema(value: str) -> dict[str, object]:
         """Infer string type with format detection.
 
         Args:
@@ -350,7 +350,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             return {"type": "string", "format": "date"}
         return {"type": "string"}
 
-    def _infer_array_schema(self, value: list[Any]) -> dict[str, Any]:
+    def _infer_array_schema(self, value: list[Any]) -> dict[str, object]:
         """Infer array type schema.
 
         Args:
@@ -366,7 +366,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             return {"type": "array", "items": item_type}
         return {"type": "array", "items": {"type": "string"}}
 
-    def _infer_object_schema(self, value: dict[str, Any]) -> dict[str, Any]:
+    def _infer_object_schema(self, value: dict[str, object]) -> dict[str, object]:
         """Infer object type schema.
 
         Args:

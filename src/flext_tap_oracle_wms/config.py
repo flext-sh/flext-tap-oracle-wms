@@ -190,7 +190,7 @@ class TapOracleWMSConfig(FlextBaseSettings):
             raise ValueError(msg)
         return v.upper()
 
-    def to_singer_config(self) -> dict[str, Any]:
+    def to_singer_config(self) -> dict[str, object]:
         """Convert to Singer protocol configuration format.
 
         Returns:
@@ -220,7 +220,7 @@ class TapOracleWMSConfig(FlextBaseSettings):
         }
 
     @classmethod
-    def from_singer_config(cls, config: dict[str, Any]) -> TapOracleWMSConfig:
+    def from_singer_config(cls, config: dict[str, object]) -> TapOracleWMSConfig:
         """Create configuration from Singer protocol format.
 
         Args:

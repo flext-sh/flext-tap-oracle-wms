@@ -144,8 +144,8 @@ class WMSStreamMetadata(BaseModel):
     replication_key: str | None = Field(None, description="Incremental replication key")
 
     # Schema information
-    json_schema: dict[str, Any] = Field(default_factory=dict, description="JSON schema")
-    metadata: dict[str, Any] = Field(
+    json_schema: dict[str, object] = Field(default_factory=dict, description="JSON schema")
+    metadata: dict[str, object] = Field(
         default_factory=dict,
         description="Stream metadata",
     )
@@ -156,7 +156,7 @@ class WMSRecord(DomainEntity):
 
     # Core data
     stream_name: str = Field(..., min_length=1, description="Source stream name")
-    record_data: dict[str, Any] = Field(..., description="Record payload")
+    record_data: dict[str, object] = Field(..., description="Record payload")
 
     # Tracking information
     extracted_at: datetime = Field(..., description="Extraction timestamp")
@@ -168,7 +168,7 @@ class WMSRecord(DomainEntity):
 
     @field_validator("record_data")
     @classmethod
-    def validate_record_data(cls, v: dict[str, Any]) -> dict[str, Any]:
+    def validate_record_data(cls, v: dict[str, object]) -> dict[str, object]:
         """Validate record data is not empty.
 
         Args:
@@ -210,7 +210,7 @@ class WMSError(BaseModel):
 
     # Additional context
     request_id: str | None = Field(None, description="Request identifier")
-    details: dict[str, Any] = Field(
+    details: dict[str, object] = Field(
         default_factory=dict,
         description="Additional error details",
     )
