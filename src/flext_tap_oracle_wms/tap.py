@@ -11,6 +11,7 @@ from typing import Any
 
 # Import generic interfaces from flext-meltano
 from flext_meltano import Tap, singer_typing as th
+from flext_meltano.common_schemas import create_oracle_tap_schema
 
 from flext_tap_oracle_wms.config_mapper import ConfigMapper
 from flext_tap_oracle_wms.config_validator import (
@@ -44,34 +45,23 @@ class TapOracleWMS(Tap):
     name = "tap-oracle-wms"
     # Set environment prefix for automatic env var loading
     config_prefix = "TAP_ORACLE_WMS_"
-    # Configuration schema using Singer SDK typing
-    config_jsonschema = th.PropertiesList(
-        # Core connection settings
-        th.Property(
-            "base_url",
-            th.StringType,
-            required=True,
-            description="Oracle WMS base URL (e.g., https://wms.company.com)",
-        ),
-        th.Property(
-            "auth_method",
-            th.StringType,
-            default="basic",
-            allowed_values=["basic", "oauth2"],
-            description="Authentication method",
-        ),
-        th.Property(
-            "username",
-            th.StringType,
-            secret=True,
-            description="Username for basic auth",
-        ),
-        th.Property(
-            "password",
-            th.StringType,
-            secret=True,
-            description="Password for basic auth",
-        ),
+    # REAL DRY: Use centralized Oracle schema from flext-meltano with WMS-specific extensions
+    config_jsonschema = create_oracle_tap_schema(
+        # Oracle WMS-specific additional properties
+        additional_properties=th.PropertiesList(
+            th.Property(
+                "base_url",
+                th.StringType,
+                required=True,
+                description="Oracle WMS base URL (e.g., https://wms.company.com)",
+            ),
+            th.Property(
+                "auth_method",
+                th.StringType,
+                default="basic",
+                allowed_values=["basic", "oauth2"],
+                description="Authentication method",
+            ),
         # WMS-specific settings
         th.Property(
             "company_code",
