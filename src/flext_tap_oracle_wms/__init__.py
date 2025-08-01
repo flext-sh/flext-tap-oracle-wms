@@ -19,10 +19,10 @@ from flext_core import (
     FlextBaseSettings as BaseConfig,
     FlextEntity as DomainEntity,
     FlextFields as Field,
-    FlextResult as FlextResult,
+    FlextResult,
+    FlextValueObject,
     FlextValueObject as BaseModel,
     FlextValueObject as FlextDomainBaseModel,
-    FlextValueObject as FlextValueObject,
 )
 
 # Import from flext-oracle-wms for centralized Oracle WMS patterns
