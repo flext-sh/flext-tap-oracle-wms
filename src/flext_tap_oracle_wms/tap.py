@@ -1,19 +1,16 @@
-"""Oracle WMS Tap - Enterprise-grade implementation using Singer SDK."""
+"""Oracle WMS Tap - Enterprise-grade implementation using Singer SDK.
 
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
+Copyright (c) 2025 FLEXT Team
+Licensed under the MIT License
+"""
+
 from __future__ import annotations
 
-# Import logger at top level
-# Removed circular dependency - use DI pattern
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-# Import centralized configuration and types from domain layer
 from flext_core import TAnyDict, get_logger
-
-# Import generic interfaces from flext-meltano
 from flext_meltano import Tap, singer_typing as th
 
 from flext_tap_oracle_wms.config import TapOracleWMSConfig, get_wms_config_schema
@@ -33,6 +30,8 @@ from flext_tap_oracle_wms.schema_generator import SchemaGenerator
 from flext_tap_oracle_wms.streams import WMSStream
 
 if TYPE_CHECKING:
+    from singer_sdk import Sequence, Stream
+
     from flext_tap_oracle_wms.domain import (
         OracleWmsCatalog,
         OracleWmsTapConfiguration,
@@ -459,7 +458,7 @@ class TapOracleWMS(Tap):
 
     # Use standard Singer SDK CLI - no customization needed
 
-    def discover_streams(self) -> list[object]:
+    def discover_streams(self) -> Sequence[Stream]:
         """Discover available streams using flext-core centralized patterns.
 
         Returns:
