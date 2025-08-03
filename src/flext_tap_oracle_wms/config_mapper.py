@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypedDict, cast
 
 from flext_core import get_logger
 
@@ -24,6 +24,15 @@ MAX_REQUEST_TIMEOUT = 600
 MAX_RETRIES = 10
 
 logger = get_logger(__name__)
+
+
+class ConfigTemplate(TypedDict):
+    """Type definition for configuration template structure."""
+
+    env_var: str
+    default: Any
+    profile_path: str
+    type: str
 
 
 # =============================================================================
@@ -59,6 +68,70 @@ class WmsStatusMappingConfig:
     default_mapping: dict[str, str]
 
 
+# Configuration Templates - SOLID DRY refactoring
+CONFIG_TEMPLATES: dict[str, ConfigTemplate] = {
+    "max_retries": {
+        "env_var": "WMS_MAX_RETRIES",
+        "default": 3,
+        "profile_path": "performance.max_retries",
+        "type": "int",
+    },
+    "cache_ttl_seconds": {
+        "env_var": "WMS_CACHE_TTL_SECONDS",
+        "default": 3600,
+        "profile_path": "performance.cache_ttl_seconds",
+        "type": "int",
+    },
+    "connection_pool_size": {
+        "env_var": "WMS_CONNECTION_POOL_SIZE",
+        "default": 5,
+        "profile_path": "performance.connection_pool_size",
+        "type": "int",
+    },
+    "incremental_overlap_minutes": {
+        "env_var": "WMS_INCREMENTAL_OVERLAP_MINUTES",
+        "default": 5,
+        "profile_path": "sync.incremental_overlap_minutes",
+        "type": "int",
+    },
+    "lookback_minutes": {
+        "env_var": "WMS_LOOKBACK_MINUTES",
+        "default": 10,
+        "profile_path": "sync.lookback_minutes",
+        "type": "int",
+    },
+    "fiscal_year_start_month": {
+        "env_var": "WMS_FISCAL_YEAR_START_MONTH",
+        "default": 1,
+        "profile_path": "business.fiscal_year_start_month",
+        "type": "int",
+    },
+    "allocation_status_mapping": {
+        "env_var": "WMS_ALLOCATION_STATUS_MAPPING",
+        "default": {
+            "10": "available",
+            "20": "allocated",
+            "30": "picked",
+            "40": "shipped",
+        },
+        "profile_path": "mappings.allocation_status",
+        "type": "dict",
+    },
+    "order_status_mapping": {
+        "env_var": "WMS_ORDER_STATUS_MAPPING",
+        "default": {
+            "10": "created",
+            "20": "released",
+            "30": "allocated",
+            "40": "picked",
+            "50": "shipped",
+        },
+        "profile_path": "mappings.order_status",
+        "type": "dict",
+    },
+}
+
+
 def _create_int_config_template(
     config_key: str,
     env_var: str,
@@ -67,8 +140,7 @@ def _create_int_config_template(
 ) -> ConfigValueRequest:
     """Template Method: Create integer configuration request.
 
-    SOLID REFACTORING: Eliminates 108 lines of duplicated configuration code
-    by using Template Method pattern for integer configuration methods.
+    DEPRECATED: Use _get_templated_config_value instead for DRY compliance.
     """
     return ConfigValueRequest(
         key=config_key,
@@ -97,7 +169,7 @@ class ConfigMapper:
     Each method group handles a specific aspect of WMS configuration.
     """
 
-    def __init__(self, profile_config: dict[str, Any] | None = None) -> None:
+    def __init__(self, profile_config: dict[str, object] | None = None) -> None:
         """Initialize ConfigMapper with optional profile configuration.
 
         Args:
@@ -105,7 +177,41 @@ class ConfigMapper:
 
         """
         self.profile_config = profile_config or {}
-        self._config_cache: dict[str, Any] = {}
+        self._config_cache: dict[str, object] = {}
+
+    def _get_templated_config_value(self, template_key: str) -> Any:
+        """Template Method Pattern: Get configuration value using predefined template.
+
+        SOLID REFACTORING: Eliminates 21 lines of duplication in config methods.
+
+        Args:
+            template_key: Key from CONFIG_TEMPLATES
+
+        Returns:
+            Configuration value with appropriate type conversion
+
+        """
+        if template_key not in CONFIG_TEMPLATES:
+            msg = f"Unknown config template: {template_key}"
+            raise ValueError(msg)
+
+        template = CONFIG_TEMPLATES[template_key]
+
+        value = self._get_config_value(
+            template_key,
+            env_var=template["env_var"],
+            default=template["default"],
+            profile_path=template["profile_path"],
+        )
+
+        # Type conversion based on template
+        if template["type"] == "int":
+            return _safe_int_conversion_with_validation(value, template["default"])
+        if template["type"] == "dict":
+            if isinstance(value, dict):
+                return value
+            return template["default"]
+        return value
 
     # Connection Configuration
 
@@ -299,20 +405,7 @@ class ConfigMapper:
             Maximum retry attempts for HTTP requests.
 
         """
-        # REFACTORING: Use Template Method Pattern - DRY principle
-        config_request = _create_int_config_template(
-            "max_retries",
-            "WMS_MAX_RETRIES",
-            3,
-            "performance.max_retries",
-        )
-        value = self._get_config_value(
-            config_request.key,
-            env_var=config_request.env_var,
-            default=config_request.default,
-            profile_path=config_request.profile_path,
-        )
-        return _safe_int_conversion_with_validation(value, 3)
+        return cast("int", self._get_templated_config_value("max_retries"))
 
     def get_retry_backoff_factor(self) -> float:
         """Get exponential backoff factor for retries.
@@ -342,20 +435,7 @@ class ConfigMapper:
             Duration in seconds for caching API responses.
 
         """
-        # REFACTORING: Use Template Method Pattern - DRY principle
-        config_request = _create_int_config_template(
-            "cache_ttl_seconds",
-            "WMS_CACHE_TTL_SECONDS",
-            3600,
-            "performance.cache_ttl_seconds",
-        )
-        value = self._get_config_value(
-            config_request.key,
-            env_var=config_request.env_var,
-            default=config_request.default,
-            profile_path=config_request.profile_path,
-        )
-        return _safe_int_conversion_with_validation(value, 3600)
+        return cast("int", self._get_templated_config_value("cache_ttl_seconds"))
 
     def get_connection_pool_size(self) -> int:
         """Get HTTP connection pool size for WMS API.
@@ -364,20 +444,7 @@ class ConfigMapper:
             Maximum number of concurrent connections to maintain.
 
         """
-        # REFACTORING: Use Template Method Pattern - DRY principle
-        config_request = _create_int_config_template(
-            "connection_pool_size",
-            "WMS_CONNECTION_POOL_SIZE",
-            5,
-            "performance.connection_pool_size",
-        )
-        value = self._get_config_value(
-            config_request.key,
-            env_var=config_request.env_var,
-            default=config_request.default,
-            profile_path=config_request.profile_path,
-        )
-        return _safe_int_conversion_with_validation(value, 5)
+        return cast("int", self._get_templated_config_value("connection_pool_size"))
 
     # Business Logic Configuration
 
@@ -420,20 +487,10 @@ class ConfigMapper:
             Minutes to overlap with previous sync to avoid missed records.
 
         """
-        # REFACTORING: Use Template Method Pattern - DRY principle
-        config_request = _create_int_config_template(
-            "incremental_overlap_minutes",
-            "WMS_INCREMENTAL_OVERLAP_MINUTES",
-            5,
-            "business_rules.incremental_overlap_minutes",
+        return cast(
+            "int",
+            self._get_templated_config_value("incremental_overlap_minutes"),
         )
-        value = self._get_config_value(
-            config_request.key,
-            env_var=config_request.env_var,
-            default=config_request.default,
-            profile_path=config_request.profile_path,
-        )
-        return _safe_int_conversion_with_validation(value, 5)
 
     def get_lookback_minutes(self) -> int:
         """Get lookback window for incremental sync start time.
@@ -442,20 +499,7 @@ class ConfigMapper:
             Minutes to look back from last bookmark for safety margin.
 
         """
-        # REFACTORING: Use Template Method Pattern - DRY principle
-        config_request = _create_int_config_template(
-            "lookback_minutes",
-            "WMS_LOOKBACK_MINUTES",
-            60,
-            "business_rules.lookback_minutes",
-        )
-        value = self._get_config_value(
-            config_request.key,
-            env_var=config_request.env_var,
-            default=config_request.default,
-            profile_path=config_request.profile_path,
-        )
-        return _safe_int_conversion_with_validation(value, 60)
+        return cast("int", self._get_templated_config_value("lookback_minutes"))
 
     # Entity Configuration
 
@@ -643,20 +687,10 @@ class ConfigMapper:
             Dictionary mapping WMS allocation statuses to standardized status names.
 
         """
-        # REFACTORING: Use Template Method Pattern - DRY principle
-        mapping_config = WmsStatusMappingConfig(
-            mapping_name="allocation_status_mapping",
-            env_var="WMS_ALLOCATION_STATUS_MAPPING_JSON",
-            profile_path="business_rules.allocation_status_mapping",
-            default_mapping={
-                "ALLOCATED": "Active",
-                "RESERVED": "Active",
-                "PICKED": "Fulfilled",
-                "SHIPPED": "Fulfilled",
-                "CANCELLED": "Cancelled",
-            },
+        return cast(
+            "dict[str, str]",
+            self._get_templated_config_value("allocation_status_mapping"),
         )
-        return self._process_status_mapping_template(mapping_config)
 
     def get_order_status_mapping(self) -> dict[str, str]:
         """Get order status mapping from WMS to standardized values.
@@ -665,20 +699,10 @@ class ConfigMapper:
             Dictionary mapping WMS order statuses to standardized status names.
 
         """
-        # REFACTORING: Use Template Method Pattern - DRY principle
-        mapping_config = WmsStatusMappingConfig(
-            mapping_name="order_status_mapping",
-            env_var="WMS_ORDER_STATUS_MAPPING_JSON",
-            profile_path="business_rules.order_status_mapping",
-            default_mapping={
-                "NEW": "Created",
-                "CONFIRMED": "Confirmed",
-                "IN_PROGRESS": "Processing",
-                "COMPLETED": "Completed",
-                "CANCELLED": "Cancelled",
-            },
+        return cast(
+            "dict[str, str]",
+            self._get_templated_config_value("order_status_mapping"),
         )
-        return self._process_status_mapping_template(mapping_config)
 
     # Field Type Patterns
 
@@ -767,20 +791,7 @@ class ConfigMapper:
             Month number (1-12) when fiscal year begins.
 
         """
-        # REFACTORING: Use Template Method Pattern - DRY principle
-        config_request = _create_int_config_template(
-            "fiscal_year_start_month",
-            "WMS_FISCAL_YEAR_START_MONTH",
-            1,
-            "business_rules.fiscal_year_start_month",
-        )
-        value = self._get_config_value(
-            config_request.key,
-            env_var=config_request.env_var,
-            default=config_request.default,
-            profile_path=config_request.profile_path,
-        )
-        return _safe_int_conversion_with_validation(value, 1)
+        return cast("int", self._get_templated_config_value("fiscal_year_start_month"))
 
     def get_company_code(self) -> str:
         """Get Oracle WMS company code from configuration.
@@ -941,7 +952,7 @@ class ConfigMapper:
 
 
 def create_config_mapper_from_profile(
-    profile_config: dict[str, Any] | None = None,
+    profile_config: dict[str, object] | None = None,
 ) -> ConfigMapper:
     """Create ConfigMapper from profile configuration.
 

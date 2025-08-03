@@ -10,7 +10,10 @@ promoting loose coupling and high cohesion.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from flext_core import TAnyDict, TService
 
 
 class EntityDiscoveryInterface(ABC):
@@ -27,7 +30,7 @@ class EntityDiscoveryInterface(ABC):
         ...
 
     @abstractmethod
-    async def describe_entity(self, entity_name: str) -> dict[str, Any] | None:
+    async def describe_entity(self, entity_name: str) -> dict[str, object] | None:
         """Get metadata description for a specific entity.
 
         Args:
@@ -60,7 +63,7 @@ class SchemaGeneratorInterface(ABC):
     """Interface for schema generation operations."""
 
     @abstractmethod
-    def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
+    def generate_from_metadata(self, metadata: dict[str, object]) -> dict[str, object]:
         """Generate JSON schema from API metadata.
 
         Args:
@@ -77,7 +80,7 @@ class SchemaGeneratorInterface(ABC):
     # Any implementation attempting to use samples will fail
 
     @abstractmethod
-    def flatten_complex_objects(self, data: dict[str, Any]) -> dict[str, Any]:
+    def flatten_complex_objects(self, data: dict[str, object]) -> dict[str, object]:
         """Flatten nested objects for schema generation.
 
         Args:
@@ -143,7 +146,7 @@ class CacheManagerInterface(ABC):
         ...
 
     @abstractmethod
-    def get_cache_stats(self) -> dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, object]:
         """Get cache statistics.
 
         Returns:
@@ -162,7 +165,7 @@ class TypeMapperInterface(ABC):
         metadata_type: str | None,
         column_name: str = "",
         max_length: int | None = None,
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """Convert Oracle WMS metadata type to Singer JSON schema type.
 
         Args:
@@ -210,9 +213,9 @@ class StreamFactoryInterface(ABC):
     def create_stream(
         self,
         entity_name: str,
-        schema: dict[str, Any],
-        tap_instance: object,
-    ) -> object:
+        schema: TAnyDict,
+        tap_instance: TService,
+    ) -> Any:
         """Create a stream instance for the given entity.
 
         Args:
@@ -223,13 +226,17 @@ class StreamFactoryInterface(ABC):
         Returns:
             Stream object for data extraction.
 
+        Raises:
+            NotImplementedError: This is an abstract method.
+
         """
         # Abstract method - parameters intentionally unused in interface
         _ = entity_name, schema, tap_instance
-        ...
+        msg = "Subclasses must implement create_stream"
+        raise NotImplementedError(msg)
 
     @abstractmethod
-    def validate_stream_config(self, config: dict[str, Any]) -> bool:
+    def validate_stream_config(self, config: dict[str, object]) -> bool:
         """Validate stream configuration.
 
         Args:
@@ -270,7 +277,7 @@ class MetricsCollectorInterface(ABC):
         ...
 
     @abstractmethod
-    def get_metrics_summary(self) -> dict[str, Any]:
+    def get_metrics_summary(self) -> dict[str, object]:
         """Get summary of collected metrics.
 
         Returns:

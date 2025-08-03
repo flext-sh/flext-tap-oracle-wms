@@ -25,7 +25,7 @@ class TestWMSStream:
             return TapOracleWMS(config=mock_wms_config)
 
     @pytest.fixture
-    def stream_schema(self) -> dict[str, Any]:
+    def stream_schema(self) -> dict[str, object]:
         return {
             "type": "object",
             "properties": {
@@ -41,7 +41,7 @@ class TestWMSStream:
     def mock_wms_stream(
         self,
         mock_tap: TapOracleWMS,
-        stream_schema: dict[str, Any],
+        stream_schema: dict[str, object],
     ) -> MagicMock:
         # Create a hybrid mock that includes real methods we want to test
         # while mocking the complex dependencies
@@ -111,8 +111,8 @@ class TestWMSStream:
             "page_mode": "sequenced",
         }
 
-        context: dict[str, Any] = {}
-        state: dict[str, Any] = {}
+        context: dict[str, object] = {}
+        state: dict[str, object] = {}
 
         params = mock_wms_stream.get_url_params(context, state)
 
@@ -137,7 +137,7 @@ class TestWMSStream:
             "mod_ts_from": "2024-01-01T10:00:00Z",
         }
 
-        context: dict[str, Any] = {}
+        context: dict[str, object] = {}
         state = {
             "bookmarks": {
                 "item": {
@@ -160,7 +160,7 @@ class TestWMSStream:
     def test_parse_response_with_results(
         self,
         mock_wms_stream: MagicMock,
-        sample_wms_response: dict[str, Any],
+        sample_wms_response: dict[str, object],
     ) -> None:
         # Test real parse_response method with sample data
         mock_response = MagicMock()
@@ -221,7 +221,7 @@ class TestWMSStream:
     def test_get_next_page_token_from_response(
         self,
         mock_wms_stream: MagicMock,
-        sample_wms_response: dict[str, Any],
+        sample_wms_response: dict[str, object],
     ) -> None:
         # Test that stream has Singer SDK pagination support
         # Singer SDK uses next_page_token_jsonpath for pagination

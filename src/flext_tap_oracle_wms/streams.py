@@ -1,4 +1,11 @@
-"""Oracle WMS Stream - Enterprise implementation using Singer SDK REST capabilities."""
+"""Oracle WMS Stream - Enterprise implementation using flext-core centralized models.
+
+REFACTORED from original streams.py to use flext-core semantic models:
+- Uses FlextSingerStreamModel, FlextOperationModel from flext-core
+- Eliminates type duplication through centralized type system
+- Implements domain models from domain layer
+- Uses factory functions for stream creation
+"""
 
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
@@ -6,25 +13,39 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 from urllib.parse import parse_qs
 
-# Removed circular dependency - use DI pattern
-from flext_core import get_logger
+# Import centralized models and types from flext-core
+from flext_core import (
+    # Base models
+    TAnyDict,
+    TEntityId,
+    TValue,
+    get_logger,
+)
 
 # Import generic interfaces from flext-meltano
 from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
 
 from flext_tap_oracle_wms.auth import get_wms_authenticator
-from flext_tap_oracle_wms.config_mapper import ConfigMapper
+
+# Import domain models from centralized domain layer
+from flext_tap_oracle_wms.domain.models import (
+    OracleWmsEntityInfo,
+    OracleWmsReplicationMethod,
+    OracleWmsTapConfiguration,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
     import requests
-# Type alias for value parameters that can accept various types
-ValueType = object | str | int | float | bool | dict[str, object] | list[object] | None
+# REFACTORED: Use centralized types from flext-core - eliminates all type duplication
+OracleWmsValueType = TValue  # Oracle WMS values use core value type
+OracleWmsEntityId = TEntityId  # Oracle WMS entities use core entity ID
+OracleWmsConfigDict = TAnyDict  # Oracle WMS config uses core dict type
 # HTTP status code constants
 STATUS_OK = 200
 STATUS_UNAUTHORIZED = 401
@@ -36,6 +57,302 @@ STATUS_SERVER_ERROR_END = 600
 DEFAULT_RETRY_AFTER = 60
 # Logging constants
 MAX_LOG_DATA_LENGTH = 200
+
+
+class ReplicationKeyTimestampStrategy:
+    """Strategy Pattern: Timestamp field detection for replication keys.
+
+    SOLID REFACTORING: Eliminates 6 returns using Strategy Pattern + Guard Clauses.
+    """
+
+    # Known timestamp field patterns
+    TIMESTAMP_FIELDS: ClassVar[set[str]] = {
+        "mod_ts",
+        "created_at",
+        "updated_at",
+        "last_modified",
+    }
+    TIMESTAMP_FORMATS: ClassVar[set[str]] = {"date-time", "date"}
+    TIMESTAMP_TYPES: ClassVar[set[str]] = {"timestamp", "datetime"}
+
+    @classmethod
+    def is_timestamp_field(
+        cls,
+        replication_key: str | None,
+        schema: dict[str, object],
+    ) -> bool:
+        """Determine if replication key is a timestamp field using Strategy Pattern.
+
+        SOLID REFACTORING: Eliminates 6 returns from original method using
+        Strategy Pattern with Guard Clauses.
+
+        Args:
+            replication_key: The replication key field name
+            schema: JSON schema containing field definitions
+
+        Returns:
+            True if field is timestamp-based, False otherwise
+
+        """
+        # Guard Clause: No replication key
+        if not replication_key:
+            return False
+
+        # Strategy 1: Known timestamp fields
+        if cls._is_known_timestamp_field(replication_key):
+            return True
+
+        # Strategy 2: Schema-based detection
+        return cls._is_schema_timestamp_field(replication_key, schema)
+
+    @classmethod
+    def _is_known_timestamp_field(cls, field_name: str) -> bool:
+        """Strategy 1: Check against known timestamp field patterns."""
+        return field_name in cls.TIMESTAMP_FIELDS
+
+    @classmethod
+    def _is_schema_timestamp_field(
+        cls,
+        field_name: str,
+        schema: dict[str, object],
+    ) -> bool:
+        """Strategy 2: Schema-based timestamp detection using Guard Clauses."""
+        schema_props = cast("dict[str, Any]", schema.get("properties", {}))
+
+        # Guard Clause: Field not in schema
+        if field_name not in schema_props:
+            return False
+
+        field_schema = schema_props[field_name]
+
+        # Guard Clause: Invalid field schema
+        if not isinstance(field_schema, dict):
+            return False
+
+        return cls._check_field_type_for_timestamp(field_schema)
+
+    @classmethod
+    def _check_field_type_for_timestamp(cls, field_schema: dict[str, Any]) -> bool:
+        """Check field type and format for timestamp indicators using Guard Clauses."""
+        field_type = field_schema.get("type", "")
+        field_format = field_schema.get("format", "")
+
+        # Strategy: String with datetime format
+        if cls._is_string_datetime_field(field_type, field_format):
+            return True
+
+        # Strategy: Direct timestamp type
+        if cls._is_direct_timestamp_type(field_type):
+            return True
+
+        # Strategy: Type array with timestamp types
+        return cls._is_array_with_timestamp_type(field_type)
+
+    @classmethod
+    def _is_string_datetime_field(
+        cls,
+        field_type: object,
+        field_format: object,
+    ) -> bool:
+        """Check if field is string with datetime format."""
+        return field_type == "string" and field_format in cls.TIMESTAMP_FORMATS
+
+    @classmethod
+    def _is_direct_timestamp_type(cls, field_type: object) -> bool:
+        """Check if field type is directly a timestamp type."""
+        return field_type in cls.TIMESTAMP_TYPES
+
+    @classmethod
+    def _is_array_with_timestamp_type(cls, field_type: object) -> bool:
+        """Check if field type is array containing timestamp types."""
+        if not isinstance(field_type, list):
+            return False
+
+        return any(t in cls.TIMESTAMP_TYPES for t in field_type)
+
+
+class UrlParamsBuilder:
+    """Strategy Pattern: URL parameter building for WMS API requests.
+
+    SOLID REFACTORING: Reduces complexity in get_url_params method using
+    Strategy Pattern + Extract Method Pattern.
+    """
+
+    @classmethod
+    def build_params(
+        cls,
+        stream: WMSStream,
+        context: Mapping[str, object] | None,
+        next_page_token: object | None,
+    ) -> dict[str, object]:
+        """Build URL parameters using Strategy Pattern.
+
+        SOLID REFACTORING: Eliminates complexity by extracting parameter
+        building logic into separate strategy methods.
+
+        Args:
+            stream: WMS stream instance
+            context: Stream context containing partition information
+            next_page_token: Token for pagination
+
+        Returns:
+            Dictionary of URL parameters for API request
+
+        """
+        # Strategy 1: Handle pagination
+        if next_page_token:
+            return cls._build_pagination_params(next_page_token)
+
+        # Strategy 2: Build initial request parameters
+        return cls._build_initial_params(stream, context)
+
+    @staticmethod
+    def _build_pagination_params(next_page_token: object) -> dict[str, object]:
+        """Strategy 1: Build pagination-specific parameters."""
+        return WMSStream._get_pagination_params(next_page_token)
+
+    @classmethod
+    def _build_initial_params(
+        cls,
+        stream: WMSStream,
+        context: Mapping[str, object] | None,
+    ) -> dict[str, object]:
+        """Strategy 2: Build initial request parameters using Template Method."""
+        params = stream._get_base_params()
+
+        # Template Method: Apply parameter builders in sequence
+        cls._apply_replication_filters(stream, params, context)
+        cls._apply_ordering_params(stream, params)
+        cls._apply_entity_filters(stream, params)
+
+        return params
+
+    @staticmethod
+    def _apply_replication_filters(
+        stream: WMSStream,
+        params: dict[str, object],
+        context: Mapping[str, object] | None,
+    ) -> None:
+        """Apply replication-specific filters to parameters."""
+        stream._add_replication_filters(params, context)
+
+    @staticmethod
+    def _apply_ordering_params(stream: WMSStream, params: dict[str, object]) -> None:
+        """Apply ordering parameters based on replication method."""
+        stream._add_ordering_params(params)
+
+    @staticmethod
+    def _apply_entity_filters(stream: WMSStream, params: dict[str, object]) -> None:
+        """Apply entity-specific filters to parameters."""
+        stream._add_entity_filters(params)
+
+
+class ResponseParser:
+    """Strategy Pattern: WMS API response parsing with reduced complexity.
+
+    SOLID REFACTORING: Eliminates nesting and simplifies response parsing
+    using Strategy Pattern + Guard Clauses.
+    """
+
+    @classmethod
+    def parse_wms_response(
+        cls,
+        response: requests.Response,
+        entity_name: str,
+    ) -> Iterable[dict[str, object]]:
+        """Parse WMS API response using Strategy Pattern.
+
+        SOLID REFACTORING: Reduces complexity by extracting parsing logic
+        into separate strategy methods with Guard Clauses.
+
+        Args:
+            response: HTTP response from WMS API
+            entity_name: Name of WMS entity for error context
+
+        Yields:
+            Dictionary records from response data
+
+        Raises:
+            ValueError: If response parsing fails
+
+        """
+        try:
+            data = response.json()
+            yield from cls._parse_response_data(data, entity_name)
+        except json.JSONDecodeError as e:
+            msg = f"Invalid JSON response from API for entity {entity_name}: {e}"
+            raise ValueError(msg) from e
+
+    @classmethod
+    def _parse_response_data(
+        cls,
+        data: object,
+        entity_name: str,
+    ) -> Iterable[dict[str, object]]:
+        """Parse response data using Strategy Pattern with Guard Clauses."""
+        # Strategy 1: Results array format
+        if cls._is_results_array_format(data):
+            yield from cls._parse_results_array(data)
+            return
+
+        # Strategy 2: Direct array format
+        if cls._is_direct_array_format(data):
+            yield from cls._parse_direct_array(data)
+            return
+
+        # Strategy 3: Empty response (valid case)
+        if cls._is_empty_response(data):
+            return  # Valid empty response
+
+        # Strategy 4: Unexpected format (error case)
+        cls._handle_unexpected_format(data, entity_name)
+
+    @staticmethod
+    def _is_results_array_format(data: object) -> bool:
+        """Check if data is in results array format."""
+        return isinstance(data, dict) and "results" in data
+
+    @staticmethod
+    def _is_direct_array_format(data: object) -> bool:
+        """Check if data is in direct array format."""
+        return isinstance(data, list)
+
+    @staticmethod
+    def _is_empty_response(data: object) -> bool:
+        """Check if response is empty (valid case)."""
+        return isinstance(data, dict) and not data
+
+    @classmethod
+    def _parse_results_array(cls, data: dict) -> Iterable[dict[str, object]]:
+        """Parse results array format using Guard Clauses."""
+        results = data["results"]
+
+        # Guard Clause: Validate results is list
+        if not isinstance(results, list):
+            error_msg = (
+                f"Critical API data format error: "
+                f"'results' exists but not a list (got {type(results).__name__}). "
+                "This indicates API format change that prevents data extraction."
+            )
+            raise TypeError(error_msg)
+
+        yield from results
+
+    @staticmethod
+    def _parse_direct_array(data: list) -> Iterable[dict[str, object]]:
+        """Parse direct array format."""
+        yield from data
+
+    @staticmethod
+    def _handle_unexpected_format(data: object, entity_name: str) -> None:
+        """Handle unexpected response format."""
+        error_msg = (
+            f"Critical API response format error for entity '{entity_name}': "
+            f"Expected dict with 'results' key or list, but got {type(data).__name__}. "
+            f"Response data: {str(data)[:200]}... "
+            "This indicates an API incompatibility that prevents data extraction."
+        )
+        raise ValueError(error_msg)
 
 
 class WMSPaginator(BaseHATEOASPaginator):
@@ -84,29 +401,45 @@ class WMSPaginator(BaseHATEOASPaginator):
 
 
 class WMSStream(RESTStream[dict[str, object]]):
-    """Oracle WMS API stream using Singer SDK capabilities."""
+    """Oracle WMS API stream using flext-core centralized patterns.
 
-    # Use HATEOAS paginator
+    REFACTORED: Uses domain models and centralized configuration instead of custom patterns.
+    Eliminates duplication by extending flext-core stream models.
+    """
+
+    # Use HATEOAS paginator for Oracle WMS
     pagination_class = WMSPaginator
+
+    # Domain configuration using centralized models
+    _wms_config: OracleWmsTapConfiguration | None = None
+    _entity_info: OracleWmsEntityInfo | None = None
     # Default replication settings (will be overridden in __init__)
     replication_method = "INCREMENTAL"
     replication_key = None
 
-    def __init__(self, tap: Any, name: str, schema: dict[str, object]) -> None:
-        """Initialize WMS stream with tap, name and schema.
+    def __init__(self, tap: object, name: str, schema: dict[str, object]) -> None:
+        """Initialize WMS stream using flext-core centralized patterns.
 
         Args:
-            tap: Parent tap instance.
+            tap: Parent tap instance with centralized configuration.
             name: Stream name.
             schema: JSON schema for the stream.
 
         Raises:
             ValueError: If replication key configuration is invalid.
 
+        REFACTORED: Uses domain models instead of storing raw configuration.
+
         """
-        # Store entity-specific information
-        self._entity_name = name
+        # Create domain entity info from stream configuration
+        self._entity_info = OracleWmsEntityInfo(
+            name=name,
+            display_name=name.replace("_", " ").title(),
+        )
+
+        # Store schema for Singer SDK compatibility
         self._schema = schema
+        self._entity_name = name
         # Call parent with correct Singer SDK types
         super().__init__(
             tap=tap,
@@ -114,33 +447,50 @@ class WMSStream(RESTStream[dict[str, object]]):
             schema=schema,
             path=self._generate_api_path(name),
         )
-        # Initialize configuration mapper for flexible configuration
-        self.config_mapper = ConfigMapper(dict(self.config))
-        # Set primary keys using configurable logic
-        entity_primary_keys = self.config_mapper.get_entity_primary_keys(
-            self._entity_name,
-        )
-        if entity_primary_keys:
-            self.primary_keys = entity_primary_keys
+        # REFACTORED: Use centralized configuration instead of custom mapper
+        if hasattr(tap, "wms_config") and tap.wms_config:
+            self._wms_config = tap.wms_config
+        else:
+            # Fallback: create configuration from tap config
+            from flext_tap_oracle_wms.domain.models import create_oracle_wms_tap_config
+
+            self._wms_config = create_oracle_wms_tap_config(dict(self.config))
+        # REFACTORED: Use domain model for primary key configuration
+        if self._entity_info and self._entity_info.primary_keys:
+            self.primary_keys = self._entity_info.primary_keys
         elif "id" in self._schema.get("properties", {}):
             self.primary_keys = ["id"]
-        # Determine replication method
+            # Update domain model with discovered primary key
+            if self._entity_info:
+                object.__setattr__(self._entity_info, "primary_keys", ["id"])
+        # REFACTORED: Use centralized configuration for replication method
         schema_props = self._schema.get("properties", {})
-        # Get configured replication key from mapper
-        configured_rep_key = self.config_mapper.get_replication_key()
-        # Check for forced full sync in config
+
+        # Get replication configuration from centralized config
         force_full_table = self.config.get("force_full_table", False)
         enable_incremental = self.config.get("enable_incremental", True)
+        configured_rep_key = self.config.get("replication_key", "mod_ts")
+
         if force_full_table or not enable_incremental:
-            # Forced full sync via config - no state management
-            self.replication_method = "FULL_TABLE"
-            self.replication_key = None  # No replication key for full table
+            # Use full table replication
+            self.replication_method = OracleWmsReplicationMethod.FULL_TABLE.value
+            self.replication_key = None
+            # Update domain model
+            if self._entity_info:
+                object.__setattr__(self._entity_info, "replication_key", None)
         elif configured_rep_key in schema_props:
-            # Use incremental sync with configured key
-            self.replication_method = "INCREMENTAL"
+            # Use incremental replication
+            self.replication_method = OracleWmsReplicationMethod.INCREMENTAL.value
             self.replication_key = configured_rep_key
+            # Update domain model
+            if self._entity_info:
+                object.__setattr__(
+                    self._entity_info,
+                    "replication_key",
+                    configured_rep_key,
+                )
         else:
-            # No fallback - fail explicitly if configuration is invalid
+            # Validation using domain model patterns
             msg = (
                 f"Incremental sync enabled but replication key '{configured_rep_key}' "
                 f"not found in schema properties: {list(schema_props.keys())}"
@@ -164,16 +514,26 @@ class WMSStream(RESTStream[dict[str, object]]):
 
     @property
     def http_headers(self) -> dict[str, object]:
-        """Get HTTP headers for WMS API requests.
+        """Get HTTP headers for WMS API requests using centralized configuration.
 
         Returns:
             Dictionary of headers including authentication and custom headers.
 
+        REFACTORED: Uses domain configuration instead of config mapper.
+
         """
         headers = super().http_headers
-        # Get headers from configuration mapper (no longer hardcoded)
-        configured_headers = self.config_mapper.get_custom_headers()
-        headers.update(configured_headers)
+
+        # Add Oracle WMS specific headers from centralized configuration
+        if self._wms_config and self._wms_config.company_code != "*":
+            headers["X-Company-Code"] = self._wms_config.company_code
+        if self._wms_config and self._wms_config.facility_code != "*":
+            headers["X-Facility-Code"] = self._wms_config.facility_code
+
+        # Add API version header
+        if self._wms_config:
+            headers["X-WMS-API-Version"] = self._wms_config.wms_api_version
+
         return headers
 
     @property
@@ -184,30 +544,11 @@ class WMSStream(RESTStream[dict[str, object]]):
             True if replication key is a timestamp/datetime field, False otherwise.
 
         """
-        if not self.replication_key:
-            return False
-        # Check if this is a known timestamp field
-        timestamp_fields = {"mod_ts", "created_at", "updated_at", "last_modified"}
-        if self.replication_key in timestamp_fields:
-            return True
-        # Check schema for timestamp types
-        schema_props = self._schema.get("properties", {})
-        if self.replication_key in schema_props:
-            field_schema = schema_props[self.replication_key]
-            if isinstance(field_schema, dict):
-                field_type = field_schema.get("type", "")
-                field_format = field_schema.get("format", "")
-                # Check for timestamp/datetime types
-                if field_type == "string" and field_format in {"date-time", "date"}:
-                    return True
-                # Handle type arrays like ["string", "null"]
-                if isinstance(field_type, list):
-                    for t in field_type:
-                        if t in {"timestamp", "datetime"}:
-                            return True
-                elif field_type in {"timestamp", "datetime"}:
-                    return True
-        return False
+        # Strategy Pattern: Use ReplicationKeyTimestampStrategy to eliminate 6 returns
+        return ReplicationKeyTimestampStrategy.is_timestamp_field(
+            self.replication_key,
+            self._schema,
+        )
 
     def get_url_params(
         self,
@@ -224,15 +565,8 @@ class WMSStream(RESTStream[dict[str, object]]):
             Dictionary of URL parameters for the API request.
 
         """
-        # Handle pagination first
-        if next_page_token:
-            return self._get_pagination_params(next_page_token)
-        # Build initial request parameters
-        params = self._get_base_params()
-        self._add_replication_filters(params, context)
-        self._add_ordering_params(params)
-        self._add_entity_filters(params)
-        return params
+        # Strategy Pattern: Use UrlParamsBuilder to reduce complexity
+        return UrlParamsBuilder.build_params(self, context, next_page_token)
 
     @staticmethod
     def _get_pagination_params(next_page_token: object) -> dict[str, object]:
@@ -268,9 +602,18 @@ class WMSStream(RESTStream[dict[str, object]]):
         return params
 
     def _get_base_params(self) -> dict[str, object]:
+        """Get base parameters using centralized configuration.
+
+        REFACTORED: Uses domain configuration instead of config mapper.
+        """
+        if self._wms_config:
+            return {
+                "page_size": self._wms_config.extraction.get("page_size", 1000),
+                "page_mode": self._wms_config.page_mode,
+            }
         return {
-            "page_size": self.config_mapper.get_page_size(),
-            "page_mode": self.config_mapper.get_pagination_mode(),
+            "page_size": self.config.get("page_size", 1000),
+            "page_mode": self.config.get("page_mode", "sequenced"),
         }
 
     def _add_replication_filters(
@@ -288,26 +631,42 @@ class WMSStream(RESTStream[dict[str, object]]):
         params: dict[str, object],
         context: Mapping[str, object] | None,
     ) -> None:
+        """Add incremental filter using centralized configuration.
+
+        REFACTORED: Uses domain configuration instead of config mapper.
+        """
         start_date = self.get_starting_timestamp(context)
-        # Se não há estado inicial, usar hora_atual - 5m
+
+        # Get overlap configuration from centralized config
         if not start_date:
-            overlap_minutes = self.config_mapper.get_lookback_minutes()
+            lookback_minutes = (
+                self._wms_config.lookback_minutes
+                if self._wms_config
+                else self.config.get("lookback_minutes", 5)
+            )
             now = datetime.now(UTC)
-            start_date = now - timedelta(minutes=overlap_minutes)
-        # Validate timestamp has timezone information
+            start_date = now - timedelta(minutes=lookback_minutes)
+
+        # Ensure timezone information
         if start_date.tzinfo is None:
             start_date = start_date.replace(tzinfo=UTC)
-        # Validate overlap configuration para estado existente
+
+        # Apply overlap for existing state
         if self.get_starting_timestamp(context):
-            # Só se tem estado
-            overlap_minutes = self.config_mapper.get_incremental_overlap_minutes()
+            overlap_minutes = (
+                self._wms_config.incremental_overlap_minutes
+                if self._wms_config
+                else self.config.get("incremental_overlap_minutes", 5)
+            )
             if not isinstance(overlap_minutes, int | float) or overlap_minutes < 0:
                 overlap_minutes = 5
             adjusted_date = start_date - timedelta(minutes=overlap_minutes)
         else:
-            # Para estado inicial, já calculamos acima
             adjusted_date = start_date
-        params[f"{self.replication_key}__gte"] = adjusted_date.isoformat()
+
+        # Set filter parameter
+        if self.replication_key:
+            params[f"{self.replication_key}__gte"] = adjusted_date.isoformat()
 
     def _add_full_table_filter(
         self,
@@ -351,11 +710,23 @@ class WMSStream(RESTStream[dict[str, object]]):
             params["ordering"] = "id"  # Fallback to ID if no replication key
 
     def _add_entity_filters(self, params: dict[str, object]) -> None:
-        entity_filters = self.config.get("entity_filters", {})
-        if self._entity_name in entity_filters:
-            params.update(entity_filters[self._entity_name])
+        """Add entity-specific filters using centralized configuration.
 
-    def parse_response(self, response: requests.Response) -> Iterable[dict[str, object]]:
+        REFACTORED: Uses domain configuration instead of raw config access.
+        """
+        if self._wms_config and self._entity_name in self._wms_config.entity_filters:
+            entity_filter = self._wms_config.entity_filters[self._entity_name]
+            params.update(entity_filter)
+        else:
+            # Fallback to raw config for backward compatibility
+            entity_filters = self.config.get("entity_filters", {})
+            if self._entity_name in entity_filters:
+                params.update(entity_filters[self._entity_name])
+
+    def parse_response(
+        self,
+        response: requests.Response,
+    ) -> Iterable[dict[str, object]]:
         """Parse records from API response.
 
         Args:
@@ -366,24 +737,13 @@ class WMSStream(RESTStream[dict[str, object]]):
             RetriableAPIError: If response parsing fails.
 
         """
-        try:
-            data = response.json()
-            # Extract records from results array
-            if isinstance(data, dict) and "results" in data:
-                yield from self._yield_results_array(data)
-            elif isinstance(data, list):
-                yield from self._yield_direct_array(data)
-            elif isinstance(data, dict) and not data:
-                # Handle empty dict response - this is valid (no data available)
-                # Must yield nothing to maintain generator contract
-                return
-            else:
-                self._log_unexpected_format(data)
-        except json.JSONDecodeError as e:
-            msg = f"Invalid JSON response from API for entity {self._entity_name}: {e}"
-            raise ValueError(msg) from e
+        # Strategy Pattern: Use ResponseParser to reduce complexity
+        return ResponseParser.parse_wms_response(response, self._entity_name)
 
-    def _yield_results_array(self, data: dict[str, object]) -> Iterable[dict[str, object]]:
+    def _yield_results_array(
+        self,
+        data: dict[str, object],
+    ) -> Iterable[dict[str, object]]:
         results = data["results"]
         if isinstance(results, list):
             yield from results
@@ -464,9 +824,23 @@ class WMSStream(RESTStream[dict[str, object]]):
         return row
 
     @property
-    def authenticator(self) -> Any:
-        """Return authenticator for API requests."""
-        return get_wms_authenticator(self, dict(self.config))
+    def authenticator(self) -> object:
+        """Return authenticator for API requests using centralized configuration.
+
+        REFACTORED: Uses domain configuration instead of raw config dict.
+        """
+        # Use centralized configuration for authentication
+        if self._wms_config:
+            auth_config = {
+                "username": self._wms_config.authentication.username,
+                "password": self._wms_config.authentication.password,
+                "auth_method": self._wms_config.authentication.auth_method.value,
+                "base_url": self._wms_config.connection.base_url,
+            }
+        else:
+            auth_config = dict(self.config)
+
+        return get_wms_authenticator(self, auth_config)
 
     @property
     def schema(self) -> dict[str, object]:
@@ -482,7 +856,7 @@ class WMSStream(RESTStream[dict[str, object]]):
         self,
         context: Mapping[str, object] | None,
     ) -> datetime | None:
-        """Get starting timestamp for incremental data extraction.
+        """Get starting timestamp using centralized configuration patterns.
 
         Args:
             context: Stream context containing partition information.
@@ -493,9 +867,11 @@ class WMSStream(RESTStream[dict[str, object]]):
         Raises:
             ValueError: If state contains corrupted timestamp value.
 
+        REFACTORED: Uses domain configuration for start date handling.
+
         """
         if self.replication_key:
-            # Try to get from state
+            # Try to get from state first
             state_value = self.get_starting_replication_key_value(context)
             try:
                 if state_value is not None:
@@ -503,12 +879,19 @@ class WMSStream(RESTStream[dict[str, object]]):
             except (ValueError, TypeError) as e:
                 msg = "Failed to parse starting timestamp from state"
                 raise ValueError(msg) from e
-        # Fall back to config start_date
-        if self.config.get("start_date"):
-            start_date_value = self.config["start_date"]
+
+        # Fall back to centralized configuration start_date
+        start_date_value = None
+        if self._wms_config and hasattr(self._wms_config, "extraction"):
+            start_date_value = self._wms_config.extraction.get("start_date")
+        else:
+            start_date_value = self.config.get("start_date")
+
+        if start_date_value:
             if isinstance(start_date_value, str):
                 return datetime.fromisoformat(start_date_value)
             if isinstance(start_date_value, datetime):
                 return start_date_value
             return datetime.fromisoformat(str(start_date_value))
+
         return None

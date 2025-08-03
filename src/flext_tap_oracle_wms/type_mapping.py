@@ -6,10 +6,8 @@ Licensed under the MIT License
 
 from __future__ import annotations
 
-from typing import Any
-
 # Define type mappings locally - flext-oracle-wms doesn't expose type mappings module
-FLEXT_ORACLE_WMS_TYPE_MAPPINGS: dict[str, dict[str, Any]] = {
+FLEXT_ORACLE_WMS_TYPE_MAPPINGS: dict[str, dict[str, object]] = {
     "string": {"type": "string"},
     "varchar": {"type": "string"},
     "varchar2": {"type": "string"},
@@ -69,7 +67,7 @@ def get_singer_type_with_metadata(
     wms_type: str,
     field_name: str | None = None,
     format_hint: str | None = None,
-) -> dict[str, Any]:
+) -> dict[str, object]:
     """Get complete Singer schema type with metadata.
 
     Args:
@@ -86,7 +84,7 @@ def get_singer_type_with_metadata(
     return FLEXT_ORACLE_WMS_TYPE_MAPPINGS.get(wms_type_lower, {"type": "string"})
 
 
-def get_oracle_to_singer_mapping() -> dict[str, dict[str, Any]]:
+def get_oracle_to_singer_mapping() -> dict[str, dict[str, object]]:
     """Get the complete Oracle to Singer type mapping.
 
     Returns:

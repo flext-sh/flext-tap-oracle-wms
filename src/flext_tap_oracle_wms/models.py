@@ -9,7 +9,7 @@ Uses flext-core base classes, types, and constants. Zero tolerance for code dupl
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 # Import from flext-core for foundational patterns (standardized)
 from flext_core import (
@@ -144,7 +144,10 @@ class WMSStreamMetadata(BaseModel):
     replication_key: str | None = Field(None, description="Incremental replication key")
 
     # Schema information
-    json_schema: dict[str, object] = Field(default_factory=dict, description="JSON schema")
+    json_schema: dict[str, object] = Field(
+        default_factory=dict,
+        description="JSON schema",
+    )
     metadata: dict[str, object] = Field(
         default_factory=dict,
         description="Stream metadata",

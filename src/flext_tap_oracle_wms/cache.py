@@ -14,13 +14,13 @@ from flext_tap_oracle_wms.interfaces import CacheManagerInterface
 logger = get_logger(__name__)
 
 # Type alias for cache values - expanded to match library return types
-CacheValueType = str | dict[str, Any] | bool | list[Any] | int | float
+CacheValueType = str | dict[str, object] | bool | list[Any] | int | float
 
 
 class CacheManager(CacheManagerInterface):
     """Cache manager using centralized flext-oracle-wms functionality."""
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize cache manager using real FlextOracleWmsCacheManager.
 
         Args:
@@ -159,7 +159,7 @@ WMSCacheManager = CacheManager
 class CacheManagerAdapter(CacheManagerInterface):
     """Adapter to use FlextOracleWmsCacheManager with CacheManagerInterface."""
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize adapter with FlextOracleWmsCacheManager."""
         # Use real WMS cache manager with proper FlextOracleWmsCacheConfig
         from flext_oracle_wms.cache import FlextOracleWmsCacheConfig
@@ -195,6 +195,6 @@ class CacheManagerAdapter(CacheManagerInterface):
         # FlextOracleWmsCacheManager doesn't expose clear, so we skip this
         logger.info("Cache clear requested for type: %s", cache_type)
 
-    def get_cache_stats(self) -> dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, object]:
         """Get cache statistics."""
         return {"cache_manager": "FlextOracleWmsCacheManager", "status": "active"}

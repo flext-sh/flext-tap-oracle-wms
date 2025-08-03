@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import json
-from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
@@ -78,7 +77,7 @@ class TestWMSStream:
     """Test WMS stream functionality."""
 
     @pytest.fixture
-    def minimal_config(self) -> dict[str, Any]:
+    def minimal_config(self) -> dict[str, object]:
         return {
             "base_url": "https://wms.example.com",
             "username": "test",
@@ -87,7 +86,7 @@ class TestWMSStream:
         }
 
     @pytest.fixture
-    def mock_tap(self, minimal_config: dict[str, Any]) -> Mock:
+    def mock_tap(self, minimal_config: dict[str, object]) -> Mock:
         tap = Mock()
         tap.config = minimal_config
         tap.logger = Mock()
@@ -97,7 +96,7 @@ class TestWMSStream:
         return tap
 
     @pytest.fixture
-    def basic_schema(self) -> dict[str, Any]:
+    def basic_schema(self) -> dict[str, object]:
         return {
             "type": "object",
             "properties": {
@@ -110,7 +109,7 @@ class TestWMSStream:
     def test_stream_initialization(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -132,7 +131,7 @@ class TestWMSStream:
     def test_stream_force_full_table(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         mock_tap.config["force_full_table"] = True
 
@@ -148,7 +147,7 @@ class TestWMSStream:
     def test_url_base_property(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -166,7 +165,11 @@ class TestWMSStream:
                 msg,
             )
 
-    def test_path_property(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_path_property(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, object],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         # Oracle WMS path pattern
@@ -209,7 +212,11 @@ class TestWMSStream:
             msg = f"Expected {'customer'} in {stream_with_pattern.path}"
             raise AssertionError(msg)
 
-    def test_http_headers(self, mock_tap: Mock, basic_schema: dict[str, Any]) -> None:
+    def test_http_headers(
+        self,
+        mock_tap: Mock,
+        basic_schema: dict[str, object],
+    ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         headers = stream.http_headers
@@ -242,7 +249,7 @@ class TestWMSStream:
     def test_get_url_params_initial_request(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         # Mock state properly for Singer SDK
         mock_tap.load_state = Mock(return_value={})
@@ -268,7 +275,7 @@ class TestWMSStream:
     def test_get_url_params_pagination(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -286,7 +293,7 @@ class TestWMSStream:
     def test_parse_response_with_results(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -312,7 +319,7 @@ class TestWMSStream:
     def test_parse_response_direct_array(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -332,7 +339,7 @@ class TestWMSStream:
     def test_parse_response_invalid_json(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -345,7 +352,7 @@ class TestWMSStream:
     def test_validate_response_success(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -358,7 +365,7 @@ class TestWMSStream:
     def test_validate_response_errors(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -382,7 +389,7 @@ class TestWMSStream:
     def test_get_starting_timestamp_from_state(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
@@ -407,7 +414,7 @@ class TestWMSStream:
     def test_get_starting_timestamp_from_config(
         self,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         mock_tap.config["start_date"] = "2024-02-01T00:00:00Z"
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
@@ -431,7 +438,7 @@ class TestWMSStream:
         self,
         mock_get_auth: Mock,
         mock_tap: Mock,
-        basic_schema: dict[str, Any],
+        basic_schema: dict[str, object],
     ) -> None:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
