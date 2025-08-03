@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import base64
-from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
@@ -24,7 +23,7 @@ class TestEntityDiscoveryComprehensive:
 
     def create_test_discovery(
         self,
-        config: dict[str, Any] | None = None,
+        config: dict[str, object] | None = None,
         cache_manager: Mock | None = None,
     ) -> EntityDiscovery:
         """Create test entity discovery instance."""

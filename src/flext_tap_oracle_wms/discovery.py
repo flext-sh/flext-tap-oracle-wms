@@ -53,7 +53,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
     def __init__(
         self,
-        config: dict[str, Any],
+        config: dict[str, object],
         cache_manager: CacheManagerInterface,
         headers: dict[str, str] | None = None,
     ) -> None:
@@ -151,7 +151,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
             }
         return entities
 
-    async def describe_entity(self, entity_name: str) -> dict[str, Any] | None:
+    async def describe_entity(self, entity_name: str) -> dict[str, object] | None:
         """Get metadata description for a specific entity.
 
         Args:
@@ -184,7 +184,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
             msg = f"Entity description failed: {e}"
             raise EntityDescriptionError(msg) from e
 
-    def describe_entity_sync(self, entity_name: str) -> dict[str, Any] | None:
+    def describe_entity_sync(self, entity_name: str) -> dict[str, object] | None:
         """Describe entity using synchronous wrapper.
 
         Args:
@@ -226,7 +226,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         self._cache_manager.clear_cache(cache_type)
         logger.info("Cleared %s cache", cache_type)
 
-    def get_cache_stats(self) -> dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, object]:
         """Get cache statistics.
 
         Returns:
@@ -243,7 +243,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
     the original interface for existing code.
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize schema generator facade.
 
         Args:
@@ -258,7 +258,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         self.flatten_id_objects = True  # Default behavior
         self.max_flatten_depth = config.get("flattening_max_depth", 3)
 
-    def generate_from_metadata(self, metadata: dict[str, Any]) -> dict[str, Any]:
+    def generate_from_metadata(self, metadata: dict[str, object]) -> dict[str, object]:
         """Generate JSON schema from Oracle WMS API metadata.
 
         Args:
@@ -283,8 +283,8 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     def generate_metadata_schema_with_flattening(
         self,
-        metadata: dict[str, Any],
-    ) -> dict[str, Any]:
+        metadata: dict[str, object],
+    ) -> dict[str, object]:
         """Generate flattened JSON schema from Oracle WMS API metadata.
 
         Args:
@@ -310,10 +310,10 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     def flatten_complex_objects(
         self,
-        data: dict[str, Any],
+        data: dict[str, object],
         prefix: str = "",
         separator: str = "_",
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """Flatten nested objects for schema processing.
 
         Args:
@@ -338,15 +338,15 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     def _flatten_complex_objects(
         self,
-        data: dict[str, Any],
+        data: dict[str, object],
         prefix: str = "",
         separator: str = "_",
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """Internal method for flattening complex objects."""
         return self.flatten_complex_objects(data, prefix, separator)
 
     @staticmethod
-    def _infer_type(value: object) -> dict[str, Any]:
+    def _infer_type(value: object) -> dict[str, object]:
         """Infer JSON schema type from Python value.
 
         Args:
@@ -380,9 +380,9 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
     @staticmethod
     def _merge_types(
-        type1: dict[str, Any],
-        type2: dict[str, Any],
-    ) -> dict[str, Any]:
+        type1: dict[str, object],
+        type2: dict[str, object],
+    ) -> dict[str, object]:
         """Merge two JSON schema types.
 
         Args:
@@ -400,7 +400,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         return {"anyOf": [type1, type2]}
 
     @staticmethod
-    def _create_property_from_field(field_info: dict[str, Any]) -> dict[str, Any]:
+    def _create_property_from_field(field_info: dict[str, object]) -> dict[str, object]:
         """Create JSON schema property from field info.
 
         Args:

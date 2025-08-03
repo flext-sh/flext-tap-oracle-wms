@@ -11,14 +11,13 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
 
-from flext_tap_oracle_wms.infrastructure.cache import CacheManager
-from flext_tap_oracle_wms.infrastructure.entity_discovery import EntityDiscovery
-from flext_tap_oracle_wms.infrastructure.schema_generator import SchemaGenerator
+from flext_tap_oracle_wms.cache import CacheManager
+from flext_tap_oracle_wms.entity_discovery import EntityDiscovery
+from flext_tap_oracle_wms.schema_generator import SchemaGenerator
 from flext_tap_oracle_wms.streams import WMSPaginator, WMSStream
 from flext_tap_oracle_wms.tap import TapOracleWMS
 
@@ -276,7 +275,7 @@ class TestSchemaGeneratorGeneric:
     """Test schema generator is generic but handles WMS metadata."""
 
     def test_wms_metadata_type_mapping(self) -> None:
-        config: dict[str, Any] = {}
+        config: dict[str, object] = {}
         generator = SchemaGenerator(config)
 
         # Test WMS metadata format
@@ -307,7 +306,7 @@ class TestSchemaGeneratorGeneric:
         assert props["mod_ts"]["format"] == "date-time"
 
     def test_audit_fields_recognized(self) -> None:
-        config: dict[str, Any] = {}
+        config: dict[str, object] = {}
         generator = SchemaGenerator(config)
 
         metadata = {
@@ -366,7 +365,7 @@ class TestBusinessLogicPreserved:
         # Mock starting timestamp
         start_time = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
         with patch.object(stream, "get_starting_timestamp", return_value=start_time):
-            params: dict[str, Any] = {}
+            params: dict[str, object] = {}
             stream._add_incremental_filter(params, {})
 
             # Verify overlap is applied (10 minutes before start_time)
@@ -396,7 +395,7 @@ class TestBusinessLogicPreserved:
         assert stream.replication_key is None  # Full table sync has no replication key
 
         # Test ordering for full sync
-        params: dict[str, Any] = {}
+        params: dict[str, object] = {}
         stream._add_full_table_ordering(params)
         if params["ordering"] != "-id":  # Descending for recovery
             msg = f"Expected '-id', got {params['ordering']}"

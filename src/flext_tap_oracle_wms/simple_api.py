@@ -131,7 +131,7 @@ def validate_wms_config(config: TapOracleWMSConfig) -> FlextResult[Any]:
         if not config.connection.base_url:
             return FlextResult.fail("Base URL is required")
 
-        return FlextResult.ok(True)
+        return FlextResult.ok(data=True)
 
     except (ValueError, TypeError, AttributeError) as e:
         return FlextResult.fail(

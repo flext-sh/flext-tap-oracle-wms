@@ -13,7 +13,8 @@ import base64
 
 # Removed circular dependency - use DI pattern
 import re
-from typing import TYPE_CHECKING, Any
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import httpx
 from flext_core import get_logger
@@ -42,6 +43,183 @@ class NetworkError(Exception):
     """Exception raised for network-related errors."""
 
 
+class ApiResponseProcessor(ABC):
+    """Strategy Pattern: Abstract base for API response processing.
+
+    SOLID REFACTORING: Eliminates complexity by providing specialized
+    response processing strategies for different Oracle WMS API formats.
+    """
+
+    @abstractmethod
+    def can_process(self, data: object) -> bool:
+        """Check if this processor can handle the given data format."""
+
+    @abstractmethod
+    def process(self, data: object, entity_endpoint: str) -> dict[str, str]:
+        """Process the API response data and return entity mapping."""
+
+
+class DictResponseProcessor(ApiResponseProcessor):
+    """Strategy Pattern: Processes dictionary format API responses.
+
+    SOLID REFACTORING: Handles Oracle WMS dictionary responses using
+    Strategy Pattern to reduce complexity in main processing logic.
+    """
+
+    def can_process(self, data: object) -> bool:
+        """Check if data is dictionary format."""
+        return isinstance(data, dict)
+
+    def process(self, data: object, entity_endpoint: str) -> dict[str, str]:
+        """Process dictionary format API response using Guard Clauses."""
+        if not isinstance(data, dict):
+            return {}
+
+        # Strategy 1: Direct entity mapping format
+        if self._is_direct_mapping(data):
+            return self._process_direct_mapping(data)
+
+        # Strategy 2: Nested entities format
+        if "entities" in data:
+            return self._process_nested_format(data["entities"], entity_endpoint)
+
+        # Strategy 3: Unexpected format
+        logger.warning("Unexpected dictionary response format for entities")
+        return {}
+
+    @staticmethod
+    def _is_direct_mapping(data: dict) -> bool:
+        """Check if response is direct entity mapping format."""
+        return all(isinstance(v, str) for v in data.values())
+
+    @staticmethod
+    def _process_direct_mapping(data: dict) -> dict[str, str]:
+        """Process direct mapping format."""
+        entities = {k: str(v) for k, v in data.items()}
+        logger.info("Using direct entity mapping format (%d entities)", len(entities))
+        return entities
+
+    def _process_nested_format(
+        self,
+        entity_list: object,
+        entity_endpoint: str,
+    ) -> dict[str, str]:
+        """Process nested entities format."""
+        entities = self._extract_entities_from_nested(entity_list, entity_endpoint)
+        logger.info("Using nested entities format (%d entities)", len(entities))
+        return entities
+
+    def _extract_entities_from_nested(
+        self,
+        entity_list: object,
+        entity_endpoint: str,
+    ) -> dict[str, str]:
+        """Extract entities from nested format using Guard Clauses."""
+        entities: dict[str, str] = {}
+
+        # Guard Clause: Dictionary format
+        if isinstance(entity_list, dict):
+            return {k: str(v) for k, v in entity_list.items()}
+
+        # Guard Clause: List format
+        if isinstance(entity_list, list):
+            return self._process_entity_list(entity_list, entity_endpoint)
+
+        return entities
+
+    def _process_entity_list(
+        self,
+        entity_list: list,
+        entity_endpoint: str,
+    ) -> dict[str, str]:
+        """Process entity list format using Guard Clauses."""
+        entities: dict[str, str] = {}
+
+        for entity_info in entity_list:
+            # Guard Clause: Dictionary entity info
+            if isinstance(entity_info, dict):
+                self._extract_entity_from_dict(entity_info, entities)
+            # Guard Clause: String entity info
+            elif isinstance(entity_info, str):
+                entities[entity_info] = f"{entity_endpoint}/{entity_info}"
+
+        return entities
+
+    @staticmethod
+    def _extract_entity_from_dict(entity_info: dict, entities: dict[str, str]) -> None:
+        """Extract entity information from dictionary format."""
+        name = entity_info.get("name")
+        url = entity_info.get("url") or entity_info.get("href")
+
+        if name and url and isinstance(name, str) and isinstance(url, str):
+            entities[name] = url
+
+
+class ListResponseProcessor(ApiResponseProcessor):
+    """Strategy Pattern: Processes list format API responses.
+
+    SOLID REFACTORING: Handles Oracle WMS list responses using
+    Strategy Pattern to eliminate nested processing logic.
+    """
+
+    def can_process(self, data: object) -> bool:
+        """Check if data is list format."""
+        return isinstance(data, list)
+
+    def process(self, data: object, entity_endpoint: str) -> dict[str, str]:
+        """Process list format API response using Guard Clauses."""
+        if not isinstance(data, list):
+            return {}
+
+        entities: dict[str, str] = {}
+
+        for entity_info in data:
+            # Guard Clause: Dictionary entity info
+            if isinstance(entity_info, dict):
+                self._extract_entity_from_dict(entity_info, entities)
+            # Guard Clause: String entity info
+            elif isinstance(entity_info, str):
+                entities[entity_info] = f"{entity_endpoint}/{entity_info}"
+
+        logger.info("Using list format (%d entities)", len(entities))
+        return entities
+
+    @staticmethod
+    def _extract_entity_from_dict(entity_info: dict, entities: dict[str, str]) -> None:
+        """Extract entity information from dictionary format."""
+        name = entity_info.get("name")
+        url = entity_info.get("url") or entity_info.get("href")
+
+        if name and url and isinstance(name, str) and isinstance(url, str):
+            entities[name] = url
+
+
+class ApiResponseProcessorFactory:
+    """Factory Pattern: Creates appropriate response processors.
+
+    SOLID REFACTORING: Centralizes processor selection logic using
+    Factory Pattern to eliminate conditional complexity.
+    """
+
+    def __init__(self, entity_endpoint: str) -> None:
+        """Initialize factory with entity endpoint."""
+        self.entity_endpoint = entity_endpoint
+        self.processors = [
+            DictResponseProcessor(),
+            ListResponseProcessor(),
+        ]
+
+    def process_response(self, data: object) -> dict[str, str]:
+        """Process API response using appropriate strategy."""
+        for processor in self.processors:
+            if processor.can_process(data):
+                return processor.process(data, self.entity_endpoint)
+
+        # No processor found for this data type
+        logger.warning("Unexpected response type: %s", type(data))
+        return {}
+
+
 class EntityDiscovery(EntityDiscoveryInterface):
     """Handle dynamic entity discovery from Oracle WMS API.
 
@@ -51,7 +229,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
     def __init__(
         self,
-        config: dict[str, Any],
+        config: dict[str, object],
         cache_manager: CacheManagerInterface,
         headers: dict[str, str] | None = None,
     ) -> None:
@@ -78,6 +256,11 @@ class EntityDiscovery(EntityDiscoveryInterface):
             f"{self.base_url}{endpoint_prefix}/{self.api_version}/entity/"
         )
 
+        # Strategy Pattern: Initialize response processor factory
+        self.response_processor_factory = ApiResponseProcessorFactory(
+            self.entity_endpoint,
+        )
+
     async def discover_entities(self) -> dict[str, str]:
         """Discover available entities from Oracle WMS API.
 
@@ -100,7 +283,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         logger.info("Discovered %d entities from WMS API", len(discovered_entities))
         return discovered_entities
 
-    async def describe_entity(self, entity_name: str) -> dict[str, Any] | None:
+    async def describe_entity(self, entity_name: str) -> dict[str, object] | None:
         """Get metadata description for a specific entity.
 
         Args:
@@ -210,8 +393,8 @@ class EntityDiscovery(EntityDiscoveryInterface):
                 response.raise_for_status()
                 data = response.json()
 
-                # Delegate complex processing to existing helper method
-                entities = self._process_api_response(data)
+                # Strategy Pattern: Use response processor factory to reduce complexity
+                entities = self.response_processor_factory.process_response(data)
 
         except httpx.HTTPError as e:
             logger.exception("Failed to fetch entities from API")
@@ -246,119 +429,10 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         return auth_headers
 
-    def _process_api_response(
+    async def _fetch_entity_metadata(
         self,
-        data: dict[str, object] | list[object] | object,
-    ) -> dict[str, str]:
-        """Process Oracle WMS API response and extract entity mapping.
-
-        Args:
-            data: Raw API response data
-
-        Returns:
-            Dictionary mapping entity names to their URLs
-
-        """
-        entities: dict[str, str] = {}
-
-        if isinstance(data, dict):
-            entities = self._process_dict_response(data)
-        elif isinstance(data, list):
-            entities = self._process_list_response(data)
-        else:
-            logger.warning("Unexpected response type: %s", type(data))
-
-        return entities
-
-    def _process_dict_response(self, data: dict[str, object]) -> dict[str, str]:
-        """Process dictionary format API response.
-
-        Args:
-            data: Raw dictionary response from API
-
-        Returns:
-            Dictionary mapping entity names to URLs
-
-        """
-        entities: dict[str, str] = {}
-
-        # Check if it's a direct entity mapping (Oracle WMS format)
-        if all(isinstance(v, str) for v in data.values()):
-            # Direct mapping format - use as-is
-            entities = {k: str(v) for k, v in data.items()}  # Type-safe copy
-            logger.info(
-                "Using direct entity mapping format (%d entities)",
-                len(entities),
-            )
-        elif "entities" in data:
-            # Nested entities format
-            entities = self._process_nested_entities(data["entities"])
-            logger.info(
-                "Using nested entities format (%d entities)",
-                len(entities),
-            )
-        else:
-            logger.warning(
-                "Unexpected dictionary response format for entities",
-            )
-
-        return entities
-
-    def _process_nested_entities(self, entity_list: object) -> dict[str, str]:
-        """Process nested entities from API response.
-
-        Args:
-            entity_list: Nested entity data from response
-
-        Returns:
-            Dictionary mapping entity names to URLs
-
-        """
-        entities: dict[str, str] = {}
-
-        if isinstance(entity_list, dict):
-            entities = {k: str(v) for k, v in entity_list.items()}  # Type-safe copy
-        elif isinstance(entity_list, list):
-            # Build entity mapping from list
-            for entity_info in entity_list:
-                if isinstance(entity_info, dict):
-                    name = entity_info.get("name")
-                    url = entity_info.get("url") or entity_info.get("href")
-                    if name and url and isinstance(name, str) and isinstance(url, str):
-                        entities[name] = url
-                elif isinstance(entity_info, str):
-                    # Simple entity name - construct URL
-                    entities[entity_info] = f"{self.entity_endpoint}/{entity_info}"
-
-        return entities
-
-    def _process_list_response(self, data: list[object]) -> dict[str, str]:
-        """Process list format API response.
-
-        Args:
-            data: List response from API
-
-        Returns:
-            Dictionary mapping entity names to URLs
-
-        """
-        entities: dict[str, str] = {}
-
-        # List format - build entity mapping
-        for entity_info in data:
-            if isinstance(entity_info, dict):
-                name = entity_info.get("name")
-                url = entity_info.get("url") or entity_info.get("href")
-                if name and url and isinstance(name, str) and isinstance(url, str):
-                    entities[name] = url
-            elif isinstance(entity_info, str):
-                # Simple entity name - construct URL
-                entities[entity_info] = f"{self.entity_endpoint}/{entity_info}"
-
-        logger.info("Using list format (%d entities)", len(entities))
-        return entities
-
-    async def _fetch_entity_metadata(self, entity_name: str) -> dict[str, Any] | None:
+        entity_name: str,
+    ) -> dict[str, object] | None:
         """Fetch metadata for a specific entity.
 
         Args:

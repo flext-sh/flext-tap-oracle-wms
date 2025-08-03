@@ -8,7 +8,7 @@ import base64
 
 # Removed circular dependency - use DI pattern
 import threading
-from typing import Any
+from typing import Any, cast
 
 # Direct imports (ZERO TOLERANCE for fallbacks)
 import requests
@@ -84,7 +84,7 @@ def get_wms_authenticator(
     if not username or not password:
         msg = "Username and password are required for WMS authentication"
         raise ValueError(msg)
-    return WMSBasicAuthenticator(stream, username, password)
+    return WMSBasicAuthenticator(stream, cast("str", username), cast("str", password))
 
 
 def get_wms_headers(config: dict[str, object]) -> dict[str, str]:
@@ -103,6 +103,7 @@ def get_wms_headers(config: dict[str, object]) -> dict[str, str]:
     }
     # Add any additional headers from config, converting values to strings
     if "headers" in config:
-        for key, value in config["headers"].items():
+        config_headers = cast("dict[str, Any]", config["headers"])
+        for key, value in config_headers.items():
             headers[str(key)] = str(value)
     return headers

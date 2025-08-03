@@ -14,7 +14,6 @@ import contextlib
 # Removed circular dependency - use DI pattern
 import re
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urlparse
 
@@ -70,14 +69,14 @@ class ValidationStrategy(ABC):
     """Strategy Pattern: Abstract base for configuration validation strategies."""
 
     @abstractmethod
-    def validate(self, config: dict[str, Any]) -> ValidationResult:
+    def validate(self, config: dict[str, object]) -> ValidationResult:
         """Validate specific aspect of configuration."""
 
 
 class ConnectionValidationStrategy(ValidationStrategy):
     """Strategy Pattern: Handles connection settings validation."""
 
-    def validate(self, config: dict[str, Any]) -> ValidationResult:
+    def validate(self, config: dict[str, object]) -> ValidationResult:
         """Validate connection configuration settings."""
         result = ValidationResult()
 
@@ -102,7 +101,9 @@ class ConnectionValidationStrategy(ValidationStrategy):
         return result
 
     def _validate_basic_auth(
-        self, config: dict[str, Any], result: ValidationResult
+        self,
+        config: dict[str, object],
+        result: ValidationResult,
     ) -> None:
         """Validate basic authentication settings."""
         if not config.get("username"):
@@ -111,7 +112,9 @@ class ConnectionValidationStrategy(ValidationStrategy):
             result.add_error("password is required for basic authentication")
 
     def _validate_oauth2_auth(
-        self, config: dict[str, Any], result: ValidationResult
+        self,
+        config: dict[str, object],
+        result: ValidationResult,
     ) -> None:
         """Validate OAuth2 authentication settings."""
         required_oauth_fields = [
@@ -146,7 +149,7 @@ class ConnectionValidationStrategy(ValidationStrategy):
 class ApiValidationStrategy(ValidationStrategy):
     """Strategy Pattern: Handles API settings validation."""
 
-    def validate(self, config: dict[str, Any]) -> ValidationResult:
+    def validate(self, config: dict[str, object]) -> ValidationResult:
         """Validate API configuration settings."""
         result = ValidationResult()
 
@@ -192,7 +195,7 @@ class ApiValidationStrategy(ValidationStrategy):
 class PerformanceValidationStrategy(ValidationStrategy):
     """Strategy Pattern: Handles performance settings validation."""
 
-    def validate(self, config: dict[str, Any]) -> ValidationResult:
+    def validate(self, config: dict[str, object]) -> ValidationResult:
         """Validate performance configuration settings."""
         result = ValidationResult()
 
@@ -246,7 +249,7 @@ class PerformanceValidationStrategy(ValidationStrategy):
 class BusinessLogicValidationStrategy(ValidationStrategy):
     """Strategy Pattern: Handles business logic settings validation."""
 
-    def validate(self, config: dict[str, Any]) -> ValidationResult:
+    def validate(self, config: dict[str, object]) -> ValidationResult:
         """Validate business logic configuration settings."""
         result = ValidationResult()
 
@@ -258,7 +261,9 @@ class BusinessLogicValidationStrategy(ValidationStrategy):
         return result
 
     def _validate_replication_settings(
-        self, config: dict[str, Any], result: ValidationResult
+        self,
+        config: dict[str, object],
+        result: ValidationResult,
     ) -> None:
         """Validate replication-related settings."""
         replication_key = config.get("replication_key", "mod_ts")
@@ -286,7 +291,9 @@ class BusinessLogicValidationStrategy(ValidationStrategy):
             )
 
     def _validate_company_settings(
-        self, config: dict[str, Any], result: ValidationResult
+        self,
+        config: dict[str, object],
+        result: ValidationResult,
     ) -> None:
         """Validate company-related settings."""
         company_code = config.get("company_code", "*")
@@ -303,7 +310,9 @@ class BusinessLogicValidationStrategy(ValidationStrategy):
             result.add_error(f"currency_code must be a 3-letter string: {currency}")
 
     def _validate_time_settings(
-        self, config: dict[str, Any], result: ValidationResult
+        self,
+        config: dict[str, object],
+        result: ValidationResult,
     ) -> None:
         """Validate time-related settings."""
         timezone = config.get("company_timezone", "UTC")
@@ -314,7 +323,7 @@ class BusinessLogicValidationStrategy(ValidationStrategy):
 class EntityValidationStrategy(ValidationStrategy):
     """Strategy Pattern: Handles entity settings validation."""
 
-    def validate(self, config: dict[str, Any]) -> ValidationResult:
+    def validate(self, config: dict[str, object]) -> ValidationResult:
         """Validate entity configuration settings."""
         result = ValidationResult()
 
@@ -325,7 +334,9 @@ class EntityValidationStrategy(ValidationStrategy):
         return result
 
     def _validate_entities_list(
-        self, config: dict[str, Any], result: ValidationResult
+        self,
+        config: dict[str, object],
+        result: ValidationResult,
     ) -> None:
         """Validate entities list configuration."""
         entities = config.get("entities")
@@ -344,7 +355,9 @@ class EntityValidationStrategy(ValidationStrategy):
                         )
 
     def _validate_entity_patterns(
-        self, config: dict[str, Any], result: ValidationResult
+        self,
+        config: dict[str, object],
+        result: ValidationResult,
     ) -> None:
         """Validate entity patterns configuration."""
         entity_patterns = config.get("entity_patterns")
@@ -356,17 +369,21 @@ class EntityValidationStrategy(ValidationStrategy):
                 exclude_patterns = entity_patterns.get("exclude")
 
                 if include_patterns is not None and not isinstance(
-                    include_patterns, list
+                    include_patterns,
+                    list,
                 ):
                     result.add_error("entity_patterns.include must be a list")
 
                 if exclude_patterns is not None and not isinstance(
-                    exclude_patterns, list
+                    exclude_patterns,
+                    list,
                 ):
                     result.add_error("entity_patterns.exclude must be a list")
 
     def _validate_entity_flags(
-        self, config: dict[str, Any], result: ValidationResult
+        self,
+        config: dict[str, object],
+        result: ValidationResult,
     ) -> None:
         """Validate entity flags configuration."""
         force_full_table = config.get("force_full_table")
@@ -401,7 +418,7 @@ class ConfigValidator:
             EntityValidationStrategy(),
         ]
 
-    def validate_config(self, config: dict[str, Any]) -> bool:
+    def validate_config(self, config: dict[str, object]) -> bool:
         """Validate complete Oracle WMS tap configuration using Strategy Pattern.
 
         SOLID REFACTORING: Reduced method complexity by delegating validation
@@ -439,7 +456,7 @@ class ConfigValidator:
         logger.info("Configuration validation passed successfully")
         return True
 
-    def get_validation_summary(self) -> dict[str, Any]:
+    def get_validation_summary(self) -> dict[str, object]:
         """Get summary of validation results.
 
         Returns:
