@@ -17,7 +17,7 @@ FLEXT Tap Oracle WMS provides data extraction capabilities for Oracle Warehouse 
 - **FLEXT Ecosystem Integration**: Built on flext-core patterns and flext-oracle-wms library
 - **Authentication Support**: Basic Auth and OAuth2 authentication methods
 - **Entity Coverage**: 15+ WMS entities including inventory, orders, shipments, and locations
-- **Production Ready**: Enterprise-grade error handling and performance optimization
+- **Development Status**: Functional with 10 working streams, 37 MyPy type errors need resolution
 
 ## Quick Start
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 # Removed circular dependency - use DI pattern
 import re
-from typing import Any
+from typing import NoReturn, Union
 
 from flext_core import get_logger
 
@@ -58,8 +58,10 @@ class SchemaGenerator(SchemaGeneratorInterface):
                 logger.warning("No field definitions found in metadata")
                 return SchemaGenerator._generate_empty_schema()
 
-            # Normalize fields to dict format
-            fields = self._normalize_fields_format(fields)
+            # Normalize fields to dict format with proper type casting
+            from typing import cast
+            typed_fields = cast("list[dict[str, object]] | dict[str, object]", fields)
+            fields = self._normalize_fields_format(typed_fields)
 
             # Build schema from fields
             properties, required_fields = self._build_schema_properties(fields)
@@ -68,8 +70,8 @@ class SchemaGenerator(SchemaGeneratorInterface):
             return self._build_complete_schema(properties, required_fields)
         except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Schema generation from metadata failed")
+            # This will raise an exception, so no return needed after
             SchemaGenerator._raise_schema_error(f"Schema generation failed: {e}", e)
-            return {}  # Unreachable but satisfies mypy
 
     def generate_metadata_schema_with_flattening(
         self,
@@ -95,13 +97,17 @@ class SchemaGenerator(SchemaGeneratorInterface):
                 return base_schema
 
             # Apply flattening to properties
-            flattened_properties = self.flatten_complex_objects(
-                base_schema.get("properties", {}),
-                separator="_",
-            )
+            properties = base_schema.get("properties", {})
+            if isinstance(properties, dict):
+                flattened_properties = self.flatten_complex_objects(
+                    properties,
+                    separator="_",
+                )
+            else:
+                flattened_properties = {}
         except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Flattened schema generation failed")
-            msg = f"Schema generation failed: {e}"
+            msg: str = f"Schema generation failed: {e}"
             raise SchemaGenerationError(
                 msg,
             ) from e
@@ -154,7 +160,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
 
         return flattened
 
-    def _normalize_fields_format(self, fields: Any) -> dict[str, object]:
+    def _normalize_fields_format(self, fields: list[dict[str, object]] | dict[str, object]) -> dict[str, object]:
         """Normalize fields format to dict format for processing.
 
         Args:
@@ -166,19 +172,22 @@ class SchemaGenerator(SchemaGeneratorInterface):
         """
         if isinstance(fields, list):
             # Convert list format to dict format for processing
-            fields_dict = {}
+            fields_dict: dict[str, object] = {}
             for field_item in fields:
                 if isinstance(field_item, dict) and "name" in field_item:
-                    field_name = field_item["name"]
+                    field_name = str(field_item["name"])
                     field_info = {k: v for k, v in field_item.items() if k != "name"}
                     fields_dict[field_name] = field_info
             return fields_dict
         if isinstance(fields, dict):
             return fields
+
+        # This will raise an exception and never return
         SchemaGenerator._raise_schema_error(
             f"Fields must be a dict or list, got {type(fields).__name__}",
         )
-        return {}  # Unreachable but satisfies mypy
+        # Add explicit return to satisfy RET503 (though this is unreachable)
+        return {}  # type: ignore[unreachable]  # pragma: no cover
 
     def _build_schema_properties(
         self,
@@ -193,19 +202,21 @@ class SchemaGenerator(SchemaGeneratorInterface):
             Tuple of (properties, required_fields)
 
         """
-        properties = {}
-        required_fields = []
+        properties: dict[str, object] = {}
+        required_fields: list[str] = []
 
         for field_name, field_info in fields.items():
             if not field_name:
                 continue
 
-            field_schema = SchemaGenerator._create_field_schema(field_info)
-            properties[field_name] = field_schema
+            # Ensure field_info is a dict
+            if isinstance(field_info, dict):
+                field_schema = SchemaGenerator._create_field_schema(field_info)
+                properties[field_name] = field_schema
 
-            # Check if field is required
-            if field_info.get("required", False):
-                required_fields.append(field_name)
+                # Check if field is required
+                if field_info.get("required", False):
+                    required_fields.append(field_name)
 
         return properties, required_fields
 
@@ -258,9 +269,9 @@ class SchemaGenerator(SchemaGeneratorInterface):
         from flext_tap_oracle_wms.type_mapping import get_singer_type_with_metadata
 
         field_schema = get_singer_type_with_metadata(
-            field_type,
+            str(field_type),
             field_name=field_name,
-            format_hint=field_format,
+            format_hint=str(field_format) if field_format else None,
         )
 
         # Apply nullable constraint if needed
@@ -301,7 +312,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             "additionalProperties": True,
         }
 
-    def _infer_field_type(self, value: Any) -> dict[str, object]:
+    def _infer_field_type(self, value: str | float | bool | None | dict[str, object] | list[object]) -> dict[str, object]:
         """Infer field type from sample value.
 
         Args:
@@ -325,11 +336,14 @@ class SchemaGenerator(SchemaGeneratorInterface):
         if value_type in simple_type_map:
             return {"type": simple_type_map[value_type]}
         if value_type is str:
-            return self._infer_string_schema(value)
+            from typing import cast
+            return self._infer_string_schema(cast("str", value))
         if value_type is list:
-            return self._infer_array_schema(value)
+            from typing import cast
+            return self._infer_array_schema(cast("list[str | int | float | bool | dict[str, object] | list[object]]", value))
         if value_type is dict:
-            return self._infer_object_schema(value)
+            from typing import cast
+            return self._infer_object_schema(cast("dict[str, object]", value))
         # Unknown type - default to string
         return {"type": "string"}
 
@@ -350,7 +364,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
             return {"type": "string", "format": "date"}
         return {"type": "string"}
 
-    def _infer_array_schema(self, value: list[Any]) -> dict[str, object]:
+    def _infer_array_schema(self, value: list[str | int | float | bool | dict[str, object] | list[object]]) -> dict[str, object]:
         """Infer array type schema.
 
         Args:
@@ -376,7 +390,12 @@ class SchemaGenerator(SchemaGeneratorInterface):
             Schema dictionary with object type and properties
 
         """
-        properties = {k: self._infer_field_type(v) for k, v in value.items()}
+        # Type casting for proper type compatibility in comprehension
+        from typing import cast
+        properties = {
+            k: self._infer_field_type(cast("str | float | bool | dict[str, object] | list[object] | None", v))
+            for k, v in value.items()
+        }
         return {"type": "object", "properties": properties}
 
     @staticmethod
@@ -411,7 +430,7 @@ class SchemaGenerator(SchemaGeneratorInterface):
         return bool(re.search(date_pattern, value))
 
     @staticmethod
-    def _raise_schema_error(message: str, _cause: Exception | None = None) -> None:
+    def _raise_schema_error(message: str, _cause: Exception | None = None) -> NoReturn:
         """Raise schema generation error with proper error handling.
 
         Args:

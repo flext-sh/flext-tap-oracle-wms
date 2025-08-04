@@ -84,7 +84,7 @@ class ConnectionValidationStrategy(ValidationStrategy):
         base_url = config.get("base_url")
         if not base_url:
             result.add_error("base_url is required")
-        elif not self._is_valid_url(base_url):
+        elif not self._is_valid_url(str(base_url)):
             result.add_error(f"base_url is not a valid URL: {base_url}")
 
         # Authentication validation using Chain of Responsibility
@@ -155,7 +155,7 @@ class ApiValidationStrategy(ValidationStrategy):
 
         # API version validation
         api_version = config.get("wms_api_version", "v10")
-        if not re.match(r"^v\d+$", api_version):
+        if not re.match(r"^v\d+$", str(api_version)):
             result.add_error(
                 f"Invalid API version format: {api_version}. "
                 f"Must be 'vN' where N is a number",
@@ -163,7 +163,7 @@ class ApiValidationStrategy(ValidationStrategy):
 
         # Endpoint prefix validation
         endpoint_prefix = config.get("endpoint_prefix", "/wms/lgfapi")
-        if not endpoint_prefix.startswith("/"):
+        if not str(endpoint_prefix).startswith("/"):
             result.add_warning(
                 f"endpoint_prefix should start with '/': {endpoint_prefix}",
             )
@@ -177,7 +177,7 @@ class ApiValidationStrategy(ValidationStrategy):
 
         # OAuth scope validation
         oauth_scope = config.get("oauth_scope")
-        if oauth_scope and not self._is_valid_url(oauth_scope):
+        if oauth_scope and not self._is_valid_url(str(oauth_scope)):
             result.add_warning(f"oauth_scope appears to be malformed: {oauth_scope}")
 
         return result
@@ -211,7 +211,7 @@ class PerformanceValidationStrategy(ValidationStrategy):
 
         # Max page size validation
         max_page_size = config.get("max_page_size", 5000)
-        if not isinstance(max_page_size, int) or max_page_size < page_size:
+        if not isinstance(max_page_size, int) or max_page_size < (int(page_size) if isinstance(page_size, (int, str)) else 0):
             result.add_error(f"max_page_size must be >= page_size: {max_page_size}")
 
         # Timeout validation

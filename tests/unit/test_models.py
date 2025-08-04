@@ -39,13 +39,13 @@ class TestFlextConstants:
     def test_constants_values(self) -> None:
         """Test constant values are properly defined."""
         if FlextConstants.MAX_ENTITY_NAME_LENGTH != 255:
-            msg = f"Expected {255}, got {FlextConstants.MAX_ENTITY_NAME_LENGTH}"
+            msg: str = f"Expected {255}, got {FlextConstants.MAX_ENTITY_NAME_LENGTH}"
             raise AssertionError(
                 msg,
             )
         assert FlextConstants.MAX_ERROR_MESSAGE_LENGTH == 1000
         if FlextConstants.DEFAULT_TIMEOUT != 30:
-            msg = f"Expected {30}, got {FlextConstants.DEFAULT_TIMEOUT}"
+            msg: str = f"Expected {30}, got {FlextConstants.DEFAULT_TIMEOUT}"
             raise AssertionError(msg)
         assert FlextConstants.FRAMEWORK_VERSION == "0.7.0"
 
@@ -61,25 +61,25 @@ class TestWMSConfig:
             password="test_pass",
         )
         if str(config.base_url) != "https://wms.example.com/":
-            msg = f"Expected {'https://wms.example.com/'}, got {config.base_url!s}"
+            msg: str = f"Expected {'https://wms.example.com/'}, got {config.base_url!s}"
             raise AssertionError(
                 msg,
             )
         assert config.username == "test_user"
         if config.password != "test_pass":
-            msg = f"Expected {'test_pass'}, got {config.password}"
+            msg: str = f"Expected {'test_pass'}, got {config.password}"
             raise AssertionError(msg)
         assert config.company_code == "*"
         if config.facility_code != "*":
-            msg = f"Expected {'*'}, got {config.facility_code}"
+            msg: str = f"Expected {'*'}, got {config.facility_code}"
             raise AssertionError(msg)
         assert config.page_size == 500
         if config.timeout != 30:
-            msg = f"Expected {30}, got {config.timeout}"
+            msg: str = f"Expected {30}, got {config.timeout}"
             raise AssertionError(msg)
         assert config.max_retries == EXPECTED_DATA_COUNT
         if not (config.auto_discover):
-            msg = f"Expected True, got {config.auto_discover}"
+            msg: str = f"Expected True, got {config.auto_discover}"
             raise AssertionError(msg)
         assert config.include_metadata is True
 
@@ -98,24 +98,26 @@ class TestWMSConfig:
             include_metadata=False,
         )
         if str(config.base_url) != "https://wms.enterprise.com/":
-            msg = f"Expected {'https://wms.enterprise.com/'}, got {config.base_url!s}"
+            msg: str = (
+                f"Expected {'https://wms.enterprise.com/'}, got {config.base_url!s}"
+            )
             raise AssertionError(
                 msg,
             )
         assert config.username == "admin_user"
         if config.company_code != "COMP1":
-            msg = f"Expected {'COMP1'}, got {config.company_code}"
+            msg: str = f"Expected {'COMP1'}, got {config.company_code}"
             raise AssertionError(msg)
         assert config.facility_code == "FAC1"
         if config.page_size != 1000:
-            msg = f"Expected {1000}, got {config.page_size}"
+            msg: str = f"Expected {1000}, got {config.page_size}"
             raise AssertionError(msg)
         assert config.timeout == 60
         if config.max_retries != 5:
-            msg = f"Expected {5}, got {config.max_retries}"
+            msg: str = f"Expected {5}, got {config.max_retries}"
             raise AssertionError(msg)
         if config.auto_discover:
-            msg = f"Expected False, got {config.auto_discover}"
+            msg: str = f"Expected False, got {config.auto_discover}"
             raise AssertionError(msg)
         assert config.include_metadata is False
 
@@ -129,7 +131,7 @@ class TestWMSConfig:
                 password="pass",
             )
             if url not in str(config.base_url):
-                msg = f"Expected {url} in {config.base_url!s}"
+                msg: str = f"Expected {url} in {config.base_url!s}"
                 raise AssertionError(msg)
         # Invalid URL should fail
         with pytest.raises(ValidationError):
@@ -149,7 +151,7 @@ class TestWMSConfig:
             page_size=100,
         )
         if config.page_size != 100:
-            msg = f"Expected {100}, got {config.page_size}"
+            msg: str = f"Expected {100}, got {config.page_size}"
             raise AssertionError(msg)
         # Invalid page sizes
         with pytest.raises(ValidationError):
@@ -177,7 +179,7 @@ class TestWMSConfig:
             timeout=60,
         )
         if config.timeout != 60:
-            msg = f"Expected {60}, got {config.timeout}"
+            msg: str = f"Expected {60}, got {config.timeout}"
             raise AssertionError(msg)
         # Invalid timeouts
         with pytest.raises(ValidationError):
@@ -222,17 +224,17 @@ class TestWMSEntity:
             total_records=None,
         )
         if entity.name != "item":
-            msg = f"Expected {'item'}, got {entity.name}"
+            msg: str = f"Expected {'item'}, got {entity.name}"
             raise AssertionError(msg)
         assert entity.endpoint == "/entity/item"
         assert entity.description is None
         if entity.supports_incremental:
-            msg = f"Expected False, got {entity.supports_incremental}"
+            msg: str = f"Expected False, got {entity.supports_incremental}"
             raise AssertionError(msg)
         assert entity.primary_key is None
         assert entity.timestamp_field is None
         if entity.fields != []:
-            msg = f"Expected {[]}, got {entity.fields}"
+            msg: str = f"Expected {[]}, got {entity.fields}"
             raise AssertionError(msg)
         assert entity.total_records is None
 
@@ -249,23 +251,23 @@ class TestWMSEntity:
             total_records=1500,
         )
         if entity.name != "allocation":
-            msg = f"Expected {'allocation'}, got {entity.name}"
+            msg: str = f"Expected {'allocation'}, got {entity.name}"
             raise AssertionError(msg)
         assert entity.endpoint == "/entity/allocation"
         if entity.description != "Allocation master data":
-            msg = f"Expected {'Allocation master data'}, got {entity.description}"
+            msg: str = f"Expected {'Allocation master data'}, got {entity.description}"
             raise AssertionError(
                 msg,
             )
         if not (entity.supports_incremental):
-            msg = f"Expected True, got {entity.supports_incremental}"
+            msg: str = f"Expected True, got {entity.supports_incremental}"
             raise AssertionError(msg)
         if entity.primary_key != "alloc_id":
-            msg = f"Expected {'alloc_id'}, got {entity.primary_key}"
+            msg: str = f"Expected {'alloc_id'}, got {entity.primary_key}"
             raise AssertionError(msg)
         assert entity.timestamp_field == "mod_ts"
         if entity.fields != ["alloc_id", "item_id", "location", "mod_ts"]:
-            msg = f"Expected {['alloc_id', 'item_id', 'location', 'mod_ts']}, got {entity.fields}"
+            msg: str = f"Expected {['alloc_id', 'item_id', 'location', 'mod_ts']}, got {entity.fields}"
             raise AssertionError(
                 msg,
             )
@@ -283,7 +285,7 @@ class TestWMSEntity:
             total_records=None,
         )
         if entity.name != "item":
-            msg = f"Expected {'item'}, got {entity.name}"
+            msg: str = f"Expected {'item'}, got {entity.name}"
             raise AssertionError(msg)
         # Invalid names
         with pytest.raises(ValidationError):
@@ -318,7 +320,7 @@ class TestWMSEntity:
             total_records=100,
         )
         if entity.total_records != 100:
-            msg = f"Expected {100}, got {entity.total_records}"
+            msg: str = f"Expected {100}, got {entity.total_records}"
             raise AssertionError(msg)
         # Invalid record count
         with pytest.raises(ValidationError):
@@ -339,17 +341,17 @@ class TestWMSStreamMetadata:
         """Test default stream metadata."""
         metadata = WMSStreamMetadata(stream_name="item", replication_key=None)
         if metadata.stream_name != "item":
-            msg = f"Expected {'item'}, got {metadata.stream_name}"
+            msg: str = f"Expected {'item'}, got {metadata.stream_name}"
             raise AssertionError(msg)
         assert metadata.key_properties == []
         if metadata.replication_method != "FULL_TABLE":
-            msg = f"Expected {'FULL_TABLE'}, got {metadata.replication_method}"
+            msg: str = f"Expected {'FULL_TABLE'}, got {metadata.replication_method}"
             raise AssertionError(
                 msg,
             )
         assert metadata.replication_key is None
         if metadata.json_schema != {}:
-            msg = f"Expected {{}}, got {metadata.json_schema}"
+            msg: str = f"Expected {{}}, got {metadata.json_schema}"
             raise AssertionError(msg)
         assert metadata.metadata == {}
 
@@ -372,17 +374,17 @@ class TestWMSStreamMetadata:
             metadata=meta,
         )
         if metadata.stream_name != "allocation":
-            msg = f"Expected {'allocation'}, got {metadata.stream_name}"
+            msg: str = f"Expected {'allocation'}, got {metadata.stream_name}"
             raise AssertionError(msg)
         assert metadata.key_properties == ["alloc_id", "facility_code"]
         if metadata.replication_method != "INCREMENTAL":
-            msg = f"Expected {'INCREMENTAL'}, got {metadata.replication_method}"
+            msg: str = f"Expected {'INCREMENTAL'}, got {metadata.replication_method}"
             raise AssertionError(
                 msg,
             )
         assert metadata.replication_key == "mod_ts"
         if metadata.json_schema != schema:
-            msg = f"Expected {schema}, got {metadata.json_schema}"
+            msg: str = f"Expected {schema}, got {metadata.json_schema}"
             raise AssertionError(msg)
         assert metadata.metadata == meta
 
@@ -391,7 +393,7 @@ class TestWMSStreamMetadata:
         # Valid name
         metadata = WMSStreamMetadata(stream_name="item", replication_key=None)
         if metadata.stream_name != "item":
-            msg = f"Expected {'item'}, got {metadata.stream_name}"
+            msg: str = f"Expected {'item'}, got {metadata.stream_name}"
             raise AssertionError(msg)
         # Invalid names
         with pytest.raises(ValidationError):
@@ -415,11 +417,11 @@ class TestWMSRecord:
             page_number=None,
         )
         if record.stream_name != "item":
-            msg = f"Expected {'item'}, got {record.stream_name}"
+            msg: str = f"Expected {'item'}, got {record.stream_name}"
             raise AssertionError(msg)
         assert record.record_data == {"id": 1, "code": "ITEM001"}
         if record.extracted_at != now:
-            msg = f"Expected {now}, got {record.extracted_at}"
+            msg: str = f"Expected {now}, got {record.extracted_at}"
             raise AssertionError(msg)
         assert record.source_endpoint == "/entity/item"
         assert record.record_id is None
@@ -437,11 +439,11 @@ class TestWMSRecord:
             page_number=2,
         )
         if record.stream_name != "allocation":
-            msg = f"Expected {'allocation'}, got {record.stream_name}"
+            msg: str = f"Expected {'allocation'}, got {record.stream_name}"
             raise AssertionError(msg)
         assert record.record_data == {"alloc_id": "A001", "item_id": "ITEM001"}
         if record.record_id != "A001":
-            msg = f"Expected {'A001'}, got {record.record_id}"
+            msg: str = f"Expected {'A001'}, got {record.record_id}"
             raise AssertionError(msg)
         assert record.page_number == EXPECTED_BULK_SIZE
 
@@ -458,7 +460,7 @@ class TestWMSRecord:
             page_number=None,
         )
         if record.record_data != {"id": 1}:
-            msg = f"Expected {{'id': 1}}, got {record.record_data}"
+            msg: str = f"Expected {{'id': 1}}, got {record.record_data}"
             raise AssertionError(msg)
         # Empty record data should fail
         with pytest.raises(ValidationError):
@@ -484,7 +486,7 @@ class TestWMSRecord:
             page_number=1,
         )
         if record.page_number != 1:
-            msg = f"Expected {1}, got {record.page_number}"
+            msg: str = f"Expected {1}, got {record.page_number}"
             raise AssertionError(msg)
         # Invalid page number
         with pytest.raises(ValidationError):
@@ -513,20 +515,20 @@ class TestWMSError:
             request_id=None,
         )
         if error.error_type != "authentication":
-            msg = f"Expected {'authentication'}, got {error.error_type}"
+            msg: str = f"Expected {'authentication'}, got {error.error_type}"
             raise AssertionError(msg)
         assert error.message == "Invalid credentials"
         if error.timestamp != now:
-            msg = f"Expected {now}, got {error.timestamp}"
+            msg: str = f"Expected {now}, got {error.timestamp}"
             raise AssertionError(msg)
         assert error.endpoint is None
         assert error.status_code is None
         if error.retryable:
-            msg = f"Expected False, got {error.retryable}"
+            msg: str = f"Expected False, got {error.retryable}"
             raise AssertionError(msg)
         assert error.request_id is None
         if error.details != {}:
-            msg = f"Expected {{}}, got {error.details}"
+            msg: str = f"Expected {{}}, got {error.details}"
             raise AssertionError(msg)
 
     def test_full_error(self) -> None:
@@ -544,18 +546,18 @@ class TestWMSError:
             details=details,
         )
         if error.error_type != "network":
-            msg = f"Expected {'network'}, got {error.error_type}"
+            msg: str = f"Expected {'network'}, got {error.error_type}"
             raise AssertionError(msg)
         assert error.message == "Connection timeout"
         if error.endpoint != "/entity/item":
-            msg = f"Expected {'/entity/item'}, got {error.endpoint}"
+            msg: str = f"Expected {'/entity/item'}, got {error.endpoint}"
             raise AssertionError(msg)
         assert error.status_code == 500
         if not (error.retryable):
-            msg = f"Expected True, got {error.retryable}"
+            msg: str = f"Expected True, got {error.retryable}"
             raise AssertionError(msg)
         if error.request_id != "req-123":
-            msg = f"Expected {'req-123'}, got {error.request_id}"
+            msg: str = f"Expected {'req-123'}, got {error.request_id}"
             raise AssertionError(msg)
         assert error.details == details
 
@@ -573,7 +575,7 @@ class TestWMSError:
                 request_id=None,
             )
             if error.status_code != status:
-                msg = f"Expected {status}, got {error.status_code}"
+                msg: str = f"Expected {status}, got {error.status_code}"
                 raise AssertionError(msg)
         # Invalid status codes
         for invalid_status in [99, 600]:
@@ -600,7 +602,7 @@ class TestWMSError:
             request_id=None,
         )
         if error.message != "Valid message":
-            msg = f"Expected {'Valid message'}, got {error.message}"
+            msg: str = f"Expected {'Valid message'}, got {error.message}"
             raise AssertionError(msg)
         # Message too long
         with pytest.raises(ValidationError):
@@ -626,18 +628,18 @@ class TestWMSDiscoveryResult:
             duration_seconds=None,
         )
         if result.discovered_at != now:
-            msg = f"Expected {now}, got {result.discovered_at}"
+            msg: str = f"Expected {now}, got {result.discovered_at}"
             raise AssertionError(msg)
         assert result.base_url == "https://wms.example.com"
         if result.total_entities != 0:
-            msg = f"Expected {0}, got {result.total_entities}"
+            msg: str = f"Expected {0}, got {result.total_entities}"
             raise AssertionError(msg)
         assert result.entities == []
         if result.errors != []:
-            msg = f"Expected {[]}, got {result.errors}"
+            msg: str = f"Expected {[]}, got {result.errors}"
             raise AssertionError(msg)
         if not (result.success):
-            msg = f"Expected True, got {result.success}"
+            msg: str = f"Expected True, got {result.success}"
             raise AssertionError(msg)
         assert result.duration_seconds is None
 
@@ -668,15 +670,15 @@ class TestWMSDiscoveryResult:
             duration_seconds=1.5,
         )
         if result.total_entities != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {result.total_entities}"
+            msg: str = f"Expected {2}, got {result.total_entities}"
             raise AssertionError(msg)
         assert len(result.entities) == EXPECTED_BULK_SIZE
         if result.entities[0].name != "item":
-            msg = f"Expected {'item'}, got {result.entities[0].name}"
+            msg: str = f"Expected {'item'}, got {result.entities[0].name}"
             raise AssertionError(msg)
         assert result.entities[1].name == "location"
         if result.duration_seconds != 1.5:
-            msg = f"Expected {1.5}, got {result.duration_seconds}"
+            msg: str = f"Expected {1.5}, got {result.duration_seconds}"
             raise AssertionError(msg)
 
     def test_discovery_with_errors(self) -> None:
@@ -697,7 +699,7 @@ class TestWMSDiscoveryResult:
             duration_seconds=None,
         )
         if len(result.errors) != 1:
-            msg = f"Expected {1}, got {len(result.errors)}"
+            msg: str = f"Expected {1}, got {len(result.errors)}"
             raise AssertionError(msg)
         assert result.errors[0].error_type == "network"
 
@@ -728,7 +730,7 @@ class TestWMSDiscoveryResult:
         )
         successful = result.successful_entities
         if len(successful) != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {len(successful)}"
+            msg: str = f"Expected {2}, got {len(successful)}"
             raise AssertionError(msg)
         if not all(entity.name for entity in successful):
             msg = (
@@ -764,7 +766,7 @@ class TestWMSDiscoveryResult:
             duration_seconds=None,
         )
         if result.failed_count != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {result.failed_count}"
+            msg: str = f"Expected {2}, got {result.failed_count}"
             raise AssertionError(msg)
 
     def test_add_entity_method(self) -> None:
@@ -785,11 +787,11 @@ class TestWMSDiscoveryResult:
         )
         result.add_entity(entity)
         if result.total_entities != 1:
-            msg = f"Expected {1}, got {result.total_entities}"
+            msg: str = f"Expected {1}, got {result.total_entities}"
             raise AssertionError(msg)
         assert len(result.entities) == 1
         if result.entities[0] != entity:
-            msg = f"Expected {entity}, got {result.entities[0]}"
+            msg: str = f"Expected {entity}, got {result.entities[0]}"
             raise AssertionError(msg)
 
     def test_add_error_method(self) -> None:
@@ -811,7 +813,7 @@ class TestWMSDiscoveryResult:
         )
         result.add_error(error1)
         if len(result.errors) != 1:
-            msg = f"Expected {1}, got {len(result.errors)}"
+            msg: str = f"Expected {1}, got {len(result.errors)}"
             raise AssertionError(msg)
         assert result.success is True  # Still successful
         # Add critical error
@@ -825,7 +827,7 @@ class TestWMSDiscoveryResult:
         )
         result.add_error(error2)
         if len(result.errors) != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {len(result.errors)}"
+            msg: str = f"Expected {2}, got {len(result.errors)}"
             raise AssertionError(msg)
         assert result.success is False  # Now failed
 
@@ -837,11 +839,11 @@ class TestTapMetrics:
         """Test default metrics initialization."""
         metrics = TapMetrics(start_time=None)
         if metrics.api_calls != 0:
-            msg = f"Expected {0}, got {metrics.api_calls}"
+            msg: str = f"Expected {0}, got {metrics.api_calls}"
             raise AssertionError(msg)
         assert metrics.records_processed == 0
         if metrics.errors_encountered != 0:
-            msg = f"Expected {0}, got {metrics.errors_encountered}"
+            msg: str = f"Expected {0}, got {metrics.errors_encountered}"
             raise AssertionError(msg)
         assert metrics.start_time is None
 
@@ -855,11 +857,11 @@ class TestTapMetrics:
             start_time=now,
         )
         if metrics.api_calls != 10:
-            msg = f"Expected {10}, got {metrics.api_calls}"
+            msg: str = f"Expected {10}, got {metrics.api_calls}"
             raise AssertionError(msg)
         assert metrics.records_processed == 1000
         if metrics.errors_encountered != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {metrics.errors_encountered}"
+            msg: str = f"Expected {2}, got {metrics.errors_encountered}"
             raise AssertionError(msg)
         assert metrics.start_time == now
 
@@ -867,45 +869,45 @@ class TestTapMetrics:
         """Test add_api_call method."""
         metrics = TapMetrics(start_time=None)
         if metrics.api_calls != 0:
-            msg = f"Expected {0}, got {metrics.api_calls}"
+            msg: str = f"Expected {0}, got {metrics.api_calls}"
             raise AssertionError(msg)
         metrics.add_api_call()
         if metrics.api_calls != 1:
-            msg = f"Expected {1}, got {metrics.api_calls}"
+            msg: str = f"Expected {1}, got {metrics.api_calls}"
             raise AssertionError(msg)
         metrics.add_api_call()
         if metrics.api_calls != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {metrics.api_calls}"
+            msg: str = f"Expected {2}, got {metrics.api_calls}"
             raise AssertionError(msg)
 
     def test_add_record_method(self) -> None:
         """Test add_record method."""
         metrics = TapMetrics(start_time=None)
         if metrics.records_processed != 0:
-            msg = f"Expected {0}, got {metrics.records_processed}"
+            msg: str = f"Expected {0}, got {metrics.records_processed}"
             raise AssertionError(msg)
         metrics.add_record()
         if metrics.records_processed != 1:
-            msg = f"Expected {1}, got {metrics.records_processed}"
+            msg: str = f"Expected {1}, got {metrics.records_processed}"
             raise AssertionError(msg)
         metrics.add_record()
         if metrics.records_processed != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {metrics.records_processed}"
+            msg: str = f"Expected {2}, got {metrics.records_processed}"
             raise AssertionError(msg)
 
     def test_add_error_method(self) -> None:
         """Test add_error method."""
         metrics = TapMetrics(start_time=None)
         if metrics.errors_encountered != 0:
-            msg = f"Expected {0}, got {metrics.errors_encountered}"
+            msg: str = f"Expected {0}, got {metrics.errors_encountered}"
             raise AssertionError(msg)
         metrics.add_error()
         if metrics.errors_encountered != 1:
-            msg = f"Expected {1}, got {metrics.errors_encountered}"
+            msg: str = f"Expected {1}, got {metrics.errors_encountered}"
             raise AssertionError(msg)
         metrics.add_error()
         if metrics.errors_encountered != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {metrics.errors_encountered}"
+            msg: str = f"Expected {2}, got {metrics.errors_encountered}"
             raise AssertionError(msg)
 
     def test_metrics_validation(self) -> None:
@@ -979,17 +981,17 @@ class TestModelIntegration:
         metrics.add_record()
         # Verify integration
         if discovery.total_entities != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {discovery.total_entities}"
+            msg: str = f"Expected {2}, got {discovery.total_entities}"
             raise AssertionError(msg)
         assert item_metadata.stream_name == item_entity.name
         if item_record.stream_name != item_entity.name:
-            msg = f"Expected {item_entity.name}, got {item_record.stream_name}"
+            msg: str = f"Expected {item_entity.name}, got {item_record.stream_name}"
             raise AssertionError(
                 msg,
             )
         assert metrics.api_calls == 1
         if metrics.records_processed != 1:
-            msg = f"Expected {1}, got {metrics.records_processed}"
+            msg: str = f"Expected {1}, got {metrics.records_processed}"
             raise AssertionError(msg)
 
     def test_error_handling_flow(self) -> None:
@@ -1016,11 +1018,11 @@ class TestModelIntegration:
         metrics.add_error()
         # Verify error handling
         if discovery.success:
-            msg = f"Expected False, got {discovery.success}"
+            msg: str = f"Expected False, got {discovery.success}"
             raise AssertionError(msg)
         assert discovery.failed_count == 1
         if metrics.errors_encountered != 1:
-            msg = f"Expected {1}, got {metrics.errors_encountered}"
+            msg: str = f"Expected {1}, got {metrics.errors_encountered}"
             raise AssertionError(msg)
 
     def test_serialization_integration(self) -> None:
@@ -1034,7 +1036,7 @@ class TestModelIntegration:
         )
         config_data = config.model_dump()
         if "base_url" not in config_data:
-            msg = f"Expected {'base_url'} in {config_data}"
+            msg: str = f"Expected {'base_url'} in {config_data}"
             raise AssertionError(msg)
         assert "username" in config_data
         # Create and serialize entity
@@ -1048,7 +1050,7 @@ class TestModelIntegration:
         )
         entity_data = entity.model_dump()
         if entity_data["name"] != "item":
-            msg = f"Expected {'item'}, got {entity_data['name']}"
+            msg: str = f"Expected {'item'}, got {entity_data['name']}"
             raise AssertionError(msg)
         assert entity_data["endpoint"] == "/entity/item"
         # Create and serialize record
@@ -1062,8 +1064,8 @@ class TestModelIntegration:
         )
         record_data = record.model_dump()
         if record_data["stream_name"] != "item":
-            msg = f"Expected {'item'}, got {record_data['stream_name']}"
+            msg: str = f"Expected {'item'}, got {record_data['stream_name']}"
             raise AssertionError(msg)
         if "record_data" not in record_data:
-            msg = f"Expected {'record_data'} in {record_data}"
+            msg: str = f"Expected {'record_data'} in {record_data}"
             raise AssertionError(msg)

@@ -32,16 +32,13 @@ from __future__ import annotations
 from flext_tap_oracle_wms.domain.models import (
     OracleWmsAuthenticationInfo,
     OracleWmsCatalog,
-    OracleWmsConfig,
     # Value objects
     OracleWmsConnectionInfo,
     OracleWmsDiscoveryResult,
     # Domain entities
     OracleWmsEntity,
     # Core domain types
-    OracleWmsEntityId,
     OracleWmsEntityInfo,
-    OracleWmsMetadata,
     OracleWmsSchema,
     OracleWmsSchemaInfo,
     # Aggregates
@@ -96,7 +93,7 @@ from flext_tap_oracle_wms.domain.types import (
     ValidationStatus,
 )
 
-__all__ = [
+__all__: list[str] = [
     "AllocationId",
     "AuthConfigDict",
     "CatalogDict",

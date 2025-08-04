@@ -15,12 +15,13 @@ Usage:
 Example:
     # Discover available streams
     python -m flext_tap_oracle_wms --config examples/configs/basic.json --discover
-    
+
     # Extract data
     python -m flext_tap_oracle_wms --config config.json --catalog catalog.json
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 # Copyright (c) 2025 FLEXT Team
@@ -32,22 +33,22 @@ from flext_tap_oracle_wms.tap import TapOracleWMS
 
 
 def main() -> None:
-    """
-    Main CLI entry point for FLEXT Tap Oracle WMS.
-    
+    """Main CLI entry point for FLEXT Tap Oracle WMS.
+
     Initializes and runs the Oracle WMS Singer tap using the Singer SDK
     CLI framework. Handles command-line argument parsing, configuration
     validation, and delegates to appropriate tap operations (discover, sync).
-    
+
     This function serves as the primary entry point for the tap when
     executed as a command-line tool or Python module.
-    
+
     Raises:
         SystemExit: On configuration errors or tap execution failures
-        
+
     Example:
         # Called automatically when running:
         # python -m flext_tap_oracle_wms --config config.json --discover
+
     """
     TapOracleWMS.cli()
 

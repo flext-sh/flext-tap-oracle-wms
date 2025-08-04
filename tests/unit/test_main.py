@@ -51,13 +51,16 @@ class TestMainModule:
 
         # Should not crash (exit code should be 0 for help)
         if result.returncode != 0:
-            msg = f"Expected {0}, got {result.returncode}"
+            msg: str = f"Expected {0}, got {result.returncode}"
             raise AssertionError(msg)
-        if "usage:" in result.stdout.lower() or "help" not in result.stdout.lower():
-            msg = f"Expected {'usage:' in result.stdout.lower() or 'help'} in {result.stdout.lower()}"
-            raise AssertionError(
-                msg,
-            )
+        # Check if output contains typical help/usage information
+        output_lower = result.stdout.lower()
+        has_usage = "usage:" in output_lower
+        has_help = "help" in output_lower
+
+        if not (has_usage or has_help):
+            msg: str = f"Expected 'usage:' or 'help' in output, got: {result.stdout[:200]}"
+            raise AssertionError(msg)
 
     def test_main_module_structure(self) -> None:
         """Test that __main__ module has expected structure."""
@@ -67,7 +70,9 @@ class TestMainModule:
         # Check module docstring
         assert main_module.__doc__ is not None
         if "running as python -m" not in main_module.__doc__.lower():
-            msg = f"Expected {'running as python -m'} in {main_module.__doc__.lower()}"
+            msg: str = (
+                f"Expected {'running as python -m'} in {main_module.__doc__.lower()}"
+            )
             raise AssertionError(
                 msg,
             )

@@ -11,9 +11,8 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from flext_core import TAnyDict, get_logger
-from flext_meltano import Tap, singer_typing as th
+from flext_meltano import Tap
 
-from flext_tap_oracle_wms.config import TapOracleWMSConfig, get_wms_config_schema
 from flext_tap_oracle_wms.critical_validation import (
     enforce_mandatory_environment_variables,
 )
@@ -30,7 +29,9 @@ from flext_tap_oracle_wms.schema_generator import SchemaGenerator
 from flext_tap_oracle_wms.streams import WMSStream
 
 if TYPE_CHECKING:
-    from singer_sdk import Sequence, Stream
+    from collections.abc import Sequence
+
+    from singer_sdk import Stream
 
     from flext_tap_oracle_wms.domain import (
         OracleWmsCatalog,
@@ -53,7 +54,7 @@ class TapInitializationConfig:
     """
 
     # REFACTORED: Use centralized configuration models
-    tap_config: TapOracleWMSConfig | None = None
+    tap_config: TAnyDict | None = None
     catalog: TAnyDict | None = None
     state: TAnyDict | None = None
     parse_env_config: bool = False
@@ -75,8 +76,7 @@ class TapOracleWMS(Tap):
     _wms_catalog: OracleWmsCatalog | None = None
 
     # REFACTORED: Use centralized configuration schema from domain model
-    @property
-    def config_jsonschema(self) -> dict:
+    def get_config_jsonschema(self) -> dict[str, object]:
         """Get configuration schema using centralized patterns.
 
         REFACTORED: Uses TapOracleWMSConfig JSON schema instead of manual definition.
@@ -90,7 +90,7 @@ class TapOracleWMS(Tap):
                     "description": "Oracle WMS base URL",
                 },
                 "username": {
-                    "type": "string", 
+                    "type": "string",
                     "description": "Oracle WMS username",
                 },
                 "password": {
@@ -104,7 +104,7 @@ class TapOracleWMS(Tap):
                     "description": "WMS company code",
                 },
                 "facility_code": {
-                    "type": "string", 
+                    "type": "string",
                     "default": "*",
                     "description": "WMS facility code",
                 },
@@ -132,7 +132,7 @@ class TapOracleWMS(Tap):
         parse_env_config: bool = False,
         validate_config: bool = True,
         setup_mapper: bool = True,
-        message_writer = None,
+        message_writer: Any = None,
         init_config: TapInitializationConfig | None = None,
     ) -> None:
         """Initialize tap with lazy loading - NO network calls during init.
@@ -142,9 +142,11 @@ class TapOracleWMS(Tap):
         """
         # Parameter Object Pattern: Use init_config if provided, otherwise use individual params
         if init_config is not None:
-            params = init_config
+            # Use init_config parameters if provided
+            pass  # init_config contains all needed parameters
         else:
-            params = TapInitializationConfig(
+            # Create TapInitializationConfig from individual params for validation
+            TapInitializationConfig(
                 tap_config=config,
                 catalog=catalog,
                 state=state,
@@ -162,7 +164,7 @@ class TapOracleWMS(Tap):
             setup_mapper=setup_mapper,
             message_writer=message_writer,
         )
-        
+
         # Strategy Pattern: Use initialization strategy to reduce complexity
         self._initialize_tap_post_super()
 
@@ -172,7 +174,6 @@ class TapOracleWMS(Tap):
         SOLID REFACTORING: Extracted initialization logic to reduce __init__ complexity
         using Strategy Pattern and Parameter Object Pattern.
         """
-
         # Apply type conversion after parent initialization
         self._apply_config_type_conversion()
 
@@ -203,7 +204,10 @@ class TapOracleWMS(Tap):
             else "REAL MODE - using Oracle WMS API"
         )
         self.logger.info(f"🔧 Initializing TapOracleWMS - {mode_msg}")
-        self.logger.info("🔧 Config provided: %s", hasattr(self, "config") and self.config is not None)
+        self.logger.info(
+            "🔧 Config provided: %s",
+            hasattr(self, "config") and self.config is not None,
+        )
 
         # Log key config values (without secrets)
         if hasattr(self, "config") and self.config:
@@ -323,7 +327,7 @@ class TapOracleWMS(Tap):
                 # Don't fail the entire tap for validation errors, just warn
 
     @property
-    def discovery(self) -> object:
+    def discovery(self) -> EntityDiscovery:
         """Get entity discovery service using centralized patterns.
 
         Returns:
@@ -333,23 +337,12 @@ class TapOracleWMS(Tap):
 
         """
         if not hasattr(self, "_discovery") or self._discovery is None:
-            # Use centralized configuration for discovery
-            if self._wms_config:
-                # Create discovery using domain configuration
-                from flext_tap_oracle_wms.cache import CacheManagerAdapter
+            # Create discovery using raw config for now
+            self._validate_configuration()
+            from flext_tap_oracle_wms.cache import CacheManagerAdapter
 
-                cache_manager = CacheManagerAdapter(self._wms_config.to_singer_config())
-                self._discovery = EntityDiscovery(
-                    self._wms_config.to_singer_config(),
-                    cache_manager,
-                )
-            else:
-                # Fallback for backward compatibility
-                self._validate_configuration()
-                from flext_tap_oracle_wms.cache import CacheManagerAdapter
-
-                cache_manager = CacheManagerAdapter(dict(self.config))
-                self._discovery = EntityDiscovery(dict(self.config), cache_manager)
+            cache_manager = CacheManagerAdapter(dict(self.config))
+            self._discovery = EntityDiscovery(dict(self.config), cache_manager)
         return self._discovery
 
     @property
@@ -363,15 +356,9 @@ class TapOracleWMS(Tap):
 
         """
         if not hasattr(self, "_schema_generator") or self._schema_generator is None:
-            # Use centralized configuration for schema generation
-            if self._wms_config:
-                self._schema_generator = SchemaGenerator(
-                    self._wms_config.to_singer_config(),
-                )
-            else:
-                # Fallback for backward compatibility
-                self._validate_configuration()
-                self._schema_generator = SchemaGenerator(dict(self.config))
+            # Create schema generator using raw config for now
+            self._validate_configuration()
+            self._schema_generator = SchemaGenerator(dict(self.config))
         return self._schema_generator
 
     def set_discovery_mode(self, *, enabled: bool = True) -> None:
@@ -407,7 +394,11 @@ class TapOracleWMS(Tap):
 
         if use_modern:
             logger.info("🚀 Using MODERN Oracle WMS discovery with flext-core models")
-            return self._discover_streams_modern_with_domain_models()
+            from typing import cast
+
+            streams = self._discover_streams_modern_with_domain_models()
+            return cast("Sequence[Stream]", streams)
+
         logger.info("⚠️ Using legacy discovery (fallback mode)")
         return self._discover_streams_legacy()
 
@@ -421,12 +412,8 @@ class TapOracleWMS(Tap):
 
             logger = get_logger(__name__)
 
-            # REFACTORED: Use centralized configuration for modern discovery
-            config_dict = (
-                self._wms_config.to_singer_config()
-                if self._wms_config
-                else dict(self.config)
-            )
+            # Use raw config for modern discovery
+            config_dict = dict(self.config)
 
             logger.info("Running modern discovery with centralized configuration")
             discovery_result = asyncio.run(
@@ -437,11 +424,11 @@ class TapOracleWMS(Tap):
                 error = discovery_result.get("error", "Unknown error")
                 self.logger.error(f"❌ Modern discovery failed: {error}")
                 # DO NOT FALL BACK - fail explicitly
-                msg = f"Modern Oracle WMS discovery failed: {error}"
-                raise RuntimeError(msg)
+                discovery_error_msg: str = f"Modern Oracle WMS discovery failed: {error}"
+                raise RuntimeError(discovery_error_msg)
 
             schemas = discovery_result.get("schemas", {})
-            entities = list(schemas.keys())
+            entities = list(schemas.keys()) if isinstance(schemas, dict) else []
 
             self.logger.info(
                 f"✅ Modern discovery found {len(entities)} entities with schemas",
@@ -452,20 +439,25 @@ class TapOracleWMS(Tap):
 
             # Create streams from modern schemas
             streams = []
-            for entity_name, schema in schemas.items():
-                try:
-                    stream = self._create_stream_from_modern_schema(entity_name, schema)
-                    if stream:
-                        streams.append(stream)
-                        self.logger.info(f"   ✅ Created modern stream: {entity_name}")
-                    else:
-                        self.logger.warning(
-                            f"   ❌ Failed to create stream: {entity_name}",
+            if isinstance(schemas, dict):
+                for entity_name, schema in schemas.items():
+                    try:
+                        stream = self._create_stream_from_modern_schema(
+                            entity_name, schema,
                         )
-                except Exception as e:
-                    self.logger.exception(
-                        f"   💥 Stream creation failed for {entity_name}: {e}",
-                    )
+                        if stream:
+                            streams.append(stream)
+                            self.logger.info(
+                                f"   ✅ Created modern stream: {entity_name}",
+                            )
+                        else:
+                            self.logger.warning(
+                                f"   ❌ Failed to create stream: {entity_name}",
+                            )
+                    except Exception as e:
+                        self.logger.exception(
+                            f"   💥 Stream creation failed for {entity_name}: {e}",
+                        )
 
             self.logger.info(
                 f"🎉 Modern discovery complete: {len(streams)} streams created",
@@ -475,10 +467,12 @@ class TapOracleWMS(Tap):
         except Exception as e:
             self.logger.exception("Modern discovery failed completely")
             # DO NOT FALL BACK - fail explicitly as requested
-            msg = f"Modern Oracle WMS discovery failed: {e}"
-            raise RuntimeError(msg)
+            exception_error_msg: str = f"Modern Oracle WMS discovery failed: {e}"
+            raise RuntimeError(exception_error_msg) from e
 
-    def _create_stream_from_modern_schema(self, entity_name: str, schema: dict) -> Any:
+    def _create_stream_from_modern_schema(
+        self, entity_name: str, schema: dict[str, object],
+    ) -> Any:
         """Create WMSStream from modern schema."""
         try:
             # Remove Oracle WMS specific metadata from schema
@@ -606,7 +600,7 @@ class TapOracleWMS(Tap):
             metadata = self.discovery.describe_entity_sync(entity_name)
             if metadata:
                 schema = self.schema_generator.generate_from_metadata(metadata)
-                if schema and schema.get("properties"):
+                if schema and isinstance(schema, dict) and schema.get("properties"):
                     return schema
         except (
             ValueError,
@@ -754,7 +748,8 @@ class TapOracleWMS(Tap):
             self.logger.exception("❌ Error during entity discovery")
             raise
         else:
-            return filtered_entities
+            # Ensure we return the correct type - filtered_entities is always dict here
+            return filtered_entities if isinstance(filtered_entities, dict) else {}
 
     def _generate_schema_sync(self, entity_name: str) -> dict[str, Any] | None:
         # Check cache first
@@ -774,31 +769,48 @@ class TapOracleWMS(Tap):
             # Generate schema from metadata ONLY - flattening support if enabled
             if flattening_enabled:
                 if metadata is None:
-                    msg = f"Metadata is None for entity {entity_name}"
-                    raise ValueError(msg)
+                    flattening_msg: str = f"Metadata is None for entity {entity_name}"
+                    raise ValueError(flattening_msg)
                 schema = self.schema_generator.generate_metadata_schema_with_flattening(
                     metadata,
+                )
+                properties_obj = (
+                    schema.get("properties", {}) if isinstance(schema, dict) else {}
+                )
+                prop_count = (
+                    len(properties_obj) if isinstance(properties_obj, dict) else 0
                 )
                 self.logger.info(
                     "✅ Generated metadata schema with flattening for %s with "
                     "%d total fields",
                     entity_name,
-                    len(schema.get("properties", {})),
+                    prop_count,
                 )
             else:
                 if metadata is None:
-                    msg = f"Metadata is None for entity {entity_name}"
-                    raise ValueError(msg)
+                    metadata_msg: str = f"Metadata is None for entity {entity_name}"
+                    raise ValueError(metadata_msg)
                 schema = self.schema_generator.generate_from_metadata(
                     metadata,
+                )
+                properties_obj = (
+                    schema.get("properties", {}) if isinstance(schema, dict) else {}
+                )
+                prop_count = (
+                    len(properties_obj) if isinstance(properties_obj, dict) else 0
                 )
                 self.logger.info(
                     "✅ Generated basic metadata schema for %s with %d fields",
                     entity_name,
-                    len(schema.get("properties", {})),
+                    prop_count,
                 )
             # Log schema field names for verification
-            field_names = list(schema.get("properties", {}).keys())
+            properties = (
+                schema.get("properties", {}) if isinstance(schema, dict) else {}
+            )
+            field_names = (
+                list(properties.keys()) if isinstance(properties, dict) else []
+            )
             self.logger.info(
                 "📋 Schema fields for %s: %s",
                 entity_name,
@@ -815,7 +827,9 @@ class TapOracleWMS(Tap):
             AuthenticationError,
         ) as e:
             # These are specific WMS errors - re-raise with context
-            error_msg = f"WMS error during schema generation for {entity_name}: {e}"
+            error_msg: str = (
+                f"WMS error during schema generation for {entity_name}: {e}"
+            )
             raise SchemaGenerationError(error_msg) from e
         except (ValueError, KeyError, TypeError, RuntimeError) as e:
             # Unexpected errors

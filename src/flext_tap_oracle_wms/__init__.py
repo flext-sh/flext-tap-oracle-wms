@@ -85,7 +85,7 @@ with contextlib.suppress(ImportError):
 # PUBLIC API EXPORTS
 # ================================
 
-__all__ = [
+__all__: list[str] = [
     "BaseConfig",
     "BaseModel",
     "DomainEntity",

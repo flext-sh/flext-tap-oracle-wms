@@ -24,7 +24,7 @@ WMSClientError = FlextOracleWmsError
 AuthenticationError = FlextOracleWmsAuthenticationError
 WMSConnectionError = FlextOracleWmsError
 
-__all__ = [
+__all__: list[str] = [
     "AuthenticationError",
     "WMSClient",
     "WMSClientError",

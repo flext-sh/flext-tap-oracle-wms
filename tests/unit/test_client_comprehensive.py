@@ -105,7 +105,7 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != [{"id": 1, "name": "item"}]:
-            msg = f"Expected {[{'id': 1, 'name': 'item'}]}, got {result}"
+            msg: str = f"Expected {[{'id': 1, 'name': 'item'}]}, got {result}"
             raise AssertionError(
                 msg,
             )
@@ -134,7 +134,7 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != [{"id": 1}, {"id": 2}]:
-            msg = f"Expected {[{'id': 1}, {'id': 2}]}, got {result}"
+            msg: str = f"Expected {[{'id': 1}, {'id': 2}]}, got {result}"
             raise AssertionError(msg)
         mock_logger.info.assert_any_call("Found %d entities via %s", 2, "/api/entities")
 
@@ -152,7 +152,7 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != []:
-            msg = f"Expected {[]}, got {result}"
+            msg: str = f"Expected {[]}, got {result}"
             raise AssertionError(msg)
         mock_logger.warning.assert_called_with(
             "No entities discovered - will try common WMS endpoints",
@@ -173,7 +173,7 @@ class TestWMSClientComprehensive:
             }
             mock_get.assert_called_once_with("/api/items", expected_params)
             if result != {"data": "test"}:
-                msg = f"Expected {{'data': 'test'}}, got {result}"
+                msg: str = f"Expected {{'data': 'test'}}, got {result}"
                 raise AssertionError(msg)
 
     def test_get_entity_data_without_params(self, wms_client: WMSClient) -> None:
@@ -205,7 +205,7 @@ class TestWMSClientComprehensive:
         result = wms_client.test_connection()
 
         if not (result):
-            msg = f"Expected True, got {result}"
+            msg: str = f"Expected True, got {result}"
             raise AssertionError(msg)
         mock_get.assert_called_once_with("/api/ping", params={})
 
@@ -222,7 +222,7 @@ class TestWMSClientComprehensive:
         result = wms_client.test_connection()
 
         if result:
-            msg = f"Expected False, got {result}"
+            msg: str = f"Expected False, got {result}"
             raise AssertionError(msg)
         assert mock_get.call_count == 1
         mock_get.assert_called_once_with("/api/ping", params={})
@@ -240,11 +240,11 @@ class TestWMSClientComprehensive:
         result = wms_client.test_connection()
 
         if result:
-            msg = f"Expected False, got {result}"
+            msg: str = f"Expected False, got {result}"
             raise AssertionError(msg)
         # Should try only /api/ping endpoint
         if mock_get.call_count != 1:
-            msg = f"Expected {1}, got {mock_get.call_count}"
+            msg: str = f"Expected {1}, got {mock_get.call_count}"
             raise AssertionError(msg)
 
     def test_handle_response_errors_unauthorized(self) -> None:
@@ -256,7 +256,7 @@ class TestWMSClientComprehensive:
             WMSClient._handle_response_errors(mock_response)
 
         if str(excinfo.value) != "Authentication failed: Invalid credentials":
-            msg = f"Expected {'Authentication failed: Invalid credentials'}, got {excinfo.value!s}"
+            msg: str = f"Expected {'Authentication failed: Invalid credentials'}, got {excinfo.value!s}"
             raise AssertionError(
                 msg,
             )
@@ -270,7 +270,7 @@ class TestWMSClientComprehensive:
             WMSClient._handle_response_errors(mock_response)
 
         if str(excinfo.value) != "Authentication failed: Access denied":
-            msg = f"Expected {'Authentication failed: Access denied'}, got {excinfo.value!s}"
+            msg: str = f"Expected {'Authentication failed: Access denied'}, got {excinfo.value!s}"
             raise AssertionError(
                 msg,
             )
@@ -284,7 +284,7 @@ class TestWMSClientComprehensive:
             WMSClient._handle_response_errors(mock_response)
 
         if str(excinfo.value) != "Server error: 500":
-            msg = f"Expected {'Server error: 500'}, got {excinfo.value!s}"
+            msg: str = f"Expected {'Server error: 500'}, got {excinfo.value!s}"
             raise AssertionError(
                 msg,
             )
@@ -299,7 +299,7 @@ class TestWMSClientComprehensive:
             WMSClient._handle_response_errors(mock_response)
 
         if str(excinfo.value) != "Client error: 400":
-            msg = f"Expected {'Client error: 400'}, got {excinfo.value!s}"
+            msg: str = f"Expected {'Client error: 400'}, got {excinfo.value!s}"
             raise AssertionError(
                 msg,
             )
@@ -339,7 +339,7 @@ class TestWMSClientComprehensive:
             wms_client.get("/test")
 
         if "Connection failed: Connection refused" not in str(excinfo.value):
-            msg = f"Expected {'Connection failed: Connection refused'} in {excinfo.value!s}"
+            msg: str = f"Expected {'Connection failed: Connection refused'} in {excinfo.value!s}"
             raise AssertionError(
                 msg,
             )
@@ -357,7 +357,9 @@ class TestWMSClientComprehensive:
             wms_client.get("/test")
 
         if "Request timeout: Request timeout" not in str(excinfo.value):
-            msg = f"Expected {'Request timeout: Request timeout'} in {excinfo.value!s}"
+            msg: str = (
+                f"Expected {'Request timeout: Request timeout'} in {excinfo.value!s}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -377,7 +379,7 @@ class TestWMSClientComprehensive:
         result = wms_client.get("/test")
 
         if result != {"data": ["item1", "item2"]}:
-            msg = f"Expected {{'data': ['item1', 'item2']}}, got {result}"
+            msg: str = f"Expected {{'data': ['item1', 'item2']}}, got {result}"
             raise AssertionError(
                 msg,
             )
@@ -427,7 +429,7 @@ class TestWMSClientComprehensive:
         try:
             decoded = base64.b64decode(encoded_part).decode()
             if decoded != "test_user:test_pass":
-                msg = f"Expected {'test_user:test_pass'}, got {decoded}"
+                msg: str = f"Expected {'test_user:test_pass'}, got {decoded}"
                 raise AssertionError(msg)
         except (RuntimeError, ValueError, TypeError):
             pytest.fail("Invalid base64 encoding in Authorization header")
@@ -455,7 +457,7 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != []:
-            msg = f"Expected {[]}, got {result}"
+            msg: str = f"Expected {[]}, got {result}"
             raise AssertionError(msg)
         mock_logger.warning.assert_called_with(
             "No entities discovered - will try common WMS endpoints",
@@ -484,7 +486,7 @@ class TestWMSClientComprehensive:
             result = wms_client.discover_entities()
 
         if result != []:
-            msg = f"Expected {[]}, got {result}"
+            msg: str = f"Expected {[]}, got {result}"
             raise AssertionError(msg)
 
 

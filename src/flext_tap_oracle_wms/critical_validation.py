@@ -39,7 +39,9 @@ def enforce_mandatory_environment_variables() -> None:
     missing_vars = [var for var in required_vars if not os.getenv(var)]
 
     if missing_vars:
-        error_msg = f"Missing required environment variables: {', '.join(missing_vars)}"
+        error_msg: str = (
+            f"Missing required environment variables: {', '.join(missing_vars)}"
+        )
         logger.error(error_msg)
         raise SystemExit(error_msg)
 

@@ -52,6 +52,7 @@ src/flext_tap_oracle_wms/
 ```
 
 **Issues**:
+
 - **26 modules** where 6-8 would suffice
 - **Multiple competing systems** (3 discovery, 4 configuration)
 - **Massive files** (1,042 lines in tap.py vs target ~100-150 lines)
@@ -77,6 +78,7 @@ src/flext_tap_oracle_wms/
 ```
 
 **Benefits**:
+
 - **90% code reduction** (8,179 → ~800 lines)
 - **Single responsibility** per module
 - **Clear dependency flow** following Clean Architecture
@@ -102,7 +104,7 @@ from flext_tap_oracle_wms.tap import TapOracleWMS
 from flext_tap_oracle_wms.config import WMSConfig
 from flext_tap_oracle_wms.__version__ import __version__
 
-__all__ = [
+__all__: list[str] = [
     "TapOracleWMS",
     "WMSConfig", 
     "__version__",
@@ -116,6 +118,7 @@ __version__ = "1.0.0"
 **Responsibility**: Establish clean public API and version management.
 
 **Import Pattern**:
+
 ```python
 # Standard ecosystem usage
 from flext_tap_oracle_wms import TapOracleWMS, WMSConfig
@@ -176,7 +179,7 @@ class TapOracleWMS(Tap):
         discovery = EntityDiscovery(self.wms_client)
         entities_result = discovery.discover_entities()
         
-        if not entities_result.is_success:
+        if not entities_result.success:
             raise RuntimeError(f"Stream discovery failed: {entities_result.error}")
             
         return [
@@ -189,6 +192,7 @@ class TapOracleWMS(Tap):
 **Responsibility**: Main tap orchestration using Singer SDK with FLEXT integration.
 
 **Usage Pattern**:
+
 ```python
 from flext_tap_oracle_wms import TapOracleWMS
 
@@ -247,7 +251,7 @@ class WMSStream(RESTStream):
     def schema(self) -> Dict[str, Any]:
         """Get stream schema from WMS metadata."""
         schema_result = self._schema_generator.generate_schema(self.name)
-        if not schema_result.is_success:
+        if not schema_result.success:
             raise RuntimeError(f"Schema generation failed: {schema_result.error}")
         return schema_result.data
         
@@ -449,7 +453,7 @@ class SchemaGenerator:
     def generate_schema(self, entity: str) -> FlextResult[Dict[str, Any]]:
         """Generate Singer schema for WMS entity."""
         metadata_result = self.discovery.get_entity_metadata(entity)
-        if not metadata_result.is_success:
+        if not metadata_result.success:
             return FlextResult.fail(metadata_result.error)
             
         try:
@@ -903,7 +907,7 @@ def discover_entities(self) -> FlextResult[List[str]]:
     Example:
         >>> discovery = EntityDiscovery(wms_client)
         >>> result = discovery.discover_entities()
-        >>> if result.is_success:
+        >>> if result.success:
         ...     print(f"Found entities: {result.data}")
         ... else:
         ...     print(f"Discovery failed: {result.error}")

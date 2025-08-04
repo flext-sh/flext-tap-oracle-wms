@@ -19,8 +19,6 @@ from flext_core import (
     FlextDataIntegrationConfig,
     # Configuration models from flext-core
     FlextOracleConfig,
-    FlextSingerConfig,
-    # TypedDict definitions
     TAnyDict,
     create_oracle_config,
 )
@@ -65,7 +63,7 @@ class OracleWMSTapConfig(FlextDataIntegrationConfig):
         """Validate page mode is supported by Oracle WMS."""
         valid_modes = ["sequenced", "paged"]
         if v not in valid_modes:
-            msg = f"Page mode must be one of: {valid_modes}"
+            msg: str = f"Page mode must be one of: {valid_modes}"
             raise ValueError(msg)
         return v
 
@@ -137,9 +135,7 @@ class TapOracleWMSConfig(OracleWMSTapConfig):
 
         """
         # Use flext-core configuration serialization patterns
-        self.model_dump()
-
-        # Create Singer-compatible configuration
+        # Create Singer-compatible configuration with proper type casting
         singer_config: TAnyDict = {
             "host": self.host,
             "username": self.username,
@@ -150,8 +146,8 @@ class TapOracleWMSConfig(OracleWMSTapConfig):
             "facility_code": self.facility_code,
             "wms_api_version": self.wms_api_version,
             "page_mode": self.page_mode,
-            "entities": self.entities,
-            "entity_filters": self.entity_filters,
+            "entities": cast("list[object]", self.entities),
+            "entity_filters": cast("dict[str, object]", self.entity_filters),
             "batch_size": self.batch_size,
             "parallel_workers": self.parallel_workers,
         }
@@ -171,53 +167,19 @@ class TapOracleWMSConfig(OracleWMSTapConfig):
         REFACTORED: Uses flext-core configuration creation patterns instead of manual construction.
 
         """
-        # Use flext-core factory patterns for Oracle configuration
-        oracle_config = create_oracle_config(
-            {
-                "host": cast("str", config["base_url"]),
-                "username": cast("str", config["username"]),
-                "password": cast("str", config["password"]),
-                "timeout": cast("int", config.get("timeout", 30)),
-                "max_retries": cast("int", config.get("max_retries", 3)),
-                "verify_ssl": cast("bool", config.get("verify_ssl", True)),
-            },
-        )
+        # Use flext-core factory patterns for Oracle configuration (unused for now)
+        # oracle_config = create_oracle_config(...)
 
-        # Create Singer configuration using flext-core patterns
-        singer_config = FlextSingerConfig(
-            state_file=cast("str", config.get("state_file"))
-            if config.get("state_file")
-            else None,
-            catalog_file=cast("str", config.get("catalog_file"))
-            if config.get("catalog_file")
-            else None,
-        )
+        # Create Singer configuration using flext-core patterns (unused for now)
+        # singer_config = FlextSingerConfig(...)
 
-        # Create main configuration using centralized patterns
+        # Create TapOracleWMSConfig using the correct constructor fields
         return cls(
-            # Connection from Oracle config
-            connection=oracle_config.connection,
-            authentication=oracle_config.authentication,
-            # WMS-specific configuration
-            company_code=cast("str", config.get("company_code", "*")),
-            facility_code=cast("str", config.get("facility_code", "*")),
-            wms_api_version=cast("str", config.get("wms_api_version", "v10")),
-            page_mode=cast("str", config.get("page_mode", "sequenced")),
-            entities=cast("list[str]", config.get("entities", [])),
-            entity_filters=cast(
-                "dict[str, dict[str, str]]",
-                config.get("entity_filters", {}),
-            ),
-            # Extraction configuration
-            extraction={
-                "page_size": cast("int", config.get("page_size", 1000)),
-                "batch_size": cast("int", config.get("batch_size", 1000)),
-                "start_date": cast("str", config.get("start_date"))
-                if config.get("start_date")
-                else None,
-            },
-            # Singer protocol configuration
-            singer_config=singer_config,
+            host=cast("str", config["base_url"]),
+            username=cast("str", config["username"]),
+            password=cast("str", config["password"]),
+            port=cast("int", config.get("port", 1521)),
+            service_name=cast("str", config.get("service_name", "XE")),
         )
 
 
@@ -255,7 +217,7 @@ def get_wms_config_schema() -> dict[str, object]:
 # EXPORTS - Centralized configuration classes
 # =============================================================================
 
-__all__ = [
+__all__: list[str] = [
     "OracleWMSTapConfig",
     # Main configuration class
     "TapOracleWMSConfig",

@@ -40,7 +40,7 @@ class TestCLI:
         # Check docstring
         assert cli_module.__doc__ is not None
         if "CLI entry point" not in cli_module.__doc__:
-            msg = f"Expected {'CLI entry point'} in {cli_module.__doc__}"
+            msg: str = f"Expected {'CLI entry point'} in {cli_module.__doc__}"
             raise AssertionError(
                 msg,
             )
@@ -48,7 +48,7 @@ class TestCLI:
         # Check main function docstring
         assert main.__doc__ is not None
         if "CLI entry point" not in main.__doc__:
-            msg = f"Expected {'CLI entry point'} in {main.__doc__}"
+            msg: str = f"Expected {'CLI entry point'} in {main.__doc__}"
             raise AssertionError(msg)
 
     @patch("flext_tap_oracle_wms.cli.main")

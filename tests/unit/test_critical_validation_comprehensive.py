@@ -63,7 +63,7 @@ class TestEnforceMandatoryEnvironmentVariables:
                 if "TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true'" not in str(
                     excinfo.value,
                 ):
-                    msg = f"Expected {'TAP_ORACLE_WMS_USE_METADATA_ONLY must be true'} in {excinfo.value!s}"
+                    msg: str = f"Expected {'TAP_ORACLE_WMS_USE_METADATA_ONLY must be true'} in {excinfo.value!s}"
                     raise AssertionError(
                         msg,
                     )
@@ -93,7 +93,9 @@ class TestEnforceMandatoryEnvironmentVariables:
 
                 # Should log error and exit (value is converted to lowercase)
                 if f"but got '{value.lower()}'" not in str(excinfo.value):
-                    msg = f"Expected {'but got {value.lower()}'} in {excinfo.value!s}"
+                    msg: str = (
+                        f"Expected {'but got {value.lower()}'} in {excinfo.value!s}"
+                    )
                     raise AssertionError(
                         msg,
                     )
@@ -124,7 +126,7 @@ class TestEnforceMandatoryEnvironmentVariables:
                     )
                 )
                 if "but got '-1'" not in str(excinfo.value):
-                    msg = f"Expected {'but got -1'} in {excinfo.value!s}"
+                    msg: str = f"Expected {'but got -1'} in {excinfo.value!s}"
                     raise AssertionError(
                         msg,
                     )
@@ -153,7 +155,7 @@ class TestEnforceMandatoryEnvironmentVariables:
 
                 # Should log error and exit
                 if f"but got '{value}'" not in str(excinfo.value):
-                    msg = f"Expected {f'but got {value}'} in {excinfo.value!s}"
+                    msg: str = f"Expected {f'but got {value}'} in {excinfo.value!s}"
                     raise AssertionError(
                         msg,
                     )
@@ -228,7 +230,7 @@ class TestEnforceMandatoryEnvironmentVariables:
 
             error_msg = str(excinfo.value)
             if "❌ CRITICAL FAILURE:" not in error_msg:
-                msg = f"Expected {'❌ CRITICAL FAILURE:'} in {error_msg}"
+                msg: str = f"Expected {'❌ CRITICAL FAILURE:'} in {error_msg}"
                 raise AssertionError(
                     msg,
                 )
@@ -248,7 +250,7 @@ class TestEnforceMandatoryEnvironmentVariables:
 
             error_msg = str(excinfo.value)
             if "❌ CRITICAL FAILURE:" not in error_msg:
-                msg = f"Expected {'❌ CRITICAL FAILURE:'} in {error_msg}"
+                msg: str = f"Expected {'❌ CRITICAL FAILURE:'} in {error_msg}"
                 raise AssertionError(
                     msg,
                 )
@@ -273,7 +275,7 @@ class TestEnforceMandatoryEnvironmentVariables:
             # Should include both validation errors
             error_msg = str(excinfo.value)
             if "TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true'" not in error_msg:
-                msg = f"Expected {'TAP_ORACLE_WMS_USE_METADATA_ONLY must be true'} in {error_msg}"
+                msg: str = f"Expected {'TAP_ORACLE_WMS_USE_METADATA_ONLY must be true'} in {error_msg}"
                 raise AssertionError(
                     msg,
                 )

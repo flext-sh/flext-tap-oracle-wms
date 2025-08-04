@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 
 # Import centralized models from flext-core
 from flext_core import (
@@ -41,7 +41,7 @@ from flext_core import (
     FlextDomainValueObject,
     TAnyDict,
 )
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 # =============================================================================
 # ORACLE WMS SPECIFIC ENUMS
@@ -161,7 +161,7 @@ class OracleWmsSchemaInfo(FlextDomainValueObject):
     """Value object for Oracle WMS schema information."""
 
     entity_name: str = Field(..., description="Entity name this schema belongs to")
-    properties: dict[str, Any] = Field(
+    properties: dict[str, dict[str, object]] = Field(
         default_factory=dict,
         description="JSON schema properties",
     )
@@ -175,11 +175,12 @@ class OracleWmsSchemaInfo(FlextDomainValueObject):
     )
     field_count: int = Field(ge=0, description="Number of fields in schema")
 
-    def __init__(self, **data: Any) -> None:
-        super().__init__(**data)
-        # Calculate field count from properties
-        if not hasattr(self, "field_count") or self.field_count == 0:
+    @model_validator(mode="after")
+    def _calculate_field_count(self) -> OracleWmsSchemaInfo:
+        """Calculate field count from properties after model creation."""
+        if self.field_count == 0:
             object.__setattr__(self, "field_count", len(self.properties))
+        return self
 
 
 # =============================================================================
@@ -225,7 +226,7 @@ class OracleWmsEntity(FlextDomainEntity):
             and self.info.replication_key in self.schema_info.properties
         )
 
-    def get_replication_config(self) -> dict[str, Any]:
+    def get_replication_config(self) -> dict[str, object]:
         """Get replication configuration for this entity."""
         return {
             "method": self.replication_method.value,
@@ -243,20 +244,24 @@ class OracleWmsSchema(FlextDomainEntity):
     """Domain entity for Oracle WMS schema definitions."""
 
     entity_name: str = Field(..., description="Entity name")
-    json_schema: dict[str, Any] = Field(..., description="Complete JSON schema")
-    singer_schema: dict[str, Any] = Field(..., description="Singer-compatible schema")
-    metadata: dict[str, Any] = Field(
+    json_schema: dict[str, object] = Field(..., description="Complete JSON schema")
+    singer_schema: dict[str, object] = Field(..., description="Singer-compatible schema")
+    metadata: dict[str, object] = Field(
         default_factory=dict,
         description="Schema metadata",
     )
 
     def get_field_names(self) -> list[str]:
         """Get all field names from schema properties."""
-        return list(self.json_schema.get("properties", {}).keys())
+        properties = self.json_schema.get("properties", {})
+        if isinstance(properties, dict):
+            return list(properties.keys())
+        return []
 
     def get_required_fields(self) -> list[str]:
         """Get required field names from schema."""
-        return self.json_schema.get("required", [])
+        required = self.json_schema.get("required", [])
+        return required if isinstance(required, list) else []
 
     def is_field_required(self, field_name: str) -> bool:
         """Check if a field is required."""
@@ -300,7 +305,7 @@ class OracleWmsTapConfiguration(FlextBaseModel):
     def add_entity(self, entity: OracleWmsEntityInfo) -> None:
         """Add entity to configuration with validation."""
         if self.get_entity_by_name(entity.name) is not None:
-            msg = f"Entity {entity.name} already exists in configuration"
+            msg: str = f"Entity {entity.name} already exists in configuration"
             raise ValueError(msg)
         self.entities.append(entity)
 
@@ -314,7 +319,7 @@ class OracleWmsCatalog(FlextBaseModel):
 
     entities: list[OracleWmsEntity] = Field(default_factory=list)
     schemas: list[OracleWmsSchema] = Field(default_factory=list)
-    discovery_metadata: dict[str, Any] = Field(default_factory=dict)
+    discovery_metadata: dict[str, object] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=datetime.now)
 
     def get_entity_names(self) -> list[str]:
@@ -329,7 +334,7 @@ class OracleWmsCatalog(FlextBaseModel):
         self,
         entity_info: OracleWmsEntityInfo,
         schema_info: OracleWmsSchemaInfo,
-        json_schema: dict[str, Any],
+        json_schema: dict[str, object],
     ) -> None:
         """Add discovered entity with schema to catalog."""
         # Create entity
@@ -360,11 +365,11 @@ class OracleWmsDiscoveryResult(FlextBaseModel):
 
     success: bool = Field(..., description="Discovery success status")
     entity_name: str = Field(..., description="Discovered entity name")
-    schema: dict[str, Any] = Field(
+    entity_schema: dict[str, object] = Field(
         default_factory=dict,
         description="Discovered schema",
     )
-    metadata: dict[str, Any] = Field(
+    metadata: dict[str, object] = Field(
         default_factory=dict,
         description="Discovery metadata",
     )
@@ -376,7 +381,7 @@ class OracleWmsDiscoveryResult(FlextBaseModel):
         description="Discovery time in milliseconds",
     )
 
-    def is_successful(self) -> bool:
+    def successful(self) -> bool:
         """Check if discovery was successful."""
         return self.success and not self.errors and self.field_count > 0
 
@@ -404,49 +409,56 @@ def create_oracle_wms_tap_config(config_dict: TAnyDict) -> OracleWmsTapConfigura
         ValueError: If configuration is invalid
 
     """
-    # Extract connection info
+    # Extract connection info with proper type conversions
     connection = OracleWmsConnectionInfo(
-        base_url=config_dict["base_url"],
-        timeout=config_dict.get("timeout", 30),
-        max_retries=config_dict.get("max_retries", 3),
-        verify_ssl=config_dict.get("verify_ssl", True),
-        api_version=config_dict.get("wms_api_version", "v10"),
+        base_url=str(config_dict["base_url"]),
+        timeout=cast("int", config_dict.get("timeout", 30)),
+        max_retries=cast("int", config_dict.get("max_retries", 3)),
+        verify_ssl=bool(config_dict.get("verify_ssl", True)),
+        api_version=str(config_dict.get("wms_api_version", "v10")),
     )
 
-    # Extract authentication info
+    # Extract authentication info with proper type conversions
     authentication = OracleWmsAuthenticationInfo(
-        username=config_dict["username"],
-        password=config_dict["password"],
-        auth_method=OracleWmsConnectionType(config_dict.get("auth_method", "basic")),
-        company_code=config_dict.get("company_code"),
-        facility_code=config_dict.get("facility_code"),
+        username=str(config_dict["username"]),
+        password=str(config_dict["password"]),
+        auth_method=OracleWmsConnectionType(
+            str(config_dict.get("auth_method", "basic")),
+        ),
+        company_code=str(config_dict.get("company_code", "*")),
+        facility_code=str(config_dict.get("facility_code", "*")),
     )
 
-    # Extract entity configurations
-    entities = []
+    # Extract entity configurations with proper type handling
+    entities: list[OracleWmsEntityInfo] = []
     if "entities" in config_dict:
-        for entity_name in config_dict["entities"]:
-            entity_info = OracleWmsEntityInfo(name=entity_name)
-            entities.append(entity_info)
+        entities_data = config_dict["entities"]
+        if isinstance(entities_data, list):
+            for entity_name in entities_data:
+                if entity_name:  # Guard clause to satisfy MyPy reachability analysis
+                    entity_info = OracleWmsEntityInfo(name=str(entity_name))
+                    entities.append(entity_info)
 
     return OracleWmsTapConfiguration(
         connection=connection,
         authentication=authentication,
         entities=entities,
-        page_size=config_dict.get("page_size", 1000),
-        page_mode=config_dict.get("page_mode", "sequenced"),
-        enable_incremental=config_dict.get("enable_incremental", True),
-        incremental_overlap_minutes=config_dict.get("incremental_overlap_minutes", 5),
-        lookback_minutes=config_dict.get("lookback_minutes", 5),
-        enable_caching=config_dict.get("enable_caching", True),
-        enable_discovery=config_dict.get("enable_discovery", True),
-        force_full_table=config_dict.get("force_full_table", False),
+        page_size=cast("int", config_dict.get("page_size", 1000)),
+        page_mode=str(config_dict.get("page_mode", "sequenced")),
+        enable_incremental=bool(config_dict.get("enable_incremental", True)),
+        incremental_overlap_minutes=cast(
+            "int", config_dict.get("incremental_overlap_minutes", 5),
+        ),
+        lookback_minutes=cast("int", config_dict.get("lookback_minutes", 5)),
+        enable_caching=bool(config_dict.get("enable_caching", True)),
+        enable_discovery=bool(config_dict.get("enable_discovery", True)),
+        force_full_table=bool(config_dict.get("force_full_table", False)),
     )
 
 
 def create_oracle_wms_discovery_result(
     entity_name: str,
-    schema: dict[str, Any] | None = None,
+    schema: dict[str, object] | None = None,
     success: bool = True,
     errors: list[str] | None = None,
 ) -> OracleWmsDiscoveryResult:
@@ -465,12 +477,15 @@ def create_oracle_wms_discovery_result(
     schema = schema or {}
     errors = errors or []
 
-    field_count = len(schema.get("properties", {}))
+    # Type casting for len() compatibility
+    from typing import cast
+    properties = cast("dict[str, object]", schema.get("properties", {}))
+    field_count = len(properties)
 
     return OracleWmsDiscoveryResult(
         success=success and not errors,
         entity_name=entity_name,
-        schema=schema,
+        entity_schema=schema,
         field_count=field_count,
         errors=errors,
     )

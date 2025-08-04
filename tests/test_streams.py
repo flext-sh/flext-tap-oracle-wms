@@ -31,7 +31,7 @@ class TestWMSPaginator:
 
         next_url = paginator.get_next_url(response)
         if next_url != "/api/v1/customers?page=2":
-            msg = f"Expected {'/api/v1/customers?page=2'}, got {next_url}"
+            msg: str = f"Expected {'/api/v1/customers?page=2'}, got {next_url}"
             raise AssertionError(
                 msg,
             )
@@ -63,13 +63,13 @@ class TestWMSPaginator:
         response = Mock(spec=requests.Response)
         response.json.return_value = {"next_page": "/api/v1/customers?page=2"}
         if not (paginator.has_more(response)):
-            msg = f"Expected True, got {paginator.has_more(response)}"
+            msg: str = f"Expected True, got {paginator.has_more(response)}"
             raise AssertionError(msg)
 
         # Without next page
         response.json.return_value = {"results": []}
         if paginator.has_more(response):
-            msg = f"Expected False, got {paginator.has_more(response)}"
+            msg: str = f"Expected False, got {paginator.has_more(response)}"
             raise AssertionError(msg)
 
 
@@ -114,15 +114,15 @@ class TestWMSStream:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         if stream._entity_name != "customer":
-            msg = f"Expected {'customer'}, got {stream._entity_name}"
+            msg: str = f"Expected {'customer'}, got {stream._entity_name}"
             raise AssertionError(msg)
         assert stream._schema == basic_schema
         if stream.primary_keys != ["id"]:
-            msg = f"Expected {['id']}, got {stream.primary_keys}"
+            msg: str = f"Expected {['id']}, got {stream.primary_keys}"
             raise AssertionError(msg)
         # Since mod_ts is in schema properties, should be INCREMENTAL
         if stream.replication_method != "INCREMENTAL":
-            msg = f"Expected {'INCREMENTAL'}, got {stream.replication_method}"
+            msg: str = f"Expected {'INCREMENTAL'}, got {stream.replication_method}"
             raise AssertionError(
                 msg,
             )
@@ -138,7 +138,7 @@ class TestWMSStream:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         if stream.replication_method != "FULL_TABLE":
-            msg = f"Expected {'FULL_TABLE'}, got {stream.replication_method}"
+            msg: str = f"Expected {'FULL_TABLE'}, got {stream.replication_method}"
             raise AssertionError(
                 msg,
             )
@@ -152,7 +152,7 @@ class TestWMSStream:
         stream = WMSStream(tap=mock_tap, name="customer", schema=basic_schema)
 
         if stream.url_base != "https://wms.example.com":
-            msg = f"Expected {'https://wms.example.com'}, got {stream.url_base}"
+            msg: str = f"Expected {'https://wms.example.com'}, got {stream.url_base}"
             raise AssertionError(
                 msg,
             )
@@ -160,7 +160,7 @@ class TestWMSStream:
         # Test with trailing slash
         mock_tap.config["base_url"] = "https://wms.example.com/"
         if stream.url_base != "https://wms.example.com":
-            msg = f"Expected {'https://wms.example.com'}, got {stream.url_base}"
+            msg: str = f"Expected {'https://wms.example.com'}, got {stream.url_base}"
             raise AssertionError(
                 msg,
             )
@@ -174,7 +174,9 @@ class TestWMSStream:
 
         # Oracle WMS path pattern
         if stream.path != "//wms/lgfapi/v10/entity/customer":
-            msg = f"Expected {'//wms/lgfapi/v10/entity/customer'}, got {stream.path}"
+            msg: str = (
+                f"Expected {'//wms/lgfapi/v10/entity/customer'}, got {stream.path}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -192,7 +194,7 @@ class TestWMSStream:
         )
         # The path is generated using WMS patterns, not a simple prefix
         if "customer" not in stream_with_prefix.path:
-            msg = f"Expected {'customer'} in {stream_with_prefix.path}"
+            msg: str = f"Expected {'customer'} in {stream_with_prefix.path}"
             raise AssertionError(msg)
 
         # With custom pattern - create new tap with updated config
@@ -209,7 +211,7 @@ class TestWMSStream:
         )
         # The path is generated using WMS patterns from ConfigMapper
         if "customer" not in stream_with_pattern.path:
-            msg = f"Expected {'customer'} in {stream_with_pattern.path}"
+            msg: str = f"Expected {'customer'} in {stream_with_pattern.path}"
             raise AssertionError(msg)
 
     def test_http_headers(
@@ -222,7 +224,7 @@ class TestWMSStream:
         headers = stream.http_headers
 
         if headers["Content-Type"] != "application/json":
-            msg = f"Expected {'application/json'}, got {headers['Content-Type']}"
+            msg: str = f"Expected {'application/json'}, got {headers['Content-Type']}"
             raise AssertionError(
                 msg,
             )
@@ -241,7 +243,7 @@ class TestWMSStream:
         )
         headers_with_custom = stream_with_headers.http_headers
         if headers_with_custom["X-API-Key"] != "secret":
-            msg = f"Expected {'secret'}, got {headers_with_custom['X-API-Key']}"
+            msg: str = f"Expected {'secret'}, got {headers_with_custom['X-API-Key']}"
             raise AssertionError(
                 msg,
             )
@@ -262,14 +264,14 @@ class TestWMSStream:
         params = stream.get_url_params(None, None)
 
         if params["page_size"] != 100:
-            msg = f"Expected {100}, got {params['page_size']}"
+            msg: str = f"Expected {100}, got {params['page_size']}"
             raise AssertionError(msg)
         assert params["page_mode"] == "sequenced"
         if params["ordering"] != "mod_ts":
-            msg = f"Expected {'mod_ts'}, got {params['ordering']}"
+            msg: str = f"Expected {'mod_ts'}, got {params['ordering']}"
             raise AssertionError(msg)
         if "mod_ts__gte" not in params:  # Should have timestamp filter:
-            msg = f"Expected {'mod_ts__gte'} in {params}"
+            msg: str = f"Expected {'mod_ts__gte'} in {params}"
             raise AssertionError(msg)
 
     def test_get_url_params_pagination(
@@ -286,7 +288,7 @@ class TestWMSStream:
         params = stream.get_url_params(None, token)
 
         if params["page"] != "2":
-            msg = f"Expected {'2'}, got {params['page']}"
+            msg: str = f"Expected {'2'}, got {params['page']}"
             raise AssertionError(msg)
         assert params["limit"] == "100"
 
@@ -309,11 +311,11 @@ class TestWMSStream:
         records = list(stream.parse_response(response))
 
         if len(records) != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {len(records)}"
+            msg: str = f"Expected {2}, got {len(records)}"
             raise AssertionError(msg)
         assert records[0]["id"] == 1
         if records[1]["id"] != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {records[1]['id']}"
+            msg: str = f"Expected {2}, got {records[1]['id']}"
             raise AssertionError(msg)
 
     def test_parse_response_direct_array(
@@ -332,7 +334,7 @@ class TestWMSStream:
         records = list(stream.parse_response(response))
 
         if len(records) != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {len(records)}"
+            msg: str = f"Expected {2}, got {len(records)}"
             raise AssertionError(msg)
         assert records[0]["id"] == 1
 
@@ -404,11 +406,11 @@ class TestWMSStream:
 
             assert timestamp is not None
             if timestamp.year != 2024:
-                msg = f"Expected {2024}, got {timestamp.year}"
+                msg: str = f"Expected {2024}, got {timestamp.year}"
                 raise AssertionError(msg)
             assert timestamp.month == 1
             if timestamp.day != 1:
-                msg = f"Expected {1}, got {timestamp.day}"
+                msg: str = f"Expected {1}, got {timestamp.day}"
                 raise AssertionError(msg)
 
     def test_get_starting_timestamp_from_config(
@@ -430,7 +432,7 @@ class TestWMSStream:
 
             assert timestamp is not None
             if timestamp.month != EXPECTED_BULK_SIZE:
-                msg = f"Expected {2}, got {timestamp.month}"
+                msg: str = f"Expected {2}, got {timestamp.month}"
                 raise AssertionError(msg)
 
     @patch("flext_tap_oracle_wms.streams.get_wms_authenticator")
@@ -448,7 +450,7 @@ class TestWMSStream:
         auth = stream.authenticator
 
         if auth != mock_auth:
-            msg = f"Expected {mock_auth}, got {auth}"
+            msg: str = f"Expected {mock_auth}, got {auth}"
             raise AssertionError(msg)
         mock_get_auth.assert_called_once_with(stream, mock_tap.config)
 
