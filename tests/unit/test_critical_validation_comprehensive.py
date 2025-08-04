@@ -24,6 +24,11 @@ class TestEnforceMandatoryEnvironmentVariables:
             patch.dict(
                 os.environ,
                 {
+                    # Required Oracle WMS environment variables
+                    "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                    "ORACLE_WMS_USERNAME": "test_user",
+                    "ORACLE_WMS_PASSWORD": "test_password",
+                    # Required tap-specific environment variables
                     "TAP_ORACLE_WMS_USE_METADATA_ONLY": "true",
                     "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "0",
                 },
@@ -79,6 +84,11 @@ class TestEnforceMandatoryEnvironmentVariables:
                 patch.dict(
                     os.environ,
                     {
+                        # Required Oracle WMS environment variables
+                        "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                        "ORACLE_WMS_USERNAME": "test_user",
+                        "ORACLE_WMS_PASSWORD": "test_password",
+                        # Required tap-specific environment variables
                         "TAP_ORACLE_WMS_USE_METADATA_ONLY": value,
                         "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "0",
                     },
@@ -105,7 +115,14 @@ class TestEnforceMandatoryEnvironmentVariables:
         """Test enforcement fails when DISCOVERY_SAMPLE_SIZE is missing."""
         with patch.dict(
             os.environ,
-            {"TAP_ORACLE_WMS_USE_METADATA_ONLY": "true"},
+            {
+                # Required Oracle WMS environment variables
+                "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                "ORACLE_WMS_USERNAME": "test_user",
+                "ORACLE_WMS_PASSWORD": "test_password",
+                # Required tap-specific environment variables
+                "TAP_ORACLE_WMS_USE_METADATA_ONLY": "true",
+            },
             clear=False,
         ):
             # Remove the DISCOVERY_SAMPLE_SIZE variable if it exists
@@ -141,6 +158,11 @@ class TestEnforceMandatoryEnvironmentVariables:
                 patch.dict(
                     os.environ,
                     {
+                        # Required Oracle WMS environment variables
+                        "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                        "ORACLE_WMS_USERNAME": "test_user",
+                        "ORACLE_WMS_PASSWORD": "test_password",
+                        # Required tap-specific environment variables
                         "TAP_ORACLE_WMS_USE_METADATA_ONLY": "true",
                         "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": value,
                     },
@@ -170,6 +192,11 @@ class TestEnforceMandatoryEnvironmentVariables:
                 patch.dict(
                     os.environ,
                     {
+                        # Required Oracle WMS environment variables
+                        "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                        "ORACLE_WMS_USERNAME": "test_user",
+                        "ORACLE_WMS_PASSWORD": "test_password",
+                        # Required tap-specific environment variables
                         "TAP_ORACLE_WMS_USE_METADATA_ONLY": "true",
                         "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": value,
                     },
@@ -195,6 +222,11 @@ class TestEnforceMandatoryEnvironmentVariables:
             with patch.dict(
                 os.environ,
                 {
+                    # Required Oracle WMS environment variables
+                    "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                    "ORACLE_WMS_USERNAME": "test_user",
+                    "ORACLE_WMS_PASSWORD": "test_password",
+                    # Required tap-specific environment variables
                     "TAP_ORACLE_WMS_USE_METADATA_ONLY": value,
                     "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "0",
                 },
@@ -209,6 +241,11 @@ class TestEnforceMandatoryEnvironmentVariables:
                 patch.dict(
                     os.environ,
                     {
+                        # Required Oracle WMS environment variables
+                        "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                        "ORACLE_WMS_USERNAME": "test_user",
+                        "ORACLE_WMS_PASSWORD": "test_password",
+                        # Required tap-specific environment variables
                         "TAP_ORACLE_WMS_USE_METADATA_ONLY": value,
                         "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "0",
                     },
@@ -222,7 +259,14 @@ class TestEnforceMandatoryEnvironmentVariables:
         """Test that error messages contain required elements."""
         with patch.dict(
             os.environ,
-            {"TAP_ORACLE_WMS_USE_METADATA_ONLY": "false"},
+            {
+                # Required Oracle WMS environment variables
+                "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                "ORACLE_WMS_USERNAME": "test_user",
+                "ORACLE_WMS_PASSWORD": "test_password",
+                # Required tap-specific environment variables
+                "TAP_ORACLE_WMS_USE_METADATA_ONLY": "false",
+            },
             clear=False,
         ):
             with pytest.raises(SystemExit) as excinfo:
@@ -240,6 +284,11 @@ class TestEnforceMandatoryEnvironmentVariables:
         with patch.dict(
             os.environ,
             {
+                # Required Oracle WMS environment variables
+                "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                "ORACLE_WMS_USERNAME": "test_user",
+                "ORACLE_WMS_PASSWORD": "test_password",
+                # Required tap-specific environment variables
                 "TAP_ORACLE_WMS_USE_METADATA_ONLY": "true",
                 "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "1",
             },
@@ -264,6 +313,11 @@ class TestEnforceMandatoryEnvironmentVariables:
         with patch.dict(
             os.environ,
             {
+                # Required Oracle WMS environment variables
+                "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                "ORACLE_WMS_USERNAME": "test_user",
+                "ORACLE_WMS_PASSWORD": "test_password",
+                # Required tap-specific environment variables
                 "TAP_ORACLE_WMS_USE_METADATA_ONLY": "false",
                 "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "1",
             },
@@ -288,6 +342,11 @@ class TestEnforceMandatoryEnvironmentVariables:
             patch.dict(
                 os.environ,
                 {
+                    # Required Oracle WMS environment variables
+                    "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                    "ORACLE_WMS_USERNAME": "test_user",
+                    "ORACLE_WMS_PASSWORD": "test_password",
+                    # Required tap-specific environment variables
                     "TAP_ORACLE_WMS_USE_METADATA_ONLY": "true",
                     "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "0",
                 },
@@ -476,6 +535,11 @@ class TestCriticalValidationIntegration:
         with patch.dict(
             os.environ,
             {
+                # Required Oracle WMS environment variables
+                "ORACLE_WMS_BASE_URL": "https://test-wms.oracle.com/api",
+                "ORACLE_WMS_USERNAME": "test_user",
+                "ORACLE_WMS_PASSWORD": "test_password",
+                # Required tap-specific environment variables
                 "TAP_ORACLE_WMS_USE_METADATA_ONLY": "true",
                 "TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE": "0",
             },

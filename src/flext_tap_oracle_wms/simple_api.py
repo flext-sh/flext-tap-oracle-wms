@@ -8,11 +8,10 @@ Provides a simple interface for setting up Oracle WMS data extraction.
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any
 
 from flext_core import (
     FlextResult,
-    TAnyDict,
 )
 
 from flext_tap_oracle_wms.config import TapOracleWMSConfig

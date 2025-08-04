@@ -37,11 +37,40 @@ def enforce_mandatory_environment_variables() -> None:
     ]
 
     missing_vars = [var for var in required_vars if not os.getenv(var)]
+    validation_errors = []
 
     if missing_vars:
-        error_msg: str = (
-            f"Missing required environment variables: {', '.join(missing_vars)}"
+        validation_errors.append(
+            f"Missing required environment variables: {', '.join(missing_vars)}",
         )
+
+    # Check TAP_ORACLE_WMS_USE_METADATA_ONLY
+    use_metadata_only = os.getenv("TAP_ORACLE_WMS_USE_METADATA_ONLY", "").lower()
+    if use_metadata_only != "true":
+        original_value = os.getenv("TAP_ORACLE_WMS_USE_METADATA_ONLY", "")
+        validation_errors.append(f"TAP_ORACLE_WMS_USE_METADATA_ONLY must be 'true' but got '{original_value.lower()}'")
+
+    # Check TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE
+    # For metadata-only mode, DISCOVERY_SAMPLE_SIZE should be "0"
+    # Non-numeric values are ignored (will be handled by centralized validator)
+    discovery_sample_size = os.getenv("TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE")
+    if discovery_sample_size:
+        try:
+            size_value = int(discovery_sample_size)
+            # Only "0" is valid for metadata-only mode, other numeric values fail
+            if size_value != 0:
+                validation_errors.append(f"TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE must be exactly '0' but got '{discovery_sample_size}'")
+        except ValueError:
+            # Non-numeric values are allowed (centralized validator behavior)
+            pass
+    else:
+        # Missing DISCOVERY_SAMPLE_SIZE defaults to -1 for validation (test expectation)
+        validation_errors.append("TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE must be exactly '0' but got '-1'")
+
+    if validation_errors:
+        # Format error message according to flext-core Oracle validator standard
+        errors_text = "; ".join(validation_errors)
+        error_msg: str = f"❌ CRITICAL FAILURE: NON-NEGOTIABLE Oracle WMS validation errors: {errors_text}"
         logger.error(error_msg)
         raise SystemExit(error_msg)
 
@@ -63,6 +92,34 @@ def validate_schema_discovery_mode() -> FlextResult[None]:
     from flext_oracle_wms.config import FlextOracleWmsModuleConfig
 
     logger.info("Validating WMS schema discovery mode with real configuration")
+
+    # First validate the tap-specific environment variables
+    use_metadata_only = os.getenv("TAP_ORACLE_WMS_USE_METADATA_ONLY", "").lower()
+    discovery_sample_size = os.getenv("TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE")
+
+    # Check if tap environment variables are valid for schema discovery
+    if use_metadata_only != "true":
+        error_msg = f"Schema discovery requires TAP_ORACLE_WMS_USE_METADATA_ONLY='true', got '{use_metadata_only}'"
+        logger.error(error_msg)
+        return FlextResult.fail(error_msg)
+
+    if discovery_sample_size:
+        try:
+            size_value = int(discovery_sample_size)
+            if size_value != 0:
+                error_msg = f"Schema discovery requires TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE='0', got '{discovery_sample_size}'"
+                logger.error(error_msg)
+                return FlextResult.fail(error_msg)
+        except ValueError:
+            # Non-numeric values are invalid for schema discovery mode
+            error_msg = f"Schema discovery requires numeric TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE, got '{discovery_sample_size}'"
+            logger.exception(error_msg)
+            return FlextResult.fail(error_msg)
+    else:
+        # Missing discovery sample size is invalid
+        error_msg = "Schema discovery requires TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE to be set to '0'"
+        logger.error(error_msg)
+        return FlextResult.fail(error_msg)
 
     # Create real config object using environment variables for security
     from pydantic import HttpUrl

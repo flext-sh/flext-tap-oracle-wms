@@ -47,7 +47,7 @@ class TestFlextConstants:
         if FlextConstants.DEFAULT_TIMEOUT != 30:
             msg: str = f"Expected {30}, got {FlextConstants.DEFAULT_TIMEOUT}"
             raise AssertionError(msg)
-        assert FlextConstants.FRAMEWORK_VERSION == "0.7.0"
+        assert FlextConstants.FRAMEWORK_VERSION == "0.9.0"
 
 
 class TestWMSConfig:
@@ -409,6 +409,7 @@ class TestWMSRecord:
         """Test basic record creation."""
         now = datetime.now(UTC)
         record = WMSRecord(
+            id="record_1",
             stream_name="item",
             record_data={"id": 1, "code": "ITEM001"},
             extracted_at=now,
@@ -431,6 +432,7 @@ class TestWMSRecord:
         """Test full record with all fields."""
         now = datetime.now(UTC)
         record = WMSRecord(
+            id="record_2",
             stream_name="allocation",
             record_data={"alloc_id": "A001", "item_id": "ITEM001"},
             extracted_at=now,
@@ -452,6 +454,7 @@ class TestWMSRecord:
         now = datetime.now(UTC)
         # Valid record data
         record = WMSRecord(
+            id="record_3",
             stream_name="item",
             record_data={"id": 1},
             extracted_at=now,
@@ -465,6 +468,7 @@ class TestWMSRecord:
         # Empty record data should fail
         with pytest.raises(ValidationError):
             WMSRecord(
+                id="record_4",
                 stream_name="item",
                 record_data={},
                 extracted_at=now,
@@ -478,6 +482,7 @@ class TestWMSRecord:
         now = datetime.now(UTC)
         # Valid page number
         record = WMSRecord(
+            id="record_5",
             stream_name="item",
             record_data={"id": 1},
             extracted_at=now,
@@ -491,6 +496,7 @@ class TestWMSRecord:
         # Invalid page number
         with pytest.raises(ValidationError):
             WMSRecord(
+                id="record_6",
                 stream_name="item",
                 record_data={"id": 1},
                 extracted_at=now,
@@ -623,6 +629,7 @@ class TestWMSDiscoveryResult:
         """Test empty discovery result."""
         now = datetime.now(UTC)
         result = WMSDiscoveryResult(
+            id="discovery_1",
             discovered_at=now,
             base_url="https://wms.example.com",
             duration_seconds=None,
@@ -663,6 +670,7 @@ class TestWMSDiscoveryResult:
             total_records=None,
         )
         result = WMSDiscoveryResult(
+            id="discovery_auto",
             discovered_at=now,
             base_url="https://wms.example.com",
             total_entities=2,
@@ -693,6 +701,7 @@ class TestWMSDiscoveryResult:
             request_id=None,
         )
         result = WMSDiscoveryResult(
+            id="discovery_auto",
             discovered_at=now,
             base_url="https://wms.example.com",
             errors=[error],
@@ -723,6 +732,7 @@ class TestWMSDiscoveryResult:
             total_records=None,
         )
         result = WMSDiscoveryResult(
+            id="discovery_auto",
             discovered_at=now,
             base_url="https://wms.example.com",
             entities=[entity1, entity2],
@@ -760,6 +770,7 @@ class TestWMSDiscoveryResult:
             request_id=None,
         )
         result = WMSDiscoveryResult(
+            id="discovery_auto",
             discovered_at=now,
             base_url="https://wms.example.com",
             errors=[error1, error2],
@@ -773,6 +784,7 @@ class TestWMSDiscoveryResult:
         """Test add_entity method."""
         now = datetime.now(UTC)
         result = WMSDiscoveryResult(
+            id="discovery_auto",
             discovered_at=now,
             base_url="https://wms.example.com",
             duration_seconds=None,
@@ -798,6 +810,7 @@ class TestWMSDiscoveryResult:
         """Test add_error method."""
         now = datetime.now(UTC)
         result = WMSDiscoveryResult(
+            id="discovery_auto",
             discovered_at=now,
             base_url="https://wms.example.com",
             duration_seconds=None,
@@ -837,7 +850,9 @@ class TestTapMetrics:
 
     def test_default_metrics(self) -> None:
         """Test default metrics initialization."""
-        metrics = TapMetrics(start_time=None)
+        metrics = TapMetrics(
+            id="metrics_auto",
+            start_time=None)
         if metrics.api_calls != 0:
             msg: str = f"Expected {0}, got {metrics.api_calls}"
             raise AssertionError(msg)
@@ -851,6 +866,7 @@ class TestTapMetrics:
         """Test metrics with initial data."""
         now = datetime.now(UTC)
         metrics = TapMetrics(
+            id="metrics_auto",
             api_calls=10,
             records_processed=1000,
             errors_encountered=2,
@@ -867,7 +883,9 @@ class TestTapMetrics:
 
     def test_add_api_call_method(self) -> None:
         """Test add_api_call method."""
-        metrics = TapMetrics(start_time=None)
+        metrics = TapMetrics(
+            id="metrics_auto",
+            start_time=None)
         if metrics.api_calls != 0:
             msg: str = f"Expected {0}, got {metrics.api_calls}"
             raise AssertionError(msg)
@@ -882,7 +900,9 @@ class TestTapMetrics:
 
     def test_add_record_method(self) -> None:
         """Test add_record method."""
-        metrics = TapMetrics(start_time=None)
+        metrics = TapMetrics(
+            id="metrics_auto",
+            start_time=None)
         if metrics.records_processed != 0:
             msg: str = f"Expected {0}, got {metrics.records_processed}"
             raise AssertionError(msg)
@@ -897,7 +917,9 @@ class TestTapMetrics:
 
     def test_add_error_method(self) -> None:
         """Test add_error method."""
-        metrics = TapMetrics(start_time=None)
+        metrics = TapMetrics(
+            id="metrics_auto",
+            start_time=None)
         if metrics.errors_encountered != 0:
             msg: str = f"Expected {0}, got {metrics.errors_encountered}"
             raise AssertionError(msg)
@@ -914,11 +936,17 @@ class TestTapMetrics:
         """Test metrics validation."""
         # Negative values should fail
         with pytest.raises(ValidationError):
-            TapMetrics(api_calls=-1, start_time=None)
+            TapMetrics(
+            id="metrics_auto",
+            api_calls=-1, start_time=None)
         with pytest.raises(ValidationError):
-            TapMetrics(records_processed=-1, start_time=None)
+            TapMetrics(
+            id="metrics_auto",
+            records_processed=-1, start_time=None)
         with pytest.raises(ValidationError):
-            TapMetrics(errors_encountered=-1, start_time=None)
+            TapMetrics(
+            id="metrics_auto",
+            errors_encountered=-1, start_time=None)
 
 
 class TestModelIntegration:
@@ -954,6 +982,7 @@ class TestModelIntegration:
         )
         # Create discovery result
         discovery = WMSDiscoveryResult(
+            id="discovery_auto",
             discovered_at=now,
             base_url=str(config.base_url),
             duration_seconds=None,
@@ -968,6 +997,7 @@ class TestModelIntegration:
         )
         # Create records
         item_record = WMSRecord(
+            id="record_7",
             stream_name=item_entity.name,
             record_data={"id": 1, "code": "ITEM001", "mod_ts": "2024-01-01T10:00:00Z"},
             extracted_at=now,
@@ -976,7 +1006,9 @@ class TestModelIntegration:
             page_number=None,
         )
         # Create metrics
-        metrics = TapMetrics(start_time=now)
+        metrics = TapMetrics(
+            id="metrics_auto",
+            start_time=now)
         metrics.add_api_call()
         metrics.add_record()
         # Verify integration
@@ -999,6 +1031,7 @@ class TestModelIntegration:
         now = datetime.now(UTC)
         # Create discovery with error
         discovery = WMSDiscoveryResult(
+            id="discovery_auto",
             discovered_at=now,
             base_url="https://wms.example.com",
             duration_seconds=None,
@@ -1014,7 +1047,9 @@ class TestModelIntegration:
         )
         discovery.add_error(auth_error)
         # Create metrics with error
-        metrics = TapMetrics(start_time=now)
+        metrics = TapMetrics(
+            id="metrics_auto",
+            start_time=now)
         metrics.add_error()
         # Verify error handling
         if discovery.success:
@@ -1055,6 +1090,7 @@ class TestModelIntegration:
         assert entity_data["endpoint"] == "/entity/item"
         # Create and serialize record
         record = WMSRecord(
+            id="record_8",
             stream_name="item",
             record_data={"id": 1},
             extracted_at=now,

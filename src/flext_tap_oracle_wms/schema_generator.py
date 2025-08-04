@@ -11,7 +11,7 @@ from __future__ import annotations
 
 # Removed circular dependency - use DI pattern
 import re
-from typing import NoReturn, Union
+from typing import NoReturn
 
 from flext_core import get_logger
 
