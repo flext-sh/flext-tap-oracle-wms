@@ -283,7 +283,7 @@ class OracleWmsTapConfiguration(FlextBaseModel):
 
     # Operational configuration
     page_size: int = Field(default=1000, ge=1, le=10000)
-    page_mode: str = Field(default="sequenced", regex="^(sequenced|paged)$")
+    page_mode: str = Field(default="sequenced", pattern="^(sequenced|paged)$")
     enable_incremental: bool = Field(default=True)
     incremental_overlap_minutes: int = Field(default=5, ge=0, le=60)
     lookback_minutes: int = Field(default=5, ge=0, le=1440)

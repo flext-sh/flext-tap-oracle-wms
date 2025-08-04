@@ -1,7 +1,30 @@
-"""Oracle WMS Authentication Module.
+"""FLEXT Tap Oracle WMS - Authentication Management.
 
-This module provides authentication capabilities for Oracle WMS API integration
-using flext-core patterns and Singer SDK compatibility.
+Provides authentication capabilities for Oracle WMS API integration,
+supporting both Basic Authentication and OAuth2 flows. This module
+serves as a bridge between Singer SDK authentication patterns and
+the FLEXT ecosystem's flext-oracle-wms library.
+
+The authentication system is designed to be lightweight and delegate
+actual authentication logic to the flext-oracle-wms library to avoid
+code duplication across the FLEXT ecosystem.
+
+Architecture:
+    This module follows the Adapter pattern, providing Singer SDK-compatible
+    authenticators that delegate to flext-oracle-wms authentication services.
+
+Integration:
+    - Built on flext-core logging patterns
+    - Integrates with flext-oracle-wms authentication services
+    - Compatible with Singer SDK authentication framework
+    - Supports FLEXT ecosystem security standards
+
+Example:
+    >>> auth = get_wms_authenticator("basic", username="user", password="pass")
+    >>> authenticated_request = auth.apply_auth(request)
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 import base64
