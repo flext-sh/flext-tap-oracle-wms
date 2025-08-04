@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from typing import Any, TypedDict, cast
+from typing import TypedDict, Union, cast
 
 from flext_core import get_logger
 
@@ -30,7 +30,7 @@ class ConfigTemplate(TypedDict):
     """Type definition for configuration template structure."""
 
     env_var: str
-    default: Any
+    default: str | int | float | bool | dict[str, object] | list[object]
     profile_path: str
     type: str
 
@@ -179,7 +179,7 @@ class ConfigMapper:
         self.profile_config = profile_config or {}
         self._config_cache: dict[str, object] = {}
 
-    def _get_templated_config_value(self, template_key: str) -> Any:
+    def _get_templated_config_value(self, template_key: str) -> str | int | float | bool | dict[str, object] | list[object]:
         """Template Method Pattern: Get configuration value using predefined template.
 
         SOLID REFACTORING: Eliminates 21 lines of duplication in config methods.
@@ -192,7 +192,7 @@ class ConfigMapper:
 
         """
         if template_key not in CONFIG_TEMPLATES:
-            msg = f"Unknown config template: {template_key}"
+            msg: str = f"Unknown config template: {template_key}"
             raise ValueError(msg)
 
         template = CONFIG_TEMPLATES[template_key]
@@ -206,12 +206,18 @@ class ConfigMapper:
 
         # Type conversion based on template
         if template["type"] == "int":
-            return _safe_int_conversion_with_validation(value, template["default"])
+            if isinstance(value, int):
+                return value
+            if isinstance(template["default"], int):
+                return _safe_int_conversion_with_validation(int(value) if isinstance(value, (str, float)) else 0, template["default"])
+            return int(value) if isinstance(value, (str, float)) else 0
         if template["type"] == "dict":
             if isinstance(value, dict):
                 return value
             return template["default"]
-        return value
+        # For other types, return the value as-is with proper type casting
+        from typing import cast
+        return cast("str | int | float | bool | dict[str, object] | list[object]", value)
 
     # Connection Configuration
 

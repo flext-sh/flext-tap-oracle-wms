@@ -10,10 +10,12 @@ promoting loose coupling and high cohesion.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from flext_core import TAnyDict, TService
+
+    from flext_tap_oracle_wms.streams import WMSStream
 
 
 class EntityDiscoveryInterface(ABC):
@@ -215,7 +217,7 @@ class StreamFactoryInterface(ABC):
         entity_name: str,
         schema: TAnyDict,
         tap_instance: TService,
-    ) -> Any:
+    ) -> WMSStream:
         """Create a stream instance for the given entity.
 
         Args:

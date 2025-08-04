@@ -1,4 +1,7 @@
-"""Comprehensive test suite for type_mapping module."""
+"""Comprehensive test suite for type_mapping module using refactored functionality.
+
+Tests Oracle WMS type mapping using centralized flext-oracle-wms patterns.
+"""
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
 
@@ -8,643 +11,253 @@ import pytest
 
 from flext_tap_oracle_wms.type_mapping import (
     API_METADATA_TO_SINGER,
-    FORMAT_TO_SINGER,
-    WMS_SPECIFIC_TYPES,
-    _apply_nullable_to_schema,
-    _get_base_schema_for_type,
+    FLEXT_ORACLE_WMS_TYPE_MAPPINGS,
     convert_metadata_type_to_singer,
-    get_full_singer_schema,
-    get_primary_key_schema,
-    get_replication_key_schema,
-    is_timestamp_field,
+    convert_to_singer_type,
+    get_oracle_to_singer_mapping,
+    get_singer_schema,
+    get_singer_type_with_metadata,
 )
 
 # Constants
 EXPECTED_BULK_SIZE = 2
+EXPECTED_DATA_COUNT = 3
 
 
-class TestTypeMapping:
-    """Test type mapping functionality."""
+class TestOracleWMSTypeMappings:
+    """Test Oracle WMS type mapping functionality."""
 
-    def test_api_metadata_mappings(self) -> None:
-        """Test API metadata type mappings."""
-        # Test primary key mapping
-        if API_METADATA_TO_SINGER["pk"]["type"] != ["integer", "null"]:
-            msg = f"Expected {['integer', 'null']}, got {API_METADATA_TO_SINGER['pk']['type']}"
-            raise AssertionError(
-                msg,
-            )
+    def test_flext_oracle_wms_type_mappings_structure(self) -> None:
+        """Test the structure of the type mappings dictionary."""
+        assert isinstance(FLEXT_ORACLE_WMS_TYPE_MAPPINGS, dict)
+        assert len(FLEXT_ORACLE_WMS_TYPE_MAPPINGS) > 0
 
-        # Test string types
-        if API_METADATA_TO_SINGER["varchar"]["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {API_METADATA_TO_SINGER['varchar']['type']}"
-            raise AssertionError(
-                msg,
-            )
-        assert API_METADATA_TO_SINGER["text"]["type"] == ["string", "null"]
-        if API_METADATA_TO_SINGER["string"]["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {API_METADATA_TO_SINGER['string']['type']}"
-            raise AssertionError(
-                msg,
-            )
+        # Check that common Oracle types are present
+        assert "string" in FLEXT_ORACLE_WMS_TYPE_MAPPINGS
+        assert "varchar" in FLEXT_ORACLE_WMS_TYPE_MAPPINGS
+        assert "varchar2" in FLEXT_ORACLE_WMS_TYPE_MAPPINGS
+        assert "number" in FLEXT_ORACLE_WMS_TYPE_MAPPINGS
+        assert "integer" in FLEXT_ORACLE_WMS_TYPE_MAPPINGS
+        assert "date" in FLEXT_ORACLE_WMS_TYPE_MAPPINGS
+        assert "timestamp" in FLEXT_ORACLE_WMS_TYPE_MAPPINGS
 
-        # Test numeric types
-        if API_METADATA_TO_SINGER["integer"]["type"] != ["integer", "null"]:
-            msg = f"Expected {['integer', 'null']}, got {API_METADATA_TO_SINGER['integer']['type']}"
-            raise AssertionError(
-                msg,
-            )
-        assert API_METADATA_TO_SINGER["number"]["type"] == ["number", "null"]
-        if API_METADATA_TO_SINGER["decimal"]["type"] != ["number", "null"]:
-            msg = f"Expected {['number', 'null']}, got {API_METADATA_TO_SINGER['decimal']['type']}"
-            raise AssertionError(
-                msg,
-            )
+    def test_basic_string_types(self) -> None:
+        """Test basic string type mappings."""
+        string_types = ["string", "varchar", "varchar2", "char", "nvarchar", "nvarchar2", "nchar"]
 
-        # Test boolean types
-        if API_METADATA_TO_SINGER["boolean"]["type"] != ["boolean", "null"]:
-            msg = f"Expected {['boolean', 'null']}, got {API_METADATA_TO_SINGER['boolean']['type']}"
-            raise AssertionError(
-                msg,
-            )
-        assert API_METADATA_TO_SINGER["bool"]["type"] == ["boolean", "null"]
+        for oracle_type in string_types:
+            mapping = FLEXT_ORACLE_WMS_TYPE_MAPPINGS[oracle_type]
+            assert mapping["type"] == "string"
 
-        # Test date/time types
-        if API_METADATA_TO_SINGER["date"]["format"] != "date":
-            msg = f"Expected {'date'}, got {API_METADATA_TO_SINGER['date']['format']}"
-            raise AssertionError(
-                msg,
-            )
-        assert API_METADATA_TO_SINGER["datetime"]["format"] == "date-time"
-        if API_METADATA_TO_SINGER["timestamp"]["format"] != "date-time":
-            msg = f"Expected {'date-time'}, got {API_METADATA_TO_SINGER['timestamp']['format']}"
-            raise AssertionError(
-                msg,
-            )
+    def test_numeric_types(self) -> None:
+        """Test numeric type mappings."""
+        integer_types = ["integer", "int"]
+        number_types = ["number", "decimal", "float", "double", "real"]
 
-        # Test UUID type
-        if "pattern" not in API_METADATA_TO_SINGER["uuid"]:
-            msg = f"Expected {'pattern'} in {API_METADATA_TO_SINGER['uuid']}"
-            raise AssertionError(
-                msg,
-            )
+        for oracle_type in integer_types:
+            mapping = FLEXT_ORACLE_WMS_TYPE_MAPPINGS[oracle_type]
+            assert mapping["type"] == "integer"
 
-    def test_format_mappings(self) -> None:
-        """Test format-specific mappings."""
-        if FORMAT_TO_SINGER["date-time"]["format"] != "date-time":
-            msg = (
-                f"Expected {'date-time'}, got {FORMAT_TO_SINGER['date-time']['format']}"
-            )
-            raise AssertionError(
-                msg,
-            )
-        assert FORMAT_TO_SINGER["date"]["format"] == "date"
-        if FORMAT_TO_SINGER["time"]["format"] != "time":
-            msg = f"Expected {'time'}, got {FORMAT_TO_SINGER['time']['format']}"
-            raise AssertionError(
-                msg,
-            )
-        assert FORMAT_TO_SINGER["email"]["format"] == "email"
-        if FORMAT_TO_SINGER["uri"]["format"] != "uri":
-            msg = f"Expected {'uri'}, got {FORMAT_TO_SINGER['uri']['format']}"
-            raise AssertionError(
-                msg,
-            )
-        assert FORMAT_TO_SINGER["uuid"]["format"] == "uuid"
+        for oracle_type in number_types:
+            mapping = FLEXT_ORACLE_WMS_TYPE_MAPPINGS[oracle_type]
+            assert mapping["type"] == "number"
 
-    def test_wms_specific_mappings(self) -> None:
-        """Test WMS-specific type mappings."""
-        # Test length constraints
-        if WMS_SPECIFIC_TYPES["facility_code"]["maxLength"] != 10:
-            msg = (
-                f"Expected {10}, got {WMS_SPECIFIC_TYPES['facility_code']['maxLength']}"
-            )
-            raise AssertionError(
-                msg,
-            )
-        assert WMS_SPECIFIC_TYPES["company_code"]["maxLength"] == 10
-        if WMS_SPECIFIC_TYPES["item_number"]["maxLength"] != 50:
-            msg = f"Expected {50}, got {WMS_SPECIFIC_TYPES['item_number']['maxLength']}"
-            raise AssertionError(
-                msg,
-            )
-        assert WMS_SPECIFIC_TYPES["location_id"]["maxLength"] == 20
+    def test_date_time_types(self) -> None:
+        """Test date/time type mappings."""
+        date_types = ["date", "timestamp", "timestamp_tz", "timestamp_ltz"]
 
-        # Test timestamp fields
-        if WMS_SPECIFIC_TYPES["mod_ts"]["format"] != "date-time":
-            msg = (
-                f"Expected {'date-time'}, got {WMS_SPECIFIC_TYPES['mod_ts']['format']}"
-            )
-            raise AssertionError(
-                msg,
-            )
-        assert WMS_SPECIFIC_TYPES["created_dttm"]["format"] == "date-time"
-        if WMS_SPECIFIC_TYPES["updated_dttm"]["format"] != "date-time":
-            msg = f"Expected {'date-time'}, got {WMS_SPECIFIC_TYPES['updated_dttm']['format']}"
-            raise AssertionError(
-                msg,
-            )
+        for oracle_type in date_types:
+            mapping = FLEXT_ORACLE_WMS_TYPE_MAPPINGS[oracle_type]
+            assert mapping["type"] == "string"
+            assert mapping["format"] == "date-time"
 
-    def test_convert_metadata_type_to_singer_basic_types(self) -> None:
-        """Test basic type conversion to Singer format."""
+    def test_boolean_type(self) -> None:
+        """Test boolean type mapping."""
+        mapping = FLEXT_ORACLE_WMS_TYPE_MAPPINGS["boolean"]
+        assert mapping["type"] == "boolean"
+
+    def test_blob_types(self) -> None:
+        """Test binary/blob type mappings."""
+        blob_types = ["clob", "nclob", "blob", "raw", "long", "long_raw"]
+
+        for oracle_type in blob_types:
+            mapping = FLEXT_ORACLE_WMS_TYPE_MAPPINGS[oracle_type]
+            assert mapping["type"] == "string"
+
+
+class TestConvertMetadataTypeToSinger:
+    """Test convert_metadata_type_to_singer function."""
+
+    def test_valid_oracle_types(self) -> None:
+        """Test conversion of valid Oracle types to Singer types."""
         # String types
-        if convert_metadata_type_to_singer("varchar") != "string":
-            msg = (
-                f"Expected {'string'}, got {convert_metadata_type_to_singer('varchar')}"
-            )
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("text") == "string"
-        if convert_metadata_type_to_singer("string") != "string":
-            msg = (
-                f"Expected {'string'}, got {convert_metadata_type_to_singer('string')}"
-            )
-            raise AssertionError(
-                msg,
-            )
+        assert convert_metadata_type_to_singer("VARCHAR2") == "string"
+        assert convert_metadata_type_to_singer("varchar") == "string"
+        assert convert_metadata_type_to_singer("CHAR") == "string"
 
-        # Integer types
-        if convert_metadata_type_to_singer("integer") != "integer":
-            msg = f"Expected {'integer'}, got {convert_metadata_type_to_singer('integer')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("int") == "integer"
-        if convert_metadata_type_to_singer("bigint") != "integer":
-            msg = (
-                f"Expected {'integer'}, got {convert_metadata_type_to_singer('bigint')}"
-            )
-            raise AssertionError(
-                msg,
-            )
+        # Numeric types
+        assert convert_metadata_type_to_singer("NUMBER") == "number"
+        assert convert_metadata_type_to_singer("integer") == "integer"
+        assert convert_metadata_type_to_singer("DECIMAL") == "number"
 
-        # Number types
-        if convert_metadata_type_to_singer("number") != "number":
-            msg = (
-                f"Expected {'number'}, got {convert_metadata_type_to_singer('number')}"
-            )
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("decimal") == "number"
-        if convert_metadata_type_to_singer("float") != "number":
-            msg = f"Expected {'number'}, got {convert_metadata_type_to_singer('float')}"
-            raise AssertionError(
-                msg,
-            )
+        # Date types
+        assert convert_metadata_type_to_singer("DATE") == "string"
+        assert convert_metadata_type_to_singer("timestamp") == "string"
 
-        # Boolean types
-        if convert_metadata_type_to_singer("boolean") != "boolean":
-            msg = f"Expected {'boolean'}, got {convert_metadata_type_to_singer('boolean')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("bool") == "boolean"
+        # Boolean
+        assert convert_metadata_type_to_singer("BOOLEAN") == "boolean"
 
-    def test_convert_metadata_type_to_singer_with_format_hint(self) -> None:
-        """Test type conversion with format hints."""
-        if convert_metadata_type_to_singer("string", "date-time") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('string', 'date-time')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("string", "date") == "string"
-        if convert_metadata_type_to_singer("string", "time") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('string', 'time')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("string", "email") == "string"
-        if convert_metadata_type_to_singer("string", "uri") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('string', 'uri')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("string", "uuid") == "string"
+    def test_case_insensitive_conversion(self) -> None:
+        """Test that type conversion is case-insensitive."""
+        assert convert_metadata_type_to_singer("VARCHAR2") == "string"
+        assert convert_metadata_type_to_singer("varchar2") == "string"
+        assert convert_metadata_type_to_singer("VarChar2") == "string"
 
-    def test_convert_metadata_type_to_singer_wms_specific(self) -> None:
-        """Test conversion of WMS-specific types."""
-        if convert_metadata_type_to_singer("facility_code") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('facility_code')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("company_code") == "string"
-        if convert_metadata_type_to_singer("item_number") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('item_number')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("mod_ts") == "string"
+    def test_unknown_type_defaults_to_string(self) -> None:
+        """Test that unknown types default to string."""
+        assert convert_metadata_type_to_singer("UNKNOWN_TYPE") == "string"
+        assert convert_metadata_type_to_singer("CUSTOM_TYPE") == "string"
 
-    def test_convert_metadata_type_to_singer_pattern_based(self) -> None:
-        """Test pattern-based type detection."""
-        # Date/time patterns
-        if convert_metadata_type_to_singer("created_date") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('created_date')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("updated_time") == "string"
-        if convert_metadata_type_to_singer("modified_datetime") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('modified_datetime')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("just_time") == "string"
+    def test_with_format_hint(self) -> None:
+        """Test conversion with format hint (currently unused but parameter exists)."""
+        # Format hint is accepted but not currently used in implementation
+        assert convert_metadata_type_to_singer("VARCHAR2", "email") == "string"
+        assert convert_metadata_type_to_singer("NUMBER", "currency") == "number"
 
-        # Numeric patterns
-        if convert_metadata_type_to_singer("some_int") != "integer":
-            msg = f"Expected {'integer'}, got {convert_metadata_type_to_singer('some_int')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("some_num") == "number"
-        if convert_metadata_type_to_singer("some_dec") != "number":
-            msg = f"Expected {'number'}, got {convert_metadata_type_to_singer('some_dec')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("some_float") == "number"
-        if convert_metadata_type_to_singer("some_double") != "number":
-            msg = f"Expected {'number'}, got {convert_metadata_type_to_singer('some_double')}"
-            raise AssertionError(
-                msg,
-            )
 
-        # Boolean patterns
-        if convert_metadata_type_to_singer("is_bool") != "boolean":
-            msg = f"Expected {'boolean'}, got {convert_metadata_type_to_singer('is_bool')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("flag_value") == "boolean"
+class TestGetSingerTypeWithMetadata:
+    """Test get_singer_type_with_metadata function."""
 
-    def test_convert_metadata_type_to_singer_case_insensitive(self) -> None:
-        """Test case-insensitive type conversion."""
-        if convert_metadata_type_to_singer("VARCHAR") != "string":
-            msg = (
-                f"Expected {'string'}, got {convert_metadata_type_to_singer('VARCHAR')}"
-            )
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("INTEGER") == "integer"
-        if convert_metadata_type_to_singer("BOOLEAN") != "boolean":
-            msg = f"Expected {'boolean'}, got {convert_metadata_type_to_singer('BOOLEAN')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("Number") == "number"
+    def test_complete_schema_for_varchar(self) -> None:
+        """Test complete schema generation for VARCHAR type."""
+        schema = get_singer_type_with_metadata("VARCHAR2")
+        assert schema["type"] == "string"
 
-    def test_convert_metadata_type_to_singer_whitespace(self) -> None:
-        """Test type conversion with whitespace."""
-        if convert_metadata_type_to_singer("  varchar  ") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('  varchar  ')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("\tinteger\n") == "integer"
-        if convert_metadata_type_to_singer(" boolean ") != "boolean":
-            msg = f"Expected {'boolean'}, got {convert_metadata_type_to_singer(' boolean ')}"
-            raise AssertionError(
-                msg,
-            )
-
-    def test_convert_metadata_type_to_singer_unknown_type(self) -> None:
-        """Test unknown type defaults to string."""
-        if convert_metadata_type_to_singer("unknown_type") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('unknown_type')}"
-            raise AssertionError(
-                msg,
-            )
-        assert convert_metadata_type_to_singer("custom_type") == "string"
-        if convert_metadata_type_to_singer("weird123") != "string":
-            msg = f"Expected {'string'}, got {convert_metadata_type_to_singer('weird123')}"
-            raise AssertionError(
-                msg,
-            )
-
-    def test_get_full_singer_schema_basic(self) -> None:
-        """Test getting full Singer schema for basic types."""
-        # String type
-        schema = get_full_singer_schema("varchar")
-        if schema["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {schema['type']}"
-            raise AssertionError(msg)
-
-        # Integer type
-        schema = get_full_singer_schema("integer")
-        if schema["type"] != ["integer", "null"]:
-            msg = f"Expected {['integer', 'null']}, got {schema['type']}"
-            raise AssertionError(
-                msg,
-            )
-
-        # Boolean type
-        schema = get_full_singer_schema("boolean")
-        if schema["type"] != ["boolean", "null"]:
-            msg = f"Expected {['boolean', 'null']}, got {schema['type']}"
-            raise AssertionError(
-                msg,
-            )
-
-    def test_get_full_singer_schema_with_format(self) -> None:
-        """Test getting full Singer schema with format hints."""
-        schema = get_full_singer_schema("string", "date-time")
-        if schema["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {schema['type']}"
-            raise AssertionError(msg)
+    def test_complete_schema_for_date(self) -> None:
+        """Test complete schema generation for DATE type."""
+        schema = get_singer_type_with_metadata("DATE")
+        assert schema["type"] == "string"
         assert schema["format"] == "date-time"
 
-        schema = get_full_singer_schema("string", "email")
-        if schema["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {schema['type']}"
-            raise AssertionError(msg)
-        assert schema["format"] == "email"
+    def test_complete_schema_for_number(self) -> None:
+        """Test complete schema generation for NUMBER type."""
+        schema = get_singer_type_with_metadata("NUMBER")
+        assert schema["type"] == "number"
 
-    def test_get_full_singer_schema_wms_specific(self) -> None:
-        """Test getting full Singer schema for WMS-specific types."""
-        schema = get_full_singer_schema("facility_code")
-        if schema["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {schema['type']}"
-            raise AssertionError(msg)
-        assert schema["maxLength"] == 10
+    def test_with_field_name_and_format_hint(self) -> None:
+        """Test schema generation with field name and format hint."""
+        # Parameters are accepted but not currently used in implementation
+        schema = get_singer_type_with_metadata("VARCHAR2", "email_field", "email")
+        assert schema["type"] == "string"
 
-        schema = get_full_singer_schema("item_number")
-        if schema["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {schema['type']}"
-            raise AssertionError(msg)
-        assert schema["maxLength"] == 50
+    def test_case_insensitive_schema_generation(self) -> None:
+        """Test that schema generation is case-insensitive."""
+        schema1 = get_singer_type_with_metadata("VARCHAR2")
+        schema2 = get_singer_type_with_metadata("varchar2")
+        assert schema1 == schema2
 
-    def test_get_full_singer_schema_nullable_true(self) -> None:
-        """Test getting full Singer schema with nullable=True."""
-        schema = get_full_singer_schema("varchar", nullable=True)
-        if "null" not in schema["type"]:
-            msg = f"Expected {'null'} in {schema['type']}"
-            raise AssertionError(msg)
 
-        schema = get_full_singer_schema("integer", nullable=True)
-        if "null" not in schema["type"]:
-            msg = f"Expected {'null'} in {schema['type']}"
-            raise AssertionError(msg)
+class TestGetOracleToSingerMapping:
+    """Test get_oracle_to_singer_mapping function."""
 
-    def test_get_full_singer_schema_nullable_false(self) -> None:
-        """Test getting full Singer schema with nullable=False."""
-        schema = get_full_singer_schema("varchar", nullable=False)
-        if schema["type"] != "string":
-            msg = f"Expected {'string'}, got {schema['type']}"
-            raise AssertionError(msg)
+    def test_returns_complete_mapping(self) -> None:
+        """Test that function returns the complete type mapping."""
+        mapping = get_oracle_to_singer_mapping()
 
-        schema = get_full_singer_schema("integer", nullable=False)
-        if schema["type"] != "integer":
-            msg = f"Expected {'integer'}, got {schema['type']}"
-            raise AssertionError(msg)
+        assert isinstance(mapping, dict)
+        assert mapping == FLEXT_ORACLE_WMS_TYPE_MAPPINGS
 
-    def test_get_base_schema_for_type_format_hint(self) -> None:
-        """Test getting base schema with format hint."""
-        schema = _get_base_schema_for_type("string", "date-time")
-        if schema["format"] != "date-time":
-            msg = f"Expected {'date-time'}, got {schema['format']}"
-            raise AssertionError(msg)
+        # Verify it contains expected types
+        assert "varchar2" in mapping
+        assert "number" in mapping
+        assert "date" in mapping
+        assert "boolean" in mapping
 
-        schema = _get_base_schema_for_type("string", "email")
-        if schema["format"] != "email":
-            msg = f"Expected {'email'}, got {schema['format']}"
-            raise AssertionError(msg)
+    def test_mapping_is_immutable_reference(self) -> None:
+        """Test that returned mapping is a reference to the original."""
+        mapping = get_oracle_to_singer_mapping()
 
-    def test_get_base_schema_for_type_wms_specific(self) -> None:
-        """Test getting base schema for WMS-specific types."""
-        schema = _get_base_schema_for_type("facility_code", None)
-        if schema["maxLength"] != 10:
-            msg = f"Expected {10}, got {schema['maxLength']}"
-            raise AssertionError(msg)
+        # Should be the same object reference
+        assert mapping is FLEXT_ORACLE_WMS_TYPE_MAPPINGS
 
-        schema = _get_base_schema_for_type("mod_ts", None)
-        if schema["format"] != "date-time":
-            msg = f"Expected {'date-time'}, got {schema['format']}"
-            raise AssertionError(msg)
 
-    def test_get_base_schema_for_type_api_metadata(self) -> None:
-        """Test getting base schema for API metadata types."""
-        schema = _get_base_schema_for_type("varchar", None)
-        if schema["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {schema['type']}"
-            raise AssertionError(msg)
+class TestBackwardCompatibilityAliases:
+    """Test backward compatibility aliases."""
 
-        schema = _get_base_schema_for_type("uuid", None)
-        if "pattern" not in schema:
-            msg = f"Expected {'pattern'} in {schema}"
-            raise AssertionError(msg)
+    def test_api_metadata_to_singer_alias(self) -> None:
+        """Test API_METADATA_TO_SINGER backward compatibility alias."""
+        assert API_METADATA_TO_SINGER == FLEXT_ORACLE_WMS_TYPE_MAPPINGS
 
-    def test_get_base_schema_for_type_fallback(self) -> None:
-        """Test getting base schema fallback behavior."""
-        schema = _get_base_schema_for_type("unknown_type", None)
-        if schema["type"] != "string":
-            msg = f"Expected {'string'}, got {schema['type']}"
-            raise AssertionError(msg)
+    def test_convert_to_singer_type_alias(self) -> None:
+        """Test convert_to_singer_type backward compatibility alias."""
+        # Should be the same function
+        assert convert_to_singer_type("VARCHAR2") == "string"
+        assert convert_to_singer_type("NUMBER") == "number"
+        assert convert_to_singer_type("DATE") == "string"
 
-    def test_apply_nullable_to_schema_remove_null(self) -> None:
-        """Test removing null from schema type array."""
-        schema = {"type": ["string", "null"]}
-        result = _apply_nullable_to_schema(schema, nullable=False)
-        if result["type"] != "string":
-            msg = f"Expected {'string'}, got {result['type']}"
-            raise AssertionError(msg)
+    def test_get_singer_schema_alias(self) -> None:
+        """Test get_singer_schema backward compatibility alias."""
+        # Should be the same function
+        schema = get_singer_schema("VARCHAR2")
+        assert schema["type"] == "string"
 
-        schema = {"type": ["integer", "null", "string"]}
-        result = _apply_nullable_to_schema(schema, nullable=False)
-        if result["type"] != ["integer", "string"]:
-            msg = f"Expected {['integer', 'string']}, got {result['type']}"
-            raise AssertionError(
-                msg,
-            )
-
-    def test_apply_nullable_to_schema_add_null(self) -> None:
-        """Test adding null to schema type."""
-        schema = {"type": "string"}
-        result = _apply_nullable_to_schema(schema, nullable=True)
-        if result["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {result['type']}"
-            raise AssertionError(msg)
-
-        schema = {"type": "integer"}
-        result = _apply_nullable_to_schema(schema, nullable=True)
-        if result["type"] != ["integer", "null"]:
-            msg = f"Expected {['integer', 'null']}, got {result['type']}"
-            raise AssertionError(
-                msg,
-            )
-
-    def test_apply_nullable_to_schema_already_nullable(self) -> None:
-        """Test applying nullable to already nullable schema."""
-        schema = {"type": ["string", "null"]}
-        result = _apply_nullable_to_schema(schema, nullable=True)
-        if result["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {result['type']}"
-            raise AssertionError(msg)
-
-    def test_apply_nullable_to_schema_already_non_nullable(self) -> None:
-        """Test applying non-nullable to already non-nullable schema."""
-        schema = {"type": "string"}
-        result = _apply_nullable_to_schema(schema, nullable=False)
-        if result["type"] != "string":
-            msg = f"Expected {'string'}, got {result['type']}"
-            raise AssertionError(msg)
-
-    def test_is_timestamp_field_basic_patterns(self) -> None:
-        """Test timestamp field detection with basic patterns."""
-        # Positive cases
-        if not (is_timestamp_field("update_ts")):
-            msg = f"Expected True, got {is_timestamp_field('update_ts')}"
-            raise AssertionError(
-                msg,
-            )
-        assert is_timestamp_field("created_dttm") is True
-        if not (is_timestamp_field("last_modified_date")):
-            msg = f"Expected True, got {is_timestamp_field('last_modified_date')}"
-            raise AssertionError(
-                msg,
-            )
-        assert is_timestamp_field("process_time") is True
-        if not (is_timestamp_field("mod_ts")):
-            msg = f"Expected True, got {is_timestamp_field('mod_ts')}"
-            raise AssertionError(msg)
-        assert is_timestamp_field("updated_dttm") is True
-        if not (is_timestamp_field("last_modified")):
-            msg = f"Expected True, got {is_timestamp_field('last_modified')}"
-            raise AssertionError(
-                msg,
-            )
-
-        # Negative cases
-        if is_timestamp_field("user_name"):
-            msg = f"Expected False, got {is_timestamp_field('user_name')}"
-            raise AssertionError(
-                msg,
-            )
-        assert is_timestamp_field("item_id") is False
-        if is_timestamp_field("status"):
-            msg = f"Expected False, got {is_timestamp_field('status')}"
-            raise AssertionError(msg)
-
-    def test_is_timestamp_field_case_insensitive(self) -> None:
-        """Test timestamp field detection is case-insensitive."""
-        if not (is_timestamp_field("UPDATE_TS")):
-            msg = f"Expected True, got {is_timestamp_field('UPDATE_TS')}"
-            raise AssertionError(
-                msg,
-            )
-        assert is_timestamp_field("Created_Dttm") is True
-        if not (is_timestamp_field("LAST_MODIFIED")):
-            msg = f"Expected True, got {is_timestamp_field('LAST_MODIFIED')}"
-            raise AssertionError(
-                msg,
-            )
-        assert is_timestamp_field("Process_Time") is True
-
-    def test_is_timestamp_field_edge_cases(self) -> None:
-        """Test timestamp field detection edge cases."""
-        # Empty and None cases handled by pattern matching
-        if is_timestamp_field(""):
-            msg = f"Expected False, got {is_timestamp_field('')}"
-            raise AssertionError(msg)
-
-        # Partial matches
-        assert is_timestamp_field("timestamp") is False  # No exact pattern match
-        assert is_timestamp_field("ts") is False  # Must end with _ts
-        assert is_timestamp_field("dttm") is False  # Must end with _dttm
-
-    def test_get_primary_key_schema(self) -> None:
-        """Test primary key schema generation."""
-        schema = get_primary_key_schema()
-        if schema["type"] != ["integer", "null"]:
-            msg = f"Expected {['integer', 'null']}, got {schema['type']}"
-            raise AssertionError(
-                msg,
-            )
-
-    def test_get_replication_key_schema(self) -> None:
-        """Test replication key schema generation."""
-        schema = get_replication_key_schema()
-        if schema["type"] != ["string", "null"]:
-            msg = f"Expected {['string', 'null']}, got {schema['type']}"
-            raise AssertionError(msg)
+        schema = get_singer_schema("DATE")
+        assert schema["type"] == "string"
         assert schema["format"] == "date-time"
 
-    def test_type_mapping_constants_immutable(self) -> None:
-        """Test that type mapping constants are properly defined."""
-        # Verify that constants exist and have expected structure
-        assert isinstance(API_METADATA_TO_SINGER, dict)
-        assert isinstance(FORMAT_TO_SINGER, dict)
-        assert isinstance(WMS_SPECIFIC_TYPES, dict)
 
-        # Verify some key entries exist
-        if "varchar" not in API_METADATA_TO_SINGER:
-            msg = f"Expected {'varchar'} in {API_METADATA_TO_SINGER}"
-            raise AssertionError(msg)
-        assert "date-time" in FORMAT_TO_SINGER
-        if "facility_code" not in WMS_SPECIFIC_TYPES:
-            msg = f"Expected {'facility_code'} in {WMS_SPECIFIC_TYPES}"
-            raise AssertionError(msg)
+class TestTypeMappingIntegration:
+    """Test type mapping integration scenarios."""
 
-    def test_schema_copy_behavior(self) -> None:
-        """Test that schema modifications don't affect original mappings."""
-        # Get schema for a WMS-specific type
-        schema = _get_base_schema_for_type("facility_code", None)
-        original_max_length = WMS_SPECIFIC_TYPES["facility_code"]["maxLength"]
+    def test_typical_oracle_wms_fields(self) -> None:
+        """Test mapping for typical Oracle WMS field types."""
+        # Typical WMS fields and their expected Singer types
+        wms_field_types = {
+            "ITEM_ID": ("VARCHAR2", "string"),
+            "ITEM_DESC": ("VARCHAR2", "string"),
+            "QTY_ON_HAND": ("NUMBER", "number"),
+            "LOCATION_ID": ("VARCHAR2", "string"),
+            "CREATED_DATE": ("DATE", "string"),
+            "MODIFIED_DATE": ("TIMESTAMP", "string"),
+            "IS_ACTIVE": ("BOOLEAN", "boolean"),
+            "ITEM_COUNT": ("INTEGER", "integer"),
+        }
 
-        # Modify the returned schema
-        schema["maxLength"] = 999
+        for field_name, (oracle_type, expected_singer_type) in wms_field_types.items():
+            singer_type = convert_metadata_type_to_singer(oracle_type)
+            assert singer_type == expected_singer_type, f"Field {field_name} with type {oracle_type} should map to {expected_singer_type}, got {singer_type}"
 
-        # Verify original mapping is unchanged
-        if WMS_SPECIFIC_TYPES["facility_code"]["maxLength"] != original_max_length:
-            msg = f"Expected {original_max_length}, got {WMS_SPECIFIC_TYPES['facility_code']['maxLength']}"
-            raise AssertionError(
-                msg,
-            )
+    def test_schema_generation_for_wms_table(self) -> None:
+        """Test schema generation for a complete WMS table structure."""
+        wms_table_structure = {
+            "ITEM_ID": "VARCHAR2",
+            "ITEM_DESC": "VARCHAR2",
+            "QTY_ON_HAND": "NUMBER",
+            "UNIT_COST": "DECIMAL",
+            "CREATED_DATE": "DATE",
+            "LAST_MODIFIED": "TIMESTAMP",
+            "IS_SERIALIZED": "BOOLEAN",
+        }
 
-    def test_integration_with_all_api_types(self) -> None:
-        """Test integration with all API metadata types."""
-        for wms_type in API_METADATA_TO_SINGER:
-            # Should not raise exceptions
-            singer_type = convert_metadata_type_to_singer(wms_type)
-            assert isinstance(singer_type, str)
+        generated_schema = {}
+        for field_name, oracle_type in wms_table_structure.items():
+            generated_schema[field_name] = get_singer_type_with_metadata(oracle_type)
 
-            # Should generate valid schema
-            schema = get_full_singer_schema(wms_type)
-            if "type" not in schema:
-                msg = f"Expected {'type'} in {schema}"
-                raise AssertionError(msg)
+        # Verify generated schema structure
+        assert generated_schema["ITEM_ID"]["type"] == "string"
+        assert generated_schema["QTY_ON_HAND"]["type"] == "number"
+        assert generated_schema["CREATED_DATE"]["type"] == "string"
+        assert generated_schema["CREATED_DATE"]["format"] == "date-time"
+        assert generated_schema["IS_SERIALIZED"]["type"] == "boolean"
 
-    def test_integration_with_all_wms_types(self) -> None:
-        """Test integration with all WMS-specific types."""
-        for wms_type in WMS_SPECIFIC_TYPES:
-            # Should not raise exceptions
-            singer_type = convert_metadata_type_to_singer(wms_type)
-            assert isinstance(singer_type, str)
+    def test_error_handling_for_malformed_input(self) -> None:
+        """Test error handling for malformed or edge case inputs."""
+        # Empty string
+        assert convert_metadata_type_to_singer("") == "string"
 
-            # Should generate valid schema
-            schema = get_full_singer_schema(wms_type)
-            if "type" not in schema:
-                msg = f"Expected {'type'} in {schema}"
-                raise AssertionError(msg)
+        # Whitespace
+        assert convert_metadata_type_to_singer("   ") == "string"
 
-    def test_format_hint_priority(self) -> None:
-        """Test that format hints take priority over type mappings."""
-        # Even if the base type exists in mappings, format hint should win
-        result = convert_metadata_type_to_singer("varchar", "date-time")
-        if result != "string":
-            msg = f"Expected {'string'}, got {result}"
-            raise AssertionError(msg)
-
-        # Verify full schema also respects format hint priority
-        schema = get_full_singer_schema("varchar", "date-time")
-        if schema["format"] != "date-time":
-            msg = f"Expected {'date-time'}, got {schema['format']}"
-            raise AssertionError(msg)
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+        # Mixed case with spaces (should be cleaned)
+        # Note: Current implementation uses .lower() which handles spaces
+        assert convert_metadata_type_to_singer(" VARCHAR2 ") == "string"

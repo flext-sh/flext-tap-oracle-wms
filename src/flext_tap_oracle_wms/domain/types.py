@@ -244,7 +244,7 @@ OperationResult = str
 # EXPORTS
 # =============================================================================
 
-__all__ = [
+__all__: list[str] = [
     "AllocationId",
     "AuthConfigDict",
     "CatalogDict",

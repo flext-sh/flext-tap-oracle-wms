@@ -11,15 +11,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 # Import from flext-core for foundational patterns (standardized)
 from flext_core import (
     FlextBaseSettings as BaseConfig,
     FlextEntity as DomainEntity,
+    FlextResult,
 )
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
-
-if TYPE_CHECKING:
-    from datetime import datetime
 
 
 # Simple constants for compatibility
@@ -86,7 +87,7 @@ class WMSConfig(BaseConfig):
         """
         url_str = str(v)
         if not url_str.startswith(("http://", "https://")):
-            msg = f"Invalid URL: {url_str}. Must start with http:// or https://"
+            msg: str = f"Invalid URL: {url_str}. Must start with http:// or https://"
             raise ValueError(msg)
         return v
 
@@ -300,9 +301,30 @@ class TapMetrics(DomainEntity):
         """Increment error counter."""
         self.errors_encountered += 1
 
+    def validate_domain_rules(self) -> FlextResult[None]:
+        """Validate business rules for tap metrics.
+
+        Returns:
+            FlextResult indicating validation success or failure.
+
+        """
+        # Business rule: metrics should not be negative
+        if self.api_calls < 0:
+            return FlextResult.fail("API calls cannot be negative")
+        if self.records_processed < 0:
+            return FlextResult.fail("Records processed cannot be negative")
+        if self.errors_encountered < 0:
+            return FlextResult.fail("Errors encountered cannot be negative")
+
+        # Business rule: if errors exist, at least some API calls should have been made
+        if self.errors_encountered > 0 and self.api_calls == 0:
+            return FlextResult.fail("Cannot have errors without making API calls")
+
+        return FlextResult.ok(None)
+
 
 # Export main models
-__all__ = [
+__all__: list[str] = [
     "FlextConstants",
     "TapMetrics",
     "WMSConfig",

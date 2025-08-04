@@ -25,7 +25,7 @@ class TestTapOracleWMS:
         tap = TapOracleWMS(config=mock_wms_config)
 
         if tap.name != "tap-oracle-wms":
-            msg = f"Expected {'tap-oracle-wms'}, got {tap.name}"
+            msg: str = f"Expected {'tap-oracle-wms'}, got {tap.name}"
             raise AssertionError(msg)
         assert tap.config == mock_wms_config
         assert hasattr(tap, "discovery")
@@ -40,7 +40,7 @@ class TestTapOracleWMS:
         config = {"base_url": "https://test.com"}
         tap = TapOracleWMS(config=config)
         if tap.config["base_url"] != "https://test.com":
-            msg = f"Expected {'https://test.com'}, got {tap.config['base_url']}"
+            msg: str = f"Expected {'https://test.com'}, got {tap.config['base_url']}"
             raise AssertionError(
                 msg,
             )
@@ -69,7 +69,7 @@ class TestTapOracleWMS:
 
             # Test basic functionality
             if tap.name != "tap-oracle-wms":
-                msg = f"Expected {'tap-oracle-wms'}, got {tap.name}"
+                msg: str = f"Expected {'tap-oracle-wms'}, got {tap.name}"
                 raise AssertionError(msg)
             assert tap.config == mock_wms_config
 
@@ -94,10 +94,10 @@ class TestTapOracleWMS:
             processed = mock_post_process(record)
 
             if "_extracted_at" not in processed:
-                msg = f"Expected {'_extracted_at'} in {processed}"
+                msg: str = f"Expected {'_extracted_at'} in {processed}"
                 raise AssertionError(msg)
             if processed["id"] != 1:
-                msg = f"Expected {1}, got {processed['id']}"
+                msg: str = f"Expected {1}, got {processed['id']}"
                 raise AssertionError(msg)
             assert processed["name"] == "Test"
 
@@ -155,7 +155,7 @@ class TestTapOracleWMS:
             # Test cache functionality by setting it manually
             tap._entity_cache = mock_entities
             if tap._entity_cache != mock_entities:
-                msg = f"Expected {mock_entities}, got {tap._entity_cache}"
+                msg: str = f"Expected {mock_entities}, got {tap._entity_cache}"
                 raise AssertionError(
                     msg,
                 )
@@ -180,7 +180,7 @@ class TestTapOracleWMS:
             # Test cache functionality by setting it manually
             tap._schema_cache["item"] = mock_schema
             if tap._schema_cache["item"] != mock_schema:
-                msg = f"Expected {mock_schema}, got {tap._schema_cache['item']}"
+                msg: str = f"Expected {mock_schema}, got {tap._schema_cache['item']}"
                 raise AssertionError(
                     msg,
                 )

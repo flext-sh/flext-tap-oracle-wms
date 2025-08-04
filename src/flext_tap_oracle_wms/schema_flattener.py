@@ -6,13 +6,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 # Removed circular dependency - use DI pattern
 from flext_core import TAnyDict, get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Union
 
 logger = get_logger(__name__)
 
@@ -184,7 +185,7 @@ class SchemaFlattener:
         depth: int,
         prefix: str,
         data_type: str,
-        processor_func: Callable[..., Any],
+        processor_func: Callable[[TAnyDict, str, object, str, int], None],
     ) -> TAnyDict:
         """Template Method Pattern: Generic flattening algorithm.
 
@@ -343,7 +344,7 @@ class SchemaFlattener:
     def _handle_data_array(
         self,
         flattened: TAnyDict,
-        value: list[Any],
+        value: list[str | int | float | bool | dict[str, object] | list[object]],
         new_key: str,
         depth: int,
     ) -> None:
@@ -387,7 +388,10 @@ class SchemaFlattener:
                 continue  # Skip due to conflict
 
             # Extract Method: Handle final value assignment
-            if not self._assign_final_value(target_dict, parts[-1], value):
+            # Type casting for proper type compatibility
+            from typing import cast
+            typed_value = cast("str | float | bool | dict[str, object] | list[object]", value)
+            if not self._assign_final_value(target_dict, parts[-1], typed_value):
                 continue  # Skip due to conflict
 
         return deflated
@@ -427,7 +431,7 @@ class SchemaFlattener:
 
         return current
 
-    def _assign_final_value(self, target_dict: TAnyDict, key: str, value: Any) -> bool:
+    def _assign_final_value(self, target_dict: TAnyDict, key: str, value: str | float | bool | dict[str, object] | list[object]) -> bool:
         """Extract Method: Assign final value with conflict detection.
 
         SOLID REFACTORING: Separates final assignment logic.

@@ -42,6 +42,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
     import requests
+    from singer_sdk import Tap
+    from singer_sdk.authenticators import SimpleAuthenticator
 # REFACTORED: Use centralized types from flext-core - eliminates all type duplication
 OracleWmsValueType = TValue  # Oracle WMS values use core value type
 OracleWmsEntityId = TEntityId  # Oracle WMS entities use core entity ID
@@ -209,7 +211,7 @@ class UrlParamsBuilder:
     @staticmethod
     def _build_pagination_params(next_page_token: object) -> dict[str, object]:
         """Strategy 1: Build pagination-specific parameters."""
-        return WMSStream._get_pagination_params(next_page_token)
+        return WMSStream.get_pagination_params(next_page_token)
 
     @classmethod
     def _build_initial_params(
@@ -218,7 +220,7 @@ class UrlParamsBuilder:
         context: Mapping[str, object] | None,
     ) -> dict[str, object]:
         """Strategy 2: Build initial request parameters using Template Method."""
-        params = stream._get_base_params()
+        params = stream._get_base_params()  # noqa: SLF001
 
         # Template Method: Apply parameter builders in sequence
         cls._apply_replication_filters(stream, params, context)
@@ -234,17 +236,17 @@ class UrlParamsBuilder:
         context: Mapping[str, object] | None,
     ) -> None:
         """Apply replication-specific filters to parameters."""
-        stream._add_replication_filters(params, context)
+        stream._add_replication_filters(params, context)  # noqa: SLF001
 
     @staticmethod
     def _apply_ordering_params(stream: WMSStream, params: dict[str, object]) -> None:
         """Apply ordering parameters based on replication method."""
-        stream._add_ordering_params(params)
+        stream._add_ordering_params(params)  # noqa: SLF001
 
     @staticmethod
     def _apply_entity_filters(stream: WMSStream, params: dict[str, object]) -> None:
         """Apply entity-specific filters to parameters."""
-        stream._add_entity_filters(params)
+        stream._add_entity_filters(params)  # noqa: SLF001
 
 
 class ResponseParser:
@@ -280,7 +282,7 @@ class ResponseParser:
             data = response.json()
             yield from cls._parse_response_data(data, entity_name)
         except json.JSONDecodeError as e:
-            msg = f"Invalid JSON response from API for entity {entity_name}: {e}"
+            msg: str = f"Invalid JSON response from API for entity {entity_name}: {e}"
             raise ValueError(msg) from e
 
     @classmethod
@@ -292,12 +294,12 @@ class ResponseParser:
         """Parse response data using Strategy Pattern with Guard Clauses."""
         # Strategy 1: Results array format
         if cls._is_results_array_format(data):
-            yield from cls._parse_results_array(data)
+            yield from cls._parse_results_array(cast("dict[str, object]", data))
             return
 
         # Strategy 2: Direct array format
         if cls._is_direct_array_format(data):
-            yield from cls._parse_direct_array(data)
+            yield from cls._parse_direct_array(cast("list[dict[str, object]]", data))
             return
 
         # Strategy 3: Empty response (valid case)
@@ -323,7 +325,9 @@ class ResponseParser:
         return isinstance(data, dict) and not data
 
     @classmethod
-    def _parse_results_array(cls, data: dict) -> Iterable[dict[str, object]]:
+    def _parse_results_array(
+        cls, data: dict[str, object],
+    ) -> Iterable[dict[str, object]]:
         """Parse results array format using Guard Clauses."""
         results = data["results"]
 
@@ -339,7 +343,9 @@ class ResponseParser:
         yield from results
 
     @staticmethod
-    def _parse_direct_array(data: list) -> Iterable[dict[str, object]]:
+    def _parse_direct_array(
+        data: list[dict[str, object]],
+    ) -> Iterable[dict[str, object]]:
         """Parse direct array format."""
         yield from data
 
@@ -376,6 +382,9 @@ class WMSPaginator(BaseHATEOASPaginator):
             data = response.json()
             return data.get("next_page") if isinstance(data, dict) else None
         except (ValueError, json.JSONDecodeError) as e:
+            # Get logger from flext-core
+            from flext_core import get_logger
+
             logger = get_logger(__name__)
             error_msg = (
                 "Critical pagination failure: Failed to parse JSON response. "
@@ -417,7 +426,7 @@ class WMSStream(RESTStream[dict[str, object]]):
     replication_method = "INCREMENTAL"
     replication_key = None
 
-    def __init__(self, tap: object, name: str, schema: dict[str, object]) -> None:
+    def __init__(self, tap: Tap, name: str, schema: dict[str, object]) -> None:
         """Initialize WMS stream using flext-core centralized patterns.
 
         Args:
@@ -458,30 +467,47 @@ class WMSStream(RESTStream[dict[str, object]]):
         # REFACTORED: Use domain model for primary key configuration
         if self._entity_info and self._entity_info.primary_keys:
             self.primary_keys = self._entity_info.primary_keys
-        elif "id" in self._schema.get("properties", {}):
-            self.primary_keys = ["id"]
-            # Update domain model with discovered primary key
-            if self._entity_info:
-                object.__setattr__(self._entity_info, "primary_keys", ["id"])
+        else:
+            # Check if id field exists in schema properties
+            schema_properties = cast(
+                "dict[str, object]", self._schema.get("properties", {}),
+            )
+            if "id" in schema_properties:
+                self.primary_keys = ["id"]
+                # Update domain model with discovered primary key
+                if self._entity_info:
+                    object.__setattr__(self._entity_info, "primary_keys", ["id"])
         # REFACTORED: Use centralized configuration for replication method
-        schema_props = self._schema.get("properties", {})
+        schema_props = cast("dict[str, Any]", self._schema.get("properties", {}))
 
         # Get replication configuration from centralized config
         force_full_table = self.config.get("force_full_table", False)
         enable_incremental = self.config.get("enable_incremental", True)
-        configured_rep_key = self.config.get("replication_key", "mod_ts")
+        # Smart replication key detection based on available schema fields
+        default_rep_key = self._detect_replication_key(schema_props)
+        configured_rep_key = self.config.get("replication_key", default_rep_key)
 
-        if force_full_table or not enable_incremental:
+        if force_full_table or not enable_incremental or not configured_rep_key:
             # Use full table replication
             self.replication_method = OracleWmsReplicationMethod.FULL_TABLE.value
             self.replication_key = None
+            # Get logger from flext-core
+            from flext_core import get_logger
+
+            logger = get_logger(__name__)
+            logger.info("Using full table replication")
             # Update domain model
             if self._entity_info:
                 object.__setattr__(self._entity_info, "replication_key", None)
-        elif configured_rep_key in schema_props:
+        elif configured_rep_key and configured_rep_key in schema_props:
             # Use incremental replication
             self.replication_method = OracleWmsReplicationMethod.INCREMENTAL.value
             self.replication_key = configured_rep_key
+            # Get logger from flext-core
+            from flext_core import get_logger
+
+            logger = get_logger(__name__)
+            logger.info(f"Using incremental replication with key: {configured_rep_key}")
             # Update domain model
             if self._entity_info:
                 object.__setattr__(
@@ -490,12 +516,20 @@ class WMSStream(RESTStream[dict[str, object]]):
                     configured_rep_key,
                 )
         else:
-            # Validation using domain model patterns
-            msg = (
-                f"Incremental sync enabled but replication key '{configured_rep_key}' "
-                f"not found in schema properties: {list(schema_props.keys())}"
+            # Fallback to full table if configured key not available
+            # Get logger from flext-core
+            from flext_core import get_logger
+
+            logger = get_logger(__name__)
+            logger.warning(
+                f"Configured replication key '{configured_rep_key}' not found in schema. "
+                f"Available: {list(schema_props.keys())[:5]}... Falling back to full table.",
             )
-            raise ValueError(msg)
+            self.replication_method = OracleWmsReplicationMethod.FULL_TABLE.value
+            self.replication_key = None
+            # Update domain model
+            if self._entity_info:
+                object.__setattr__(self._entity_info, "replication_key", None)
 
     @property
     def url_base(self) -> str:
@@ -525,14 +559,22 @@ class WMSStream(RESTStream[dict[str, object]]):
         headers = super().http_headers
 
         # Add Oracle WMS specific headers from centralized configuration
-        if self._wms_config and self._wms_config.company_code != "*":
-            headers["X-Company-Code"] = self._wms_config.company_code
-        if self._wms_config and self._wms_config.facility_code != "*":
-            headers["X-Facility-Code"] = self._wms_config.facility_code
+        if (
+            self._wms_config
+            and self._wms_config.authentication.company_code
+            and self._wms_config.authentication.company_code != "*"
+        ):
+            headers["X-Company-Code"] = self._wms_config.authentication.company_code
+        if (
+            self._wms_config
+            and self._wms_config.authentication.facility_code
+            and self._wms_config.authentication.facility_code != "*"
+        ):
+            headers["X-Facility-Code"] = self._wms_config.authentication.facility_code
 
         # Add API version header
         if self._wms_config:
-            headers["X-WMS-API-Version"] = self._wms_config.wms_api_version
+            headers["X-WMS-API-Version"] = self._wms_config.connection.api_version
 
         return headers
 
@@ -569,7 +611,7 @@ class WMSStream(RESTStream[dict[str, object]]):
         return UrlParamsBuilder.build_params(self, context, next_page_token)
 
     @staticmethod
-    def _get_pagination_params(next_page_token: object) -> dict[str, object]:
+    def get_pagination_params(next_page_token: object) -> dict[str, object]:
         """Build URL parameters for WMS API requests.
 
         Args:
@@ -608,7 +650,7 @@ class WMSStream(RESTStream[dict[str, object]]):
         """
         if self._wms_config:
             return {
-                "page_size": self._wms_config.extraction.get("page_size", 1000),
+                "page_size": self._wms_config.page_size,
                 "page_mode": self._wms_config.page_mode,
             }
         return {
@@ -701,6 +743,50 @@ class WMSStream(RESTStream[dict[str, object]]):
         elif self.replication_key:
             params["ordering"] = f"-{self.replication_key}"
 
+    def _detect_replication_key(self, schema_props: dict[str, Any]) -> str:
+        """Detect the best available replication key from schema properties.
+
+        Priority order:
+        1. mod_ts (preferred Oracle WMS standard)
+        2. mod_date (alternative Oracle standard)
+        3. modified_at (common alternative)
+        4. updated_at (common alternative)
+        5. create_date (fallback)
+        6. None (full table only)
+
+        Args:
+            schema_props: Schema properties dictionary
+
+        Returns:
+            Best available replication key or None for full table
+
+        """
+        # Get logger from flext-core
+        logger = get_logger(__name__)
+
+        # Ordered list of preferred replication keys
+        replication_candidates = [
+            "mod_ts",
+            "mod_date",
+            "modified_at",
+            "updated_at",
+            "last_updated",
+            "create_date",
+            "created_at",
+        ]
+
+        available_props = set(schema_props.keys())
+
+        for candidate in replication_candidates:
+            if candidate in available_props:
+                logger.info(f"Using replication key: {candidate}")
+                return candidate
+
+        logger.warning(
+            "No suitable replication key found, using full table replication",
+        )
+        return ""  # Empty string indicates full table replication
+
     def _add_incremental_ordering(self, params: dict[str, object]) -> None:
         if self.replication_key == "mod_ts":
             params["ordering"] = "mod_ts"  # CRITICAL: Ascending temporal order
@@ -714,14 +800,12 @@ class WMSStream(RESTStream[dict[str, object]]):
 
         REFACTORED: Uses domain configuration instead of raw config access.
         """
-        if self._wms_config and self._entity_name in self._wms_config.entity_filters:
-            entity_filter = self._wms_config.entity_filters[self._entity_name]
-            params.update(entity_filter)
-        else:
-            # Fallback to raw config for backward compatibility
-            entity_filters = self.config.get("entity_filters", {})
-            if self._entity_name in entity_filters:
-                params.update(entity_filters[self._entity_name])
+        # Entity filters are not directly on configuration - use fallback to raw config
+        # TODO: Add entity_filters to domain model if needed
+        # Fallback to raw config for backward compatibility
+        entity_filters = self.config.get("entity_filters", {})
+        if self._entity_name in entity_filters:
+            params.update(entity_filters[self._entity_name])
 
     def parse_response(
         self,
@@ -824,17 +908,19 @@ class WMSStream(RESTStream[dict[str, object]]):
         return row
 
     @property
-    def authenticator(self) -> object:
+    def authenticator(self) -> SimpleAuthenticator:
         """Return authenticator for API requests using centralized configuration.
 
         REFACTORED: Uses domain configuration instead of raw config dict.
         """
         # Use centralized configuration for authentication
         if self._wms_config:
-            auth_config = {
+            auth_config: dict[str, object] = {
                 "username": self._wms_config.authentication.username,
                 "password": self._wms_config.authentication.password,
-                "auth_method": self._wms_config.authentication.auth_method.value,
+                "auth_method": self._wms_config.authentication.auth_method.value
+                if hasattr(self._wms_config.authentication.auth_method, "value")
+                else self._wms_config.authentication.auth_method,
                 "base_url": self._wms_config.connection.base_url,
             }
         else:

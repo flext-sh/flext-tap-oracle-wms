@@ -41,7 +41,7 @@ class TestSimpleAPI:
         result = setup_wms_tap(config)
         assert result.success
         if result.data != config:
-            msg = f"Expected {config}, got {result.data}"
+            msg: str = f"Expected {config}, got {result.data}"
             raise AssertionError(msg)
 
     def test_setup_wms_tap_missing_username(self) -> None:
@@ -61,7 +61,7 @@ class TestSimpleAPI:
         assert not result.success
         assert result.error is not None
         if "Username is required" not in result.error:
-            msg = f"Expected {'Username is required'} in {result.error}"
+            msg: str = f"Expected {'Username is required'} in {result.error}"
             raise AssertionError(msg)
 
     def test_setup_wms_tap_exception_handling(self) -> None:
@@ -72,7 +72,7 @@ class TestSimpleAPI:
         assert not result.success
         assert result.error is not None
         if "Failed to setup WMS tap" not in result.error:
-            msg = f"Expected {'Failed to setup WMS tap'} in {result.error}"
+            msg: str = f"Expected {'Failed to setup WMS tap'} in {result.error}"
             raise AssertionError(
                 msg,
             )
@@ -81,29 +81,31 @@ class TestSimpleAPI:
         """Test creating development config with defaults."""
         config = create_development_wms_config()
         if config.auth.username != "test_user":
-            msg = f"Expected {'test_user'}, got {config.auth.username}"
+            msg: str = f"Expected {'test_user'}, got {config.auth.username}"
             raise AssertionError(msg)
         assert config.auth.password == "test_password"
         if config.auth.auth_method != "basic":
-            msg = f"Expected {'basic'}, got {config.auth.auth_method}"
+            msg: str = f"Expected {'basic'}, got {config.auth.auth_method}"
             raise AssertionError(msg)
         if "test-wms.oracle.com" not in config.connection.base_url:
-            msg = f"Expected {'test-wms.oracle.com'} in {config.connection.base_url}"
+            msg: str = (
+                f"Expected {'test-wms.oracle.com'} in {config.connection.base_url}"
+            )
             raise AssertionError(
                 msg,
             )
         if config.connection.timeout != 30:
-            msg = f"Expected {30}, got {config.connection.timeout}"
+            msg: str = f"Expected {30}, got {config.connection.timeout}"
             raise AssertionError(msg)
         assert config.connection.max_retries == EXPECTED_DATA_COUNT
         if config.connection.verify_ssl:
-            msg = f"Expected False, got {config.connection.verify_ssl}"
+            msg: str = f"Expected False, got {config.connection.verify_ssl}"
             raise AssertionError(msg)
         if not (config.debug):
-            msg = f"Expected True, got {config.debug}"
+            msg: str = f"Expected True, got {config.debug}"
             raise AssertionError(msg)
         if config.log_level != "DEBUG":
-            msg = f"Expected {'DEBUG'}, got {config.log_level}"
+            msg: str = f"Expected {'DEBUG'}, got {config.log_level}"
             raise AssertionError(msg)
 
     def test_create_development_wms_config_overrides(self) -> None:
@@ -116,18 +118,20 @@ class TestSimpleAPI:
             log_level="INFO",
         )
         if config.auth.username != "custom_user":
-            msg = f"Expected {'custom_user'}, got {config.auth.username}"
+            msg: str = f"Expected {'custom_user'}, got {config.auth.username}"
             raise AssertionError(
                 msg,
             )
         assert config.auth.password == "custom_pass"
         if config.connection.base_url != "https://custom.com":
-            msg = f"Expected {'https://custom.com'}, got {config.connection.base_url}"
+            msg: str = (
+                f"Expected {'https://custom.com'}, got {config.connection.base_url}"
+            )
             raise AssertionError(
                 msg,
             )
         if config.debug:
-            msg = f"Expected False, got {config.debug}"
+            msg: str = f"Expected False, got {config.debug}"
             raise AssertionError(msg)
         assert config.log_level == "INFO"
 
@@ -138,7 +142,7 @@ class TestSimpleAPI:
             custom_field="custom_value",
         )
         if config.auth.username != "partial_user":
-            msg = f"Expected {'partial_user'}, got {config.auth.username}"
+            msg: str = f"Expected {'partial_user'}, got {config.auth.username}"
             raise AssertionError(
                 msg,
             )
@@ -146,7 +150,7 @@ class TestSimpleAPI:
         # Custom fields are not preserved in config structure
         config_dict = config.model_dump()
         if "custom_field" not in config_dict:
-            msg = f"Expected {'custom_field'} in {config_dict}"
+            msg: str = f"Expected {'custom_field'} in {config_dict}"
             raise AssertionError(msg)
 
     def test_create_production_wms_config_defaults(self) -> None:
@@ -165,19 +169,19 @@ class TestSimpleAPI:
             log_level="DEBUG",
         )
         if config.auth.username != "prod_user":
-            msg = f"Expected {'prod_user'}, got {config.auth.username}"
+            msg: str = f"Expected {'prod_user'}, got {config.auth.username}"
             raise AssertionError(msg)
         assert config.auth.password == "prod_pass"
         if config.connection.base_url != "https://prod.oracle.com":
-            msg = f"Expected {'https://prod.oracle.com'}, got {config.connection.base_url}"
+            msg: str = f"Expected {'https://prod.oracle.com'}, got {config.connection.base_url}"
             raise AssertionError(
                 msg,
             )
         if not (config.debug):
-            msg = f"Expected True, got {config.debug}"
+            msg: str = f"Expected True, got {config.debug}"
             raise AssertionError(msg)
         if config.log_level != "DEBUG":
-            msg = f"Expected {'DEBUG'}, got {config.log_level}"
+            msg: str = f"Expected {'DEBUG'}, got {config.log_level}"
             raise AssertionError(msg)
 
     def test_create_production_wms_config_security_defaults(self) -> None:
@@ -189,14 +193,14 @@ class TestSimpleAPI:
         )
         # Production should have secure defaults
         if not (config.connection.verify_ssl):
-            msg = f"Expected True, got {config.connection.verify_ssl}"
+            msg: str = f"Expected True, got {config.connection.verify_ssl}"
             raise AssertionError(msg)
         if config.debug:
-            msg = f"Expected False, got {config.debug}"
+            msg: str = f"Expected False, got {config.debug}"
             raise AssertionError(msg)
         assert config.connection.timeout == 60  # Higher timeout for production
         if config.connection.max_retries != 5:  # More retries for production:
-            msg = f"Expected {5}, got {config.connection.max_retries}"
+            msg: str = f"Expected {5}, got {config.connection.max_retries}"
             raise AssertionError(msg)
 
     def test_validate_wms_config_valid(self) -> None:
@@ -209,7 +213,7 @@ class TestSimpleAPI:
         result = validate_wms_config(config)
         assert result.success
         if not (result.data):
-            msg = f"Expected True, got {result.data}"
+            msg: str = f"Expected True, got {result.data}"
             raise AssertionError(msg)
 
     def test_validate_wms_config_missing_username(self) -> None:
@@ -229,7 +233,7 @@ class TestSimpleAPI:
         assert not result.success
         assert result.error is not None
         if "Username is required" not in result.error:
-            msg = f"Expected {'Username is required'} in {result.error}"
+            msg: str = f"Expected {'Username is required'} in {result.error}"
             raise AssertionError(msg)
 
     def test_validate_wms_config_missing_password(self) -> None:
@@ -249,7 +253,7 @@ class TestSimpleAPI:
         assert not result.success
         assert result.error is not None
         if "Password is required" not in result.error:
-            msg = f"Expected {'Password is required'} in {result.error}"
+            msg: str = f"Expected {'Password is required'} in {result.error}"
             raise AssertionError(msg)
 
     def test_validate_wms_config_missing_base_url(self) -> None:
@@ -278,7 +282,7 @@ class TestSimpleAPI:
         assert not result.success
         assert result.error is not None
         if "Base URL is required" not in result.error:
-            msg = f"Expected {'Base URL is required'} in {result.error}"
+            msg: str = f"Expected {'Base URL is required'} in {result.error}"
             raise AssertionError(msg)
 
     def test_validate_wms_config_exception_handling(self) -> None:
@@ -289,7 +293,7 @@ class TestSimpleAPI:
         assert not result.success
         assert result.error is not None
         if "Configuration validation failed" not in result.error:
-            msg = f"Expected {'Configuration validation failed'} in {result.error}"
+            msg: str = f"Expected {'Configuration validation failed'} in {result.error}"
             raise AssertionError(
                 msg,
             )
@@ -312,7 +316,7 @@ class TestSimpleAPI:
         ]
         for export in expected_exports:
             if export not in simple_api.__all__:
-                msg = f"Expected {export} in {simple_api.__all__}"
+                msg: str = f"Expected {export} in {simple_api.__all__}"
                 raise AssertionError(msg)
 
     def test_service_result_integration(self) -> None:
@@ -321,7 +325,7 @@ class TestSimpleAPI:
         success_result = FlextResult.ok("test_data")
         assert success_result.success
         if success_result.data != "test_data":
-            msg = f"Expected {'test_data'}, got {success_result.data}"
+            msg: str = f"Expected {'test_data'}, got {success_result.data}"
             raise AssertionError(msg)
         # Test failure case
         fail_result: FlextResult[None] = FlextResult.fail(
@@ -329,7 +333,7 @@ class TestSimpleAPI:
         )
         assert not fail_result.success
         if fail_result.error != "test_error":
-            msg = f"Expected {'test_error'}, got {fail_result.error}"
+            msg: str = f"Expected {'test_error'}, got {fail_result.error}"
             raise AssertionError(msg)
 
     def test_config_from_singer_integration(self) -> None:
@@ -347,19 +351,19 @@ class TestSimpleAPI:
         }
         config = TapOracleWMSConfig.from_singer_config(singer_config)
         if config.auth.username != "singer_user":
-            msg = f"Expected {'singer_user'}, got {config.auth.username}"
+            msg: str = f"Expected {'singer_user'}, got {config.auth.username}"
             raise AssertionError(
                 msg,
             )
         assert config.auth.password == "singer_pass"
         if config.connection.base_url != "https://singer.oracle.com":
-            msg = f"Expected {'https://singer.oracle.com'}, got {config.connection.base_url}"
+            msg: str = f"Expected {'https://singer.oracle.com'}, got {config.connection.base_url}"
             raise AssertionError(
                 msg,
             )
         assert config.connection.timeout == 45
         if not (config.debug):
-            msg = f"Expected True, got {config.debug}"
+            msg: str = f"Expected True, got {config.debug}"
             raise AssertionError(msg)
 
 

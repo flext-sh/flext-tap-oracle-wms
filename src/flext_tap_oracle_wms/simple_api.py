@@ -8,10 +8,11 @@ Provides a simple interface for setting up Oracle WMS data extraction.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from flext_core import (
     FlextResult,
+    TAnyDict,
 )
 
 from flext_tap_oracle_wms.config import TapOracleWMSConfig
@@ -122,14 +123,14 @@ def validate_wms_config(config: TapOracleWMSConfig) -> FlextResult[Any]:
         config.model_validate(config.model_dump())
 
         # Additional business validation
-        if not config.auth.username:
+        if not config.username:
             return FlextResult.fail("Username is required")
 
-        if not config.auth.password:
+        if not config.password:
             return FlextResult.fail("Password is required")
 
-        if not config.connection.base_url:
-            return FlextResult.fail("Base URL is required")
+        if not config.host:
+            return FlextResult.fail("Host is required")
 
         return FlextResult.ok(data=True)
 
@@ -140,7 +141,7 @@ def validate_wms_config(config: TapOracleWMSConfig) -> FlextResult[Any]:
 
 
 # Export convenience functions
-__all__ = [
+__all__: list[str] = [
     "FlextResult",
     "create_development_wms_config",
     "create_production_wms_config",

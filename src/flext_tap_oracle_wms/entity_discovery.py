@@ -88,12 +88,12 @@ class DictResponseProcessor(ApiResponseProcessor):
         return {}
 
     @staticmethod
-    def _is_direct_mapping(data: dict) -> bool:
+    def _is_direct_mapping(data: dict[str, object]) -> bool:
         """Check if response is direct entity mapping format."""
         return all(isinstance(v, str) for v in data.values())
 
     @staticmethod
-    def _process_direct_mapping(data: dict) -> dict[str, str]:
+    def _process_direct_mapping(data: dict[str, object]) -> dict[str, str]:
         """Process direct mapping format."""
         entities = {k: str(v) for k, v in data.items()}
         logger.info("Using direct entity mapping format (%d entities)", len(entities))
@@ -129,7 +129,7 @@ class DictResponseProcessor(ApiResponseProcessor):
 
     def _process_entity_list(
         self,
-        entity_list: list,
+        entity_list: list[object],
         entity_endpoint: str,
     ) -> dict[str, str]:
         """Process entity list format using Guard Clauses."""
@@ -146,7 +146,10 @@ class DictResponseProcessor(ApiResponseProcessor):
         return entities
 
     @staticmethod
-    def _extract_entity_from_dict(entity_info: dict, entities: dict[str, str]) -> None:
+    def _extract_entity_from_dict(
+        entity_info: dict[str, object],
+        entities: dict[str, str],
+    ) -> None:
         """Extract entity information from dictionary format."""
         name = entity_info.get("name")
         url = entity_info.get("url") or entity_info.get("href")
@@ -185,7 +188,10 @@ class ListResponseProcessor(ApiResponseProcessor):
         return entities
 
     @staticmethod
-    def _extract_entity_from_dict(entity_info: dict, entities: dict[str, str]) -> None:
+    def _extract_entity_from_dict(
+        entity_info: dict[str, object],
+        entities: dict[str, str],
+    ) -> None:
         """Extract entity information from dictionary format."""
         name = entity_info.get("name")
         url = entity_info.get("url") or entity_info.get("href")
@@ -249,7 +255,7 @@ class EntityDiscovery(EntityDiscoveryInterface):
         self.config_mapper = ConfigMapper(config)
 
         # Build API endpoints using configuration
-        self.base_url = config["base_url"].rstrip("/")
+        self.base_url = str(config["base_url"]).rstrip("/")
         self.api_version = self.config_mapper.get_api_version()
         endpoint_prefix = self.config_mapper.get_endpoint_prefix()
         self.entity_endpoint = (
@@ -323,10 +329,13 @@ class EntityDiscovery(EntityDiscoveryInterface):
         # Check if specific entities are configured
         configured_entities = self.config.get("entities")
         if configured_entities:
+            configured_set = (
+                set(configured_entities)
+                if isinstance(configured_entities, list)
+                else set()
+            )
             filtered = {
-                name: url
-                for name, url in entities.items()
-                if name in configured_entities
+                name: url for name, url in entities.items() if name in configured_set
             }
             logger.info(
                 "Filtered to configured entities: %d/%d",
@@ -337,8 +346,12 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         # Apply pattern-based filtering
         entity_patterns = self.config.get("entity_patterns", {})
-        include_patterns = entity_patterns.get("include", [])
-        exclude_patterns = entity_patterns.get("exclude", [])
+        if isinstance(entity_patterns, dict):
+            include_patterns = entity_patterns.get("include", [])
+            exclude_patterns = entity_patterns.get("exclude", [])
+        else:
+            include_patterns = []
+            exclude_patterns = []
 
         # If no patterns, return all entities
         if not include_patterns and not exclude_patterns:
@@ -398,14 +411,14 @@ class EntityDiscovery(EntityDiscoveryInterface):
 
         except httpx.HTTPError as e:
             logger.exception("Failed to fetch entities from API")
-            msg = f"HTTP error during entity discovery: {e}"
+            http_msg: str = f"HTTP error during entity discovery: {e}"
             raise EntityDiscoveryError(
-                msg,
+                http_msg,
             ) from e
         except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Unexpected error during entity discovery")
-            msg = f"Entity discovery failed: {e}"
-            raise EntityDiscoveryError(msg) from e
+            general_msg: str = f"Entity discovery failed: {e}"
+            raise EntityDiscoveryError(general_msg) from e
 
         return entities
 
@@ -468,14 +481,14 @@ class EntityDiscovery(EntityDiscoveryInterface):
                 "Failed to fetch metadata for entity %s",
                 entity_name,
             )
-            msg = f"HTTP error during entity metadata fetch: {e}"
+            http_error_msg: str = f"HTTP error during entity metadata fetch: {e}"
             raise EntityDescriptionError(
-                msg,
+                http_error_msg,
             ) from e
         except (RuntimeError, ValueError, TypeError) as e:
             logger.exception("Unexpected error during entity metadata fetch")
-            msg = f"Entity metadata fetch failed: {e}"
-            raise EntityDescriptionError(msg) from e
+            fetch_error_msg: str = f"Entity metadata fetch failed: {e}"
+            raise EntityDescriptionError(fetch_error_msg) from e
 
     @staticmethod
     def _matches_patterns(entity_name: str, patterns: list[str]) -> bool:
@@ -498,3 +511,30 @@ class EntityDiscovery(EntityDiscoveryInterface):
                 if pattern.lower() in entity_name.lower():
                     return True
         return False
+
+    def _process_nested_entities(self, entity_list: list[object]) -> dict[str, str]:
+        """Process nested entities from API response.
+
+        Args:
+            entity_list: List of entities (can be strings or dicts)
+
+        Returns:
+            Dictionary mapping entity names to URLs
+
+        """
+        result: dict[str, str] = {}
+
+        for item in entity_list:
+            if isinstance(item, str):
+                # Simple string entity name - construct URL
+                result[item] = f"{self.entity_endpoint}/{item}"
+            elif isinstance(item, dict):
+                # Dictionary with name and URL fields
+                name = item.get("name")
+                if name:
+                    # Check both 'url' and 'href' keys for URL
+                    url = item.get("url") or item.get("href")
+                    if url:
+                        result[str(name)] = str(url)
+
+        return result

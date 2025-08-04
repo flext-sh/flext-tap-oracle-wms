@@ -74,17 +74,19 @@ class TestWMSStream:
         mock_wms_config: Any,
     ) -> None:
         if mock_wms_stream.name != "item":
-            msg = f"Expected {'item'}, got {mock_wms_stream.name}"
+            msg: str = f"Expected {'item'}, got {mock_wms_stream.name}"
             raise AssertionError(msg)
         assert mock_wms_stream.path == "/entity/item"
         if mock_wms_stream.primary_keys != ["id"]:
-            msg = f"Expected {['id']}, got {mock_wms_stream.primary_keys}"
+            msg: str = f"Expected {['id']}, got {mock_wms_stream.primary_keys}"
             raise AssertionError(
                 msg,
             )
         assert mock_wms_stream.replication_key == "mod_ts"
         if mock_wms_stream.replication_method != "INCREMENTAL":
-            msg = f"Expected {'INCREMENTAL'}, got {mock_wms_stream.replication_method}"
+            msg: str = (
+                f"Expected {'INCREMENTAL'}, got {mock_wms_stream.replication_method}"
+            )
             raise AssertionError(
                 msg,
             )
@@ -117,16 +119,16 @@ class TestWMSStream:
         params = mock_wms_stream.get_url_params(context, state)
 
         if "page_size" not in params:
-            msg = f"Expected {'page_size'} in {params}"
+            msg: str = f"Expected {'page_size'} in {params}"
             raise AssertionError(msg)
         if params["page_size"] != 100:
-            msg = f"Expected {100}, got {params['page_size']}"
+            msg: str = f"Expected {100}, got {params['page_size']}"
             raise AssertionError(msg)
         if "page_mode" not in params:
-            msg = f"Expected {'page_mode'} in {params}"
+            msg: str = f"Expected {'page_mode'} in {params}"
             raise AssertionError(msg)
         if params["page_mode"] != "sequenced":
-            msg = f"Expected {'sequenced'}, got {params['page_mode']}"
+            msg: str = f"Expected {'sequenced'}, got {params['page_mode']}"
             raise AssertionError(msg)
 
     def test_get_url_params_with_bookmark(self, mock_wms_stream: MagicMock) -> None:
@@ -149,10 +151,10 @@ class TestWMSStream:
         params = mock_wms_stream.get_url_params(context, state)
 
         if "mod_ts_from" not in params:
-            msg = f"Expected {'mod_ts_from'} in {params}"
+            msg: str = f"Expected {'mod_ts_from'} in {params}"
             raise AssertionError(msg)
         if params["mod_ts_from"] != "2024-01-01T10:00:00Z":
-            msg = f"Expected {'2024-01-01T10:00:00Z'}, got {params['mod_ts_from']}"
+            msg: str = f"Expected {'2024-01-01T10:00:00Z'}, got {params['mod_ts_from']}"
             raise AssertionError(
                 msg,
             )
@@ -170,11 +172,11 @@ class TestWMSStream:
         records = list(mock_wms_stream.parse_response(mock_response))
 
         if len(records) != EXPECTED_BULK_SIZE:
-            msg = f"Expected {2}, got {len(records)}"
+            msg: str = f"Expected {2}, got {len(records)}"
             raise AssertionError(msg)
         assert records[0]["id"] == 1
         if records[0]["code"] != "ITEM001":
-            msg = f"Expected {'ITEM001'}, got {records[0]['code']}"
+            msg: str = f"Expected {'ITEM001'}, got {records[0]['code']}"
             raise AssertionError(msg)
 
     def test_parse_response_empty(self, mock_wms_stream: MagicMock) -> None:
@@ -186,7 +188,7 @@ class TestWMSStream:
         records = list(mock_wms_stream.parse_response(mock_response))
 
         if len(records) != 0:
-            msg = f"Expected {0}, got {len(records)}"
+            msg: str = f"Expected {0}, got {len(records)}"
             raise AssertionError(msg)
 
     def test_post_process_record(self, mock_wms_stream: MagicMock) -> None:
@@ -210,11 +212,11 @@ class TestWMSStream:
 
         # Check that metadata was added
         if "_extracted_at" not in processed:
-            msg = f"Expected {'_extracted_at'} in {processed}"
+            msg: str = f"Expected {'_extracted_at'} in {processed}"
             raise AssertionError(msg)
         assert "_entity" in processed
         if processed["_entity"] != "item":
-            msg = f"Expected {'item'}, got {processed['_entity']}"
+            msg: str = f"Expected {'item'}, got {processed['_entity']}"
             raise AssertionError(msg)
         assert processed["id"] == 1
 
@@ -234,7 +236,7 @@ class TestWMSStream:
         # Parse response should work without errors
         records = list(mock_wms_stream.parse_response(mock_response))
         if len(records) < 0:  # Should not error:
-            msg = f"Expected {len(records)} >= {0}"
+            msg: str = f"Expected {len(records)} >= {0}"
             raise AssertionError(msg)  # Should not error
 
     def test_get_next_page_token_no_next_page(self, mock_wms_stream: MagicMock) -> None:
@@ -251,7 +253,7 @@ class TestWMSStream:
         # Parse response should work for last page
         records = list(mock_wms_stream.parse_response(mock_response))
         if len(records) != 1:
-            msg = f"Expected {1}, got {len(records)}"
+            msg: str = f"Expected {1}, got {len(records)}"
             raise AssertionError(msg)
         assert records[0]["id"] == 1
 
@@ -261,7 +263,7 @@ class TestWMSStream:
     ) -> None:
         # Verify that tap config includes auth
         if "username" not in mock_wms_stream.tap.config:
-            msg = f"Expected {'username'} in {mock_wms_stream.tap.config}"
+            msg: str = f"Expected {'username'} in {mock_wms_stream.tap.config}"
             raise AssertionError(
                 msg,
             )
@@ -282,7 +284,7 @@ class TestWMSStream:
     ) -> None:
         # Test that replication key is properly configured
         if mock_wms_stream.replication_key != "mod_ts":
-            msg = f"Expected {'mod_ts'}, got {mock_wms_stream.replication_key}"
+            msg: str = f"Expected {'mod_ts'}, got {mock_wms_stream.replication_key}"
             raise AssertionError(
                 msg,
             )
@@ -290,10 +292,10 @@ class TestWMSStream:
 
     def test_stream_name_and_path_consistency(self, mock_wms_stream: MagicMock) -> None:
         if mock_wms_stream.name != "item":
-            msg = f"Expected {'item'}, got {mock_wms_stream.name}"
+            msg: str = f"Expected {'item'}, got {mock_wms_stream.name}"
             raise AssertionError(msg)
         if "item" not in mock_wms_stream.path:
-            msg = f"Expected {'item'} in {mock_wms_stream.path}"
+            msg: str = f"Expected {'item'} in {mock_wms_stream.path}"
             raise AssertionError(msg)
 
         # URL base should be accessible
@@ -303,14 +305,14 @@ class TestWMSStream:
         schema = mock_wms_stream.schema
 
         if schema["type"] != "object":
-            msg = f"Expected {'object'}, got {schema['type']}"
+            msg: str = f"Expected {'object'}, got {schema['type']}"
             raise AssertionError(msg)
         if "properties" not in schema:
-            msg = f"Expected {'properties'} in {schema}"
+            msg: str = f"Expected {'properties'} in {schema}"
             raise AssertionError(msg)
         assert "id" in schema["properties"]
         if "code" not in schema["properties"]:
-            msg = f"Expected {'code'} in {schema['properties']}"
+            msg: str = f"Expected {'code'} in {schema['properties']}"
             raise AssertionError(msg)
         assert "mod_ts" in schema["properties"]
 
@@ -319,7 +321,7 @@ class TestWMSStream:
         mock_wms_stream: MagicMock,
     ) -> None:
         if mock_wms_stream.primary_keys != ["id"]:
-            msg = f"Expected {['id']}, got {mock_wms_stream.primary_keys}"
+            msg: str = f"Expected {['id']}, got {mock_wms_stream.primary_keys}"
             raise AssertionError(
                 msg,
             )
@@ -327,7 +329,7 @@ class TestWMSStream:
 
     def test_stream_replication_configuration(self, mock_wms_stream: MagicMock) -> None:
         if mock_wms_stream.replication_key != "mod_ts":
-            msg = f"Expected {'mod_ts'}, got {mock_wms_stream.replication_key}"
+            msg: str = f"Expected {'mod_ts'}, got {mock_wms_stream.replication_key}"
             raise AssertionError(
                 msg,
             )

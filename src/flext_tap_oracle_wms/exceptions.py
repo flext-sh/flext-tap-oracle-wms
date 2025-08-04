@@ -65,24 +65,35 @@ class OracleWmsExceptionFactory:
     @staticmethod
     def create_generic_exception_init(
         error_prefix: str,
-        parent_class: type,
+        _parent_class: type,  # Underscore prefix to indicate unused
     ) -> Callable[..., Any]:
         """Generic Exception __init__ Generator using Template Method Pattern.
 
         SOLID REFACTORING: Creates standardized __init__ methods to eliminate
         ALL duplication across exception classes.
+
+        Args:
+            error_prefix: Prefix for error messages
+            parent_class: Parent exception class for proper inheritance
+
         """
 
         def generic_init(self: Any, message: str, **kwargs: object) -> None:
             """Generic initialization using Factory Pattern."""
-            _formatted_message, _context = (
+            formatted_message, _context = (
                 OracleWmsExceptionFactory.build_context_and_message(
                     message,
                     error_prefix,
                     **kwargs,
                 )
             )
-            # This factory approach causes mypy issues - use direct super() in classes instead
+            # Use parent_class for proper exception initialization
+            # NOTE: Using direct parent.__init__ call to avoid mypy issues
+            if hasattr(self, "__class__") and hasattr(self.__class__, "__bases__"):
+                for base in self.__class__.__bases__:
+                    if issubclass(base, Exception):
+                        base.__init__(self, formatted_message)
+                        break
 
         return generic_init
 
@@ -302,7 +313,7 @@ class FlextTapOracleWmsStreamError(FlextTapOracleWmsError):
         super().__init__(formatted_message, context=context)
 
 
-__all__ = [
+__all__: list[str] = [
     "FlextTapOracleWmsAuthenticationError",
     "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsConnectionError",

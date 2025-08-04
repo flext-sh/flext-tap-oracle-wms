@@ -127,6 +127,7 @@ TEST_FACILITY_CODE=TEST01
 **Coverage Target**: 95% for enabled tests
 
 **Example Pattern**:
+
 ```python
 @pytest.fixture
 def mock_wms_client():
@@ -139,7 +140,7 @@ def test_entity_discovery(mock_wms_client):
     """Test entity discovery with mocked client."""
     discovery = EntityDiscovery(mock_wms_client)
     result = discovery.discover_entities()
-    assert result.is_success
+    assert result.success
     assert "item" in result.data
 ```
 
@@ -150,6 +151,7 @@ def test_entity_discovery(mock_wms_client):
 **Coverage Target**: 90% of integration scenarios
 
 **Required Implementation**:
+
 - Mock WMS API server for consistent responses
 - Test data fixtures for various WMS configurations
 - Error scenario testing (network failures, authentication issues)
@@ -231,21 +233,25 @@ def valid_tap_config():
 ## Test Re-enabling Plan
 
 ### Phase 1: Infrastructure (Week 1)
+
 - [ ] Create comprehensive mock infrastructure
 - [ ] Set up test fixtures and data management
 - [ ] Implement mock WMS API responses
 
 ### Phase 2: Core Tests (Week 2)
+
 - [ ] Re-enable `conftest.py` with mock-based fixtures
 - [ ] Re-enable `test_tap.py` with mocked dependencies
 - [ ] Re-enable `test_config_validation.py` with separated validation logic
 
 ### Phase 3: Integration Tests (Week 3)
+
 - [ ] Re-enable `test_simple_integration.py` with mocked integration
 - [ ] Re-enable `test_discovery.py` with mock metadata
 - [ ] Implement comprehensive integration test scenarios
 
 ### Phase 4: E2E Tests (Week 4)
+
 - [ ] Design E2E test strategy (mock vs test instance)
 - [ ] Re-enable `test_wms_e2e.py` with appropriate mocking
 - [ ] Implement complete workflow validation
@@ -283,6 +289,7 @@ def test_config_validation_with_missing_auth_raises_error():
 ### Common Test Problems
 
 1. **Import Errors**
+
    ```bash
    # Fix: Ensure proper Python path
    export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
@@ -290,12 +297,14 @@ def test_config_validation_with_missing_auth_raises_error():
    ```
 
 2. **Mock Configuration Issues**
+
    ```bash
    # Fix: Check mock setup in conftest.py
    pytest tests/unit/test_specific.py -v -s
    ```
 
 3. **Coverage Calculation Issues**
+
    ```bash
    # Fix: Clean coverage data
    make clean
