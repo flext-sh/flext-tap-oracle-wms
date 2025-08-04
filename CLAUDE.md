@@ -4,38 +4,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is `flext-tap-oracle-wms`, a Singer tap for extracting data from Oracle Warehouse Management Systems (WMS). It's part of the FLEXT ecosystem and uses the Singer SDK for data extraction. The project follows Clean Architecture principles and implements enterprise-grade patterns with zero tolerance quality standards.
+This is `flext-tap-oracle-wms`, a Singer tap for extracting data from Oracle Warehouse Management Systems (WMS). It's part of the FLEXT ecosystem and uses the Singer SDK for data extraction.
 
-## Architecture
+**⚠️ CRITICAL STATUS**: This project requires significant refactoring due to architectural over-engineering. The current implementation has 26 Python files with 8,179 lines of code where 6-8 files with ~800 lines would suffice. See [docs/TODO.md](docs/TODO.md) for detailed analysis and refactoring plan.
 
-### Core Components
+**Current Issues**:
+- Over-engineered architecture with multiple competing systems
+- 27% of test suite disabled due to external dependencies
+- Code duplication across discovery and configuration systems
+- Excessive abstraction layers and design patterns
 
-**Singer Tap Implementation:**
+## Current Architecture (Requires Refactoring)
 
-- `src/flext_tap_oracle_wms/tap.py` - Main tap class inheriting from Singer SDK's `Tap`
-- `src/flext_tap_oracle_wms/streams.py` - Stream definitions using `RESTStream` with WMS-specific pagination
-- `src/flext_tap_oracle_wms/client.py` - HTTP client with Oracle WMS API integration
-- `src/flext_tap_oracle_wms/auth.py` - Authentication handling (Basic Auth and OAuth2)
+### Current Over-Engineered Structure
 
-**Configuration and Discovery:**
+The project currently contains **26 Python files with 8,179 lines of code** - a clear case of architectural over-engineering for a Singer tap:
 
-- `src/flext_tap_oracle_wms/config.py` - Configuration models using Pydantic
-- `src/flext_tap_oracle_wms/config_mapper.py` - Maps config to internal models
-- `src/flext_tap_oracle_wms/config_validator.py` - Validates configuration with business rules
-- `src/flext_tap_oracle_wms/discovery.py` - Entity discovery and schema generation
-- `src/flext_tap_oracle_wms/entity_discovery.py` - WMS entity discovery logic
+**Largest Files (showing complexity)**:
+- `tap.py` - 1,042 lines (should be ~150 lines)
+- `config_mapper.py` - 1,030 lines (unnecessary mapping layer)
+- `streams.py` - 897 lines (over-engineered stream implementation)
+- `modern_discovery.py` - 791 lines (redundant "modern" discovery system)
 
-**Schema and Type Handling:**
+**Multiple Competing Systems**:
+- **3 discovery systems**: `discovery.py`, `modern_discovery.py`, `entity_discovery.py`
+- **4 configuration approaches**: Various config classes and validators
+- **Unnecessary abstractions**: `interfaces.py`, `client.py` wrapper layers
 
-- `src/flext_tap_oracle_wms/schema_generator.py` - Generates Singer schemas from WMS metadata
-- `src/flext_tap_oracle_wms/schema_flattener.py` - Flattens nested WMS data structures
-- `src/flext_tap_oracle_wms/type_mapping.py` - Maps WMS data types to Singer types
+### Target Simplified Architecture
 
-**Specialized Features:**
+After refactoring, the project should have **6-8 files with ~800 total lines**:
 
-- `src/flext_tap_oracle_wms/cache.py` - Response caching for performance
-- `src/flext_tap_oracle_wms/simple_api.py` - Simplified API interface
-- `src/flext_tap_oracle_wms/critical_validation.py` - Validates critical environment variables
+- `tap.py` - Main tap class (~150 lines)
+- `streams.py` - Stream implementations (~200 lines)
+- `config.py` - Unified configuration (~100 lines)
+- `discovery.py` - Single discovery system (~150 lines)
+- `schema.py` - Schema utilities (~100 lines)
+- `auth.py` - Authentication wrapper (~50 lines)
+- `exceptions.py` - Project-specific exceptions (~30 lines)
 
 ### Dependencies
 
@@ -54,47 +60,6 @@ The project depends on several FLEXT ecosystem libraries:
 make setup                   # Complete project setup with pre-commit hooks
 make install                 # Install project dependencies only
 make install-dev             # Install with development dependencies
-
-## TODO: GAPS DE ARQUITETURA IDENTIFICADOS - PRIORIDADE ALTA
-
-### 🚨 GAP 1: Oracle WMS Library Integration Duplication
-**Status**: ALTO - Dependency em flext-oracle-wms mas components duplicated
-**Problema**:
-- client.py pode duplicar flext-oracle-wms API client functionality
-- auth.py pode reimplementar authentication já available na WMS library
-- Configuration patterns podem divergir entre tap e library
-
-**TODO**:
-- [ ] Eliminate duplication com flext-oracle-wms library
-- [ ] Integrate WMS authentication patterns from library
-- [ ] Consolidate configuration management
-- [ ] Document WMS integration patterns
-
-### 🚨 GAP 2: Complex Component Architecture
-**Status**: ALTO - Muitos specialized components podem indicate over-engineering
-**Problema**:
-- 15+ specialized components (mapper, validator, discovery, schema generator, etc.)
-- Component boundaries podem not be optimal
-- Maintenance overhead pode be high
-
-**TODO**:
-- [ ] Review component architecture para simplification opportunities
-- [ ] Consolidate related functionality onde appropriate
-- [ ] Optimize component boundaries
-- [ ] Document component responsibilities clearly
-
-### 🚨 GAP 3: WMS Business Logic in Tap Layer
-**Status**: ALTO - WMS-specific business logic pode belong in lower layer
-**Problema**:
-- Entity discovery e schema generation são WMS business concerns
-- Type mapping e data transformation podem belong in flext-oracle-wms
-- Tap layer pode be too thick com business logic
-
-**TODO**:
-- [ ] Move WMS business logic to appropriate layer (flext-oracle-wms)
-- [ ] Keep tap layer focused em Singer protocol compliance
-- [ ] Refactor to proper layered architecture
-- [ ] Document layer responsibilities
 ```
 
 ### Quality Gates (Always run before committing)
@@ -130,12 +95,12 @@ make catalog                # Alias for discover
 make sync                   # Alias for run
 ```
 
-### WMS-Specific Operations
+### Singer Tap Testing and Debugging
 
 ```bash
-make wms-test               # Test Oracle WMS connectivity
-make wms-entities           # List available WMS entities for extraction
-make wms-performance        # Run WMS performance benchmarks
+make wms-test               # Test Oracle WMS connectivity (via Python function)
+make diagnose               # Run project diagnostics and health checks
+make doctor                 # Comprehensive health check + diagnostics
 ```
 
 ### Building and Distribution
@@ -316,3 +281,55 @@ This tap integrates with other FLEXT components:
 - **flext-meltano** - Singer/Meltano orchestration platform
 
 The tap can be deployed as part of larger FLEXT data pipelines with corresponding targets and DBT transformations in the ecosystem.
+
+## Key Architecture Insights
+
+### Code Deduplication Strategy
+
+This project has been refactored to eliminate code duplication with FLEXT ecosystem libraries:
+
+- **Client Layer**: Uses `FlextOracleWmsClient` from `flext-oracle-wms` instead of custom HTTP client
+- **Type System**: Imports centralized types from `flext-core` (`TAnyDict`, `TEntityId`, `TValue`)
+- **Domain Models**: Uses shared domain models from the `domain/` package
+- **Authentication**: Leverages WMS-specific authentication from the shared library
+
+### Testing Architecture
+
+The project uses a comprehensive testing strategy with disabled tests in production:
+
+- **Unit Tests**: Located in `tests/unit/` with comprehensive coverage
+- **Integration Tests**: Some disabled with `.DISABLED_USES_FORBIDDEN_SAMPLES.backup` suffix
+- **E2E Tests**: End-to-end tests disabled in production environment
+- **Test Configuration**: Uses `tests/config.json` for test-specific settings
+
+### Configuration Patterns
+
+Multiple configuration approaches are supported:
+
+- **Basic Configuration**: `config.json.example` for simple setups
+- **Advanced Examples**: 20+ configuration examples in `examples/configs/` covering various scenarios
+- **Meltano Integration**: Environment-specific configurations (dev, staging, prod) in `meltano.yml`
+- **Environment Variables**: Supports `TAP_ORACLE_WMS_` prefixed environment variables
+
+## Common Development Issues
+
+### Test Configuration
+
+When running tests, be aware that some integration and e2e tests are disabled:
+- Look for files with `.DISABLED_USES_FORBIDDEN_SAMPLES.backup` extension
+- These contain tests that require external WMS instances
+- Use `make test-unit` for isolated testing without external dependencies
+
+### Performance Considerations
+
+- **Page Size Limits**: Oracle WMS has a maximum page size of 1250 records
+- **Request Timeouts**: Default timeout is 120 seconds, configurable up to 600 seconds
+- **Retry Logic**: Up to 10 retries with exponential backoff
+- **Caching**: Response caching is available for performance optimization
+
+### Development vs Production
+
+The project includes different configurations for different environments:
+- **Development**: Verbose logging, smaller page sizes, more retries
+- **Staging**: Balanced configuration with moderate logging
+- **Production**: Optimized for performance with minimal logging

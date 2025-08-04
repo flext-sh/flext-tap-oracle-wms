@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, Mock, patch
 import httpx
 import pytest
 
-from flext_tap_oracle_wms.infrastructure.entity_discovery import (
+from flext_tap_oracle_wms.entity_discovery import (
     EntityDescriptionError,
     EntityDiscovery,
     EntityDiscoveryError,
@@ -486,7 +486,7 @@ class TestEntityDiscoveryComprehensive:
         discovery = self.create_test_discovery()
 
         with patch(
-            "flext_tap_oracle_wms.infrastructure.entity_discovery.logger",
+            "flext_tap_oracle_wms.entity_discovery.logger",
         ) as mock_logger:
             result = discovery._process_api_response("unexpected_string")
 
@@ -527,7 +527,7 @@ class TestEntityDiscoveryComprehensive:
         data: dict[str, object] = {"unexpected": {"nested": "data"}}
 
         with patch(
-            "flext_tap_oracle_wms.infrastructure.entity_discovery.logger",
+            "flext_tap_oracle_wms.entity_discovery.logger",
         ) as mock_logger:
             result = discovery._process_dict_response(data)
 

@@ -76,129 +76,52 @@ class TapOracleWMS(Tap):
 
     # REFACTORED: Use centralized configuration schema from domain model
     @property
-    def config_jsonschema(self) -> th.PropertiesList:
+    def config_jsonschema(self) -> dict:
         """Get configuration schema using centralized patterns.
 
         REFACTORED: Uses TapOracleWMSConfig JSON schema instead of manual definition.
         """
-        # Convert Pydantic schema to Singer schema format
-        get_wms_config_schema()
-
-        # For now, return basic schema - full conversion would be more complex
-        return th.PropertiesList(
-            # Core authentication and connection
-            th.Property(
-                "base_url",
-                th.StringType,
-                required=True,
-                description="Oracle WMS base URL",
-            ),
-            th.Property(
-                "username",
-                th.StringType,
-                required=True,
-                description="Oracle WMS username",
-            ),
-            th.Property(
-                "password",
-                th.StringType,
-                required=True,
-                secret=True,
-                description="Oracle WMS password",
-            ),
-            # WMS-specific settings using centralized config
-            th.Property(
-                "company_code",
-                th.StringType,
-                default="*",
-                description="WMS company code",
-            ),
-            th.Property(
-                "facility_code",
-                th.StringType,
-                default="*",
-                description="WMS facility code",
-            ),
-            th.Property(
-                "wms_api_version",
-                th.StringType,
-                default="v10",
-                description="WMS API version",
-            ),
-            th.Property(
-                "entities",
-                th.ArrayType(th.StringType),
-                description="WMS entities to extract",
-            ),
-            th.Property(
-                "page_mode",
-                th.StringType,
-                default="sequenced",
-                allowed_values=["sequenced", "paged"],
-                description="Pagination mode",
-            ),
-            th.Property(
-                "page_size",
-                th.IntegerType,
-                default=1000,
-                description="Records per page",
-            ),
-            th.Property(
-                "timeout",
-                th.IntegerType,
-                default=30,
-                description="Request timeout in seconds",
-            ),
-            th.Property(
-                "max_retries",
-                th.IntegerType,
-                default=3,
-                description="Maximum retry attempts",
-            ),
-            th.Property(
-                "verify_ssl",
-                th.BooleanType,
-                default=True,
-                description="Verify SSL certificates",
-            ),
-            th.Property(
-                "enable_incremental",
-                th.BooleanType,
-                default=True,
-                description="Enable incremental sync",
-            ),
-            th.Property(
-                "force_full_table",
-                th.BooleanType,
-                default=False,
-                description="Force full table sync",
-            ),
-            # Additional incremental sync settings
-            th.Property(
-                "start_date",
-                th.DateTimeType,
-                description="Start date for incremental sync",
-            ),
-            th.Property(
-                "replication_key",
-                th.StringType,
-                default="mod_ts",
-                description="Field to use for incremental replication",
-            ),
-            # Discovery configuration properties
-            th.Property(
-                "discover_catalog",
-                th.BooleanType,
-                default=True,
-                description="Auto-discover catalog on startup",
-            ),
-            th.Property(
-                "use_modern_discovery",
-                th.BooleanType,
-                default=True,
-                description="Use modern Oracle API discovery",
-            ),
-        )
+        # Return basic JSON schema dict - compatible with Singer SDK
+        return {
+            "type": "object",
+            "properties": {
+                "base_url": {
+                    "type": "string",
+                    "description": "Oracle WMS base URL",
+                },
+                "username": {
+                    "type": "string", 
+                    "description": "Oracle WMS username",
+                },
+                "password": {
+                    "type": "string",
+                    "description": "Oracle WMS password",
+                    "writeOnly": True,
+                },
+                "company_code": {
+                    "type": "string",
+                    "default": "*",
+                    "description": "WMS company code",
+                },
+                "facility_code": {
+                    "type": "string", 
+                    "default": "*",
+                    "description": "WMS facility code",
+                },
+                "entities": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "default": ["item", "inventory"],
+                    "description": "WMS entities to extract",
+                },
+                "page_size": {
+                    "type": "integer",
+                    "default": 1000,
+                    "description": "Number of records per page",
+                },
+            },
+            "required": ["base_url", "username", "password"],
+        }
 
     def __init__(
         self,
@@ -208,6 +131,8 @@ class TapOracleWMS(Tap):
         state: TAnyDict | None = None,
         parse_env_config: bool = False,
         validate_config: bool = True,
+        setup_mapper: bool = True,
+        message_writer = None,
         init_config: TapInitializationConfig | None = None,
     ) -> None:
         """Initialize tap with lazy loading - NO network calls during init.
@@ -227,29 +152,32 @@ class TapOracleWMS(Tap):
                 validate_config=validate_config,
             )
 
+        # Call parent init first to let Singer SDK handle config parsing
+        super().__init__(
+            config=config,
+            catalog=catalog,
+            state=state,
+            parse_env_config=parse_env_config,
+            validate_config=validate_config,
+            setup_mapper=setup_mapper,
+            message_writer=message_writer,
+        )
+        
         # Strategy Pattern: Use initialization strategy to reduce complexity
-        self._initialize_tap(params)
+        self._initialize_tap_post_super()
 
-    def _initialize_tap(self, params: TapInitializationConfig) -> None:
-        """Initialize tap using Parameter Object Pattern.
+    def _initialize_tap_post_super(self) -> None:
+        """Initialize tap after parent initialization.
 
         SOLID REFACTORING: Extracted initialization logic to reduce __init__ complexity
         using Strategy Pattern and Parameter Object Pattern.
         """
-        # Call parent init first to let Singer SDK handle config parsing
-        super().__init__(
-            config=params.tap_config,
-            catalog=params.catalog,
-            state=params.state,
-            parse_env_config=params.parse_env_config,
-            validate_config=params.validate_config,
-        )
 
         # Apply type conversion after parent initialization
         self._apply_config_type_conversion()
 
         # Initialize logging and configuration display
-        self._initialize_logging_and_display(params)
+        self._initialize_logging_and_display()
 
         # Initialize cache and discovery systems
         self._initialize_caches_and_discovery()
@@ -261,7 +189,7 @@ class TapOracleWMS(Tap):
         if hasattr(self, "config") and self.config:
             self._config = self._convert_config_types(dict(self.config))
 
-    def _initialize_logging_and_display(self, params: TapInitializationConfig) -> None:
+    def _initialize_logging_and_display(self) -> None:
         """Initialize logging and display configuration information."""
         # Now we can use self.logger safely
         mock_mode = (
@@ -275,8 +203,7 @@ class TapOracleWMS(Tap):
             else "REAL MODE - using Oracle WMS API"
         )
         self.logger.info(f"🔧 Initializing TapOracleWMS - {mode_msg}")
-        self.logger.info("🔧 Config provided: %s", params.config is not None)
-        self.logger.info("🔧 Catalog provided: %s", params.catalog is not None)
+        self.logger.info("🔧 Config provided: %s", hasattr(self, "config") and self.config is not None)
 
         # Log key config values (without secrets)
         if hasattr(self, "config") and self.config:
