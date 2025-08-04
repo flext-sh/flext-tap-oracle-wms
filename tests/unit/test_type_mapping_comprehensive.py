@@ -7,8 +7,6 @@ Tests Oracle WMS type mapping using centralized flext-oracle-wms patterns.
 
 from __future__ import annotations
 
-import pytest
-
 from flext_tap_oracle_wms.type_mapping import (
     API_METADATA_TO_SINGER,
     FLEXT_ORACLE_WMS_TYPE_MAPPINGS,

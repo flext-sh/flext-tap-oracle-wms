@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from typing import TypedDict, Union, cast
+from typing import TypedDict, cast
 
 from flext_core import get_logger
 

@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Any, ClassVar, cast
+from typing import ClassVar, cast
 
 # Import centralized models from flext-core
 from flext_core import (

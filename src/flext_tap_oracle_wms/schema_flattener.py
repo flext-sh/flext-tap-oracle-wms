@@ -13,7 +13,6 @@ from flext_core import TAnyDict, get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Union
 
 logger = get_logger(__name__)
 

@@ -190,6 +190,27 @@ class WMSRecord(DomainEntity):
             raise ValueError(msg)
         return v
 
+    def validate_domain_rules(self) -> FlextResult[None]:
+        """Validate business rules for WMS record.
+
+        Returns:
+            FlextResult indicating validation success or failure.
+
+        """
+        # Business rule: stream name must not be empty
+        if not self.stream_name.strip():
+            return FlextResult.fail("Stream name cannot be empty or whitespace")
+
+        # Business rule: record data must contain at least one key
+        if not self.record_data:
+            return FlextResult.fail("Record data must contain at least one field")
+
+        # Business rule: source endpoint must be valid
+        if not self.source_endpoint.strip():
+            return FlextResult.fail("Source endpoint cannot be empty")
+
+        return FlextResult.ok(None)
+
 
 class WMSError(BaseModel):
     """WMS error information using flext-core value object patterns."""
@@ -265,6 +286,29 @@ class WMSDiscoveryResult(DomainEntity):
         self.errors.append(error)
         if error.error_type in {"authentication", "network"}:
             self.success = False
+
+    def validate_domain_rules(self) -> FlextResult[None]:
+        """Validate business rules for WMS discovery result.
+
+        Returns:
+            FlextResult indicating validation success or failure.
+
+        """
+        # Business rule: base URL must not be empty
+        if not self.base_url.strip():
+            return FlextResult.fail("Base URL cannot be empty")
+
+        # Business rule: total entities must match actual count
+        if self.total_entities != len(self.entities):
+            return FlextResult.fail(
+                "Total entities count must match actual entities count",
+            )
+
+        # Business rule: if success is False, there should be errors
+        if not self.success and not self.errors:
+            return FlextResult.fail("Failed discovery must have error records")
+
+        return FlextResult.ok(None)
 
 
 class TapMetrics(DomainEntity):
