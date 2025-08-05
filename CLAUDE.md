@@ -9,6 +9,7 @@ This is `flext-tap-oracle-wms`, a Singer tap for extracting data from Oracle War
 **⚠️ CRITICAL STATUS**: This project requires significant refactoring due to architectural over-engineering. The current implementation has 26 Python files with 8,179 lines of code where 6-8 files with ~800 lines would suffice. See [docs/TODO.md](docs/TODO.md) for detailed analysis and refactoring plan.
 
 **Current Issues**:
+
 - Over-engineered architecture with multiple competing systems
 - 27% of test suite disabled due to external dependencies
 - Code duplication across discovery and configuration systems
@@ -21,12 +22,14 @@ This is `flext-tap-oracle-wms`, a Singer tap for extracting data from Oracle War
 The project currently contains **26 Python files with 8,179 lines of code** - a clear case of architectural over-engineering for a Singer tap:
 
 **Largest Files (showing complexity)**:
+
 - `tap.py` - 1,042 lines (should be ~150 lines)
 - `config_mapper.py` - 1,030 lines (unnecessary mapping layer)
 - `streams.py` - 897 lines (over-engineered stream implementation)
 - `modern_discovery.py` - 791 lines (redundant "modern" discovery system)
 
 **Multiple Competing Systems**:
+
 - **3 discovery systems**: `discovery.py`, `modern_discovery.py`, `entity_discovery.py`
 - **4 configuration approaches**: Various config classes and validators
 - **Unnecessary abstractions**: `interfaces.py`, `client.py` wrapper layers
@@ -228,6 +231,7 @@ pytest -m singer           # Singer protocol tests
 ## Quality Standards
 
 ### CURRENT STATUS (2025-01-08) - SENDO SINCERO
+
 - **MyPy**: 37 errors (REGRESSION during refactoring - NEEDS IMMEDIATE ATTENTION)
 - **Linting**: 0 errors ✅ (PERFECT - all ruff rules passing)
 - **Functionality**: 10 streams working ✅ with proper replication key detection
@@ -243,6 +247,7 @@ pytest -m singer           # Singer protocol tests
 - **Pre-commit Hooks** ❌ - Not implemented yet
 
 ### IMMEDIATE PRIORITIES
+
 1. **FIX 37 MyPy ERRORS** - Most critical blocker
 2. **Implement comprehensive tests** - Coverage + functionality validation
 3. **Add security scanning** - Complete quality pipeline
@@ -327,6 +332,7 @@ Multiple configuration approaches are supported:
 ### Test Configuration
 
 When running tests, be aware that some integration and e2e tests are disabled:
+
 - Look for files with `.DISABLED_USES_FORBIDDEN_SAMPLES.backup` extension
 - These contain tests that require external WMS instances
 - Use `make test-unit` for isolated testing without external dependencies
@@ -341,6 +347,7 @@ When running tests, be aware that some integration and e2e tests are disabled:
 ### Development vs Production
 
 The project includes different configurations for different environments:
+
 - **Development**: Verbose logging, smaller page sizes, more retries
 - **Staging**: Balanced configuration with moderate logging
 - **Production**: Optimized for performance with minimal logging

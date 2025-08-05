@@ -91,24 +91,24 @@ from singer_sdk import Tap
 from flext_core import get_logger
 from flext_oracle_wms import FlextOracleWmsClient
 
-class TapOracleWMS(Tap):
+class FlextTapOracleWMS(Tap):
     name = "tap-oracle-wms"
-    
+
     def __init__(self, config: dict):
         super().__init__(config)
         self.logger = get_logger(__name__)
         self._wms_client = None
-    
+
     @property
     def wms_client(self) -> FlextOracleWmsClient:
         if not self._wms_client:
             self._wms_client = FlextOracleWmsClient(self.config)
         return self._wms_client
-    
+
     def discover_streams(self):
         """Discover streams using flext-oracle-wms."""
         return [
-            WMSStream(tap=self, name=entity)
+            FlextTapOracleWMSStream(tap=self, name=entity)
             for entity in self.config.get("entities", [])
         ]
 ```
@@ -123,19 +123,19 @@ class TapOracleWMS(Tap):
 from singer_sdk.streams import RESTStream
 from flext_core import TAnyDict
 
-class WMSStream(RESTStream):
+class FlextTapOracleWMSStream(RESTStream):
     """Simplified WMS stream using flext-oracle-wms."""
-    
+
     def __init__(self, tap, name: str):
         super().__init__(tap)
         self.name = name
         self.path = f"/api/{name}"
-    
+
     def get_records(self, context):
         """Extract records using WMS client."""
         for record in self.tap.wms_client.get_entity_data(self.name):
             yield record
-    
+
     def get_url_params(self, context, next_page_token):
         """Simple pagination parameters."""
         params = {"page_size": self.config.get("page_size", 1000)}
@@ -153,14 +153,14 @@ from flext_oracle_wms import FlextOracleWmsClient
 
 class EntityDiscovery:
     """Simplified entity discovery."""
-    
+
     def __init__(self, wms_client: FlextOracleWmsClient):
         self.wms_client = wms_client
-    
+
     def discover_entities(self) -> List[str]:
         """Get available entities from WMS."""
         return self.wms_client.get_available_entities()
-    
+
     def get_entity_schema(self, entity: str) -> Dict[str, Any]:
         """Get schema for specific entity."""
         return self.wms_client.get_entity_schema(entity)
@@ -178,18 +178,18 @@ from pydantic import Field, validator
 
 class WMSConfig(FlextConfig):
     """Unified WMS configuration using flext-core."""
-    
+
     base_url: str
     auth_method: str = Field(regex="^(basic|oauth2)$")
     company_code: str
     facility_code: str
     entities: List[str] = Field(default=["item", "inventory"])
-    
+
     username: Optional[str] = None
     password: Optional[str] = None
     oauth_client_id: Optional[str] = None
     oauth_client_secret: Optional[str] = None
-    
+
     @validator("entities")
     def validate_entities(cls, v):
         valid_entities = ["item", "location", "inventory", "order", "shipment"]
@@ -231,7 +231,7 @@ def tap_config():
 def test_tap_discovery(mock_wms_client, tap_config):
     """Test tap discovery functionality."""
     with patch('flext_tap_oracle_wms.tap.FlextOracleWmsClient', return_value=mock_wms_client):
-        tap = TapOracleWMS(tap_config)
+        tap = FlextTapOracleWMS(tap_config)
         streams = tap.discover_streams()
         assert len(streams) > 0
         assert streams[0].name in ["item", "inventory"]
@@ -250,17 +250,17 @@ from singer_sdk.streams import RESTStream
 
 class OptimizedWMSStream(RESTStream):
     """Performance-optimized WMS stream."""
-    
+
     def __init__(self, tap, name: str):
         super().__init__(tap)
         self.name = name
         self.page_size = min(self.config.get("page_size", 1000), 1250)
-    
+
     async def get_records_async(self, context) -> AsyncIterator:
         """Async record extraction for better performance."""
         async for record in self.tap.wms_client.get_entity_data_async(self.name):
             yield record
-    
+
     def request_decorator(self, func):
         """Add retry logic and error handling."""
         @retry_with_backoff(max_retries=3)
@@ -437,8 +437,8 @@ make test-meltano-integration  # Meltano orchestration
 | **Phase 5** | Week 5 | Migration | Production migration |
 | **Phase 6** | Week 6 | Finalization | Ecosystem validation |
 
-**Total Duration**: 6 weeks  
-**Critical Path**: Core architecture → Stream implementation → FLEXT integration  
+**Total Duration**: 6 weeks
+**Critical Path**: Core architecture → Stream implementation → FLEXT integration
 **Risk Buffer**: Built into each phase for quality validation
 
 ## Post-Refactoring Maintenance

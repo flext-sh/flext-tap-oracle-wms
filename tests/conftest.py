@@ -1,146 +1,208 @@
-"""Pytest configuration for Oracle WMS tap tests."""
+"""Test configuration and fixtures for FLEXT Tap Oracle WMS."""
 
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
 from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
+from unittest.mock import MagicMock
 
 import pytest
+from flext_core import FlextResult
+from pydantic import SecretStr
 
-# Load environment if needed (optional)
-project_root = Path(__file__).parent.parent
+from flext_tap_oracle_wms import (
+    FlextTapOracleWMS,
+    FlextTapOracleWMSConfig,
+)
 
-
-def pytest_configure(config: pytest.Config) -> None:
-    """Configure pytest with custom markers."""
-    config.addinivalue_line(
-        "markers",
-        "e2e: mark test as end-to-end test requiring real WMS instance",
-    )
-    config.addinivalue_line(
-        "markers",
-        "integration: mark test as integration test",
-    )
-    config.addinivalue_line(
-        "markers",
-        "unit: mark test as unit test",
-    )
-
-
-def pytest_addoption(parser: pytest.Parser) -> None:
-    """Add custom command line options."""
-    parser.addoption(
-        "--run-e2e",
-        action="store_true",
-        default=False,
-        help="run end-to-end tests against real WMS instance",
-    )
-
-
-def pytest_collection_modifyitems(
-    config: pytest.Config,
-    items: list[pytest.Item],
-) -> None:
-    """Modify test collection to skip E2E tests by default."""
-    if not config.getoption("--run-e2e"):
-        skip_e2e = pytest.mark.skip(reason="need --run-e2e option to run")
-        for item in items:
-            if "e2e" in item.keywords:
-                item.add_marker(skip_e2e)
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 @pytest.fixture(scope="session")
-def test_project_root() -> Path:
-    """Get project root directory.
-
-    Returns:
-        Path to project root directory.
-
-    """
-    return Path(__file__).parent.parent
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_test_environment() -> None:
-    """Setup test environment variables."""
-    # Set mandatory environment variables for tests
-    os.environ["TAP_ORACLE_WMS_USE_METADATA_ONLY"] = "true"
-    os.environ["TAP_ORACLE_WMS_DISCOVERY_SAMPLE_SIZE"] = "0"
-
-
-@pytest.fixture(scope="session")
-def mock_wms_config() -> dict[str, object]:
-    """Mock WMS configuration for unit tests."""
-    # Set additional environment for tests
-    os.environ["TAP_ORACLE_WMS_ENTITIES"] = "allocation,order_hdr,order_dtl,item"
-    return {
-        "base_url": "https://mock-wms.example.com",
-        "username": "test_user",
-        "password": "test_pass",
-        "company_code": "*",
-        "facility_code": "*",
-        "page_size": 100,
-        "request_timeout": 30,
-        "verify_ssl": False,
-        "entities": ["allocation", "order_hdr", "order_dtl"],
-        "auth_method": "basic",
-        "enable_incremental": True,
-        "replication_key": "mod_ts",
-    }
+def oracle_wms_environment() -> None:
+    """Set Oracle WMS environment variables for tests."""
+    # Load from .env if exists
+    env_file = Path(__file__).parent.parent / ".env"
+    if env_file.exists():
+        with env_file.open(encoding="utf-8") as f:
+            for file_line in f:
+                line = file_line.strip()
+                if line and not line.startswith("#"):
+                    key, value = line.split("=", 1)
+                    os.environ[key] = value
 
 
 @pytest.fixture
-def sample_wms_response() -> dict[str, object]:
-    """Sample WMS API response for testing."""
+def sample_config() -> FlextTapOracleWMSConfig:
+    """Sample configuration for tests."""
+    return FlextTapOracleWMSConfig(
+        base_url="https://test.wms.example.com",
+        username="test_user",
+        password=SecretStr("test_password"),
+        api_version="v10",
+        page_size=100,
+        timeout=30,
+        max_retries=3,
+        verify_ssl=False,
+    )
+
+
+@pytest.fixture
+def real_config(oracle_wms_environment: None) -> FlextTapOracleWMSConfig:
+    """Real configuration from environment."""
+    return FlextTapOracleWMSConfig(
+        base_url=os.environ.get("ORACLE_WMS_BASE_URL", ""),
+        username=os.environ.get("ORACLE_WMS_USERNAME", ""),
+        password=SecretStr(os.environ.get("ORACLE_WMS_PASSWORD", "")),
+        api_version=os.environ.get("ORACLE_WMS_API_VERSION", "v10"),
+        page_size=int(os.environ.get("ORACLE_WMS_PAGE_SIZE", "100")),
+        timeout=int(os.environ.get("ORACLE_WMS_TIMEOUT", "30")),
+        verify_ssl=os.environ.get("ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
+    )
+
+
+@pytest.fixture
+def mock_wms_client() -> MagicMock:
+    """Mock Oracle WMS client."""
+    client = MagicMock()
+
+    # Mock successful connection
+    client.connect.return_value = FlextResult.ok(None)
+
+    # Mock list entities
+    client.list_entities.return_value = FlextResult.ok(
+        [
+            "inventory",
+            "locations",
+            "shipments",
+            "receipts",
+        ]
+    )
+
+    # Mock get records
+    client.get_records.return_value = FlextResult.ok(
+        [
+            {"id": "1", "name": "Test Item 1", "quantity": 100},
+            {"id": "2", "name": "Test Item 2", "quantity": 200},
+        ]
+    )
+
+    # Mock get entity metadata
+    client.get_entity_metadata.return_value = FlextResult.ok(
+        {
+            "display_name": "Inventory",
+            "description": "Inventory data",
+            "primary_key": ["inventory_id"],
+            "replication_key": "mod_ts",
+        }
+    )
+
+    return client
+
+
+@pytest.fixture
+def tap_instance(sample_config: FlextTapOracleWMSConfig) -> FlextTapOracleWMS:
+    """Create tap instance with sample config."""
+    return FlextTapOracleWMS(config=sample_config)
+
+
+# Removed fixtures for authenticator and discovery_instance
+# as these classes were moved to flext-oracle-wms
+
+
+@pytest.fixture
+def sample_catalog() -> dict[str, object]:
+    """Sample Singer catalog."""
     return {
-        "results": [
+        "type": "CATALOG",
+        "streams": [
             {
-                "id": 1,
-                "code": "ITEM001",
-                "description": "Test Item 1",
-                "mod_ts": "2024-01-01T10:00:00Z",
-                "create_ts": "2024-01-01T09:00:00Z",
-            },
-            {
-                "id": 2,
-                "code": "ITEM002",
-                "description": "Test Item 2",
-                "mod_ts": "2024-01-01T11:00:00Z",
-                "create_ts": "2024-01-01T09:30:00Z",
+                "tap_stream_id": "inventory",
+                "stream": "inventory",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "inventory_id": {"type": "string"},
+                        "item_id": {"type": "string"},
+                        "quantity": {"type": "number"},
+                        "mod_ts": {"type": "string", "format": "date-time"},
+                    },
+                },
+                "metadata": [
+                    {
+                        "breadcrumb": [],
+                        "metadata": {
+                            "inclusion": "available",
+                            "forced-replication-method": "INCREMENTAL",
+                            "table-key-properties": ["inventory_id"],
+                            "replication-key": "mod_ts",
+                        },
+                    },
+                ],
             },
         ],
-        "next_page": "https://mock-wms.example.com/entity/item?cursor=abc123",
-        "page_nbr": 1,
-        "page_count": 5,
-        "result_count": 10,
     }
 
 
 @pytest.fixture
-def sample_metadata() -> dict[str, object]:
-    """Sample WMS entity metadata for testing."""
+def sample_state() -> dict[str, object]:
+    """Sample Singer state."""
     return {
-        "parameters": ["id", "code", "description", "mod_ts", "create_ts"],
-        "fields": {
-            "id": {"type": "integer", "required": True},
-            "code": {"type": "string", "max_length": 50, "required": True},
-            "description": {"type": "string", "required": False},
-            "mod_ts": {"type": "datetime", "required": False},
-            "create_ts": {"type": "datetime", "required": False},
+        "bookmarks": {
+            "inventory": {
+                "replication_key_value": "2024-01-01T00:00:00Z",
+                "version": 1,
+            },
         },
     }
 
 
 @pytest.fixture
-def sample_entity_dict() -> dict[str, str]:
-    """Sample entity discovery response as dictionary."""
-    return {
-        "allocation": "/entity/allocation",
-        "order_hdr": "/entity/order_hdr",
-        "order_dtl": "/entity/order_dtl",
-        "item": "/entity/item",
-        "location": "/entity/location",
-        "inventory": "/entity/inventory",
+def mock_response() -> MagicMock:
+    """Mock HTTP response."""
+    response = MagicMock()
+    response.status_code = 200
+    response.json.return_value = {
+        "data": [
+            {"id": "1", "name": "Item 1"},
+            {"id": "2", "name": "Item 2"},
+        ],
+        "_links": {
+            "next": "https://test.wms.example.com/api/v10/inventory?page=2",
+        },
     }
+    response.text = '{"data": []}'
+    return response
+
+
+@pytest.fixture
+def mock_request() -> MagicMock:
+    """Mock HTTP request."""
+    request = MagicMock()
+    request.auth = None
+    request.headers = {}
+    return request
+
+
+# Marker for tests requiring real Oracle WMS
+def pytest_collection_modifyitems(config: object, items: list[object]) -> None:
+    """Add markers to tests based on their location."""
+    for item in items:
+        # Add oracle_wms marker to integration tests
+        if "integration" in str(item.fspath):
+            item.add_marker(pytest.mark.oracle_wms)
+
+        # Add slow marker to e2e and performance tests
+        if any(x in str(item.fspath) for x in ["e2e", "performance"]):
+            item.add_marker(pytest.mark.slow)
+
+
+@pytest.fixture(autouse=True)
+def reset_environment() -> Generator[None]:
+    """Reset environment after each test."""
+    original_env = os.environ.copy()
+    yield
+    os.environ.clear()
+    os.environ.update(original_env)
