@@ -17,8 +17,8 @@
     }
   },
   "entity_filters": {
-    "allocation": {"status_id": "ACTIVE"},
-    "order_hdr": {"facility_code": "MAIN"}
+    "allocation": { "status_id": "ACTIVE" },
+    "order_hdr": { "facility_code": "MAIN" }
   },
   "circuit_breaker": {
     "enabled": true,

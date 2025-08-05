@@ -9,8 +9,8 @@
   "request_timeout": 300,
   "enable_incremental": false,
   "entity_filters": {
-    "allocation": {"id__lte": 50},
-    "order_hdr": {"id__lte": 30},
-    "order_dtl": {"id__lte": 30}
+    "allocation": { "id__lte": 50 },
+    "order_hdr": { "id__lte": 30 },
+    "order_dtl": { "id__lte": 30 }
   }
 }

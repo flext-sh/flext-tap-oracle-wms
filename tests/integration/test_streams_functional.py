@@ -24,7 +24,9 @@ class TestWMSStreamFunctional:
     """Functional tests for WMS streams using real Oracle WMS data."""
 
     def test_stream_creation_with_real_config(
-        self, real_tap_instance: FlextTapOracleWMS, wms_test_entities: list[str],
+        self,
+        real_tap_instance: FlextTapOracleWMS,
+        wms_test_entities: list[str],
     ) -> None:
         """Test stream creation with real Oracle WMS configuration."""
         from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
@@ -157,7 +159,8 @@ class TestWMSStreamFunctional:
         logger.info("✅ HTTP headers configured: %s", list(headers.keys()))
 
     def test_replication_key_detection(
-        self, real_tap_instance: FlextTapOracleWMS,
+        self,
+        real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test automatic replication key detection."""
         from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
@@ -188,7 +191,8 @@ class TestWMSStreamFunctional:
         assert total_streams > 0, "No replication methods configured"
 
     def test_timestamp_replication_key_detection(
-        self, real_tap_instance: FlextTapOracleWMS,
+        self,
+        real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test timestamp field detection for replication keys."""
         from flext_tap_oracle_wms.streams import (
@@ -299,7 +303,8 @@ class TestWMSStreamFunctional:
         # Test with replication key value
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
         params = incremental_stream.get_url_params(
-            context=context, next_page_token=None,
+            context=context,
+            next_page_token=None,
         )
 
         # Check for timestamp filters
@@ -315,15 +320,18 @@ class TestWMSStreamFunctional:
                 f"Filter value must be string: {filter_value}"
             )
             # Basic ISO format check
-            assert "T" in filter_value, f"Invalid timestamp format - missing T: {filter_value}"
-            assert (
-                "Z" in filter_value or "+" in filter_value
-            ), f"Invalid timestamp format - missing timezone: {filter_value}"
+            assert "T" in filter_value, (
+                f"Invalid timestamp format - missing T: {filter_value}"
+            )
+            assert "Z" in filter_value or "+" in filter_value, (
+                f"Invalid timestamp format - missing timezone: {filter_value}"
+            )
 
         logger.info("✅ Incremental filtering: %s", filter_keys)
 
     def test_response_parsing_structure(
-        self, real_tap_instance: FlextTapOracleWMS,
+        self,
+        real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test response parsing with mock Oracle WMS responses."""
         from flext_tap_oracle_wms.streams import ResponseParser
@@ -361,7 +369,8 @@ class TestWMSStreamFunctional:
         logger.info("✅ Response parsing working for all formats")
 
     def test_stream_ordering_configuration(
-        self, real_tap_instance: FlextTapOracleWMS,
+        self,
+        real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test ordering configuration for different replication methods."""
         from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream

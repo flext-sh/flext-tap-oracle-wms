@@ -43,9 +43,11 @@
 ## Current Limitations & Future Improvements
 
 1. **Schema Discovery**: Currently using a basic generic schema for all entities
+
    - TODO: Query each entity to get its actual fields and types
 
 2. **Field Metadata**: Not discovering actual field information yet
+
    - TODO: Use Oracle WMS metadata API to get field details
 
 3. **Primary Keys**: Currently defaulting to ['id'] for all entities

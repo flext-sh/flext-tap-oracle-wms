@@ -4,8 +4,9 @@ Tests FlextTapOracleWMSConfig validation and domain rules.
 """
 
 import pytest
-from flext_tap_oracle_wms import FlextTapOracleWMSConfig
 from pydantic import SecretStr, ValidationError
+
+from flext_tap_oracle_wms import FlextTapOracleWMSConfig
 
 
 class TestConfigValidation:

@@ -59,8 +59,11 @@ Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 tap-oracle-wms = "flext_tap_oracle_wms.tap:main"
 flext-tap-oracle-wms = "flext_tap_oracle_wms.tap:main"
 
+[tool.ruff]
 extend = "../.ruff-shared.toml"
-lint.isort.known-first-party = ["flext_tap_oracle_wms"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["flext_tap_oracle_wms"]
 
 [tool.mypy]
 python_version = "3.13"

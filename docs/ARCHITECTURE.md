@@ -44,6 +44,7 @@ src/flext_tap_oracle_wms/
 ```
 
 **Problems**:
+
 - **26 components** where 6-8 would suffice
 - **8,179 lines** of code vs expected 400-800 lines
 - **Multiple discovery systems** competing for the same functionality
@@ -66,6 +67,7 @@ src/flext_tap_oracle_wms/
 ```
 
 **Benefits**:
+
 - **8 components** vs current 26 (69% reduction)
 - **~800 lines** vs current 8,179 (90% reduction)
 - **Single responsibility** per component
@@ -74,18 +76,22 @@ src/flext_tap_oracle_wms/
 ### Architecture Layers
 
 #### 1. Presentation Layer
+
 - **tap.py**: Singer SDK tap implementation
 - **CLI interface**: Command-line interface for tap operations
 
 #### 2. Application Layer
+
 - **streams.py**: Stream orchestration and data flow
 - **discovery.py**: Entity and schema discovery coordination
 
 #### 3. Domain Layer
+
 - **config.py**: Configuration domain models and validation
 - **schema.py**: Schema transformation and validation logic
 
 #### 4. Infrastructure Layer
+
 - **auth.py**: Authentication using flext-oracle-wms library
 - **flext-oracle-wms**: External WMS API client (dependency)
 
@@ -125,6 +131,7 @@ graph TB
 ```
 
 **Integration Points**:
+
 - **flext-core**: Base patterns, logging, result handling, type system
 - **flext-oracle-wms**: WMS API client, authentication, entity models
 - **flext-meltano**: Singer SDK integration, orchestration patterns
@@ -450,18 +457,21 @@ class SecureWMSConfig(WMSConfig):
 ## Migration Strategy
 
 ### Phase 1: Emergency Simplification (Week 1)
+
 1. Remove redundant discovery systems (keep one)
 2. Eliminate client.py wrapper layer
 3. Consolidate configuration classes
 4. Re-enable critical disabled tests
 
 ### Phase 2: Structural Refactoring (Weeks 2-3)
+
 1. Implement simplified component structure
 2. Integrate flext-core patterns consistently
 3. Create comprehensive test coverage
 4. Validate Singer compliance
 
 ### Phase 3: Performance Optimization (Week 4)
+
 1. Optimize stream performance
 2. Implement proper error handling
 3. Add comprehensive monitoring
@@ -470,6 +480,7 @@ class SecureWMSConfig(WMSConfig):
 ## Quality Metrics
 
 ### Target Metrics
+
 - **Code Lines**: < 1,000 lines (from 8,179)
 - **Components**: 6-8 files (from 26)
 - **Test Coverage**: 95% (from ~70% with disabled tests)
@@ -477,6 +488,7 @@ class SecureWMSConfig(WMSConfig):
 - **Type Coverage**: 100% with strict MyPy
 
 ### Quality Gates
+
 - All tests passing (no disabled tests)
 - Zero security vulnerabilities
 - 100% Singer protocol compliance
