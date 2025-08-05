@@ -363,10 +363,16 @@ class FlextTapOracleWMSDataValidationError(FlextTapOracleWMSError):
         if self.validation_context.expected_type:
             self.context["expected_type"] = self.validation_context.expected_type
         if self.validation_context.actual_value is not None:
-            self.context["actual_type"] = type(self.validation_context.actual_value).__name__
+            self.context["actual_type"] = type(
+                self.validation_context.actual_value,
+            ).__name__
             # Only include value if it's safe to log
-            if isinstance(self.validation_context.actual_value, (str, int, float, bool)):
-                self.context["actual_value"] = str(self.validation_context.actual_value)[:100]
+            if isinstance(
+                self.validation_context.actual_value, (str, int, float, bool),
+            ):
+                self.context["actual_value"] = str(
+                    self.validation_context.actual_value,
+                )[:100]
 
     # Backward compatibility properties
     @property

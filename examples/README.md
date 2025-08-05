@@ -340,14 +340,14 @@ All configurations must include:
 
 ### Optional Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `entities` | `["item", "inventory"]` | List of entities to extract |
-| `page_size` | `1000` | Records per page (max 1250) |
-| `start_date` | `null` | Start date for incremental extraction |
-| `request_timeout` | `120` | Request timeout in seconds |
-| `max_retries` | `3` | Maximum retry attempts |
-| `log_level` | `"INFO"` | Logging level |
+| Setting           | Default                 | Description                           |
+| ----------------- | ----------------------- | ------------------------------------- |
+| `entities`        | `["item", "inventory"]` | List of entities to extract           |
+| `page_size`       | `1000`                  | Records per page (max 1250)           |
+| `start_date`      | `null`                  | Start date for incremental extraction |
+| `request_timeout` | `120`                   | Request timeout in seconds            |
+| `max_retries`     | `3`                     | Maximum retry attempts                |
+| `log_level`       | `"INFO"`                | Logging level                         |
 
 ## Troubleshooting Configurations
 

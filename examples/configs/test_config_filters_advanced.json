@@ -15,8 +15,8 @@
   },
   "advanced_filters": {
     "allocation": {
-      "id": {"__gte": 20},
-      "alloc_qty": {"__gte": "100"}
+      "id": { "__gte": 20 },
+      "alloc_qty": { "__gte": "100" }
     }
   }
 }

@@ -27,6 +27,7 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 #### **Configuration Tests**
 
 - **[test_config_mapper_comprehensive.py](test_config_mapper_comprehensive.py)** - Configuration mapping
+
   - Configuration transformation
   - Default value application
   - Validation rule mapping
@@ -139,7 +140,7 @@ def test_component_with_mock(mock_wms_client):
     """Test component behavior with mocked dependencies."""
     component = ComponentUnderTest(mock_wms_client)
     result = component.perform_operation()
-    
+
     assert result.success
     mock_wms_client.get_entities.assert_called_once()
 ```
@@ -173,10 +174,10 @@ def test_component_handles_network_error():
     """Test component error handling for network failures."""
     with patch('requests.get') as mock_get:
         mock_get.side_effect = requests.ConnectionError("Network error")
-        
+
         component = ComponentUnderTest()
         result = component.fetch_data()
-        
+
         assert not result.success
         assert "Network error" in result.error_message
 ```
@@ -186,7 +187,7 @@ def test_component_handles_network_error():
 ### **Current Coverage Status**
 
 - **Authentication**: ~95% coverage
-- **Configuration**: ~90% coverage  
+- **Configuration**: ~90% coverage
 - **Client**: ~85% coverage
 - **Discovery**: ~80% coverage
 - **Validation**: ~95% coverage
@@ -237,17 +238,17 @@ def test_config_validation_with_missing_url_raises_error():
 def test_complex_scenario():
     """
     Test complex business scenario with multiple interactions.
-    
+
     This test verifies that when component A interacts with component B
     under specific conditions, the expected business outcome occurs.
-    
+
     Given:
         - Valid configuration with specific settings
         - Mocked WMS client with predefined responses
-        
+
     When:
         - Component performs multi-step operation
-        
+
     Then:
         - All interactions occur in correct order
         - Final result matches business expectations
@@ -276,12 +277,12 @@ def mock_flext_wms_client():
     with patch('flext_tap_oracle_wms.client.FlextOracleWmsClient') as mock:
         client = Mock()
         mock.return_value = client
-        
+
         # Standard responses
         client.authenticate.return_value = True
         client.get_entities.return_value = ["item", "inventory", "order"]
         client.get_data.return_value = iter([{"id": "1", "name": "test"}])
-        
+
         yield client
 
 @pytest.fixture
@@ -352,10 +353,10 @@ def test_debug_example():
     """Example test with debugging techniques."""
     # Use pytest.set_trace() for debugging
     pytest.set_trace()
-    
+
     # Print debug information
     print(f"Debug info: {variable}")
-    
+
     # Use assert with custom messages
     assert condition, f"Failed because: {explanation}"
 ```

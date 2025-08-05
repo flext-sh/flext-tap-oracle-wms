@@ -10,13 +10,13 @@ This directory contains the test suite for FLEXT Tap Oracle WMS. The testing str
 
 ### Test Coverage Analysis
 
-| Test Type | Status | Coverage | Issues |
-|-----------|--------|----------|--------|
-| **Unit Tests** | ✅ Working | ~70%* | Some comprehensive tests available |
-| **Integration Tests** | ⚠️ Partially Disabled | ~40%* | External WMS dependencies |
-| **E2E Tests** | ❌ Disabled | 0% | Requires live WMS instance |
+| Test Type             | Status                | Coverage | Issues                             |
+| --------------------- | --------------------- | -------- | ---------------------------------- |
+| **Unit Tests**        | ✅ Working            | ~70%\*   | Some comprehensive tests available |
+| **Integration Tests** | ⚠️ Partially Disabled | ~40%\*   | External WMS dependencies          |
+| **E2E Tests**         | ❌ Disabled           | 0%       | Requires live WMS instance         |
 
-*Coverage percentages are estimates based on enabled tests only
+\*Coverage percentages are estimates based on enabled tests only
 
 ## Test Structure
 
@@ -48,26 +48,31 @@ tests/
 The following test files are disabled due to external WMS dependencies:
 
 1. **conftest.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
+
    - **Reason**: Contains live WMS connection fixtures
    - **Impact**: Test configuration unavailable for integration tests
    - **Remediation**: Create mock-based fixtures
 
 2. **test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
+
    - **Reason**: Requires live Oracle WMS instance
    - **Impact**: No end-to-end workflow validation
    - **Remediation**: Implement comprehensive mocking strategy
 
 3. **test_simple_integration.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
+
    - **Reason**: Integration tests with external API calls
    - **Impact**: Multi-component integration not validated
    - **Remediation**: Mock WMS API responses
 
 4. **test_tap.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
+
    - **Reason**: Tap-level testing with live connections
    - **Impact**: Core tap functionality not validated
    - **Remediation**: Mock WMS client for tap testing
 
 5. **test_config_validation.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
+
    - **Reason**: Configuration validation with live API checks
    - **Impact**: Configuration edge cases not tested
    - **Remediation**: Separate validation logic from API calls
@@ -203,12 +208,12 @@ def mock_flext_wms_client():
     with patch('flext_tap_oracle_wms.tap.FlextOracleWmsClient') as mock:
         client_instance = Mock()
         mock.return_value = client_instance
-        
+
         # Configure standard responses
         client_instance.get_available_entities.return_value = ["item", "inventory"]
         client_instance.get_entity_metadata.return_value = Mock()
         client_instance.get_entity_data.return_value = iter([{"id": "1", "name": "test"}])
-        
+
         yield client_instance
 ```
 
@@ -222,7 +227,7 @@ def valid_tap_config():
     return {
         "base_url": "https://test-wms.example.com",
         "auth_method": "basic",
-        "username": "test_user", 
+        "username": "test_user",
         "password": "test_pass",
         "company_code": "TEST",
         "facility_code": "TEST01",

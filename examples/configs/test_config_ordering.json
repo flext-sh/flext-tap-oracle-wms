@@ -14,6 +14,6 @@
     "allocation": "-id"
   },
   "entity_filters": {
-    "allocation": {"id__gte": 1}
+    "allocation": { "id__gte": 1 }
   }
 }

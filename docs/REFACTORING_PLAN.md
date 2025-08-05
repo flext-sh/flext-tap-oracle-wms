@@ -8,14 +8,14 @@ FLEXT Tap Oracle WMS requires **critical refactoring** due to severe architectur
 
 ### Critical Issues Summary
 
-| Issue Category | Current State | Target State | Priority |
-|---------------|---------------|--------------|----------|
-| **Code Volume** | 8,179 lines | ~800 lines | CRITICAL |
-| **Component Count** | 26 files | 6-8 files | CRITICAL |
-| **Test Coverage** | 27% disabled | 100% working | CRITICAL |
-| **Discovery Systems** | 3 competing | 1 unified | HIGH |
-| **Configuration** | 4 systems | 1 system | HIGH |
-| **FLEXT Integration** | Inconsistent | Standardized | HIGH |
+| Issue Category        | Current State | Target State | Priority |
+| --------------------- | ------------- | ------------ | -------- |
+| **Code Volume**       | 8,179 lines   | ~800 lines   | CRITICAL |
+| **Component Count**   | 26 files      | 6-8 files    | CRITICAL |
+| **Test Coverage**     | 27% disabled  | 100% working | CRITICAL |
+| **Discovery Systems** | 3 competing   | 1 unified    | HIGH     |
+| **Configuration**     | 4 systems     | 1 system     | HIGH     |
+| **FLEXT Integration** | Inconsistent  | Standardized | HIGH     |
 
 ### Technical Debt Metrics
 
@@ -31,11 +31,13 @@ Discovery Implementations: 3 competing systems
 ## Refactoring Strategy
 
 ### Option 1: Incremental Refactoring (8-10 weeks)
+
 **Approach**: Gradually simplify existing codebase while maintaining functionality
 **Risk**: High complexity during transition period
 **Benefit**: Preserves existing functionality throughout process
 
 ### Option 2: Complete Rewrite (4-6 weeks) ⭐ **RECOMMENDED**
+
 **Approach**: Build new implementation from scratch following Singer SDK best practices
 **Risk**: Temporary loss of current functionality
 **Benefit**: Clean architecture, faster completion, lower maintenance burden
@@ -53,9 +55,11 @@ Discovery Implementations: 3 competing systems
 ## Implementation Plan
 
 ### Phase 1: Foundation (Week 1)
+
 **Goal**: Establish core architecture and basic functionality
 
 #### Week 1.1: Project Setup
+
 ```bash
 # Create new implementation branch
 git checkout -b rewrite/simplified-architecture
@@ -65,12 +69,14 @@ mkdir src/flext_tap_oracle_wms_v2
 ```
 
 **Deliverables**:
+
 - [ ] New project structure with 6-8 core components
 - [ ] Basic Singer SDK tap class implementation
 - [ ] flext-core integration foundation
 - [ ] Basic configuration system using Pydantic
 
 **Components to Create**:
+
 ```
 src/flext_tap_oracle_wms_v2/
 ├── tap.py                  # Main tap implementation
@@ -83,6 +89,7 @@ src/flext_tap_oracle_wms_v2/
 ```
 
 #### Week 1.2: Core Implementation
+
 **Focus**: Basic tap functionality with flext-oracle-wms integration
 
 ```python
@@ -114,9 +121,11 @@ class FlextTapOracleWMS(Tap):
 ```
 
 ### Phase 2: Core Functionality (Week 2)
+
 **Goal**: Complete basic data extraction and discovery
 
 #### Week 2.1: Stream Implementation
+
 **Focus**: Singer-compliant stream implementation
 
 ```python
@@ -145,6 +154,7 @@ class FlextTapOracleWMSStream(RESTStream):
 ```
 
 #### Week 2.2: Discovery System
+
 **Focus**: Unified discovery using flext-oracle-wms
 
 ```python
@@ -167,9 +177,11 @@ class EntityDiscovery:
 ```
 
 ### Phase 3: Integration and Testing (Week 3)
+
 **Goal**: Complete FLEXT ecosystem integration and comprehensive testing
 
 #### Week 3.1: FLEXT Integration
+
 **Focus**: Complete integration with flext-core patterns
 
 ```python
@@ -200,6 +212,7 @@ class WMSConfig(FlextConfig):
 ```
 
 #### Week 3.2: Comprehensive Testing
+
 **Focus**: 100% test coverage with proper mocking
 
 ```python
@@ -238,9 +251,11 @@ def test_tap_discovery(mock_wms_client, tap_config):
 ```
 
 ### Phase 4: Optimization and Documentation (Week 4)
+
 **Goal**: Performance optimization and complete documentation
 
 #### Week 4.1: Performance Optimization
+
 **Focus**: Optimize stream performance and error handling
 
 ```python
@@ -274,6 +289,7 @@ class OptimizedWMSStream(RESTStream):
 ```
 
 #### Week 4.2: Complete Documentation
+
 **Focus**: Comprehensive documentation and examples
 
 - [ ] Update README.md with new architecture
@@ -285,9 +301,11 @@ class OptimizedWMSStream(RESTStream):
 ## Migration Strategy
 
 ### Phase 5: Migration and Validation (Week 5)
+
 **Goal**: Migrate from old to new implementation
 
 #### Week 5.1: Side-by-Side Testing
+
 ```bash
 # Test both implementations with same data
 make test-old-implementation
@@ -298,6 +316,7 @@ diff old_output.json new_output.json
 ```
 
 #### Week 5.2: Production Migration
+
 ```bash
 # Create migration branch
 git checkout -b migration/v2-implementation
@@ -311,15 +330,18 @@ grep -r "flext_tap_oracle_wms" . --include="*.py" --include="*.md"
 ```
 
 ### Phase 6: Cleanup and Finalization (Week 6)
+
 **Goal**: Complete cleanup and ecosystem integration
 
 #### Week 6.1: Legacy Cleanup
+
 - [ ] Remove old test files with .backup extensions
 - [ ] Clean up redundant configuration examples
 - [ ] Update all documentation references
 - [ ] Remove deprecated make targets
 
 #### Week 6.2: Ecosystem Integration
+
 - [ ] Update flext-core integration
 - [ ] Validate flext-oracle-wms usage
 - [ ] Test with flext-meltano orchestration
@@ -330,36 +352,42 @@ grep -r "flext_tap_oracle_wms" . --include="*.py" --include="*.md"
 ### Phase Completion Criteria
 
 #### Phase 1 Completion ✅
+
 - [ ] New project structure established
 - [ ] Basic tap class implemented
 - [ ] flext-core integration working
 - [ ] Configuration system functional
 
 #### Phase 2 Completion ✅
+
 - [ ] Stream implementation complete
 - [ ] Discovery system functional
 - [ ] Basic data extraction working
 - [ ] Singer protocol compliance validated
 
 #### Phase 3 Completion ✅
+
 - [ ] 100% test coverage achieved
 - [ ] FLEXT ecosystem integration complete
 - [ ] All quality gates passing
 - [ ] Documentation updated
 
 #### Phase 4 Completion ✅
+
 - [ ] Performance optimized
 - [ ] Error handling comprehensive
 - [ ] Production-ready monitoring
 - [ ] Complete documentation
 
 #### Phase 5 Completion ✅
+
 - [ ] Migration successful
 - [ ] Output validation passed
 - [ ] No functionality regression
 - [ ] Performance maintained/improved
 
 #### Phase 6 Completion ✅
+
 - [ ] Legacy code removed
 - [ ] Ecosystem integration validated
 - [ ] Documentation complete
@@ -390,33 +418,33 @@ make test-meltano-integration  # Meltano orchestration
 
 ### Technical Risks
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| **WMS API Changes** | High | Low | Use flext-oracle-wms abstraction |
-| **Test Coverage Gaps** | Medium | Medium | Comprehensive mock strategy |
-| **Performance Regression** | Medium | Low | Benchmark against current |
-| **FLEXT Integration Issues** | High | Low | Early integration testing |
+| Risk                         | Impact | Probability | Mitigation                       |
+| ---------------------------- | ------ | ----------- | -------------------------------- |
+| **WMS API Changes**          | High   | Low         | Use flext-oracle-wms abstraction |
+| **Test Coverage Gaps**       | Medium | Medium      | Comprehensive mock strategy      |
+| **Performance Regression**   | Medium | Low         | Benchmark against current        |
+| **FLEXT Integration Issues** | High   | Low         | Early integration testing        |
 
 ### Project Risks
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| **Timeline Overrun** | Medium | Medium | Phased delivery with quality gates |
-| **Functionality Loss** | High | Low | Comprehensive validation testing |
-| **Team Knowledge Gap** | Medium | Low | Documentation and knowledge transfer |
+| Risk                   | Impact | Probability | Mitigation                           |
+| ---------------------- | ------ | ----------- | ------------------------------------ |
+| **Timeline Overrun**   | Medium | Medium      | Phased delivery with quality gates   |
+| **Functionality Loss** | High   | Low         | Comprehensive validation testing     |
+| **Team Knowledge Gap** | Medium | Low         | Documentation and knowledge transfer |
 
 ## Success Metrics
 
 ### Quantitative Metrics
 
-| Metric | Current | Target | Measurement |
-|--------|---------|--------|-------------|
-| **Lines of Code** | 8,179 | < 1,000 | Line count |
-| **Component Count** | 26 | 6-8 | File count |
-| **Test Coverage** | ~70% | 100% | pytest-cov |
-| **Disabled Tests** | 7 files | 0 files | Test execution |
-| **Build Time** | ~2 min | < 30 sec | CI pipeline |
-| **Discovery Time** | Unknown | < 10 sec | Performance test |
+| Metric              | Current | Target   | Measurement      |
+| ------------------- | ------- | -------- | ---------------- |
+| **Lines of Code**   | 8,179   | < 1,000  | Line count       |
+| **Component Count** | 26      | 6-8      | File count       |
+| **Test Coverage**   | ~70%    | 100%     | pytest-cov       |
+| **Disabled Tests**  | 7 files | 0 files  | Test execution   |
+| **Build Time**      | ~2 min  | < 30 sec | CI pipeline      |
+| **Discovery Time**  | Unknown | < 10 sec | Performance test |
 
 ### Qualitative Metrics
 
@@ -428,14 +456,14 @@ make test-meltano-integration  # Meltano orchestration
 
 ## Timeline Summary
 
-| Phase | Duration | Key Deliverables | Critical Path |
-|-------|----------|------------------|---------------|
-| **Phase 1** | Week 1 | Foundation & Setup | Core architecture |
-| **Phase 2** | Week 2 | Core Functionality | Stream implementation |
-| **Phase 3** | Week 3 | Integration & Testing | FLEXT integration |
-| **Phase 4** | Week 4 | Optimization | Performance tuning |
-| **Phase 5** | Week 5 | Migration | Production migration |
-| **Phase 6** | Week 6 | Finalization | Ecosystem validation |
+| Phase       | Duration | Key Deliverables      | Critical Path         |
+| ----------- | -------- | --------------------- | --------------------- |
+| **Phase 1** | Week 1   | Foundation & Setup    | Core architecture     |
+| **Phase 2** | Week 2   | Core Functionality    | Stream implementation |
+| **Phase 3** | Week 3   | Integration & Testing | FLEXT integration     |
+| **Phase 4** | Week 4   | Optimization          | Performance tuning    |
+| **Phase 5** | Week 5   | Migration             | Production migration  |
+| **Phase 6** | Week 6   | Finalization          | Ecosystem validation  |
 
 **Total Duration**: 6 weeks
 **Critical Path**: Core architecture → Stream implementation → FLEXT integration

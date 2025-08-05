@@ -116,7 +116,9 @@ class TestTapInitialization:
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.discover_streams")
     @patch("flext_tap_oracle_wms.cache.CacheManagerAdapter")
     def test_lazy_loading_discovery(
-        self, mock_cache_adapter: MagicMock, mock_discover: MagicMock,
+        self,
+        mock_cache_adapter: MagicMock,
+        mock_discover: MagicMock,
     ) -> None:
         """Test lazy loading discovery behavior."""
         # Mock discover_streams to return empty list during initialization

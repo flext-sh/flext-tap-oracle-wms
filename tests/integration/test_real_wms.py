@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 from flext_core import get_logger
+
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 
 logger = get_logger(__name__)
@@ -92,10 +93,13 @@ class TestRealOracleWMSIntegration:
 
         except Exception as e:
             # Some streams might be empty or require specific permissions
-            logger.debug(f"Stream {test_stream.name} extraction failed (expected for some streams): {e}")
+            logger.debug(
+                f"Stream {test_stream.name} extraction failed (expected for some streams): {e}"
+            )
 
     def test_real_filtered_discovery(
-        self, real_config: FlextTapOracleWMSConfig,
+        self,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """Test discovery with filtered entities."""
         # Create tap with filtered config
@@ -131,7 +135,9 @@ class TestRealOracleWMSIntegration:
                     return
 
             except Exception as e:
-                logger.debug(f"Stream {stream.name} failed pagination test (expected for some streams): {e}")
+                logger.debug(
+                    f"Stream {stream.name} failed pagination test (expected for some streams): {e}"
+                )
                 continue
 
         pytest.skip("No streams with sufficient data for pagination test")

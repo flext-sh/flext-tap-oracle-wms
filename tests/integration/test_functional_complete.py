@@ -38,7 +38,8 @@ class TestOracleWMSFunctionalComplete:
         logger.info("✅ Real Oracle WMS environment verified: %s", base_url)
 
     def test_tap_initialization_real_config(
-        self, real_wms_config: dict[str, object],
+        self,
+        real_wms_config: dict[str, object],
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         from flext_tap_oracle_wms.tap import FlextTapOracleWMS
@@ -70,7 +71,9 @@ class TestOracleWMSFunctionalComplete:
             # Log discovered entities
             entity_names = [stream["tap_stream_id"] for stream in streams]
             logger.info(
-                "✅ Discovered %d entities: %s", len(entity_names), entity_names,
+                "✅ Discovered %d entities: %s",
+                len(entity_names),
+                entity_names,
             )
 
             # Verify essential entities exist (based on REAL discovery)
@@ -219,7 +222,8 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.singer
     def test_pagination_functionality(
-        self, real_tap_instance: FlextTapOracleWMS,
+        self,
+        real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test pagination parameters are correctly configured."""
         catalog = real_tap_instance.catalog_dict
@@ -257,7 +261,8 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.functional
     def test_replication_key_detection(
-        self, real_tap_instance: FlextTapOracleWMS,
+        self,
+        real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test automatic replication key detection."""
         catalog = real_tap_instance.catalog_dict
@@ -348,7 +353,8 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.functional
     def test_error_handling_and_validation(
-        self, real_wms_config: dict[str, object],
+        self,
+        real_wms_config: dict[str, object],
     ) -> None:
         """Test error handling with invalid configurations."""
         from flext_tap_oracle_wms.tap import FlextTapOracleWMS
@@ -398,7 +404,8 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.singer
     def test_singer_protocol_compliance(
-        self, real_tap_instance: FlextTapOracleWMS,
+        self,
+        real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test Singer protocol compliance."""
         # Test catalog generation
@@ -433,7 +440,8 @@ class TestOracleWMSFunctionalComplete:
         logger.info("✅ Singer protocol compliance verified")
 
     def test_comprehensive_functionality_summary(
-        self, real_tap_instance: FlextTapOracleWMS,
+        self,
+        real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """FINAL COMPREHENSIVE TEST: Verify all functionality works together."""
         summary = {
@@ -500,7 +508,8 @@ class TestOracleWMSFunctionalComplete:
         logger.info("  📊 Entities discovered: %d", summary["entities_discovered"])
         logger.info("  📋 Schemas generated: %d", summary["schemas_generated"])
         logger.info(
-            "  🔄 Replication configured: %s", summary["replication_configured"],
+            "  🔄 Replication configured: %s",
+            summary["replication_configured"],
         )
         logger.info("  📄 Pagination configured: %s", summary["pagination_configured"])
         logger.info("  🎵 Singer compliant: %s", summary["singer_compliant"])

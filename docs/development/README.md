@@ -7,21 +7,25 @@ This directory contains comprehensive development documentation for FLEXT Tap Or
 ## Development Documentation Structure
 
 ### Testing Documentation
+
 - **[testing-strategy.md](testing-strategy.md)** - Comprehensive testing approach and disabled tests analysis
 - **[test-architecture.md](test-architecture.md)** - Test organization and structure
 - **[mocking-strategy.md](mocking-strategy.md)** - Mock implementation for external dependencies
 
 ### Quality Standards
+
 - **[quality-gates.md](quality-gates.md)** - Quality validation requirements and standards
 - **[code-standards.md](code-standards.md)** - Code quality and style guidelines
 - **[security-standards.md](security-standards.md)** - Security requirements and validation
 
 ### Development Workflows
+
 - **[development-workflow.md](development-workflow.md)** - Complete development process
 - **[singer-compliance.md](singer-compliance.md)** - Singer SDK specification compliance
 - **[debugging-guide.md](debugging-guide.md)** - Debugging and troubleshooting guide
 
 ### Refactoring Documentation
+
 - **[refactoring-guidelines.md](refactoring-guidelines.md)** - Guidelines for the major refactoring
 - **[migration-strategy.md](migration-strategy.md)** - Migration from current to target architecture
 - **[validation-checklist.md](validation-checklist.md)** - Validation steps for refactored code
@@ -30,22 +34,22 @@ This directory contains comprehensive development documentation for FLEXT Tap Or
 
 ### Critical Issues
 
-| Issue | Impact | Status | Action Required |
-|-------|--------|--------|-----------------|
-| **Disabled Tests** | 27% test coverage loss | Critical | Re-enable with proper mocks |
-| **Over-Engineering** | High maintenance burden | Critical | Simplify architecture |
-| **Config Chaos** | Development confusion | High | Consolidate configuration |
-| **FLEXT Integration** | Ecosystem inconsistency | Medium | Standardize patterns |
+| Issue                 | Impact                  | Status   | Action Required             |
+| --------------------- | ----------------------- | -------- | --------------------------- |
+| **Disabled Tests**    | 27% test coverage loss  | Critical | Re-enable with proper mocks |
+| **Over-Engineering**  | High maintenance burden | Critical | Simplify architecture       |
+| **Config Chaos**      | Development confusion   | High     | Consolidate configuration   |
+| **FLEXT Integration** | Ecosystem inconsistency | Medium   | Standardize patterns        |
 
 ### Quality Metrics
 
-| Metric | Current | Target | Status |
-|--------|---------|--------|--------|
-| **Test Coverage** | ~70% (with disabled) | 100% | ❌ Requires work |
-| **Code Complexity** | Very High | Low | ❌ Requires refactoring |
-| **Type Coverage** | ~85% | 100% | ⚠️ Needs improvement |
-| **Security Scan** | Clean | Clean | ✅ Passing |
-| **Lint Score** | Passing | Passing | ✅ Passing |
+| Metric              | Current              | Target  | Status                  |
+| ------------------- | -------------------- | ------- | ----------------------- |
+| **Test Coverage**   | ~70% (with disabled) | 100%    | ❌ Requires work        |
+| **Code Complexity** | Very High            | Low     | ❌ Requires refactoring |
+| **Type Coverage**   | ~85%                 | 100%    | ⚠️ Needs improvement    |
+| **Security Scan**   | Clean                | Clean   | ✅ Passing              |
+| **Lint Score**      | Passing              | Passing | ✅ Passing              |
 
 ## Development Environment Setup
 
@@ -280,6 +284,7 @@ except WMSConfigurationError as e:
 ### IDE Configuration
 
 **VS Code Settings** (recommended):
+
 ```json
 {
   "python.defaultInterpreterPath": ".venv/bin/python",
@@ -340,6 +345,7 @@ pre-commit run --all-files
 ### Adding New WMS Entity
 
 1. **Update Configuration**:
+
 ```python
 # Add entity to valid entities list
 VALID_ENTITIES = [
@@ -349,6 +355,7 @@ VALID_ENTITIES = [
 ```
 
 2. **Create Entity Tests**:
+
 ```python
 def test_new_entity_extraction(mock_wms_client):
     """Test new entity extraction."""
@@ -357,6 +364,7 @@ def test_new_entity_extraction(mock_wms_client):
 ```
 
 3. **Update Documentation**:
+
 - Add entity to README.md entity table
 - Update configuration examples
 - Add entity to schema documentation
@@ -364,6 +372,7 @@ def test_new_entity_extraction(mock_wms_client):
 ### Debugging Common Issues
 
 #### Authentication Issues
+
 ```bash
 # Test WMS connection
 make wms-test
@@ -373,6 +382,7 @@ TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap --config confi
 ```
 
 #### Schema Issues
+
 ```bash
 # Validate schema generation
 python -c "
@@ -384,6 +394,7 @@ print(schema)
 ```
 
 #### Performance Issues
+
 ```bash
 # Profile extraction
 python -m cProfile -o profile.stats -m flext_tap_oracle_wms.tap --config config.json --catalog catalog.json
@@ -423,16 +434,19 @@ p.sort_stats('cumulative').print_stats(20)
 ### Current → Target Architecture
 
 1. **Preparation Phase**:
+
    - Document all current functionality
    - Create comprehensive test suite
    - Set up FLEXT integration foundation
 
 2. **Implementation Phase**:
+
    - Implement simplified architecture
    - Migrate functionality incrementally
    - Validate each component thoroughly
 
 3. **Validation Phase**:
+
    - Compare outputs between old and new
    - Performance benchmarking
    - Integration testing

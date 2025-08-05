@@ -14,7 +14,9 @@ def main() -> int:
     """Run basic example."""
     # Configuration from environment or hardcoded
     config = FlextTapOracleWMSConfig(
-        base_url=os.getenv("ORACLE_WMS_BASE_URL", "https://ta29.wms.ocs.oraclecloud.com/raizen_test"),
+        base_url=os.getenv(
+            "ORACLE_WMS_BASE_URL", "https://ta29.wms.ocs.oraclecloud.com/raizen_test"
+        ),
         username=os.getenv("ORACLE_WMS_USERNAME", "USER_WMS_INTEGRA"),
         password=os.getenv("ORACLE_WMS_PASSWORD", "your_password"),
         api_version="v10",

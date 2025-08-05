@@ -10,6 +10,6 @@
   "request_timeout": 300,
   "enable_incremental": false,
   "entity_filters": {
-    "allocation": {"id__gte": 50534800}
+    "allocation": { "id__gte": 50534800 }
   }
 }

@@ -7,7 +7,7 @@ Uses flext-oracle-wms for all Oracle WMS communication.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from flext_core import FlextResult, get_logger
 from singer_sdk import Tap
@@ -19,6 +19,7 @@ from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from flext_core.flext_types import TAnyDict, TAnyObject
     from singer_sdk import Stream
 
 logger = get_logger(__name__)
@@ -38,39 +39,39 @@ class FlextTapOracleWMS(Tap):
     name = "flext-tap-oracle-wms"
 
     config_jsonschema: ClassVar[dict[str, object]] = {
-            "type": "object",
-            "properties": {
-                "base_url": {
-                    "type": "string",
-                    "description": "Oracle WMS base URL",
-                },
-                "username": {
-                    "type": "string",
-                    "description": "Oracle WMS username",
-                },
-                "password": {
-                    "type": "string",
-                    "description": "Oracle WMS password",
+        "type": "object",
+        "properties": {
+            "base_url": {
+                "type": "string",
+                "description": "Oracle WMS base URL",
+            },
+            "username": {
+                "type": "string",
+                "description": "Oracle WMS username",
+            },
+            "password": {
+                "type": "string",
+                "description": "Oracle WMS password",
                 "secret": True,
-                },
+            },
             "api_version": {
-                    "type": "string",
+                "type": "string",
                 "default": "v10",
                 "description": "Oracle WMS API version",
-                },
-                "page_size": {
-                    "type": "integer",
+            },
+            "page_size": {
+                "type": "integer",
                 "default": 100,
-                    "description": "Number of records per page",
-                },
+                "description": "Number of records per page",
+            },
             "verify_ssl": {
                 "type": "boolean",
                 "default": True,
                 "description": "Verify SSL certificates",
-                },
             },
-            "required": ["base_url", "username", "password"],
-        }
+        },
+        "required": ["base_url", "username", "password"],
+    }
 
     def __init__(
         self,
@@ -128,7 +129,7 @@ class FlextTapOracleWMS(Tap):
             self._flext_config = FlextTapOracleWMSConfig(**self.config)
         return self._flext_config
 
-    def _run_async(self, coro: Any) -> Any:
+    def _run_async(self, coro: TAnyObject) -> TAnyObject:
         """Run async coroutine in sync context."""
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -138,7 +139,7 @@ class FlextTapOracleWMS(Tap):
             loop.close()
 
     @property
-    def wms_client(self) -> Any:  # FlextOracleWmsClient at runtime
+    def wms_client(self) -> TAnyObject:  # FlextOracleWmsClient at runtime
         """Get or create WMS client."""
         if self._wms_client is None:
             # Import dynamically to avoid import errors
@@ -158,7 +159,8 @@ class FlextTapOracleWMS(Tap):
                 username=self.flext_config.username,
                 password=self.flext_config.password.get_secret_value(),
                 environment=self.flext_config.api_version.replace("v", "").replace(
-                    "/", "",
+                    "/",
+                    "",
                 ),
                 timeout=self.flext_config.timeout,
                 max_retries=self.flext_config.max_retries,
@@ -182,7 +184,7 @@ class FlextTapOracleWMS(Tap):
         return self._wms_client
 
     @property
-    def discovery(self) -> Any:  # Use WMS client directly for discovery
+    def discovery(self) -> TAnyObject:  # Use WMS client directly for discovery
         """Get WMS client for discovery operations."""
         # Use the WMS client directly as it has discovery capabilities
         return self.wms_client
@@ -207,7 +209,7 @@ class FlextTapOracleWMS(Tap):
             return FlextResult.ok(None)
 
         except Exception as e:
-            logger.exception(f"Failed to initialize tap: {e}")
+            logger.exception("Failed to initialize tap")
             return FlextResult.fail(str(e))
 
     def discover_catalog(self) -> FlextResult[dict[str, object]]:
@@ -252,7 +254,7 @@ class FlextTapOracleWMS(Tap):
             return FlextResult.ok(catalog)
 
         except Exception as e:
-            logger.exception(f"Failed to discover catalog: {e}")
+            logger.exception("Failed to discover catalog")
             return FlextResult.fail(str(e))
 
     def _build_singer_catalog(self, discovery_result: object) -> dict[str, object]:
@@ -274,8 +276,14 @@ class FlextTapOracleWMS(Tap):
                         # Basic generic properties
                         "id": {"type": ["string", "null"]},
                         "name": {"type": ["string", "null"]},
-                        "created_at": {"type": ["string", "null"], "format": "date-time"},
-                        "updated_at": {"type": ["string", "null"], "format": "date-time"},
+                        "created_at": {
+                            "type": ["string", "null"],
+                            "format": "date-time",
+                        },
+                        "updated_at": {
+                            "type": ["string", "null"],
+                            "format": "date-time",
+                        },
                     },
                 },
                 "metadata": [
@@ -292,12 +300,14 @@ class FlextTapOracleWMS(Tap):
 
             # Add field metadata for each property
             for prop_name in stream["schema"]["properties"]:
-                stream["metadata"].append({
-                    "breadcrumb": ["properties", prop_name],
-                    "metadata": {
-                        "inclusion": "available",
+                stream["metadata"].append(
+                    {
+                        "breadcrumb": ["properties", prop_name],
+                        "metadata": {
+                            "inclusion": "available",
+                        },
                     },
-                })
+                )
 
             streams.append(stream)
 
@@ -306,7 +316,7 @@ class FlextTapOracleWMS(Tap):
             "streams": streams,
         }
 
-    def _convert_fields_to_properties(self, fields: Any) -> dict[str, object]:
+    def _convert_fields_to_properties(self, fields: TAnyObject) -> dict[str, object]:
         """Convert Oracle WMS fields to Singer properties."""
         properties: dict[str, object] = {}
 
@@ -362,7 +372,7 @@ class FlextTapOracleWMS(Tap):
         logger.info(f"Discovered {len(streams)} dynamic streams")
         return streams
 
-    def _get_stream_definitions_from_catalog(self) -> list[dict[str, Any]]:
+    def _get_stream_definitions_from_catalog(self) -> list[TAnyDict]:
         """Get stream definitions from discovered catalog.
 
         Returns:
@@ -387,7 +397,9 @@ class FlextTapOracleWMS(Tap):
 
         return catalog_streams
 
-    def _create_streams_from_definitions(self, stream_definitions: list[dict[str, Any]]) -> list[Stream]:
+    def _create_streams_from_definitions(
+        self, stream_definitions: list[TAnyDict],
+    ) -> list[Stream]:
         """Create stream instances from stream definitions.
 
         Args:
@@ -410,7 +422,7 @@ class FlextTapOracleWMS(Tap):
 
         return streams
 
-    def _create_single_stream(self, stream_def: dict[str, Any]) -> Stream | None:
+    def _create_single_stream(self, stream_def: TAnyDict) -> Stream | None:
         """Create a single stream from definition.
 
         Args:
@@ -440,7 +452,9 @@ class FlextTapOracleWMS(Tap):
 
         return stream
 
-    def _configure_stream_metadata(self, stream: Stream, stream_def: dict[str, Any]) -> None:
+    def _configure_stream_metadata(
+        self, stream: Stream, stream_def: TAnyDict,
+    ) -> None:
         """Configure stream metadata from definition.
 
         Args:
@@ -481,7 +495,7 @@ class FlextTapOracleWMS(Tap):
             return FlextResult.ok(None)
 
         except Exception as e:
-            logger.exception(f"Tap execution failed: {e}")
+            logger.exception("Tap execution failed")
             return FlextResult.fail(str(e))
 
     def validate_configuration(self) -> FlextResult[dict[str, object]]:
@@ -502,7 +516,9 @@ class FlextTapOracleWMS(Tap):
             # Test connection using flext-oracle-wms health check
             health_result = self._run_async(self.wms_client.health_check())
             if hasattr(health_result, "is_failure") and health_result.is_failure:
-                error_msg = getattr(health_result, "error", "Unknown health check error")
+                error_msg = getattr(
+                    health_result, "error", "Unknown health check error",
+                )
                 return FlextResult.fail(f"Connection test failed: {error_msg}")
 
             validation_info = {
@@ -517,7 +533,7 @@ class FlextTapOracleWMS(Tap):
             return FlextResult.ok(validation_info)
 
         except Exception as e:
-            logger.exception(f"Configuration validation failed: {e}")
+            logger.exception("Configuration validation failed")
             return FlextResult.fail(str(e))
 
     def get_implementation_name(self) -> str:

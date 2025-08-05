@@ -9,11 +9,12 @@ from unittest.mock import MagicMock
 
 import pytest
 from flext_core import FlextResult
+from pydantic import SecretStr
+
 from flext_tap_oracle_wms import (
     FlextTapOracleWMS,
     FlextTapOracleWMSConfig,
 )
-from pydantic import SecretStr
 
 if TYPE_CHECKING:
     from collections.abc import Generator
