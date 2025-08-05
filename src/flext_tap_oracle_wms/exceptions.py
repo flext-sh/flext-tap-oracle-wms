@@ -5,11 +5,22 @@ Follows FLEXT exception hierarchy patterns with specific Oracle WMS tap errors.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from flext_core.flext_types import TAnyDict, TValue
+
+
+@dataclass
+class ValidationContext:
+    """Context information for validation errors."""
+
+    stream_name: str | None = None
+    field_name: str | None = None
+    expected_type: str | None = None
+    actual_value: object = None
 
 
 class FlextTapOracleWMSError(Exception):
@@ -320,25 +331,19 @@ class FlextTapOracleWMSRateLimitError(FlextTapOracleWMSError):
 
 
 class FlextTapOracleWMSDataValidationError(FlextTapOracleWMSError):
-    """Data validation errors."""
+    """Data validation errors with structured context."""
 
     def __init__(
         self,
         message: str,
-        stream_name: str | None = None,
-        field_name: str | None = None,
-        expected_type: str | None = None,
-        actual_value: object = None,
+        validation_context: ValidationContext | None = None,
         context: TAnyDict | None = None,
     ) -> None:
         """Initialize data validation error.
 
         Args:
             message: Error message
-            stream_name: Stream with validation error
-            field_name: Field that failed validation
-            expected_type: Expected data type
-            actual_value: Actual value received
+            validation_context: Structured validation context information
             context: Additional context
 
         """
@@ -348,23 +353,41 @@ class FlextTapOracleWMSDataValidationError(FlextTapOracleWMSError):
             context=context or {},
         )
 
-        self.stream_name = stream_name
-        self.field_name = field_name
-        self.expected_type = expected_type
-        self.actual_value = actual_value
+        self.validation_context = validation_context or ValidationContext()
 
-        # Add to context
-        if stream_name:
-            self.context["stream"] = stream_name
-        if field_name:
-            self.context["field"] = field_name
-        if expected_type:
-            self.context["expected_type"] = expected_type
-        if actual_value is not None:
-            self.context["actual_type"] = type(actual_value).__name__
+        # Add validation context to error context for backward compatibility
+        if self.validation_context.stream_name:
+            self.context["stream"] = self.validation_context.stream_name
+        if self.validation_context.field_name:
+            self.context["field"] = self.validation_context.field_name
+        if self.validation_context.expected_type:
+            self.context["expected_type"] = self.validation_context.expected_type
+        if self.validation_context.actual_value is not None:
+            self.context["actual_type"] = type(self.validation_context.actual_value).__name__
             # Only include value if it's safe to log
-            if isinstance(actual_value, (str, int, float, bool)):
-                self.context["actual_value"] = str(actual_value)[:100]
+            if isinstance(self.validation_context.actual_value, (str, int, float, bool)):
+                self.context["actual_value"] = str(self.validation_context.actual_value)[:100]
+
+    # Backward compatibility properties
+    @property
+    def stream_name(self) -> str | None:
+        """Get stream name for backward compatibility."""
+        return self.validation_context.stream_name
+
+    @property
+    def field_name(self) -> str | None:
+        """Get field name for backward compatibility."""
+        return self.validation_context.field_name
+
+    @property
+    def expected_type(self) -> str | None:
+        """Get expected type for backward compatibility."""
+        return self.validation_context.expected_type
+
+    @property
+    def actual_value(self) -> object:
+        """Get actual value for backward compatibility."""
+        return self.validation_context.actual_value
 
 
 class FlextTapOracleWMSRetryableError(FlextTapOracleWMSError):

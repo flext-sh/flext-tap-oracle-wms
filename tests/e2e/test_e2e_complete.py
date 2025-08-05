@@ -24,7 +24,7 @@ class TestOracleWMSE2EComplete:
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
 
     def test_complete_discovery_to_catalog(
-        self, real_tap_instance: FlextTapOracleWMS
+        self, real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """E2E: Test complete discovery process generating valid Singer catalog."""
         # Run discovery
@@ -57,7 +57,7 @@ class TestOracleWMSE2EComplete:
 
             # Check for table-level metadata
             table_metadata = next(
-                (m for m in metadata if m.get("breadcrumb") == []), None
+                (m for m in metadata if m.get("breadcrumb") == []), None,
             )
             assert table_metadata is not None, "Missing table metadata"
 
@@ -68,11 +68,11 @@ class TestOracleWMSE2EComplete:
             )
 
         logger.info(
-            "✅ Complete discovery validation passed for %d streams", len(streams)
+            "✅ Complete discovery validation passed for %d streams", len(streams),
         )
 
     def test_catalog_serialization_and_selection(
-        self, real_tap_instance: FlextTapOracleWMS
+        self, real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """E2E: Test catalog serialization and stream selection."""
         catalog = real_tap_instance.catalog_dict
@@ -101,7 +101,7 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Catalog serialization and selection working")
 
     def test_single_stream_extraction_sample(
-        self, real_tap_instance: FlextTapOracleWMS
+        self, real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """E2E: Test single stream data extraction with real data."""
         catalog = real_tap_instance.catalog_dict
@@ -139,7 +139,7 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Single stream extraction setup successful")
 
     def test_incremental_extraction_workflow(
-        self, real_tap_instance: FlextTapOracleWMS
+        self, real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """E2E: Test incremental extraction workflow."""
         catalog = real_tap_instance.catalog_dict
@@ -192,7 +192,7 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Incremental extraction workflow validated for %s", stream.name)
 
     def test_full_table_extraction_workflow(
-        self, real_tap_instance: FlextTapOracleWMS
+        self, real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """E2E: Test full table extraction workflow."""
         catalog = real_tap_instance.catalog_dict
@@ -240,7 +240,7 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Full table extraction workflow validated for %s", stream.name)
 
     def test_data_quality_validation(
-        self, real_tap_instance: FlextTapOracleWMS
+        self, real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """E2E: Test data quality and schema validation."""
         catalog = real_tap_instance.catalog_dict
@@ -279,10 +279,10 @@ class TestOracleWMSE2EComplete:
 
             # Check for replication key
             table_metadata = next(
-                (m for m in metadata if m.get("breadcrumb") == []), None
+                (m for m in metadata if m.get("breadcrumb") == []), None,
             )
             if table_metadata and table_metadata.get("metadata", {}).get(
-                "replication-key"
+                "replication-key",
             ):
                 quality_report["replication_keys_defined"] += 1
 
@@ -302,10 +302,10 @@ class TestOracleWMSE2EComplete:
         logger.info("  Streams tested: %d", quality_report["streams_tested"])
         logger.info("  Valid schemas: %d", quality_report["schemas_valid"])
         logger.info(
-            "  Primary keys defined: %d", quality_report["primary_keys_defined"]
+            "  Primary keys defined: %d", quality_report["primary_keys_defined"],
         )
         logger.info(
-            "  Replication keys defined: %d", quality_report["replication_keys_defined"]
+            "  Replication keys defined: %d", quality_report["replication_keys_defined"],
         )
         logger.info(
             "  Nullable fields documented: %d",
@@ -353,7 +353,7 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Pagination flow tested: %s", pages_tested)
 
     def test_error_recovery_and_resilience(
-        self, real_wms_config: dict[str, object]
+        self, real_wms_config: dict[str, object],
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         from flext_tap_oracle_wms.tap import FlextTapOracleWMS
@@ -388,7 +388,7 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Error recovery tested")
 
     def test_complete_singer_protocol_compliance(
-        self, real_tap_instance: FlextTapOracleWMS
+        self, real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """E2E: Test complete Singer protocol compliance."""
         # Test discovery mode
@@ -445,7 +445,7 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Complete Singer protocol compliance verified")
 
     def test_performance_and_scalability_indicators(
-        self, real_tap_instance: FlextTapOracleWMS
+        self, real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """E2E: Test performance indicators and scalability."""
         import time
@@ -492,7 +492,7 @@ class TestOracleWMSE2EComplete:
         assert streams_count / discovery_time > 0.1, "Discovery rate too slow"
 
     def test_final_e2e_integration_summary(
-        self, real_tap_instance: FlextTapOracleWMS
+        self, real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """FINAL E2E: Comprehensive integration summary."""
         summary = {
@@ -519,12 +519,12 @@ class TestOracleWMSE2EComplete:
                 # Count replication methods
                 metadata = stream.get("metadata", [])
                 table_meta = next(
-                    (m for m in metadata if m.get("breadcrumb") == []), None
+                    (m for m in metadata if m.get("breadcrumb") == []), None,
                 )
 
                 if table_meta:
                     replication_method = table_meta.get("metadata", {}).get(
-                        "replication-method"
+                        "replication-method",
                     )
                     if replication_method == "INCREMENTAL":
                         summary["incremental_streams"] += 1
@@ -543,7 +543,7 @@ class TestOracleWMSE2EComplete:
                     isinstance(catalog.get("streams"), list),
                     summary["streams_discovered"] > 0,
                     summary["schemas_valid"] > 0,
-                ]
+                ],
             )
 
             # 4. Performance
@@ -565,7 +565,7 @@ class TestOracleWMSE2EComplete:
         logger.info("  📝 Valid schemas: %d", summary["schemas_valid"])
         logger.info("  🎵 Singer compliant: %s", summary["singer_compliant"])
         logger.info(
-            "  ⚡ Performance acceptable: %s", summary["performance_acceptable"]
+            "  ⚡ Performance acceptable: %s", summary["performance_acceptable"],
         )
 
         if summary["errors"]:

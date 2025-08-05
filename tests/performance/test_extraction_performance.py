@@ -6,15 +6,10 @@ Tests extraction performance against real Oracle WMS environment.
 import os
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 from dotenv import load_dotenv
-
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
-
-if TYPE_CHECKING:
-    from collections.abc import Generator
 
 # Load environment variables
 env_path = Path(__file__).parent.parent.parent / ".env"

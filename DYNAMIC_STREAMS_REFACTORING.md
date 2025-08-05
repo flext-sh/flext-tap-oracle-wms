@@ -3,27 +3,32 @@
 ## What Was Changed
 
 ### 1. Removed Static Stream Classes
+
 - **Removed** `get_stream_classes()` and `get_stream_by_name()` from `streams.py`
 - These functions were returning hardcoded stream classes
 - Now all streams are created dynamically based on Oracle WMS discovery
 
 ### 2. Updated Discovery Mechanism
+
 - **Changed** `discovery` property to return the WMS client directly
 - The WMS client has built-in discovery capabilities via `discover_entities()`
 - Removed the need for a separate discovery instance
 
 ### 3. Modified Stream Discovery Flow
+
 - **Updated** `discover_streams()` method to:
   1. First call `discover_catalog()` to get available entities from Oracle WMS
   2. Create stream instances dynamically from the catalog
   3. Set primary keys and metadata dynamically for each stream
 
 ### 4. Simplified Catalog Building
+
 - **Updated** `_build_singer_catalog()` to work with a list of entity names
 - Creates basic schema for each entity (can be enhanced later)
 - Adds standard metadata for Singer compatibility
 
 ### 5. Generic Stream Class
+
 - **Modified** `FlextTapOracleWMSStream` to be a fully generic class
 - Primary keys and schema are set dynamically at runtime
 - No hardcoded entity-specific logic
@@ -49,6 +54,7 @@
 ## Testing Results
 
 The refactoring was successful:
+
 - 6 dynamic streams discovered from Oracle WMS
 - All tests passing
 - No hardcoded stream classes remaining

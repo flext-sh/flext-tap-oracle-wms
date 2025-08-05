@@ -7,11 +7,9 @@ Uses flext-oracle-wms for all Oracle WMS communication.
 from __future__ import annotations
 
 import asyncio
-import json
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from flext_core import FlextResult, get_logger
-from flext_core.flext_types import TAnyDict, TService, TValue
 from singer_sdk import Tap
 
 from flext_tap_oracle_wms.config import FlextTapOracleWMSConfig
@@ -21,12 +19,6 @@ from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from flext_oracle_wms import (
-        FlextOracleWmsClient,
-        FlextOracleWmsClientConfig,
-        FlextOracleWmsEntityDiscovery,
-    )
-    from flext_oracle_wms.api_catalog import FlextOracleWmsApiVersion
     from singer_sdk import Stream
 
 logger = get_logger(__name__)
@@ -166,7 +158,7 @@ class FlextTapOracleWMS(Tap):
                 username=self.flext_config.username,
                 password=self.flext_config.password.get_secret_value(),
                 environment=self.flext_config.api_version.replace("v", "").replace(
-                    "/", ""
+                    "/", "",
                 ),
                 timeout=self.flext_config.timeout,
                 max_retries=self.flext_config.max_retries,
@@ -205,7 +197,7 @@ class FlextTapOracleWMS(Tap):
                 validation_result = self.validate_configuration()
                 if validation_result.is_failure:
                     return FlextResult.fail(
-                        validation_result.error or "Configuration validation failed"
+                        validation_result.error or "Configuration validation failed",
                     )
 
             # Ensure client is created and started
@@ -233,13 +225,13 @@ class FlextTapOracleWMS(Tap):
                 init_result = self.initialize()
                 if init_result.is_failure:
                     return FlextResult.fail(
-                        init_result.error or "Initialization failed"
+                        init_result.error or "Initialization failed",
                     )
 
             # Use flext-oracle-wms discovery
             # The WMS client has discover_entities method
             discovery_result = self._run_async(
-                self.discovery.discover_entities()
+                self.discovery.discover_entities(),
             )
 
             if hasattr(discovery_result, "is_failure") and discovery_result.is_failure:
@@ -326,11 +318,11 @@ class FlextTapOracleWMS(Tap):
             # Map Oracle WMS types to Singer types
             singer_type = "string"  # Default
 
-            if field.data_type in ["NUMBER", "INTEGER", "DECIMAL"]:
+            if field.data_type in {"NUMBER", "INTEGER", "DECIMAL"}:
                 singer_type = "number"
-            elif field.data_type in ["BOOLEAN"]:
+            elif field.data_type == "BOOLEAN":
                 singer_type = "boolean"
-            elif field.data_type in ["DATE", "TIMESTAMP"]:
+            elif field.data_type in {"DATE", "TIMESTAMP"}:
                 singer_type = "string"
                 properties[field.name] = {
                     "type": singer_type,
@@ -359,7 +351,25 @@ class FlextTapOracleWMS(Tap):
         """
         logger.info("Discovering streams dynamically")
 
-        # First, discover the catalog to get available entities
+        # Get stream definitions from catalog
+        stream_definitions = self._get_stream_definitions_from_catalog()
+        if not stream_definitions:
+            return []
+
+        # Create stream instances from definitions
+        streams = self._create_streams_from_definitions(stream_definitions)
+
+        logger.info(f"Discovered {len(streams)} dynamic streams")
+        return streams
+
+    def _get_stream_definitions_from_catalog(self) -> list[dict[str, Any]]:
+        """Get stream definitions from discovered catalog.
+
+        Returns:
+            List of stream definition dictionaries
+
+        """
+        # Discover the catalog to get available entities
         catalog_result = self.discover_catalog()
         if catalog_result.is_failure:
             logger.error(f"Failed to discover catalog: {catalog_result.error}")
@@ -375,44 +385,79 @@ class FlextTapOracleWMS(Tap):
             logger.error("Invalid catalog streams format")
             return []
 
-        # Create stream instances dynamically
+        return catalog_streams
+
+    def _create_streams_from_definitions(self, stream_definitions: list[dict[str, Any]]) -> list[Stream]:
+        """Create stream instances from stream definitions.
+
+        Args:
+            stream_definitions: List of stream definition dictionaries
+
+        Returns:
+            List of created Stream instances
+
+        """
         streams = []
-        for stream_def in catalog_streams:
+
+        for stream_def in stream_definitions:
             try:
-                # Extract stream information
-                stream_name = stream_def.get("stream")
-                stream_schema = stream_def.get("schema")
-
-                if not stream_name:
-                    logger.warning("Stream missing name, skipping")
-                    continue
-
-                # Create a dynamic stream instance
-                stream = FlextTapOracleWMSStream(
-                    tap=self,
-                    name=stream_name,
-                    schema=stream_schema,
-                )
-
-                # Set primary keys if available from metadata
-                metadata_list = stream_def.get("metadata", [])
-                for metadata in metadata_list:
-                    if metadata.get("breadcrumb") == []:
-                        table_metadata = metadata.get("metadata", {})
-                        pk_list = table_metadata.get("table-key-properties", [])
-                        if pk_list:
-                            # Set primary keys dynamically using setattr for class variables
-                            setattr(stream, 'primary_keys', pk_list)
-                        break
-
-                streams.append(stream)
-                logger.debug(f"Created dynamic stream: {stream_name}")
-
+                stream = self._create_single_stream(stream_def)
+                if stream is not None:
+                    streams.append(stream)
+                    logger.debug(f"Created dynamic stream: {stream.name}")
             except Exception as e:
                 logger.warning(f"Failed to create stream from catalog: {e}")
 
-        logger.info(f"Discovered {len(streams)} dynamic streams")
         return streams
+
+    def _create_single_stream(self, stream_def: dict[str, Any]) -> Stream | None:
+        """Create a single stream from definition.
+
+        Args:
+            stream_def: Stream definition dictionary
+
+        Returns:
+            Created Stream instance or None if invalid
+
+        """
+        # Extract stream information
+        stream_name = stream_def.get("stream")
+        stream_schema = stream_def.get("schema")
+
+        if not stream_name:
+            logger.warning("Stream missing name, skipping")
+            return None
+
+        # Create a dynamic stream instance
+        stream = FlextTapOracleWMSStream(
+            tap=self,
+            name=stream_name,
+            schema=stream_schema,
+        )
+
+        # Configure stream metadata
+        self._configure_stream_metadata(stream, stream_def)
+
+        return stream
+
+    def _configure_stream_metadata(self, stream: Stream, stream_def: dict[str, Any]) -> None:
+        """Configure stream metadata from definition.
+
+        Args:
+            stream: Stream instance to configure
+            stream_def: Stream definition dictionary
+
+        """
+        # Set primary keys if available from metadata
+        metadata_list = stream_def.get("metadata", [])
+        for metadata in metadata_list:
+            if metadata.get("breadcrumb") == []:
+                table_metadata = metadata.get("metadata", {})
+                pk_list = table_metadata.get("table-key-properties", [])
+                if pk_list:
+                    # Set primary keys dynamically using setattr for class variables
+                    stream.primary_keys = pk_list
+                break
 
     def execute(self, message: str | None = None) -> FlextResult[None]:
         """Execute tap in Singer mode.

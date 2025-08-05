@@ -3,14 +3,11 @@
 Tests against the actual Oracle WMS environment using real credentials.
 """
 
-import asyncio
 import os
 from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
-from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsClientConfig
-
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 
 # Load environment variables

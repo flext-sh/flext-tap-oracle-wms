@@ -4,15 +4,13 @@
 Shows how to use the tap with flext-oracle-wms integration.
 """
 
-import json
 import os
 import sys
-from pathlib import Path
 
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 
 
-def main():
+def main() -> int:
     """Run basic example."""
     # Configuration from environment or hardcoded
     config = FlextTapOracleWMSConfig(
@@ -32,43 +30,32 @@ def main():
     tap = FlextTapOracleWMS(config=config)
 
     # Example 1: Validate configuration
-    print("1. Validating configuration...")
     validation_result = tap.validate_configuration()
     if validation_result.is_success:
-        print(f"✓ Configuration valid: {validation_result.value}")
+        pass
     else:
-        print(f"✗ Configuration invalid: {validation_result.error}")
         return 1
 
     # Example 2: Discover catalog
-    print("\n2. Discovering catalog...")
     catalog_result = tap.discover_catalog()
     if catalog_result.is_success:
         catalog = catalog_result.value
-        print(f"✓ Discovered {len(catalog['streams'])} streams:")
         for stream in catalog["streams"]:
-            print(f"  - {stream['stream']}")
             if "schema" in stream and "properties" in stream["schema"]:
-                print(f"    Fields: {', '.join(stream['schema']['properties'].keys())}")
+                pass
     else:
-        print(f"✗ Discovery failed: {catalog_result.error}")
         return 1
 
     # Example 3: Discover available streams
-    print("\n3. Discovering available streams...")
     streams = tap.discover_streams()
-    print(f"✓ Found {len(streams)} streams:")
-    for stream in streams:
-        print(f"  - {stream.name} (PK: {stream.primary_keys}, RK: {stream.replication_key})")
+    for _stream in streams:
+        pass
 
     # Example 4: Get implementation info
-    print("\n4. Implementation information:")
-    print(f"  Name: {tap.get_implementation_name()}")
-    print(f"  Version: {tap.get_implementation_version()}")
 
     metrics_result = tap.get_implementation_metrics()
     if metrics_result.is_success:
-        print(f"  Metrics: {json.dumps(metrics_result.value, indent=2)}")
+        pass
 
     # Example 5: Extract data (commented out to avoid actual API calls)
     """
@@ -88,10 +75,6 @@ def main():
                 break
         print(f"Extracted {record_count} records from {stream.name}")
     """
-
-    print("\n✓ Example completed successfully!")
-    print("\nTo run the tap for real data extraction:")
-    print("  python -m flext_tap_oracle_wms | target-postgres --config postgres_config.json")
 
     return 0
 
