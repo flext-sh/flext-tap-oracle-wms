@@ -10,19 +10,19 @@ import pytest
 
 import flext_tap_oracle_wms.cli as cli_module
 from flext_tap_oracle_wms.cli import main
-from flext_tap_oracle_wms.tap import TapOracleWMS
+from flext_tap_oracle_wms.tap import FlextTapOracleWMS
 
 
 class TestCLI:
     """Test CLI functionality."""
 
-    @patch("flext_tap_oracle_wms.tap.TapOracleWMS.cli")
+    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
     def test_main_calls_tap_cli(self, mock_cli: Mock) -> None:
-        """Test that main() calls TapOracleWMS.cli()."""
+        """Test that main() calls FlextTapOracleWMS.cli()."""
         main()
         mock_cli.assert_called_once()
 
-    @patch("flext_tap_oracle_wms.tap.TapOracleWMS.cli")
+    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
     def test_main_function_exists(self, mock_cli: Mock) -> None:
         """Test that main function exists and is callable."""
         assert callable(main)
@@ -66,7 +66,7 @@ class TestCLI:
         # Verify main was called
         mock_main.assert_called_once()
 
-    @patch("flext_tap_oracle_wms.tap.TapOracleWMS.cli")
+    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
     def test_main_with_exception_handling(self, mock_cli: Mock) -> None:
         """Test main function handles exceptions properly."""
         # Configure mock to raise an exception
@@ -78,7 +78,7 @@ class TestCLI:
 
         mock_cli.assert_called_once()
 
-    @patch("flext_tap_oracle_wms.tap.TapOracleWMS.cli")
+    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
     def test_main_return_value(self, mock_cli: Mock) -> None:
         """Test main function return value."""
         mock_cli.return_value = None
@@ -88,10 +88,10 @@ class TestCLI:
 
     def test_module_imports(self) -> None:
         """Test that CLI module imports are correct."""
-        # Check that TapOracleWMS is imported
-        assert hasattr(cli_module, "TapOracleWMS")
+        # Check that FlextTapOracleWMS is imported
+        assert hasattr(cli_module, "FlextTapOracleWMS")
 
-        assert cli_module.TapOracleWMS is TapOracleWMS
+        assert cli_module.FlextTapOracleWMS is FlextTapOracleWMS
 
 
 if __name__ == "__main__":

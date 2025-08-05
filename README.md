@@ -63,7 +63,7 @@ This project is undergoing architectural refactoring to align with Singer SDK be
 
 **Development Metrics**:
 - **Current Architecture**: 26 Python files, 8,179 lines of code
-- **Target Architecture**: 6-8 Python files, ~800 lines of code  
+- **Target Architecture**: 6-8 Python files, ~800 lines of code
 - **Refactoring Goal**: 90% code reduction while maintaining all functionality
 - **Timeline**: Refactoring planned for completion in 6 weeks
 
@@ -165,7 +165,7 @@ This tap integrates with the following FLEXT ecosystem components:
 ```python
 from flext_core import get_logger, FlextResult
 from flext_oracle_wms import FlextOracleWmsClient
-from flext_tap_oracle_wms import TapOracleWMS
+from flext_tap_oracle_wms import FlextTapOracleWMS
 
 # Initialize tap with FLEXT patterns
 config = {
@@ -174,7 +174,7 @@ config = {
     # ... other config
 }
 
-tap = TapOracleWMS(config)
+tap = FlextTapOracleWMS(config)
 streams = tap.discover_streams()
 ```
 

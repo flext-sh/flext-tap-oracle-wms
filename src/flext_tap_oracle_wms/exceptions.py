@@ -1,327 +1,404 @@
-"""Oracle WMS tap exception hierarchy using flext-core patterns.
+"""Custom exceptions for FLEXT Tap Oracle WMS.
 
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-Domain-specific exceptions for Oracle WMS tap operations inheriting from flext-core.
+Follows FLEXT exception hierarchy patterns with specific Oracle WMS tap errors.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
-from flext_core.exceptions import (
-    FlextAuthenticationError,
-    FlextConfigurationError,
-    FlextConnectionError,
-    FlextError,
-    FlextProcessingError,
-    FlextTimeoutError,
-    FlextValidationError,
-)
-
-# =============================================================================
-# REFACTORING: DRY Principle - Centralized context building pattern
-# =============================================================================
+    from flext_core.flext_types import TAnyDict, TValue
 
 
-# SOLID REFACTORING: Advanced Template Method + Generic Factory to eliminate ALL __init__ duplication
-class OracleWmsExceptionFactory:
-    """Factory for Oracle WMS exceptions using Advanced Template Method Pattern.
+class FlextTapOracleWMSError(Exception):
+    """Base exception for Oracle WMS tap errors.
 
-    SOLID REFACTORING: Eliminates ALL 16 lines of duplicated __init__ code
-    across ALL exception classes using Advanced Factory + Generic Template Pattern.
+    All tap-specific exceptions inherit from this base class.
     """
 
-    @staticmethod
-    def build_context_and_message(
+    def __init__(
+        self,
         message: str,
-        error_prefix: str,
-        **specific_kwargs: object,
-    ) -> tuple[str, dict[str, object]]:
-        """Template Method: Build context and message for exception initialization.
-
-        SOLID REFACTORING: Replaces ALL 16 lines of duplicated __init__ code
-        in each exception class with a single method call.
+        error_code: str = "TAP_ERROR",
+        context: TAnyDict | None = None,
+    ) -> None:
+        """Initialize tap exception.
 
         Args:
             message: Error message
-            error_prefix: Prefix for the error message
-            **specific_kwargs: Context parameters specific to this exception
-
-        Returns:
-            Tuple of (formatted_message, filtered_context)
+            error_code: Error code for categorization
+            context: Additional error context
 
         """
-        # Template Method Pattern: Build context with None filtering (DRY)
-        context = {k: v for k, v in specific_kwargs.items() if v is not None}
-        formatted_message = f"{error_prefix}: {message}"
+        super().__init__(message)
+        self.message = message
+        self.error_code = error_code
+        self.context = context or {}
+        self.timestamp = datetime.now(UTC)
 
-        return formatted_message, context
+    def __str__(self) -> str:
+        """String representation of the error."""
+        return f"[{self.error_code}] {self.message}"
 
-    @staticmethod
-    def create_generic_exception_init(
-        error_prefix: str,
-        _parent_class: type,  # Underscore prefix to indicate unused
-    ) -> Callable[..., Any]:
-        """Generic Exception __init__ Generator using Template Method Pattern.
 
-        SOLID REFACTORING: Creates standardized __init__ methods to eliminate
-        ALL duplication across exception classes.
+class FlextTapOracleWMSConfigurationError(FlextTapOracleWMSError):
+    """Configuration-related errors."""
+
+    def __init__(
+        self,
+        message: str,
+        field: str | None = None,
+        value: TValue = None,
+        context: TAnyDict | None = None,
+    ) -> None:
+        """Initialize configuration error.
 
         Args:
-            error_prefix: Prefix for error messages
-            parent_class: Parent exception class for proper inheritance
+            message: Error message
+            field: Configuration field that caused the error
+            value: Invalid value
+            context: Additional context
 
         """
+        if field:
+            message = f"Configuration error in '{field}': {message}"
 
-        def generic_init(self: Any, message: str, **kwargs: object) -> None:
-            """Generic initialization using Factory Pattern."""
-            formatted_message, _context = (
-                OracleWmsExceptionFactory.build_context_and_message(
-                    message,
-                    error_prefix,
-                    **kwargs,
-                )
-            )
-            # Use parent_class for proper exception initialization
-            # NOTE: Using direct parent.__init__ call to avoid mypy issues
-            if hasattr(self, "__class__") and hasattr(self.__class__, "__bases__"):
-                for base in self.__class__.__bases__:
-                    if issubclass(base, Exception):
-                        base.__init__(self, formatted_message)
-                        break
+        super().__init__(
+            message=message,
+            error_code="CONFIG_ERROR",
+            context=context or {},
+        )
 
-        return generic_init
+        self.field = field
+        self.value = value
 
-
-def _build_exception_context(
-    kwargs: dict[str, object],
-    **additional_context: object,
-) -> dict[str, object]:
-    """Build exception context using DRY principle.
-
-    DEPRECATED: Use BaseOracleWmsExceptionFactory instead.
-    """
-    context = kwargs.copy()
-
-    # Add additional context fields with None filtering
-    for key, value in additional_context.items():
+        # Add to context
+        if field:
+            self.context["field"] = field
         if value is not None:
-            context[key] = value
-
-    return context
+            self.context["value"] = str(value)
 
 
-class FlextTapOracleWmsError(FlextError):
-    """Base exception for Oracle WMS tap operations."""
+class FlextTapOracleWMSConnectionError(FlextTapOracleWMSError):
+    """Connection-related errors."""
 
     def __init__(
         self,
-        message: str = "Oracle WMS tap error",
-        warehouse_name: str | None = None,
-        **kwargs: object,
+        message: str,
+        url: str | None = None,
+        status_code: int | None = None,
+        response_body: str | None = None,
+        context: TAnyDict | None = None,
     ) -> None:
-        """Initialize Oracle WMS tap error with context."""
-        context = kwargs.copy()
-        if warehouse_name is not None:
-            context["warehouse_name"] = warehouse_name
+        """Initialize connection error.
 
-        super().__init__(message, error_code="ORACLE_WMS_TAP_ERROR", context=context)
+        Args:
+            message: Error message
+            url: URL that failed
+            status_code: HTTP status code
+            response_body: Response body if available
+            context: Additional context
 
-
-class FlextTapOracleWmsConnectionError(FlextConnectionError):
-    """Oracle WMS tap connection errors."""
-
-    def __init__(
-        self,
-        message: str = "Oracle WMS tap connection failed",
-        **kwargs: object,
-    ) -> None:
-        """Initialize Oracle WMS tap connection error with context."""
-        # SOLID REFACTORING: Single-line initialization eliminates ALL duplication
-        formatted_message, context = (
-            OracleWmsExceptionFactory.build_context_and_message(
-                message,
-                "Oracle WMS tap connection",
-                **kwargs,
-            )
+        """
+        super().__init__(
+            message=message,
+            error_code="CONNECTION_ERROR",
+            context=context or {},
         )
-        super().__init__(formatted_message, context=context)
+
+        self.url = url
+        self.status_code = status_code
+        self.response_body = response_body
+
+        # Add to context
+        if url:
+            self.context["url"] = url
+        if status_code:
+            self.context["status_code"] = status_code
+        if response_body:
+            self.context["response_body"] = response_body[:500]  # Limit size
 
 
-class FlextTapOracleWmsAuthenticationError(FlextAuthenticationError):
-    """Oracle WMS tap authentication errors."""
-
-    def __init__(
-        self,
-        message: str = "Oracle WMS tap authentication failed",
-        **kwargs: object,
-    ) -> None:
-        """Initialize Oracle WMS tap authentication error with context."""
-        # SOLID REFACTORING: Single-line initialization eliminates ALL duplication
-        formatted_message, context = (
-            OracleWmsExceptionFactory.build_context_and_message(
-                message,
-                "Oracle WMS tap auth",
-                **kwargs,
-            )
-        )
-        super().__init__(formatted_message, context=context)
-
-
-class FlextTapOracleWmsValidationError(FlextValidationError):
-    """Oracle WMS tap validation errors."""
+class FlextTapOracleWMSAuthenticationError(FlextTapOracleWMSError):
+    """Authentication-related errors."""
 
     def __init__(
         self,
-        message: str = "Oracle WMS tap validation failed",
-        **kwargs: object,
+        message: str,
+        username: str | None = None,
+        auth_method: str = "basic",
+        context: TAnyDict | None = None,
     ) -> None:
-        """Initialize Oracle WMS tap validation error with context."""
-        # SOLID REFACTORING: Single-line initialization eliminates ALL duplication
-        formatted_message, context = (
-            OracleWmsExceptionFactory.build_context_and_message(
-                message,
-                "Oracle WMS tap validation",
-                **kwargs,
-            )
+        """Initialize authentication error.
+
+        Args:
+            message: Error message
+            username: Username that failed authentication
+            auth_method: Authentication method used
+            context: Additional context
+
+        """
+        super().__init__(
+            message=message,
+            error_code="AUTH_ERROR",
+            context=context or {},
         )
-        super().__init__(formatted_message, context=context)
+
+        self.username = username
+        self.auth_method = auth_method
+
+        # Add to context (don't log password)
+        if username:
+            self.context["username"] = username
+        self.context["auth_method"] = auth_method
 
 
-class FlextTapOracleWmsConfigurationError(FlextConfigurationError):
-    """Oracle WMS tap configuration errors."""
+class FlextTapOracleWMSDiscoveryError(FlextTapOracleWMSError):
+    """Schema discovery errors."""
 
     def __init__(
         self,
-        message: str = "Oracle WMS tap configuration error",
-        **kwargs: object,
+        message: str,
+        entity_name: str | None = None,
+        field_name: str | None = None,
+        sample_data: object = None,
+        context: TAnyDict | None = None,
     ) -> None:
-        """Initialize Oracle WMS tap configuration error with context."""
-        # SOLID REFACTORING: Single-line initialization eliminates ALL duplication
-        formatted_message, context = (
-            OracleWmsExceptionFactory.build_context_and_message(
-                message,
-                "Oracle WMS tap config",
-                **kwargs,
-            )
+        """Initialize discovery error.
+
+        Args:
+            message: Error message
+            entity_name: Entity being discovered
+            field_name: Field that caused the error
+            sample_data: Sample data that caused the error
+            context: Additional context
+
+        """
+        super().__init__(
+            message=message,
+            error_code="DISCOVERY_ERROR",
+            context=context or {},
         )
-        super().__init__(formatted_message, context=context)
+
+        self.entity_name = entity_name
+        self.field_name = field_name
+        self.sample_data = sample_data
+
+        # Add to context
+        if entity_name:
+            self.context["entity"] = entity_name
+        if field_name:
+            self.context["field"] = field_name
+        if sample_data is not None:
+            self.context["sample_data_type"] = type(sample_data).__name__
 
 
-class FlextTapOracleWmsProcessingError(FlextProcessingError):
-    """Oracle WMS tap processing errors."""
+class FlextTapOracleWMSStreamError(FlextTapOracleWMSError):
+    """Stream processing errors."""
 
     def __init__(
         self,
-        message: str = "Oracle WMS tap processing failed",
-        **kwargs: object,
+        message: str,
+        stream_name: str | None = None,
+        record_count: int | None = None,
+        last_record: TAnyDict | None = None,
+        context: TAnyDict | None = None,
     ) -> None:
-        """Initialize Oracle WMS tap processing error with context."""
-        # SOLID REFACTORING: Single-line initialization eliminates ALL duplication
-        formatted_message, context = (
-            OracleWmsExceptionFactory.build_context_and_message(
-                message,
-                "Oracle WMS tap processing",
-                **kwargs,
-            )
+        """Initialize stream error.
+
+        Args:
+            message: Error message
+            stream_name: Stream that failed
+            record_count: Number of records processed before failure
+            last_record: Last record processed
+            context: Additional context
+
+        """
+        super().__init__(
+            message=message,
+            error_code="STREAM_ERROR",
+            context=context or {},
         )
-        super().__init__(formatted_message, context=context)
+
+        self.stream_name = stream_name
+        self.record_count = record_count
+        self.last_record = last_record
+
+        # Add to context
+        if stream_name:
+            self.context["stream"] = stream_name
+        if record_count is not None:
+            self.context["records_processed"] = record_count
+        if last_record:
+            # Only include record ID if available
+            for id_field in ["id", "Id", "ID", "_id"]:
+                if id_field in last_record:
+                    self.context["last_record_id"] = last_record[id_field]
+                    break
 
 
-class FlextTapOracleWmsInventoryError(FlextTapOracleWmsError):
-    """Oracle WMS tap inventory-specific errors."""
+class FlextTapOracleWMSPaginationError(FlextTapOracleWMSError):
+    """Pagination-related errors."""
 
     def __init__(
         self,
-        message: str = "Oracle WMS tap inventory error",
-        **kwargs: object,
+        message: str,
+        stream_name: str | None = None,
+        page_number: int | None = None,
+        next_url: str | None = None,
+        context: TAnyDict | None = None,
     ) -> None:
-        """Initialize Oracle WMS tap inventory error with context."""
-        # SOLID REFACTORING: Single-line initialization eliminates ALL duplication
-        formatted_message, context = (
-            OracleWmsExceptionFactory.build_context_and_message(
-                message,
-                "Oracle WMS tap inventory",
-                **kwargs,
-            )
+        """Initialize pagination error.
+
+        Args:
+            message: Error message
+            stream_name: Stream being paginated
+            page_number: Current page number
+            next_url: Next page URL if available
+            context: Additional context
+
+        """
+        super().__init__(
+            message=message,
+            error_code="PAGINATION_ERROR",
+            context=context or {},
         )
-        super().__init__(formatted_message, context=context)
+
+        self.stream_name = stream_name
+        self.page_number = page_number
+        self.next_url = next_url
+
+        # Add to context
+        if stream_name:
+            self.context["stream"] = stream_name
+        if page_number is not None:
+            self.context["page"] = page_number
+        if next_url:
+            self.context["next_url"] = next_url
 
 
-class FlextTapOracleWmsShipmentError(FlextTapOracleWmsError):
-    """Oracle WMS tap shipment-specific errors."""
+class FlextTapOracleWMSRateLimitError(FlextTapOracleWMSError):
+    """Rate limiting errors."""
 
     def __init__(
         self,
-        message: str = "Oracle WMS tap shipment error",
-        **kwargs: object,
+        message: str,
+        retry_after: int | None = None,
+        requests_made: int | None = None,
+        limit: int | None = None,
+        context: TAnyDict | None = None,
     ) -> None:
-        """Initialize Oracle WMS tap shipment error with context."""
-        # SOLID REFACTORING: Single-line initialization eliminates ALL duplication
-        formatted_message, context = (
-            OracleWmsExceptionFactory.build_context_and_message(
-                message,
-                "Oracle WMS tap shipment",
-                **kwargs,
-            )
+        """Initialize rate limit error.
+
+        Args:
+            message: Error message
+            retry_after: Seconds to wait before retry
+            requests_made: Number of requests made
+            limit: Rate limit threshold
+            context: Additional context
+
+        """
+        super().__init__(
+            message=message,
+            error_code="RATE_LIMIT_ERROR",
+            context=context or {},
         )
-        super().__init__(formatted_message, context=context)
+
+        self.retry_after = retry_after
+        self.requests_made = requests_made
+        self.limit = limit
+
+        # Add to context
+        if retry_after is not None:
+            self.context["retry_after_seconds"] = retry_after
+        if requests_made is not None:
+            self.context["requests_made"] = requests_made
+        if limit is not None:
+            self.context["rate_limit"] = limit
 
 
-class FlextTapOracleWmsTimeoutError(FlextTimeoutError):
-    """Oracle WMS tap timeout errors."""
+class FlextTapOracleWMSDataValidationError(FlextTapOracleWMSError):
+    """Data validation errors."""
 
     def __init__(
         self,
-        message: str = "Oracle WMS tap operation timed out",
-        **kwargs: object,
+        message: str,
+        stream_name: str | None = None,
+        field_name: str | None = None,
+        expected_type: str | None = None,
+        actual_value: object = None,
+        context: TAnyDict | None = None,
     ) -> None:
-        """Initialize Oracle WMS tap timeout error with context."""
-        # SOLID REFACTORING: Single-line initialization eliminates ALL duplication
-        formatted_message, context = (
-            OracleWmsExceptionFactory.build_context_and_message(
-                message,
-                "Oracle WMS tap timeout",
-                **kwargs,
-            )
+        """Initialize data validation error.
+
+        Args:
+            message: Error message
+            stream_name: Stream with validation error
+            field_name: Field that failed validation
+            expected_type: Expected data type
+            actual_value: Actual value received
+            context: Additional context
+
+        """
+        super().__init__(
+            message=message,
+            error_code="VALIDATION_ERROR",
+            context=context or {},
         )
-        super().__init__(formatted_message, context=context)
+
+        self.stream_name = stream_name
+        self.field_name = field_name
+        self.expected_type = expected_type
+        self.actual_value = actual_value
+
+        # Add to context
+        if stream_name:
+            self.context["stream"] = stream_name
+        if field_name:
+            self.context["field"] = field_name
+        if expected_type:
+            self.context["expected_type"] = expected_type
+        if actual_value is not None:
+            self.context["actual_type"] = type(actual_value).__name__
+            # Only include value if it's safe to log
+            if isinstance(actual_value, (str, int, float, bool)):
+                self.context["actual_value"] = str(actual_value)[:100]
 
 
-class FlextTapOracleWmsStreamError(FlextTapOracleWmsError):
-    """Oracle WMS tap stream processing errors."""
+class FlextTapOracleWMSRetryableError(FlextTapOracleWMSError):
+    """Base class for retryable errors."""
 
     def __init__(
         self,
-        message: str = "Oracle WMS tap stream error",
-        **kwargs: object,
+        message: str,
+        error_code: str = "RETRYABLE_ERROR",
+        retry_count: int = 0,
+        max_retries: int | None = None,
+        context: TAnyDict | None = None,
     ) -> None:
-        """Initialize Oracle WMS tap stream error with context."""
-        # SOLID REFACTORING: Single-line initialization eliminates ALL duplication
-        formatted_message, context = (
-            OracleWmsExceptionFactory.build_context_and_message(
-                message,
-                "Oracle WMS tap stream",
-                **kwargs,
-            )
+        """Initialize retryable error.
+
+        Args:
+            message: Error message
+            error_code: Specific error code
+            retry_count: Current retry attempt
+            max_retries: Maximum retries allowed
+            context: Additional context
+
+        """
+        super().__init__(
+            message=message,
+            error_code=error_code,
+            context=context or {},
         )
-        super().__init__(formatted_message, context=context)
 
+        self.retry_count = retry_count
+        self.max_retries = max_retries
 
-__all__: list[str] = [
-    "FlextTapOracleWmsAuthenticationError",
-    "FlextTapOracleWmsConfigurationError",
-    "FlextTapOracleWmsConnectionError",
-    "FlextTapOracleWmsError",
-    "FlextTapOracleWmsInventoryError",
-    "FlextTapOracleWmsProcessingError",
-    "FlextTapOracleWmsShipmentError",
-    "FlextTapOracleWmsStreamError",
-    "FlextTapOracleWmsTimeoutError",
-    "FlextTapOracleWmsValidationError",
-]
+        # Add to context
+        self.context["retry_count"] = retry_count
+        if max_retries is not None:
+            self.context["max_retries"] = max_retries
+            self.context["retries_remaining"] = max_retries - retry_count

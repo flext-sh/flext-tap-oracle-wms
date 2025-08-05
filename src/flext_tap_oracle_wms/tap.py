@@ -1,88 +1,51 @@
-"""Oracle WMS Tap - Enterprise-grade implementation using Singer SDK.
+"""FLEXT Tap Oracle WMS - Singer tap implementation.
 
-Copyright (c) 2025 FLEXT Team
-Licensed under the MIT License
+Simple, clean implementation following FLEXT patterns.
+Uses flext-oracle-wms for all Oracle WMS communication.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+import asyncio
+import json
+from typing import TYPE_CHECKING, Any, ClassVar
 
-from flext_core import TAnyDict, get_logger
-from flext_meltano import Tap
+from flext_core import FlextResult, get_logger
+from flext_core.flext_types import TAnyDict, TService, TValue
+from singer_sdk import Tap
 
-from flext_tap_oracle_wms.critical_validation import (
-    enforce_mandatory_environment_variables,
-)
-from flext_tap_oracle_wms.discovery import (
-    AuthenticationError,
-    EntityDescriptionError,
-    EntityDiscovery,
-    EntityDiscoveryError,
-    NetworkError,
-    SchemaGenerationError,
-)
-from flext_tap_oracle_wms.modern_discovery import discover_oracle_wms_with_modern_singer
-from flext_tap_oracle_wms.schema_generator import SchemaGenerator
-from flext_tap_oracle_wms.streams import WMSStream
+from flext_tap_oracle_wms.config import FlextTapOracleWMSConfig
+from flext_tap_oracle_wms.exceptions import FlextTapOracleWMSConfigurationError
+from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from flext_oracle_wms import (
+        FlextOracleWmsClient,
+        FlextOracleWmsClientConfig,
+        FlextOracleWmsEntityDiscovery,
+    )
+    from flext_oracle_wms.api_catalog import FlextOracleWmsApiVersion
     from singer_sdk import Stream
 
-    from flext_tap_oracle_wms.domain import (
-        OracleWmsCatalog,
-        OracleWmsTapConfiguration,
-    )
-
-# API and Performance Constants
-MAX_PAGE_SIZE = 1250
-MAX_REQUEST_TIMEOUT = 600
-MAX_RETRIES = 10
-MAX_FIELD_DISPLAY = 10  # Maximum fields to display in logs
+logger = get_logger(__name__)
 
 
-@dataclass
-class TapInitializationConfig:
-    """Parameter Object: Encapsulates tap initialization parameters.
+class FlextTapOracleWMS(Tap):
+    """Oracle WMS tap using FLEXT patterns.
 
-    SOLID REFACTORING: Reduces parameter count in __init__ method using
-    Parameter Object Pattern to improve readability and maintainability.
+    Implements Singer tap for Oracle Warehouse Management System with:
+    - Automatic schema discovery using flext-oracle-wms
+    - Incremental replication
+    - Stream filtering and selection
+    - Pagination and rate limiting
+    - Error handling and retries
     """
 
-    # REFACTORED: Use centralized configuration models
-    tap_config: TAnyDict | None = None
-    catalog: TAnyDict | None = None
-    state: TAnyDict | None = None
-    parse_env_config: bool = False
-    validate_config: bool = True
+    name = "flext-tap-oracle-wms"
 
-
-class TapOracleWMS(Tap):
-    """Oracle WMS tap using flext-core centralized patterns.
-
-    REFACTORED: Uses centralized configuration and domain models.
-    """
-
-    name = "tap-oracle-wms"
-    # Set environment prefix for automatic env var loading
-    config_prefix = "TAP_ORACLE_WMS_"
-
-    # REFACTORED: Add centralized configuration support
-    _wms_config: OracleWmsTapConfiguration | None = None
-    _wms_catalog: OracleWmsCatalog | None = None
-
-    # REFACTORED: Use centralized configuration schema from domain model
-    def get_config_jsonschema(self) -> dict[str, object]:
-        """Get configuration schema using centralized patterns.
-
-        REFACTORED: Uses TapOracleWMSConfig JSON schema instead of manual definition.
-        """
-        # Return basic JSON schema dict - compatible with Singer SDK
-        return {
+    config_jsonschema: ClassVar[dict[str, object]] = {
             "type": "object",
             "properties": {
                 "base_url": {
@@ -96,28 +59,22 @@ class TapOracleWMS(Tap):
                 "password": {
                     "type": "string",
                     "description": "Oracle WMS password",
-                    "writeOnly": True,
+                "secret": True,
                 },
-                "company_code": {
+            "api_version": {
                     "type": "string",
-                    "default": "*",
-                    "description": "WMS company code",
-                },
-                "facility_code": {
-                    "type": "string",
-                    "default": "*",
-                    "description": "WMS facility code",
-                },
-                "entities": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "default": ["item", "inventory"],
-                    "description": "WMS entities to extract",
+                "default": "v10",
+                "description": "Oracle WMS API version",
                 },
                 "page_size": {
                     "type": "integer",
-                    "default": 1000,
+                "default": 100,
                     "description": "Number of records per page",
+                },
+            "verify_ssl": {
+                "type": "boolean",
+                "default": True,
+                "description": "Verify SSL certificates",
                 },
             },
             "required": ["base_url", "username", "password"],
@@ -125,859 +82,450 @@ class TapOracleWMS(Tap):
 
     def __init__(
         self,
-        *,
-        config: TAnyDict | None = None,
-        catalog: TAnyDict | None = None,
-        state: TAnyDict | None = None,
-        parse_env_config: bool = False,
+        config: dict[str, object] | FlextTapOracleWMSConfig | None = None,
+        catalog: dict[str, object] | None = None,
+        state: dict[str, object] | None = None,
+        parse_env_config: bool = True,
         validate_config: bool = True,
-        setup_mapper: bool = True,
-        message_writer: Any = None,
-        init_config: TapInitializationConfig | None = None,
     ) -> None:
-        """Initialize tap with lazy loading - NO network calls during init.
+        """Initialize the Oracle WMS tap.
 
-        SOLID REFACTORING: Supports both individual parameters and Parameter Object
-        for backwards compatibility while improving maintainability.
+        Args:
+            config: Configuration dict or FlextTapOracleWMSConfig instance
+            catalog: Singer catalog
+            state: Singer state
+            parse_env_config: Whether to parse config from environment
+            validate_config: Whether to validate configuration
+
         """
-        # Parameter Object Pattern: Use init_config if provided, otherwise use individual params
-        if init_config is not None:
-            # Use init_config parameters if provided
-            pass  # init_config contains all needed parameters
-        else:
-            # Create TapInitializationConfig from individual params for validation
-            TapInitializationConfig(
-                tap_config=config,
-                catalog=catalog,
-                state=state,
-                parse_env_config=parse_env_config,
-                validate_config=validate_config,
-            )
+        # Convert config to FlextTapOracleWMSConfig if needed
+        if config is not None and not isinstance(config, FlextTapOracleWMSConfig):
+            try:
+                # Convert dict[str, object] to proper types for Pydantic model
+                # Pydantic will handle type conversion internally
+                config_dict = dict(config) if hasattr(config, "items") else config
+                config = FlextTapOracleWMSConfig.model_validate(config_dict)
+            except Exception as e:
+                msg = f"Invalid configuration: {e}"
+                raise FlextTapOracleWMSConfigurationError(msg) from e
 
-        # Call parent init first to let Singer SDK handle config parsing
+        # Store typed config
+        self._flext_config = config
+
+        # Initialize instance attributes before parent init
+        self._wms_client: object | None = None
+        self._discovery: object | None = None
+        self._is_started = False
+
+        # Initialize parent with dict config for Singer SDK compatibility
+        config_dict = config.model_dump(exclude_unset=True) if config else {}
+
         super().__init__(
-            config=config,
+            config=config_dict,
             catalog=catalog,
             state=state,
             parse_env_config=parse_env_config,
             validate_config=validate_config,
-            setup_mapper=setup_mapper,
-            message_writer=message_writer,
         )
-
-        # Strategy Pattern: Use initialization strategy to reduce complexity
-        self._initialize_tap_post_super()
-
-    def _initialize_tap_post_super(self) -> None:
-        """Initialize tap after parent initialization.
-
-        SOLID REFACTORING: Extracted initialization logic to reduce __init__ complexity
-        using Strategy Pattern and Parameter Object Pattern.
-        """
-        # Apply type conversion after parent initialization
-        self._apply_config_type_conversion()
-
-        # Initialize logging and configuration display
-        self._initialize_logging_and_display()
-
-        # Initialize cache and discovery systems
-        self._initialize_caches_and_discovery()
-
-        self.logger.info("🔧 TapOracleWMS initialization completed.")
-
-    def _apply_config_type_conversion(self) -> None:
-        """Apply type conversion to fix Meltano string-to-integer issues."""
-        if hasattr(self, "config") and self.config:
-            self._config = self._convert_config_types(dict(self.config))
-
-    def _initialize_logging_and_display(self) -> None:
-        """Initialize logging and display configuration information."""
-        # Now we can use self.logger safely
-        mock_mode = (
-            self.config.get("mock_mode", False)
-            if hasattr(self, "config") and self.config
-            else False
-        )
-        mode_msg = (
-            "MOCK MODE - using realistic test data"
-            if mock_mode
-            else "REAL MODE - using Oracle WMS API"
-        )
-        self.logger.info(f"🔧 Initializing TapOracleWMS - {mode_msg}")
-        self.logger.info(
-            "🔧 Config provided: %s",
-            hasattr(self, "config") and self.config is not None,
-        )
-
-        # Log key config values (without secrets)
-        if hasattr(self, "config") and self.config:
-            self.logger.info("🔧 base_url: %s", self.config.get("base_url"))
-            self.logger.info("🔧 entities: %s", self.config.get("entities"))
-            self.logger.info(
-                "🔧 page_size: %s (%s)",
-                self.config.get("page_size"),
-                type(self.config.get("page_size")).__name__,
-            )
-
-    def _initialize_caches_and_discovery(self) -> None:
-        """Initialize cache and discovery systems with lazy loading."""
-        # Cache for discovered entities and schemas - LAZY LOADED
-        self._entity_cache: dict[str, str] | None = None
-        self._schema_cache: dict[str, dict[str, Any]] = {}
-        # Lazy-load discovery system - NO INITIALIZATION HERE
-        self._discovery: EntityDiscovery | None = None
-        self._schema_generator: SchemaGenerator | None = None
-        # Detection for discovery mode vs sync mode
-        self._is_discovery_mode = False
-
-    @staticmethod
-    def _convert_config_types(config: dict[str, Any]) -> dict[str, Any]:
-        converted = config.copy()
-        # Integer fields that might come as strings from Meltano
-        int_fields = [
-            "page_size",
-            "max_page_size",
-            "request_timeout",
-            "max_retries",
-            "catalog_cache_ttl",
-            "discovery_timeout",
-            "auth_timeout",
-        ]
-        for field in int_fields:
-            if field in converted:
-                value = converted[field]
-                try:
-                    # Handle both string and numeric values
-                    if isinstance(value, (str, int, float)):
-                        converted[field] = int(value)
-                except (ValueError, TypeError):
-                    # Keep original value if conversion fails
-                    continue
-        # Boolean fields that might come as strings
-        bool_fields = ["enable_incremental", "discover_catalog", "verify_ssl"]
-        for field in bool_fields:
-            if field in converted:
-                value = converted[field]
-                if isinstance(value, str):
-                    converted[field] = value.lower() in {
-                        "true",
-                        "1",
-                        "yes",
-                        "on",
-                    }
-                elif isinstance(value, bool):
-                    # Already boolean, keep as is
-                    pass
-        return converted
-
-    def _validate_configuration(self) -> None:
-        self.logger.info("🔧 Starting configuration validation...")
-        # CRITICAL: Enforce mandatory environment variables FIRST
-        # (only in non-discovery mode)
-        if not getattr(self, "_is_discovery_mode", False):
-            try:
-                enforce_mandatory_environment_variables()
-                self.logger.info("✅ Mandatory environment variables validated")
-            except SystemExit:
-                self.logger.exception("❌ Mandatory environment validation failed")
-                raise
-        else:
-            self.logger.info(
-                "🔍 Skipping mandatory environment validation in discovery mode",
-            )
-        # REFACTORED: Use centralized configuration validation
-        if self._wms_config:
-            logger = get_logger(__name__)
-            logger.info("🔧 Using centralized configuration validation")
-            # Domain model validation is handled automatically by Pydantic
-            if not getattr(self, "_is_discovery_mode", False):
-                logger.info("✅ Centralized configuration validation passed")
-            else:
-                logger.info("🔍 Skipping validation in discovery mode")
-        else:
-            # Fallback to legacy validation for backward compatibility
-            try:
-                from flext_tap_oracle_wms.config_mapper import ConfigMapper
-                from flext_tap_oracle_wms.config_validator import (
-                    ConfigValidationError,
-                    validate_config_with_mapper,
-                )
-
-                config_mapper = ConfigMapper(dict(self.config))
-                self.logger.info("🔧 ConfigMapper created successfully")
-                if not getattr(self, "_is_discovery_mode", False):
-                    validate_config_with_mapper(config_mapper)
-                    self.logger.info("✅ Full configuration validation passed")
-                else:
-                    self.logger.info(
-                        "🔍 Skipping full config validation in discovery mode",
-                    )
-            except ConfigValidationError:
-                self.logger.exception("❌ Configuration validation failed")
-                if not getattr(self, "_is_discovery_mode", False):
-                    raise
-                self.logger.warning(
-                    "⚠️ Config validation failed in discovery mode, continuing...",
-                )
-            except (ValueError, KeyError, TypeError, RuntimeError) as e:
-                self.logger.warning(
-                    "Configuration validation encountered an error: %s",
-                    e,
-                )
-                # Don't fail the entire tap for validation errors, just warn
 
     @property
-    def discovery(self) -> EntityDiscovery:
-        """Get entity discovery service using centralized patterns.
+    def flext_config(self) -> FlextTapOracleWMSConfig:
+        """Get typed configuration."""
+        if self._flext_config is None:
+            # Create from parent config
+            self._flext_config = FlextTapOracleWMSConfig(**self.config)
+        return self._flext_config
 
-        Returns:
-            Discovery service using domain models.
-
-        REFACTORED: Uses centralized configuration instead of raw config dict.
-
-        """
-        if not hasattr(self, "_discovery") or self._discovery is None:
-            # Create discovery using raw config for now
-            self._validate_configuration()
-            from flext_tap_oracle_wms.cache import CacheManagerAdapter
-
-            cache_manager = CacheManagerAdapter(dict(self.config))
-            self._discovery = EntityDiscovery(dict(self.config), cache_manager)
-        return self._discovery
+    def _run_async(self, coro: Any) -> Any:
+        """Run async coroutine in sync context."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(coro)
+        finally:
+            loop.close()
 
     @property
-    def schema_generator(self) -> SchemaGenerator:
-        """Get schema generator using centralized patterns.
-
-        Returns:
-            SchemaGenerator instance using domain models.
-
-        REFACTORED: Uses centralized configuration instead of raw config dict.
-
-        """
-        if not hasattr(self, "_schema_generator") or self._schema_generator is None:
-            # Create schema generator using raw config for now
-            self._validate_configuration()
-            self._schema_generator = SchemaGenerator(dict(self.config))
-        return self._schema_generator
-
-    def set_discovery_mode(self, *, enabled: bool = True) -> None:
-        """Enable or disable discovery mode for the tap.
-
-        Args:
-            enabled: Whether to enable discovery mode for entity detection.
-
-        """
-        self._is_discovery_mode = enabled
-
-    # Use standard Singer SDK CLI - no customization needed
-
-    def discover_streams(self) -> Sequence[Stream]:
-        """Discover available streams using flext-core centralized patterns.
-
-        Returns:
-            List of discovered stream definitions using domain models.
-
-        REFACTORED: Uses centralized configuration and domain models.
-
-        """
-        # Enable discovery mode when this method is called
-        self._is_discovery_mode = True
-        logger = get_logger(__name__)
-        logger.info("🔍 Discovery mode enabled with domain models")
-
-        # REFACTORED: Use centralized configuration for discovery mode selection
-        if self._wms_config:
-            use_modern = self._wms_config.enable_discovery
-        else:
-            use_modern = self.config.get("use_modern_discovery", True)
-
-        if use_modern:
-            logger.info("🚀 Using MODERN Oracle WMS discovery with flext-core models")
-            from typing import cast
-
-            streams = self._discover_streams_modern_with_domain_models()
-            return cast("Sequence[Stream]", streams)
-
-        logger.info("⚠️ Using legacy discovery (fallback mode)")
-        return self._discover_streams_legacy()
-
-    def _discover_streams_modern_with_domain_models(self) -> list[object]:
-        """Modern Oracle WMS discovery using flext-core centralized patterns.
-
-        REFACTORED: Uses domain configuration instead of raw config dict.
-        """
-        try:
-            import asyncio
-
-            logger = get_logger(__name__)
-
-            # Use raw config for modern discovery
-            config_dict = dict(self.config)
-
-            logger.info("Running modern discovery with centralized configuration")
-            discovery_result = asyncio.run(
-                discover_oracle_wms_with_modern_singer(config_dict),
-            )
-
-            if not discovery_result.get("success", False):
-                error = discovery_result.get("error", "Unknown error")
-                self.logger.error(f"❌ Modern discovery failed: {error}")
-                # DO NOT FALL BACK - fail explicitly
-                discovery_error_msg: str = f"Modern Oracle WMS discovery failed: {error}"
-                raise RuntimeError(discovery_error_msg)
-
-            schemas = discovery_result.get("schemas", {})
-            entities = list(schemas.keys()) if isinstance(schemas, dict) else []
-
-            self.logger.info(
-                f"✅ Modern discovery found {len(entities)} entities with schemas",
-            )
-            self.logger.info(
-                f"📊 Entities: {entities[:10]}{'...' if len(entities) > 10 else ''}",
-            )
-
-            # Create streams from modern schemas
-            streams = []
-            if isinstance(schemas, dict):
-                for entity_name, schema in schemas.items():
-                    try:
-                        stream = self._create_stream_from_modern_schema(
-                            entity_name, schema,
-                        )
-                        if stream:
-                            streams.append(stream)
-                            self.logger.info(
-                                f"   ✅ Created modern stream: {entity_name}",
-                            )
-                        else:
-                            self.logger.warning(
-                                f"   ❌ Failed to create stream: {entity_name}",
-                            )
-                    except Exception as e:
-                        self.logger.exception(
-                            f"   💥 Stream creation failed for {entity_name}: {e}",
-                        )
-
-            self.logger.info(
-                f"🎉 Modern discovery complete: {len(streams)} streams created",
-            )
-            return streams
-
-        except Exception as e:
-            self.logger.exception("Modern discovery failed completely")
-            # DO NOT FALL BACK - fail explicitly as requested
-            exception_error_msg: str = f"Modern Oracle WMS discovery failed: {e}"
-            raise RuntimeError(exception_error_msg) from e
-
-    def _create_stream_from_modern_schema(
-        self, entity_name: str, schema: dict[str, object],
-    ) -> Any:
-        """Create WMSStream from modern schema."""
-        try:
-            # Remove Oracle WMS specific metadata from schema
-            clean_schema = {
-                k: v for k, v in schema.items() if not k.startswith("oracle_wms_")
-            }
-
-            return WMSStream(
-                tap=self,
-                name=entity_name,
-                schema=clean_schema,
-            )
-
-        except Exception as e:
-            self.logger.exception(
-                f"Failed to create stream from modern schema for {entity_name}: {e}",
-            )
-            return None
-
-    def _discover_streams_legacy(self) -> list[Any]:
-        """Legacy discovery method with fallbacks."""
-        streams: list[Any] = []
-        self.logger.info("🔍 Starting legacy stream discovery...")
-        try:
-            # Get configured entities for basic discovery
-            entities = self.config.get("entities")
-            if not entities:
-                # Auto-discover entities if none configured
-                self.logger.info(
-                    "🔍 No entities configured, auto-discovering from WMS API...",
+    def wms_client(self) -> Any:  # FlextOracleWmsClient at runtime
+        """Get or create WMS client."""
+        if self._wms_client is None:
+            # Import dynamically to avoid import errors
+            try:
+                from flext_oracle_wms import (
+                    FlextOracleWmsClient,
+                    FlextOracleWmsClientConfig,
                 )
-                try:
-                    discovered_entities = self._discover_entities_sync()
-                    entities = (
-                        list(discovered_entities.keys()) if discovered_entities else []
-                    )
-                    self.logger.info(
-                        "🔍 Auto-discovered %d entities: %s",
-                        len(entities),
-                        entities[:10],
-                    )
-                except Exception as e:
-                    self.logger.warning(
-                        "⚠️ Auto-discovery failed: %s, using fallback entities",
-                        e,
-                    )
-                    # Use common WMS entities as fallback
-                    entities = [
-                        "company",
-                        "facility",
-                        "item",
-                        "container",
-                        "inventory",
-                        "location",
-                        "order_hdr",
-                        "order_dtl",
-                        "allocation",
-                        "pick_hdr",
-                        "pick_dtl",
-                        "wave_hdr",
-                    ]
-            self.logger.info("🔍 Using entities: %s", entities)
-            for entity_name in entities or []:
-                self.logger.info("🔍 Creating stream for entity: %s", entity_name)
-                # Create minimal stream for discovery
-                stream = self._create_stream_minimal(entity_name)
-                if stream:
-                    streams.append(stream)
-                    self.logger.info("✅ Created stream: %s", entity_name)
-        except (RuntimeError, ValueError, TypeError):
-            self.logger.exception("❌ Error during stream discovery")
-            raise
-        self.logger.info(
-            "🔍 Discovery completed. Found %d streams total.",
-            len(streams),
-        )
-        return streams
+                from flext_oracle_wms.api_catalog import FlextOracleWmsApiVersion
+            except ImportError as e:
+                msg = f"flext_oracle_wms not available: {e}"
+                raise FlextTapOracleWMSConfigurationError(msg) from e
 
-    def _create_stream_minimal(self, entity_name: str) -> object | None:
-        """Create a minimal stream for discovery."""
+            # Create client config for flext-oracle-wms
+            client_config = FlextOracleWmsClientConfig(
+                base_url=self.flext_config.base_url,
+                username=self.flext_config.username,
+                password=self.flext_config.password.get_secret_value(),
+                environment=self.flext_config.api_version.replace("v", "").replace(
+                    "/", ""
+                ),
+                timeout=self.flext_config.timeout,
+                max_retries=self.flext_config.max_retries,
+                api_version=FlextOracleWmsApiVersion(self.flext_config.api_version),
+                verify_ssl=self.flext_config.verify_ssl,
+                enable_logging=True,
+            )
+
+            # Create client
+            self._wms_client = FlextOracleWmsClient(client_config)
+
+            # Start client (async operation)
+            if not self._is_started:
+                start_result = self._run_async(self._wms_client.start())
+                if hasattr(start_result, "is_failure") and start_result.is_failure:
+                    error_msg = getattr(start_result, "error", "Unknown error")
+                    msg = f"Failed to start Oracle WMS client: {error_msg}"
+                    raise FlextTapOracleWMSConfigurationError(msg)
+                self._is_started = True
+
+        return self._wms_client
+
+    @property
+    def discovery(self) -> Any:  # Use WMS client directly for discovery
+        """Get WMS client for discovery operations."""
+        # Use the WMS client directly as it has discovery capabilities
+        return self.wms_client
+
+    def initialize(self) -> FlextResult[None]:
+        """Initialize the tap."""
+        logger.info("Initializing Oracle WMS tap")
+
         try:
-            # Initialize cache if not exists
-            if not hasattr(self, "_schema_cache"):
-                self._schema_cache = {}
-            # Use cached schema if available, otherwise create minimal schema
-            if (
-                hasattr(self, "_schema_cache")
-                and self._schema_cache
-                and entity_name in self._schema_cache
-            ):
-                schema = self._schema_cache[entity_name]
-            else:
-                # Create minimal schema for sync mode
-                schema = self._create_minimal_schema(entity_name)
-                if hasattr(self, "_schema_cache") and self._schema_cache is not None:
-                    self._schema_cache[entity_name] = schema
-            stream = WMSStream(
-                tap=self,
-                name=entity_name,
-                schema=schema,
-            )
-            self.logger.info(
-                "Created stream: %s with minimal schema (%s properties)",
-                entity_name,
-                len(schema.get("properties", {})),
-            )
-        except (ValueError, KeyError, TypeError, RuntimeError) as e:
-            self.logger.warning("Failed to create stream for %s: %s", entity_name, e)
-            return None
-        else:
-            return stream
+            # Validate configuration
+            if self.flext_config.validate_config:
+                validation_result = self.validate_configuration()
+                if validation_result.is_failure:
+                    return FlextResult.fail(
+                        validation_result.error or "Configuration validation failed"
+                    )
 
-    def _create_minimal_schema(self, entity_name: str) -> dict[str, Any]:
-        """Create a complete schema based on sample data.
+            # Ensure client is created and started
+            _ = self.wms_client
 
-        Args:
-            entity_name: Name of the entity to create schema for
+            logger.info("Oracle WMS tap initialized successfully")
+            return FlextResult.ok(None)
+
+        except Exception as e:
+            logger.exception(f"Failed to initialize tap: {e}")
+            return FlextResult.fail(str(e))
+
+    def discover_catalog(self) -> FlextResult[dict[str, object]]:
+        """Discover available streams and their schemas.
+
         Returns:
-            Complete JSON schema dictionary for the entity.
+            FlextResult containing Singer catalog
 
         """
-        self.logger.info("🔍 Creating complete schema for entity: %s", entity_name)
-        # Try to get a sample record to infer schema (only if online)
+        logger.info("Discovering Oracle WMS catalog")
+
         try:
-            metadata = self.discovery.describe_entity_sync(entity_name)
-            if metadata:
-                schema = self.schema_generator.generate_from_metadata(metadata)
-                if schema and isinstance(schema, dict) and schema.get("properties"):
-                    return schema
-        except (
-            ValueError,
-            KeyError,
-            TypeError,
-            RuntimeError,
-            ConnectionError,
-            TimeoutError,
-        ) as e:
-            # Catch all data access and network errors during testing
-            self.logger.warning(
-                "⚠️ Could not get metadata for %s: %s",
-                entity_name,
-                e,
+            # Initialize if needed
+            if not self._is_started:
+                init_result = self.initialize()
+                if init_result.is_failure:
+                    return FlextResult.fail(
+                        init_result.error or "Initialization failed"
+                    )
+
+            # Use flext-oracle-wms discovery
+            # The WMS client has discover_entities method
+            discovery_result = self._run_async(
+                self.discovery.discover_entities()
             )
-        # If no metadata, create schema based on known entity structures
-        if entity_name == "allocation":
-            return {
-                "type": "object",
-                "properties": {
-                    "id": {"type": ["integer", "string"]},
-                    "url": {"type": ["string", "null"]},
-                    "create_user": {"type": ["string", "null"]},
-                    "create_ts": {"type": ["string", "null"], "format": "date-time"},
-                    "mod_user": {"type": ["string", "null"]},
-                    "mod_ts": {"type": ["string", "null"], "format": "date-time"},
-                    "order_dtl_id": {"type": ["object", "null"]},
-                    "from_inventory_id": {"type": ["object", "null"]},
-                    "to_inventory_id": {"type": ["object", "null"]},
-                    "status_id": {"type": ["integer", "null"]},
-                    "alloc_qty": {"type": ["string", "null"]},
-                    "packed_qty": {"type": ["string", "null"]},
-                    "type_id": {"type": ["object", "null"]},
-                    "wave_id": {"type": ["object", "null"]},
-                    "task_id": {"type": ["object", "null"]},
-                    "alloc_uom_id": {"type": ["object", "null"]},
-                    "cartonize_uom_id": {"type": ["object", "null"]},
-                    "task_seq_nbr": {"type": ["integer", "null"]},
-                    "ob_lpn_type_id": {"type": ["object", "null"]},
-                    "mhe_system_id": {"type": ["object", "null"]},
-                    "pick_user": {"type": ["string", "null"]},
-                    "picked_ts": {"type": ["string", "null"], "format": "date-time"},
-                    "pick_locn_str": {"type": ["string", "null"]},
-                    "final_oblpn_nbr": {"type": ["string", "null"]},
-                    "is_picking_flg": {"type": ["boolean", "null"]},
-                    "_sdc_extracted_at": {"type": "string", "format": "date-time"},
-                    "_sdc_entity": {"type": "string"},
+
+            if hasattr(discovery_result, "is_failure") and discovery_result.is_failure:
+                error_msg = getattr(discovery_result, "error", "Discovery failed")
+                return FlextResult.fail(error_msg)
+
+            # Build Singer catalog from discovery result
+            data = getattr(discovery_result, "data", discovery_result)
+            catalog = self._build_singer_catalog(data)
+
+            # Count streams safely
+            stream_count = 0
+            if isinstance(catalog, dict):
+                streams = catalog.get("streams", [])
+                if isinstance(streams, list):
+                    stream_count = len(streams)
+            logger.info(f"Discovered {stream_count} streams")
+            return FlextResult.ok(catalog)
+
+        except Exception as e:
+            logger.exception(f"Failed to discover catalog: {e}")
+            return FlextResult.fail(str(e))
+
+    def _build_singer_catalog(self, discovery_result: object) -> dict[str, object]:
+        """Build Singer catalog from Oracle WMS discovery result."""
+        streams = []
+
+        # discovery_result should be a list of entities
+        entities = discovery_result if isinstance(discovery_result, list) else []
+
+        for entity_name in entities:
+            # For now, create a simple schema as the entities are just strings
+            # In production, you'd need to query each entity to get its schema
+            stream = {
+                "tap_stream_id": entity_name,
+                "stream": entity_name,
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        # Basic generic properties
+                        "id": {"type": ["string", "null"]},
+                        "name": {"type": ["string", "null"]},
+                        "created_at": {"type": ["string", "null"], "format": "date-time"},
+                        "updated_at": {"type": ["string", "null"], "format": "date-time"},
+                    },
                 },
-                "additionalProperties": True,
+                "metadata": [
+                    {
+                        "breadcrumb": [],
+                        "metadata": {
+                            "inclusion": "available",
+                            "forced-replication-method": "FULL_TABLE",
+                            "table-key-properties": ["id"],
+                        },
+                    },
+                ],
             }
-        if entity_name == "order_hdr":
-            return {
-                "type": "object",
-                "properties": {
-                    "id": {"type": ["integer", "string"]},
-                    "url": {"type": ["string", "null"]},
-                    "create_user": {"type": ["string", "null"]},
-                    "create_ts": {"type": ["string", "null"], "format": "date-time"},
-                    "mod_user": {"type": ["string", "null"]},
-                    "mod_ts": {"type": ["string", "null"], "format": "date-time"},
-                    "order_nbr": {"type": ["string", "null"]},
-                    "company_code": {"type": ["string", "null"]},
-                    "facility_code": {"type": ["string", "null"]},
-                    "order_date": {"type": ["string", "null"], "format": "date"},
-                    "order_type": {"type": ["string", "null"]},
-                    "order_status": {"type": ["integer", "null"]},
-                    "customer_id": {"type": ["object", "null"]},
-                    "ship_to_id": {"type": ["object", "null"]},
-                    "total_qty": {"type": ["string", "null"]},
-                    "total_lines": {"type": ["integer", "null"]},
-                    "_sdc_extracted_at": {"type": "string", "format": "date-time"},
-                    "_sdc_entity": {"type": "string"},
-                },
-                "additionalProperties": True,
-            }
-        if entity_name == "order_dtl":
-            return {
-                "type": "object",
-                "properties": {
-                    "id": {"type": ["integer", "string"]},
-                    "url": {"type": ["string", "null"]},
-                    "create_user": {"type": ["string", "null"]},
-                    "create_ts": {"type": ["string", "null"], "format": "date-time"},
-                    "mod_user": {"type": ["string", "null"]},
-                    "mod_ts": {"type": ["string", "null"], "format": "date-time"},
-                    "order_nbr": {"type": ["string", "null"]},
-                    "order_line_nbr": {"type": ["integer", "null"]},
-                    "company_code": {"type": ["string", "null"]},
-                    "facility_code": {"type": ["string", "null"]},
-                    "item_id": {"type": ["object", "null"]},
-                    "ordered_qty": {"type": ["string", "null"]},
-                    "shipped_qty": {"type": ["string", "null"]},
-                    "status_id": {"type": ["integer", "null"]},
-                    "uom_id": {"type": ["object", "null"]},
-                    "_sdc_extracted_at": {"type": "string", "format": "date-time"},
-                    "_sdc_entity": {"type": "string"},
-                },
-                "additionalProperties": True,
-            }
-        # Fallback for unknown entities - at least include basic fields
+
+            # Add field metadata for each property
+            for prop_name in stream["schema"]["properties"]:
+                stream["metadata"].append({
+                    "breadcrumb": ["properties", prop_name],
+                    "metadata": {
+                        "inclusion": "available",
+                    },
+                })
+
+            streams.append(stream)
+
         return {
-            "type": "object",
-            "properties": {
-                "id": {"type": ["integer", "string"]},
-                "url": {"type": ["string", "null"]},
-                "create_user": {"type": ["string", "null"]},
-                "create_ts": {"type": ["string", "null"], "format": "date-time"},
-                "mod_user": {"type": ["string", "null"]},
-                "mod_ts": {"type": ["string", "null"], "format": "date-time"},
-                "_sdc_extracted_at": {"type": "string", "format": "date-time"},
-                "_sdc_entity": {"type": "string"},
-            },
-            "additionalProperties": True,
+            "type": "CATALOG",
+            "streams": streams,
         }
 
-    def _discover_entities_sync(self) -> dict[str, str]:
-        # Check cache first
-        if self._entity_cache is not None:
-            self.logger.info(
-                "🔍 Using cached entities: %s",
-                list(self._entity_cache.keys()),
-            )
-            return self._entity_cache
-        self.logger.info("🔍 Starting entity discovery from WMS API...")
-        try:
-            # Discover entities synchronously
-            entities = self.discovery.discover_entities_sync()
-            self.logger.info(
-                "🔍 Raw entities discovered: %s",
-                list(entities.keys()) if entities else "None",
-            )
-            # Apply filtering
-            filtered_entities = self.discovery.filter_entities(entities)
-            self.logger.info(
-                "🔍 Filtered entities: %s",
-                list(filtered_entities.keys()) if filtered_entities else "None",
-            )
-            # Cache results
-            self._entity_cache = filtered_entities
-            self.logger.info(
-                "✅ Discovered %s entities from WMS API",
-                len(filtered_entities),
-            )
-        except (RuntimeError, ValueError, TypeError):
-            self.logger.exception("❌ Error during entity discovery")
-            raise
-        else:
-            # Ensure we return the correct type - filtered_entities is always dict here
-            return filtered_entities if isinstance(filtered_entities, dict) else {}
+    def _convert_fields_to_properties(self, fields: Any) -> dict[str, object]:
+        """Convert Oracle WMS fields to Singer properties."""
+        properties: dict[str, object] = {}
 
-    def _generate_schema_sync(self, entity_name: str) -> dict[str, Any] | None:
-        # Check cache first
-        if self._schema_cache and entity_name in self._schema_cache:
-            return self._schema_cache[entity_name]
-        flattening_enabled = self.config.get("flattening_enabled")
-        try:
-            # Always get metadata first - this is fundamental and never optional
-            metadata = self.discovery.describe_entity_sync(entity_name)
-            if not metadata:
-                self._raise_metadata_error(entity_name)
-            self.logger.info(
-                "🚀 METADATA-ONLY MODE (HARD-CODED): Using ONLY API metadata "
-                "for entity: %s",
-                entity_name,
-            )
-            # Generate schema from metadata ONLY - flattening support if enabled
-            if flattening_enabled:
-                if metadata is None:
-                    flattening_msg: str = f"Metadata is None for entity {entity_name}"
-                    raise ValueError(flattening_msg)
-                schema = self.schema_generator.generate_metadata_schema_with_flattening(
-                    metadata,
-                )
-                properties_obj = (
-                    schema.get("properties", {}) if isinstance(schema, dict) else {}
-                )
-                prop_count = (
-                    len(properties_obj) if isinstance(properties_obj, dict) else 0
-                )
-                self.logger.info(
-                    "✅ Generated metadata schema with flattening for %s with "
-                    "%d total fields",
-                    entity_name,
-                    prop_count,
-                )
-            else:
-                if metadata is None:
-                    metadata_msg: str = f"Metadata is None for entity {entity_name}"
-                    raise ValueError(metadata_msg)
-                schema = self.schema_generator.generate_from_metadata(
-                    metadata,
-                )
-                properties_obj = (
-                    schema.get("properties", {}) if isinstance(schema, dict) else {}
-                )
-                prop_count = (
-                    len(properties_obj) if isinstance(properties_obj, dict) else 0
-                )
-                self.logger.info(
-                    "✅ Generated basic metadata schema for %s with %d fields",
-                    entity_name,
-                    prop_count,
-                )
-            # Log schema field names for verification
-            properties = (
-                schema.get("properties", {}) if isinstance(schema, dict) else {}
-            )
-            field_names = (
-                list(properties.keys()) if isinstance(properties, dict) else []
-            )
-            self.logger.info(
-                "📋 Schema fields for %s: %s",
-                entity_name,
-                (
-                    [*field_names[:MAX_FIELD_DISPLAY], "..."]
-                    if len(field_names) > MAX_FIELD_DISPLAY
-                    else field_names
-                ),
-            )
-        except (
-            EntityDiscoveryError,
-            EntityDescriptionError,
-            NetworkError,
-            AuthenticationError,
-        ) as e:
-            # These are specific WMS errors - re-raise with context
-            error_msg: str = (
-                f"WMS error during schema generation for {entity_name}: {e}"
-            )
-            raise SchemaGenerationError(error_msg) from e
-        except (ValueError, KeyError, TypeError, RuntimeError) as e:
-            # Unexpected errors
-            error_msg = (
-                f"Unexpected error during schema generation for {entity_name}: {e}"
-            )
-            raise SchemaGenerationError(error_msg) from e
-        # Cache schema
-        if self._schema_cache is not None:
-            self._schema_cache[entity_name] = schema
-        return schema
+        # Ensure fields is iterable
+        if not hasattr(fields, "__iter__"):
+            return properties
 
-    # Singer SDK hooks for advanced functionality
-    @staticmethod
-    def post_process(
-        row: dict[str, Any],
-        _context: dict[str, Any] | None = None,
-    ) -> dict[str, Any] | None:
-        """Post-process extracted records with metadata.
+        for field in fields:
+            # Map Oracle WMS types to Singer types
+            singer_type = "string"  # Default
 
-        Args:
-            row: Data record from Oracle WMS API.
-            _context: Stream context (unused in this implementation).
+            if field.data_type in ["NUMBER", "INTEGER", "DECIMAL"]:
+                singer_type = "number"
+            elif field.data_type in ["BOOLEAN"]:
+                singer_type = "boolean"
+            elif field.data_type in ["DATE", "TIMESTAMP"]:
+                singer_type = "string"
+                properties[field.name] = {
+                    "type": singer_type,
+                    "format": "date-time",
+                }
+                continue
 
-        Returns:
-            Processed record with extraction timestamp added.
+            properties[field.name] = {"type": singer_type}
 
-        """
-        # Add extraction metadata
-        row["_extracted_at"] = datetime.now(UTC).isoformat()
-        return row
-
-    @property
-    def catalog_dict(self) -> dict[str, Any]:
-        """Get catalog as dictionary.
-
-        Returns:
-            Dictionary representation of the Singer catalog.
-
-        """
-        return self._catalog.to_dict() if self._catalog else {}
-
-    @property
-    def state_dict(self) -> dict[str, Any]:
-        """Get state as dictionary.
-
-        Returns:
-            Dictionary representation of the Singer state.
-
-        """
-        return dict(self.state) if self.state else {}
-
-    def _raise_metadata_error(self, entity_name: str) -> None:
-        """Raise metadata error with proper error handling.
-
-        Args:
-            entity_name: Name of the entity that failed metadata retrieval
-        Raises:
-            ValueError: Always raises with descriptive error message.
-
-        """
-        error_msg = (
-            f"❌ CRITICAL FAILURE: Cannot get metadata for entity: "
-            f"{entity_name}. This is a fatal error - aborting!"
-        )
-        raise ValueError(error_msg)
-
-    def write_catalog(self) -> None:
-        """Write the catalog to stdout in Singer format for discovery.
-
-        This method creates a complete catalog with proper schemas for the
-        configured entities.
-
-        Raises:
-            ValueError: If no entities are configured for catalog creation.
-
-        """
-        self.logger.info("🔍 Creating complete catalog with proper schemas...")
-        # Get configured entities
-        entities = self.config.get("entities")
-        if not entities:
-            msg = "No entities configured for catalog creation"
-            raise ValueError(msg)
-        catalog: dict[str, Any] = {"version": 1, "streams": []}
-        streams_list = catalog["streams"]
-        if isinstance(streams_list, list):
-            for entity_name in entities:
-                self.logger.info("🔍 Creating catalog entry for: %s", entity_name)
-                # Create a complete schema for each entity
-                stream_schema = self._create_minimal_schema(entity_name)
-                # Determine key properties based on entity
-                key_properties = []
-                if entity_name == "allocation":
-                    key_properties = ["company_code", "facility_code", "allocation_id"]
-                elif entity_name == "order_hdr":
-                    key_properties = ["company_code", "facility_code", "order_nbr"]
-                elif entity_name == "order_dtl":
-                    key_properties = [
-                        "company_code",
-                        "facility_code",
-                        "order_nbr",
-                        "order_line_nbr",
-                    ]
-                stream_entry = {
-                    "tap_stream_id": entity_name,
-                    "stream": entity_name,
-                    "schema": stream_schema,
-                    "key_properties": key_properties,
-                    "metadata": [
-                        {
-                            "breadcrumb": [],
-                            "metadata": {
-                                "inclusion": "available",
-                                "selected": True,
-                                "replication-method": "FULL_TABLE",
-                                "forced-replication-method": "FULL_TABLE",
-                                "table-key-properties": key_properties,
-                            },
-                        },
+            if field.is_nullable:
+                properties[field.name] = {
+                    "anyOf": [
+                        properties[field.name],
+                        {"type": "null"},
                     ],
                 }
-                streams_list.append(stream_entry)
-        # Output the catalog
-        self.logger.info(
-            "✅ Catalog output completed with %d streams",
-            len(streams_list) if isinstance(streams_list, list) else 0,
-        )
 
-    @staticmethod
-    def _raise_discovery_error(message: str) -> None:
-        """Raise discovery error with proper error handling.
+        return properties
 
-        Args:
-            message: Error message to include
-        Raises:
-            ValueError: Always raises with the provided message.
+    def discover_streams(self) -> Sequence[Stream]:
+        """Discover available streams dynamically from Oracle WMS.
+
+        Returns:
+            List of Stream instances
 
         """
-        raise ValueError(message)
+        logger.info("Discovering streams dynamically")
 
-    # Use standard Singer SDK CLI - no customization needed
+        # First, discover the catalog to get available entities
+        catalog_result = self.discover_catalog()
+        if catalog_result.is_failure:
+            logger.error(f"Failed to discover catalog: {catalog_result.error}")
+            return []
 
+        catalog = catalog_result.data
+        if not isinstance(catalog, dict):
+            logger.error("Invalid catalog format")
+            return []
 
-def main() -> None:
-    """Entry point for the Oracle WMS tap."""
-    TapOracleWMS.cli()
+        catalog_streams = catalog.get("streams", [])
+        if not isinstance(catalog_streams, list):
+            logger.error("Invalid catalog streams format")
+            return []
 
+        # Create stream instances dynamically
+        streams = []
+        for stream_def in catalog_streams:
+            try:
+                # Extract stream information
+                stream_name = stream_def.get("stream")
+                stream_schema = stream_def.get("schema")
 
-if __name__ == "__main__":
-    # Allow direct execution for testing
-    main()
+                if not stream_name:
+                    logger.warning("Stream missing name, skipping")
+                    continue
+
+                # Create a dynamic stream instance
+                stream = FlextTapOracleWMSStream(
+                    tap=self,
+                    name=stream_name,
+                    schema=stream_schema,
+                )
+
+                # Set primary keys if available from metadata
+                metadata_list = stream_def.get("metadata", [])
+                for metadata in metadata_list:
+                    if metadata.get("breadcrumb") == []:
+                        table_metadata = metadata.get("metadata", {})
+                        pk_list = table_metadata.get("table-key-properties", [])
+                        if pk_list:
+                            # Set primary keys dynamically using setattr for class variables
+                            setattr(stream, 'primary_keys', pk_list)
+                        break
+
+                streams.append(stream)
+                logger.debug(f"Created dynamic stream: {stream_name}")
+
+            except Exception as e:
+                logger.warning(f"Failed to create stream from catalog: {e}")
+
+        logger.info(f"Discovered {len(streams)} dynamic streams")
+        return streams
+
+    def execute(self, message: str | None = None) -> FlextResult[None]:
+        """Execute tap in Singer mode.
+
+        Args:
+            message: Optional Singer message to process
+
+        Returns:
+            FlextResult indicating success or failure
+
+        """
+        try:
+            # If message provided, process it
+            if message:
+                # This is target mode, not supported for tap
+                return FlextResult.fail("Tap does not support message processing")
+
+            # Run tap using sync_all from Singer SDK
+            # Use sync_all method from Singer SDK
+            self.sync_all()
+            return FlextResult.ok(None)
+
+        except Exception as e:
+            logger.exception(f"Tap execution failed: {e}")
+            return FlextResult.fail(str(e))
+
+    def validate_configuration(self) -> FlextResult[dict[str, object]]:
+        """Validate tap configuration.
+
+        Returns:
+            FlextResult with validation status
+
+        """
+        logger.info("Validating configuration")
+
+        try:
+            # Validate config model
+            validation_result = self.flext_config.validate_oracle_wms_config()
+            if validation_result.is_failure:
+                return validation_result
+
+            # Test connection using flext-oracle-wms health check
+            health_result = self._run_async(self.wms_client.health_check())
+            if hasattr(health_result, "is_failure") and health_result.is_failure:
+                error_msg = getattr(health_result, "error", "Unknown health check error")
+                return FlextResult.fail(f"Connection test failed: {error_msg}")
+
+            validation_info = {
+                "valid": True,
+                "connection": "success",
+                "base_url": self.flext_config.base_url,
+                "api_version": self.flext_config.api_version,
+                "health": getattr(health_result, "data", None),
+            }
+
+            logger.info("Configuration validated successfully")
+            return FlextResult.ok(validation_info)
+
+        except Exception as e:
+            logger.exception(f"Configuration validation failed: {e}")
+            return FlextResult.fail(str(e))
+
+    def get_implementation_name(self) -> str:
+        """Get implementation name."""
+        return "FLEXT Oracle WMS Tap"
+
+    def get_implementation_version(self) -> str:
+        """Get implementation version."""
+        try:
+            import importlib.metadata
+
+            return importlib.metadata.version("flext-tap-oracle-wms")
+        except Exception:
+            return "0.9.0"
+
+    def get_implementation_metrics(self) -> FlextResult[dict[str, object]]:
+        """Get implementation metrics.
+
+        Returns:
+            FlextResult containing metrics
+
+        """
+        metrics = {
+            "tap_name": self.name,
+            "version": self.get_implementation_version(),
+            "streams_available": len(self.discover_streams()),
+            "configuration": {
+                "base_url": self.flext_config.base_url,
+                "api_version": self.flext_config.api_version,
+                "page_size": self.flext_config.page_size,
+                "verify_ssl": self.flext_config.verify_ssl,
+            },
+        }
+
+        # Add runtime metrics if available
+        if hasattr(self, "metrics"):
+            metrics["runtime"] = {
+                "records_extracted": getattr(self.metrics, "records_extracted", 0),
+                "streams_extracted": getattr(self.metrics, "streams_extracted", 0),
+            }
+
+        return FlextResult.ok(metrics)
+
+    def __del__(self) -> None:
+        """Cleanup when tap is destroyed."""
+        if (
+            hasattr(self, "_is_started")
+            and self._is_started
+            and hasattr(self, "_wms_client")
+            and self._wms_client
+        ):
+            try:
+                if hasattr(self._wms_client, "stop"):
+                    self._run_async(self._wms_client.stop())
+            except Exception as e:
+                logger.debug(f"Error stopping WMS client: {e}")

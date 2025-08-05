@@ -48,12 +48,12 @@ This directory contains integration tests for FLEXT Tap Oracle WMS, focusing on 
 def test_tap_stream_integration():
     """Test tap and stream components working together."""
     with mock_wms_server():
-        tap = TapOracleWMS(test_config)
+        tap = FlextTapOracleWMS(test_config)
         streams = tap.discover_streams()
-        
+
         # Verify stream discovery
         assert len(streams) > 0
-        
+
         # Test stream data extraction
         stream = streams[0]
         records = list(stream.get_records({}))
@@ -68,7 +68,7 @@ def test_auth_client_integration():
     with mock_wms_auth_server():
         auth = get_wms_authenticator(stream, config)
         client = WMSClient(config, auth)
-        
+
         # Test authenticated request flow
         response = client.get_entities()
         assert response.status_code == 200
@@ -82,10 +82,10 @@ def test_discovery_schema_integration():
     with mock_wms_metadata():
         discovery = EntityDiscovery(mock_client)
         entities = discovery.discover_entities()
-        
+
         schema_gen = SchemaGenerator()
         schemas = schema_gen.generate_schemas(entities)
-        
+
         # Verify end-to-end schema generation
         assert "item" in schemas
         assert "properties" in schemas["item"]
@@ -99,17 +99,17 @@ def test_discovery_schema_integration():
 def test_config_validation_chain():
     """Test complete configuration validation workflow."""
     config = load_test_config("complex_config.json")
-    
+
     # Test validation chain
     mapper = ConfigMapper()
     mapped_config = mapper.map_config(config)
-    
+
     validator = ConfigValidator()
     validation_result = validator.validate(mapped_config)
-    
+
     critical_validator = CriticalValidation()
     critical_result = critical_validator.validate_environment(mapped_config)
-    
+
     # Verify all validation steps pass
     assert validation_result.is_valid
     assert critical_result.success
@@ -124,19 +124,19 @@ def test_etl_integration_flow():
     """Test complete data extraction and transformation flow."""
     with mock_wms_data_server():
         # Initialize tap with test configuration
-        tap = TapOracleWMS(test_config)
-        
+        tap = FlextTapOracleWMS(test_config)
+
         # Discover available streams
         catalog = tap.discover_streams()
-        
+
         # Extract data from each stream
         for stream_def in catalog:
             stream = tap.get_stream(stream_def.tap_stream_id)
             records = list(stream.get_records({}))
-            
+
             # Verify data extraction
             assert len(records) > 0
-            
+
             # Verify data transformation
             for record in records:
                 assert "item_id" in record.record
@@ -151,11 +151,11 @@ def test_etl_integration_flow():
 # Planned mock server implementation
 class MockWMSServer:
     """Mock WMS API server for integration testing."""
-    
+
     def __init__(self):
         self.entities = ["item", "inventory", "order", "shipment"]
         self.auth_tokens = {}
-    
+
     def setup_responses(self):
         """Configure mock HTTP responses."""
         responses.add(
@@ -164,7 +164,7 @@ class MockWMSServer:
             json={"entities": self.entities},
             status=200
         )
-        
+
         responses.add(
             responses.GET,
             "https://mock-wms.test.com/api/items",
@@ -206,7 +206,7 @@ pytest tests/integration/ -v --mock-server
 
 # Run specific integration scenarios
 pytest tests/integration/ -k "auth_flow"
-pytest tests/integration/ -k "discovery_flow" 
+pytest tests/integration/ -k "discovery_flow"
 pytest tests/integration/ -k "extraction_flow"
 
 # Integration tests with coverage
@@ -264,14 +264,14 @@ def mock_wms_server():
     """Mock WMS server for integration testing."""
     with responses.RequestsMock() as rsps:
         # Setup standard responses
-        rsps.add(responses.GET, 
+        rsps.add(responses.GET,
                 "https://mock-wms.test.com/api/entities",
                 json={"entities": ["item", "inventory"]})
-        
+
         rsps.add(responses.POST,
-                "https://mock-wms.test.com/auth/token", 
+                "https://mock-wms.test.com/auth/token",
                 json={"access_token": "test_token"})
-        
+
         yield rsps
 ```
 
@@ -286,7 +286,7 @@ def integration_config():
         "auth_method": "basic",
         "username": "integration_test",
         "password": "test_password",
-        "company_code": "TEST", 
+        "company_code": "TEST",
         "facility_code": "TEST01",
         "entities": ["item", "inventory"],
         "page_size": 100
@@ -302,18 +302,18 @@ def test_data_integration_flow(mock_wms_server, integration_config):
     mock_wms_server.add(responses.GET,
                        "https://mock-wms.test.com/api/items",
                        json=load_fixture("item_data.json"))
-    
+
     # Execute integration flow
-    tap = TapOracleWMS(integration_config)
+    tap = FlextTapOracleWMS(integration_config)
     catalog = tap.discover_streams()
-    
+
     # Validate results
     assert len(catalog) > 0
-    
+
     # Test data extraction
     item_stream = next(s for s in catalog if s.tap_stream_id == "item")
     records = list(item_stream.get_records({}))
-    
+
     # Validate extracted data structure
     assert len(records) > 0
     assert all("item_id" in record.record for record in records)
@@ -327,11 +327,11 @@ def test_data_integration_flow(mock_wms_server, integration_config):
 def test_high_volume_integration():
     """Test integration with high-volume data extraction."""
     with mock_large_dataset():
-        tap = TapOracleWMS(high_volume_config)
-        
+        tap = FlextTapOracleWMS(high_volume_config)
+
         # Test with large dataset
         records = list(tap.extract_all_data())
-        
+
         # Verify performance characteristics
         assert len(records) > 10000
         assert extraction_time < 300  # seconds
@@ -343,18 +343,18 @@ def test_high_volume_integration():
 def test_concurrent_stream_integration():
     """Test concurrent stream operations integration."""
     import concurrent.futures
-    
+
     with mock_wms_server():
-        tap = TapOracleWMS(test_config)
+        tap = FlextTapOracleWMS(test_config)
         streams = tap.discover_streams()
-        
+
         # Test concurrent extraction
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = [executor.submit(stream.extract_data) 
+            futures = [executor.submit(stream.extract_data)
                       for stream in streams]
-            
+
             results = [future.result() for future in futures]
-            
+
         # Verify all streams completed successfully
         assert all(result.success for result in results)
 ```
@@ -367,12 +367,12 @@ def test_concurrent_stream_integration():
 def test_network_failure_integration():
     """Test integration behavior during network failures."""
     with mock_network_failures():
-        tap = TapOracleWMS(test_config)
-        
+        tap = FlextTapOracleWMS(test_config)
+
         # Simulate network issues
         with pytest.raises(NetworkError):
             tap.discover_streams()
-        
+
         # Test recovery mechanisms
         tap.retry_with_backoff()
         streams = tap.discover_streams()

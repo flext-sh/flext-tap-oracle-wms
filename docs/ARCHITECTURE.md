@@ -99,7 +99,7 @@ graph TB
         FM[flext-meltano]
         FO[flext-observability]
     end
-    
+
     subgraph "Tap Architecture"
         TAP[tap.py]
         STREAMS[streams.py]
@@ -108,7 +108,7 @@ graph TB
         AUTH[auth.py]
         SCHEMA[schema.py]
     end
-    
+
     FC --> TAP
     FC --> CONFIG
     FOW --> AUTH
@@ -116,7 +116,7 @@ graph TB
     FM --> TAP
     FM --> STREAMS
     FO --> TAP
-    
+
     TAP --> STREAMS
     STREAMS --> DISCOVERY
     STREAMS --> AUTH
@@ -163,20 +163,20 @@ class WMSAuthenticator:
 from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
-class TapOracleWMS(Tap):
+class FlextTapOracleWMS(Tap):
     name = "tap-oracle-wms"
     config_jsonschema = WMSConfigSchema.model_json_schema()
-    
+
     def discover_streams(self) -> List[Stream]:
         """Discover available streams from WMS API."""
         return [
-            WMSStream(tap=self, name=entity, path=f"/api/{entity}")
+            FlextTapOracleWMSStream(tap=self, name=entity, path=f"/api/{entity}")
             for entity in self.config["entities"]
         ]
 
-class WMSStream(RESTStream):
+class FlextTapOracleWMSStream(RESTStream):
     """Standard Singer stream for WMS entities."""
-    
+
     def get_records(self, context):
         """Extract records using flext-oracle-wms client."""
         for record in self.wms_client.get_entity_data(self.name):
@@ -193,19 +193,19 @@ from flext_core import FlextConfig
 
 class WMSConfig(FlextConfig):
     """Unified WMS tap configuration."""
-    
+
     base_url: str
     auth_method: str = Field(..., regex="^(basic|oauth2)$")
     company_code: str
     facility_code: str
     entities: List[str] = Field(default_factory=lambda: ["item", "inventory"])
-    
+
     # Authentication fields
     username: Optional[str] = None
     password: Optional[str] = None
     oauth_client_id: Optional[str] = None
     oauth_client_secret: Optional[str] = None
-    
+
     @validator("entities")
     def validate_entities(cls, v):
         """Validate entity names against WMS API."""
@@ -227,7 +227,7 @@ sequenceDiagram
     participant Discovery
     participant WMSClient
     participant WMS_API
-    
+
     CLI->>Tap: discover()
     Tap->>Discovery: discover_entities()
     Discovery->>WMSClient: get_available_entities()
@@ -247,7 +247,7 @@ sequenceDiagram
     participant Stream
     participant WMSClient
     participant WMS_API
-    
+
     CLI->>Tap: sync()
     Tap->>Stream: get_records()
     loop For each page
@@ -267,10 +267,10 @@ sequenceDiagram
 ```python
 class WMSPaginator:
     """Simplified pagination for Oracle WMS HATEOAS."""
-    
+
     def __init__(self, page_size: int = 1000):
         self.page_size = min(page_size, 1250)  # WMS limit
-    
+
     def get_next_url(self, response: Dict) -> Optional[str]:
         """Extract next page URL from HATEOAS links."""
         return response.get("links", {}).get("next")
@@ -284,7 +284,7 @@ from typing import Dict, Any
 
 class WMSCache:
     """Simple LRU cache for WMS responses."""
-    
+
     @lru_cache(maxsize=1000)
     def get_entity_schema(self, entity_name: str) -> Dict[str, Any]:
         """Cache entity schemas for discovery."""
@@ -298,14 +298,14 @@ from flext_oracle_wms import FlextOracleWmsClient
 
 class WMSConnectionManager:
     """Manage WMS connections using flext-oracle-wms."""
-    
+
     def __init__(self, config: WMSConfig):
         self.client = FlextOracleWmsClient(
             base_url=config.base_url,
             auth_method=config.auth_method,
             # ... other config
         )
-    
+
     def get_client(self) -> FlextOracleWmsClient:
         """Get configured WMS client."""
         return self.client
@@ -399,7 +399,7 @@ def mock_wms_client():
 def test_stream_extraction(mock_wms_client):
     """Test stream data extraction with mocked client."""
     with patch('flext_tap_oracle_wms.streams.get_wms_client', return_value=mock_wms_client):
-        stream = WMSStream(tap=mock_tap, name="item")
+        stream = FlextTapOracleWMSStream(tap=mock_tap, name="item")
         records = list(stream.get_records(None))
         assert len(records) == 2
         assert records[0]["id"] == "1"
@@ -414,13 +414,13 @@ from flext_oracle_wms import WMSAuthenticator
 
 class TapAuthentication:
     """Delegate authentication to flext-oracle-wms library."""
-    
+
     def __init__(self, config: WMSConfig):
         self.authenticator = WMSAuthenticator(
             auth_method=config.auth_method,
             credentials=self._extract_credentials(config)
         )
-    
+
     def get_authenticated_client(self):
         """Get authenticated WMS client."""
         return self.authenticator.get_client()
@@ -433,10 +433,10 @@ from pydantic import SecretStr
 
 class SecureWMSConfig(WMSConfig):
     """Secure configuration with secret handling."""
-    
+
     password: Optional[SecretStr] = None
     oauth_client_secret: Optional[SecretStr] = None
-    
+
     def get_credentials(self) -> Dict[str, str]:
         """Get credentials with secret values."""
         creds = {}

@@ -208,25 +208,25 @@ from pydantic import Field, validator
 
 class WMSConfig(FlextConfig):
     """FLEXT-compliant configuration."""
-    
+
     base_url: str = Field(..., description="WMS instance URL")
     auth_method: str = Field(..., regex="^(basic|oauth2)$")
-    
+
     class Config:
         env_prefix = "TAP_ORACLE_WMS_"
-        
+
     @validator("entities")
     def validate_entities(cls, v):
         # Business logic validation
         return v
 
-class TapOracleWMS:
+class FlextTapOracleWMS:
     """FLEXT-compliant tap implementation."""
-    
+
     def __init__(self, config: dict):
         self.config = WMSConfig(**config)
         self.logger = get_logger(__name__)
-        
+
     def discover_streams(self) -> ServiceResult[List[Stream]]:
         """Use ServiceResult pattern for error handling."""
         try:
@@ -245,7 +245,7 @@ from typing import List, Dict, Any, Optional, Iterator
 from flext_core import TAnyDict
 
 def extract_records(
-    entity: str, 
+    entity: str,
     config: TAnyDict,
     filters: Optional[Dict[str, Any]] = None
 ) -> Iterator[TAnyDict]:
@@ -284,7 +284,7 @@ except WMSConfigurationError as e:
 {
   "python.defaultInterpreterPath": ".venv/bin/python",
   "python.linting.enabled": true,
-  "python.linting.mypyEnabled": true,  
+  "python.linting.mypyEnabled": true,
   "python.formatting.provider": "none",
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
@@ -323,7 +323,7 @@ pre-commit run --all-files
       "cwd": "${workspaceFolder}"
     },
     {
-      "name": "Debug Tap Extraction", 
+      "name": "Debug Tap Extraction",
       "type": "python",
       "request": "launch",
       "module": "flext_tap_oracle_wms.tap",
@@ -343,7 +343,7 @@ pre-commit run --all-files
 ```python
 # Add entity to valid entities list
 VALID_ENTITIES = [
-    "item", "location", "inventory", "order", 
+    "item", "location", "inventory", "order",
     "shipment", "receipt", "pick", "new_entity"  # Add here
 ]
 ```
@@ -422,7 +422,7 @@ p.sort_stats('cumulative').print_stats(20)
 
 ### Current → Target Architecture
 
-1. **Preparation Phase**: 
+1. **Preparation Phase**:
    - Document all current functionality
    - Create comprehensive test suite
    - Set up FLEXT integration foundation

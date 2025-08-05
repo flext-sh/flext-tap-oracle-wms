@@ -4,7 +4,7 @@ Provides the command-line entry point for the Oracle WMS Singer tap,
 enabling data extraction from Oracle Warehouse Management Systems
 following Singer specification standards.
 
-This module serves as the CLI gateway to the TapOracleWMS implementation,
+This module serves as the CLI gateway to the FlextTapOracleWMS implementation,
 supporting standard Singer tap operations including discovery, extraction,
 and configuration validation.
 
@@ -24,12 +24,9 @@ SPDX-License-Identifier: MIT
 
 """
 
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
-
 from __future__ import annotations
 
-from flext_tap_oracle_wms.tap import TapOracleWMS
+from flext_tap_oracle_wms.tap import FlextTapOracleWMS
 
 
 def main() -> None:
@@ -50,7 +47,7 @@ def main() -> None:
         # python -m flext_tap_oracle_wms --config config.json --discover
 
     """
-    TapOracleWMS.cli()
+    FlextTapOracleWMS.cli()
 
 
 if __name__ == "__main__":
