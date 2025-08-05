@@ -248,7 +248,7 @@ class FlextTapOracleWMSConfig(FlextValueObject):
                 common = set(self.include_entities) & set(self.exclude_entities)
                 if common:
                     return FlextResult.fail(
-                        f"Entities cannot be both included and excluded: {common}"
+                        f"Entities cannot be both included and excluded: {common}",
                     )
 
             # Validate date range
@@ -264,7 +264,7 @@ class FlextTapOracleWMSConfig(FlextValueObject):
             if self.enable_parallel_extraction and self.max_parallel_streams > 5:
                 if not self.enable_rate_limiting:
                     return FlextResult.fail(
-                        "Rate limiting must be enabled for more than 5 parallel streams"
+                        "Rate limiting must be enabled for more than 5 parallel streams",
                     )
 
             validation_result = {
@@ -292,53 +292,87 @@ class FlextTapOracleWMSConfig(FlextValueObject):
 
         """
         try:
-            # Validate required fields
-            if not self.base_url:
-                return FlextResult.fail("base_url is required")
+            # Run all validation checks in sequence
+            validation_methods = [
+                self._validate_required_fields,
+                self._validate_url_format,
+                self._validate_page_size_limits,
+                self._validate_date_range,
+                self._validate_entity_selections,
+            ]
 
-            if not self.username:
-                return FlextResult.fail("username is required")
-
-            if not self.password:
-                return FlextResult.fail("password is required")
-
-            # Validate URL format
-            if not self.base_url.startswith(("http://", "https://")):
-                return FlextResult.fail("base_url must start with http:// or https://")
-
-            # Validate page size limits
-            if self.page_size > FlextTapOracleWMSConstants.MAX_PAGE_SIZE:
-                return FlextResult.fail(
-                    f"page_size cannot exceed {FlextTapOracleWMSConstants.MAX_PAGE_SIZE}"
-                )
-
-            # Validate date range if both are provided
-            if self.start_date and self.end_date:
-                from datetime import datetime
-
-                try:
-                    start = datetime.fromisoformat(self.start_date)
-                    end = datetime.fromisoformat(self.end_date)
-                    if start >= end:
-                        return FlextResult.fail("start_date must be before end_date")
-                except ValueError as e:
-                    return FlextResult.fail(f"Invalid date format: {e}")
-
-            # Validate entity selections
-            if self.include_entities and self.exclude_entities:
-                # Check for overlap
-                included_set = set(self.include_entities)
-                excluded_set = set(self.exclude_entities)
-                overlap = included_set & excluded_set
-                if overlap:
-                    return FlextResult.fail(
-                        f"Entities cannot be both included and excluded: {list(overlap)}"
-                    )
+            for validation_method in validation_methods:
+                result = validation_method()
+                if result.is_failure:
+                    return result
 
             return FlextResult.ok(None)
 
         except Exception as e:
             return FlextResult.fail(f"Domain rule validation failed: {e}")
+
+    def _validate_required_fields(self) -> FlextResult[None]:
+        """Validate required configuration fields."""
+        if not self.base_url:
+            return FlextResult.fail("base_url is required")
+
+        if not self.username:
+            return FlextResult.fail("username is required")
+
+        if not self.password:
+            return FlextResult.fail("password is required")
+
+        return FlextResult.ok(None)
+
+    def _validate_url_format(self) -> FlextResult[None]:
+        """Validate URL format requirements."""
+        if not self.base_url.startswith(("http://", "https://")):
+            return FlextResult.fail("base_url must start with http:// or https://")
+
+        return FlextResult.ok(None)
+
+    def _validate_page_size_limits(self) -> FlextResult[None]:
+        """Validate page size limits."""
+        if self.page_size > FlextTapOracleWMSConstants.MAX_PAGE_SIZE:
+            return FlextResult.fail(
+                f"page_size cannot exceed {FlextTapOracleWMSConstants.MAX_PAGE_SIZE}",
+            )
+
+        return FlextResult.ok(None)
+
+    def _validate_date_range(self) -> FlextResult[None]:
+        """Validate date range consistency."""
+        if not (self.start_date and self.end_date):
+            return FlextResult.ok(None)
+
+        from datetime import datetime
+
+        try:
+            start = datetime.fromisoformat(self.start_date)
+            end = datetime.fromisoformat(self.end_date)
+            if start >= end:
+                return FlextResult.fail("start_date must be before end_date")
+        except ValueError as e:
+            return FlextResult.fail(f"Invalid date format: {e}")
+
+        return FlextResult.ok(None)
+
+    def _validate_entity_selections(self) -> FlextResult[None]:
+        """Validate entity inclusion/exclusion logic."""
+        if not (self.include_entities and self.exclude_entities):
+            return FlextResult.ok(None)
+
+        # Check for overlap between included and excluded entities
+        included_set = set(self.include_entities)
+        excluded_set = set(self.exclude_entities)
+        overlap = included_set & excluded_set
+
+        if overlap:
+            return FlextResult.fail(
+                f"Entities cannot be both included and excluded: {list(overlap)}",
+            )
+
+        return FlextResult.ok(None)
 
     def get_stream_config(self, stream_name: str) -> dict[str, object]:
         """Get configuration for a specific stream.

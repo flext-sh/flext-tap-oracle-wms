@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import pytest
-from pydantic import SecretStr, ValidationError
-
 from flext_tap_oracle_wms import FlextTapOracleWMSConfig
+from pydantic import SecretStr, ValidationError
 
 
 class TestFlextTapOracleWMSConfig:

@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from flext_core import FlextResult
-
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.exceptions import FlextTapOracleWMSConfigurationError
 
@@ -132,7 +131,7 @@ class TestFlextTapOracleWMS:
             {
                 "inventory": {"type": "object", "properties": {}},
                 "locations": {"type": "object", "properties": {}},
-            }
+            },
         )
         mock_discovery.build_catalog.return_value = {
             "type": "CATALOG",

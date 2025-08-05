@@ -9,12 +9,11 @@ from unittest.mock import MagicMock
 
 import pytest
 from flext_core import FlextResult
-from pydantic import SecretStr
-
 from flext_tap_oracle_wms import (
     FlextTapOracleWMS,
     FlextTapOracleWMSConfig,
 )
+from pydantic import SecretStr
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -78,7 +77,7 @@ def mock_wms_client() -> MagicMock:
             "locations",
             "shipments",
             "receipts",
-        ]
+        ],
     )
 
     # Mock get records
@@ -86,7 +85,7 @@ def mock_wms_client() -> MagicMock:
         [
             {"id": "1", "name": "Test Item 1", "quantity": 100},
             {"id": "2", "name": "Test Item 2", "quantity": 200},
-        ]
+        ],
     )
 
     # Mock get entity metadata
@@ -96,7 +95,7 @@ def mock_wms_client() -> MagicMock:
             "description": "Inventory data",
             "primary_key": ["inventory_id"],
             "replication_key": "mod_ts",
-        }
+        },
     )
 
     return client

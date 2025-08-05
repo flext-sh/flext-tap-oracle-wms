@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import os
-
 import pytest
-from flext_core import FlextResult, get_logger
-
+from flext_core import get_logger
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 
 logger = get_logger(__name__)
@@ -98,7 +95,7 @@ class TestRealOracleWMSIntegration:
             logger.debug(f"Stream {test_stream.name} extraction failed (expected for some streams): {e}")
 
     def test_real_filtered_discovery(
-        self, real_config: FlextTapOracleWMSConfig
+        self, real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """Test discovery with filtered entities."""
         # Create tap with filtered config
@@ -109,7 +106,7 @@ class TestRealOracleWMSIntegration:
         stream_names = [stream.name for stream in streams]
 
         # Only included streams should be present
-        assert all(name in ["inventory", "locations"] for name in stream_names)
+        assert all(name in {"inventory", "locations"} for name in stream_names)
 
     def test_real_pagination(self, real_tap: FlextTapOracleWMS) -> None:
         """Test pagination with real Oracle WMS."""
@@ -178,5 +175,5 @@ class TestRealOracleWMSIntegration:
 
         assert result.is_failure
         assert "Connection test failed" in str(
-            result.error
+            result.error,
         ) or "Failed to connect" in str(result.error)

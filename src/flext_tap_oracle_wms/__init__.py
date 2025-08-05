@@ -6,7 +6,6 @@ Uses flext-oracle-wms for all Oracle WMS operations.
 
 from __future__ import annotations
 
-import contextlib
 import importlib.metadata
 
 from flext_core import FlextResult, FlextValueObject, get_logger
@@ -42,6 +41,7 @@ __all__ = [
     "FlextTapOracleWMSAuthenticationError",
     # Configuration
     "FlextTapOracleWMSConfig",
+    "FlextTapOracleWMSConfigurationError",
     "FlextTapOracleWMSConnectionError",
     "FlextTapOracleWMSDataValidationError",
     "FlextTapOracleWMSDiscoveryError",

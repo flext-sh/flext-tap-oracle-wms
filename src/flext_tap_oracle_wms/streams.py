@@ -6,21 +6,14 @@ Implements Singer streams for Oracle WMS entities using flext-oracle-wms client.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 from typing import TYPE_CHECKING, Any, ClassVar
-from urllib.parse import parse_qs, urlparse
 
-from flext_core.flext_types import TService, TValue
-from singer_sdk import typing as th
 from singer_sdk.streams import Stream
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 
-    from flext_core import FlextResult
-    from flext_core.flext_types import TAnyDict
-    from flext_oracle_wms import FlextOracleWmsClient
     from singer_sdk import Tap
 
 logger = logging.getLogger(__name__)
@@ -53,7 +46,8 @@ class FlextTapOracleWMSStream(Stream):
             if tap_instance and hasattr(tap_instance, "wms_client"):
                 self._client = tap_instance.wms_client
             else:
-                raise RuntimeError("WMS client not available - tap must be FlextTapOracleWMS")
+                msg = "WMS client not available - tap must be FlextTapOracleWMS"
+                raise RuntimeError(msg)
         return self._client
 
     def _run_async(self, coro: Coroutine[object, object, object] | Awaitable[object]) -> object:
@@ -75,73 +69,133 @@ class FlextTapOracleWMSStream(Stream):
             Stream records
 
         """
-        # Get entity data using flext-oracle-wms client
         page = 1
         has_more = True
 
         while has_more:
-            # Execute operation through client
-            operation_name = f"get_{self.name}"
-            kwargs = {
-                "limit": self._page_size,
-                "page": page,
-            }
-
-            # Add filtering for incremental replication
-            if self.replication_key:
-                starting_timestamp = self.get_starting_timestamp(context)
-                if starting_timestamp:
-                    kwargs["filter"] = {
-                        self.replication_key: {
-                            "$gte": starting_timestamp.isoformat(),
-                        },
-                    }
-
             try:
-                # Execute operation
-                result = self._run_async(
-                    self.client.execute(operation_name, **kwargs)
-                )
-
-                if hasattr(result, "is_failure") and result.is_failure:
-                    error_msg = getattr(result, "error", "Unknown error")
-                    logger.error(f"Failed to get records for {self.name}: {error_msg}")
+                # Get page data
+                page_result = self._fetch_page_data(page, context)
+                if page_result is None:
                     break
 
-                # Extract records from response
-                data = getattr(result, "value", result)
-                if isinstance(data, dict):
-                    records = data.get("data", data.get("items", data.get("results", [])))
-                    has_more = data.get("has_more", False) or data.get("next_page", False)
-                elif isinstance(data, list):
-                    records = data
-                    has_more = len(records) == self._page_size
-                else:
-                    records = []
-                    has_more = False
+                records, has_more = page_result
 
-                # Ensure records is always a list
-                if records is None:
-                    records = []
-
-                # Yield records
-                for record in records:
-                    # Ensure record is a dict for processing
-                    if isinstance(record, dict):
-                        processed_record = self.post_process(record, context)
-                        if processed_record is not None:
-                            yield processed_record
+                # Process and yield records
+                yield from self._process_page_records(records, context)
 
                 # Move to next page
                 page += 1
 
-                # Break if no more records
+                # Break if no records found
                 if not records:
                     break
 
             except Exception as e:
                 logger.exception(f"Error getting records for {self.name}: {e}")
                 break
+
+    def _fetch_page_data(self, page: int, context: Mapping[str, Any] | None) -> tuple[list[dict[str, Any]], bool] | None:
+        """Fetch data for a specific page.
+
+        Args:
+            page: Page number to fetch
+            context: Stream context
+
+        Returns:
+            Tuple of (records, has_more) or None if failed
+
+        """
+        # Build operation parameters
+        operation_name = f"get_{self.name}"
+        kwargs = self._build_operation_kwargs(page, context)
+
+        # Execute operation
+        result = self._run_async(
+            self.client.execute(operation_name, **kwargs),
+        )
+
+        # Check for failure
+        if hasattr(result, "is_failure") and result.is_failure:
+            error_msg = getattr(result, "error", "Unknown error")
+            logger.error(f"Failed to get records for {self.name}: {error_msg}")
+            return None
+
+        # Extract and process response data
+        data = getattr(result, "value", result)
+        return self._extract_records_from_response(data)
+
+    def _build_operation_kwargs(self, page: int, context: Mapping[str, Any] | None) -> dict[str, Any]:
+        """Build kwargs for the operation call.
+
+        Args:
+            page: Page number
+            context: Stream context
+
+        Returns:
+            Operation kwargs dict
+
+        """
+        kwargs = {
+            "limit": self._page_size,
+            "page": page,
+        }
+
+        # Add incremental replication filter if configured
+        if self.replication_key:
+            starting_timestamp = self.get_starting_timestamp(context)
+            if starting_timestamp:
+                kwargs["filter"] = {
+                    self.replication_key: {
+                        "$gte": starting_timestamp.isoformat(),
+                    },
+                }
+
+        return kwargs
+
+    def _extract_records_from_response(self, data: Any) -> tuple[list[dict[str, Any]], bool]:
+        """Extract records and pagination info from API response.
+
+        Args:
+            data: Raw response data
+
+        Returns:
+            Tuple of (records, has_more)
+
+        """
+        if isinstance(data, dict):
+            records = data.get("data", data.get("items", data.get("results", [])))
+            has_more = data.get("has_more", False) or data.get("next_page", False)
+        elif isinstance(data, list):
+            records = data
+            has_more = len(records) == self._page_size
+        else:
+            records = []
+            has_more = False
+
+        # Ensure records is always a list
+        if records is None:
+            records = []
+
+        return records, has_more
+
+    def _process_page_records(self, records: list[dict[str, Any]], context: Mapping[str, Any] | None) -> Iterable[dict[str, Any]]:
+        """Process and yield records from a page.
+
+        Args:
+            records: List of records to process
+            context: Stream context
+
+        Yields:
+            Processed records
+
+        """
+        for record in records:
+            # Ensure record is a dict for processing
+            if isinstance(record, dict):
+                processed_record = self.post_process(record, context)
+                if processed_record is not None:
+                    yield processed_record
 
     def post_process(
         self,
@@ -173,7 +227,6 @@ class FlextTapOracleWMSStream(Stream):
                 row.pop(column, None)
 
         return row
-
 
 
 # Stream discovery is now fully dynamic - no predefined stream classes needed

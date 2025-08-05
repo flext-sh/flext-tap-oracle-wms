@@ -8,7 +8,6 @@ from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
-
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 
 # Load environment variables
@@ -75,7 +74,7 @@ class TestRealWmsIntegration:
         init_result = tap.initialize()
         if init_result.is_failure:
             pytest.skip(
-                f"Cannot test discovery, initialization failed: {init_result.error}"
+                f"Cannot test discovery, initialization failed: {init_result.error}",
             )
 
         # Discover streams
@@ -96,7 +95,7 @@ class TestRealWmsIntegration:
         init_result = tap.initialize()
         if init_result.is_failure:
             pytest.skip(
-                f"Cannot test extraction, initialization failed: {init_result.error}"
+                f"Cannot test extraction, initialization failed: {init_result.error}",
             )
 
         # Get streams
