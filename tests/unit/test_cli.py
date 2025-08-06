@@ -1,7 +1,5 @@
 """Test CLI module functionality."""
 
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
 from __future__ import annotations
 
 from unittest.mock import Mock, patch
