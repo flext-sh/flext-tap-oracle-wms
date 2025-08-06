@@ -7,9 +7,15 @@ Uses flext-oracle-wms for all Oracle WMS communication.
 from __future__ import annotations
 
 import asyncio
+import importlib.metadata
 from typing import TYPE_CHECKING, ClassVar
 
 from flext_core import FlextResult, get_logger
+from flext_oracle_wms import (
+    FlextOracleWmsClient,
+    FlextOracleWmsClientConfig,
+)
+from flext_oracle_wms.api_catalog import FlextOracleWmsApiVersion
 from singer_sdk import Tap
 
 from flext_tap_oracle_wms.config import FlextTapOracleWMSConfig
@@ -78,6 +84,7 @@ class FlextTapOracleWMS(Tap):
         config: dict[str, object] | FlextTapOracleWMSConfig | None = None,
         catalog: dict[str, object] | None = None,
         state: dict[str, object] | None = None,
+        *,
         parse_env_config: bool = True,
         validate_config: bool = True,
     ) -> None:
@@ -142,17 +149,6 @@ class FlextTapOracleWMS(Tap):
     def wms_client(self) -> TAnyObject:  # FlextOracleWmsClient at runtime
         """Get or create WMS client."""
         if self._wms_client is None:
-            # Import dynamically to avoid import errors
-            try:
-                from flext_oracle_wms import (
-                    FlextOracleWmsClient,
-                    FlextOracleWmsClientConfig,
-                )
-                from flext_oracle_wms.api_catalog import FlextOracleWmsApiVersion
-            except ImportError as e:
-                msg = f"flext_oracle_wms not available: {e}"
-                raise FlextTapOracleWMSConfigurationError(msg) from e
-
             # Create client config for flext-oracle-wms
             client_config = FlextOracleWmsClientConfig(
                 base_url=self.flext_config.base_url,
@@ -543,8 +539,6 @@ class FlextTapOracleWMS(Tap):
     def get_implementation_version(self) -> str:
         """Get implementation version."""
         try:
-            import importlib.metadata
-
             return importlib.metadata.version("flext-tap-oracle-wms")
         except Exception:
             return "0.9.0"

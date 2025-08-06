@@ -36,7 +36,7 @@ class FlextTapOracleWMSStream(Stream):
         tap: Tap,
         name: str | None = None,
         schema: TAnyDict | None = None,
-        path: str | None = None,  # noqa: ARG002
+        _path: str | None = None,
     ) -> None:
         """Initialize stream."""
         super().__init__(tap=tap, name=name or self.name, schema=schema)
@@ -219,7 +219,7 @@ class FlextTapOracleWMSStream(Stream):
     def post_process(
         self,
         row: TAnyDict,
-        context: Mapping[str, TAnyObject] | None = None,  # noqa: ARG002
+        _context: Mapping[str, TAnyObject] | None = None,
     ) -> TAnyDict | None:
         """Post-process a record.
 
