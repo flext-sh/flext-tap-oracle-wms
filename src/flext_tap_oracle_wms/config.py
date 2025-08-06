@@ -5,9 +5,11 @@ Type-safe configuration using FLEXT patterns with Pydantic validation.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Final
 
-from flext_core import FlextResult, FlextValueObject
+from flext_core import FlextResult
+from flext_meltano import FlextMeltanoConfig
 from pydantic import Field, SecretStr, field_validator
 
 
@@ -32,11 +34,11 @@ class FlextTapOracleWMSConstants:
     MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = 1000
 
 
-class FlextTapOracleWMSConfig(FlextValueObject):
+class FlextTapOracleWMSConfig(FlextMeltanoConfig):
     """Configuration for Oracle WMS tap.
 
     Type-safe configuration with validation for Oracle WMS data extraction.
-    Follows FLEXT patterns using FlextValueObject for immutability.
+    Follows FLEXT patterns using FlextMeltanoConfig for Singer/Meltano integration.
     """
 
     # Connection settings
@@ -226,8 +228,6 @@ class FlextTapOracleWMSConfig(FlextValueObject):
     def validate_dates(cls, v: str | None) -> str | None:
         """Validate date format."""
         if v is not None:
-            from datetime import datetime
-
             try:
                 datetime.fromisoformat(v)
             except ValueError as e:
@@ -253,19 +253,19 @@ class FlextTapOracleWMSConfig(FlextValueObject):
 
             # Validate date range
             if self.start_date and self.end_date:
-                from datetime import datetime
-
                 start = datetime.fromisoformat(self.start_date)
                 end = datetime.fromisoformat(self.end_date)
                 if start > end:
                     return FlextResult.fail("Start date must be before end date")
 
             # Validate performance settings
-            if self.enable_parallel_extraction and self.max_parallel_streams > 5:
-                if not self.enable_rate_limiting:
-                    return FlextResult.fail(
-                        "Rate limiting must be enabled for more than 5 parallel streams",
-                    )
+            max_parallel_streams_without_rate_limit = 5
+            if (self.enable_parallel_extraction
+                and self.max_parallel_streams > max_parallel_streams_without_rate_limit
+                and not self.enable_rate_limiting):
+                return FlextResult.fail(
+                    f"Rate limiting must be enabled for more than {max_parallel_streams_without_rate_limit} parallel streams",
+                )
 
             validation_result = {
                 "valid": True,
@@ -345,8 +345,6 @@ class FlextTapOracleWMSConfig(FlextValueObject):
         if not (self.start_date and self.end_date):
             return FlextResult.ok(None)
 
-        from datetime import datetime
-
         try:
             start = datetime.fromisoformat(self.start_date)
             end = datetime.fromisoformat(self.end_date)
@@ -400,3 +398,33 @@ class FlextTapOracleWMSConfig(FlextValueObject):
             config["ignored_columns"] = self.ignored_columns
 
         return config
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules for Oracle WMS tap configuration.
+
+        Returns:
+            FlextResult indicating success or failure with validation errors.
+
+        """
+        # Validate basic URL format
+        if not self.base_url.startswith(("http://", "https://")):
+            return FlextResult.fail("base_url must start with http:// or https://")
+
+        # Validate timeout settings
+        if self.timeout <= 0:
+            return FlextResult.fail("timeout must be positive")
+
+        # Validate page size limits
+        if not (
+            self.page_size <= FlextTapOracleWMSConstants.MAX_PAGE_SIZE
+            and self.page_size >= FlextTapOracleWMSConstants.MIN_PAGE_SIZE
+        ):
+            return FlextResult.fail(
+                f"page_size must be between {FlextTapOracleWMSConstants.MIN_PAGE_SIZE} and {FlextTapOracleWMSConstants.MAX_PAGE_SIZE}",
+            )
+
+        # Validate auth credentials
+        if not self.username or not self.password:
+            return FlextResult.fail("username and password are required")
+
+        return FlextResult.ok(None)
