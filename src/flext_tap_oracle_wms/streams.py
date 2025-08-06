@@ -9,13 +9,14 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING, ClassVar
 
-from singer_sdk.streams import Stream
+from flext_meltano import Stream
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 
-    from flext_core.flext_types import TAnyDict, TAnyObject
-    from singer_sdk import Tap
+    from flext_core.flext_types import TAnyDict
+    from flext_meltano import Tap
+    from flext_oracle_wms import FlextOracleWmsClient
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class FlextTapOracleWMSStream(Stream):
         self._page_size = self.config.get("page_size", 100)
 
     @property
-    def client(self) -> TAnyObject:  # FlextOracleWmsClient at runtime
+    def client(self) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
         if self._client is None:
             # Access WMS client from tap (FlextTapOracleWMS)
@@ -55,10 +56,11 @@ class FlextTapOracleWMSStream(Stream):
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWMS"
                 raise RuntimeError(msg)
-        return self._client
+        return self._client  # type: ignore[return-value]
 
     def _run_async(
-        self, coro: Coroutine[object, object, object] | Awaitable[object],
+        self,
+        coro: Coroutine[object, object, object] | Awaitable[object],
     ) -> object:
         """Run async coroutine in sync context."""
         loop = asyncio.new_event_loop()
@@ -69,7 +71,8 @@ class FlextTapOracleWMSStream(Stream):
             loop.close()
 
     def get_records(
-        self, context: Mapping[str, TAnyObject] | None,
+        self,
+        context: Mapping[str, object] | None,
     ) -> Iterable[TAnyDict]:
         """Get records from Oracle WMS.
 
@@ -103,11 +106,13 @@ class FlextTapOracleWMSStream(Stream):
                     break
 
             except Exception:
-                logger.exception(f"Error getting records for {self.name}")
+                logger.exception("Error getting records for %s", self.name)
                 break
 
     def _fetch_page_data(
-        self, page: int, context: Mapping[str, TAnyObject] | None,
+        self,
+        page: int,
+        context: Mapping[str, object] | None,
     ) -> tuple[list[TAnyDict], bool] | None:
         """Fetch data for a specific page.
 
@@ -125,13 +130,13 @@ class FlextTapOracleWMSStream(Stream):
 
         # Execute operation
         result = self._run_async(
-            self.client.execute(operation_name, **kwargs),
+            self.client.execute(operation_name, **kwargs),  # type: ignore[attr-defined]
         )
 
         # Check for failure
         if hasattr(result, "is_failure") and result.is_failure:
             error_msg = getattr(result, "error", "Unknown error")
-            logger.error(f"Failed to get records for {self.name}: {error_msg}")
+            logger.error("Failed to get records for %s: %s", self.name, error_msg)
             return None
 
         # Extract and process response data
@@ -139,7 +144,9 @@ class FlextTapOracleWMSStream(Stream):
         return self._extract_records_from_response(data)
 
     def _build_operation_kwargs(
-        self, page: int, context: Mapping[str, TAnyObject] | None,
+        self,
+        page: int,
+        context: Mapping[str, object] | None,
     ) -> TAnyDict:
         """Build kwargs for the operation call.
 
@@ -169,7 +176,8 @@ class FlextTapOracleWMSStream(Stream):
         return kwargs
 
     def _extract_records_from_response(
-        self, data: TAnyObject,
+        self,
+        data: dict[str, object] | list[object] | object,
     ) -> tuple[list[TAnyDict], bool]:
         """Extract records and pagination info from API response.
 
@@ -181,23 +189,35 @@ class FlextTapOracleWMSStream(Stream):
 
         """
         if isinstance(data, dict):
-            records = data.get("data", data.get("items", data.get("results", [])))
-            has_more = data.get("has_more", False) or data.get("next_page", False)
+            raw_records = data.get("data", data.get("items", data.get("results", [])))
+            has_more = bool(data.get("has_more", False) or data.get("next_page", False))
         elif isinstance(data, list):
-            records = data
-            has_more = len(records) == self._page_size
+            raw_records = data
+            has_more = len(raw_records) == self._page_size
         else:
-            records = []
+            raw_records = []
             has_more = False
 
-        # Ensure records is always a list
-        if records is None:
+        # Ensure records is always a list of dict[str, object]
+        if raw_records is None or not isinstance(raw_records, list):
+            records: list[TAnyDict] = []
+        else:
+            # Type cast each record to TAnyDict
             records = []
+            for record in raw_records:
+                if isinstance(record, dict):
+                    # Type narrowing: record is now dict[str, Any] which is compatible with TAnyDict
+                    records.append(record)
+                else:
+                    # Convert non-dict records to dict format
+                    records.append({"value": record})
 
         return records, has_more
 
     def _process_page_records(
-        self, records: list[TAnyDict], context: Mapping[str, TAnyObject] | None,
+        self,
+        records: list[TAnyDict],
+        context: Mapping[str, object] | None,
     ) -> Iterable[TAnyDict]:
         """Process and yield records from a page.
 
@@ -219,7 +239,7 @@ class FlextTapOracleWMSStream(Stream):
     def post_process(
         self,
         row: TAnyDict,
-        _context: Mapping[str, TAnyObject] | None = None,
+        _context: Mapping[str, object] | None = None,
     ) -> TAnyDict | None:
         """Post-process a record.
 

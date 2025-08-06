@@ -368,7 +368,8 @@ class FlextTapOracleWMSDataValidationError(FlextTapOracleWMSError):
             ).__name__
             # Only include value if it's safe to log
             if isinstance(
-                self.validation_context.actual_value, (str, int, float, bool),
+                self.validation_context.actual_value,
+                (str, int, float, bool),
             ):
                 self.context["actual_value"] = str(
                     self.validation_context.actual_value,
