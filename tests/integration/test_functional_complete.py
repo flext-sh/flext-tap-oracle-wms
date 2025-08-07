@@ -117,8 +117,8 @@ class TestOracleWMSFunctionalComplete:
                     len(properties),
                 )
 
-        except Exception as e:
-            logger.exception("❌ Entity discovery failed: %s", e)
+        except Exception:
+            logger.exception("❌ Entity discovery failed")
             raise
 
     @pytest.mark.singer
@@ -216,8 +216,8 @@ class TestOracleWMSFunctionalComplete:
 
             logger.info("✅ Stream URL generated: %s", url)
 
-        except Exception as e:
-            logger.exception("❌ Stream creation failed for %s: %s", stream_id, e)
+        except Exception:
+            logger.exception("❌ Stream creation failed for %s", stream_id)
             raise
 
     @pytest.mark.singer

@@ -462,8 +462,6 @@ class TestOracleWMSE2EComplete:
         real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """E2E: Test performance indicators and scalability."""
-        import time
-
         start_time = time.time()
 
         # Test discovery performance
@@ -596,7 +594,5 @@ class TestOracleWMSE2EComplete:
         assert len(summary["errors"]) == 0, f"Errors found: {summary['errors']}"
 
         logger.info("🎉 ALL E2E INTEGRATION TESTS PASSED!")
-
-        import time
 
         time.sleep(0.1)  # Brief pause for log visibility
