@@ -85,6 +85,10 @@ from flext_tap_oracle_wms.exceptions import (
     FlextTapOracleWMSRetryableError,
     FlextTapOracleWMSStreamError,
 )
+from flext_tap_oracle_wms.plugin import (
+    FlextTapOracleWMSPlugin,
+    create_oracle_wms_tap_plugin,
+)
 from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWMS
 
@@ -114,6 +118,7 @@ __all__ = [
     "FlextTapOracleWMSDiscoveryError",
     "FlextTapOracleWMSError",
     "FlextTapOracleWMSPaginationError",
+    "FlextTapOracleWMSPlugin",
     "FlextTapOracleWMSRateLimitError",
     "FlextTapOracleWMSRetryableError",
     "FlextTapOracleWMSStream",
@@ -130,6 +135,7 @@ __all__ = [
     "__version__",
     "__version_info__",
     "create_meltano_tap_service",
+    "create_oracle_wms_tap_plugin",
     "get_logger",
     "get_tap_test_class",
     "singer_typing",
