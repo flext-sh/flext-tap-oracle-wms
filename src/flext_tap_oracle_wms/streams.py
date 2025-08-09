@@ -14,7 +14,7 @@ from flext_meltano import Stream
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 
-    from flext_core.flext_types import TAnyDict
+    from flext_core.typings import TAnyDict
     from flext_meltano import Tap
     from flext_oracle_wms import FlextOracleWmsClient
 
@@ -56,7 +56,7 @@ class FlextTapOracleWMSStream(Stream):
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWMS"
                 raise RuntimeError(msg)
-        return self._client  # type: ignore[return-value]
+        return self._client
 
     def _run_async(
         self,
@@ -130,7 +130,7 @@ class FlextTapOracleWMSStream(Stream):
 
         # Execute operation
         result = self._run_async(
-            self.client.execute(operation_name, **kwargs),  # type: ignore[attr-defined]
+            self.client.execute(operation_name, **kwargs),
         )
 
         # Check for failure

@@ -25,7 +25,7 @@ from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Sequence
 
-    from flext_core.flext_types import TAnyDict, TAnyObject
+    from flext_core.typings import TAnyDict, TAnyObject
     from flext_meltano import Stream
 
 logger = get_logger(__name__)
@@ -137,7 +137,8 @@ class FlextTapOracleWMS(Tap):
         return self._flext_config
 
     def _run_async(
-        self, coro: Coroutine[object, object, object] | Awaitable[object],
+        self,
+        coro: Coroutine[object, object, object] | Awaitable[object],
     ) -> object:
         """Run async coroutine in sync context."""
         loop = asyncio.new_event_loop()
@@ -179,7 +180,7 @@ class FlextTapOracleWMS(Tap):
                     raise FlextTapOracleWMSConfigurationError(msg)
                 self._is_started = True
 
-        return self._wms_client  # type: ignore[return-value]
+        return self._wms_client
 
     @property
     def discovery(self) -> FlextOracleWmsClient:
@@ -558,8 +559,12 @@ class FlextTapOracleWMS(Tap):
             # This is NOT security-sensitive fake data generation - it's version fallback
             logger = get_logger(__name__)
             logger.debug(f"Package version retrieval failed: {type(e).__name__}: {e}")
-            logger.info("Using fallback version 0.9.0 - legitimate version metadata fallback")
-            logger.debug("This fallback ensures tap version reporting even without installed package metadata")
+            logger.info(
+                "Using fallback version 0.9.0 - legitimate version metadata fallback"
+            )
+            logger.debug(
+                "This fallback ensures tap version reporting even without installed package metadata"
+            )
             # SECURITY CLARIFICATION: This version fallback is appropriate metadata handling
             # Required for tap functionality - NOT security-sensitive data generation
             return "0.9.0"

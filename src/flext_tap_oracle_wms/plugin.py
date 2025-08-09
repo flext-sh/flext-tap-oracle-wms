@@ -37,8 +37,8 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWMS
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from flext_core.flext_types import TAnyDict
     from flext_core.interfaces import FlextPluginContext
+    from flext_core.typings import TAnyDict
     from flext_meltano import Stream
 
 logger = get_logger(__name__)
@@ -78,7 +78,7 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
         >>> # Plugin lifecycle management
         >>> result = plugin.initialize()
         >>> if result.success:
-        >>>     # Execute tap functionality through plugin
+        >>> # Execute tap functionality through plugin
         >>>     streams = plugin.discover_streams()
         >>>     data = plugin.extract_data("inventory", streams[0])
 
@@ -114,7 +114,7 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
         """Get the plugin version."""
         return self._version
 
-    def initialize(self, context: FlextPluginContext) -> FlextResult[None]:  # noqa: ARG002
+    def initialize(self, context: FlextPluginContext) -> FlextResult[None]:
         """Initialize plugin with provided context (FlextPlugin interface)."""
         # Initialize with context (required by FlextPlugin interface)
         # For now, we ignore context and use internal initialization
@@ -156,7 +156,9 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
             logger.exception("Failed to shutdown Oracle WMS tap plugin")
             return FlextResult.fail(f"Plugin shutdown failed: {e}")
 
-    def execute(self, operation: str, parameters: TAnyDict | None = None) -> FlextResult[TAnyDict]:
+    def execute(
+        self, operation: str, parameters: TAnyDict | None = None
+    ) -> FlextResult[TAnyDict]:
         """Execute plugin operations via tap instance.
 
         Args:
@@ -176,7 +178,9 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
         if not self._tap_instance:
             init_result = self.initialize_tap()
             if not init_result.success:
-                return FlextResult.fail(f"Plugin initialization failed: {init_result.error}")
+                return FlextResult.fail(
+                    f"Plugin initialization failed: {init_result.error}"
+                )
 
         try:
             # Define operation mapping to reduce return statements
@@ -211,7 +215,9 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
         if not self._tap_instance:
             init_result = self.initialize_tap()
             if not init_result.success:
-                return FlextResult.fail(f"Plugin initialization failed: {init_result.error}")
+                return FlextResult.fail(
+                    f"Plugin initialization failed: {init_result.error}"
+                )
 
         try:
             # Ensure tap instance exists (replaced assertion with proper error handling)
@@ -240,7 +246,7 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
         """
         return self._tap_instance
 
-    def _execute_discover(self, parameters: TAnyDict) -> FlextResult[TAnyDict]:  # noqa: ARG002
+    def _execute_discover(self, parameters: TAnyDict) -> FlextResult[TAnyDict]:
         """Execute discover operation through tap."""
         streams_result = self.discover_streams()
         if not streams_result.success:
@@ -253,7 +259,9 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
                     "tap_stream_id": stream.tap_stream_id,
                     "schema": stream.schema,
                     "metadata": getattr(stream, "metadata", {}),
-                    "replication_method": getattr(stream, "replication_method", "FULL_TABLE"),
+                    "replication_method": getattr(
+                        stream, "replication_method", "FULL_TABLE"
+                    ),
                 }
                 for stream in streams
             ],
@@ -263,19 +271,21 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
 
         return FlextResult.ok(catalog_data)
 
-    def _execute_sync(self, parameters: TAnyDict) -> FlextResult[TAnyDict]:  # noqa: ARG002
+    def _execute_sync(self, parameters: TAnyDict) -> FlextResult[TAnyDict]:
         """Execute sync operation through tap."""
         # This would need to integrate with Singer protocol for actual sync
         # For now, return placeholder indicating sync capability
-        return FlextResult.ok({
-            "operation": "sync",
-            "status": "completed",
-            "message": "Sync operation would execute through Singer protocol",
-            "streams_synced": 0,
-            "records_extracted": 0,
-        })
+        return FlextResult.ok(
+            {
+                "operation": "sync",
+                "status": "completed",
+                "message": "Sync operation would execute through Singer protocol",
+                "streams_synced": 0,
+                "records_extracted": 0,
+            }
+        )
 
-    def _execute_test(self, parameters: TAnyDict) -> FlextResult[TAnyDict]:  # noqa: ARG002
+    def _execute_test(self, parameters: TAnyDict) -> FlextResult[TAnyDict]:
         """Execute test operation through tap."""
         try:
             if not self._tap_instance:
@@ -283,12 +293,14 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
 
             # Test configuration (Pydantic validation already occurred during creation)
             # Connection test could be added here in the future
-            return FlextResult.ok({
-                "operation": "test",
-                "status": "passed",
-                "message": "Connection and configuration test successful",
-                "tested_at": "2025-01-08T00:00:00Z",  # Should be actual timestamp
-            })
+            return FlextResult.ok(
+                {
+                    "operation": "test",
+                    "status": "passed",
+                    "message": "Connection and configuration test successful",
+                    "tested_at": "2025-01-08T00:00:00Z",  # Should be actual timestamp
+                }
+            )
 
         except Exception as e:
             return FlextResult.fail(f"Test operation failed: {e}")
@@ -313,16 +325,23 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
         # Validate required configuration fields
         # Note: self._tap_config is typed as TAnyDict so it's guaranteed to be a dict
         required_fields = ["base_url", "username", "password"]
-        missing_fields = [field for field in required_fields
-                         if field not in self._tap_config or not self._tap_config[field]]
+        missing_fields = [
+            field
+            for field in required_fields
+            if field not in self._tap_config or not self._tap_config[field]
+        ]
 
         if missing_fields:
-            return FlextResult.fail(f"Missing required configuration fields: {missing_fields}")
+            return FlextResult.fail(
+                f"Missing required configuration fields: {missing_fields}"
+            )
 
         return FlextResult.ok(None)
 
 
-def create_oracle_wms_tap_plugin(config: TAnyDict) -> FlextResult[FlextTapOracleWMSPlugin]:
+def create_oracle_wms_tap_plugin(
+    config: TAnyDict,
+) -> FlextResult[FlextTapOracleWMSPlugin]:
     """Factory function to create Oracle WMS tap plugin instance.
 
     Args:
