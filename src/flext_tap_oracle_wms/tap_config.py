@@ -1,6 +1,7 @@
 """Configuration management for FLEXT Tap Oracle WMS.
 
 Type-safe configuration using FLEXT patterns with Pydantic validation.
+Consolidates configuration management and constants following PEP8 patterns.
 """
 
 from __future__ import annotations
@@ -33,7 +34,9 @@ class FlextTapOracleWMSConstants:
     MAX_TIMEOUT: Final[int] = 300  # Singer-specific maximum
 
     # CONSUME discovery settings from flext-oracle-wms - NO DUPLICATION
-    DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = _WmsConstants.Processing.DEFAULT_SAMPLE_SIZE
+    DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = (
+        _WmsConstants.Processing.DEFAULT_SAMPLE_SIZE
+    )
     MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = 1000  # Singer-specific maximum
 
 
@@ -263,9 +266,11 @@ class FlextTapOracleWMSConfig(FlextMeltanoConfig):
 
             # Validate performance settings
             max_parallel_streams_without_rate_limit = 5
-            if (self.enable_parallel_extraction
+            if (
+                self.enable_parallel_extraction
                 and self.max_parallel_streams > max_parallel_streams_without_rate_limit
-                and not self.enable_rate_limiting):
+                and not self.enable_rate_limiting
+            ):
                 return FlextResult.fail(
                     f"Rate limiting must be enabled for more than {max_parallel_streams_without_rate_limit} parallel streams",
                 )
@@ -402,7 +407,7 @@ class FlextTapOracleWMSConfig(FlextMeltanoConfig):
 
         return config
 
-    def validate_business_rules(self) -> FlextResult[None]:
+    def validate_oracle_wms_business_rules(self) -> FlextResult[None]:
         """Validate business rules for Oracle WMS tap configuration.
 
         Returns:

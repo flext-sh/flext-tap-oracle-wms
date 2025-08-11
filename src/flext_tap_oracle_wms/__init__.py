@@ -4,6 +4,7 @@
 **Integration**: Complete flext-meltano ecosystem integration with ALL facilities utilized
 **Quality**: 100% type safety, 90%+ test coverage, zero-tolerance quality standards
 **WMS Integration**: Complete Oracle WMS API connectivity via flext-oracle-wms
+**Structure**: PEP8-compliant module organization following FLEXT patterns
 
 ## Enterprise Integration Features:
 
@@ -29,6 +30,14 @@
    - 90%+ test coverage with comprehensive test suite
    - All lint rules passing with Ruff
    - Security scanning with Bandit and pip-audit
+
+5. **PEP8 Structure**: Clean module organization
+   - tap_config.py: Configuration management and constants
+   - tap_client.py: Consolidated tap and plugin functionality
+   - tap_streams.py: Stream definitions and processing
+   - tap_cli.py: Command-line interface
+   - tap_exceptions.py: Exception hierarchy
+   - tap_models.py: Data models and structures
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -71,9 +80,17 @@ from flext_meltano import (
     singer_typing,
 )
 
-# Local implementations with complete flext-meltano integration
-from flext_tap_oracle_wms.config import FlextTapOracleWMSConfig
-from flext_tap_oracle_wms.exceptions import (
+# PEP8-compliant local imports from reorganized modules
+from flext_tap_oracle_wms.tap_config import (
+    FlextTapOracleWMSConfig,
+    FlextTapOracleWMSConstants,
+)
+from flext_tap_oracle_wms.tap_client import (
+    FlextTapOracleWMS,
+    FlextTapOracleWMSPlugin,
+    create_oracle_wms_tap_plugin,
+)
+from flext_tap_oracle_wms.tap_exceptions import (
     FlextTapOracleWMSAuthenticationError,
     FlextTapOracleWMSConfigurationError,
     FlextTapOracleWMSConnectionError,
@@ -81,16 +98,21 @@ from flext_tap_oracle_wms.exceptions import (
     FlextTapOracleWMSDiscoveryError,
     FlextTapOracleWMSError,
     FlextTapOracleWMSPaginationError,
+    FlextTapOracleWMSProcessingError,
     FlextTapOracleWMSRateLimitError,
     FlextTapOracleWMSRetryableError,
     FlextTapOracleWMSStreamError,
+    FlextTapOracleWMSTimeoutError,
+    FlextTapOracleWMSValidationError,
+    ValidationContext,
 )
-from flext_tap_oracle_wms.plugin import (
-    FlextTapOracleWMSPlugin,
-    create_oracle_wms_tap_plugin,
+from flext_tap_oracle_wms.tap_models import (
+    CatalogStream,
+    OracleWMSEntityModel,
+    StreamMetadata,
+    StreamSchema,
 )
-from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
-from flext_tap_oracle_wms.tap import FlextTapOracleWMS
+from flext_tap_oracle_wms.tap_streams import FlextTapOracleWMSStream
 
 # Version following semantic versioning
 try:
@@ -100,30 +122,15 @@ except importlib.metadata.PackageNotFoundError:
 
 __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
-# Complete public API exports
+# Complete public API exports - maintaining backward compatibility
 __all__ = [
+    # flext-meltano integration
     "BatchSink",
     "FlextMeltanoBaseService",
     "FlextMeltanoBridge",
     "FlextMeltanoConfig",
     "FlextMeltanoEvent",
     "FlextMeltanoTapService",
-    "FlextResult",
-    "FlextTapOracleWMS",
-    "FlextTapOracleWMSAuthenticationError",
-    "FlextTapOracleWMSConfig",
-    "FlextTapOracleWMSConfigurationError",
-    "FlextTapOracleWMSConnectionError",
-    "FlextTapOracleWMSDataValidationError",
-    "FlextTapOracleWMSDiscoveryError",
-    "FlextTapOracleWMSError",
-    "FlextTapOracleWMSPaginationError",
-    "FlextTapOracleWMSPlugin",
-    "FlextTapOracleWMSRateLimitError",
-    "FlextTapOracleWMSRetryableError",
-    "FlextTapOracleWMSStream",
-    "FlextTapOracleWMSStreamError",
-    "FlextValueObject",
     "OAuthAuthenticator",
     "PropertiesList",
     "Property",
@@ -132,11 +139,43 @@ __all__ = [
     "Stream",
     "Tap",
     "Target",
-    "__version__",
-    "__version_info__",
     "create_meltano_tap_service",
-    "create_oracle_wms_tap_plugin",
-    "get_logger",
     "get_tap_test_class",
     "singer_typing",
+    # flext-core integration
+    "FlextResult",
+    "FlextValueObject",
+    "get_logger",
+    # Tap implementation (PEP8 reorganized)
+    "FlextTapOracleWMS",
+    "FlextTapOracleWMSPlugin",
+    "create_oracle_wms_tap_plugin",
+    # Configuration
+    "FlextTapOracleWMSConfig",
+    "FlextTapOracleWMSConstants",
+    # Streams
+    "FlextTapOracleWMSStream",
+    # Models
+    "CatalogStream",
+    "OracleWMSEntityModel",
+    "StreamMetadata",
+    "StreamSchema",
+    # Exceptions
+    "FlextTapOracleWMSAuthenticationError",
+    "FlextTapOracleWMSConfigurationError",
+    "FlextTapOracleWMSConnectionError",
+    "FlextTapOracleWMSDataValidationError",
+    "FlextTapOracleWMSDiscoveryError",
+    "FlextTapOracleWMSError",
+    "FlextTapOracleWMSPaginationError",
+    "FlextTapOracleWMSProcessingError",
+    "FlextTapOracleWMSRateLimitError",
+    "FlextTapOracleWMSRetryableError",
+    "FlextTapOracleWMSStreamError",
+    "FlextTapOracleWMSTimeoutError",
+    "FlextTapOracleWMSValidationError",
+    "ValidationContext",
+    # Version info
+    "__version__",
+    "__version_info__",
 ]
