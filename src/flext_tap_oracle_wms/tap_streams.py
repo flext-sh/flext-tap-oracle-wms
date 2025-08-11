@@ -1,15 +1,17 @@
 """Streams for FLEXT Tap Oracle WMS.
 
 Implements Singer streams for Oracle WMS entities using flext-oracle-wms client.
+Consolidates stream definitions and functionality following PEP8 patterns.
 """
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import TYPE_CHECKING, ClassVar
 
 from flext_meltano import Stream
+
+from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Iterable, Mapping
@@ -56,19 +58,14 @@ class FlextTapOracleWMSStream(Stream):
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWMS"
                 raise RuntimeError(msg)
-        return self._client
+        return self._client  # type: ignore[return-value]
 
     def _run_async(
         self,
         coro: Coroutine[object, object, object] | Awaitable[object],
     ) -> object:
         """Run async coroutine in sync context."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            return loop.run_until_complete(coro)
-        finally:
-            loop.close()
+        return run_async(coro)
 
     def get_records(
         self,
@@ -129,9 +126,18 @@ class FlextTapOracleWMSStream(Stream):
         kwargs = self._build_operation_kwargs(page, context)
 
         # Execute operation
-        result = self._run_async(
-            self.client.execute(operation_name, **kwargs),
-        )
+        # Execute operation using dynamic method call
+        execute_method = getattr(self.client, "execute", None)
+        if execute_method:
+            result = self._run_async(execute_method(operation_name, **kwargs))
+        else:
+            # Fallback: try direct method call
+            method = getattr(self.client, operation_name, None)
+            if method:
+                result = self._run_async(method(**kwargs))
+            else:
+                logger.error("Method %s not found on WMS client", operation_name)
+                return None
 
         # Check for failure
         if hasattr(result, "is_failure") and result.is_failure:
