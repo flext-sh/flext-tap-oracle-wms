@@ -37,7 +37,7 @@ class StreamMetadata(FlextValueObject):
             List of Singer metadata entries
 
         """
-        metadata = [
+        metadata: list[dict[str, Any]] = [
             {
                 "breadcrumb": [],
                 "metadata": {
@@ -45,11 +45,11 @@ class StreamMetadata(FlextValueObject):
                     "forced-replication-method": self.replication_method,
                     "table-key-properties": self.primary_keys,
                 },
-            }
+            },
         ]
 
         if self.replication_key:
-            metadata[0]["metadata"]["replication-key"] = self.replication_key  # type: ignore[index]
+            metadata[0]["metadata"]["replication-key"] = self.replication_key
 
         return metadata
 

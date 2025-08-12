@@ -14,15 +14,16 @@ if TYPE_CHECKING:
 
 def run_async(coro: Coroutine[object, object, object] | Awaitable[object]) -> object:
     """Run async coroutine in sync context.
-    
+
     This is a shared utility to eliminate the duplicate _run_async methods
     found in tap_client.py and tap_streams.py.
-    
+
     Args:
         coro: Coroutine or awaitable to run
-        
+
     Returns:
         Result of the coroutine execution
+
     """
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
