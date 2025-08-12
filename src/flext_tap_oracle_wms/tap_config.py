@@ -11,7 +11,7 @@ from typing import Final
 
 from flext_core import FlextResult
 from flext_meltano import FlextMeltanoConfig
-from flext_oracle_wms.constants import (
+from flext_oracle_wms.wms_constants import (
     FlextOracleWmsSemanticConstants as _WmsConstants,
 )
 from pydantic import Field, SecretStr, field_validator

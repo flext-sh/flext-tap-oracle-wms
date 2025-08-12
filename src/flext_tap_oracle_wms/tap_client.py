@@ -15,7 +15,7 @@ from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsClientConfig,
 )
-from flext_oracle_wms.api_catalog import FlextOracleWmsApiVersion
+from flext_oracle_wms.wms_constants import FlextOracleWmsApiVersion
 
 from flext_tap_oracle_wms.tap_config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.tap_exceptions import FlextTapOracleWMSConfigurationError
@@ -114,7 +114,7 @@ class FlextTapOracleWMS(Tap):
         self._flext_config = config
 
         # Initialize instance attributes before parent init
-        self._wms_client: object | None = None
+        self._wms_client: FlextOracleWmsClient | None = None
         self._discovery: object | None = None
         self._is_started = False
 
@@ -159,7 +159,8 @@ class FlextTapOracleWMS(Tap):
                 ),
                 timeout=self.flext_config.timeout,
                 max_retries=self.flext_config.max_retries,
-                api_version=FlextOracleWmsApiVersion(self.flext_config.api_version),
+                # Convert string api_version to proper enum
+                api_version=FlextOracleWmsApiVersion.LGF_V10 if self.flext_config.api_version in {"v10", "10"} else FlextOracleWmsApiVersion.LEGACY,
                 verify_ssl=self.flext_config.verify_ssl,
                 enable_logging=True,
             )
@@ -167,16 +168,17 @@ class FlextTapOracleWMS(Tap):
             # Create client
             self._wms_client = FlextOracleWmsClient(client_config)
 
-            # Start client (async operation)
+            # Initialize client (async operation)
             if not self._is_started:
-                start_result = self._run_async(self._wms_client.start())
-                if hasattr(start_result, "is_failure") and start_result.is_failure:
-                    error_msg = getattr(start_result, "error", "Unknown error")
-                    msg = f"Failed to start Oracle WMS client: {error_msg}"
+                init_result = self._run_async(self._wms_client.initialize())
+                if hasattr(init_result, "is_failure") and init_result.is_failure:
+                    error_msg = getattr(init_result, "error", "Unknown error")
+                    msg = f"Failed to initialize Oracle WMS client: {error_msg}"
                     raise FlextTapOracleWMSConfigurationError(msg)
                 self._is_started = True
 
-        return self._wms_client  # type: ignore[return-value]
+        # Type narrowing: after initialization above, _wms_client is guaranteed to be FlextOracleWmsClient
+        return self._wms_client
 
     @property
     def discovery(self) -> FlextOracleWmsClient:
@@ -517,22 +519,25 @@ class FlextTapOracleWMS(Tap):
             if validation_result.is_failure:
                 return validation_result
 
-            # Test connection using flext-oracle-wms health check
-            health_result = self._run_async(self.wms_client.health_check())
-            if hasattr(health_result, "is_failure") and health_result.is_failure:
-                error_msg = getattr(
-                    health_result,
-                    "error",
-                    "Unknown health check error",
-                )
-                return FlextResult.fail(f"Connection test failed: {error_msg}")
+            # Test connection by attempting entity discovery
+            try:
+                discovery_result = self._run_async(self.wms_client.discover_entities())
+                if hasattr(discovery_result, "is_failure") and discovery_result.is_failure:
+                    error_msg = getattr(
+                        discovery_result,
+                        "error",
+                        "Unknown connection error",
+                    )
+                    return FlextResult.fail(f"Connection test failed: {error_msg}")
+            except Exception as e:
+                return FlextResult.fail(f"Connection test failed: {e}")
 
             validation_info = {
                 "valid": True,
                 "connection": "success",
                 "base_url": self.flext_config.base_url,
                 "api_version": self.flext_config.api_version,
-                "health": getattr(health_result, "data", None),
+                "health": getattr(discovery_result, "data", None) if "discovery_result" in locals() else None,
             }
 
             logger.info("Configuration validated successfully")
@@ -556,10 +561,10 @@ class FlextTapOracleWMS(Tap):
             logger = get_logger(__name__)
             logger.debug(f"Package version retrieval failed: {type(e).__name__}: {e}")
             logger.info(
-                "Using fallback version 0.9.0 - legitimate version metadata fallback"
+                "Using fallback version 0.9.0 - legitimate version metadata fallback",
             )
             logger.debug(
-                "This fallback ensures tap version reporting even without installed package metadata"
+                "This fallback ensures tap version reporting even without installed package metadata",
             )
             # SECURITY CLARIFICATION: This version fallback is appropriate metadata handling
             # Required for tap functionality - NOT security-sensitive data generation
@@ -707,7 +712,9 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
             return FlextResult.fail(f"Plugin shutdown failed: {e}")
 
     def execute(
-        self, operation: str, parameters: FlextTypes.Core.JsonDict | None = None
+        self,
+        operation: str,
+        parameters: FlextTypes.Core.JsonDict | None = None,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Execute plugin operations via tap instance.
 
@@ -729,7 +736,7 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
             init_result = self.initialize_tap()
             if not init_result.success:
                 return FlextResult.fail(
-                    f"Plugin initialization failed: {init_result.error}"
+                    f"Plugin initialization failed: {init_result.error}",
                 )
 
         try:
@@ -766,7 +773,7 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
             init_result = self.initialize_tap()
             if not init_result.success:
                 return FlextResult.fail(
-                    f"Plugin initialization failed: {init_result.error}"
+                    f"Plugin initialization failed: {init_result.error}",
                 )
 
         try:
@@ -797,7 +804,8 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
         return self._tap_instance
 
     def _execute_discover(
-        self, _parameters: FlextTypes.Core.JsonDict
+        self,
+        _parameters: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Execute discover operation through tap."""
         streams_result = self.discover_streams()
@@ -812,7 +820,9 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
                     "schema": stream.schema,
                     "metadata": getattr(stream, "metadata", {}),
                     "replication_method": getattr(
-                        stream, "replication_method", "FULL_TABLE"
+                        stream,
+                        "replication_method",
+                        "FULL_TABLE",
                     ),
                 }
                 for stream in streams
@@ -824,7 +834,8 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
         return FlextResult.ok(catalog_data)
 
     def _execute_sync(
-        self, _parameters: FlextTypes.Core.JsonDict
+        self,
+        _parameters: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Execute sync operation through tap."""
         # This would need to integrate with Singer protocol for actual sync
@@ -836,11 +847,12 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
                 "message": "Sync operation would execute through Singer protocol",
                 "streams_synced": 0,
                 "records_extracted": 0,
-            }
+            },
         )
 
     def _execute_test(
-        self, _parameters: FlextTypes.Core.JsonDict
+        self,
+        _parameters: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Execute test operation through tap."""
         try:
@@ -855,14 +867,15 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
                     "status": "passed",
                     "message": "Connection and configuration test successful",
                     "tested_at": "2025-01-08T00:00:00Z",  # Should be actual timestamp
-                }
+                },
             )
 
         except Exception as e:
             return FlextResult.fail(f"Test operation failed: {e}")
 
     def _execute_catalog(
-        self, parameters: FlextTypes.Core.JsonDict
+        self,
+        parameters: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Execute catalog generation through tap."""
         # Alias for discover operation
@@ -891,7 +904,7 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
 
         if missing_fields:
             return FlextResult.fail(
-                f"Missing required configuration fields: {missing_fields}"
+                f"Missing required configuration fields: {missing_fields}",
             )
 
         return FlextResult.ok(None)

@@ -44,7 +44,7 @@ class FlextTapOracleWMSStream(Stream):
         """Initialize stream."""
         super().__init__(tap=tap, name=name or self.name, schema=schema)
         # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
-        self._client: object | None = None
+        self._client: FlextOracleWmsClient | None = None
         self._page_size = self.config.get("page_size", 100)
 
     @property
@@ -58,7 +58,11 @@ class FlextTapOracleWMSStream(Stream):
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWMS"
                 raise RuntimeError(msg)
-        return self._client  # type: ignore[return-value]
+        # Type narrowing: after the RuntimeError check above, self._client is guaranteed to be FlextOracleWmsClient
+        if self._client is None:
+            msg = "Client not available after initialization - this should not happen"
+            raise RuntimeError(msg)
+        return self._client
 
     def _run_async(
         self,
@@ -194,29 +198,33 @@ class FlextTapOracleWMSStream(Stream):
             Tuple of (records, has_more)
 
         """
-        if isinstance(data, dict):
-            raw_records = data.get("data", data.get("items", data.get("results", [])))
-            has_more = bool(data.get("has_more", False) or data.get("next_page", False))
-        elif isinstance(data, list):
-            raw_records = data
-            has_more = len(raw_records) == self._page_size
-        else:
-            raw_records = []
-            has_more = False
+        match data:
+            case dict() as data_dict:
+                raw_records = data_dict.get("data", data_dict.get("items", data_dict.get("results", [])))
+                has_more = bool(data_dict.get("has_more", False) or data_dict.get("next_page", False))
+            case list() as data_list:
+                raw_records = data_list
+                has_more = len(data_list) == self._page_size
+            case _:
+                raw_records = []
+                has_more = False
 
         # Ensure records is always a list of dict[str, object]
-        if raw_records is None or not isinstance(raw_records, list):
-            records: list[TAnyDict] = []
-        else:
-            # Type cast each record to TAnyDict
-            records = []
-            for record in raw_records:
-                if isinstance(record, dict):
-                    # Type narrowing: record is now dict[str, Any] which is compatible with TAnyDict
-                    records.append(record)
-                else:
-                    # Convert non-dict records to dict format
-                    records.append({"value": record})
+        match raw_records:
+            case list() as records_list:
+                # Type cast each record to TAnyDict
+                coerced_records: list[TAnyDict] = []
+                for record in records_list:
+                    match record:
+                        case dict() as record_dict:
+                            # Type narrowing: record is now dict which is compatible with TAnyDict
+                            coerced_records.append(record_dict)
+                        case _:
+                            # Convert non-dict records to dict format
+                            coerced_records.append({"value": record})
+                records = coerced_records
+            case _:
+                records = []
 
         return records, has_more
 

@@ -123,59 +123,18 @@ except importlib.metadata.PackageNotFoundError:
 __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
 # Complete public API exports - maintaining backward compatibility
-__all__ = [
-    # flext-meltano integration
-    "BatchSink",
-    "FlextMeltanoBaseService",
-    "FlextMeltanoBridge",
-    "FlextMeltanoConfig",
-    "FlextMeltanoEvent",
-    "FlextMeltanoTapService",
-    "OAuthAuthenticator",
-    "PropertiesList",
-    "Property",
-    "SQLSink",
-    "Sink",
-    "Stream",
-    "Tap",
-    "Target",
-    "create_meltano_tap_service",
-    "get_tap_test_class",
-    "singer_typing",
-    # flext-core integration
-    "FlextResult",
-    "FlextValueObject",
-    "get_logger",
-    # Tap implementation (PEP8 reorganized)
-    "FlextTapOracleWMS",
-    "FlextTapOracleWMSPlugin",
-    "create_oracle_wms_tap_plugin",
-    # Configuration
-    "FlextTapOracleWMSConfig",
-    "FlextTapOracleWMSConstants",
-    # Streams
-    "FlextTapOracleWMSStream",
-    # Models
-    "CatalogStream",
-    "OracleWMSEntityModel",
-    "StreamMetadata",
-    "StreamSchema",
-    # Exceptions
-    "FlextTapOracleWMSAuthenticationError",
-    "FlextTapOracleWMSConfigurationError",
-    "FlextTapOracleWMSConnectionError",
-    "FlextTapOracleWMSDataValidationError",
-    "FlextTapOracleWMSDiscoveryError",
-    "FlextTapOracleWMSError",
-    "FlextTapOracleWMSPaginationError",
-    "FlextTapOracleWMSProcessingError",
-    "FlextTapOracleWMSRateLimitError",
-    "FlextTapOracleWMSRetryableError",
-    "FlextTapOracleWMSStreamError",
-    "FlextTapOracleWMSTimeoutError",
-    "FlextTapOracleWMSValidationError",
-    "ValidationContext",
-    # Version info
-    "__version__",
-    "__version_info__",
+__all__: list[str] = [
+    "BatchSink", "FlextMeltanoBaseService", "FlextMeltanoBridge", "FlextMeltanoConfig",
+    "FlextMeltanoEvent", "FlextMeltanoTapService", "OAuthAuthenticator", "PropertiesList", "Property",
+    "SQLSink", "Sink", "Stream", "Tap", "Target", "create_meltano_tap_service", "get_tap_test_class",
+    "singer_typing", "FlextResult", "FlextValueObject", "get_logger", "FlextTapOracleWMS",
+    "FlextTapOracleWMSPlugin", "create_oracle_wms_tap_plugin", "FlextTapOracleWMSConfig",
+    "FlextTapOracleWMSConstants", "FlextTapOracleWMSStream", "CatalogStream", "OracleWMSEntityModel",
+    "StreamMetadata", "StreamSchema", "FlextTapOracleWMSAuthenticationError",
+    "FlextTapOracleWMSConfigurationError", "FlextTapOracleWMSConnectionError",
+    "FlextTapOracleWMSDataValidationError", "FlextTapOracleWMSDiscoveryError", "FlextTapOracleWMSError",
+    "FlextTapOracleWMSPaginationError", "FlextTapOracleWMSProcessingError",
+    "FlextTapOracleWMSRateLimitError", "FlextTapOracleWMSRetryableError", "FlextTapOracleWMSStreamError",
+    "FlextTapOracleWMSTimeoutError", "FlextTapOracleWMSValidationError", "ValidationContext",
+    "__version__", "__version_info__", "annotations",
 ]
