@@ -430,7 +430,8 @@ class FlextTapOracleWMS(Tap):
         return streams
 
     def _create_single_stream(
-        self, stream_def: FlextTypes.Core.AnyDict,
+        self,
+        stream_def: FlextTypes.Core.AnyDict,
     ) -> Stream | None:
         """Create a single stream from definition.
 

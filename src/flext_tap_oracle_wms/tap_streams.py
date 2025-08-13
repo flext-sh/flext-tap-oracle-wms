@@ -202,7 +202,8 @@ class FlextTapOracleWMSStream(Stream):
         match data:
             case dict() as data_dict:
                 raw_records = data_dict.get(
-                    "data", data_dict.get("items", data_dict.get("results", [])),
+                    "data",
+                    data_dict.get("items", data_dict.get("results", [])),
                 )
                 has_more = bool(
                     data_dict.get("has_more", False)
