@@ -31,10 +31,6 @@ classifiers = [
     "Topic :: System :: Archiving",
 ]
 dependencies = [
-    "flext-core @ file:///home/marlonsc/flext/flext-core",
-    "flext-meltano @ file:///home/marlonsc/flext/flext-meltano",
-    "flext-oracle-wms @ file:///home/marlonsc/flext/flext-oracle-wms",
-    "flext-observability @ file:///home/marlonsc/flext/flext-observability",
     "pydantic>=2.11.7",
     "pydantic-settings>=2.10.1",
     "requests>=2.31.0",
@@ -106,6 +102,8 @@ warn_required_dynamic_aliases = true
 include = "flext_tap_oracle_wms"
 from = "src"
 
+# Local workspace dependencies are defined under [tool.poetry.dependencies]
+
 [tool.deptry]
 known_first_party = ["flext_tap_oracle_wms"]
 
@@ -166,14 +164,12 @@ python = ">=3.13,<3.14"
 pydantic = ">=2.11.7"
 requests = ">=2.31.0"
 httpx = ">=0.27.0"
+flext-core = { path = "../flext-core", develop = true }
+flext-meltano = { path = "../flext-meltano", develop = true }
+flext-oracle-wms = { path = "../flext-oracle-wms", develop = true }
+flext-observability = { path = "../flext-observability", develop = true }
 
-[tool.poetry.dependencies.flext-core]
-path = "../flext-core"
-develop = true
 
-[tool.poetry.dependencies.flext-observability]
-path = "../flext-observability"
-develop = true
 
 [tool.poetry.group.dev.dependencies]
 ruff = ">=0.12.3"

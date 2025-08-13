@@ -20,7 +20,7 @@ from flext_oracle_wms.wms_constants import FlextOracleWmsApiVersion
 from flext_tap_oracle_wms.tap_config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.tap_exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.tap_streams import FlextTapOracleWMSStream
-from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
@@ -905,7 +905,7 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
 
         """
         # Validate required configuration fields
-        # Note: self._tap_config is typed as TAnyDict so it's guaranteed to be a dict
+        # Note: self._tap_config is typed as FlextTypes.Core.AnyDict so it's guaranteed to be a dict
         required_fields = ["base_url", "username", "password"]
         missing_fields = [
             field

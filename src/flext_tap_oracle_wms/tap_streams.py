@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, ClassVar
 
 from flext_meltano import Stream
 
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
@@ -224,7 +223,7 @@ class FlextTapOracleWMSStream(Stream):
                 for record in records_list:
                     match record:
                         case dict() as record_dict:
-                            # Type narrowing: record is now dict which is compatible with TAnyDict
+                            # Type narrowing: record is now dict which is compatible with FlextTypes.Core.AnyDict
                             coerced_records.append(record_dict)
                         case _:
                             # Convert non-dict records to dict format
