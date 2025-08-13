@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is `flext-tap-oracle-wms`, a Singer tap for extracting data from Oracle Warehouse Management Systems (WMS). It's part of the FLEXT ecosystem and uses the Singer SDK for data extraction.
+This is `flext-tap-oracle-wms`, a Singer tap for extracting data from Oracle Warehouse Management Systems (WMS). It uses the Singer SDK for data extraction.
 
 **⚠️ CRITICAL STATUS**: This project requires significant refactoring due to architectural over-engineering. The current implementation has 26 Python files with 8,179 lines of code where 6-8 files with ~800 lines would suffice. See [docs/TODO.md](docs/TODO.md) for detailed analysis and refactoring plan.
 
