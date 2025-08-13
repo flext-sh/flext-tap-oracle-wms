@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, ClassVar
 
 from flext_meltano import Stream
 
-from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:
@@ -19,6 +18,8 @@ if TYPE_CHECKING:
 
     from flext_meltano import Tap
     from flext_oracle_wms import FlextOracleWmsClient
+
+    from flext_tap_oracle_wms.typings import FlextTypes
 
 logger = logging.getLogger(__name__)
 
@@ -200,8 +201,13 @@ class FlextTapOracleWMSStream(Stream):
         """
         match data:
             case dict() as data_dict:
-                raw_records = data_dict.get("data", data_dict.get("items", data_dict.get("results", [])))
-                has_more = bool(data_dict.get("has_more", False) or data_dict.get("next_page", False))
+                raw_records = data_dict.get(
+                    "data", data_dict.get("items", data_dict.get("results", [])),
+                )
+                has_more = bool(
+                    data_dict.get("has_more", False)
+                    or data_dict.get("next_page", False),
+                )
             case list() as data_list:
                 raw_records = data_list
                 has_more = len(data_list) == self._page_size
@@ -212,8 +218,8 @@ class FlextTapOracleWMSStream(Stream):
         # Ensure records is always a list of dict[str, object]
         match raw_records:
             case list() as records_list:
-                # Type cast each record to TAnyDict
-                coerced_records: list[TAnyDict] = []
+                # Type cast each record to AnyDict
+                coerced_records: list[FlextTypes.Core.AnyDict] = []
                 for record in records_list:
                     match record:
                         case dict() as record_dict:

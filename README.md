@@ -1,10 +1,10 @@
 # flext-tap-oracle-wms
 
-**Type**: Singer Tap | **Status**: Development | **Dependencies**: flext-core, flext-oracle-wms
+**Type**: Singer Tap | **Status**: Active Development | **Dependencies**: flext-core, flext-oracle-wms
 
 Singer-compliant tap for extracting data from Oracle Warehouse Management Systems.
 
-> **⚠️ Development Status**: 10 streams working, 37 MyPy errors (regression), over-engineered architecture needs simplification
+> ⚠️ Development Status: 10 streams working; 37 MyPy errors (regression); architecture simplification planned.
 
 ## Quick Start
 
@@ -198,11 +198,11 @@ export TAP_ORACLE_WMS_START_DATE="2024-01-01T00:00:00Z"
 
 ## Quality Standards
 
-### **Zero Tolerance Quality Gates**
+### **Quality Targets**
 
-- **Coverage**: 90% test coverage enforced
-- **Type Safety**: Strict MyPy configuration (37 errors need fixing)
-- **Linting**: Ruff with comprehensive rules (currently passing)
+- **Coverage**: 90% target
+- **Type Safety**: MyPy strict mode planned (currently ~37 errors)
+- **Linting**: Ruff with comprehensive rules
 - **Security**: Bandit + pip-audit scanning
 
 ## Integration with FLEXT Ecosystem

@@ -11,6 +11,7 @@ from unittest.mock import Mock
 
 import pytest
 import requests
+from flext_api.constants import FlextApiConstants
 from flext_core import get_logger
 
 if TYPE_CHECKING:
@@ -452,7 +453,7 @@ class TestWMSPaginatorUnit:
         response = Mock(spec=requests.Response)
         response.json.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
         response.status_code = 200
-        response.headers = {"Content-Type": "application/json"}
+        response.headers = {"Content-Type": FlextApiConstants.ContentTypes.JSON}
 
         with pytest.raises(ValueError, match="Critical pagination failure"):
             paginator.get_next_url(response)

@@ -497,4 +497,4 @@ class SecureWMSConfig(WMSConfig):
 
 ---
 
-**Status**: Architecture Defined | **Next**: Implementation of simplified architecture | **Updated**: 2025-08-04
+**Status**: Architecture Defined | **Next**: Implementation of simplified architecture | **Updated**: 2025-08-13
