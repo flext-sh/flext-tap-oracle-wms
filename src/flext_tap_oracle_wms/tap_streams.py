@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING, ClassVar
+from flext_tap_oracle_wms.typings import FlextTypes
 
 from flext_meltano import Stream
 
@@ -18,8 +19,6 @@ if TYPE_CHECKING:
 
     from flext_meltano import Tap
     from flext_oracle_wms import FlextOracleWmsClient
-
-    from flext_tap_oracle_wms.typings import FlextTypes
 
 logger = logging.getLogger(__name__)
 
