@@ -191,33 +191,39 @@ tests/fixtures/e2e/
 ### **Command Execution Testing**
 
 ```python
-import subprocess
+import asyncio
 import json
 from pathlib import Path
 
-def run_tap_command(args, input_data=None, timeout=300):
-    """Execute tap command and capture results."""
-    cmd = ["tap-oracle-wms"] + args
-
-    result = subprocess.run(
-        cmd,
-        input=input_data,
-        capture_output=True,
-        text=True,
-        timeout=timeout
+async def run_tap_command(args: list[str], input_data: str | None = None, timeout: int = 300):
+    """Execute tap command and capture results using asyncio."""
+    cmd = ["tap-oracle-wms", *args]
+    process = await asyncio.create_subprocess_exec(
+        *cmd,
+        stdin=asyncio.subprocess.PIPE if input_data else None,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
     )
-
+    try:
+        stdout, stderr = await asyncio.wait_for(
+            process.communicate(input=input_data.encode() if input_data else None),
+            timeout=timeout,
+        )
+    except asyncio.TimeoutError:
+        process.kill()
+        await process.communicate()
+        raise
     return CLIResult(
-        returncode=result.returncode,
-        stdout=result.stdout,
-        stderr=result.stderr,
-        command=cmd
+        returncode=process.returncode,
+        stdout=stdout.decode(),
+        stderr=stderr.decode(),
+        command=cmd,
     )
 
 def test_cli_discovery_execution():
     """Test CLI discovery command execution."""
     with e2e_mock_environment():
-        result = run_tap_command([
+        result = await run_tap_command([
             "--config", "tests/fixtures/e2e/basic_e2e.json",
             "--discover"
         ])
