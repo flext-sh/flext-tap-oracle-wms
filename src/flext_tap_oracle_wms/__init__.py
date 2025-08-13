@@ -106,7 +106,7 @@ from flext_tap_oracle_wms.tap_exceptions import (
     FlextTapOracleWMSValidationError,
     ValidationContext,
 )
-from flext_tap_oracle_wms.tap_models import (
+from flext_tap_oracle_wms.models import (
     CatalogStream,
     OracleWMSEntityModel,
     StreamMetadata,
