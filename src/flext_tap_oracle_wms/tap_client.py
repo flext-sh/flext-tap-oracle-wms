@@ -20,13 +20,13 @@ from flext_oracle_wms.wms_constants import FlextOracleWmsApiVersion
 from flext_tap_oracle_wms.tap_config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.tap_exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.tap_streams import FlextTapOracleWMSStream
+from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Sequence
 
-    from flext_core import FlextPluginContext, FlextTypes
-    from flext_core.typings import TAnyDict, TAnyObject
+    from flext_core import FlextPluginContext
     from flext_meltano import Stream
 
 logger = get_logger(__name__)
@@ -313,7 +313,7 @@ class FlextTapOracleWMS(Tap):
             "streams": streams,
         }
 
-    def _convert_fields_to_properties(self, fields: TAnyObject) -> dict[str, object]:
+    def _convert_fields_to_properties(self, fields: object) -> dict[str, object]:
         """Convert Oracle WMS fields to Singer properties."""
         properties: dict[str, object] = {}
 
@@ -374,7 +374,7 @@ class FlextTapOracleWMS(Tap):
         logger.info("Discovered %d dynamic streams", len(streams))
         return streams
 
-    def _get_stream_definitions_from_catalog(self) -> list[TAnyDict]:
+    def _get_stream_definitions_from_catalog(self) -> list[FlextTypes.Core.AnyDict]:
         """Get stream definitions from discovered catalog.
 
         Returns:
@@ -401,7 +401,7 @@ class FlextTapOracleWMS(Tap):
 
     def _create_streams_from_definitions(
         self,
-        stream_definitions: list[TAnyDict],
+        stream_definitions: list[FlextTypes.Core.AnyDict],
     ) -> list[Stream]:
         """Create stream instances from stream definitions.
 
@@ -425,7 +425,7 @@ class FlextTapOracleWMS(Tap):
 
         return streams
 
-    def _create_single_stream(self, stream_def: TAnyDict) -> Stream | None:
+    def _create_single_stream(self, stream_def: FlextTypes.Core.AnyDict) -> Stream | None:
         """Create a single stream from definition.
 
         Args:
@@ -458,7 +458,7 @@ class FlextTapOracleWMS(Tap):
     def _configure_stream_metadata(
         self,
         stream: Stream,
-        stream_def: TAnyDict,
+        stream_def: FlextTypes.Core.AnyDict,
     ) -> None:
         """Configure stream metadata from definition.
 
@@ -913,7 +913,7 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
 def create_oracle_wms_tap_plugin(
     config: FlextTypes.Core.JsonDict,
 ) -> FlextResult[FlextTapOracleWMSPlugin]:
-    """Factory function to create Oracle WMS tap plugin instance.
+    """Create Oracle WMS tap plugin instance.
 
     Args:
         config: Configuration dictionary for plugin creation
