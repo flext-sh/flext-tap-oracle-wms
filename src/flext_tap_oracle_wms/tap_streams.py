@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING, ClassVar
-from flext_tap_oracle_wms.typings import FlextTypes
 
 from flext_meltano import Stream
 
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:

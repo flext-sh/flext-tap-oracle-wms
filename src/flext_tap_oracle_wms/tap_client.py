@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import importlib.metadata
 from typing import TYPE_CHECKING, ClassVar
-from flext_tap_oracle_wms.typings import FlextTypes
+
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms.typings import FlextTypes
 
 from flext_core import FlextPlugin, FlextResult, get_logger
 from flext_meltano import Tap
