@@ -278,5 +278,3 @@ MIT License - See [LICENSE](LICENSE) file for details.
 - **[CLAUDE.md](CLAUDE.md)**: Development guidance
 
 ---
-
- 
