@@ -477,6 +477,6 @@ tap-oracle-wms --config config.json --discover
 
 ---
 
-**Updated**: 2025-08-04
+**Updated**: 2025-08-13
 **Status**: Configuration examples available for all common use cases
 **Next**: Review and test configurations with actual WMS instances

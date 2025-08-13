@@ -13,7 +13,7 @@ from flext_tap_oracle_wms.tap_client import FlextTapOracleWMS
 
 
 def main() -> None:
-    """Main CLI entry point for FLEXT Tap Oracle WMS.
+    """Provide CLI entry point for FLEXT Tap Oracle WMS.
 
     Initializes and runs the Oracle WMS Singer tap using the Singer SDK
     CLI framework. Handles command-line argument parsing, configuration

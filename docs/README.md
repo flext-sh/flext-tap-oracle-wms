@@ -179,4 +179,4 @@ This tap is part of the larger FLEXT enterprise data integration platform:
 
 ---
 
-**Status**: Core documentation complete, ongoing maintenance required | **Quality**: Professional enterprise standards | **Updated**: 2025-08-04
+**Status**: Core documentation complete, ongoing maintenance required | **Quality**: Professional enterprise standards | **Updated**: 2025-08-13

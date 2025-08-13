@@ -20,7 +20,6 @@ from flext_oracle_wms.wms_constants import FlextOracleWmsApiVersion
 from flext_tap_oracle_wms.tap_config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.tap_exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.tap_streams import FlextTapOracleWMSStream
-from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:
@@ -28,6 +27,8 @@ if TYPE_CHECKING:
 
     from flext_core import FlextPluginContext
     from flext_meltano import Stream
+
+    from flext_tap_oracle_wms.typings import FlextTypes
 
 logger = get_logger(__name__)
 
@@ -160,7 +161,9 @@ class FlextTapOracleWMS(Tap):
                 timeout=self.flext_config.timeout,
                 max_retries=self.flext_config.max_retries,
                 # Convert string api_version to proper enum
-                api_version=FlextOracleWmsApiVersion.LGF_V10 if self.flext_config.api_version in {"v10", "10"} else FlextOracleWmsApiVersion.LEGACY,
+                api_version=FlextOracleWmsApiVersion.LGF_V10
+                if self.flext_config.api_version in {"v10", "10"}
+                else FlextOracleWmsApiVersion.LEGACY,
                 verify_ssl=self.flext_config.verify_ssl,
                 enable_logging=True,
             )
@@ -425,7 +428,9 @@ class FlextTapOracleWMS(Tap):
 
         return streams
 
-    def _create_single_stream(self, stream_def: FlextTypes.Core.AnyDict) -> Stream | None:
+    def _create_single_stream(
+        self, stream_def: FlextTypes.Core.AnyDict,
+    ) -> Stream | None:
         """Create a single stream from definition.
 
         Args:
@@ -522,7 +527,10 @@ class FlextTapOracleWMS(Tap):
             # Test connection by attempting entity discovery
             try:
                 discovery_result = self._run_async(self.wms_client.discover_entities())
-                if hasattr(discovery_result, "is_failure") and discovery_result.is_failure:
+                if (
+                    hasattr(discovery_result, "is_failure")
+                    and discovery_result.is_failure
+                ):
                     error_msg = getattr(
                         discovery_result,
                         "error",
@@ -537,7 +545,9 @@ class FlextTapOracleWMS(Tap):
                 "connection": "success",
                 "base_url": self.flext_config.base_url,
                 "api_version": self.flext_config.api_version,
-                "health": getattr(discovery_result, "data", None) if "discovery_result" in locals() else None,
+                "health": getattr(discovery_result, "data", None)
+                if "discovery_result" in locals()
+                else None,
             }
 
             logger.info("Configuration validated successfully")

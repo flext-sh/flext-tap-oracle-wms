@@ -58,7 +58,7 @@ class TestExtractionPerformance:
 
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
     def test_pagination_performance(
-        self, tap: FlextTapOracleWMS, page_size: int
+        self, tap: FlextTapOracleWMS, page_size: int,
     ) -> None:
         """Benchmark different page sizes."""
         tap.initialize()
@@ -147,7 +147,7 @@ class TestRateLimitingPerformance:
     """Test rate limiting impact on performance."""
 
     def test_rate_limiting_impact(
-        self, performance_config: FlextTapOracleWMSConfig
+        self, performance_config: FlextTapOracleWMSConfig,
     ) -> None:
         """Compare performance with and without rate limiting."""
         # Without rate limiting
