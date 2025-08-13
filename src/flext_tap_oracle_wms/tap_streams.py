@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from flext_meltano import Stream
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async

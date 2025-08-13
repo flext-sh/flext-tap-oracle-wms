@@ -9,9 +9,6 @@ from __future__ import annotations
 import importlib.metadata
 from typing import TYPE_CHECKING, ClassVar
 
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms.typings import FlextTypes
-
 from flext_core import FlextPlugin, FlextResult, get_logger
 from flext_meltano import Tap
 from flext_oracle_wms import (
@@ -23,6 +20,9 @@ from flext_oracle_wms.wms_constants import FlextOracleWmsApiVersion
 from flext_tap_oracle_wms.tap_config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.tap_exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.tap_streams import FlextTapOracleWMSStream
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:
