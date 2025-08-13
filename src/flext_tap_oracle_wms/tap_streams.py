@@ -11,12 +11,12 @@ from typing import TYPE_CHECKING, ClassVar
 
 from flext_meltano import Stream
 
+from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 
-    from flext_core.typings import TAnyDict
     from flext_meltano import Tap
     from flext_oracle_wms import FlextOracleWmsClient
 
@@ -38,7 +38,7 @@ class FlextTapOracleWMSStream(Stream):
         self,
         tap: Tap,
         name: str | None = None,
-        schema: TAnyDict | None = None,
+        schema: FlextTypes.Core.AnyDict | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
@@ -74,7 +74,7 @@ class FlextTapOracleWMSStream(Stream):
     def get_records(
         self,
         context: Mapping[str, object] | None,
-    ) -> Iterable[TAnyDict]:
+    ) -> Iterable[FlextTypes.Core.AnyDict]:
         """Get records from Oracle WMS.
 
         Args:
@@ -114,7 +114,7 @@ class FlextTapOracleWMSStream(Stream):
         self,
         page: int,
         context: Mapping[str, object] | None,
-    ) -> tuple[list[TAnyDict], bool] | None:
+    ) -> tuple[list[FlextTypes.Core.AnyDict], bool] | None:
         """Fetch data for a specific page.
 
         Args:
@@ -157,7 +157,7 @@ class FlextTapOracleWMSStream(Stream):
         self,
         page: int,
         context: Mapping[str, object] | None,
-    ) -> TAnyDict:
+    ) -> FlextTypes.Core.AnyDict:
         """Build kwargs for the operation call.
 
         Args:
@@ -188,7 +188,7 @@ class FlextTapOracleWMSStream(Stream):
     def _extract_records_from_response(
         self,
         data: dict[str, object] | list[object] | object,
-    ) -> tuple[list[TAnyDict], bool]:
+    ) -> tuple[list[FlextTypes.Core.AnyDict], bool]:
         """Extract records and pagination info from API response.
 
         Args:
@@ -230,9 +230,9 @@ class FlextTapOracleWMSStream(Stream):
 
     def _process_page_records(
         self,
-        records: list[TAnyDict],
+        records: list[FlextTypes.Core.AnyDict],
         context: Mapping[str, object] | None,
-    ) -> Iterable[TAnyDict]:
+    ) -> Iterable[FlextTypes.Core.AnyDict]:
         """Process and yield records from a page.
 
         Args:
@@ -252,9 +252,9 @@ class FlextTapOracleWMSStream(Stream):
 
     def post_process(
         self,
-        row: TAnyDict,
+        row: FlextTypes.Core.AnyDict,
         _context: Mapping[str, object] | None = None,
-    ) -> TAnyDict | None:
+    ) -> FlextTypes.Core.AnyDict | None:
         """Post-process a record.
 
         Args:
