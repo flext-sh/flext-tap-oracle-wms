@@ -1,47 +1,4 @@
-"""FLEXT Tap Oracle WMS - Enterprise Singer Tap for Oracle WMS Integration.
-
-**Architecture**: Production-ready Singer tap implementing Clean Architecture, DDD, and enterprise patterns
-**Integration**: Complete flext-meltano ecosystem integration with ALL facilities utilized
-**Quality**: 100% type safety, 90%+ test coverage, zero-tolerance quality standards
-**WMS Integration**: Complete Oracle WMS API connectivity via flext-oracle-wms
-**Structure**: PEP8-compliant module organization following FLEXT patterns
-
-## Enterprise Integration Features:
-
-1. **Complete flext-meltano Integration**: Uses ALL flext-meltano facilities
-   - FlextMeltanoTapService base class for enterprise patterns
-   - Centralized Singer SDK imports and typing
-   - Common schema definitions from flext-meltano.common_schemas
-   - Enterprise bridge integration for Go ↔ Python communication
-
-2. **Foundation Library Integration**: Full flext-core pattern adoption
-   - FlextResult railway-oriented programming throughout
-   - Enterprise logging with FlextLogger
-   - Dependency injection with flext-core container
-   - FlextConfig for configuration management
-
-3. **Oracle WMS Integration**: Complete WMS connectivity
-   - flext-oracle-wms for all WMS API operations
-   - Enterprise error handling and validation
-   - Production-grade authentication and security
-
-4. **Production Readiness**: Zero-tolerance quality standards
-   - 100% type safety with strict MyPy compliance
-   - 90%+ test coverage with comprehensive test suite
-   - All lint rules passing with Ruff
-   - Security scanning with Bandit and pip-audit
-
-5. **PEP8 Structure**: Clean module organization
-   - tap_config.py: Configuration management and constants
-   - tap_client.py: Consolidated tap and plugin functionality
-   - tap_streams.py: Stream definitions and processing
-   - tap_cli.py: Command-line interface
-   - tap_exceptions.py: Exception hierarchy
-   - tap_models.py: Data models and structures
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""Enterprise Singer Tap for Oracle WMS data extraction."""
 
 from __future__ import annotations
 
