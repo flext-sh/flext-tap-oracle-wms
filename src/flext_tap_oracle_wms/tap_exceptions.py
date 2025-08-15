@@ -29,25 +29,25 @@ from flext_core import create_module_exception_classes
 # Generate all standard exceptions using factory pattern
 _tap_oracle_wms_exceptions = create_module_exception_classes("flext_tap_oracle_wms")
 
-# Export factory-created exception classes (using actual factory keys)
-FlextTapOracleWMSError = _tap_oracle_wms_exceptions["FlextTapOracleWmsError"]
+# Export factory-created exception classes (using correct factory keys)
+FlextTapOracleWMSError = _tap_oracle_wms_exceptions["FLEXT_TAP_ORACLE_WMSError"]
 FlextTapOracleWMSValidationError = _tap_oracle_wms_exceptions[
-    "FlextTapOracleWmsValidationError"
+    "FLEXT_TAP_ORACLE_WMSValidationError"
 ]
 FlextTapOracleWMSConfigurationError = _tap_oracle_wms_exceptions[
-    "FlextTapOracleWmsConfigurationError"
+    "FLEXT_TAP_ORACLE_WMSConfigurationError"
 ]
 FlextTapOracleWMSProcessingError = _tap_oracle_wms_exceptions[
-    "FlextTapOracleWmsProcessingError"
+    "FLEXT_TAP_ORACLE_WMSProcessingError"
 ]
 FlextTapOracleWMSConnectionError = _tap_oracle_wms_exceptions[
-    "FlextTapOracleWmsConnectionError"
+    "FLEXT_TAP_ORACLE_WMSConnectionError"
 ]
 FlextTapOracleWMSAuthenticationError = _tap_oracle_wms_exceptions[
-    "FlextTapOracleWmsAuthenticationError"
+    "FLEXT_TAP_ORACLE_WMSAuthenticationError"
 ]
 FlextTapOracleWMSTimeoutError = _tap_oracle_wms_exceptions[
-    "FlextTapOracleWmsTimeoutError"
+    "FLEXT_TAP_ORACLE_WMSTimeoutError"
 ]
 
 # Create backward-compatible aliases for existing code
