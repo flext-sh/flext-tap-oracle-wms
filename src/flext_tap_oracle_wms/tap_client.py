@@ -9,27 +9,23 @@ from __future__ import annotations
 import importlib.metadata
 from typing import TYPE_CHECKING, ClassVar
 
-from flext_core import FlextPlugin, FlextResult, get_logger
-from flext_meltano import Tap
+from flext_core import FlextPlugin, FlextPluginContext, FlextResult, get_logger
+from flext_meltano import Stream, Tap
 from flext_oracle_wms import (
+    FlextOracleWmsApiVersion,
     FlextOracleWmsClient,
     FlextOracleWmsClientConfig,
 )
-from flext_oracle_wms.wms_constants import FlextOracleWmsApiVersion
 
 from flext_tap_oracle_wms.tap_config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.tap_exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.tap_streams import FlextTapOracleWMSStream
-
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms.typings import FlextTypes
+from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Sequence
 
-    from flext_core import FlextPluginContext
-    from flext_meltano import Stream
 
 logger = get_logger(__name__)
 

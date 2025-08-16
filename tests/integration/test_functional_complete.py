@@ -6,13 +6,14 @@ ALL Singer SDK features must work correctly with production data.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pytest
 from flext_core import get_logger
 
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms import FlextTapOracleWMS
+from flext_tap_oracle_wms import (
+    FlextTapOracleWMS,
+    FlextTapOracleWMSStream,
+    create_wms_tap_config,
+)
 
 logger = get_logger(__name__)
 
@@ -42,8 +43,6 @@ class TestOracleWMSFunctionalComplete:
         real_wms_config: dict[str, object],
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
-        from flext_tap_oracle_wms.tap import FlextTapOracleWMS
-
         # CRITICAL: This must work without errors
         tap = FlextTapOracleWMS(config=real_wms_config)
 
@@ -190,7 +189,6 @@ class TestOracleWMSFunctionalComplete:
         logger.info("Testing extraction from stream: %s", stream_id)
 
         # Create stream instance
-        from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 
         try:
             # This should make REAL API calls
@@ -234,8 +232,6 @@ class TestOracleWMSFunctionalComplete:
 
         test_stream = streams[0]
         stream_id = test_stream["tap_stream_id"]
-
-        from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 
         stream = FlextTapOracleWMSStream(
             tap=real_tap_instance,
@@ -324,8 +320,6 @@ class TestOracleWMSFunctionalComplete:
         test_stream = streams[0]
         stream_id = test_stream["tap_stream_id"]
 
-        from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
-
         stream = FlextTapOracleWMSStream(
             tap=real_tap_instance,
             name=stream_id,
@@ -357,8 +351,6 @@ class TestOracleWMSFunctionalComplete:
         real_wms_config: dict[str, object],
     ) -> None:
         """Test error handling with invalid configurations."""
-        from flext_tap_oracle_wms.tap import FlextTapOracleWMS
-
         # Test with invalid URL
         invalid_config = real_wms_config.copy()
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
@@ -385,8 +377,6 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.functional
     def test_configuration_validation(self, real_wms_config: dict[str, object]) -> None:
         """Test configuration validation and type conversion."""
-        from flext_tap_oracle_wms.config import create_wms_tap_config
-
         # Test configuration creation
         config = create_wms_tap_config(real_wms_config)
 
@@ -487,8 +477,6 @@ class TestOracleWMSFunctionalComplete:
 
             # 6. Pagination
             if catalog.get("streams"):
-                from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
-
                 test_stream = catalog["streams"][0]
                 stream = FlextTapOracleWMSStream(
                     real_tap_instance,
