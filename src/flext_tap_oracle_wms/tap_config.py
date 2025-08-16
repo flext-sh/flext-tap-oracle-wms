@@ -15,6 +15,9 @@ from flext_oracle_wms import (
 )
 from pydantic import Field, SecretStr, field_validator
 
+# Constants for validation limits
+MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT = 5
+
 
 class FlextTapOracleWMSConstants:
     """Constants for Oracle WMS tap configuration - consuming from flext-oracle-wms API."""
@@ -245,15 +248,38 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
 
         Consolidates all validation logic into a single comprehensive method.
         """
-        # Validate required fields
+        # Run all validations
+        validations = [
+            self._validate_required_fields(),
+            self._validate_url_format(),
+            self._validate_page_size(),
+            self._validate_timeout(),
+            self._validate_entity_settings(),
+            self._validate_date_range(),
+            self._validate_performance_settings(),
+        ]
+
+        # Check if any validation failed
+        for validation in validations:
+            if not validation.success:
+                return validation
+
+        return FlextResult.ok(None)
+
+    def _validate_required_fields(self) -> FlextResult[None]:
+        """Validate required fields."""
         if not self.base_url or not self.username or not self.password:
             return FlextResult.fail("base_url, username, and password are required")
+        return FlextResult.ok(None)
 
-        # Validate URL format
+    def _validate_url_format(self) -> FlextResult[None]:
+        """Validate URL format."""
         if not self.base_url.startswith(("http://", "https://")):
             return FlextResult.fail("base_url must start with http:// or https://")
+        return FlextResult.ok(None)
 
-        # Validate page size limits
+    def _validate_page_size(self) -> FlextResult[None]:
+        """Validate page size limits."""
         if not (
             FlextTapOracleWMSConstants.MIN_PAGE_SIZE
             <= self.page_size
@@ -262,20 +288,26 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
             return FlextResult.fail(
                 f"page_size must be between {FlextTapOracleWMSConstants.MIN_PAGE_SIZE} and {FlextTapOracleWMSConstants.MAX_PAGE_SIZE}",
             )
+        return FlextResult.ok(None)
 
-        # Validate timeout
+    def _validate_timeout(self) -> FlextResult[None]:
+        """Validate timeout."""
         if self.timeout <= 0:
             return FlextResult.fail("timeout must be positive")
+        return FlextResult.ok(None)
 
-        # Check for conflicting entity settings
+    def _validate_entity_settings(self) -> FlextResult[None]:
+        """Validate entity settings."""
         if self.include_entities and self.exclude_entities:
             common = set(self.include_entities) & set(self.exclude_entities)
             if common:
                 return FlextResult.fail(
-                    f"Entities cannot be both included and excluded: {common}"
+                    f"Entities cannot be both included and excluded: {common}",
                 )
+        return FlextResult.ok(None)
 
-        # Validate date range if both are provided
+    def _validate_date_range(self) -> FlextResult[None]:
+        """Validate date range."""
         if self.start_date and self.end_date:
             try:
                 start = datetime.fromisoformat(self.start_date)
@@ -284,17 +316,18 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
                     return FlextResult.fail("start_date must be before end_date")
             except ValueError as e:
                 return FlextResult.fail(f"Invalid date format: {e}")
+        return FlextResult.ok(None)
 
-        # Validate performance settings
+    def _validate_performance_settings(self) -> FlextResult[None]:
+        """Validate performance settings."""
         if (
             self.enable_parallel_extraction
-            and self.max_parallel_streams > 5
+            and self.max_parallel_streams > MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
             and not self.enable_rate_limiting
         ):
             return FlextResult.fail(
-                "Rate limiting must be enabled for more than 5 parallel streams",
+                f"Rate limiting must be enabled for more than {MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT} parallel streams",
             )
-
         return FlextResult.ok(None)
 
     def validate_oracle_wms_config(self) -> FlextResult[dict[str, object]]:
