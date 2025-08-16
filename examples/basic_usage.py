@@ -11,8 +11,12 @@ from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 
 
 def main() -> int:
-    """Run basic example."""
-    # Configuration from environment or hardcoded
+    """Run basic example.
+
+    Returns:
+        int: Description.
+
+    """    # Configuration from environment or hardcoded
     config = FlextTapOracleWMSConfig(
         base_url=os.getenv(
             "ORACLE_WMS_BASE_URL",

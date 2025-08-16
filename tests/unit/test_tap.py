@@ -7,8 +7,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 from flext_core import FlextResult
 
-from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
-from flext_tap_oracle_wms.exceptions import FlextTapOracleWMSConfigurationError
+from flext_tap_oracle_wms import (
+    FlextTapOracleWMS,
+    FlextTapOracleWMSConfig,
+    FlextTapOracleWMSConfigurationError,
+)
 
 
 class TestFlextTapOracleWMS:

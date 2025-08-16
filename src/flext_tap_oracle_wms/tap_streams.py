@@ -9,17 +9,15 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, ClassVar
 
-from flext_meltano import Stream
+from flext_meltano import Stream, Tap
+from flext_oracle_wms import FlextOracleWmsClient
 
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms.typings import FlextTypes
+from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 
-    from flext_meltano import Tap
-    from flext_oracle_wms import FlextOracleWmsClient
 
 logger = logging.getLogger(__name__)
 

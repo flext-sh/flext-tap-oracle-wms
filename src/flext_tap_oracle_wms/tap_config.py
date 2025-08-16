@@ -9,9 +9,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Final
 
-from flext_core import FlextResult, FlextBaseConfigModel
-from flext_meltano import FlextMeltanoConfig
-from flext_oracle_wms.wms_constants import (
+from flext_core import FlextBaseConfigModel, FlextResult
+from flext_oracle_wms import (
     FlextOracleWmsSemanticConstants as _WmsConstants,
 )
 from pydantic import Field, SecretStr, field_validator
@@ -243,33 +242,39 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate Oracle WMS tap configuration business rules using FlextBaseConfigModel pattern.
-        
+
         Consolidates all validation logic into a single comprehensive method.
         """
         # Validate required fields
         if not self.base_url or not self.username or not self.password:
             return FlextResult.fail("base_url, username, and password are required")
-        
+
         # Validate URL format
         if not self.base_url.startswith(("http://", "https://")):
             return FlextResult.fail("base_url must start with http:// or https://")
-        
+
         # Validate page size limits
-        if not (FlextTapOracleWMSConstants.MIN_PAGE_SIZE <= self.page_size <= FlextTapOracleWMSConstants.MAX_PAGE_SIZE):
+        if not (
+            FlextTapOracleWMSConstants.MIN_PAGE_SIZE
+            <= self.page_size
+            <= FlextTapOracleWMSConstants.MAX_PAGE_SIZE
+        ):
             return FlextResult.fail(
-                f"page_size must be between {FlextTapOracleWMSConstants.MIN_PAGE_SIZE} and {FlextTapOracleWMSConstants.MAX_PAGE_SIZE}"
+                f"page_size must be between {FlextTapOracleWMSConstants.MIN_PAGE_SIZE} and {FlextTapOracleWMSConstants.MAX_PAGE_SIZE}",
             )
-        
+
         # Validate timeout
         if self.timeout <= 0:
             return FlextResult.fail("timeout must be positive")
-        
+
         # Check for conflicting entity settings
         if self.include_entities and self.exclude_entities:
             common = set(self.include_entities) & set(self.exclude_entities)
             if common:
-                return FlextResult.fail(f"Entities cannot be both included and excluded: {common}")
-        
+                return FlextResult.fail(
+                    f"Entities cannot be both included and excluded: {common}"
+                )
+
         # Validate date range if both are provided
         if self.start_date and self.end_date:
             try:
@@ -279,15 +284,17 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
                     return FlextResult.fail("start_date must be before end_date")
             except ValueError as e:
                 return FlextResult.fail(f"Invalid date format: {e}")
-        
+
         # Validate performance settings
-        if (self.enable_parallel_extraction and 
-            self.max_parallel_streams > 5 and 
-            not self.enable_rate_limiting):
+        if (
+            self.enable_parallel_extraction
+            and self.max_parallel_streams > 5
+            and not self.enable_rate_limiting
+        ):
             return FlextResult.fail(
-                "Rate limiting must be enabled for more than 5 parallel streams"
+                "Rate limiting must be enabled for more than 5 parallel streams",
             )
-        
+
         return FlextResult.ok(None)
 
     def validate_oracle_wms_config(self) -> FlextResult[dict[str, object]]:

@@ -8,13 +8,17 @@ from __future__ import annotations
 
 import json
 import time
-from typing import TYPE_CHECKING
+from datetime import UTC, datetime, timedelta
+from unittest.mock import Mock
 
 import pytest
 from flext_core import get_logger
 
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms import FlextTapOracleWMS
+from flext_tap_oracle_wms import (
+    FlextTapOracleWMS,
+    FlextTapOracleWMSStream,
+    WMSPaginator,
+)
 
 logger = get_logger(__name__)
 
@@ -122,7 +126,6 @@ class TestOracleWMSE2EComplete:
         logger.info("Testing extraction from: %s", stream_id)
 
         # Create stream instance
-        from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 
         stream = FlextTapOracleWMSStream(
             tap=real_tap_instance,
@@ -169,8 +172,6 @@ class TestOracleWMSE2EComplete:
         if not incremental_stream_config:
             pytest.skip("No incremental streams found")
 
-        from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
-
         stream = FlextTapOracleWMSStream(
             tap=real_tap_instance,
             name=incremental_stream_config["tap_stream_id"],
@@ -182,7 +183,6 @@ class TestOracleWMSE2EComplete:
         assert stream.replication_key is not None
 
         # Test with state (simulated bookmark)
-        from datetime import UTC, datetime, timedelta
 
         yesterday = datetime.now(UTC) - timedelta(days=1)
         context = {"replication_key_value": yesterday.isoformat()}
@@ -222,8 +222,6 @@ class TestOracleWMSE2EComplete:
 
         if not full_table_stream_config:
             pytest.skip("No full table streams found")
-
-        from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 
         stream = FlextTapOracleWMSStream(
             tap=real_tap_instance,
@@ -329,10 +327,6 @@ class TestOracleWMSE2EComplete:
 
     def test_pagination_end_to_end(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """E2E: Test pagination handling through multiple pages."""
-        from unittest.mock import Mock
-
-        from flext_tap_oracle_wms.streams import WMSPaginator
-
         paginator = WMSPaginator()
 
         # Test pagination flow
@@ -368,8 +362,6 @@ class TestOracleWMSE2EComplete:
         real_wms_config: dict[str, object],
     ) -> None:
         """E2E: Test error recovery and system resilience."""
-        from flext_tap_oracle_wms.tap import FlextTapOracleWMS
-
         # Test with invalid credentials
         invalid_config = real_wms_config.copy()
         invalid_config["password"] = "invalid_password"

@@ -23,7 +23,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# ZERO DUPLICATION: Use flext-core exception factory - eliminates 450+ lines
 from flext_core import create_module_exception_classes
 
 # Generate all standard exceptions using factory pattern

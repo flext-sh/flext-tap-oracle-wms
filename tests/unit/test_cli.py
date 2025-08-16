@@ -6,9 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-import flext_tap_oracle_wms.cli as cli_module
-from flext_tap_oracle_wms.cli import main
-from flext_tap_oracle_wms.tap import FlextTapOracleWMS
+from flext_tap_oracle_wms import FlextTapOracleWMS, cli as cli_module, main
 
 
 class TestCLI:

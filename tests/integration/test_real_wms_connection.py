@@ -48,12 +48,12 @@ class TestRealConnection:
         assert result.value["valid"] is True
         assert "health" in result.value
 
-    def test_tap_initialization(self, tap) -> None:
+    def test_tap_initialization(self, tap: FlextTapOracleWMS) -> None:
         """Test tap initialization."""
         result = tap.initialize()
         assert result.is_success
 
-    def test_discover_catalog(self, tap) -> None:
+    def test_discover_catalog(self, tap: FlextTapOracleWMS) -> None:
         """Test catalog discovery."""
         # Initialize first
         init_result = tap.initialize()
@@ -71,7 +71,7 @@ class TestRealConnection:
         for stream in catalog["streams"]:
             stream.get("schema", {}).get("properties", {})
 
-    def test_discover_streams(self, tap) -> None:
+    def test_discover_streams(self, tap: FlextTapOracleWMS) -> None:
         """Test stream discovery."""
         streams = tap.discover_streams()
         assert len(streams) > 0
@@ -79,7 +79,7 @@ class TestRealConnection:
         for _stream in streams:
             pass
 
-    def test_stream_schema(self, tap) -> None:
+    def test_stream_schema(self, tap: FlextTapOracleWMS) -> None:
         """Test stream schemas."""
         streams = tap.discover_streams()
 
@@ -97,7 +97,11 @@ class TestRealDataExtraction:
     """Test real data extraction from Oracle WMS."""
 
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
-    def test_extract_stream_data(self, tap, stream_name) -> None:
+    def test_extract_stream_data(
+        self,
+        tap: FlextTapOracleWMS,
+        stream_name: str,
+    ) -> None:
         """Test extracting data from specific streams."""
         # Initialize tap
         init_result = tap.initialize()
@@ -127,7 +131,7 @@ class TestRealDataExtraction:
         except Exception as e:
             pytest.fail(f"Failed to extract records from {stream_name}: {e}")
 
-    def test_pagination(self, tap) -> None:
+    def test_pagination(self, tap: FlextTapOracleWMS) -> None:
         """Test pagination functionality."""
         # Use a stream with many records
         tap.initialize()
@@ -158,7 +162,7 @@ class TestRealDataExtraction:
 class TestFilteringAndSelection:
     """Test entity filtering and selection."""
 
-    def test_include_entities(self, real_config) -> None:
+    def test_include_entities(self, real_config: FlextTapOracleWMSConfig) -> None:
         """Test including specific entities."""
         config = FlextTapOracleWMSConfig(
             **real_config.model_dump(),
@@ -173,7 +177,7 @@ class TestFilteringAndSelection:
         assert "locations" in stream_names
         assert "orders" not in stream_names  # Should be excluded
 
-    def test_exclude_entities(self, real_config) -> None:
+    def test_exclude_entities(self, real_config: FlextTapOracleWMSConfig) -> None:
         """Test excluding specific entities."""
         config = FlextTapOracleWMSConfig(
             **real_config.model_dump(),
@@ -192,7 +196,7 @@ class TestFilteringAndSelection:
 class TestAsyncIntegration:
     """Test async/sync integration with flext-oracle-wms."""
 
-    def test_client_lifecycle(self, tap) -> None:
+    def test_client_lifecycle(self, tap: FlextTapOracleWMS) -> None:
         """Test proper client lifecycle management."""
         # Initialize should start the client
         init_result = tap.initialize()

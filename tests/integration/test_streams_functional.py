@@ -6,16 +6,14 @@ Tests stream functionality with REAL Oracle WMS instance using .env configuratio
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import pytest
 import requests
-from flext_api.constants import FlextApiConstants
+from flext_api import FlextApiConstants
 from flext_core import get_logger
 
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms import FlextTapOracleWMS
+from flext_tap_oracle_wms import FlextTapOracleWMS
 
 logger = get_logger(__name__)
 
