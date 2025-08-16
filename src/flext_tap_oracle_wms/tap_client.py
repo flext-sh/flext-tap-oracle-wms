@@ -20,11 +20,12 @@ from flext_oracle_wms import (
 from flext_tap_oracle_wms.tap_config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.tap_exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.tap_streams import FlextTapOracleWMSStream
-from flext_tap_oracle_wms.typings import FlextTypes
 from flext_tap_oracle_wms.utils import run_async
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Coroutine, Sequence
+
+    from flext_tap_oracle_wms.typings import FlextTypes
 
 
 logger = get_logger(__name__)
