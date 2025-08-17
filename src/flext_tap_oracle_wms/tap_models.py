@@ -31,27 +31,27 @@ class StreamMetadata(FlextValueObject):
     inclusion: str = "available"
 
     def to_singer_metadata(self) -> list[dict[str, Any]]:
-      """Convert to Singer metadata format.
+        """Convert to Singer metadata format.
 
-      Returns:
-          List of Singer metadata entries
+        Returns:
+            List of Singer metadata entries
 
-      """
-      metadata: list[dict[str, Any]] = [
-          {
-              "breadcrumb": [],
-              "metadata": {
-                  "inclusion": self.inclusion,
-                  "forced-replication-method": self.replication_method,
-                  "table-key-properties": self.primary_keys,
-              },
-          },
-      ]
+        """
+        metadata: list[dict[str, Any]] = [
+            {
+                "breadcrumb": [],
+                "metadata": {
+                    "inclusion": self.inclusion,
+                    "forced-replication-method": self.replication_method,
+                    "table-key-properties": self.primary_keys,
+                },
+            },
+        ]
 
-      if self.replication_key:
-          metadata[0]["metadata"]["replication-key"] = self.replication_key
+        if self.replication_key:
+            metadata[0]["metadata"]["replication-key"] = self.replication_key
 
-      return metadata
+        return metadata
 
 
 class StreamSchema(FlextValueObject):
@@ -61,16 +61,16 @@ class StreamSchema(FlextValueObject):
     properties: dict[str, dict[str, Any]]
 
     def to_singer_schema(self) -> dict[str, Any]:
-      """Convert to Singer schema format.
+        """Convert to Singer schema format.
 
-      Returns:
-          Singer schema dictionary
+        Returns:
+            Singer schema dictionary
 
-      """
-      return {
-          "type": "object",
-          "properties": self.properties,
-      }
+        """
+        return {
+            "type": "object",
+            "properties": self.properties,
+        }
 
 
 class CatalogStream(FlextValueObject):
@@ -82,18 +82,18 @@ class CatalogStream(FlextValueObject):
     metadata: StreamMetadata
 
     def to_singer_catalog_entry(self) -> dict[str, Any]:
-      """Convert to Singer catalog entry format.
+        """Convert to Singer catalog entry format.
 
-      Returns:
-          Singer catalog stream entry
+        Returns:
+            Singer catalog stream entry
 
-      """
-      return {
-          "tap_stream_id": self.tap_stream_id,
-          "stream": self.stream_name,
-          "schema": self.stream_schema.to_singer_schema(),
-          "metadata": self.metadata.to_singer_metadata(),
-      }
+        """
+        return {
+            "tap_stream_id": self.tap_stream_id,
+            "stream": self.stream_name,
+            "schema": self.stream_schema.to_singer_schema(),
+            "metadata": self.metadata.to_singer_metadata(),
+        }
 
 
 __all__ = [
