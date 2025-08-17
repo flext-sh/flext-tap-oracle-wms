@@ -14,80 +14,80 @@ class TestCLI:
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
     def test_main_calls_tap_cli(self, mock_cli: Mock) -> None:
-        """Test that main() calls FlextTapOracleWMS.cli()."""
-        main()
-        mock_cli.assert_called_once()
+      """Test that main() calls FlextTapOracleWMS.cli()."""
+      main()
+      mock_cli.assert_called_once()
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
     def test_main_function_exists(self, mock_cli: Mock) -> None:
-        """Test that main function exists and is callable."""
-        assert callable(main)
+      """Test that main function exists and is callable."""
+      assert callable(main)
 
-        # Call main and verify it delegates to tap CLI
-        main()
-        mock_cli.assert_called_once()
+      # Call main and verify it delegates to tap CLI
+      main()
+      mock_cli.assert_called_once()
 
     def test_cli_module_structure(self) -> None:
-        """Test CLI module has expected structure."""
-        # Check main function exists
-        assert hasattr(cli_module, "main")
-        assert callable(cli_module.main)
+      """Test CLI module has expected structure."""
+      # Check main function exists
+      assert hasattr(cli_module, "main")
+      assert callable(cli_module.main)
 
-        # Check docstring
-        assert cli_module.__doc__ is not None
-        if "CLI entry point" not in cli_module.__doc__:
-            msg: str = f"Expected {'CLI entry point'} in {cli_module.__doc__}"
-            raise AssertionError(
-                msg,
-            )
+      # Check docstring
+      assert cli_module.__doc__ is not None
+      if "CLI entry point" not in cli_module.__doc__:
+          msg: str = f"Expected {'CLI entry point'} in {cli_module.__doc__}"
+          raise AssertionError(
+              msg,
+          )
 
-        # Check main function docstring
-        assert main.__doc__ is not None
-        if "CLI entry point" not in main.__doc__:
-            msg: str = f"Expected {'CLI entry point'} in {main.__doc__}"
-            raise AssertionError(msg)
+      # Check main function docstring
+      assert main.__doc__ is not None
+      if "CLI entry point" not in main.__doc__:
+          msg: str = f"Expected {'CLI entry point'} in {main.__doc__}"
+          raise AssertionError(msg)
 
     @patch("flext_tap_oracle_wms.cli.main")
     def test_cli_main_execution(self, mock_main: Mock) -> None:
-        """Test CLI main execution when run as script."""
-        # Import the CLI module
+      """Test CLI main execution when run as script."""
+      # Import the CLI module
 
-        # Test that main function is available
-        assert hasattr(cli_module, "main")
-        assert callable(cli_module.main)
+      # Test that main function is available
+      assert hasattr(cli_module, "main")
+      assert callable(cli_module.main)
 
-        # Call main directly (which should be mocked)
-        cli_module.main()
+      # Call main directly (which should be mocked)
+      cli_module.main()
 
-        # Verify main was called
-        mock_main.assert_called_once()
+      # Verify main was called
+      mock_main.assert_called_once()
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
     def test_main_with_exception_handling(self, mock_cli: Mock) -> None:
-        """Test main function handles exceptions properly."""
-        # Configure mock to raise an exception
-        mock_cli.side_effect = SystemExit(0)
+      """Test main function handles exceptions properly."""
+      # Configure mock to raise an exception
+      mock_cli.side_effect = SystemExit(0)
 
-        # Should propagate SystemExit (normal CLI behavior)
-        with pytest.raises(SystemExit):
-            main()
+      # Should propagate SystemExit (normal CLI behavior)
+      with pytest.raises(SystemExit):
+          main()
 
-        mock_cli.assert_called_once()
+      mock_cli.assert_called_once()
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
     def test_main_return_value(self, mock_cli: Mock) -> None:
-        """Test main function return value."""
-        mock_cli.return_value = None
+      """Test main function return value."""
+      mock_cli.return_value = None
 
-        main()  # main() returns None, no need to check return value
-        mock_cli.assert_called_once()
+      main()  # main() returns None, no need to check return value
+      mock_cli.assert_called_once()
 
     def test_module_imports(self) -> None:
-        """Test that CLI module imports are correct."""
-        # Check that FlextTapOracleWMS is imported
-        assert hasattr(cli_module, "FlextTapOracleWMS")
+      """Test that CLI module imports are correct."""
+      # Check that FlextTapOracleWMS is imported
+      assert hasattr(cli_module, "FlextTapOracleWMS")
 
-        assert cli_module.FlextTapOracleWMS is FlextTapOracleWMS
+      assert cli_module.FlextTapOracleWMS is FlextTapOracleWMS
 
 
 if __name__ == "__main__":
