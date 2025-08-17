@@ -23,11 +23,11 @@ def main() -> None:
     executed as a command-line tool or Python module.
 
     Raises:
-        SystemExit: On configuration errors or tap execution failures
+      SystemExit: On configuration errors or tap execution failures
 
     Example:
-        # Called automatically when running:
-        # python -m flext_tap_oracle_wms --config config.json --discover
+      # Called automatically when running:
+      # python -m flext_tap_oracle_wms --config config.json --discover
 
     """
     FlextTapOracleWMS.cli()

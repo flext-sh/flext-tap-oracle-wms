@@ -14,23 +14,23 @@ def main() -> int:
     """Run basic example.
 
     Returns:
-        int: Description.
+      int: Description.
 
     """    # Configuration from environment or hardcoded
     config = FlextTapOracleWMSConfig(
-        base_url=os.getenv(
-            "ORACLE_WMS_BASE_URL",
-            "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
-        ),
-        username=os.getenv("ORACLE_WMS_USERNAME", "USER_WMS_INTEGRA"),
-        password=os.getenv("ORACLE_WMS_PASSWORD", "your_password"),
-        api_version="v10",
-        page_size=100,
-        verify_ssl=True,
-        # Optional: filter specific entities
-        include_entities=["inventory", "locations", "orders"],
-        # Optional: enable request logging for debugging
-        enable_request_logging=True,
+      base_url=os.getenv(
+          "ORACLE_WMS_BASE_URL",
+          "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+      ),
+      username=os.getenv("ORACLE_WMS_USERNAME", "USER_WMS_INTEGRA"),
+      password=os.getenv("ORACLE_WMS_PASSWORD", "your_password"),
+      api_version="v10",
+      page_size=100,
+      verify_ssl=True,
+      # Optional: filter specific entities
+      include_entities=["inventory", "locations", "orders"],
+      # Optional: enable request logging for debugging
+      enable_request_logging=True,
     )
 
     # Create tap
@@ -39,30 +39,30 @@ def main() -> int:
     # Example 1: Validate configuration
     validation_result = tap.validate_configuration()
     if validation_result.is_success:
-        pass
+      pass
     else:
-        return 1
+      return 1
 
     # Example 2: Discover catalog
     catalog_result = tap.discover_catalog()
     if catalog_result.is_success:
-        catalog = catalog_result.value
-        for stream in catalog["streams"]:
-            if "schema" in stream and "properties" in stream["schema"]:
-                pass
+      catalog = catalog_result.value
+      for stream in catalog["streams"]:
+          if "schema" in stream and "properties" in stream["schema"]:
+              pass
     else:
-        return 1
+      return 1
 
     # Example 3: Discover available streams
     streams = tap.discover_streams()
     for _stream in streams:
-        pass
+      pass
 
     # Example 4: Get implementation info
 
     metrics_result = tap.get_implementation_metrics()
     if metrics_result.is_success:
-        pass
+      pass
 
     # Example 5: Extract data (commented out to avoid actual API calls)
     """
@@ -73,14 +73,14 @@ def main() -> int:
 
     # Option B: Process specific streams
     for stream in streams[:1]:  # Just first stream as example
-        print(f"\nExtracting from {stream.name}...")
-        record_count = 0
-        for record in stream.get_records(context=None):
-            print(json.dumps(record))
-            record_count += 1
-            if record_count >= 5:  # Limit to 5 records for example
-                break
-        print(f"Extracted {record_count} records from {stream.name}")
+      print(f"\nExtracting from {stream.name}...")
+      record_count = 0
+      for record in stream.get_records(context=None):
+          print(json.dumps(record))
+          record_count += 1
+          if record_count >= 5:  # Limit to 5 records for example
+              break
+      print(f"Extracted {record_count} records from {stream.name}")
     """
 
     return 0
