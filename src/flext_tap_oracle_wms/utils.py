@@ -23,6 +23,6 @@ def run_async(coro: Coroutine[object, object, object] | Awaitable[object]) -> ob
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
-      return loop.run_until_complete(coro)
+        return loop.run_until_complete(coro)
     finally:
-      loop.close()
+        loop.close()

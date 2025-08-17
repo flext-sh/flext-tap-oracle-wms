@@ -20,13 +20,13 @@ load_dotenv(env_path)
 def real_config():
     """Create real configuration from environment."""
     return FlextTapOracleWMSConfig(
-      base_url=os.getenv("ORACLE_WMS_BASE_URL"),
-      username=os.getenv("ORACLE_WMS_USERNAME"),
-      password=os.getenv("ORACLE_WMS_PASSWORD"),
-      api_version=os.getenv("ORACLE_WMS_API_VERSION", "v10"),
-      timeout=int(os.getenv("ORACLE_WMS_TIMEOUT", "30")),
-      page_size=int(os.getenv("ORACLE_WMS_PAGE_SIZE", "100")),
-      verify_ssl=os.getenv("ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
+        base_url=os.getenv("ORACLE_WMS_BASE_URL"),
+        username=os.getenv("ORACLE_WMS_USERNAME"),
+        password=os.getenv("ORACLE_WMS_PASSWORD"),
+        api_version=os.getenv("ORACLE_WMS_API_VERSION", "v10"),
+        timeout=int(os.getenv("ORACLE_WMS_TIMEOUT", "30")),
+        page_size=int(os.getenv("ORACLE_WMS_PAGE_SIZE", "100")),
+        verify_ssl=os.getenv("ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
     )
 
 
@@ -36,96 +36,96 @@ class TestRealWmsIntegration:
     """Test real Oracle WMS integration."""
 
     def test_tap_creation(self, real_config) -> None:
-      """Test tap can be created with real config."""
-      tap = FlextTapOracleWMS(config=real_config)
-      assert tap is not None
-      assert tap.name == "flext-tap-oracle-wms"
+        """Test tap can be created with real config."""
+        tap = FlextTapOracleWMS(config=real_config)
+        assert tap is not None
+        assert tap.name == "flext-tap-oracle-wms"
 
     def test_config_validation(self, real_config) -> None:
-      """Test configuration validation."""
-      # Create tap
-      tap = FlextTapOracleWMS(config=real_config)
+        """Test configuration validation."""
+        # Create tap
+        tap = FlextTapOracleWMS(config=real_config)
 
-      # Validate config
-      result = tap.validate_configuration()
+        # Validate config
+        result = tap.validate_configuration()
 
-      # Check result
-      if result.is_success:
-          assert result.data["valid"] is True
-      else:
-          pytest.skip(f"Configuration validation failed: {result.error}")
+        # Check result
+        if result.is_success:
+            assert result.data["valid"] is True
+        else:
+            pytest.skip(f"Configuration validation failed: {result.error}")
 
     def test_tap_initialization(self, real_config) -> None:
-      """Test tap initialization."""
-      tap = FlextTapOracleWMS(config=real_config)
+        """Test tap initialization."""
+        tap = FlextTapOracleWMS(config=real_config)
 
-      # Initialize
-      result = tap.initialize()
+        # Initialize
+        result = tap.initialize()
 
-      if result.is_success:
-          pass
-      else:
-          pytest.skip(f"Tap initialization failed: {result.error}")
+        if result.is_success:
+            pass
+        else:
+            pytest.skip(f"Tap initialization failed: {result.error}")
 
     def test_discover_streams(self, real_config) -> None:
-      """Test stream discovery."""
-      tap = FlextTapOracleWMS(config=real_config)
+        """Test stream discovery."""
+        tap = FlextTapOracleWMS(config=real_config)
 
-      # Initialize first
-      init_result = tap.initialize()
-      if init_result.is_failure:
-          pytest.skip(
-              f"Cannot test discovery, initialization failed: {init_result.error}",
-          )
+        # Initialize first
+        init_result = tap.initialize()
+        if init_result.is_failure:
+            pytest.skip(
+                f"Cannot test discovery, initialization failed: {init_result.error}",
+            )
 
-      # Discover streams
-      streams = tap.discover_streams()
+        # Discover streams
+        streams = tap.discover_streams()
 
-      assert len(streams) > 0
+        assert len(streams) > 0
 
-      for stream in streams:
-          assert stream.name is not None
-          assert hasattr(stream, "schema")
+        for stream in streams:
+            assert stream.name is not None
+            assert hasattr(stream, "schema")
 
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
     def test_stream_extraction(self, real_config, stream_name) -> None:
-      """Test data extraction from specific streams."""
-      tap = FlextTapOracleWMS(config=real_config)
+        """Test data extraction from specific streams."""
+        tap = FlextTapOracleWMS(config=real_config)
 
-      # Initialize
-      init_result = tap.initialize()
-      if init_result.is_failure:
-          pytest.skip(
-              f"Cannot test extraction, initialization failed: {init_result.error}",
-          )
+        # Initialize
+        init_result = tap.initialize()
+        if init_result.is_failure:
+            pytest.skip(
+                f"Cannot test extraction, initialization failed: {init_result.error}",
+            )
 
-      # Get streams
-      streams = tap.discover_streams()
-      stream = next((s for s in streams if s.name == stream_name), None)
+        # Get streams
+        streams = tap.discover_streams()
+        stream = next((s for s in streams if s.name == stream_name), None)
 
-      if stream is None:
-          pytest.skip(f"Stream '{stream_name}' not available")
+        if stream is None:
+            pytest.skip(f"Stream '{stream_name}' not available")
 
-      # Try to extract a few records
-      records = []
-      try:
-          for i, record in enumerate(stream.get_records(context=None)):
-              records.append(record)
-              if i >= 2:  # Just get 3 records for testing
-                  break
+        # Try to extract a few records
+        records = []
+        try:
+            for i, record in enumerate(stream.get_records(context=None)):
+                records.append(record)
+                if i >= 2:  # Just get 3 records for testing
+                    break
 
-          if records:
-              pass
+            if records:
+                pass
 
-      except Exception as e:
-          # Check if it's an authentication or connection error
-          error_msg = str(e).lower()
-          if any(
-              x in error_msg for x in ["auth", "401", "403", "connection", "timeout"]
-          ):
-              pytest.skip(f"Connection/auth issue with {stream_name}: {e}")
-          else:
-              raise
+        except Exception as e:
+            # Check if it's an authentication or connection error
+            error_msg = str(e).lower()
+            if any(
+                x in error_msg for x in ["auth", "401", "403", "connection", "timeout"]
+            ):
+                pytest.skip(f"Connection/auth issue with {stream_name}: {e}")
+            else:
+                raise
 
 
 if __name__ == "__main__":
