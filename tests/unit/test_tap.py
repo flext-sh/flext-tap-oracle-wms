@@ -60,7 +60,7 @@ class TestFlextTapOracleWMS:
         """Test WMS client property lazy initialization."""
         # Mock client instance
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult.ok(None)
+        mock_client.connect.return_value = FlextResult[None].ok(None)
         mock_client_class.return_value = mock_client
 
         # First access creates client
@@ -83,7 +83,7 @@ class TestFlextTapOracleWMS:
         """Test WMS client connection failure."""
         # Mock failed connection
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult.fail("Connection refused")
+        mock_client.connect.return_value = FlextResult[None].fail("Connection refused")
         mock_client_class.return_value = mock_client
 
         with pytest.raises(FlextTapOracleWMSConfigurationError) as exc_info:
@@ -102,7 +102,7 @@ class TestFlextTapOracleWMS:
         """Test tap initialization."""
         # Mock client
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult.ok(None)
+        mock_client.connect.return_value = FlextResult[None].ok(None)
         mock_client_class.return_value = mock_client
 
         # Mock discovery
@@ -126,12 +126,12 @@ class TestFlextTapOracleWMS:
         """Test catalog discovery."""
         # Mock client
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult.ok(None)
+        mock_client.connect.return_value = FlextResult[None].ok(None)
         mock_client_class.return_value = mock_client
 
         # Mock discovery
         mock_discovery = MagicMock()
-        mock_discovery.discover_entities.return_value = FlextResult.ok(
+        mock_discovery.discover_entities.return_value = FlextResult[None].ok(
             {
                 "inventory": {"type": "object", "properties": {}},
                 "locations": {"type": "object", "properties": {}},
@@ -214,8 +214,8 @@ class TestFlextTapOracleWMS:
         """Test configuration validation."""
         # Mock client
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult.ok(None)
-        mock_client.list_entities.return_value = FlextResult.ok(["inventory"])
+        mock_client.connect.return_value = FlextResult[None].ok(None)
+        mock_client.list_entities.return_value = FlextResult[None].ok(["inventory"])
         mock_client_class.return_value = mock_client
 
         result = tap_instance.validate_configuration()
