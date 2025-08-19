@@ -409,19 +409,19 @@ class EntityDiscovery:
         try:
             entities = self.wms_client.get_available_entities()
             self.logger.info(f"Discovered {len(entities)} WMS entities")
-            return FlextResult.ok(entities)
+            return FlextResult[None].ok(entities)
         except Exception as e:
             self.logger.error(f"Entity discovery failed: {e}")
-            return FlextResult.fail(f"Discovery error: {e}")
+            return FlextResult[None].fail(f"Discovery error: {e}")
 
     def get_entity_metadata(self, entity: str) -> FlextResult[WMSEntityMetadata]:
         """Get metadata for specific entity."""
         try:
             metadata = self.wms_client.get_entity_metadata(entity)
-            return FlextResult.ok(metadata)
+            return FlextResult[None].ok(metadata)
         except Exception as e:
             self.logger.error(f"Metadata retrieval failed for {entity}: {e}")
-            return FlextResult.fail(f"Metadata error: {e}")
+            return FlextResult[None].fail(f"Metadata error: {e}")
 
 # schema.py - Schema Generation (~100 lines)
 """
@@ -454,13 +454,13 @@ class SchemaGenerator:
         """Generate Singer schema for WMS entity."""
         metadata_result = self.discovery.get_entity_metadata(entity)
         if not metadata_result.success:
-            return FlextResult.fail(metadata_result.error)
+            return FlextResult[None].fail(metadata_result.error)
 
         try:
             schema = self._convert_metadata_to_schema(metadata_result.data)
-            return FlextResult.ok(schema)
+            return FlextResult[None].ok(schema)
         except Exception as e:
-            return FlextResult.fail(f"Schema generation error: {e}")
+            return FlextResult[None].fail(f"Schema generation error: {e}")
 
     def _convert_metadata_to_schema(self, metadata) -> Dict[str, Any]:
         """Convert WMS metadata to Singer JSON schema."""
@@ -715,9 +715,9 @@ def discover_entities(self) -> FlextResult[List[str]]:
     """Business logic with railway-oriented programming."""
     try:
         entities = self.wms_client.get_available_entities()
-        return FlextResult.ok(entities)
+        return FlextResult[None].ok(entities)
     except Exception as e:
-        return FlextResult.fail(f"Discovery failed: {e}")
+        return FlextResult[None].fail(f"Discovery failed: {e}")
 
 # Logging using FLEXT patterns
 self.logger = get_logger(__name__)

@@ -66,10 +66,10 @@ def mock_wms_client() -> MagicMock:
     client = MagicMock()
 
     # Mock successful connection
-    client.connect.return_value = FlextResult.ok(None)
+    client.connect.return_value = FlextResult[None].ok(None)
 
     # Mock list entities
-    client.list_entities.return_value = FlextResult.ok(
+    client.list_entities.return_value = FlextResult[None].ok(
         [
             "inventory",
             "locations",
@@ -79,7 +79,7 @@ def mock_wms_client() -> MagicMock:
     )
 
     # Mock get records
-    client.get_records.return_value = FlextResult.ok(
+    client.get_records.return_value = FlextResult[None].ok(
         [
             {"id": "1", "name": "Test Item 1", "quantity": 100},
             {"id": "2", "name": "Test Item 2", "quantity": 200},
@@ -87,7 +87,7 @@ def mock_wms_client() -> MagicMock:
     )
 
     # Mock get entity metadata
-    client.get_entity_metadata.return_value = FlextResult.ok(
+    client.get_entity_metadata.return_value = FlextResult[None].ok(
         {
             "display_name": "Inventory",
             "description": "Inventory data",
