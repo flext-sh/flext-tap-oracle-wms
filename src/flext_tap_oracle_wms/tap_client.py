@@ -167,7 +167,7 @@ class FlextTapOracleWMS(Tap):
             if not self._is_started:
                 init_result = self._run_async(self._wms_client.initialize())
                 if hasattr(init_result, "is_failure") and init_result.is_failure:
-                    error_msg = getattr(init_result, "error", "Unknown error")
+                    error_msg = init_result.error or "Unknown error"
                     msg = f"Failed to initialize Oracle WMS client: {error_msg}"
                     raise FlextTapOracleWMSConfigurationError(msg)
                 self._is_started = True
@@ -221,10 +221,10 @@ class FlextTapOracleWMS(Tap):
                 self.discovery.discover_entities(),
             )
             if hasattr(discovery_result, "is_failure") and discovery_result.is_failure:
-                error_msg = getattr(discovery_result, "error", "Discovery failed")
+                error_msg = discovery_result.error or "Discovery failed"
                 return FlextResult[None].fail(error_msg)
             # Build Singer catalog from discovery result
-            data = getattr(discovery_result, "data", discovery_result)
+            data = discovery_result.value if hasattr(discovery_result, "value") else discovery_result
             catalog = self._build_singer_catalog(data)
             # Count streams safely
             stream_count = 0
@@ -497,7 +497,7 @@ class FlextTapOracleWMS(Tap):
                 "connection": "success",
                 "base_url": self.flext_config.base_url,
                 "api_version": self.flext_config.api_version,
-                "health": getattr(discovery_result, "data", None)
+                "health": discovery_result.value if hasattr(discovery_result, "value") else None
                 if "discovery_result" in locals()
                 else None,
             }
