@@ -224,7 +224,11 @@ class FlextTapOracleWMS(Tap):
                 error_msg = discovery_result.error or "Discovery failed"
                 return FlextResult[None].fail(error_msg)
             # Build Singer catalog from discovery result
-            data = discovery_result.value if hasattr(discovery_result, "value") else discovery_result
+            data = (
+                discovery_result.value
+                if hasattr(discovery_result, "value")
+                else discovery_result
+            )
             catalog = self._build_singer_catalog(data)
             # Count streams safely
             stream_count = 0
@@ -497,7 +501,9 @@ class FlextTapOracleWMS(Tap):
                 "connection": "success",
                 "base_url": self.flext_config.base_url,
                 "api_version": self.flext_config.api_version,
-                "health": discovery_result.value if hasattr(discovery_result, "value") else None
+                "health": discovery_result.value
+                if hasattr(discovery_result, "value")
+                else None
                 if "discovery_result" in locals()
                 else None,
             }
