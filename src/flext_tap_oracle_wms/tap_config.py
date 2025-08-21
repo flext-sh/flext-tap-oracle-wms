@@ -269,13 +269,17 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
     def _validate_required_fields(self) -> FlextResult[None]:
         """Validate required fields."""
         if not self.base_url or not self.username or not self.password:
-            return FlextResult[None].fail("base_url, username, and password are required")
+            return FlextResult[None].fail(
+                "base_url, username, and password are required"
+            )
         return FlextResult[None].ok(None)
 
     def _validate_url_format(self) -> FlextResult[None]:
         """Validate URL format."""
         if not self.base_url.startswith(("http://", "https://")):
-            return FlextResult[None].fail("base_url must start with http:// or https://")
+            return FlextResult[None].fail(
+                "base_url must start with http:// or https://"
+            )
         return FlextResult[None].ok(None)
 
     def _validate_page_size(self) -> FlextResult[None]:
@@ -424,7 +428,9 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
     def _validate_url_format(self) -> FlextResult[None]:
         """Validate URL format requirements."""
         if not self.base_url.startswith(("http://", "https://")):
-            return FlextResult[None].fail("base_url must start with http:// or https://")
+            return FlextResult[None].fail(
+                "base_url must start with http:// or https://"
+            )
 
         return FlextResult[None].ok(None)
 
@@ -505,7 +511,9 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
         """
         # Validate basic URL format
         if not self.base_url.startswith(("http://", "https://")):
-            return FlextResult[None].fail("base_url must start with http:// or https://")
+            return FlextResult[None].fail(
+                "base_url must start with http:// or https://"
+            )
 
         # Validate timeout settings
         if self.timeout <= 0:

@@ -487,7 +487,9 @@ class FlextTapOracleWMS(Tap):
                         "error",
                         "Unknown connection error",
                     )
-                    return FlextResult[None].fail(f"Connection test failed: {error_msg}")
+                    return FlextResult[None].fail(
+                        f"Connection test failed: {error_msg}"
+                    )
             except Exception as e:
                 return FlextResult[None].fail(f"Connection test failed: {e}")
             validation_info = {
@@ -865,7 +867,9 @@ def create_oracle_wms_tap_plugin(
         # Validate plugin configuration
         validation = plugin.validate_business_rules()
         if not validation.success:
-            return FlextResult[None].fail(f"Plugin validation failed: {validation.error}")
+            return FlextResult[None].fail(
+                f"Plugin validation failed: {validation.error}"
+            )
 
         logger.info("Oracle WMS tap plugin created successfully")
         return FlextResult[None].ok(plugin)
