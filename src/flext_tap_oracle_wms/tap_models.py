@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from flext_core import FlextValueObject
+from flext_core import FlextValue
 from pydantic import BaseModel, Field
 
 
@@ -21,7 +21,7 @@ class OracleWMSEntityModel(BaseModel):
     updated_at: str | None = Field(default=None, description="Last update timestamp")
 
 
-class StreamMetadata(FlextValueObject):
+class StreamMetadata(FlextValue):
     """Stream metadata for Oracle WMS streams."""
 
     stream_name: str
@@ -54,7 +54,7 @@ class StreamMetadata(FlextValueObject):
         return metadata
 
 
-class StreamSchema(FlextValueObject):
+class StreamSchema(FlextValue):
     """Schema definition for Oracle WMS streams."""
 
     stream_name: str
@@ -73,7 +73,7 @@ class StreamSchema(FlextValueObject):
         }
 
 
-class CatalogStream(FlextValueObject):
+class CatalogStream(FlextValue):
     """Complete catalog stream definition."""
 
     tap_stream_id: str
