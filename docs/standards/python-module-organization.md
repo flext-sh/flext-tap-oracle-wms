@@ -112,7 +112,7 @@ __all__: list[str] = [
 
 # __version__.py - Version Management
 """Version information for FLEXT Tap Oracle WMS."""
-__version__ = "1.0.0"
+__version__ = "0.9.0"
 ```
 
 **Responsibility**: Establish clean public API and version management.
