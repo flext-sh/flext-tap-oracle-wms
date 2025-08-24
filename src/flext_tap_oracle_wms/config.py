@@ -346,7 +346,7 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
             if self.include_entities and self.exclude_entities:
                 common = set(self.include_entities) & set(self.exclude_entities)
                 if common:
-                    return FlextResult[None].fail(
+                    return FlextResult[dict[str, object]].fail(
                         f"Entities cannot be both included and excluded: {common}",
                     )
 
@@ -355,7 +355,9 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
                 start = datetime.fromisoformat(self.start_date)
                 end = datetime.fromisoformat(self.end_date)
                 if start > end:
-                    return FlextResult[None].fail("Start date must be before end date")
+                    return FlextResult[dict[str, object]].fail(
+                        "Start date must be before end date"
+                    )
 
             # Validate performance settings
             max_parallel_streams_without_rate_limit = 5
@@ -364,7 +366,7 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
                 and self.max_parallel_streams > max_parallel_streams_without_rate_limit
                 and not self.enable_rate_limiting
             ):
-                return FlextResult[None].fail(
+                return FlextResult[dict[str, object]].fail(
                     f"Rate limiting must be enabled for more than {max_parallel_streams_without_rate_limit} parallel streams",
                 )
 
@@ -380,10 +382,12 @@ class FlextTapOracleWMSConfig(FlextBaseConfigModel):
                 else 0,
             }
 
-            return FlextResult[None].ok(validation_result)
+            return FlextResult[dict[str, object]].ok(validation_result)
 
         except Exception as e:
-            return FlextResult[None].fail(f"Configuration validation failed: {e}")
+            return FlextResult[dict[str, object]].fail(
+                f"Configuration validation failed: {e}"
+            )
 
     def validate_domain_rules(self) -> FlextResult[None]:
         """Validate Oracle WMS tap-specific domain rules.

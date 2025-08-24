@@ -8,7 +8,7 @@ Following PEP8 reorganization using tap_cli module.
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms.tap_cli import run_as_module
+from flext_tap_oracle_wms.cli import main
 
 if __name__ == "__main__":
-    run_as_module()
+    main()

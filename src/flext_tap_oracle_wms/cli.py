@@ -9,7 +9,7 @@ Consolidates CLI functionality from cli.py and __main__.py following PEP8 patter
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms.tap_client import FlextTapOracleWMS
+from flext_tap_oracle_wms.client import FlextTapOracleWMS
 
 
 def main() -> None:
