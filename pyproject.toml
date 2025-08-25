@@ -56,7 +56,7 @@ tap-oracle-wms = "flext_tap_oracle_wms.tap:main"
 flext-tap-oracle-wms = "flext_tap_oracle_wms.tap:main"
 
 [tool.ruff]
-extend = "../.config/tools/.ruff-shared.toml"
+extend = "../ruff-shared.toml"
 lint.isort.known-first-party = ["flext_tap_oracle_wms"]
 
 [tool.mypy]
