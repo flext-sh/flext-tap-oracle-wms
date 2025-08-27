@@ -261,9 +261,9 @@ def extract_records(
 ### Error Handling Standards
 
 ```python
-from flext_core import FlextError
+from flext_core import FlextExceptions.Error
 
-class WMSTapError(FlextError):
+class WMSTapError(FlextExceptions.Error):
     """Base error for WMS tap."""
     pass
 
