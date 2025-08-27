@@ -307,9 +307,9 @@ validation, and FLEXT ecosystem integration.
 
 from typing import List, Optional
 from pydantic import Field, validator
-from flext_core import FlextSettings
+from flext_core import FlextConfig
 
-class WMSConfig(FlextSettings):
+class WMSConfig(FlextConfig):
     """
     Oracle WMS tap configuration using FLEXT patterns.
 
@@ -638,7 +638,7 @@ from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
 # FLEXT ecosystem imports
-from flext_core import FlextSettings, get_logger, FlextResult, TAnyDict
+from flext_core import FlextConfig, get_logger, FlextResult, TAnyDict
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # Project imports (relative)
@@ -703,8 +703,8 @@ class FlextTapOracleWMSStream(RESTStream):
 ### **FLEXT Integration Pattern**
 
 ```python
-# Configuration using FlextSettings
-class WMSConfig(FlextSettings):
+# Configuration using FlextConfig
+class WMSConfig(FlextConfig):
     """Configuration with FLEXT patterns."""
 
     class Config:
@@ -780,7 +780,7 @@ class AuthenticationManager:
 ✅ tap.py           # 1,042 → ~150 lines (remove complexity)
 ✅ streams.py       # 897 → ~200 lines (simplify implementation)
 ✅ discovery.py     # 418 → ~150 lines (unified discovery)
-✅ config.py        # 265 → ~100 lines (use FlextSettings)
+✅ config.py        # 265 → ~100 lines (use FlextConfig)
 ✅ auth.py          # 109 → ~50 lines (wrapper around flext-oracle-wms)
 ✅ exceptions.py    # 316 → ~30 lines (use FlextExceptions.Error hierarchy)
 ✅ schema.py        # NEW → ~100 lines (unified schema handling)
@@ -790,11 +790,11 @@ class AuthenticationManager:
 
 ```python
 # INTEGRATE with FLEXT ecosystem:
-from flext_core import FlextSettings, FlextResult, get_logger
+from flext_core import FlextConfig, FlextResult, get_logger
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # REMOVE custom implementations:
-- Custom configuration classes → use FlextSettings
+- Custom configuration classes → use FlextConfig
 - Custom error handling → use FlextResult railway pattern
 - Custom logging → use get_logger()
 - Custom WMS client → use FlextOracleWmsClient
@@ -815,7 +815,7 @@ Test Coverage: ~70% (27% disabled)
 Lines of Code: ~800 (90% reduction)
 Module Count: 8 (69% reduction)
 Discovery Systems: 1 unified implementation
-Configuration Systems: 1 FlextSettings-based
+Configuration Systems: 1 FlextConfig-based
 Test Coverage: 100% (all tests enabled)
 ```
 
@@ -860,7 +860,7 @@ def test_wms_stream_get_records():
     pass
 
 def test_config_validation():
-    """Test configuration validation with FlextSettings."""
+    """Test configuration validation with FlextConfig."""
     pass
 
 def test_entity_discovery():
@@ -923,9 +923,9 @@ def discover_entities(self) -> FlextResult[List[str]]:
 
 ```python
 # ✅ Use FLEXT patterns consistently
-from flext_core import FlextSettings, FlextResult, get_logger
+from flext_core import FlextConfig, FlextResult, get_logger
 
-class WMSConfig(FlextSettings):          # Configuration
+class WMSConfig(FlextConfig):          # Configuration
     pass
 
 def process_data() -> FlextResult[Data]:     # Error handling
@@ -934,7 +934,7 @@ def process_data() -> FlextResult[Data]:     # Error handling
 logger = get_logger(__name__)                # Logging
 
 # ❌ Don't create project-specific alternatives
-class CustomConfig(BaseModel):               # Use FlextSettings
+class CustomConfig(BaseModel):               # Use FlextConfig
 class CustomResult[T]:                       # Use FlextResult
 custom_logger = logging.getLogger()          # Use get_logger()
 ```
