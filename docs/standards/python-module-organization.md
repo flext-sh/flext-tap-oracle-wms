@@ -527,9 +527,9 @@ Defines tap-specific exceptions while leveraging FLEXT core
 exception hierarchy for consistency.
 """
 
-from flext_core import FlextError
+from flext_core import FlextExceptions.Error
 
-class WMSTapError(FlextError):
+class WMSTapError(FlextExceptions.Error):
     """Base exception for WMS tap errors."""
     pass
 
@@ -782,7 +782,7 @@ class AuthenticationManager:
 ✅ discovery.py     # 418 → ~150 lines (unified discovery)
 ✅ config.py        # 265 → ~100 lines (use FlextSettings)
 ✅ auth.py          # 109 → ~50 lines (wrapper around flext-oracle-wms)
-✅ exceptions.py    # 316 → ~30 lines (use FlextError hierarchy)
+✅ exceptions.py    # 316 → ~30 lines (use FlextExceptions.Error hierarchy)
 ✅ schema.py        # NEW → ~100 lines (unified schema handling)
 ```
 

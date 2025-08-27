@@ -323,9 +323,9 @@ class WMSConnectionManager:
 ### 1. Exception Hierarchy
 
 ```python
-from flext_core import FlextError
+from flext_core import FlextExceptions.Error
 
-class WMSTapError(FlextError):
+class WMSTapError(FlextExceptions.Error):
     """Base exception for WMS tap errors."""
     pass
 
