@@ -245,13 +245,14 @@ class FlextTapOracleWMS:
 
 ```python
 # Strict type annotations required
-from typing import List, Dict, Any, Optional, Iterator
+from typing import List, Dict, Optional, Iterator
+
 from flext_core import TAnyDict
 
 def extract_records(
     entity: str,
     config: TAnyDict,
-    filters: Optional[Dict[str, Any]] = None
+    filters: Optional[Dict[str, object]] = None
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety

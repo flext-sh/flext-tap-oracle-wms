@@ -6,7 +6,7 @@ Following PEP8 patterns for model organization.
 
 from __future__ import annotations
 
-from typing import Any
+object
 
 from flext_core import FlextValue
 from pydantic import BaseModel, Field
@@ -30,14 +30,14 @@ class StreamMetadata(FlextValue):
     replication_key: str | None = None
     inclusion: str = "available"
 
-    def to_singer_metadata(self) -> list[dict[str, Any]]:
+    def to_singer_metadata(self) -> list[dict[str, object]]:
         """Convert to Singer metadata format.
 
         Returns:
             List of Singer metadata entries
 
         """
-        metadata: list[dict[str, Any]] = [
+        metadata: list[dict[str, object]] = [
             {
                 "breadcrumb": [],
                 "metadata": {
@@ -58,9 +58,9 @@ class StreamSchema(FlextValue):
     """Schema definition for Oracle WMS streams."""
 
     stream_name: str
-    properties: dict[str, dict[str, Any]]
+    properties: dict[str, dict[str, object]]
 
-    def to_singer_schema(self) -> dict[str, Any]:
+    def to_singer_schema(self) -> dict[str, object]:
         """Convert to Singer schema format.
 
         Returns:
@@ -81,7 +81,7 @@ class CatalogStream(FlextValue):
     stream_schema: StreamSchema  # Renamed to avoid conflict with BaseModel.schema
     metadata: StreamMetadata
 
-    def to_singer_catalog_entry(self) -> dict[str, Any]:
+    def to_singer_catalog_entry(self) -> dict[str, object]:
         """Convert to Singer catalog entry format.
 
         Returns:
