@@ -287,13 +287,13 @@ class WMSPaginator:
 
 ```python
 from functools import lru_cache
-from typing import Dict, Any
+from typing import Dict, object
 
 class WMSCache:
     """Simple LRU cache for WMS responses."""
 
     @lru_cache(maxsize=1000)
-    def get_entity_schema(self, entity_name: str) -> Dict[str, Any]:
+    def get_entity_schema(self, entity_name: str) -> Dict[str, object]:
         """Cache entity schemas for discovery."""
         return self._fetch_schema(entity_name)
 ```
@@ -346,7 +346,7 @@ class WMSSchemaError(WMSTapError):
 
 ```python
 import time
-from typing import Iterator, Any
+from typing import Iterator, object
 
 def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
     """Decorator for retry logic with exponential backoff."""
