@@ -52,7 +52,7 @@ graph TB
 ```python
 from flext_core import (
     FlextConfig,          # Configuration base class
-    get_logger,          # Standardized logging
+    FlextLogger,          # Standardized logging
     TAnyDict,            # Type definitions
     TEntityId,           # Entity identifier type
     ServiceResult,       # Result handling pattern
@@ -77,7 +77,7 @@ class FlextTapOracleWMS:
 
     def __init__(self, config: TAnyDict):
         self.config = WMSConfig(**config)
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def discover_streams(self) -> ServiceResult[List[Stream]]:
         """Return streams using ServiceResult pattern."""
@@ -119,7 +119,7 @@ class FlextTapOracleWMSStream:
 #### Logging Integration
 
 ```python
-from flext_core import get_logger
+from flext_core import FlextLogger
 import logging
 
 class FlextTapOracleWMSStream:
@@ -128,7 +128,7 @@ class FlextTapOracleWMSStream:
     def __init__(self, tap, name: str):
         self.tap = tap
         self.name = name
-        self.logger = get_logger(f"{__name__}.{name}")
+        self.logger = FlextLogger(f"{__name__}.{name}")
 
     def get_records(self, context):
         """Extract records with comprehensive logging."""
@@ -167,7 +167,7 @@ class WMSClientManager:
     def __init__(self, config: WMSConfig):
         self.config = config
         self._client = None
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     @property
     def client(self) -> FlextOracleWmsClient:
@@ -211,7 +211,7 @@ class EntityDiscovery:
 
     def __init__(self, wms_client: FlextOracleWmsClient):
         self.wms_client = wms_client
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def discover_entities(self) -> ServiceResult[List[str]]:
         """Discover available entities using WMS client."""

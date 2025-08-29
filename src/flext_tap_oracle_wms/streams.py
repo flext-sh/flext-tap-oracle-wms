@@ -9,13 +9,13 @@ from __future__ import annotations
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 from typing import ClassVar
 
-from flext_core import FlextTypes, get_logger
+from flext_core import FlextLogger, FlextTypes
 from flext_meltano import Stream, Tap
 from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms.utils import run_async
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextTapOracleWMSStream(Stream):

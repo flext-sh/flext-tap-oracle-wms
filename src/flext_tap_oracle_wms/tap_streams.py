@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 from typing import TYPE_CHECKING, ClassVar
 
-from flext_core import FlextTypes, get_logger
+from flext_core import FlextLogger, FlextTypes
 from flext_meltano import Stream, Tap
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 from flext_tap_oracle_wms.utils import run_async
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextTapOracleWMSStream(Stream):

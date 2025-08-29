@@ -206,7 +206,7 @@ tests/
 
 ```python
 # Example of FLEXT-compliant code
-from flext_core import FlextConfig, get_logger, ServiceResult
+from flext_core import FlextConfig, FlextLogger, ServiceResult
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import Field, validator
 
@@ -229,7 +229,7 @@ class FlextTapOracleWMS:
 
     def __init__(self, config: dict):
         self.config = WMSConfig(**config)
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def discover_streams(self) -> ServiceResult[List[Stream]]:
         """Use ServiceResult pattern for error handling."""

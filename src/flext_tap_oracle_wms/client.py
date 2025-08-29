@@ -11,11 +11,11 @@ from collections.abc import Awaitable, Coroutine, Sequence
 from typing import ClassVar
 
 from flext_core import (
+    FlextLogger,
     FlextPlugin,
     FlextPluginContext,
     FlextResult,
     FlextTypes,
-    get_logger,
 )
 from flext_meltano import Stream, Tap
 from flext_oracle_wms import (
@@ -29,7 +29,7 @@ from flext_tap_oracle_wms.exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 from flext_tap_oracle_wms.utils import run_async
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextTapOracleWMS(Tap):
@@ -526,7 +526,7 @@ class FlextTapOracleWMS(Tap):
         except Exception as e:
             # EXPLICIT TRANSPARENCY: Version metadata retrieval fallback with proper error handling
             # This is NOT security-sensitive fake data generation - it's version fallback
-            logger = get_logger(__name__)
+            logger = FlextLogger(__name__)
             logger.debug(f"Package version retrieval failed: {type(e).__name__}: {e}")
             logger.info(
                 "Using fallback version 0.9.0 - legitimate version metadata fallback",
