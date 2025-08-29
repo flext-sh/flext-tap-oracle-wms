@@ -12,7 +12,7 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 
 import pytest
-from flext_core import get_logger
+from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWMS,
@@ -20,7 +20,7 @@ from flext_tap_oracle_wms import (
     WMSPaginator,
 )
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 @pytest.mark.e2e

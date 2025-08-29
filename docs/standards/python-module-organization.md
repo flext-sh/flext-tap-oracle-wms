@@ -136,7 +136,7 @@ FLEXT ecosystem integration for configuration, logging, and error handling.
 """
 
 from singer_sdk import Tap
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms.config import WMSConfig
@@ -157,7 +157,7 @@ class FlextTapOracleWMS(Tap):
     def __init__(self, config: dict):
         super().__init__(config)
         self.config = WMSConfig(**config)
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
         self._wms_client = None
 
     @property
@@ -220,7 +220,7 @@ pagination, error handling, and schema management.
 
 from singer_sdk.streams import RESTStream
 from singer_sdk.pagination import BaseHATEOASPaginator
-from flext_core import get_logger, TAnyDict
+from flext_core import FlextLogger, TAnyDict
 
 from flext_tap_oracle_wms.schema import SchemaGenerator
 
@@ -244,7 +244,7 @@ class FlextTapOracleWMSStream(RESTStream):
         super().__init__(tap)
         self.name = name
         self.path = f"/api/rest/v1/{name}"
-        self.logger = get_logger(f"{__name__}.{name}")
+        self.logger = FlextLogger(f"{__name__}.{name}")
         self._schema_generator = SchemaGenerator(tap.wms_client)
 
     @property
@@ -389,7 +389,7 @@ using FLEXT ecosystem patterns and error handling.
 """
 
 from typing import List, Dict, object
-from flext_core import get_logger, FlextResult
+from flext_core import FlextLogger, FlextResult
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 class EntityDiscovery:
@@ -402,7 +402,7 @@ class EntityDiscovery:
 
     def __init__(self, wms_client: FlextOracleWmsClient):
         self.wms_client = wms_client
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def discover_entities(self) -> FlextResult[List[str]]:
         """Discover available entities from WMS API."""
@@ -432,7 +432,7 @@ and validation rules.
 """
 
 from typing import Dict, object
-from flext_core import FlextResult, get_logger
+from flext_core import FlextResult, FlextLogger
 from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms.discovery import EntityDiscovery
@@ -448,7 +448,7 @@ class SchemaGenerator:
     def __init__(self, wms_client: FlextOracleWmsClient):
         self.wms_client = wms_client
         self.discovery = EntityDiscovery(wms_client)
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def generate_schema(self, entity: str) -> FlextResult[Dict[str, object]]:
         """Generate Singer schema for WMS entity."""
@@ -639,7 +639,7 @@ from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
 # FLEXT ecosystem imports
-from flext_core import FlextConfig, get_logger, FlextResult, TAnyDict
+from flext_core import FlextConfig, FlextLogger, FlextResult, TAnyDict
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # Project imports (relative)
@@ -721,7 +721,7 @@ def discover_entities(self) -> FlextResult[List[str]]:
         return FlextResult[None].fail(f"Discovery failed: {e}")
 
 # Logging using FLEXT patterns
-self.logger = get_logger(__name__)
+self.logger = FlextLogger(__name__)
 self.logger.info("Starting extraction", entity=entity_name)
 ```
 
@@ -791,13 +791,13 @@ class AuthenticationManager:
 
 ```python
 # INTEGRATE with FLEXT ecosystem:
-from flext_core import FlextConfig, FlextResult, get_logger
+from flext_core import FlextConfig, FlextResult, FlextLogger
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # REMOVE custom implementations:
 - Custom configuration classes → use FlextConfig
 - Custom error handling → use FlextResult railway pattern
-- Custom logging → use get_logger()
+- Custom logging → use FlextLogger()
 - Custom WMS client → use FlextOracleWmsClient
 - Custom result types → use FlextResult[T]
 ```
@@ -924,7 +924,7 @@ def discover_entities(self) -> FlextResult[List[str]]:
 
 ```python
 # ✅ Use FLEXT patterns consistently
-from flext_core import FlextConfig, FlextResult, get_logger
+from flext_core import FlextConfig, FlextResult, FlextLogger
 
 class WMSConfig(FlextConfig):          # Configuration
     pass
@@ -932,12 +932,12 @@ class WMSConfig(FlextConfig):          # Configuration
 def process_data() -> FlextResult[Data]:     # Error handling
     pass
 
-logger = get_logger(__name__)                # Logging
+logger = FlextLogger(__name__)                # Logging
 
 # ❌ Don't create project-specific alternatives
 class CustomConfig(BaseModel):               # Use FlextConfig
 class CustomResult[T]:                       # Use FlextResult
-custom_logger = logging.getLogger()          # Use get_logger()
+custom_logger = logging.getLogger()          # Use FlextLogger()
 ```
 
 ### **Library Integration**

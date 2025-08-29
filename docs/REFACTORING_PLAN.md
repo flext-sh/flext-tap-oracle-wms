@@ -95,7 +95,7 @@ src/flext_tap_oracle_wms_v2/
 ```python
 # Example simplified tap implementation
 from singer_sdk import Tap
-from flext_core import get_logger
+from flext_core import FlextLogger
 from flext_oracle_wms import FlextOracleWmsClient
 
 class FlextTapOracleWMS(Tap):
@@ -103,7 +103,7 @@ class FlextTapOracleWMS(Tap):
 
     def __init__(self, config: dict):
         super().__init__(config)
-        self.logger = get_logger(__name__)
+        self.logger = FlextLogger(__name__)
         self._wms_client = None
 
     @property

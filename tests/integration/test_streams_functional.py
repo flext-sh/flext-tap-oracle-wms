@@ -11,11 +11,11 @@ from unittest.mock import Mock
 import pytest
 import requests
 from flext_api import FlextApiConstants
-from flext_core import get_logger
+from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSStream
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class TestStreamsFunctional:

@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import pytest
-from flext_core import get_logger
+from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 @pytest.mark.oracle_wms
