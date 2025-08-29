@@ -6,17 +6,16 @@ Consolidates stream definitions and functionality following PEP8 patterns.
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 from typing import ClassVar
 
-from flext_core import FlextTypes
+from flext_core import FlextTypes, get_logger
 from flext_meltano import Stream, Tap
 from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms.utils import run_async
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class FlextTapOracleWMSStream(Stream):
