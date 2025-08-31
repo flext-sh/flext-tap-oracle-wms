@@ -5,7 +5,7 @@ from __future__ import annotations
 import importlib.metadata
 
 # flext-core imports
-from flext_core import FlextResult, FlextModels.Value, FlextLogger
+from flext_core import FlextResult, FlextModels, FlextLogger
 
 # === FLEXT-MELTANO COMPLETE INTEGRATION ===
 # Re-export ALL flext-meltano facilities for full ecosystem integration
@@ -99,7 +99,7 @@ __all__: list[str] = [
     "get_tap_test_class",
     "singer_typing",
     "FlextResult",
-    "FlextModels.Value",
+    "FlextModels",
     "FlextLogger",
     "FlextTapOracleWMS",
     "FlextTapOracleWMSPlugin",
