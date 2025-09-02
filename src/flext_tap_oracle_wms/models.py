@@ -10,7 +10,7 @@ from flext_core import FlextModels
 from pydantic import Field
 
 
-class OracleWMSEntityModel(FlextModels.BaseModel):
+class OracleWMSEntityModel(FlextModels.Entity):
     """Base model for Oracle WMS entities."""
 
     id: str | None = Field(default=None, description="Entity identifier")
@@ -19,7 +19,7 @@ class OracleWMSEntityModel(FlextModels.BaseModel):
     updated_at: str | None = Field(default=None, description="Last update timestamp")
 
 
-class StreamMetadata(FlextModels.BaseModel):
+class StreamMetadata(FlextModels.BaseConfig):
     """Stream metadata for Oracle WMS streams."""
 
     stream_name: str
@@ -52,7 +52,7 @@ class StreamMetadata(FlextModels.BaseModel):
         return metadata
 
 
-class StreamSchema(FlextModels.BaseModel):
+class StreamSchema(FlextModels.BaseConfig):
     """Schema definition for Oracle WMS streams."""
 
     stream_name: str
@@ -71,7 +71,7 @@ class StreamSchema(FlextModels.BaseModel):
         }
 
 
-class CatalogStream(FlextModels.BaseModel):
+class CatalogStream(FlextModels.BaseConfig):
     """Complete catalog stream definition."""
 
     tap_stream_id: str
