@@ -6,13 +6,11 @@ Following PEP8 patterns for model organization.
 
 from __future__ import annotations
 
-object
-
-from flext_core import FlextModels.Value
-from pydantic import BaseModel, Field
+from flext_core import FlextModels
+from pydantic import Field
 
 
-class OracleWMSEntityModel(BaseModel):
+class OracleWMSEntityModel(FlextModels.BaseModel):
     """Base model for Oracle WMS entities."""
 
     id: str | None = Field(default=None, description="Entity identifier")
@@ -21,7 +19,7 @@ class OracleWMSEntityModel(BaseModel):
     updated_at: str | None = Field(default=None, description="Last update timestamp")
 
 
-class StreamMetadata(FlextModels.Value):
+class StreamMetadata(FlextModels.BaseModel):
     """Stream metadata for Oracle WMS streams."""
 
     stream_name: str
@@ -54,7 +52,7 @@ class StreamMetadata(FlextModels.Value):
         return metadata
 
 
-class StreamSchema(FlextModels.Value):
+class StreamSchema(FlextModels.BaseModel):
     """Schema definition for Oracle WMS streams."""
 
     stream_name: str
@@ -73,7 +71,7 @@ class StreamSchema(FlextModels.Value):
         }
 
 
-class CatalogStream(FlextModels.Value):
+class CatalogStream(FlextModels.BaseModel):
     """Complete catalog stream definition."""
 
     tap_stream_id: str
