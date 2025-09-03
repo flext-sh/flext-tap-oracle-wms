@@ -42,11 +42,11 @@ class FlextTapOracleWMSConstants:
     MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = 1000  # Singer-specific maximum
 
 
-class FlextTapOracleWMSConfig(FlextModels.BaseConfig):
+class FlextTapOracleWMSConfig(FlextModels.Config):
     """Configuration for Oracle WMS tap.
 
     Type-safe configuration with validation for Oracle WMS data extraction.
-    Follows FLEXT patterns using FlextModels.BaseConfig for comprehensive validation.
+    Follows FLEXT patterns using FlextModels.Config for comprehensive validation.
     """
 
     # Connection settings
@@ -244,7 +244,7 @@ class FlextTapOracleWMSConfig(FlextModels.BaseConfig):
         return v
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate Oracle WMS tap configuration business rules using FlextModels.BaseConfig pattern.
+        """Validate Oracle WMS tap configuration business rules using FlextModels.Config pattern.
 
         Consolidates all validation logic into a single comprehensive method.
         """
