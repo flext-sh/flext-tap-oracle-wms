@@ -19,7 +19,7 @@ class OracleWMSEntityModel(FlextModels.Entity):
     updated_at: str | None = Field(default=None, description="Last update timestamp")
 
 
-class StreamMetadata(FlextModels.BaseConfig):
+class StreamMetadata(FlextModels.Config):
     """Stream metadata for Oracle WMS streams."""
 
     stream_name: str
@@ -52,7 +52,7 @@ class StreamMetadata(FlextModels.BaseConfig):
         return metadata
 
 
-class StreamSchema(FlextModels.BaseConfig):
+class StreamSchema(FlextModels.Config):
     """Schema definition for Oracle WMS streams."""
 
     stream_name: str
@@ -71,7 +71,7 @@ class StreamSchema(FlextModels.BaseConfig):
         }
 
 
-class CatalogStream(FlextModels.BaseConfig):
+class CatalogStream(FlextModels.Config):
     """Complete catalog stream definition."""
 
     tap_stream_id: str
