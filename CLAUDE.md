@@ -18,7 +18,7 @@ The project now contains **11 Python files with ~2,121 lines of code** - a prope
 
 - `tap_cli.py` - Main tap CLI entry point
 - `tap_client.py` - Oracle WMS client integration (using flext-oracle-wms)
-- `tap_config.py` - Configuration management 
+- `tap_config.py` - Configuration management
 - `tap_streams.py` - Singer stream implementations
 - `tap_models.py` - Data models and schemas
 - `utils.py` - Utility functions
