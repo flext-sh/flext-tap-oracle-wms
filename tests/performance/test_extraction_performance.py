@@ -7,6 +7,7 @@ import os
 import time
 from pathlib import Path
 
+import psutil
 import pytest
 from dotenv import load_dotenv
 
@@ -112,36 +113,30 @@ class TestExtractionPerformance:
 
     def test_memory_usage(self, tap: FlextTapOracleWMS) -> None:
         """Test memory usage during large extractions."""
-        try:
-            import psutil
+        process = psutil.Process()
 
-            process = psutil.Process()
+        # Initial memory
+        initial_memory = process.memory_info().rss / 1024 / 1024  # MB
 
-            # Initial memory
-            initial_memory = process.memory_info().rss / 1024 / 1024  # MB
+        # Initialize and extract
+        tap.initialize()
+        streams = tap.discover_streams()
 
-            # Initialize and extract
-            tap.initialize()
-            streams = tap.discover_streams()
+        if streams:
+            stream = streams[0]
+            records = []
 
-            if streams:
-                stream = streams[0]
-                records = []
+            for i, record in enumerate(stream.get_records(context=None)):
+                records.append(record)
+                if i >= 999:  # Extract 1000 records
+                    break
 
-                for i, record in enumerate(stream.get_records(context=None)):
-                    records.append(record)
-                    if i >= 999:  # Extract 1000 records
-                        break
+            # Final memory
+            final_memory = process.memory_info().rss / 1024 / 1024  # MB
+            memory_increase = final_memory - initial_memory
 
-                # Final memory
-                final_memory = process.memory_info().rss / 1024 / 1024  # MB
-                memory_increase = final_memory - initial_memory
-
-                # Memory should not increase too much
-                assert memory_increase < 100  # Less than 100MB increase
-
-        except ImportError:
-            pytest.skip("psutil not installed")
+            # Memory should not increase too much
+            assert memory_increase < 100  # Less than 100MB increase
 
 
 @pytest.mark.performance
