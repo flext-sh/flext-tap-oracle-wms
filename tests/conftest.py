@@ -1,4 +1,8 @@
-"""Test configuration and fixtures for FLEXT Tap Oracle WMS."""
+"""Test configuration and fixtures for FLEXT Tap Oracle WMS.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -8,7 +12,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes
 from pydantic import SecretStr
 
 from flext_tap_oracle_wms import (
@@ -110,7 +114,7 @@ def tap_instance(sample_config: FlextTapOracleWMSConfig) -> FlextTapOracleWMS:
 
 
 @pytest.fixture
-def sample_catalog() -> dict[str, object]:
+def sample_catalog() -> FlextTypes.Core.Dict:
     """Sample Singer catalog."""
     return {
         "type": "CATALOG",
@@ -144,7 +148,7 @@ def sample_catalog() -> dict[str, object]:
 
 
 @pytest.fixture
-def sample_state() -> dict[str, object]:
+def sample_state() -> FlextTypes.Core.Dict:
     """Sample Singer state."""
     return {
         "bookmarks": {
@@ -184,7 +188,7 @@ def mock_request() -> MagicMock:
 
 
 # Marker for tests requiring real Oracle WMS
-def pytest_collection_modifyitems(_config: object, items: list[object]) -> None:
+def pytest_collection_modifyitems(_config: object, items: FlextTypes.Core.List) -> None:
     """Add markers to tests based on their location."""
     for item in items:
         # Add oracle_wms marker to integration tests

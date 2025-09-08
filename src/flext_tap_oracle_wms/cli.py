@@ -5,9 +5,19 @@ enabling data extraction from Oracle Warehouse Management Systems
 following Singer specification standards.
 
 Consolidates CLI functionality from cli.py and __main__.py following PEP8 patterns.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+
+"""
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 
 from flext_tap_oracle_wms.client import FlextTapOracleWMS
 
@@ -29,6 +39,9 @@ def main() -> None:
       # Called automatically when running:
       # python -m flext_tap_oracle_wms --config config.json --discover
 
+    Returns:
+            object: Description of return value.
+
     """
     FlextTapOracleWMS.cli()
 
@@ -40,6 +53,10 @@ def run_as_module() -> None:
     python -m flext_tap_oracle_wms
 
     It delegates to the main CLI function for consistency.
+
+    Returns:
+            object: Description of return value.
+
     """
     main()
 

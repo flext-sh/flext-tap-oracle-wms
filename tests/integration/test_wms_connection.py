@@ -1,6 +1,10 @@
 """Test real Oracle WMS connection and basic operations.
 
 Tests against the actual Oracle WMS environment using real credentials.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 import os

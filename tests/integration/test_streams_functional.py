@@ -1,6 +1,10 @@
 """Functional tests for FlextTapOracleWMSStream with real Oracle WMS data.
 
 Tests stream functionality with REAL Oracle WMS instance using .env configuration.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
