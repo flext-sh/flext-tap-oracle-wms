@@ -104,7 +104,7 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWMS
 from flext_tap_oracle_wms.config import WMSConfig
 from flext_tap_oracle_wms.__version__ import __version__
 
-__all__: list[str] = [
+__all__: FlextTypes.Core.StringList = [
     "FlextTapOracleWMS",
     "WMSConfig",
     "__version__",

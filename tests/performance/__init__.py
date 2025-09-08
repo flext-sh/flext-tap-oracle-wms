@@ -1,1 +1,5 @@
-"""Performance tests for FLEXT Tap Oracle WMS."""
+"""Performance tests for FLEXT Tap Oracle WMS.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""

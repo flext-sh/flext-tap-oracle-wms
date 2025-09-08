@@ -2,12 +2,16 @@
 
 HONEST TESTING: Tests REAL functionality with REAL Oracle WMS instance.
 ALL Singer SDK features must work correctly with production data.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextLogger
+from flext_core import FlextLogger, FlextTypes
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWMS,
@@ -22,7 +26,7 @@ logger = FlextLogger(__name__)
 class TestOracleWMSFunctionalComplete:
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
-    def test_environment_loaded(self, real_wms_config: dict[str, object]) -> None:
+    def test_environment_loaded(self, real_wms_config: FlextTypes.Core.Dict) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
         for key in required_config:
@@ -40,7 +44,7 @@ class TestOracleWMSFunctionalComplete:
 
     def test_tap_initialization_real_config(
         self,
-        real_wms_config: dict[str, object],
+        real_wms_config: FlextTypes.Core.Dict,
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         # CRITICAL: This must work without errors
@@ -173,7 +177,7 @@ class TestOracleWMSFunctionalComplete:
     def test_real_data_extraction_sample(
         self,
         real_tap_instance: FlextTapOracleWMS,
-        test_config_extraction: dict[str, object],
+        test_config_extraction: FlextTypes.Core.Dict,
     ) -> None:
         """Test REAL data extraction with small sample."""
         catalog = real_tap_instance.catalog_dict
@@ -348,7 +352,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.functional
     def test_error_handling_and_validation(
         self,
-        real_wms_config: dict[str, object],
+        real_wms_config: FlextTypes.Core.Dict,
     ) -> None:
         """Test error handling with invalid configurations."""
         # Test with invalid URL
@@ -375,7 +379,9 @@ class TestOracleWMSFunctionalComplete:
             logger.info("✅ Network error handled gracefully: %s", type(e).__name__)
 
     @pytest.mark.functional
-    def test_configuration_validation(self, real_wms_config: dict[str, object]) -> None:
+    def test_configuration_validation(
+        self, real_wms_config: FlextTypes.Core.Dict
+    ) -> None:
         """Test configuration validation and type conversion."""
         # Test configuration creation
         config = create_wms_tap_config(real_wms_config)

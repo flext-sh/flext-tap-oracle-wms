@@ -1,4 +1,8 @@
-"""Test tap initialization without network calls."""
+"""Test tap initialization without network calls.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License

@@ -1,9 +1,19 @@
 """Utility functions for flext-tap-oracle-wms.
 
 This module contains shared utilities to eliminate code duplication across the tap.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+
+"""
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 
 import asyncio
 from collections.abc import Awaitable, Coroutine

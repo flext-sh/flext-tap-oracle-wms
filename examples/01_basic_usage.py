@@ -7,7 +7,7 @@ Shows how to use the tap with flext-oracle-wms integration.
 import os
 import sys
 
-from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
+from ..flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 
 
 def main() -> int:

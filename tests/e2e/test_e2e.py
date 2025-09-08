@@ -2,6 +2,10 @@
 
 HONEST E2E TESTING: Tests complete data extraction pipeline with REAL Oracle WMS.
 Validates all Singer SDK functionality including discovery, extraction, and data quality.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -12,7 +16,7 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 
 import pytest
-from flext_core import FlextLogger
+from flext_core import FlextLogger, FlextTypes
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWMS,
@@ -359,7 +363,7 @@ class TestOracleWMSE2EComplete:
 
     def test_error_recovery_and_resilience(
         self,
-        real_wms_config: dict[str, object],
+        real_wms_config: FlextTypes.Core.Dict,
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         # Test with invalid credentials

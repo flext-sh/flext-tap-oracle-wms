@@ -2,9 +2,21 @@
 
 Data models for Oracle WMS tap-specific structures and schema definitions.
 Following PEP8 patterns for model organization.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+
+from flext_core import FlextTypes
+
+"""
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 
 from flext_core import FlextModels
 from pydantic import Field
@@ -23,19 +35,19 @@ class StreamMetadata(FlextModels.Config):
     """Stream metadata for Oracle WMS streams."""
 
     stream_name: str
-    primary_keys: list[str]
+    primary_keys: FlextTypes.Core.StringList
     replication_method: str = "FULL_TABLE"
     replication_key: str | None = None
     inclusion: str = "available"
 
-    def to_singer_metadata(self) -> list[dict[str, object]]:
+    def to_singer_metadata(self) -> list[FlextTypes.Core.Dict]:
         """Convert to Singer metadata format.
 
         Returns:
             List of Singer metadata entries
 
         """
-        metadata: list[dict[str, object]] = [
+        metadata: list[FlextTypes.Core.Dict] = [
             {
                 "breadcrumb": [],
                 "metadata": {
@@ -56,9 +68,9 @@ class StreamSchema(FlextModels.Config):
     """Schema definition for Oracle WMS streams."""
 
     stream_name: str
-    properties: dict[str, dict[str, object]]
+    properties: dict[str, FlextTypes.Core.Dict]
 
-    def to_singer_schema(self) -> dict[str, object]:
+    def to_singer_schema(self) -> FlextTypes.Core.Dict:
         """Convert to Singer schema format.
 
         Returns:
@@ -79,7 +91,7 @@ class CatalogStream(FlextModels.Config):
     stream_schema: StreamSchema  # Renamed to avoid conflict with BaseModel.schema
     metadata: StreamMetadata
 
-    def to_singer_catalog_entry(self) -> dict[str, object]:
+    def to_singer_catalog_entry(self) -> FlextTypes.Core.Dict:
         """Convert to Singer catalog entry format.
 
         Returns:

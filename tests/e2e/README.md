@@ -195,7 +195,7 @@ import asyncio
 import json
 from pathlib import Path
 
-async def run_tap_command(args: list[str], input_data: str | None = None, timeout: int = 300):
+async def run_tap_command(args: FlextTypes.Core.StringList, input_data: str | None = None, timeout: int = 300):
     """Execute tap command and capture results using asyncio."""
     cmd = ["tap-oracle-wms", *args]
     process = await asyncio.create_subprocess_exec(

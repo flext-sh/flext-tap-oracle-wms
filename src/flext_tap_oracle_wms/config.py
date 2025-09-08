@@ -2,9 +2,21 @@
 
 Type-safe configuration using FLEXT patterns with Pydantic validation.
 Consolidates configuration management and constants following PEP8 patterns.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+
+from flext_core import FlextTypes
+
+"""
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 
 from datetime import datetime
 from typing import Final
@@ -108,11 +120,11 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
     )
 
     # Stream selection
-    include_entities: list[str] | None = Field(
+    include_entities: FlextTypes.Core.StringList | None = Field(
         default=None,
         description="List of entities to include (default: all)",
     )
-    exclude_entities: list[str] | None = Field(
+    exclude_entities: FlextTypes.Core.StringList | None = Field(
         default=None,
         description="List of entities to exclude",
     )
@@ -152,17 +164,17 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         default=None,
         description="Custom User-Agent header",
     )
-    additional_headers: dict[str, str] | None = Field(
+    additional_headers: FlextTypes.Core.Headers | None = Field(
         default=None,
         description="Additional HTTP headers",
     )
 
     # Column filtering
-    column_mappings: dict[str, dict[str, str]] | None = Field(
+    column_mappings: dict[str, FlextTypes.Core.Headers] | None = Field(
         default=None,
         description="Column name mappings per stream",
     )
-    ignored_columns: list[str] | None = Field(
+    ignored_columns: FlextTypes.Core.StringList | None = Field(
         default=None,
         description="Columns to ignore globally",
     )
@@ -222,7 +234,9 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
 
     @field_validator("include_entities", "exclude_entities")
     @classmethod
-    def validate_entity_lists(cls, v: list[str] | None) -> list[str] | None:
+    def validate_entity_lists(
+        cls, v: FlextTypes.Core.StringList | None
+    ) -> FlextTypes.Core.StringList | None:
         """Validate entity lists are unique."""
         if v is not None:
             unique_entities = list(dict.fromkeys(v))
@@ -334,7 +348,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             )
         return FlextResult[None].ok(None)
 
-    def validate_oracle_wms_config(self) -> FlextResult[dict[str, object]]:
+    def validate_oracle_wms_config(self) -> FlextResult[FlextTypes.Core.Dict]:
         """Validate Oracle WMS specific configuration.
 
         Returns:
@@ -346,7 +360,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             if self.include_entities and self.exclude_entities:
                 common = set(self.include_entities) & set(self.exclude_entities)
                 if common:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[FlextTypes.Core.Dict].fail(
                         f"Entities cannot be both included and excluded: {common}",
                     )
 
@@ -355,7 +369,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                 start = datetime.fromisoformat(self.start_date)
                 end = datetime.fromisoformat(self.end_date)
                 if start > end:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[FlextTypes.Core.Dict].fail(
                         "Start date must be before end date"
                     )
 
@@ -366,7 +380,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                 and self.max_parallel_streams > max_parallel_streams_without_rate_limit
                 and not self.enable_rate_limiting
             ):
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[FlextTypes.Core.Dict].fail(
                     f"Rate limiting must be enabled for more than {max_parallel_streams_without_rate_limit} parallel streams",
                 )
 
@@ -382,10 +396,10 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                 else 0,
             }
 
-            return FlextResult[dict[str, object]].ok(validation_result)
+            return FlextResult[FlextTypes.Core.Dict].ok(validation_result)
 
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[FlextTypes.Core.Dict].fail(
                 f"Configuration validation failed: {e}"
             )
 
@@ -479,7 +493,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
 
         return FlextResult[None].ok(None)
 
-    def get_stream_config(self, stream_name: str) -> dict[str, object]:
+    def get_stream_config(self, stream_name: str) -> FlextTypes.Core.Dict:
         """Get configuration for a specific stream.
 
         Args:
@@ -489,7 +503,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             Stream-specific configuration
 
         """
-        config: dict[str, object] = {
+        config: FlextTypes.Core.Dict = {
             "page_size": self.page_size,
             "start_date": self.start_date,
             "end_date": self.end_date,

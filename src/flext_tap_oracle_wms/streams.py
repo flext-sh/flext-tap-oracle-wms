@@ -2,14 +2,26 @@
 
 Implements Singer streams for Oracle WMS entities using flext-oracle-wms client.
 Consolidates stream definitions and functionality following PEP8 patterns.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
+from flext_core import FlextTypes
+
+"""
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 from typing import ClassVar
 
-from flext_core import FlextLogger, FlextTypes
+from flext_core import FlextLogger
 from flext_meltano import Stream, Tap
 from flext_oracle_wms import FlextOracleWmsClient
 
@@ -25,7 +37,7 @@ class FlextTapOracleWMSStream(Stream):
     """
 
     # Dynamic attributes - will be set at runtime based on discovery
-    primary_keys: ClassVar[list[str]] = []  # Will be set dynamically
+    primary_keys: ClassVar[FlextTypes.Core.StringList] = []  # Will be set dynamically
     replication_key: str | None = None  # Will be set dynamically
 
     def __init__(
@@ -167,7 +179,7 @@ class FlextTapOracleWMSStream(Stream):
 
     def _extract_records_from_response(
         self,
-        data: dict[str, object] | list[object] | object,
+        data: FlextTypes.Core.Dict | FlextTypes.Core.List | object,
     ) -> tuple[list[FlextTypes.Core.AnyDict], bool]:
         """Extract records and pagination info from API response.
 
@@ -193,7 +205,7 @@ class FlextTapOracleWMSStream(Stream):
             case _:
                 raw_records = []
                 has_more = False
-        # Ensure records is always a list of dict[str, object]
+        # Ensure records is always a list of FlextTypes.Core.Dict
         match raw_records:
             case list() as records_list:
                 # Type cast each record to AnyDict

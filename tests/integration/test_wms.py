@@ -1,6 +1,10 @@
 """Simple integration test for Oracle WMS connection.
 
 Tests basic connectivity without complex dependencies.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 import os
