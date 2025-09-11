@@ -133,7 +133,7 @@ make deps-audit        # Dependency vulnerability check
 
 # Code quality
 make lint
-make type-check        # MyPy strict mode
+make type-check      
 make format            # Auto-format with Ruff
 ```
 

@@ -885,7 +885,7 @@ Documentation Coverage: 100%
 
 # Quality gates
 make lint
-make type-check           # MyPy strict mode
+make type-check         
 make test                 # 95% coverage minimum
 make security             # Bandit + pip-audit
 ```
