@@ -3,8 +3,8 @@ SPDX-License-Identifier: MIT.
 """
 
 from __future__ import annotations
-from flext_core import FlextTypes
 
+from flext_core import FlextTypes
 
 """Enterprise Singer Tap for Oracle WMS data extraction."""
 """
@@ -16,7 +16,7 @@ SPDX-License-Identifier: MIT
 import importlib.metadata
 
 # flext-core imports
-from flext_core import FlextResult, FlextModels, FlextLogger
+from flext_core import FlextLogger, FlextModels, FlextResult
 
 # === FLEXT-MELTANO COMPLETE INTEGRATION ===
 # Re-export ALL flext-meltano facilities for full ecosystem integration
@@ -48,15 +48,22 @@ from flext_meltano import (
     singer_typing,
 )
 
-# PEP8-compliant local imports from reorganized modules
-from flext_tap_oracle_wms.tap_config import (
-    FlextTapOracleWMSConfig,
-    FlextTapOracleWMSConstants,
+from flext_tap_oracle_wms.models import (
+    CatalogStream,
+    OracleWMSEntityModel,
+    StreamMetadata,
+    StreamSchema,
 )
 from flext_tap_oracle_wms.tap_client import (
     FlextTapOracleWMS,
     FlextTapOracleWMSPlugin,
     create_oracle_wms_tap_plugin,
+)
+
+# PEP8-compliant local imports from reorganized modules
+from flext_tap_oracle_wms.tap_config import (
+    FlextTapOracleWMSConfig,
+    FlextTapOracleWMSConstants,
 )
 from flext_tap_oracle_wms.tap_exceptions import (
     FlextTapOracleWMSAuthenticationError,
@@ -74,12 +81,6 @@ from flext_tap_oracle_wms.tap_exceptions import (
     FlextTapOracleWMSValidationError,
     ValidationContext,
 )
-from flext_tap_oracle_wms.models import (
-    CatalogStream,
-    OracleWMSEntityModel,
-    StreamMetadata,
-    StreamSchema,
-)
 from flext_tap_oracle_wms.tap_streams import FlextTapOracleWMSStream
 
 # Version following semantic versioning
@@ -93,50 +94,50 @@ __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 # Complete public API exports - maintaining backward compatibility
 __all__: FlextTypes.Core.StringList = [
     "BatchSink",
+    "CatalogStream",
+    "FlextLogger",
     "FlextMeltanoBaseService",
     "FlextMeltanoBridge",
     "FlextMeltanoConfig",
     "FlextMeltanoEvent",
     "FlextMeltanoTapService",
+    "FlextModels",
+    "FlextResult",
+    "FlextTapOracleWMS",
+    "FlextTapOracleWMSAuthenticationError",
+    "FlextTapOracleWMSConfig",
+    "FlextTapOracleWMSConfigurationError",
+    "FlextTapOracleWMSConnectionError",
+    "FlextTapOracleWMSConstants",
+    "FlextTapOracleWMSDataValidationError",
+    "FlextTapOracleWMSDiscoveryError",
+    "FlextTapOracleWMSError",
+    "FlextTapOracleWMSPaginationError",
+    "FlextTapOracleWMSPlugin",
+    "FlextTapOracleWMSProcessingError",
+    "FlextTapOracleWMSRateLimitError",
+    "FlextTapOracleWMSRetryableError",
+    "FlextTapOracleWMSStream",
+    "FlextTapOracleWMSStreamError",
+    "FlextTapOracleWMSTimeoutError",
+    "FlextTapOracleWMSValidationError",
     "OAuthAuthenticator",
+    "OracleWMSEntityModel",
     "PropertiesList",
     "Property",
     "SQLSink",
     "Sink",
     "Stream",
-    "Tap",
-    "Target",
-    "create_meltano_tap_service",
-    "get_tap_test_class",
-    "singer_typing",
-    "FlextResult",
-    "FlextModels",
-    "FlextLogger",
-    "FlextTapOracleWMS",
-    "FlextTapOracleWMSPlugin",
-    "create_oracle_wms_tap_plugin",
-    "FlextTapOracleWMSConfig",
-    "FlextTapOracleWMSConstants",
-    "FlextTapOracleWMSStream",
-    "CatalogStream",
-    "OracleWMSEntityModel",
     "StreamMetadata",
     "StreamSchema",
-    "FlextTapOracleWMSAuthenticationError",
-    "FlextTapOracleWMSConfigurationError",
-    "FlextTapOracleWMSConnectionError",
-    "FlextTapOracleWMSDataValidationError",
-    "FlextTapOracleWMSDiscoveryError",
-    "FlextTapOracleWMSError",
-    "FlextTapOracleWMSPaginationError",
-    "FlextTapOracleWMSProcessingError",
-    "FlextTapOracleWMSRateLimitError",
-    "FlextTapOracleWMSRetryableError",
-    "FlextTapOracleWMSStreamError",
-    "FlextTapOracleWMSTimeoutError",
-    "FlextTapOracleWMSValidationError",
+    "Tap",
+    "Target",
     "ValidationContext",
     "__version__",
     "__version_info__",
     "annotations",
+    "create_meltano_tap_service",
+    "create_oracle_wms_tap_plugin",
+    "get_tap_test_class",
+    "singer_typing",
 ]
