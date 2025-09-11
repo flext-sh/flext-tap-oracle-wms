@@ -29,7 +29,7 @@ src/flext_tap_oracle_wms/
 ├── entity_discovery.py         # Third discovery system (redundant)
 ├── schema_generator.py         # Schema generation
 ├── schema_flattener.py         # Schema flattening utilities
-├── type_mapping.py             # Type mapping utilities
+├── type_mapping.py
 ├── cache.py                    # Response caching
 ├── simple_api.py               # Simplified API interface
 ├── critical_validation.py      # Environment validation

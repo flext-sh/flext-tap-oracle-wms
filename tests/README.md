@@ -29,7 +29,7 @@ tests/
 │   ├── test_config_mapper_comprehensive.py  # Configuration mapping
 │   ├── test_critical_validation_comprehensive.py  # Environment validation
 │   ├── test_entity_discovery_comprehensive.py  # Entity discovery logic
-│   ├── test_type_mapping_comprehensive.py  # Type mapping utilities
+│   ├── test_type_mapping_comprehensive.py
 │   └── [other unit tests]
 ├── integration/                    # Integration tests (some disabled)
 │   └── test_simple_integration.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup

@@ -884,7 +884,7 @@ Type Annotation Coverage: 100%
 Documentation Coverage: 100%
 
 # Quality gates
-make lint                  # Ruff with ALL rules enabled
+make lint
 make type-check           # MyPy strict mode
 make test                 # 95% coverage minimum
 make security             # Bandit + pip-audit
