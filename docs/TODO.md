@@ -179,9 +179,9 @@ WMSClient = FlextOracleWmsClient  # Apenas um alias!
 **Aliases Problemáticos**:
 
 ```python
-OracleWmsValueType = TValue     # Alias desnecessário
-OracleWmsEntityId = TEntityId   # Alias desnecessário
-OracleWmsConfigDict = TAnyDict  # Alias desnecessário
+OracleWmsValueType = TValue
+OracleWmsEntityId = TEntityId
+OracleWmsConfigDict = TAnyDict
 ```
 
 **Ação Requerida**: Remover aliases e usar tipos flext-core diretamente

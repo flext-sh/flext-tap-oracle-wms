@@ -64,7 +64,7 @@ class FlextTapOracleWMSStream(Stream):
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWMS"
                 raise RuntimeError(msg)
-        # Type narrowing: after the RuntimeError check above, self._client is guaranteed to be FlextOracleWmsClient
+
         if self._client is None:
             msg = "Client not available after initialization - this should not happen"
             raise RuntimeError(msg)
@@ -208,12 +208,10 @@ class FlextTapOracleWMSStream(Stream):
         # Ensure records is always a list of FlextTypes.Core.Dict
         match raw_records:
             case list() as records_list:
-                # Type cast each record to AnyDict
                 coerced_records: list[FlextTypes.Core.AnyDict] = []
                 for record in records_list:
                     match record:
                         case dict() as record_dict:
-                            # Type narrowing: record is now dict which is compatible with FlextTypes.Core.AnyDict
                             coerced_records.append(record_dict)
                         case _:
                             # Convert non-dict records to dict format

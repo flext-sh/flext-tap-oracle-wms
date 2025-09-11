@@ -400,7 +400,7 @@ grep -r "flext_tap_oracle_wms" . --include="*.py" --include="*.md"
 make validate                   # All quality gates
 make test                      # 100% test coverage
 make lint                      # Code quality
-make type-check                # Type safety
+make type-check
 make security                  # Security scanning
 
 # Functional validation

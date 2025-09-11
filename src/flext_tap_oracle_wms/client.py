@@ -182,7 +182,7 @@ class FlextTapOracleWMS(Tap):
                     msg = f"Failed to initialize Oracle WMS client: {error_msg}"
                     raise FlextTapOracleWMSConfigurationError(msg)
                 self._is_started = True
-        # Type narrowing: after initialization above, _wms_client is guaranteed to be FlextOracleWmsClient
+
         return self._wms_client
 
     @property
@@ -845,7 +845,6 @@ class FlextTapOracleWMSPlugin(FlextPlugin):
         parameters: FlextTypes.Core.JsonDict,
     ) -> FlextResult[FlextTypes.Core.JsonDict]:
         """Execute catalog generation through tap."""
-        # Alias for discover operation
         return self._execute_discover(parameters)
 
     def validate_business_rules(self) -> FlextResult[None]:

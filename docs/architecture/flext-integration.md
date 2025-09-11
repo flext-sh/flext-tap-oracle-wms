@@ -53,7 +53,7 @@ graph TB
 from flext_core import (
     FlextConfig,          # Configuration base class
     FlextLogger,          # Standardized logging
-    TAnyDict,            # Type definitions
+    TAnyDict,
     TEntityId,           # Entity identifier type
     ServiceResult,       # Result handling pattern
 )
@@ -253,7 +253,7 @@ class EntityDiscovery:
 from flext_meltano import (
     Tap,                    # Base tap class with FLEXT patterns
     Stream,                 # Base stream class
-    singer_typing as th,    # Type definitions
+    singer_typing as th,
 )
 
 class FlextTapOracleWMS(Tap):
