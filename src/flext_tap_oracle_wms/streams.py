@@ -1,31 +1,20 @@
-"""Streams for FLEXT Tap Oracle WMS.
-
-Implements Singer streams for Oracle WMS entities using flext-oracle-wms client.
-Consolidates stream definitions and functionality following PEP8 patterns.
-
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
-
-from flext_core import FlextTypes
-
-"""
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 from typing import ClassVar
 
-from flext_core import FlextLogger
+from flext_core import FlextLogger, FlextTypes
 from flext_meltano import Stream, Tap
 from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms.utils import run_async
+
+"""
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 
 logger = FlextLogger(__name__)
 

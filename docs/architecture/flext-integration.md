@@ -204,7 +204,7 @@ class WMSClientManager:
 
 ```python
 from flext_oracle_wms import WMSEntityMetadata
-from typing import List, Dict, object
+from typing import List, Dict
 
 class EntityDiscovery:
     """Entity discovery using flext-oracle-wms."""

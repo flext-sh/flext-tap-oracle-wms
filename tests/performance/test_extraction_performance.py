@@ -1,12 +1,3 @@
-"""Performance tests for FLEXT Tap Oracle WMS.
-
-Tests extraction performance against real Oracle WMS environment.
-
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 import os
 import time
 from pathlib import Path

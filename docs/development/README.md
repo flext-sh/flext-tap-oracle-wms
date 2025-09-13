@@ -133,7 +133,7 @@ make deps-audit        # Dependency vulnerability check
 
 # Code quality
 make lint
-make type-check      
+make type-check
 make format            # Auto-format with Ruff
 ```
 
@@ -435,19 +435,16 @@ p.sort_stats('cumulative').print_stats(20)
 ### Current → Target Architecture
 
 1. **Preparation Phase**:
-
    - Document all current functionality
    - Create comprehensive test suite
    - Set up FLEXT integration foundation
 
 2. **Implementation Phase**:
-
    - Implement simplified architecture
    - Migrate functionality incrementally
    - Validate each component thoroughly
 
 3. **Validation Phase**:
-
    - Compare outputs between old and new
    - Performance benchmarking
    - Integration testing

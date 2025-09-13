@@ -25,7 +25,7 @@ Transform FLEXT Tap Oracle WMS into a **production-ready, enterprise-grade Oracl
 
 ## 🚫 PROJECT PROHIBITIONS (ZERO TOLERANCE ENFORCEMENT)
 
-### ⛔ ABSOLUTELY FORBIDDEN ACTIONS:
+### ⛔ ABSOLUTELY FORBIDDEN ACTIONS
 
 1. **Architecture Regression**:
    - NEVER return to over-engineered patterns (previous 26 files)
@@ -76,29 +76,29 @@ src/flext_tap_oracle_wms/
 ```python
 class FlextTapOracleWmsService(FlextDomainService):
     """Single unified service class following flext-core patterns.
-    
+
     This class consolidates all Oracle WMS tap-related operations,
     leveraging flext-oracle-wms infrastructure while maintaining
     the simplified architecture achieved through refactoring.
     """
-    
+
     def __init__(self, **data) -> None:
         """Initialize service with proper dependency injection."""
         super().__init__(**data)
         self._container = FlextContainer.get_global()
         self._logger = FlextLogger(__name__)
         self._wms_client = self._container.get(FlextOracleWmsClient)  # From flext-oracle-wms
-    
+
     def extract_wms_entity(
-        self, 
-        config: dict, 
-        entity_type: str, 
+        self,
+        config: dict,
+        entity_type: str,
         page_size: int = 1000
     ) -> FlextResult[Iterator[dict]]:
         """Extract data from Oracle WMS entity with comprehensive error handling."""
         if not config or not entity_type:
             return FlextResult[Iterator[dict]].fail("Configuration and entity type are required")
-        
+
         try:
             # Authenticate using flext-oracle-wms
             auth_result = self._wms_client.authenticate(
@@ -109,10 +109,10 @@ class FlextTapOracleWmsService(FlextDomainService):
                 company_code=config.get("company_code"),
                 facility_code=config.get("facility_code")
             )
-            
+
             if auth_result.is_failure:
                 return FlextResult[Iterator[dict]].fail(f"WMS authentication failed: {auth_result.error}")
-            
+
             # Extract entity data with pagination
             extraction_result = self._wms_client.extract_entity_paginated(
                 entity_type=entity_type,
@@ -121,40 +121,40 @@ class FlextTapOracleWmsService(FlextDomainService):
                 field_selection=config.get("field_selection", {}),
                 start_date=config.get("start_date")
             )
-            
+
             if extraction_result.is_success:
                 return FlextResult[Iterator[dict]].ok(extraction_result.value)
             else:
                 return FlextResult[Iterator[dict]].fail(f"WMS extraction failed: {extraction_result.error}")
-                
+
         except Exception as e:
             self._logger.error(f"Oracle WMS extraction error: {e}")
             return FlextResult[Iterator[dict]].fail(f"WMS extraction error: {str(e)}")
-    
+
     def discover_wms_schema(self, config: dict, entity_type: str) -> FlextResult[dict]:
         """Discover WMS entity schema for Singer catalog generation."""
         try:
             schema_result = self._wms_client.get_entity_schema(entity_type)
-            
+
             if schema_result.is_success:
                 # Convert WMS schema to Singer schema format
                 singer_schema = self._convert_wms_schema_to_singer(schema_result.value)
                 return FlextResult[dict].ok(singer_schema)
             else:
                 return FlextResult[dict].fail(f"WMS schema discovery failed: {schema_result.error}")
-                
+
         except Exception as e:
             self._logger.error(f"WMS schema discovery error: {e}")
             return FlextResult[dict].fail(f"Schema discovery error: {str(e)}")
-    
+
     def _convert_wms_schema_to_singer(self, wms_schema: dict) -> dict:
         """Convert Oracle WMS schema to Singer schema format."""
         properties = {}
-        
+
         for field in wms_schema.get("fields", []):
             field_name = field["name"]
             wms_type = field["type"]
-            
+
             # Oracle WMS to Singer type mapping
             if wms_type in ["String", "VARCHAR2", "CHAR"]:
                 singer_type = {"type": "string"}
@@ -166,31 +166,31 @@ class FlextTapOracleWmsService(FlextDomainService):
                 singer_type = {"type": "boolean"}
             else:
                 singer_type = {"type": "string"}  # Default fallback
-            
+
             # Add nullability
             if field.get("nullable", True):
                 singer_type = {"anyOf": [singer_type, {"type": "null"}]}
-            
+
             properties[field_name] = singer_type
-        
+
         return {
             "type": "object",
             "properties": properties,
             "required": []  # WMS typically doesn't enforce required fields strictly
         }
-    
+
     def validate_configuration(self, config: dict) -> FlextResult[bool]:
         """Validate tap configuration with business rules."""
         required_fields = ["base_url", "username", "password"]
         for field in required_fields:
             if not config.get(field):
                 return FlextResult[bool].fail(f"Required configuration field missing: {field}")
-        
+
         # Validate page_size limits
         page_size = config.get("page_size", 1000)
         if page_size > 1250:
             return FlextResult[bool].fail("Oracle WMS page_size cannot exceed 1250")
-        
+
         return FlextResult[bool].ok(True)
 ```
 
@@ -201,6 +201,7 @@ class FlextTapOracleWmsService(FlextDomainService):
 ### Phase 1: Foundation Assessment & Test Implementation (MANDATORY FIRST)
 
 #### 1.1 Current State Validation (MAINTAIN ACHIEVEMENTS)
+
 ```bash
 # VERIFY: Refactoring achievements maintained
 find src/ -name "*.py" | wc -l  # Should be 11 files (not 26+)
@@ -220,6 +221,7 @@ python -c "from flext_tap_oracle_wms import FlextTapOracleWms; tap = FlextTapOra
 ```
 
 #### 1.2 Test Implementation Strategy
+
 ```bash
 # PRIORITY 1: Unit tests for core functionality
 pytest tests/unit/ --cov=src/flext_tap_oracle_wms --cov-report=term-missing
@@ -237,44 +239,46 @@ pytest tests/unit/ -m singer --cov=src/flext_tap_oracle_wms --cov-report=term-mi
 ### Phase 2: Service Architecture Enhancement (MAINTAIN SIMPLICITY)
 
 #### 2.1 Unified Service Implementation (DO NOT OVER-ENGINEER)
+
 ```python
 # MAINTAIN: Simple, focused service implementation
 class FlextTapOracleWmsService(FlextDomainService):
     """Unified WMS service - keep simple, avoid over-abstraction."""
-    
+
     def __init__(self, **data) -> None:
         super().__init__(**data)
         # Simple dependency injection
         self._wms_client = self._container.get(FlextOracleWmsClient)
-    
+
     # IMPLEMENT: Only essential methods
     def extract_wms_entity(self, config: dict, entity_type: str) -> FlextResult[Iterator[dict]]:
         """Core extraction method - no unnecessary complexity."""
         pass
-    
+
     def discover_wms_schema(self, config: dict, entity_type: str) -> FlextResult[dict]:
         """Schema discovery - leverage flext-oracle-wms capabilities."""
         pass
 ```
 
 #### 2.2 Stream Implementation Optimization
+
 ```python
 class WMSEntityStream(Stream):
     """Simple, focused WMS stream implementation."""
-    
+
     def get_records(self, context: dict | None) -> Iterable[dict[str, Any]]:
         """Extract WMS records - maintain simplicity."""
         service = self._container.get(FlextTapOracleWmsService)
         config = self.tap.config.model_dump()
-        
+
         result = service.extract_wms_entity(config, self.name)
-        
+
         if result.is_success:
             for record in result.value:
                 yield self._process_wms_record(record)
         else:
             raise RuntimeError(f"WMS extraction failed: {result.error}")
-    
+
     def _process_wms_record(self, record: dict) -> dict:
         """Simple record processing - avoid over-engineering."""
         # Basic data type conversions and Singer compliance
@@ -284,6 +288,7 @@ class WMSEntityStream(Stream):
 ### Phase 3: Testing Excellence Implementation (90% COVERAGE TARGET)
 
 #### 3.1 Comprehensive Test Suite Development
+
 ```python
 # Unit tests for core functionality
 @pytest.mark.unit
@@ -295,7 +300,7 @@ def test_wms_service_extract_entity():
     # Test data transformation
     pass
 
-@pytest.mark.unit  
+@pytest.mark.unit
 def test_wms_schema_discovery():
     """Test WMS schema discovery and Singer conversion."""
     # Test schema retrieval
@@ -323,6 +328,7 @@ def test_singer_protocol_compliance():
 ```
 
 #### 3.2 Performance and Load Testing
+
 ```python
 @pytest.mark.performance
 def test_large_wms_extraction():
@@ -346,6 +352,7 @@ def test_wms_api_limits():
 ### Phase 4: Production Readiness (DEPLOYMENT EXCELLENCE)
 
 #### 4.1 Configuration and Security Validation
+
 ```python
 @pytest.mark.security
 def test_configuration_security():
@@ -371,6 +378,7 @@ def test_meltano_integration():
 ## 🔧 ESSENTIAL COMMANDS (DAILY DEVELOPMENT)
 
 ### Quality Gates (MANDATORY BEFORE ANY COMMIT)
+
 ```bash
 # NEVER SKIP: Complete validation pipeline (maintain achievements)
 make validate                # lint + type + security + test (90% coverage target)
@@ -387,6 +395,7 @@ make fix                     # Auto-fix code issues and format
 ```
 
 ### Singer Tap Operations
+
 ```bash
 # Essential Singer protocol operations
 make discover                # Generate catalog.json schema (test Singer compliance)
@@ -400,6 +409,7 @@ make doctor                  # Comprehensive health check + diagnostics
 ```
 
 ### Testing Strategy (90% COVERAGE TARGET)
+
 ```bash
 # Comprehensive testing approach
 make test                    # All tests with 90% coverage requirement
@@ -415,6 +425,7 @@ pytest -m security           # Security and configuration validation tests
 ```
 
 ### WMS Development Environment
+
 ```bash
 # Configuration setup
 export TAP_ORACLE_WMS_BASE_URL="https://your-wms.oraclecloud.com"
@@ -434,6 +445,7 @@ poetry run tap-oracle-wms --config config.json --catalog catalog.json --state st
 ## 📊 SUCCESS METRICS (EVIDENCE-BASED MEASUREMENT)
 
 ### Architecture Simplification (MAINTAIN ACHIEVEMENTS)
+
 ```bash
 # File count validation (TARGET: 11 files, not 26+)
 find src/flext_tap_oracle_wms -name "*.py" | wc -l
@@ -449,6 +461,7 @@ ruff check src/ --statistics | grep -o "[0-9]\+ errors"
 ```
 
 ### Code Quality Metrics (AUTOMATED VALIDATION)
+
 ```bash
 # Coverage measurement (TARGET: 90%)
 pytest --cov=src --cov-report=term | grep "TOTAL" | awk '{print $4}'
@@ -461,6 +474,7 @@ python -c "from flext_tap_oracle_wms import FlextTapOracleWms; print('✅ Simple
 ```
 
 ### Singer Protocol Compliance (FUNCTIONAL VALIDATION)
+
 ```bash
 # Catalog discovery success
 make discover >/dev/null 2>&1 && echo "✅ Discovery OK" || echo "❌ Discovery FAILED"
@@ -473,6 +487,7 @@ singer-check-tap --catalog catalog.json < /dev/null && echo "✅ Schema OK" || e
 ```
 
 ### WMS Integration Functionality (DOMAIN-SPECIFIC VALIDATION)
+
 ```bash
 # WMS connectivity test
 make wms-test >/dev/null 2>&1 && echo "✅ WMS OK" || echo "❌ WMS FAILED"
@@ -500,6 +515,7 @@ print('✅ Configuration validation OK')
 ### Oracle Warehouse Management System Integration Excellence
 
 #### WMS Entity Types and Characteristics
+
 ```python
 WMS_ENTITY_MODEL = {
     # Core Inventory Entities
@@ -512,7 +528,7 @@ WMS_ENTITY_MODEL = {
     },
     "location": {
         "description": "Warehouse location definitions",
-        "primary_key": "location_id", 
+        "primary_key": "location_id",
         "replication_key": "date_time_stamp",
         "page_size_recommendation": 1250,  # Max allowed
         "api_complexity": "low"
@@ -524,7 +540,7 @@ WMS_ENTITY_MODEL = {
         "page_size_recommendation": 500,  # Complex data
         "api_complexity": "high"
     },
-    
+
     # Order Management Entities
     "order": {
         "description": "Warehouse orders and fulfillment",
@@ -535,17 +551,17 @@ WMS_ENTITY_MODEL = {
     },
     "shipment": {
         "description": "Shipment creation and tracking",
-        "primary_key": "shipment_id", 
+        "primary_key": "shipment_id",
         "replication_key": "date_time_stamp",
         "page_size_recommendation": 800,
         "api_complexity": "medium"
     },
-    
+
     # Operational Entities
     "user": {
         "description": "WMS user accounts and permissions",
         "primary_key": "user_id",
-        "replication_key": "date_time_stamp", 
+        "replication_key": "date_time_stamp",
         "page_size_recommendation": 1250,  # Max allowed
         "api_complexity": "low"
     }
@@ -553,10 +569,11 @@ WMS_ENTITY_MODEL = {
 ```
 
 #### Oracle WMS API Performance Characteristics
+
 ```python
 class OracleWmsApiLimits:
     """Oracle WMS API limits and optimization guidelines."""
-    
+
     API_LIMITS = {
         "max_page_size": 1250,           # Hard limit from Oracle WMS
         "max_request_timeout": 600,      # 10 minutes maximum
@@ -565,7 +582,7 @@ class OracleWmsApiLimits:
         "min_page_size": 1,              # Minimum page size
         "default_page_size": 1000        # Recommended default
     }
-    
+
     PERFORMANCE_RECOMMENDATIONS = {
         "complex_entities": {           # inventory, order
             "page_size": 500,
@@ -573,7 +590,7 @@ class OracleWmsApiLimits:
             "concurrent_requests": 2
         },
         "medium_entities": {            # item, shipment
-            "page_size": 1000, 
+            "page_size": 1000,
             "timeout": 120,
             "concurrent_requests": 3
         },
@@ -583,7 +600,7 @@ class OracleWmsApiLimits:
             "concurrent_requests": 5
         }
     }
-    
+
     ERROR_HANDLING_PATTERNS = {
         "timeout_errors": "exponential_backoff_retry",
         "rate_limit_errors": "linear_backoff_retry",
@@ -593,10 +610,11 @@ class OracleWmsApiLimits:
 ```
 
 #### Authentication and Security Patterns
+
 ```python
 class OracleWmsAuthenticationManager:
     """Oracle WMS authentication patterns and security."""
-    
+
     AUTHENTICATION_METHODS = {
         "basic": {
             "description": "Basic HTTP authentication",
@@ -607,11 +625,11 @@ class OracleWmsAuthenticationManager:
         "oauth2": {
             "description": "OAuth2 client credentials flow",
             "required_fields": ["client_id", "client_secret", "token_url"],
-            "security_level": "high", 
+            "security_level": "high",
             "token_management": True
         }
     }
-    
+
     ORGANIZATIONAL_STRUCTURE = {
         "company_code": {
             "required": True,
@@ -620,11 +638,11 @@ class OracleWmsAuthenticationManager:
         },
         "facility_code": {
             "required": True,
-            "description": "Facility/warehouse identifier", 
+            "description": "Facility/warehouse identifier",
             "validation_pattern": r"^[A-Z0-9]{1,10}$"
         }
     }
-    
+
     SECURITY_CONSIDERATIONS = {
         "password_handling": "never_log_or_expose",
         "token_caching": "memory_only_no_persistence",
@@ -636,6 +654,7 @@ class OracleWmsAuthenticationManager:
 ### flext-oracle-wms Integration Patterns
 
 #### Infrastructure Service Integration
+
 ```python
 # MANDATORY: Use flext-oracle-wms for all WMS operations (NEVER implement directly)
 from flext_oracle_wms import (
@@ -648,7 +667,7 @@ from flext_oracle_wms import (
 
 class FlextTapOracleWmsService(FlextDomainService):
     """Service leveraging flext-oracle-wms infrastructure."""
-    
+
     def __init__(self, **data) -> None:
         super().__init__(**data)
         # Get WMS services from infrastructure layer
@@ -661,34 +680,35 @@ class FlextTapOracleWmsService(FlextDomainService):
 ### Configuration Excellence
 
 #### Comprehensive Configuration Support
+
 ```python
 class TapOracleWmsConfig(FlextModel):
     """Comprehensive WMS tap configuration with validation."""
-    
+
     # Connection Configuration (required)
     base_url: str = Field(..., description="Oracle WMS instance URL")
     username: str = Field(..., description="WMS username")
     password: SecretStr = Field(..., description="WMS password")
     auth_method: str = Field(default="basic", pattern="^(basic|oauth2)$")
-    
+
     # Organizational Configuration (required)
     company_code: str = Field(..., pattern=r"^[A-Z0-9]{1,10}$")
     facility_code: str = Field(..., pattern=r"^[A-Z0-9]{1,10}$")
-    
+
     # Extraction Configuration
     entities: list[str] = Field(default_factory=list, description="WMS entities to extract")
     page_size: int = Field(default=1000, ge=1, le=1250, description="Records per page")
     start_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
-    
+
     # Filtering Configuration
     entity_filters: dict[str, dict] = Field(default_factory=dict)
     field_selection: dict[str, list[str]] = Field(default_factory=dict)
-    
+
     # Performance Configuration
     request_timeout: int = Field(default=120, ge=30, le=600)
     max_retries: int = Field(default=3, ge=1, le=10)
     concurrent_requests: int = Field(default=3, ge=1, le=5)
-    
+
     @model_validator(mode='after')
     def validate_entity_configuration(self) -> 'TapOracleWmsConfig':
         """Validate entity-specific configuration."""
@@ -698,32 +718,33 @@ class TapOracleWmsConfig(FlextModel):
             invalid_entities = [e for e in self.entities if e not in supported_entities]
             if invalid_entities:
                 raise ValueError(f"Unsupported entities: {invalid_entities}")
-        
+
         return self
 ```
 
 ### Singer Protocol Implementation Details
 
 #### Stream Implementation Patterns
+
 ```python
 class WMSInventoryStream(Stream):
     """WMS Inventory stream with optimized configuration."""
-    
+
     name = "inventory"
     primary_keys = ["item_id", "location_id"]
     replication_key = "date_time_stamp"
     replication_method = "INCREMENTAL"
-    
+
     def get_records(self, context: dict | None) -> Iterable[dict[str, Any]]:
         """Extract inventory records with optimized pagination."""
         service = self._container.get(FlextTapOracleWmsService)
         config = self.tap.config.model_dump()
-        
+
         # Use entity-specific page size for complex inventory data
         optimized_page_size = min(config.get("page_size", 1000), 500)
-        
+
         result = service.extract_wms_entity(config, "inventory", optimized_page_size)
-        
+
         if result.is_success:
             for record in result.value:
                 # Process WMS-specific data types
@@ -731,19 +752,19 @@ class WMSInventoryStream(Stream):
                 yield processed_record
         else:
             raise RuntimeError(f"Inventory extraction failed: {result.error}")
-    
+
     def _process_inventory_record(self, record: dict) -> dict:
         """Process inventory record for Singer compliance."""
         # Handle WMS-specific date formats
         if "date_time_stamp" in record:
             record["date_time_stamp"] = self._normalize_wms_timestamp(record["date_time_stamp"])
-        
+
         # Handle WMS numeric formats
         numeric_fields = ["quantity_on_hand", "quantity_allocated", "quantity_available"]
         for field in numeric_fields:
             if field in record and record[field] is not None:
                 record[field] = float(record[field])
-        
+
         return record
 ```
 
@@ -752,30 +773,35 @@ class WMSInventoryStream(Stream):
 ## 🎯 QUALITY ACHIEVEMENT ROADMAP (PHASE-BY-PHASE SUCCESS)
 
 ### Week 1: Test Implementation & Coverage Achievement (MAINTAIN SIMPLICITY)
+
 - [ ] **Architecture Validation**: Verify 11-file structure and 0 MyPy errors maintained
 - [ ] **Unit Test Implementation**: Achieve 70% coverage with comprehensive unit tests
 - [ ] **Integration Test Development**: WMS connectivity and authentication testing
 - [ ] **Singer Protocol Tests**: Catalog discovery and data extraction validation
 
 ### Week 2: Service Enhancement & Integration Excellence (NO OVER-ENGINEERING)
+
 - [ ] **Unified Service Implementation**: `FlextTapOracleWmsService` with essential functionality only
 - [ ] **Stream Optimization**: Efficient WMS entity streams with proper error handling
 - [ ] **Configuration Enhancement**: Comprehensive validation with WMS-specific business rules
 - [ ] **FlextResult Integration**: Complete migration to FlextResult patterns
 
 ### Week 3: Performance & Security Excellence (WMS OPTIMIZATION)
+
 - [ ] **Performance Testing**: Large dataset extraction with pagination optimization
 - [ ] **Security Implementation**: Configuration security and credential handling
 - [ ] **Error Recovery**: Comprehensive error handling for WMS API scenarios
 - [ ] **Meltano Integration**: Complete orchestration platform integration
 
 ### Week 4: Production Readiness & Coverage Target (90% COVERAGE)
+
 - [ ] **Coverage Achievement**: Reach and maintain 90% test coverage
 - [ ] **Performance Validation**: Large-scale WMS environment testing
 - [ ] **Security Scanning**: Complete Bandit and pip-audit compliance
 - [ ] **Documentation Excellence**: Comprehensive configuration and usage documentation
 
 ### Success Validation (EVIDENCE-BASED CONFIRMATION)
+
 ```bash
 # Final success confirmation (ALL must pass)
 make validate                    # ✅ Zero errors (maintain achievements)

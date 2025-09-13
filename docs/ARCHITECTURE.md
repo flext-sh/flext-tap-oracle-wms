@@ -287,7 +287,7 @@ class WMSPaginator:
 
 ```python
 from functools import lru_cache
-from typing import Dict, object
+from typing import Dict
 
 class WMSCache:
     """Simple LRU cache for WMS responses."""
@@ -346,7 +346,7 @@ class WMSSchemaError(WMSTapError):
 
 ```python
 import time
-from typing import Iterator, object
+from typing import Iterator
 
 def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
     """Decorator for retry logic with exponential backoff."""
