@@ -158,7 +158,7 @@ class FlextTapOracleWMSStream(RESTStream):
 **Focus**: Unified discovery using flext-oracle-wms
 
 ```python
-from typing import List, Dict, object
+from typing import List, Dict
 from flext_oracle_wms import FlextOracleWmsClient
 
 class EntityDiscovery:

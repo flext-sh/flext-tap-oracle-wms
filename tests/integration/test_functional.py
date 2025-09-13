@@ -1,9 +1,5 @@
 """Comprehensive functional tests for Oracle WMS tap using real .env data.
 
-HONEST TESTING: Tests REAL functionality with REAL Oracle WMS instance.
-ALL Singer SDK features must work correctly with production data.
-
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """

@@ -2,7 +2,6 @@
 
 Tests against the actual Oracle WMS environment using real credentials.
 
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """

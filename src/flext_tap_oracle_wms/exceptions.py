@@ -4,6 +4,10 @@ SPDX-License-Identifier: MIT.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
+from flext_core import create_module_exception_classes
+
 """Oracle WMS Tap Exception Hierarchy - ZERO DUPLICATION.
 
 Architectural compliance: ZERO EXCEPTION DUPLICATION using flext-core Factory.
@@ -25,14 +29,11 @@ built on FLEXT ecosystem error handling patterns with specialized exceptions
 for Oracle WMS tap operations, validation, and data processing.
 """
 """
+
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-
-from dataclasses import dataclass
-
-from flext_core import create_module_exception_classes
 
 # Generate all standard exceptions using factory pattern
 _tap_oracle_wms_exceptions = create_module_exception_classes("flext_tap_oracle_wms")

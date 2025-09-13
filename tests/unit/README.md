@@ -27,7 +27,6 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 #### **Configuration Tests**
 
 - **[test_config_mapper_comprehensive.py](test_config_mapper_comprehensive.py)** - Configuration mapping
-
   - Configuration transformation
   - Default value application
   - Validation rule mapping

@@ -1,23 +1,10 @@
 """FLEXT Tap Oracle WMS - Command Line Interface.
 
-Provides the command-line entry point for the Oracle WMS Singer tap,
-enabling data extraction from Oracle Warehouse Management Systems
-following Singer specification standards.
-
-Consolidates CLI functionality from cli.py and __main__.py following PEP8 patterns.
-
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
-
-"""
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 
 from flext_tap_oracle_wms.client import FlextTapOracleWMS
 

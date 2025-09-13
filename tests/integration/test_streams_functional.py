@@ -2,7 +2,6 @@
 
 Tests stream functionality with REAL Oracle WMS instance using .env configuration.
 
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
@@ -17,7 +16,11 @@ import requests
 from flext_api import FlextApiConstants
 from flext_core import FlextLogger
 
-from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSStream
+from flext_tap_oracle_wms import (
+    FlextTapOracleWMS,
+    FlextTapOracleWMSStream,
+    WMSPaginator,
+)
 
 logger = FlextLogger(__name__)
 
@@ -87,8 +90,6 @@ class TestStreamsFunctional:
 
     def test_stream_authentication(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test stream authentication with real credentials."""
-        from flext_tap_oracle_wms import FlextTapOracleWMSStream
-
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
@@ -119,8 +120,6 @@ class TestStreamsFunctional:
 
     def test_stream_http_headers(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test HTTP headers generation."""
-        from flext_tap_oracle_wms import FlextTapOracleWMSStream
-
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
@@ -158,8 +157,6 @@ class TestStreamsFunctional:
         real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test automatic replication key detection."""
-        from flext_tap_oracle_wms import FlextTapOracleWMSStream
-
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
@@ -190,11 +187,6 @@ class TestStreamsFunctional:
         real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test timestamp field detection for replication keys."""
-        from flext_tap_oracle_wms import (
-            FlextTapOracleWMSStream,
-            ReplicationKeyTimestampStrategy,
-        )
-
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
@@ -230,8 +222,6 @@ class TestStreamsFunctional:
 
     def test_pagination_parameters(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test pagination parameter generation."""
-        from flext_tap_oracle_wms import FlextTapOracleWMSStream
-
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
@@ -274,8 +264,6 @@ class TestStreamsFunctional:
 
     def test_incremental_filtering(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test incremental filtering with timestamps."""
-        from flext_tap_oracle_wms import FlextTapOracleWMSStream
-
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
@@ -368,8 +356,6 @@ class TestStreamsFunctional:
         real_tap_instance: FlextTapOracleWMS,
     ) -> None:
         """Test ordering configuration for different replication methods."""
-        from flext_tap_oracle_wms import FlextTapOracleWMSStream
-
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
@@ -428,8 +414,6 @@ class TestWMSPaginatorUnit:
 
     def test_get_next_url_no_next_page(self) -> None:
         """Test handling of final page."""
-        from flext_tap_oracle_wms import WMSPaginator
-
         paginator = WMSPaginator()
 
         response = Mock(spec=requests.Response)
@@ -440,8 +424,6 @@ class TestWMSPaginatorUnit:
 
     def test_get_next_url_json_error(self) -> None:
         """Test handling of JSON parsing errors."""
-        from flext_tap_oracle_wms import WMSPaginator
-
         paginator = WMSPaginator()
 
         response = Mock(spec=requests.Response)
@@ -454,8 +436,6 @@ class TestWMSPaginatorUnit:
 
     def test_has_more_pages(self) -> None:
         """Test pagination status detection."""
-        from flext_tap_oracle_wms import WMSPaginator
-
         paginator = WMSPaginator()
 
         # Response with next page

@@ -3,7 +3,15 @@
 Tests FlextTapOracleWMSConfig validation and domain rules.
 """
 
+from __future__ import annotations
+
+import pytest
+from pydantic import SecretStr, ValidationError
+
+from flext_tap_oracle_wms import FlextTapOracleWMSConfig
+
 """
+
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
@@ -16,11 +24,6 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
-
-import pytest
-from pydantic import SecretStr, ValidationError
-
-from flext_tap_oracle_wms import FlextTapOracleWMSConfig
 
 
 class TestConfigValidation:

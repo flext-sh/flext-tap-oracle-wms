@@ -247,7 +247,6 @@ OracleWmsConfigDict = TAnyDict
 **Prioridade**: CRÍTICA
 
 1. **Reabilitar Testes Críticos**
-
    - [ ] Restaurar testes de integração essenciais
    - [ ] Criar mocks para dependências WMS externas
    - [ ] Implementar testes E2E básicos funcionais
@@ -262,7 +261,6 @@ OracleWmsConfigDict = TAnyDict
 **Prioridade**: ALTA
 
 1. **Arquitetura Simplificada**
-
    - [ ] Reduzir de 26 para 8 componentes máximo
    - [ ] Implementar arquitetura Singer tap padrão
    - [ ] Usar padrões flext-core consistentemente
@@ -277,7 +275,6 @@ OracleWmsConfigDict = TAnyDict
 **Prioridade**: MÉDIA
 
 1. **Qualidade e Performance**
-
    - [ ] Implementar error handling consistente
    - [ ] Otimizar performance de streams
    - [ ] Melhorar logging e observabilidade

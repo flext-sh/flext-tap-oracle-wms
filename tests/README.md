@@ -48,31 +48,26 @@ tests/
 The following test files are disabled due to external WMS dependencies:
 
 1. **conftest.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Contains live WMS connection fixtures
    - **Impact**: Test configuration unavailable for integration tests
    - **Remediation**: Create mock-based fixtures
 
 2. **test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Requires live Oracle WMS instance
    - **Impact**: No end-to-end workflow validation
    - **Remediation**: Implement comprehensive mocking strategy
 
 3. **test_simple_integration.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Integration tests with external API calls
    - **Impact**: Multi-component integration not validated
    - **Remediation**: Mock WMS API responses
 
 4. **test_tap.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Tap-level testing with live connections
    - **Impact**: Core tap functionality not validated
    - **Remediation**: Mock WMS client for tap testing
 
 5. **test_config_validation.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Configuration validation with live API checks
    - **Impact**: Configuration edge cases not tested
    - **Remediation**: Separate validation logic from API calls

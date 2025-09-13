@@ -388,7 +388,7 @@ Implements entity discovery and metadata retrieval from Oracle WMS API
 using FLEXT ecosystem patterns and error handling.
 """
 
-from typing import List, Dict, object
+from typing import List, Dict
 from flext_core import FlextLogger, FlextResult
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
@@ -431,7 +431,7 @@ Converts WMS metadata to Singer JSON schemas with proper type mapping
 and validation rules.
 """
 
-from typing import Dict, object
+from typing import Dict
 from flext_core import FlextResult, FlextLogger
 from flext_oracle_wms import FlextOracleWmsClient
 
@@ -885,7 +885,7 @@ Documentation Coverage: 100%
 
 # Quality gates
 make lint
-make type-check         
+make type-check
 make test                 # 95% coverage minimum
 make security             # Bandit + pip-audit
 ```

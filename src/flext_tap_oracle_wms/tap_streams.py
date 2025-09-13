@@ -10,22 +10,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextTypes
-
-"""
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
-
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 from typing import TYPE_CHECKING, ClassVar
 
-from flext_core import FlextLogger
+from flext_core import FlextLogger, FlextTypes
 from flext_meltano import Stream, Tap
 
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsClient
+
 
 from flext_tap_oracle_wms.utils import run_async
 

@@ -4,11 +4,13 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
 from unittest.mock import MagicMock, patch
 
 from flext_tap_oracle_wms import FlextTapOracleWMS
+
+# Copyright (c) 2025 FLEXT Team
+# Licensed under the MIT License
+
 
 # Constants
 EXPECTED_BULK_SIZE = 2

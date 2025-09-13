@@ -10,14 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextTypes
-
-"""
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
-
 import importlib.metadata
 from collections.abc import Awaitable, Coroutine, Sequence
 from typing import ClassVar
@@ -27,6 +19,7 @@ from flext_core import (
     FlextPlugin,
     FlextPluginContext,
     FlextResult,
+    FlextTypes,
 )
 from flext_meltano import Stream, Tap
 from flext_oracle_wms import (
