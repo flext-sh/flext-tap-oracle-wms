@@ -17,7 +17,7 @@ from pydantic import Field
 class OracleWMSEntityModel(FlextModels.Entity):
     """Base model for Oracle WMS entities."""
 
-    id: str | None = Field(default=None, description="Entity identifier")
+    id: str = Field(..., description="Entity identifier")
     name: str | None = Field(default=None, description="Entity name")
     created_at: str | None = Field(default=None, description="Creation timestamp")
     updated_at: str | None = Field(default=None, description="Last update timestamp")
@@ -32,14 +32,14 @@ class StreamMetadata(FlextModels.Config):
     replication_key: str | None = None
     inclusion: str = "available"
 
-    def to_singer_metadata(self) -> list[FlextTypes.Core.Dict]:
+    def to_singer_metadata(self) -> list[dict[str, object]]:
         """Convert to Singer metadata format.
 
         Returns:
             List of Singer metadata entries
 
         """
-        metadata: list[FlextTypes.Core.Dict] = [
+        metadata: list[dict[str, object]] = [
             {
                 "breadcrumb": [],
                 "metadata": {
@@ -51,7 +51,10 @@ class StreamMetadata(FlextModels.Config):
         ]
 
         if self.replication_key:
-            metadata[0]["metadata"]["replication-key"] = self.replication_key
+            # Type assertion to help MyPy understand the structure
+            metadata_dict = metadata[0]["metadata"]
+            if isinstance(metadata_dict, dict):
+                metadata_dict["replication-key"] = self.replication_key
 
         return metadata
 
@@ -62,7 +65,7 @@ class StreamSchema(FlextModels.Config):
     stream_name: str
     properties: dict[str, FlextTypes.Core.Dict]
 
-    def to_singer_schema(self) -> FlextTypes.Core.Dict:
+    def to_singer_schema(self) -> dict[str, object]:
         """Convert to Singer schema format.
 
         Returns:
@@ -83,7 +86,7 @@ class CatalogStream(FlextModels.Config):
     stream_schema: StreamSchema  # Renamed to avoid conflict with BaseModel.schema
     metadata: StreamMetadata
 
-    def to_singer_catalog_entry(self) -> FlextTypes.Core.Dict:
+    def to_singer_catalog_entry(self) -> dict[str, object]:
         """Convert to Singer catalog entry format.
 
         Returns:

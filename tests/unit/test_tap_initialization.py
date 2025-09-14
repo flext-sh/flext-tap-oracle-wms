@@ -21,6 +21,7 @@ class TestTapInitialization:
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.discover_streams")
     def test_tap_init_no_network_calls(self, mock_discover: MagicMock) -> None:
+        """Test tap initialization without network calls."""
         # Mock discover_streams to return empty list during initialization
         mock_discover.return_value = []
         config = {
@@ -50,6 +51,7 @@ class TestTapInitialization:
             assert tap.config["entities"] == ["allocation", "order_hdr"]
 
     def test_discover_streams_sync_mode_no_api_calls(self) -> None:
+        """Test discover streams in sync mode without API calls."""
         config = {
             "base_url": "https://test.example.com",
             "username": "test",
@@ -157,6 +159,7 @@ class TestTapInitialization:
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.discover_streams")
     def test_config_type_conversion(self, mock_discover: MagicMock) -> None:
+        """Test configuration type conversion."""
         # Mock discover_streams to return empty list during initialization
         mock_discover.return_value = []
         config = {
@@ -192,6 +195,7 @@ class TestTapInitialization:
                 raise AssertionError(msg)
 
     def test_minimal_schema_creation(self) -> None:
+        """Test minimal schema creation."""
         config = {
             "base_url": "https://test.example.com",
             "username": "test",
