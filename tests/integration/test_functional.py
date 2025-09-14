@@ -173,7 +173,6 @@ class TestOracleWMSFunctionalComplete:
     def test_real_data_extraction_sample(
         self,
         real_tap_instance: FlextTapOracleWMS,
-        test_config_extraction: FlextTypes.Core.Dict,
     ) -> None:
         """Test REAL data extraction with small sample."""
         catalog = real_tap_instance.catalog_dict

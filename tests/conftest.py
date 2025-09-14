@@ -207,3 +207,21 @@ def reset_environment() -> Generator[None]:
     yield
     os.environ.clear()
     os.environ.update(original_env)
+
+
+@pytest.fixture
+def _real_tap_instance(real_config: FlextTapOracleWMSConfig) -> FlextTapOracleWMS:
+    """Real tap instance for integration tests."""
+    return FlextTapOracleWMS(config=real_config)
+
+
+@pytest.fixture
+def _test_config_extraction() -> FlextTypes.Core.Dict:
+    """Test configuration for extraction tests."""
+    return {
+        "base_url": "https://test.wms.example.com",
+        "username": "test_user",
+        "password": "test_password",
+        "entities": ["inventory"],
+        "page_size": 10,
+    }

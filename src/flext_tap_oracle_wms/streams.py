@@ -1,3 +1,9 @@
+"""Oracle WMS Stream implementations for Singer protocol.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 from __future__ import annotations
 
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
@@ -9,18 +15,12 @@ from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms.utils import run_async
 
-"""
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
-
 logger = FlextLogger(__name__)
 
 
 class FlextTapOracleWMSStream(Stream):
     """Dynamic stream for Oracle WMS entities.
+
     Uses flext-oracle-wms client for all data operations.
     This is a generic stream class that adapts to any Oracle WMS entity dynamically.
     """

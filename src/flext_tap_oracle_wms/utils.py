@@ -12,6 +12,7 @@ from collections.abc import Awaitable, Coroutine
 
 def run_async(coro: Coroutine[object, object, object] | Awaitable[object]) -> object:
     """Run async coroutine in sync context.
+
     This is a shared utility to eliminate the duplicate _run_async methods
     found in tap_client.py and tap_streams.py.
 

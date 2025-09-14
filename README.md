@@ -36,7 +36,7 @@ make discover
 - 37 MyPy type errors (regression during refactoring)
 - Over-engineered architecture (26 files, 8,179 lines for a tap)
 - 27% of tests disabled due to external dependencies
-- No comprehensive test coverage implemented
+- No test coverage implemented
 
 ## Architecture Role in FLEXT Ecosystem
 
@@ -202,7 +202,7 @@ export TAP_ORACLE_WMS_START_DATE="2024-01-01T00:00:00Z"
 
 - **Coverage**: 90% target
 - **Type Safety**: MyPy strict mode planned (currently ~37 errors)
-- **Linting**: Ruff with comprehensive rules
+- **Linting**: Ruff with rules
 - **Security**: Bandit + pip-audit scanning
 
 ## Integration with FLEXT Ecosystem
@@ -272,6 +272,8 @@ make discover
 MIT License - See [LICENSE](LICENSE) file for details.
 
 ## Links
+
+For verified project capabilities and accurate status information, see [ACTUAL_CAPABILITIES.md](../ACTUAL_CAPABILITIES.md).
 
 - **[flext-core](../flext-core)**: Foundation library
 - **[flext-oracle-wms](../flext-oracle-wms)**: Oracle WMS integration

@@ -11,23 +11,23 @@ import importlib.metadata
 from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
 from flext_meltano import FlextMeltanoBridge, FlextMeltanoConfig, FlextMeltanoTapService
 
+from flext_tap_oracle_wms.client import FlextTapOracleWMS, FlextTapOracleWMSPlugin
+from flext_tap_oracle_wms.config import (
+    FlextTapOracleWMSConfig,
+    FlextTapOracleWMSConstants,
+)
+from flext_tap_oracle_wms.exceptions import (
+    FlextTapOracleWMSConnectionError,
+    FlextTapOracleWMSError,
+    FlextTapOracleWMSValidationError,
+)
 from flext_tap_oracle_wms.models import (
     CatalogStream,
     OracleWMSEntityModel,
     StreamMetadata,
     StreamSchema,
 )
-from flext_tap_oracle_wms.tap_client import FlextTapOracleWMS, FlextTapOracleWMSPlugin
-from flext_tap_oracle_wms.tap_config import (
-    FlextTapOracleWMSConfig,
-    FlextTapOracleWMSConstants,
-)
-from flext_tap_oracle_wms.tap_exceptions import (
-    FlextTapOracleWMSConnectionError,
-    FlextTapOracleWMSError,
-    FlextTapOracleWMSValidationError,
-)
-from flext_tap_oracle_wms.tap_streams import FlextTapOracleWMSStream
+from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 
 try:
     __version__ = importlib.metadata.version("flext-tap-oracle-wms")

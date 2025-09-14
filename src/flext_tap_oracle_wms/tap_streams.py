@@ -27,6 +27,7 @@ logger = FlextLogger(__name__)
 
 class FlextTapOracleWMSStream(Stream):
     """Dynamic stream for Oracle WMS entities.
+
     Uses flext-oracle-wms client for all data operations.
     This is a generic stream class that adapts to any Oracle WMS entity dynamically.
     """
