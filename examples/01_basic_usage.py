@@ -7,6 +7,8 @@ Shows how to use the tap with flext-oracle-wms integration.
 import os
 import sys
 
+from pydantic import SecretStr
+
 from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 
 
@@ -23,7 +25,7 @@ def main() -> int:
             "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
         ),
         username=os.getenv("ORACLE_WMS_USERNAME", "USER_WMS_INTEGRA"),
-        password=os.getenv("ORACLE_WMS_PASSWORD", "your_password"),
+        password=SecretStr(os.getenv("ORACLE_WMS_PASSWORD", "your_password")),
         api_version="v10",
         page_size=100,
         verify_ssl=True,
@@ -38,31 +40,34 @@ def main() -> int:
 
     # Example 1: Validate configuration
     validation_result = tap.validate_configuration()
-    if validation_result.is_success:
-        pass
-    else:
+    if not validation_result.is_success:
         return 1
 
     # Example 2: Discover catalog
     catalog_result = tap.discover_catalog()
     if catalog_result.is_success:
         catalog = catalog_result.value
-        for stream in catalog["streams"]:
-            if "schema" in stream and "properties" in stream["schema"]:
-                pass
+        if isinstance(catalog, dict) and "streams" in catalog:
+            for stream in catalog["streams"]:
+                if (
+                    isinstance(stream, dict)
+                    and "schema" in stream
+                    and "properties" in stream["schema"]
+                ):
+                    print(f"Found stream: {stream.get('tap_stream_id', 'unknown')}")
     else:
         return 1
 
     # Example 3: Discover available streams
     streams = tap.discover_streams()
-    for _stream in streams:
-        pass
+    for stream in streams:
+        print(f"Available stream: {stream.name}")
 
     # Example 4: Get implementation info
 
     metrics_result = tap.get_implementation_metrics()
     if metrics_result.is_success:
-        pass
+        print("Implementation metrics retrieved successfully")
 
     # Example 5: Extract data (commented out to avoid actual API calls)
     """

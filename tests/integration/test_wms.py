@@ -18,9 +18,9 @@ from flext_tap_oracle_wms import FlextTapOracleWMS, FlextTapOracleWMSConfig
 def real_config() -> FlextTapOracleWMSConfig:
     """Create real configuration from environment."""
     return FlextTapOracleWMSConfig(
-        base_url=os.getenv("ORACLE_WMS_BASE_URL"),
-        username=os.getenv("ORACLE_WMS_USERNAME"),
-        password=os.getenv("ORACLE_WMS_PASSWORD"),
+        base_url=os.getenv("ORACLE_WMS_BASE_URL") or "https://test.example.com",
+        username=os.getenv("ORACLE_WMS_USERNAME") or "test_user",
+        password=os.getenv("ORACLE_WMS_PASSWORD") or "test_password",
         api_version=os.getenv("ORACLE_WMS_API_VERSION", "v10"),
         timeout=int(os.getenv("ORACLE_WMS_TIMEOUT", "30")),
         page_size=int(os.getenv("ORACLE_WMS_PAGE_SIZE", "100")),
@@ -60,9 +60,7 @@ class TestRealWmsIntegration:
         # Initialize
         result = tap.initialize()
 
-        if result.is_success:
-            pass
-        else:
+        if not result.is_success:
             pytest.skip(f"Tap initialization failed: {result.error}")
 
     def test_discover_streams(self, real_config: FlextTapOracleWMSConfig) -> None:
@@ -86,7 +84,9 @@ class TestRealWmsIntegration:
             assert hasattr(stream, "schema")
 
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
-    def test_stream_extraction(self, real_config: FlextTapOracleWMSConfig, stream_name: str) -> None:
+    def test_stream_extraction(
+        self, real_config: FlextTapOracleWMSConfig, stream_name: str
+    ) -> None:
         """Test data extraction from specific streams."""
         tap = FlextTapOracleWMS(config=real_config)
 
@@ -112,8 +112,7 @@ class TestRealWmsIntegration:
                 if i >= 2:  # Just get 3 records for testing
                     break
 
-            if records:
-                pass
+            assert records is not None, "No records found"
 
         except Exception as e:
             # Check if it's an authentication or connection error

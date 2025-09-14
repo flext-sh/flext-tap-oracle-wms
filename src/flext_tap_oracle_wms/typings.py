@@ -16,6 +16,11 @@ from flext_core import E, F, FlextTypes as CoreFlextTypes, P, R, T, U, V
 class FlextTypes(CoreFlextTypes):
     """Tap Oracle WMS domain-specific types can extend here."""
 
+    class Core(CoreFlextTypes.Core):
+        """Core types with additional JsonDict for compatibility."""
+
+        AnyDict = CoreFlextTypes.Core.JsonDict
+
 
 __all__ = [
     "E",
