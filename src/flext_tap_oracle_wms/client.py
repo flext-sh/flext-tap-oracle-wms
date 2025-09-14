@@ -509,8 +509,6 @@ class FlextTapOracleWMS(Tap):
                 "api_version": self.flext_config.api_version,
                 "health": discovery_result.value
                 if hasattr(discovery_result, "value")
-                else None
-                if "discovery_result" in locals()
                 else None,
             }
             logger.info("Configuration validated successfully")

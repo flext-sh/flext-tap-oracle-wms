@@ -1,3 +1,9 @@
+"""Performance tests for Oracle WMS extraction.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 import os
 import time
 from pathlib import Path

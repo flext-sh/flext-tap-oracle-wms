@@ -20,6 +20,7 @@ from flext_core import FlextLogger, FlextTypes
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWMS,
+    FlextTapOracleWMSConfig,
     FlextTapOracleWMSStream,
     WMSPaginator,
 )
@@ -31,13 +32,17 @@ logger = FlextLogger(__name__)
 class TestOracleWMSE2EComplete:
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
 
+    @pytest.mark.usefixtures("real_config")
     def test_complete_discovery_to_catalog(
         self,
-        real_tap_instance: FlextTapOracleWMS,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """E2E: Test complete discovery process generating valid Singer catalog."""
+        # Create tap instance with real config
+        tap_instance = FlextTapOracleWMS(config=real_config)
+
         # Run discovery
-        catalog = real_tap_instance.catalog_dict
+        catalog = tap_instance.catalog_dict
 
         # Verify catalog structure
         assert catalog is not None, "Discovery returned None catalog"
@@ -82,12 +87,14 @@ class TestOracleWMSE2EComplete:
             len(streams),
         )
 
+    @pytest.mark.usefixtures("real_config")
     def test_catalog_serialization_and_selection(
         self,
-        real_tap_instance: FlextTapOracleWMS,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """E2E: Test catalog serialization and stream selection."""
-        catalog = real_tap_instance.catalog_dict
+        tap_instance = FlextTapOracleWMS(config=real_config)
+        catalog = tap_instance.catalog_dict
 
         # Test catalog serialization
         catalog_json = json.dumps(catalog, indent=2)
@@ -114,10 +121,11 @@ class TestOracleWMSE2EComplete:
 
     def test_single_stream_extraction_sample(
         self,
-        real_tap_instance: FlextTapOracleWMS,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """E2E: Test single stream data extraction with real data."""
-        catalog = real_tap_instance.catalog_dict
+        tap_instance = FlextTapOracleWMS(config=real_config)
+        catalog = tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
         if not streams:
@@ -132,7 +140,7 @@ class TestOracleWMSE2EComplete:
         # Create stream instance
 
         stream = FlextTapOracleWMSStream(
-            tap=real_tap_instance,
+            tap=tap_instance,
             name=stream_id,
             schema=test_stream["schema"],
         )
@@ -152,10 +160,11 @@ class TestOracleWMSE2EComplete:
 
     def test_incremental_extraction_workflow(
         self,
-        real_tap_instance: FlextTapOracleWMS,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """E2E: Test incremental extraction workflow."""
-        catalog = real_tap_instance.catalog_dict
+        tap_instance = FlextTapOracleWMS(config=real_config)
+        catalog = tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
         # Find an incremental stream
@@ -177,7 +186,7 @@ class TestOracleWMSE2EComplete:
             pytest.skip("No incremental streams found")
 
         stream = FlextTapOracleWMSStream(
-            tap=real_tap_instance,
+            tap=tap_instance,
             name=incremental_stream_config["tap_stream_id"],
             schema=incremental_stream_config["schema"],
         )
@@ -203,10 +212,11 @@ class TestOracleWMSE2EComplete:
 
     def test_full_table_extraction_workflow(
         self,
-        real_tap_instance: FlextTapOracleWMS,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """E2E: Test full table extraction workflow."""
-        catalog = real_tap_instance.catalog_dict
+        tap_instance = FlextTapOracleWMS(config=real_config)
+        catalog = tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
         # Find a full table stream
@@ -228,7 +238,7 @@ class TestOracleWMSE2EComplete:
             pytest.skip("No full table streams found")
 
         stream = FlextTapOracleWMSStream(
-            tap=real_tap_instance,
+            tap=tap_instance,
             name=full_table_stream_config["tap_stream_id"],
             schema=full_table_stream_config["schema"],
         )
@@ -250,10 +260,11 @@ class TestOracleWMSE2EComplete:
 
     def test_data_quality_validation(
         self,
-        real_tap_instance: FlextTapOracleWMS,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """E2E: Test data quality and schema validation."""
-        catalog = real_tap_instance.catalog_dict
+        tap_instance = FlextTapOracleWMS(config=real_config)
+        catalog = tap_instance.catalog_dict
         streams = catalog.get("streams", [])
 
         quality_report = {
@@ -329,7 +340,7 @@ class TestOracleWMSE2EComplete:
         assert quality_report["streams_tested"] > 0, "No streams tested"
         assert quality_report["schemas_valid"] > 0, "No valid schemas found"
 
-    def test_pagination_end_to_end(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_pagination_end_to_end(self, _real_tap_instance: FlextTapOracleWMS) -> None:
         """E2E: Test pagination handling through multiple pages."""
         paginator = WMSPaginator()
 
@@ -397,11 +408,12 @@ class TestOracleWMSE2EComplete:
 
     def test_complete_singer_protocol_compliance(
         self,
-        real_tap_instance: FlextTapOracleWMS,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """E2E: Test complete Singer protocol compliance."""
         # Test discovery mode
-        catalog = real_tap_instance.catalog_dict
+        tap_instance = FlextTapOracleWMS(config=real_config)
+        catalog = tap_instance.catalog_dict
 
         # Singer catalog requirements
         assert catalog["version"] in {1, "1"}, "Invalid catalog version"
@@ -455,13 +467,14 @@ class TestOracleWMSE2EComplete:
 
     def test_performance_and_scalability_indicators(
         self,
-        real_tap_instance: FlextTapOracleWMS,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """E2E: Test performance indicators and scalability."""
         start_time = time.time()
 
         # Test discovery performance
-        catalog = real_tap_instance.catalog_dict
+        tap_instance = FlextTapOracleWMS(config=real_config)
+        catalog = tap_instance.catalog_dict
         discovery_time = time.time() - start_time
 
         streams_count = len(catalog.get("streams", []))
@@ -501,7 +514,7 @@ class TestOracleWMSE2EComplete:
 
     def test_final_e2e_integration_summary(
         self,
-        real_tap_instance: FlextTapOracleWMS,
+        real_config: FlextTapOracleWMSConfig,
     ) -> None:
         """FINAL E2E: Comprehensive integration summary."""
         summary = {
@@ -519,7 +532,8 @@ class TestOracleWMSE2EComplete:
             start_time = time.time()
 
             # 1. Discovery
-            catalog = real_tap_instance.catalog_dict
+            tap_instance = FlextTapOracleWMS(config=real_config)
+            catalog = tap_instance.catalog_dict
             summary["discovery_successful"] = True
             summary["streams_discovered"] = len(catalog.get("streams", []))
 
