@@ -26,8 +26,8 @@ class FlextTapOracleWMSStream(Stream):
     """
 
     # Dynamic attributes - will be set at runtime based on discovery
-    primary_keys: ClassVar[FlextTypes.Core.StringList] = []  # Will be set dynamically
-    replication_key: str | None = None  # Will be set dynamically
+    stream_primary_keys: ClassVar[FlextTypes.Core.StringList] = []  # Will be set dynamically
+    stream_replication_key: str | None = None  # Will be set dynamically
 
     def __init__(
         self,
@@ -58,6 +58,14 @@ class FlextTapOracleWMSStream(Stream):
             msg = "Client not available after initialization - this should not happen"
             raise RuntimeError(msg)
         return self._client
+
+    def get_primary_keys(self) -> list[str]:
+        """Get primary keys for this stream."""
+        return list(self.stream_primary_keys)
+
+    def get_replication_key(self) -> str | None:
+        """Get replication key for this stream."""
+        return self.stream_replication_key
 
     def _run_async(
         self,
@@ -156,11 +164,11 @@ class FlextTapOracleWMSStream(Stream):
             "page": page,
         }
         # Add incremental replication filter if configured
-        if self.replication_key:
+        if self.stream_replication_key:
             starting_timestamp = self.get_starting_timestamp(context)
             if starting_timestamp:
                 kwargs["filter"] = {
-                    self.replication_key: {
+                    self.stream_replication_key: {
                         "$gte": starting_timestamp.isoformat(),
                     },
                 }
@@ -234,7 +242,7 @@ class FlextTapOracleWMSStream(Stream):
     def post_process(
         self,
         row: FlextTypes.Core.JsonDict,
-        _context: Mapping[str, object] | None = None,
+        context: Mapping[str, object] | None = None,
     ) -> FlextTypes.Core.JsonDict | None:
         """Post-process a record.
 
@@ -257,6 +265,11 @@ class FlextTapOracleWMSStream(Stream):
             ignored_columns = self.config.get("ignored_columns", [])
             for column in ignored_columns:
                 row.pop(column, None)
+
+        # Add context information if available
+        if context:
+            row["_context"] = {k: str(v) for k, v in context.items()}
+
         return row
 
 

@@ -17,7 +17,7 @@ from pydantic import Field
 class OracleWMSEntityModel(FlextModels.Entity):
     """Base model for Oracle WMS entities."""
 
-    id: str = Field(..., description="Entity identifier")
+    entity_id: str = Field(..., description="Entity identifier")
     name: str | None = Field(default=None, description="Entity name")
     created_at: str | None = Field(default=None, description="Creation timestamp")
     updated_at: str | None = Field(default=None, description="Last update timestamp")
