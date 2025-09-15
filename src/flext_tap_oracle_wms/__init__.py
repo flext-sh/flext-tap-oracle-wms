@@ -11,12 +11,14 @@ import importlib.metadata
 from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
 from flext_meltano import FlextMeltanoBridge, FlextMeltanoConfig, FlextMeltanoTapService
 
+from flext_tap_oracle_wms.cli import main
 from flext_tap_oracle_wms.client import FlextTapOracleWMS, FlextTapOracleWMSPlugin
 from flext_tap_oracle_wms.config import (
     FlextTapOracleWMSConfig,
     FlextTapOracleWMSConstants,
 )
 from flext_tap_oracle_wms.exceptions import (
+    FlextTapOracleWMSConfigurationError,
     FlextTapOracleWMSConnectionError,
     FlextTapOracleWMSError,
     FlextTapOracleWMSValidationError,
@@ -37,21 +39,16 @@ except importlib.metadata.PackageNotFoundError:
 __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
 __all__: FlextTypes.Core.StringList = [
-    # Models
     "CatalogStream",
-    # FLEXT ecosystem integration
     "FlextLogger",
-    # Meltano integration
     "FlextMeltanoBridge",
     "FlextMeltanoConfig",
     "FlextMeltanoTapService",
     "FlextModels",
     "FlextResult",
-    # Core tap functionality
     "FlextTapOracleWMS",
-    # Configuration
     "FlextTapOracleWMSConfig",
-    # Exceptions
+    "FlextTapOracleWMSConfigurationError",
     "FlextTapOracleWMSConnectionError",
     "FlextTapOracleWMSConstants",
     "FlextTapOracleWMSError",
@@ -62,7 +59,7 @@ __all__: FlextTypes.Core.StringList = [
     "OracleWMSEntityModel",
     "StreamMetadata",
     "StreamSchema",
-    # Version info
     "__version__",
     "__version_info__",
+    "main",
 ]

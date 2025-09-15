@@ -167,7 +167,7 @@ class FlextTapOracleWMS(Tap):
             # Initialize client (async operation)
             if not self._is_started:
                 init_result = self._run_async(self._wms_client.initialize())
-                if hasattr(init_result, "is_failure") and init_result.is_failure:
+                if hasattr(init_result, "is_failure") and getattr(init_result, "is_failure", False):
                     error_msg = (
                         getattr(init_result, "error", "Unknown error")
                         or "Unknown error"
@@ -224,7 +224,7 @@ class FlextTapOracleWMS(Tap):
             discovery_result = self._run_async(
                 self.discovery.discover_entities(),
             )
-            if hasattr(discovery_result, "is_failure") and discovery_result.is_failure:
+            if hasattr(discovery_result, "is_failure") and getattr(discovery_result, "is_failure", False):
                 error_msg = (
                     getattr(discovery_result, "error", "Discovery failed")
                     or "Discovery failed"
@@ -232,9 +232,7 @@ class FlextTapOracleWMS(Tap):
                 return FlextResult[dict[str, object]].fail(error_msg)
             # Build Singer catalog from discovery result
             data = (
-                discovery_result.value
-                if hasattr(discovery_result, "value")
-                else discovery_result
+                getattr(discovery_result, "value", discovery_result)
             )
             catalog = self._build_singer_catalog(data)
             # Count streams safely
@@ -309,32 +307,36 @@ class FlextTapOracleWMS(Tap):
         # Ensure fields is iterable
         if not hasattr(fields, "__iter__"):
             return properties
-        for field in fields:
-            # Map Oracle WMS types to Singer types
-            singer_type = "string"  # Default
-            # Handle field as object with attributes
-            field_data_type = getattr(field, "data_type", "STRING")
-            field_name = getattr(field, "name", str(field))
-            field_nullable = getattr(field, "is_nullable", True)
-            if field_data_type in {"NUMBER", "INTEGER", "DECIMAL"}:
-                singer_type = "number"
-            elif field_data_type == "BOOLEAN":
-                singer_type = "boolean"
-            elif field_data_type in {"DATE", "TIMESTAMP"}:
-                singer_type = "string"
-                properties[field_name] = {
-                    "type": singer_type,
-                    "format": "date-time",
-                }
-                continue
-            properties[field_name] = {"type": singer_type}
-            if field_nullable:
-                properties[field_name] = {
-                    "anyOf": [
-                        properties[field_name],
-                        {"type": "null"},
-                    ],
-                }
+        try:
+            for field in fields:
+                # Map Oracle WMS types to Singer types
+                singer_type = "string"  # Default
+                # Handle field as object with attributes
+                field_data_type = getattr(field, "data_type", "STRING")
+                field_name = getattr(field, "name", str(field))
+                field_nullable = getattr(field, "is_nullable", True)
+                if field_data_type in {"NUMBER", "INTEGER", "DECIMAL"}:
+                    singer_type = "number"
+                elif field_data_type == "BOOLEAN":
+                    singer_type = "boolean"
+                elif field_data_type in {"DATE", "TIMESTAMP"}:
+                    singer_type = "string"
+                    properties[field_name] = {
+                        "type": singer_type,
+                        "format": "date-time",
+                    }
+                    continue
+                properties[field_name] = {"type": singer_type}
+                if field_nullable:
+                    properties[field_name] = {
+                        "anyOf": [
+                            properties[field_name],
+                            {"type": "null"},
+                        ],
+                    }
+        except TypeError:
+            # fields is not iterable
+            logger.warning("Fields object is not iterable")
         return properties
 
     def discover_streams(self) -> Sequence[FlextTapOracleWMSStream]:
@@ -494,7 +496,7 @@ class FlextTapOracleWMS(Tap):
                 discovery_result = self._run_async(self.wms_client.discover_entities())
                 if (
                     hasattr(discovery_result, "is_failure")
-                    and discovery_result.is_failure
+                    and getattr(discovery_result, "is_failure", False)
                 ):
                     error_msg = getattr(
                         discovery_result,
@@ -513,9 +515,7 @@ class FlextTapOracleWMS(Tap):
                 "connection": "success",
                 "base_url": self.flext_config.base_url,
                 "api_version": self.flext_config.api_version,
-                "health": discovery_result.value
-                if hasattr(discovery_result, "value")
-                else None,
+                "health": getattr(discovery_result, "value", None),
             }
             logger.info("Configuration validated successfully")
             return FlextResult[dict[str, object]].ok(validation_info)
