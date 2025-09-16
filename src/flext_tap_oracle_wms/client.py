@@ -167,7 +167,9 @@ class FlextTapOracleWMS(Tap):
             # Initialize client (async operation)
             if not self._is_started:
                 init_result = self._run_async(self._wms_client.initialize())
-                if hasattr(init_result, "is_failure") and getattr(init_result, "is_failure", False):
+                if hasattr(init_result, "is_failure") and getattr(
+                    init_result, "is_failure", False
+                ):
                     error_msg = (
                         getattr(init_result, "error", "Unknown error")
                         or "Unknown error"
@@ -224,16 +226,16 @@ class FlextTapOracleWMS(Tap):
             discovery_result = self._run_async(
                 self.discovery.discover_entities(),
             )
-            if hasattr(discovery_result, "is_failure") and getattr(discovery_result, "is_failure", False):
+            if hasattr(discovery_result, "is_failure") and getattr(
+                discovery_result, "is_failure", False
+            ):
                 error_msg = (
                     getattr(discovery_result, "error", "Discovery failed")
                     or "Discovery failed"
                 )
                 return FlextResult[dict[str, object]].fail(error_msg)
             # Build Singer catalog from discovery result
-            data = (
-                getattr(discovery_result, "value", discovery_result)
-            )
+            data = getattr(discovery_result, "value", discovery_result)
             catalog = self._build_singer_catalog(data)
             # Count streams safely
             stream_count = 0
@@ -494,9 +496,8 @@ class FlextTapOracleWMS(Tap):
             # Test connection by attempting entity discovery
             try:
                 discovery_result = self._run_async(self.wms_client.discover_entities())
-                if (
-                    hasattr(discovery_result, "is_failure")
-                    and getattr(discovery_result, "is_failure", False)
+                if hasattr(discovery_result, "is_failure") and getattr(
+                    discovery_result, "is_failure", False
                 ):
                     error_msg = getattr(
                         discovery_result,
