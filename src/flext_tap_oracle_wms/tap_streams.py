@@ -33,7 +33,9 @@ class FlextTapOracleWMSStream(Stream):
     """
 
     # Dynamic attributes - will be set at runtime based on discovery
-    stream_primary_keys: ClassVar[FlextTypes.Core.StringList] = []  # Will be set dynamically
+    stream_primary_keys: ClassVar[
+        FlextTypes.Core.StringList
+    ] = []  # Will be set dynamically
     stream_replication_key: str | None = None  # Will be set dynamically
 
     def __init__(
