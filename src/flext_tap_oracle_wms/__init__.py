@@ -10,7 +10,6 @@ import importlib.metadata
 
 from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
 from flext_meltano import FlextMeltanoBridge, FlextMeltanoConfig, FlextMeltanoTapService
-
 from flext_tap_oracle_wms.cli import main
 from flext_tap_oracle_wms.client import FlextTapOracleWMS, FlextTapOracleWMSPlugin
 from flext_tap_oracle_wms.config import (

@@ -185,7 +185,7 @@ class EntityDiscovery:
 **Focus**: Complete integration with flext-core patterns
 
 ```python
-from flext_core import FlextConfig, ServiceResult
+from flext_core import FlextConfig, FlextResult
 from pydantic import Field, validator
 
 class WMSConfig(FlextConfig):

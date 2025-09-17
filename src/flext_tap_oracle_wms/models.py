@@ -10,8 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextModels, FlextTypes
 from pydantic import Field
+
+from flext_core import FlextModels, FlextTypes
 
 
 class OracleWMSEntityModel(FlextModels.Entity):
@@ -19,8 +20,8 @@ class OracleWMSEntityModel(FlextModels.Entity):
 
     entity_id: str = Field(..., description="Entity identifier")
     name: str | None = Field(default=None, description="Entity name")
-    created_at: str | None = Field(default=None, description="Creation timestamp")
-    updated_at: str | None = Field(default=None, description="Last update timestamp")
+    # Note: created_at and updated_at are inherited from Entity as datetime objects
+    # Use oracle_created_at and oracle_updated_at for string timestamps if needed
 
 
 class StreamMetadata(FlextModels.Config):

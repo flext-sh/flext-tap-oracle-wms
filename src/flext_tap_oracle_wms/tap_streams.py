@@ -13,8 +13,9 @@ from __future__ import annotations
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 from typing import TYPE_CHECKING, ClassVar
 
-from flext_core import FlextLogger, FlextTypes
 from singer_sdk import Stream, Tap
+
+from flext_core import FlextLogger, FlextTypes
 
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsClient
