@@ -9,14 +9,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Final
+
+from pydantic import Field, SecretStr, field_validator
 
 from flext_core import FlextModels, FlextResult, FlextTypes
 from flext_oracle_wms import (
     FlextOracleWmsSemanticConstants as _WmsConstants,
 )
-from pydantic import Field, SecretStr, field_validator
 
 # Constants for validation limits
 MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT = 5
@@ -25,20 +25,20 @@ MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT = 5
 class FlextTapOracleWMSConstants:
     """Constants for Oracle WMS tap configuration - consuming from flext-oracle-wms API."""
 
-    # CONSUME API defaults from flext-oracle-wms - NO DUPLICATION
+    # CONSUME API defaults from flext-oracle-wms
     DEFAULT_API_VERSION: Final[str] = _WmsConstants.OracleWmsApi.DEFAULT_VERSION
     DEFAULT_PAGE_SIZE: Final[int] = _WmsConstants.Pagination.DEFAULT_PAGE_SIZE
     DEFAULT_TIMEOUT: Final[int] = int(_WmsConstants.OracleWmsApi.DEFAULT_TIMEOUT)
     DEFAULT_MAX_RETRIES: Final[int] = _WmsConstants.OracleWmsApi.DEFAULT_MAX_RETRIES
     DEFAULT_RETRY_DELAY: Final[float] = _WmsConstants.OracleWmsApi.DEFAULT_RETRY_DELAY
 
-    # CONSUME limits from flext-oracle-wms - NO DUPLICATION
+    # CONSUME limits from flext-oracle-wms
     MIN_PAGE_SIZE: Final[int] = _WmsConstants.Pagination.MIN_PAGE_SIZE
     MAX_PAGE_SIZE: Final[int] = _WmsConstants.Pagination.MAX_PAGE_SIZE
     MIN_TIMEOUT: Final[int] = 1  # Singer-specific minimum
     MAX_TIMEOUT: Final[int] = 300  # Singer-specific maximum
 
-    # CONSUME discovery settings from flext-oracle-wms - NO DUPLICATION
+    # CONSUME discovery settings from flext-oracle-wms
     DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = (
         _WmsConstants.Processing.DEFAULT_SAMPLE_SIZE
     )
@@ -216,12 +216,14 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
     @field_validator("base_url")
     @classmethod
     def validate_base_url(cls, v: str) -> str:
-        """Validate base URL format."""
-        v = v.rstrip("/")  # Remove trailing slash
-        if not v.startswith(("http://", "https://")):
-            msg = "Base URL must start with http:// or https://"
-            raise ValueError(msg)
-        return v
+        """Validate base URL using centralized FlextModels validation."""
+        # Use centralized FlextModels validation instead of duplicate logic
+        stripped_url = v.rstrip("/")  # Remove trailing slash
+        validation_result = FlextModels.create_validated_http_url(stripped_url)
+        if validation_result.is_failure:
+            error_msg = f"Invalid base URL: {validation_result.error}"
+            raise ValueError(error_msg)
+        return stripped_url
 
     @field_validator("include_entities", "exclude_entities")
     @classmethod
@@ -239,13 +241,14 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
     @field_validator("start_date", "end_date")
     @classmethod
     def validate_dates(cls, v: str | None) -> str | None:
-        """Validate date format."""
+        """Validate date format using centralized FlextModels validation."""
         if v is not None:
-            try:
-                datetime.fromisoformat(v)
-            except ValueError as e:
-                msg = f"Invalid date format. Use ISO format: {e}"
-                raise ValueError(msg) from e
+            # Use centralized FlextModels validation instead of duplicate logic
+            validation_result = FlextModels.create_validated_iso_date(v)
+            if validation_result.is_failure:
+                error_msg = f"Invalid date format: {validation_result.error}"
+                raise ValueError(error_msg)
+            return validation_result.unwrap()
         return v
 
     def validate_business_rules(self) -> FlextResult[None]:
@@ -316,15 +319,16 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         return FlextResult[None].ok(None)
 
     def _validate_date_range(self) -> FlextResult[None]:
-        """Validate date range."""
+        """Validate date range using centralized FlextModels validation."""
         if self.start_date and self.end_date:
-            try:
-                start = datetime.fromisoformat(self.start_date)
-                end = datetime.fromisoformat(self.end_date)
-                if start >= end:
-                    return FlextResult[None].fail("start_date must be before end_date")
-            except ValueError as e:
-                return FlextResult[None].fail(f"Invalid date format: {e}")
+            # Use centralized FlextModels date range validation instead of duplicate logic
+            validation_result = FlextModels.create_validated_date_range(
+                self.start_date, self.end_date
+            )
+            if validation_result.is_failure:
+                return FlextResult[None].fail(
+                    validation_result.error or "Date range validation failed"
+                )
         return FlextResult[None].ok(None)
 
     def _validate_performance_settings(self) -> FlextResult[None]:
@@ -355,13 +359,14 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                         f"Entities cannot be both included and excluded: {common}",
                     )
 
-            # Validate date range
+            # Validate date range using centralized FlextModels validation
             if self.start_date and self.end_date:
-                start = datetime.fromisoformat(self.start_date)
-                end = datetime.fromisoformat(self.end_date)
-                if start > end:
+                validation_result = FlextModels.create_validated_date_range(
+                    self.start_date, self.end_date
+                )
+                if validation_result.is_failure:
                     return FlextResult[FlextTypes.Core.Dict].fail(
-                        "Start date must be before end date"
+                        validation_result.error or "Date range validation failed"
                     )
 
             # Validate performance settings

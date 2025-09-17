@@ -14,6 +14,9 @@ import importlib.metadata
 from collections.abc import Awaitable, Coroutine, Sequence
 from typing import ClassVar, cast
 
+# from flext_plugin import ConcretePluginContext  # Not available
+from singer_sdk import Stream, Tap
+
 from flext_core import (
     FlextLogger,
     FlextResult,
@@ -24,10 +27,6 @@ from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsClientConfig,
 )
-
-# from flext_plugin import ConcretePluginContext  # Not available
-from singer_sdk import Stream, Tap
-
 from flext_tap_oracle_wms.config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream

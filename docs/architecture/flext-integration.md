@@ -55,7 +55,7 @@ from flext_core import (
     FlextLogger,          # Standardized logging
     TAnyDict,
     TEntityId,           # Entity identifier type
-    ServiceResult,       # Result handling pattern
+    FlextResult,       # Result handling pattern
 )
 
 class WMSConfig(FlextConfig):
@@ -79,14 +79,14 @@ class FlextTapOracleWMS:
         self.config = WMSConfig(**config)
         self.logger = FlextLogger(__name__)
 
-    def discover_streams(self) -> ServiceResult[List[Stream]]:
-        """Return streams using ServiceResult pattern."""
+    def discover_streams(self) -> FlextResult[List[Stream]]:
+        """Return streams using FlextResult pattern."""
         try:
             streams = self._build_streams()
-            return ServiceResult.success(streams)
+            return FlextResult.success(streams)
         except Exception as e:
             self.logger.error(f"Stream discovery failed: {e}")
-            return ServiceResult.failure(f"Discovery error: {e}")
+            return FlextResult.failure(f"Discovery error: {e}")
 ```
 
 #### Type System Integration
@@ -183,21 +183,21 @@ class WMSClientManager:
             )
         return self._client
 
-    def test_connection(self) -> ServiceResult[bool]:
+    def test_connection(self) -> FlextResult[bool]:
         """Test WMS connection using library client."""
         try:
             result = self.client.test_connection()
             if result:
                 self.logger.info("WMS connection successful")
-                return ServiceResult.success(True)
+                return FlextResult.success(True)
             else:
-                return ServiceResult.failure("WMS connection test failed")
+                return FlextResult.failure("WMS connection test failed")
         except FlextOracleWmsAuthenticationError as e:
             self.logger.error(f"WMS authentication failed: {e}")
-            return ServiceResult.failure(f"Authentication error: {e}")
+            return FlextResult.failure(f"Authentication error: {e}")
         except FlextOracleWmsError as e:
             self.logger.error(f"WMS client error: {e}")
-            return ServiceResult.failure(f"WMS error: {e}")
+            return FlextResult.failure(f"WMS error: {e}")
 ```
 
 #### Entity Discovery Integration
@@ -213,36 +213,36 @@ class EntityDiscovery:
         self.wms_client = wms_client
         self.logger = FlextLogger(__name__)
 
-    def discover_entities(self) -> ServiceResult[List[str]]:
+    def discover_entities(self) -> FlextResult[List[str]]:
         """Discover available entities using WMS client."""
         try:
             entities = self.wms_client.get_available_entities()
             self.logger.info(f"Discovered {len(entities)} WMS entities")
-            return ServiceResult.success(entities)
+            return FlextResult.success(entities)
         except Exception as e:
             self.logger.error(f"Entity discovery failed: {e}")
-            return ServiceResult.failure(f"Discovery error: {e}")
+            return FlextResult.failure(f"Discovery error: {e}")
 
-    def get_entity_metadata(self, entity: str) -> ServiceResult[WMSEntityMetadata]:
+    def get_entity_metadata(self, entity: str) -> FlextResult[WMSEntityMetadata]:
         """Get entity metadata using library client."""
         try:
             metadata = self.wms_client.get_entity_metadata(entity)
-            return ServiceResult.success(metadata)
+            return FlextResult.success(metadata)
         except Exception as e:
             self.logger.error(f"Metadata retrieval failed for {entity}: {e}")
-            return ServiceResult.failure(f"Metadata error: {e}")
+            return FlextResult.failure(f"Metadata error: {e}")
 
-    def generate_schema(self, entity: str) -> ServiceResult[Dict[str, object]]:
+    def generate_schema(self, entity: str) -> FlextResult[Dict[str, object]]:
         """Generate Singer schema from WMS metadata."""
         metadata_result = self.get_entity_metadata(entity)
         if not metadata_result.success:
-            return ServiceResult.failure(metadata_result.error)
+            return FlextResult.failure(metadata_result.error)
 
         try:
             schema = self._convert_metadata_to_schema(metadata_result.data)
-            return ServiceResult.success(schema)
+            return FlextResult.success(schema)
         except Exception as e:
-            return ServiceResult.failure(f"Schema generation error: {e}")
+            return FlextResult.failure(f"Schema generation error: {e}")
 ```
 
 ### 3. flext-meltano Integration
