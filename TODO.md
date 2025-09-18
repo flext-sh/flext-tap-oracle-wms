@@ -1,6 +1,6 @@
 # TODO.md - flext-tap-oracle-wms
 
-**Status**: REFATORAÇÃO EM PROGRESSO - PROBLEMAS REAIS IDENTIFICADOS
+**Status**: REFATORAÇÃO EM PROGRESSO - PROBLEMAS REAIS IDENTIFICADOS · 1.0.0 Release Preparation
 **Última Atualização**: 2025-01-08
 **MyPy Errors**: 37 errors (REGRESSÃO após correções)
 **Lint Errors**: 0 errors

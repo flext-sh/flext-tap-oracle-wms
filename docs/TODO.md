@@ -1,8 +1,8 @@
 # FLEXT-TAP-ORACLE-WMS - Desvios e Falhas de Projeto
 
 **Data de Análise**: 2025-08-04  
-**Versão**: 0.9.0  
-**Status**: CRÍTICO - Necessita refatoração massiva  
+**Versão**: 0.9.9  
+**Status**: CRÍTICO - Necessita refatoração massiva · 1.0.0 Release Preparation
 **Linhas de Código**: 8.179 linhas em 26 arquivos Python
 
 ---

@@ -115,31 +115,31 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 **Decision**: Complete rewrite of the tap implementation  
 **Rationale**: 90% code reduction is more efficiently achieved through rewrite  
-**Status**: Approved
+**Status**: Approved · 1.0.0 Release Preparation
 
 ### ADR-002: FLEXT Ecosystem Integration Strategy
 
 **Decision**: Full integration with flext-core, flext-oracle-wms, and flext-meltano  
 **Rationale**: Consistency with ecosystem patterns and reduced maintenance burden  
-**Status**: Approved
+**Status**: Approved · 1.0.0 Release Preparation
 
 ### ADR-003: Singer SDK Compliance Level
 
 **Decision**: Full Singer SDK specification compliance  
 **Rationale**: Ensures interoperability with Meltano and other Singer ecosystem tools  
-**Status**: Approved
+**Status**: Approved · 1.0.0 Release Preparation
 
 ### ADR-004: Testing Strategy
 
 **Decision**: 100% test coverage with comprehensive mocking  
 **Rationale**: Address current issue of disabled tests and ensure reliability  
-**Status**: Approved
+**Status**: Approved · 1.0.0 Release Preparation
 
 ### ADR-005: Configuration Management
 
 **Decision**: Single configuration system using Pydantic and flext-core patterns  
 **Rationale**: Eliminate configuration chaos and provide consistent validation  
-**Status**: Approved
+**Status**: Approved · 1.0.0 Release Preparation
 
 ## Related Documentation
 
@@ -163,4 +163,4 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 ---
 
-**Updated**: 2025-08-13 | **Status**: Architecture Defined | **Next**: Implementation Planning
+**Updated**: 2025-08-13 | **Status**: Architecture Defined · 1.0.0 Release Preparation | **Next**: Implementation Planning

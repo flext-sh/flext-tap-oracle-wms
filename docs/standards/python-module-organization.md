@@ -112,7 +112,7 @@ __all__: FlextTypes.Core.StringList = [
 
 # __version__.py - Version Management
 """Version information for FLEXT Tap Oracle WMS."""
-__version__ = "0.9.0"
+__version__ = "0.9.9"
 ```
 
 **Responsibility**: Establish clean public API and version management.
@@ -985,4 +985,4 @@ class CustomTap(BaseTap):                    # Use flext_meltano.Tap
 **Last Updated**: August 4, 2025
 **Target Audience**: FLEXT Tap Oracle WMS developers and architects
 **Scope**: Module organization for Singer tap refactoring
-**Status**: Architecture defined, implementation pending
+**Status**: Architecture defined, implementation pending · 1.0.0 Release Preparation

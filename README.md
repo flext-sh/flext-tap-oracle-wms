@@ -1,6 +1,6 @@
 # flext-tap-oracle-wms
 
-**Type**: Singer Tap | **Status**: Active Development | **Dependencies**: flext-core, flext-oracle-wms
+**Type**: Singer Tap | **Status**: 1.0.0 Release Preparation | **Dependencies**: flext-core, flext-oracle-wms
 
 Singer-compliant tap for extracting data from Oracle Warehouse Management Systems.
 
@@ -227,7 +227,7 @@ streams = tap.discover_streams()
 
 ## Current Status
 
-**Version**: 0.9.0 (Development)
+**Version**: 0.9.9 RC (Development)
 
 **Completed**:
 

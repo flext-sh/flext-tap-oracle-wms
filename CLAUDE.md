@@ -1,7 +1,7 @@
 # CLAUDE.md - FLEXT Tap Oracle WMS Quality Refactoring Guide
 
 **Project**: FLEXT Tap Oracle WMS - Enterprise Oracle Warehouse Management System Extraction  
-**Status**: Refactored but Quality Enhancement Required | **Architecture**: Clean Singer Tap + FLEXT Integration  
+**Status**: Refactored but Quality Enhancement Required · 1.0.0 Release Preparation | **Architecture**: Clean Singer Tap + FLEXT Integration  
 **Dependencies**: Python 3.13+, flext-core, flext-oracle-wms, flext-meltano, singer-sdk  
 **Coverage Target**: 75% minimum (proven achievable), 100% aspirational target | **Current Status**: MyPy ✅, Ruff ✅, Tests Pending
 **Authority**: FLEXT-TAP-ORACLE-WMS | **Last Updated**: 2025-01-08
@@ -10,11 +10,11 @@
 
 ## 🔗 MCP SERVER INTEGRATION
 
-| MCP Server | Purpose | Status |
-|------------|---------|--------|
-| **serena** | Singer tap codebase analysis and Oracle WMS extraction patterns | **ACTIVE** |
-| **sequential-thinking** | Oracle WMS data processing and Singer protocol architecture | **ACTIVE** |
-| **github** | Singer ecosystem integration and Oracle WMS tap PRs | **ACTIVE** |
+| MCP Server              | Purpose                                                         | Status     |
+| ----------------------- | --------------------------------------------------------------- | ---------- |
+| **serena**              | Singer tap codebase analysis and Oracle WMS extraction patterns | **ACTIVE** |
+| **sequential-thinking** | Oracle WMS data processing and Singer protocol architecture     | **ACTIVE** |
+| **github**              | Singer ecosystem integration and Oracle WMS tap PRs             | **ACTIVE** |
 
 **Usage**: `claude mcp list` for available servers, leverage for Singer-specific development patterns and Oracle WMS extraction analysis.
 
