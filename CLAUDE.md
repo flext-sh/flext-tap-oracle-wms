@@ -3,8 +3,20 @@
 **Project**: FLEXT Tap Oracle WMS - Enterprise Oracle Warehouse Management System Extraction  
 **Status**: Refactored but Quality Enhancement Required | **Architecture**: Clean Singer Tap + FLEXT Integration  
 **Dependencies**: Python 3.13+, flext-core, flext-oracle-wms, flext-meltano, singer-sdk  
-**Coverage Target**: 90% | **Current Status**: MyPy ✅, Ruff ✅, Tests Pending  
+**Coverage Target**: 75% minimum (proven achievable), 100% aspirational target | **Current Status**: MyPy ✅, Ruff ✅, Tests Pending
 **Authority**: FLEXT-TAP-ORACLE-WMS | **Last Updated**: 2025-01-08
+
+**Hierarchy**: This document provides project-specific standards based on workspace-level patterns defined in [../CLAUDE.md](../CLAUDE.md). For architectural principles, quality gates, and MCP server usage, reference the main workspace standards.
+
+## 🔗 MCP SERVER INTEGRATION
+
+| MCP Server | Purpose | Status |
+|------------|---------|--------|
+| **serena** | Singer tap codebase analysis and Oracle WMS extraction patterns | **ACTIVE** |
+| **sequential-thinking** | Oracle WMS data processing and Singer protocol architecture | **ACTIVE** |
+| **github** | Singer ecosystem integration and Oracle WMS tap PRs | **ACTIVE** |
+
+**Usage**: `claude mcp list` for available servers, leverage for Singer-specific development patterns and Oracle WMS extraction analysis.
 
 ---
 
@@ -266,7 +278,7 @@ class FlextTapOracleWmsService(FlextDomainService):
 class WMSEntityStream(Stream):
     """Simple, focused WMS stream implementation."""
 
-    def get_records(self, context: dict | None) -> Iterable[dict[str, Any]]:
+    def get_records(self, context: dict | None) -> Iterable[dict[str, object]]:
         """Extract WMS records - maintain simplicity."""
         service = self._container.get(FlextTapOracleWmsService)
         config = self.tap.config.model_dump()
@@ -735,7 +747,7 @@ class WMSInventoryStream(Stream):
     replication_key = "date_time_stamp"
     replication_method = "INCREMENTAL"
 
-    def get_records(self, context: dict | None) -> Iterable[dict[str, Any]]:
+    def get_records(self, context: dict | None) -> Iterable[dict[str, object]]:
         """Extract inventory records with optimized pagination."""
         service = self._container.get(FlextTapOracleWmsService)
         config = self.tap.config.model_dump()
