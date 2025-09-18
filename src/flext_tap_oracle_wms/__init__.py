@@ -9,7 +9,7 @@ from __future__ import annotations
 import importlib.metadata
 
 from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
-from flext_meltano import FlextMeltanoBridge, FlextMeltanoConfig, FlextMeltanoTapService
+from flext_meltano import FlextMeltanoBridge, FlextMeltanoConfig, FlextMeltanoService
 from flext_tap_oracle_wms.cli import main
 from flext_tap_oracle_wms.client import FlextTapOracleWMS, FlextTapOracleWMSPlugin
 from flext_tap_oracle_wms.config import (
@@ -42,7 +42,7 @@ __all__: FlextTypes.Core.StringList = [
     "FlextLogger",
     "FlextMeltanoBridge",
     "FlextMeltanoConfig",
-    "FlextMeltanoTapService",
+    "FlextMeltanoService",
     "FlextModels",
     "FlextResult",
     "FlextTapOracleWMS",

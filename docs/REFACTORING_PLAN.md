@@ -488,4 +488,4 @@ make test-meltano-integration  # Meltano orchestration
 
 ---
 
-**Status**: Plan Approved | **Start Date**: TBD | **Duration**: 6 weeks | **Updated**: 2025-08-13
+**Status**: Plan Approved · 1.0.0 Release Preparation | **Start Date**: TBD | **Duration**: 6 weeks | **Updated**: 2025-08-13

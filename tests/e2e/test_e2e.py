@@ -426,7 +426,7 @@ class TestOracleWMSE2EComplete:
             assert isinstance(stream["tap_stream_id"], str), (
                 "tap_stream_id must be string"
             )
-            assert stream["tap_stream_id"] != "", "tap_stream_id cannot be empty"
+            assert stream["tap_stream_id"], "tap_stream_id cannot be empty"
 
             # Schema structure
             schema = stream["schema"]

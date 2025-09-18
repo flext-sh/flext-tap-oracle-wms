@@ -27,7 +27,7 @@ class TestOracleWMSFunctionalComplete:
         required_config = ["base_url", "username", "password"]
         for key in required_config:
             assert real_wms_config.get(key), f"Missing required config: {key}"
-            assert real_wms_config[key] != "", f"Empty config value: {key}"
+            assert real_wms_config[key], f"Empty config value: {key}"
 
         # Verify it's the real ta29 environment
         base_url = str(real_wms_config["base_url"])
@@ -208,7 +208,7 @@ class TestOracleWMSFunctionalComplete:
             # Test URL generation
             url = stream.url_base
             assert url is not None, "Stream URL is None"
-            assert url != "", "Stream URL is empty"
+            assert url, "Stream URL is empty"
             assert "ta29.wms.ocs.oraclecloud.com" in url, f"Invalid URL: {url}"
 
             logger.info("✅ Stream URL generated: %s", url)

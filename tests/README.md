@@ -332,6 +332,6 @@ def test_config_validation_with_missing_auth_raises_error():
 
 ---
 
-**Status**: Test infrastructure requires significant improvement  
+**Status**: Test infrastructure requires significant improvement · 1.0.0 Release Preparation
 **Priority**: Re-enable disabled tests before production use  
 **Updated**: 2025-08-13

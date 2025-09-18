@@ -382,4 +382,4 @@ def test_debug_example():
 
 ---
 
-**Status**: Core unit tests working with good coverage | **Priority**: Maintain isolation and coverage | **Updated**: 2025-08-13
+**Status**: Core unit tests working with good coverage · 1.0.0 Release Preparation | **Priority**: Maintain isolation and coverage | **Updated**: 2025-08-13
