@@ -168,7 +168,6 @@ flext-oracle-wms = { path = "../flext-oracle-wms", develop = true }
 flext-observability = { path = "../flext-observability", develop = true }
 
 
-
 [tool.poetry.group.dev.dependencies]
 ruff = ">=0.12.3"
 black = ">=25.1.0"

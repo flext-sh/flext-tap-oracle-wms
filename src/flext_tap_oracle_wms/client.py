@@ -167,7 +167,9 @@ class FlextTapOracleWMS(Tap):
             if not self._is_started:
                 init_result = self._run_async(self._wms_client.initialize())
                 if hasattr(init_result, "is_failure") and getattr(
-                    init_result, "is_failure", False,
+                    init_result,
+                    "is_failure",
+                    False,
                 ):
                     error_msg = (
                         getattr(init_result, "error", "Unknown error")
@@ -226,7 +228,9 @@ class FlextTapOracleWMS(Tap):
                 self.discovery.discover_entities(),
             )
             if hasattr(discovery_result, "is_failure") and getattr(
-                discovery_result, "is_failure", False,
+                discovery_result,
+                "is_failure",
+                False,
             ):
                 error_msg = (
                     getattr(discovery_result, "error", "Discovery failed")
@@ -496,7 +500,9 @@ class FlextTapOracleWMS(Tap):
             try:
                 discovery_result = self._run_async(self.wms_client.discover_entities())
                 if hasattr(discovery_result, "is_failure") and getattr(
-                    discovery_result, "is_failure", False,
+                    discovery_result,
+                    "is_failure",
+                    False,
                 ):
                     error_msg = getattr(
                         discovery_result,

@@ -375,7 +375,8 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.functional
     def test_configuration_validation(
-        self, real_wms_config: FlextTypes.Core.Dict,
+        self,
+        real_wms_config: FlextTypes.Core.Dict,
     ) -> None:
         """Test configuration validation and type conversion."""
         # Test configuration creation
