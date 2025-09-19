@@ -10,8 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Coroutine, Iterable, Mapping
-from typing import TYPE_CHECKING, ClassVar
+from collections.abc import Awaitable, Coroutine, Iterable, Mapping, Sequence
+from typing import TYPE_CHECKING
 
 from singer_sdk import Stream, Tap
 
@@ -33,11 +33,7 @@ class FlextTapOracleWMSStream(Stream):
     This is a generic stream class that adapts to any Oracle WMS entity dynamically.
     """
 
-    # Dynamic attributes - will be set at runtime based on discovery
-    stream_primary_keys: ClassVar[
-        FlextTypes.Core.StringList
-    ] = []  # Will be set dynamically
-    stream_replication_key: str | None = None  # Will be set dynamically
+    # Dynamic attributes - will be set at runtime as instance variables in __init__
 
     def __init__(
         self,
@@ -51,6 +47,10 @@ class FlextTapOracleWMSStream(Stream):
         # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
         self._client: FlextOracleWmsClient | None = None
         self._page_size = self.config.get("page_size", 100)
+
+        # Initialize instance variables for dynamic configuration
+        self.stream_primary_keys: list[str] = []
+        self.stream_replication_key: str | None = None
 
     @property
     def client(self) -> FlextOracleWmsClient:
@@ -70,14 +70,24 @@ class FlextTapOracleWMSStream(Stream):
         return self._client
 
     @property
-    def primary_keys(self) -> list[str]:
+    def primary_keys(self) -> Sequence[str]:
         """Get primary keys for this stream."""
-        return list(self._primary_keys)
+        return self.stream_primary_keys or []
+
+    @primary_keys.setter
+    def primary_keys(self, value: Sequence[str]) -> None:
+        """Set primary keys for this stream."""
+        self.stream_primary_keys = list(value)
 
     @property
     def replication_key(self) -> str | None:
         """Get replication key for this stream."""
-        return self._replication_key
+        return self.stream_replication_key
+
+    @replication_key.setter
+    def replication_key(self, value: str | None) -> None:
+        """Set replication key for this stream."""
+        self.stream_replication_key = value
 
     def _run_async(
         self,
