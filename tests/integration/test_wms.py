@@ -85,7 +85,7 @@ class TestRealWmsIntegration:
 
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
     def test_stream_extraction(
-        self, real_config: FlextTapOracleWMSConfig, stream_name: str
+        self, real_config: FlextTapOracleWMSConfig, stream_name: str,
     ) -> None:
         """Test data extraction from specific streams."""
         tap = FlextTapOracleWMS(config=real_config)
