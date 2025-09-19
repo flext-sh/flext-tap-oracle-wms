@@ -228,7 +228,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
     @field_validator("include_entities", "exclude_entities")
     @classmethod
     def validate_entity_lists(
-        cls, v: FlextTypes.Core.StringList | None
+        cls, v: FlextTypes.Core.StringList | None,
     ) -> FlextTypes.Core.StringList | None:
         """Validate entity lists are unique."""
         if v is not None:
@@ -278,7 +278,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         """Validate required fields."""
         if not self.base_url or not self.username or not self.password:
             return FlextResult[None].fail(
-                "base_url, username, and password are required"
+                "base_url, username, and password are required",
             )
         return FlextResult[None].ok(None)
 
@@ -286,7 +286,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         """Validate URL format."""
         if not self.base_url.startswith(("http://", "https://")):
             return FlextResult[None].fail(
-                "base_url must start with http:// or https://"
+                "base_url must start with http:// or https://",
             )
         return FlextResult[None].ok(None)
 
@@ -323,11 +323,11 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         if self.start_date and self.end_date:
             # Use centralized FlextModels date range validation instead of duplicate logic
             validation_result = FlextModels.create_validated_date_range(
-                self.start_date, self.end_date
+                self.start_date, self.end_date,
             )
             if validation_result.is_failure:
                 return FlextResult[None].fail(
-                    validation_result.error or "Date range validation failed"
+                    validation_result.error or "Date range validation failed",
                 )
         return FlextResult[None].ok(None)
 
@@ -362,11 +362,11 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             # Validate date range using centralized FlextModels validation
             if self.start_date and self.end_date:
                 date_range_result = FlextModels.create_validated_date_range(
-                    self.start_date, self.end_date
+                    self.start_date, self.end_date,
                 )
                 if date_range_result.is_failure:
                     return FlextResult[FlextTypes.Core.Dict].fail(
-                        date_range_result.error or "Date range validation failed"
+                        date_range_result.error or "Date range validation failed",
                     )
 
             # Validate performance settings
@@ -396,7 +396,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
 
         except Exception as e:
             return FlextResult[FlextTypes.Core.Dict].fail(
-                f"Configuration validation failed: {e}"
+                f"Configuration validation failed: {e}",
             )
 
     def validate_domain_rules(self) -> FlextResult[None]:
