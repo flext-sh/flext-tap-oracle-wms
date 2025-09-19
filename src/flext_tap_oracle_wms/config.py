@@ -361,12 +361,12 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
 
             # Validate date range using centralized FlextModels validation
             if self.start_date and self.end_date:
-                validation_result = FlextModels.create_validated_date_range(
+                date_range_result = FlextModels.create_validated_date_range(
                     self.start_date, self.end_date
                 )
-                if validation_result.is_failure:
+                if date_range_result.is_failure:
                     return FlextResult[FlextTypes.Core.Dict].fail(
-                        validation_result.error or "Date range validation failed"
+                        date_range_result.error or "Date range validation failed"
                     )
 
             # Validate performance settings
@@ -380,7 +380,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                     f"Rate limiting must be enabled for more than {max_parallel_streams_without_rate_limit} parallel streams",
                 )
 
-            validation_result = {
+            validation_data = {
                 "valid": True,
                 "base_url": self.base_url,
                 "api_version": self.api_version,
@@ -392,7 +392,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                 else 0,
             }
 
-            return FlextResult[FlextTypes.Core.Dict].ok(validation_result)
+            return FlextResult[FlextTypes.Core.Dict].ok(validation_data)
 
         except Exception as e:
             return FlextResult[FlextTypes.Core.Dict].fail(
