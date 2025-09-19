@@ -228,7 +228,8 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
     @field_validator("include_entities", "exclude_entities")
     @classmethod
     def validate_entity_lists(
-        cls, v: FlextTypes.Core.StringList | None,
+        cls,
+        v: FlextTypes.Core.StringList | None,
     ) -> FlextTypes.Core.StringList | None:
         """Validate entity lists are unique."""
         if v is not None:
@@ -323,7 +324,8 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         if self.start_date and self.end_date:
             # Use centralized FlextModels date range validation instead of duplicate logic
             validation_result = FlextModels.create_validated_date_range(
-                self.start_date, self.end_date,
+                self.start_date,
+                self.end_date,
             )
             if validation_result.is_failure:
                 return FlextResult[None].fail(
@@ -362,7 +364,8 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             # Validate date range using centralized FlextModels validation
             if self.start_date and self.end_date:
                 date_range_result = FlextModels.create_validated_date_range(
-                    self.start_date, self.end_date,
+                    self.start_date,
+                    self.end_date,
                 )
                 if date_range_result.is_failure:
                     return FlextResult[FlextTypes.Core.Dict].fail(
