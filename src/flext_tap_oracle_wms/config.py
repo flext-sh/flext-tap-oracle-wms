@@ -13,13 +13,10 @@ from typing import Final
 
 from pydantic import Field, SecretStr, field_validator
 
-from flext_core import FlextModels, FlextResult, FlextTypes
+from flext_core import FlextConstants, FlextModels, FlextResult, FlextTypes
 from flext_oracle_wms import (
     FlextOracleWmsSemanticConstants as _WmsConstants,
 )
-
-# Constants for validation limits
-MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT = 5
 
 
 class FlextTapOracleWMSConstants:
@@ -27,6 +24,11 @@ class FlextTapOracleWMSConstants:
 
     # CONSUME API defaults from flext-oracle-wms
     DEFAULT_API_VERSION: Final[str] = _WmsConstants.OracleWmsApi.DEFAULT_VERSION
+
+    # Validation limits - using FlextConstants as SOURCE OF TRUTH
+    MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = (
+        FlextConstants.Container.MAX_WORKERS + 1
+    )  # 5
     DEFAULT_PAGE_SIZE: Final[int] = _WmsConstants.Pagination.DEFAULT_PAGE_SIZE
     DEFAULT_TIMEOUT: Final[int] = int(_WmsConstants.OracleWmsApi.DEFAULT_TIMEOUT)
     DEFAULT_MAX_RETRIES: Final[int] = _WmsConstants.OracleWmsApi.DEFAULT_MAX_RETRIES
@@ -132,7 +134,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         description="Enable flattening of nested structures",
     )
     max_flattening_depth: int = Field(
-        default=3,
+        default=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,  # 3
         description="Maximum depth for schema flattening",
         ge=0,
         le=10,
@@ -144,7 +146,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         description="Enable rate limiting",
     )
     max_requests_per_minute: int = Field(
-        default=60,
+        default=FlextConstants.Utilities.SECONDS_PER_MINUTE,  # 60
         description="Maximum requests per minute",
         ge=1,
         le=1000,
@@ -182,9 +184,11 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
 
     # Logging and debugging
     log_level: str = Field(
-        default="INFO",
+        default=FlextConstants.Config.LogLevel.DEFAULT_LEVEL,  # SOURCE OF TRUTH
         description="Logging level",
-        pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$",
+        pattern="^("
+        + "|".join(FlextConstants.Config.LogLevel.VALID_LEVELS)
+        + ")$",  # SOURCE OF TRUTH
     )
     enable_request_logging: bool = Field(
         default=False,
@@ -197,7 +201,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         description="Enable parallel stream extraction",
     )
     max_parallel_streams: int = Field(
-        default=3,
+        default=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,  # 3
         description="Maximum number of parallel streams",
         ge=1,
         le=10,
@@ -256,6 +260,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         """Validate Oracle WMS tap configuration business rules using FlextModels.Config pattern.
 
         Consolidates all validation logic into a single comprehensive method.
+
         """
         # Run all validations
         validations = [
@@ -337,11 +342,12 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         """Validate performance settings."""
         if (
             self.enable_parallel_extraction
-            and self.max_parallel_streams > MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
+            and self.max_parallel_streams
+            > FlextTapOracleWMSConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
             and not self.enable_rate_limiting
         ):
             return FlextResult[None].fail(
-                f"Rate limiting must be enabled for more than {MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT} parallel streams",
+                f"Rate limiting must be enabled for more than {FlextTapOracleWMSConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT} parallel streams",
             )
         return FlextResult[None].ok(None)
 
