@@ -33,7 +33,7 @@ class StreamMetadata(FlextModels.Config):
     replication_key: str | None = None
     inclusion: str = "available"
 
-    def to_singer_metadata(self) -> list[dict[str, object]]:
+    def to_singer_metadata(self: object) -> list[dict[str, object]]:
         """Convert to Singer metadata format.
 
         Returns:
@@ -66,7 +66,7 @@ class StreamSchema(FlextModels.Config):
     stream_name: str
     properties: dict[str, FlextTypes.Core.Dict]
 
-    def to_singer_schema(self) -> dict[str, object]:
+    def to_singer_schema(self: object) -> dict[str, object]:
         """Convert to Singer schema format.
 
         Returns:
@@ -87,7 +87,7 @@ class CatalogStream(FlextModels.Config):
     stream_schema: StreamSchema  # Renamed to avoid conflict with BaseModel.schema
     metadata: StreamMetadata
 
-    def to_singer_catalog_entry(self) -> dict[str, object]:
+    def to_singer_catalog_entry(self: object) -> dict[str, object]:
         """Convert to Singer catalog entry format.
 
         Returns:
