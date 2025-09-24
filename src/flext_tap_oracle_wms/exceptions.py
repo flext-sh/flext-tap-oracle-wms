@@ -11,33 +11,35 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from flext_core import FlextExceptions
 
-# Define exceptions directly inheriting from Exception
-class FlextTapOracleWMSError(Exception):
+
+# Define exceptions inheriting from FlextExceptions
+class FlextTapOracleWMSError(FlextExceptions.Error):
     """Base exception for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSValidationError(Exception):
+class FlextTapOracleWMSValidationError(FlextExceptions.ValidationError):
     """Validation error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSConfigurationError(Exception):
+class FlextTapOracleWMSConfigurationError(FlextExceptions.ConfigurationError):
     """Configuration error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSProcessingError(Exception):
+class FlextTapOracleWMSProcessingError(FlextExceptions.ProcessingError):
     """Processing error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSConnectionError(Exception):
+class FlextTapOracleWMSConnectionError(FlextExceptions.ConnectionError):
     """Connection error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSAuthenticationError(Exception):
+class FlextTapOracleWMSAuthenticationError(FlextExceptions.AuthenticationError):
     """Authentication error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSTimeoutError(Exception):
+class FlextTapOracleWMSTimeoutError(FlextExceptions.TimeoutError):
     """Timeout error for Oracle WMS tap operations."""
 
 

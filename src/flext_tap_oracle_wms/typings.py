@@ -19,7 +19,7 @@ class FlextTypes(CoreFlextTypes):
     class Core(CoreFlextTypes.Core):
         """Core types with additional JsonDict for compatibility."""
 
-        AnyDict = CoreFlextTypes.Core.JsonDict
+        object_dict = CoreFlextTypes.Core.JsonDict
 
 
 __all__ = [

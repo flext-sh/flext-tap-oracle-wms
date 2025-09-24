@@ -20,7 +20,6 @@ from singer_sdk import Stream, Tap
 from flext_core import (
     FlextLogger,
     FlextResult,
-    FlextTypes,
 )
 from flext_oracle_wms import (
     FlextOracleWmsApiVersion,
@@ -47,7 +46,7 @@ class FlextTapOracleWMS(Tap):
     """
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[FlextTypes.Core.Dict] = {
+    config_jsonschema: ClassVar[dict[str, object]] = {
         "type": "object",
         "properties": {
             "base_url": {
@@ -84,9 +83,9 @@ class FlextTapOracleWMS(Tap):
 
     def __init__(
         self,
-        config: FlextTypes.Core.Dict | FlextTapOracleWMSConfig | None = None,
-        catalog: FlextTypes.Core.Dict | None = None,
-        state: FlextTypes.Core.Dict | None = None,
+        config: dict[str, object] | FlextTapOracleWMSConfig | None = None,
+        catalog: dict[str, object] | None = None,
+        state: dict[str, object] | None = None,
         *,
         parse_env_config: bool = True,
         validate_config: bool = True,
@@ -102,23 +101,29 @@ class FlextTapOracleWMS(Tap):
 
         """
         # Convert config to FlextTapOracleWMSConfig if needed
+        flext_config: FlextTapOracleWMSConfig | None = None
         if config is not None and not isinstance(config, FlextTapOracleWMSConfig):
             try:
-                # Convert FlextTypes.Core.Dict to proper types for Pydantic model
-                # Pydantic will handle type conversion internally
-                config_dict = dict(config) if hasattr(config, "items") else config
-                config = FlextTapOracleWMSConfig.model_validate(config_dict)
+                # Convert dict to proper types for Pydantic model
+                config_dict: dict[str, object] = (
+                    dict(config) if hasattr(config, "items") else config
+                )
+                flext_config = FlextTapOracleWMSConfig.model_validate(config_dict)
             except Exception as e:
                 msg = f"Invalid configuration: {e}"
                 raise FlextTapOracleWMSConfigurationError(msg) from e
+        else:
+            flext_config = config
         # Store typed config
-        self._flext_config = config
+        self._flext_config: FlextTapOracleWMSConfig | None = flext_config
         # Initialize instance attributes before parent init
         self._wms_client: FlextOracleWmsClient | None = None
-        self._discovery: object | None = None
+        self._discovery: FlextOracleWmsClient | None = None
         self._is_started = False
         # Initialize parent with dict config for Singer SDK compatibility
-        config_dict = config.model_dump(exclude_unset=True) if config else {}
+        config_dict: dict[str, object] = (
+            flext_config.model_dump(exclude_unset=True) if flext_config else {}
+        )
         super().__init__(
             config=config_dict,
             catalog=catalog,
@@ -239,6 +244,8 @@ class FlextTapOracleWMS(Tap):
                 return FlextResult[dict[str, object]].fail(error_msg)
             # Build Singer catalog from discovery result
             data = getattr(discovery_result, "value", discovery_result)
+            if not isinstance(data, dict):
+                data = {}
             catalog = self._build_singer_catalog(data)
             # Count streams safely
             stream_count = 0
@@ -252,15 +259,17 @@ class FlextTapOracleWMS(Tap):
             logger.exception("Failed to discover catalog")
             return FlextResult[dict[str, object]].fail(str(e))
 
-    def _build_singer_catalog(self, discovery_result: object) -> FlextTypes.Core.Dict:
+    def _build_singer_catalog(self, discovery_result: object) -> dict[str, object]:
         """Build Singer catalog from Oracle WMS discovery result."""
-        streams = []
+        streams: list[dict[str, object]] = []
         # discovery_result should be a list of entities
-        entities = discovery_result if isinstance(discovery_result, list) else []
+        entities: list[str] = (
+            discovery_result if isinstance(discovery_result, list) else []
+        )
         for entity_name in entities:
             # For now, create a simple schema as the entities are just strings
             # In production, you'd need to query each entity to get its schema
-            stream = {
+            stream: dict[str, object] = {
                 "tap_stream_id": entity_name,
                 "stream": entity_name,
                 "schema": {
@@ -291,24 +300,28 @@ class FlextTapOracleWMS(Tap):
                 ],
             }
             # Add field metadata for each property
-            for prop_name in stream["schema"]["properties"]:
-                stream["metadata"].append(
-                    {
-                        "breadcrumb": ["properties", prop_name],
-                        "metadata": {
-                            "inclusion": "available",
-                        },
-                    },
-                )
+            schema_props = stream["schema"]["properties"]
+            if isinstance(schema_props, dict):
+                for prop_name in schema_props:
+                    metadata_list = stream["metadata"]
+                    if isinstance(metadata_list, list):
+                        metadata_list.append(
+                            {
+                                "breadcrumb": ["properties", prop_name],
+                                "metadata": {
+                                    "inclusion": "available",
+                                },
+                            },
+                        )
             streams.append(stream)
         return {
             "type": "CATALOG",
             "streams": streams,
         }
 
-    def _convert_fields_to_properties(self, fields: object) -> FlextTypes.Core.Dict:
+    def _convert_fields_to_properties(self, fields: object) -> dict[str, object]:
         """Convert Oracle WMS fields to Singer properties."""
-        properties: FlextTypes.Core.Dict = {}
+        properties: dict[str, object] = {}
         # Ensure fields is iterable
         if not hasattr(fields, "__iter__"):
             return properties
@@ -326,16 +339,16 @@ class FlextTapOracleWMS(Tap):
                     singer_type = "boolean"
                 elif field_data_type in {"DATE", "TIMESTAMP"}:
                     singer_type = "string"
-                    properties[field_name] = {
+                    properties[str(field_name)] = {
                         "type": singer_type,
                         "format": "date-time",
                     }
                     continue
-                properties[field_name] = {"type": singer_type}
+                properties[str(field_name)] = {"type": singer_type}
                 if field_nullable:
-                    properties[field_name] = {
+                    properties[str(field_name)] = {
                         "anyOf": [
-                            properties[field_name],
+                            properties[str(field_name)],
                             {"type": "null"},
                         ],
                     }
@@ -361,7 +374,9 @@ class FlextTapOracleWMS(Tap):
         logger.info("Discovered %d dynamic streams", len(streams))
         return streams
 
-    def _get_stream_definitions_from_catalog(self) -> list[FlextTypes.Core.JsonDict]:
+    def _get_stream_definitions_from_catalog(
+        self,
+    ) -> list[dict[str, object]]:
         """Get stream definitions from discovered catalog.
 
         Returns:
@@ -385,7 +400,7 @@ class FlextTapOracleWMS(Tap):
 
     def _create_streams_from_definitions(
         self,
-        stream_definitions: list[FlextTypes.Core.JsonDict],
+        stream_definitions: list[dict[str, object]],
     ) -> list[FlextTapOracleWMSStream]:
         """Create stream instances from stream definitions.
 
@@ -395,7 +410,7 @@ class FlextTapOracleWMS(Tap):
             List of created Stream instances
 
         """
-        streams = []
+        streams: list[FlextTapOracleWMSStream] = []
         for stream_def in stream_definitions:
             try:
                 stream = self._create_single_stream(stream_def)
@@ -408,7 +423,7 @@ class FlextTapOracleWMS(Tap):
 
     def _create_single_stream(
         self,
-        stream_def: FlextTypes.Core.JsonDict,
+        stream_def: dict[str, object],
     ) -> FlextTapOracleWMSStream | None:
         """Create a single stream from definition.
 
@@ -439,7 +454,7 @@ class FlextTapOracleWMS(Tap):
     def _configure_stream_metadata(
         self,
         stream: FlextTapOracleWMSStream,
-        stream_def: FlextTypes.Core.JsonDict,
+        stream_def: dict[str, object],
     ) -> None:
         """Configure stream metadata from definition.
 
@@ -449,13 +464,15 @@ class FlextTapOracleWMS(Tap):
 
         """
         # Set primary keys if available from metadata
-        metadata_list = stream_def.get("metadata", [])
+        metadata_list: dict[str, object] = stream_def.get("metadata", [])
         if isinstance(metadata_list, list):
             for metadata in metadata_list:
                 if isinstance(metadata, dict) and metadata.get("breadcrumb") == []:
-                    table_metadata = metadata.get("metadata", {})
+                    table_metadata: dict[str, object] = metadata.get("metadata", {})
                     if isinstance(table_metadata, dict):
-                        pk_list = table_metadata.get("table-key-properties", [])
+                        pk_list: list[object] = table_metadata.get(
+                            "table-key-properties", []
+                        )
                         if pk_list:
                             # Set primary keys dynamically using setattr for class variables
                             setattr(stream.__class__, "primary_keys", pk_list)
@@ -609,7 +626,7 @@ class FlextTapOracleWMSPlugin:
       - Integration with FLEXT ecosystem plugin registry
     """
 
-    def get_info(self) -> FlextTypes.Core.Dict:
+    def get_info(self) -> dict[str, object]:
         """Get plugin information (required by FlextPlugin interface)."""
         return {
             "name": self.name,
@@ -618,7 +635,7 @@ class FlextTapOracleWMSPlugin:
             "capabilities": ["discover", "sync", "test", "catalog"],
         }
 
-    def __init__(self, config: FlextTypes.Core.JsonDict) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize Oracle WMS tap plugin with configuration.
 
         Args:
@@ -630,7 +647,7 @@ class FlextTapOracleWMSPlugin:
 
         """
         # Store configuration for tap creation
-        self._tap_config = config
+        self._tap_config: dict[str, object] = config
         self._tap_instance: FlextTapOracleWMS | None = None
         self._name = "flext-tap-oracle-wms"
         self._version = "0.9.0"
@@ -690,7 +707,7 @@ class FlextTapOracleWMSPlugin:
     def execute(
         self,
         operation: str,
-        parameters: FlextTypes.Core.JsonDict | None = None,
+        parameters: dict[str, object] | None = None,
     ) -> FlextResult[dict[str, object]]:
         """Execute plugin operations via tap instance.
 
@@ -777,7 +794,7 @@ class FlextTapOracleWMSPlugin:
 
     def _execute_discover(
         self,
-        _parameters: FlextTypes.Core.JsonDict,
+        _parameters: dict[str, object],
     ) -> FlextResult[dict[str, object]]:
         """Execute discover operation through tap."""
         streams_result = self.discover_streams()
@@ -786,7 +803,7 @@ class FlextTapOracleWMSPlugin:
                 streams_result.error or "Discovery failed",
             )
         streams = streams_result.data or []
-        catalog_data: FlextTypes.Core.Dict = {
+        catalog_data: dict[str, object] = {
             "streams": [
                 {
                     "tap_stream_id": stream.tap_stream_id,
@@ -807,7 +824,7 @@ class FlextTapOracleWMSPlugin:
 
     def _execute_sync(
         self,
-        _parameters: FlextTypes.Core.JsonDict,
+        _parameters: dict[str, object],
     ) -> FlextResult[dict[str, object]]:
         """Execute sync operation through tap."""
         # This would need to integrate with Singer protocol for actual sync
@@ -824,7 +841,7 @@ class FlextTapOracleWMSPlugin:
 
     def _execute_test(
         self,
-        _parameters: FlextTypes.Core.JsonDict,
+        _parameters: dict[str, object],
     ) -> FlextResult[dict[str, object]]:
         """Execute test operation through tap."""
         try:
@@ -847,7 +864,7 @@ class FlextTapOracleWMSPlugin:
 
     def _execute_catalog(
         self,
-        parameters: FlextTypes.Core.JsonDict,
+        parameters: dict[str, object],
     ) -> FlextResult[dict[str, object]]:
         """Execute catalog generation through tap."""
         return self._execute_discover(parameters)
@@ -864,7 +881,7 @@ class FlextTapOracleWMSPlugin:
 
         """
         # Validate required configuration fields
-        # Note: self._tap_config is typed as FlextTypes.Core.AnyDict so it's guaranteed to be a dict
+        # Note: self._tap_config is typed as dict[str, object] so it's guaranteed to be a dict
         required_fields = ["base_url", "username", "password"]
         missing_fields = [
             field
@@ -879,7 +896,7 @@ class FlextTapOracleWMSPlugin:
 
 
 def create_oracle_wms_tap_plugin(
-    config: FlextTypes.Core.JsonDict,
+    config: dict[str, object],
 ) -> FlextResult[FlextTapOracleWMSPlugin]:
     """Create Oracle WMS tap plugin instance.
 

@@ -11,7 +11,7 @@ from typing import ClassVar
 
 from singer_sdk import Stream, Tap
 
-from flext_core import FlextLogger, FlextTypes
+from flext_core import FlextLogger, FlextResult, FlextTypes
 from flext_oracle_wms import FlextOracleWmsClient
 from flext_tap_oracle_wms.utils import run_async
 
@@ -45,7 +45,7 @@ class FlextTapOracleWMSStream(Stream):
         self._page_size = self.config.get("page_size", 100)
 
     @property
-    def client(self) -> FlextOracleWmsClient:
+    def client(self: object) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
         if self._client is None:
             # Access WMS client from tap (FlextTapOracleWMS)
@@ -61,11 +61,11 @@ class FlextTapOracleWMSStream(Stream):
             raise RuntimeError(msg)
         return self._client
 
-    def get_primary_keys(self) -> list[str]:
+    def get_primary_keys(self: object) -> list[str]:
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
 
-    def get_replication_key(self) -> str | None:
+    def get_replication_key(self: object) -> str | None:
         """Get replication key for this stream."""
         return self.stream_replication_key
 
@@ -93,7 +93,7 @@ class FlextTapOracleWMSStream(Stream):
         while has_more:
             try:
                 # Get page data
-                page_result = self._fetch_page_data(page, context)
+                page_result: FlextResult[object] = self._fetch_page_data(page, context)
                 if page_result is None:
                     break
                 records, has_more = page_result
@@ -129,12 +129,14 @@ class FlextTapOracleWMSStream(Stream):
         # Execute operation using dynamic method call
         execute_method = getattr(self.client, "execute", None)
         if execute_method:
-            result = self._run_async(execute_method(operation_name, **kwargs))
+            result: FlextResult[object] = self._run_async(
+                execute_method(operation_name, **kwargs)
+            )
         else:
             # Fallback: try direct method call
             method = getattr(self.client, operation_name, None)
             if method:
-                result = self._run_async(method(**kwargs))
+                result: FlextResult[object] = self._run_async(method(**kwargs))
             else:
                 logger.error("Method %s not found on WMS client", operation_name)
                 return None
@@ -144,7 +146,7 @@ class FlextTapOracleWMSStream(Stream):
             logger.error("Failed to get records for %s: %s", self.name, error_msg)
             return None
         # Extract and process response data
-        data = getattr(result, "value", result)
+        data: dict[str, object] = getattr(result, "value", result)
         return self._extract_records_from_response(data)
 
     def _build_operation_kwargs(
@@ -257,14 +259,14 @@ class FlextTapOracleWMSStream(Stream):
         """
         # Apply column mappings if configured
         if self.config:
-            column_mappings = self.config.get("column_mappings", {})
+            column_mappings: dict[str, object] = self.config.get("column_mappings", {})
             if self.name in column_mappings:
                 mappings = column_mappings[self.name]
                 for old_name, new_name in mappings.items():
                     if old_name in row:
                         row[new_name] = row.pop(old_name)
             # Remove ignored columns
-            ignored_columns = self.config.get("ignored_columns", [])
+            ignored_columns: list[object] = self.config.get("ignored_columns", [])
             for column in ignored_columns:
                 row.pop(column, None)
 

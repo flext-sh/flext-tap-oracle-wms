@@ -120,7 +120,6 @@ class FlextTapOracleWMSStream:
 
 ```python
 from flext_core import FlextLogger
-import logging
 
 class FlextTapOracleWMSStream:
     """Stream with standardized logging."""

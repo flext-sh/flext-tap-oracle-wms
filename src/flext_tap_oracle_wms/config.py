@@ -19,7 +19,7 @@ from flext_oracle_wms import (
 )
 
 
-class FlextTapOracleWMSConstants:
+class FlextTapOracleWMSConstants(FlextConstants):
     """Constants for Oracle WMS tap configuration - consuming from flext-oracle-wms API."""
 
     # CONSUME API defaults from flext-oracle-wms
@@ -223,7 +223,9 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         """Validate base URL using centralized FlextModels validation."""
         # Use centralized FlextModels validation instead of duplicate logic
         stripped_url = v.rstrip("/")  # Remove trailing slash
-        validation_result = FlextModels.create_validated_http_url(stripped_url)
+        validation_result: FlextResult[object] = FlextModels.create_validated_http_url(
+            stripped_url
+        )
         if validation_result.is_failure:
             error_msg = f"Invalid base URL: {validation_result.error}"
             raise ValueError(error_msg)
@@ -249,14 +251,16 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         """Validate date format using centralized FlextModels validation."""
         if v is not None:
             # Use centralized FlextModels validation instead of duplicate logic
-            validation_result = FlextModels.create_validated_iso_date(v)
+            validation_result: FlextResult[object] = (
+                FlextModels.create_validated_iso_date(v)
+            )
             if validation_result.is_failure:
                 error_msg = f"Invalid date format: {validation_result.error}"
                 raise ValueError(error_msg)
             return validation_result.unwrap()
         return v
 
-    def validate_business_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self: object) -> FlextResult[None]:
         """Validate Oracle WMS tap configuration business rules using FlextModels.Config pattern.
 
         Consolidates all validation logic into a single comprehensive method.
@@ -280,7 +284,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
 
         return FlextResult[None].ok(None)
 
-    def _validate_required_fields(self) -> FlextResult[None]:
+    def _validate_required_fields(self: object) -> FlextResult[None]:
         """Validate required fields."""
         if not self.base_url or not self.username or not self.password:
             return FlextResult[None].fail(
@@ -288,7 +292,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             )
         return FlextResult[None].ok(None)
 
-    def _validate_url_format(self) -> FlextResult[None]:
+    def _validate_url_format(self: object) -> FlextResult[None]:
         """Validate URL format."""
         if not self.base_url.startswith(("http://", "https://")):
             return FlextResult[None].fail(
@@ -296,7 +300,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             )
         return FlextResult[None].ok(None)
 
-    def _validate_page_size(self) -> FlextResult[None]:
+    def _validate_page_size(self: object) -> FlextResult[None]:
         """Validate page size limits."""
         if not (
             FlextTapOracleWMSConstants.MIN_PAGE_SIZE
@@ -308,13 +312,13 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             )
         return FlextResult[None].ok(None)
 
-    def _validate_timeout(self) -> FlextResult[None]:
+    def _validate_timeout(self: object) -> FlextResult[None]:
         """Validate timeout."""
         if self.timeout <= 0:
             return FlextResult[None].fail("timeout must be positive")
         return FlextResult[None].ok(None)
 
-    def _validate_entity_settings(self) -> FlextResult[None]:
+    def _validate_entity_settings(self: object) -> FlextResult[None]:
         """Validate entity settings."""
         if self.include_entities and self.exclude_entities:
             common = set(self.include_entities) & set(self.exclude_entities)
@@ -324,7 +328,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                 )
         return FlextResult[None].ok(None)
 
-    def _validate_date_range(self) -> FlextResult[None]:
+    def _validate_date_range(self: object) -> FlextResult[None]:
         """Validate date range using centralized FlextModels validation."""
         if self.start_date and self.end_date:
             # Use centralized FlextModels date range validation instead of duplicate logic
@@ -338,7 +342,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                 )
         return FlextResult[None].ok(None)
 
-    def _validate_performance_settings(self) -> FlextResult[None]:
+    def _validate_performance_settings(self: object) -> FlextResult[None]:
         """Validate performance settings."""
         if (
             self.enable_parallel_extraction
@@ -351,7 +355,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             )
         return FlextResult[None].ok(None)
 
-    def validate_oracle_wms_config(self) -> FlextResult[FlextTypes.Core.Dict]:
+    def validate_oracle_wms_config(self: object) -> FlextResult[FlextTypes.Core.Dict]:
         """Validate Oracle WMS specific configuration.
 
         Returns:
@@ -408,7 +412,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                 f"Configuration validation failed: {e}",
             )
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_domain_rules(self: object) -> FlextResult[None]:
         """Validate Oracle WMS tap-specific domain rules.
 
         Returns:
@@ -424,7 +428,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
             ]
 
             for validation_method in validation_methods:
-                result = validation_method()
+                result: FlextResult[object] = validation_method()
                 if result.is_failure:
                     return result
 
