@@ -43,7 +43,7 @@ def tap(performance_config: FlextTapOracleWMSConfig) -> FlextTapOracleWMS:
 class TestExtractionPerformance:
     """Test data extraction performance."""
 
-    def test_discovery_performance(self, tap: FlextTapOracleWMS) -> None:
+    def test_self(self, tap: FlextTapOracleWMS) -> None:
         """Benchmark catalog discovery time."""
         # Initialize tap
         tap.initialize()
@@ -90,7 +90,7 @@ class TestExtractionPerformance:
 
         time.time() - start_time
 
-    def test_concurrent_stream_extraction(self, tap: FlextTapOracleWMS) -> None:
+    def test_self(self, tap: FlextTapOracleWMS) -> None:
         """Test extracting multiple streams concurrently."""
         tap.initialize()
         streams = tap.discover_streams()[:3]  # Test first 3 streams
@@ -112,7 +112,7 @@ class TestExtractionPerformance:
 
         time.time() - start_time
 
-    def test_memory_usage(self, tap: FlextTapOracleWMS) -> None:
+    def test_self(self, tap: FlextTapOracleWMS) -> None:
         """Test memory usage during large extractions."""
         process = psutil.Process()
 

@@ -22,7 +22,7 @@ logger = FlextLogger(__name__)
 class TestOracleWMSFunctionalComplete:
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
-    def test_environment_loaded(self, real_wms_config: FlextTypes.Core.Dict) -> None:
+    def test_self(self, real_wms_config: FlextTypes.Core.Dict) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
         for key in required_config:
@@ -53,7 +53,7 @@ class TestOracleWMSFunctionalComplete:
         logger.info("✅ Tap initialized successfully with real config")
 
     @pytest.mark.discovery
-    def test_real_entity_discovery(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_self(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """CRITICAL: Test automatic entity discovery with REAL Oracle WMS."""
         # This will make REAL network calls to Oracle WMS
         try:
@@ -121,7 +121,7 @@ class TestOracleWMSFunctionalComplete:
             raise
 
     @pytest.mark.singer
-    def test_real_schema_generation(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_self(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test schema generation produces valid Singer schemas."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog["streams"]
@@ -308,7 +308,7 @@ class TestOracleWMSFunctionalComplete:
         )
 
     @pytest.mark.functional
-    def test_filtering_and_ordering(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_self(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test filtering and ordering parameters."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog["streams"]

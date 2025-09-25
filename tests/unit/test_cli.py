@@ -17,13 +17,13 @@ class TestCLI:
     """Test CLI functionality."""
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
-    def test_main_calls_tap_cli(self, mock_cli: Mock) -> None:
+    def test_self(self, mock_cli: Mock) -> None:
         """Test that main() calls FlextTapOracleWMS.cli()."""
         main()
         mock_cli.assert_called_once()
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
-    def test_main_function_exists(self, mock_cli: Mock) -> None:
+    def test_self(self, mock_cli: Mock) -> None:
         """Test that main function exists and is callable."""
         assert callable(main)
 
@@ -52,7 +52,7 @@ class TestCLI:
             raise AssertionError(msg)
 
     @patch("flext_tap_oracle_wms.cli.main")
-    def test_cli_main_execution(self, mock_main: Mock) -> None:
+    def test_self(self, mock_main: Mock) -> None:
         """Test CLI main execution when run as script."""
         # Import the CLI module
 
@@ -67,7 +67,7 @@ class TestCLI:
         mock_main.assert_called_once()
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
-    def test_main_with_exception_handling(self, mock_cli: Mock) -> None:
+    def test_self(self, mock_cli: Mock) -> None:
         """Test main function handles exceptions properly."""
         # Configure mock to raise an exception
         mock_cli.side_effect = SystemExit(0)
@@ -79,7 +79,7 @@ class TestCLI:
         mock_cli.assert_called_once()
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.cli")
-    def test_main_return_value(self, mock_cli: Mock) -> None:
+    def test_self(self, mock_cli: Mock) -> None:
         """Test main function return value."""
         mock_cli.return_value = None
 
