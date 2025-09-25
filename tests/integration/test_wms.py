@@ -33,13 +33,13 @@ def real_config() -> FlextTapOracleWMSConfig:
 class TestRealWmsIntegration:
     """Test real Oracle WMS integration."""
 
-    def test_tap_creation(self, real_config: FlextTapOracleWMSConfig) -> None:
+    def test_self(self, real_config: FlextTapOracleWMSConfig) -> None:
         """Test tap can be created with real config."""
         tap = FlextTapOracleWMS(config=real_config)
         assert tap is not None
         assert tap.name == "flext-tap-oracle-wms"
 
-    def test_config_validation(self, real_config: FlextTapOracleWMSConfig) -> None:
+    def test_self(self, real_config: FlextTapOracleWMSConfig) -> None:
         """Test configuration validation."""
         # Create tap
         tap = FlextTapOracleWMS(config=real_config)
@@ -53,7 +53,7 @@ class TestRealWmsIntegration:
         else:
             pytest.skip(f"Configuration validation failed: {result.error}")
 
-    def test_tap_initialization(self, real_config: FlextTapOracleWMSConfig) -> None:
+    def test_self(self, real_config: FlextTapOracleWMSConfig) -> None:
         """Test tap initialization."""
         tap = FlextTapOracleWMS(config=real_config)
 
@@ -63,7 +63,7 @@ class TestRealWmsIntegration:
         if not result.is_success:
             pytest.skip(f"Tap initialization failed: {result.error}")
 
-    def test_discover_streams(self, real_config: FlextTapOracleWMSConfig) -> None:
+    def test_self(self, real_config: FlextTapOracleWMSConfig) -> None:
         """Test stream discovery."""
         tap = FlextTapOracleWMS(config=real_config)
 

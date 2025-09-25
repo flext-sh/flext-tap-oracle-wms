@@ -346,7 +346,7 @@ class TestOracleWMSE2EComplete:
         paginator = None  # Placeholder until implementation
 
         # Test pagination flow
-        pages_tested = []
+        pages_tested: list[str] = []
 
         # Page 1
         response1 = Mock()

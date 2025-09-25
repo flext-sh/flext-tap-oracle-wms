@@ -30,7 +30,7 @@ logger = FlextLogger(__name__)
 class TestStreamsFunctional:
     """Test streams functionality."""
 
-    def test_stream_creation(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_self(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test stream creation with real Oracle WMS data."""
         # Get a real schema from discovery
         catalog = real_tap_instance.catalog_dict
@@ -56,7 +56,7 @@ class TestStreamsFunctional:
 
         logger.info("✅ Stream created successfully: %s", stream_id)
 
-    def test_stream_url_generation(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_self(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test URL generation for Oracle WMS API."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
@@ -87,7 +87,7 @@ class TestStreamsFunctional:
         logger.info("✅ URL generation working: %s", url_base)
         logger.info("✅ Parameters: %s", list(url_params.keys()))
 
-    def test_stream_authentication(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_self(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test stream authentication with real credentials."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
@@ -117,7 +117,7 @@ class TestStreamsFunctional:
 
         logger.info("✅ Authentication configured correctly")
 
-    def test_stream_http_headers(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_self(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test HTTP headers generation."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
@@ -216,7 +216,7 @@ class TestStreamsFunctional:
                     "last_modified",
                 }, f"Unexpected timestamp field: {replication_key}"
 
-    def test_pagination_parameters(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_self(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test pagination parameter generation."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
@@ -258,7 +258,7 @@ class TestStreamsFunctional:
 
         logger.info("✅ Pagination token handling working")
 
-    def test_incremental_filtering(self, real_tap_instance: FlextTapOracleWMS) -> None:
+    def test_self(self, real_tap_instance: FlextTapOracleWMS) -> None:
         """Test incremental filtering with timestamps."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
