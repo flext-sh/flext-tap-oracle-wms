@@ -21,7 +21,9 @@ from flext_tap_oracle_wms import (
 class TestFlextTapOracleWMS:
     """Test FlextTapOracleWMS class."""
 
-    def test_self(self, sample_config: FlextTapOracleWMSConfig) -> None:
+    def test_tap_initialization_with_config(
+        self, sample_config: FlextTapOracleWMSConfig
+    ) -> None:
         """Test tap initialization with config."""
         tap = FlextTapOracleWMS(config=sample_config)
 
@@ -154,7 +156,7 @@ class TestFlextTapOracleWMS:
         mock_discovery.discover_entities.assert_called_once()
         mock_discovery.build_catalog.assert_called_once()
 
-    def test_self(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_stream_discovery(self, tap_instance: FlextTapOracleWMS) -> None:
         """Test stream discovery."""
         streams = tap_instance.discover_streams()
 
@@ -194,7 +196,7 @@ class TestFlextTapOracleWMS:
         assert "shipments" not in stream_names
         assert "receipts" not in stream_names
 
-    def test_self(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_execute_normal_mode(self, tap_instance: FlextTapOracleWMS) -> None:
         """Test execute without message (normal tap mode)."""
         with patch.object(tap_instance, "run") as mock_run:
             result = tap_instance.execute()
@@ -202,7 +204,9 @@ class TestFlextTapOracleWMS:
             assert result.is_success
             mock_run.assert_called_once()
 
-    def test_self(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_execute_with_message_unsupported(
+        self, tap_instance: FlextTapOracleWMS
+    ) -> None:
         """Test execute with message (not supported for tap)."""
         result = tap_instance.execute("some message")
 
@@ -229,17 +233,17 @@ class TestFlextTapOracleWMS:
         assert result.value["connection"] == "success"
         mock_client.list_entities.assert_called_once_with(limit=1)
 
-    def test_self(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_get_implementation_name(self, tap_instance: FlextTapOracleWMS) -> None:
         """Test get implementation name."""
         assert tap_instance.get_implementation_name() == "FLEXT Oracle WMS Tap"
 
-    def test_self(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_get_implementation_version(self, tap_instance: FlextTapOracleWMS) -> None:
         """Test get implementation version."""
         version = tap_instance.get_implementation_version()
         assert isinstance(version, str)
         assert "." in version  # Should be semantic version
 
-    def test_self(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_get_implementation_metrics(self, tap_instance: FlextTapOracleWMS) -> None:
         """Test get implementation metrics."""
         result = tap_instance.get_implementation_metrics()
 

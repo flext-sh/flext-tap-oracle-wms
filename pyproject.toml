@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core>=1.9.0"]
+requires = [ "poetry-core>=1.9.0",]
 build-backend = "poetry.core.masonry.api"
 
 [project]
@@ -8,33 +8,9 @@ version = "0.9.0"
 description = "FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-keywords = [
-    "flext",
-    "enterprise",
-    "async",
-    "typed",
-    "singer",
-    "tap",
-    "data-extraction",
-    "etl",
-]
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Typing :: Typed",
-    "Topic :: Database",
-    "Topic :: System :: Archiving",
-]
-dependencies = [
-    "pydantic>=2.11.7",
-    "pydantic-settings>=2.10.1",
-    "requests>=2.31.0",
-]
+keywords = [ "flext", "enterprise", "async", "typed", "singer", "tap", "data-extraction", "etl",]
+classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", "Programming Language :: Python :: 3.13", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Libraries :: Python Modules", "Typing :: Typed", "Topic :: Database", "Topic :: System :: Archiving",]
+dependencies = [ "pydantic>=2.11.7", "pydantic-settings>=2.10.1", "requests>=2.31.0",]
 [[project.authors]]
 name = "FLEXT Team"
 email = "team@flext.sh"
@@ -57,98 +33,44 @@ flext-tap-oracle-wms = "flext_tap_oracle_wms.tap:main"
 
 [tool.ruff]
 extend = "../ruff-shared.toml"
-lint.isort.known-first-party = ["flext_tap_oracle_wms"]
-
-[tool.mypy]
-python_version = "3.13"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = false
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = false
-warn_no_return = true
-warn_unreachable = true
-strict_equality = true
-show_error_codes = true
-show_error_context = true
-pretty = true
-disallow_any_generics = true
-disallow_subclassing_any = true
-disallow_untyped_calls = true
-ignore_missing_imports = false
-no_implicit_reexport = true
-files = ["src", "tests"]
-plugins = ["pydantic.mypy"]
-exclude = ["build", "dist", ".venv", ".mypy_cache"]
 
 [tool.bandit]
-exclude_dirs = ["tests", "build", "dist"]
-skips = ["B101", "B601"]
-
-[tool.pydantic-mypy]
-init_forbid_extra = true
-init_typed = true
-warn_required_dynamic_aliases = true
+exclude_dirs = [ "tests", "build", "dist",]
+skips = [ "B101", "B601",]
 
 [tool.poetry]
 [[tool.poetry.packages]]
 include = "flext_tap_oracle_wms"
 from = "src"
 
-# Local workspace dependencies are defined under [tool.poetry.dependencies]
-
 [tool.deptry]
-known_first_party = ["flext_tap_oracle_wms"]
+known_first_party = [ "flext_tap_oracle_wms",]
+
+[tool.pyrefly]
+python_version = "3.13"
+target_version = "3.13"
+show_error_codes = true
+
+[tool.poetry.dependencies]
+python = ">=3.13,<3.14"
+pydantic = ">=2.11.7"
+requests = ">=2.31.0"
+httpx = ">=0.27.0"
 
 [tool.pytest.ini_options]
 minversion = "8.0"
 asyncio_mode = "auto"
-addopts = [
-    "-ra",
-    "--strict-markers",
-    "--strict-config",
-    "--cov=flext_tap_oracle_wms",
-    "--cov-branch",
-    "--cov-report=term-missing:skip-covered",
-    "--cov-report=html:reports/coverage",
-    "--cov-report=xml:reports/coverage.xml",
-    "--cov-fail-under=90",
-    "--maxfail=1",
-    "--tb=short",
-]
-testpaths = ["tests"]
-markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "slow: Slow tests",
-    "smoke: Smoke tests",
-    "e2e: End-to-end tests",
-]
-# filterwarnings = ["error", "ignore::UserWarning", "ignore::DeprecationWarning"]
+addopts = [ "-ra", "--strict-markers", "--strict-config", "--cov=flext_tap_oracle_wms", "--cov-branch", "--cov-report=term-missing:skip-covered", "--cov-report=html:reports/coverage", "--cov-report=xml:reports/coverage.xml", "--cov-fail-under=90", "--maxfail=1", "--tb=short",]
+testpaths = [ "tests",]
+markers = [ "unit: Unit tests", "integration: Integration tests", "slow: Slow tests", "smoke: Smoke tests", "e2e: End-to-end tests",]
 
 [tool.coverage.run]
-source = ["src"]
+source = [ "src",]
 branch = true
-omit = ["*/tests/*", "*/test_*", "*/__pycache__/*", "*/venv/*", "*/.venv/*"]
+omit = [ "*/tests/*", "*/test_*", "*/__pycache__/*", "*/venv/*", "*/.venv/*",]
 
 [tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
+exclude_lines = [ "pragma: no cover", "def __repr__", "if self.debug:", "if settings.DEBUG", "raise AssertionError", "raise NotImplementedError", "if 0:", "if __name__ == .__main__.:", "class .*\\bProtocol\\):", "@(abc\\.)?abstractmethod",]
 
 [tool.coverage.html]
 directory = "reports/coverage"
@@ -156,23 +78,29 @@ directory = "reports/coverage"
 [tool.coverage.xml]
 output = "reports/coverage.xml"
 
-[tool.poetry.dependencies]
-python = ">=3.13,<3.14"
-# MIGRATED TO flext-meltano: \1
-pydantic = ">=2.11.7"
-requests = ">=2.31.0"
-httpx = ">=0.27.0"
-flext-core = { path = "../flext-core", develop = true }
-flext-meltano = { path = "../flext-meltano", develop = true }
-flext-oracle-wms = { path = "../flext-oracle-wms", develop = true }
-flext-observability = { path = "../flext-observability", develop = true }
+[tool.ruff.lint.isort]
+known-first-party = [ "flext_tap_oracle_wms",]
 
+[tool.poetry.dependencies.flext-core]
+path = "../flext-core"
+develop = true
+
+[tool.poetry.dependencies.flext-meltano]
+path = "../flext-meltano"
+develop = true
+
+[tool.poetry.dependencies.flext-oracle-wms]
+path = "../flext-oracle-wms"
+develop = true
+
+[tool.poetry.dependencies.flext-observability]
+path = "../flext-observability"
+develop = true
 
 [tool.poetry.group.dev.dependencies]
 ruff = ">=0.12.3"
 black = ">=25.1.0"
 isort = ">=6.0.1"
-mypy = ">=1.13.0"
 pylint = ">=3.3.0"
 pre-commit = ">=4.0.1"
 vulture = ">=2.13"
@@ -182,6 +110,7 @@ pyupgrade = ">=3.19.0"
 autoflake = ">=2.3.1"
 detect-secrets = ">=1.5.0"
 commitizen = ">=4.8.3"
+pyrefly = "^0.34.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = ">=8.4.0"

@@ -20,7 +20,9 @@ class TestTapInitialization:
     """Test tap initialization behavior."""
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.discover_streams")
-    def test_self(self, mock_discover: MagicMock) -> None:
+    def test_tap_initialization_without_network_calls(
+        self, mock_discover: MagicMock
+    ) -> None:
         """Test tap initialization without network calls."""
         # Mock discover_streams to return empty list during initialization
         mock_discover.return_value = []
@@ -158,7 +160,7 @@ class TestTapInitialization:
             _ = schema_gen  # Used to satisfy mypy
 
     @patch("flext_tap_oracle_wms.tap.FlextTapOracleWMS.discover_streams")
-    def test_self(self, mock_discover: MagicMock) -> None:
+    def test_configuration_type_conversion(self, mock_discover: MagicMock) -> None:
         """Test configuration type conversion."""
         # Mock discover_streams to return empty list during initialization
         mock_discover.return_value = []

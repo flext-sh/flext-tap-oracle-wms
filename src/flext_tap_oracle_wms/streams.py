@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
-from typing import ClassVar
+from typing import ClassVar, override
 
 from singer_sdk import Stream, Tap
 
@@ -31,6 +31,7 @@ class FlextTapOracleWMSStream(Stream):
     ] = []  # Will be set dynamically
     stream_replication_key: str | None = None  # Will be set dynamically
 
+    @override
     def __init__(
         self,
         tap: Tap,
@@ -165,7 +166,7 @@ class FlextTapOracleWMSStream(Stream):
         """
         kwargs = {
             "limit": self._page_size,
-            "page": page,
+            "page": "page",
         }
         # Add incremental replication filter if configured
         if self.stream_replication_key:
@@ -216,7 +217,7 @@ class FlextTapOracleWMSStream(Stream):
                             coerced_records.append(record_dict)
                         case _:
                             # Convert non-dict records to dict format
-                            coerced_records.append({"value": record})
+                            coerced_records.append({"value": "record"})
                 records = coerced_records
             case _:
                 records = []
