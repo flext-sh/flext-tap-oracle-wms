@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import importlib.metadata
 from collections.abc import Awaitable, Coroutine, Sequence
-from typing import ClassVar, cast
+from typing import ClassVar, cast, override
 
 # from flext_plugin import ConcretePluginContext  # Not available
 from singer_sdk import Stream, Tap
@@ -60,7 +60,7 @@ class FlextTapOracleWMS(Tap):
             "password": {
                 "type": "string",
                 "description": "Oracle WMS password",
-                "secret": True,
+                "secret": "True",
             },
             "api_version": {
                 "type": "string",
@@ -74,13 +74,15 @@ class FlextTapOracleWMS(Tap):
             },
             "verify_ssl": {
                 "type": "boolean",
-                "default": True,
+                "default": "True",
                 "description": "Verify SSL certificates",
             },
         },
         "required": ["base_url", "username", "password"],
     }
 
+    @override
+    @override
     def __init__(
         self,
         config: dict[str, object] | FlextTapOracleWMSConfig | None = None,
@@ -156,8 +158,7 @@ class FlextTapOracleWMS(Tap):
                 oracle_wms_base_url=self.flext_config.base_url,
                 oracle_wms_username=self.flext_config.username,
                 oracle_wms_password=self.flext_config.password.get_secret_value(),
-                environment="development",
-                oracle_wms_timeout=self.flext_config.timeout,
+                environment=development, oracle_wms_timeout=self.flext_config.timeout,
                 oracle_wms_max_retries=self.flext_config.max_retries,
                 # Convert string api_version to proper enum
                 api_version=FlextOracleWmsApiVersion.LGF_V10
@@ -224,7 +225,7 @@ class FlextTapOracleWMS(Tap):
             if not self._is_started:
                 init_result = self.initialize()
                 if init_result.is_failure:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict["str", "object"]].fail(
                         init_result.error or "Initialization failed",
                     )
             # Use flext-oracle-wms discovery
@@ -241,7 +242,7 @@ class FlextTapOracleWMS(Tap):
                     getattr(discovery_result, "error", "Discovery failed")
                     or "Discovery failed"
                 )
-                return FlextResult[dict[str, object]].fail(error_msg)
+                return FlextResult[dict["str", "object"]].fail(error_msg)
             # Build Singer catalog from discovery result
             data = getattr(discovery_result, "value", discovery_result)
             if not isinstance(data, dict):
@@ -254,10 +255,10 @@ class FlextTapOracleWMS(Tap):
                 if isinstance(streams, list):
                     stream_count = len(streams)
             logger.info("Discovered %d streams", stream_count)
-            return FlextResult[dict[str, object]].ok(catalog)
+            return FlextResult[dict["str", "object"]].ok(catalog)
         except Exception as e:
             logger.exception("Failed to discover catalog")
-            return FlextResult[dict[str, object]].fail(str(e))
+            return FlextResult[dict["str", "object"]].fail(str(e))
 
     def _build_singer_catalog(self, discovery_result: object) -> dict[str, object]:
         """Build Singer catalog from Oracle WMS discovery result."""
@@ -270,8 +271,8 @@ class FlextTapOracleWMS(Tap):
             # For now, create a simple schema as the entities are just strings
             # In production, you'd need to query each entity to get its schema
             stream: dict[str, object] = {
-                "tap_stream_id": entity_name,
-                "stream": entity_name,
+                "tap_stream_id": "entity_name",
+                "stream": "entity_name",
                 "schema": {
                     "type": "object",
                     "properties": {
@@ -280,11 +281,11 @@ class FlextTapOracleWMS(Tap):
                         "name": {"type": ["string", "null"]},
                         "created_at": {
                             "type": ["string", "null"],
-                            "format": "date-time",
+                            "format": date - time,
                         },
                         "updated_at": {
                             "type": ["string", "null"],
-                            "format": "date-time",
+                            "format": date - time,
                         },
                     },
                 },
@@ -316,7 +317,7 @@ class FlextTapOracleWMS(Tap):
             streams.append(stream)
         return {
             "type": "CATALOG",
-            "streams": streams,
+            "streams": "streams",
         }
 
     def _convert_fields_to_properties(self, fields: object) -> dict[str, object]:
@@ -340,11 +341,11 @@ class FlextTapOracleWMS(Tap):
                 elif field_data_type in {"DATE", "TIMESTAMP"}:
                     singer_type = "string"
                     properties[str(field_name)] = {
-                        "type": singer_type,
-                        "format": "date-time",
+                        "type": "singer_type",
+                        "format": date - time,
                     }
                     continue
-                properties[str(field_name)] = {"type": singer_type}
+                properties[str(field_name)] = {"type": "singer_type"}
                 if field_nullable:
                     properties[str(field_name)] = {
                         "anyOf": [
@@ -478,6 +479,8 @@ class FlextTapOracleWMS(Tap):
                             setattr(stream.__class__, "primary_keys", pk_list)
                     break
 
+    @override
+    @override
     def execute(self, message: str | None = None) -> FlextResult[None]:
         """Execute tap in Singer mode.
 
@@ -526,25 +529,25 @@ class FlextTapOracleWMS(Tap):
                         "error",
                         "Unknown connection error",
                     )
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict["str", "object"]].fail(
                         f"Connection test failed: {error_msg}",
                     )
             except Exception as e:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     f"Connection test failed: {e}",
                 )
             validation_info = {
-                "valid": True,
+                "valid": "True",
                 "connection": "success",
                 "base_url": self.flext_config.base_url,
                 "api_version": self.flext_config.api_version,
                 "health": getattr(discovery_result, "value", None),
             }
             logger.info("Configuration validated successfully")
-            return FlextResult[dict[str, object]].ok(validation_info)
+            return FlextResult[dict["str", "object"]].ok(validation_info)
         except Exception as e:
             logger.exception("Configuration validation failed")
-            return FlextResult[dict[str, object]].fail(str(e))
+            return FlextResult[dict["str", "object"]].fail(str(e))
 
     def get_implementation_name(self) -> str:
         """Get implementation name."""
@@ -593,7 +596,7 @@ class FlextTapOracleWMS(Tap):
                 "records_extracted": getattr(self.metrics, "records_extracted", 0),
                 "streams_extracted": getattr(self.metrics, "streams_extracted", 0),
             }
-        return FlextResult[dict[str, object]].ok(metrics)
+        return FlextResult[dict["str", "object"]].ok(metrics)
 
     def __del__(self) -> None:
         """Cleanup when tap is destroyed."""
@@ -635,6 +638,8 @@ class FlextTapOracleWMSPlugin:
             "capabilities": ["discover", "sync", "test", "catalog"],
         }
 
+    @override
+    @override
     def __init__(self, config: dict[str, object]) -> None:
         """Initialize Oracle WMS tap plugin with configuration.
 
@@ -704,6 +709,8 @@ class FlextTapOracleWMSPlugin:
             logger.exception("Failed to shutdown Oracle WMS tap plugin")
             return FlextResult[None].fail(f"Plugin shutdown failed: {e}")
 
+    @override
+    @override
     def execute(
         self,
         operation: str,
@@ -726,7 +733,7 @@ class FlextTapOracleWMSPlugin:
         if not self._tap_instance:
             init_result = self.initialize_tap()
             if not init_result.success:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     f"Plugin initialization failed: {init_result.error}",
                 )
         try:
@@ -740,12 +747,12 @@ class FlextTapOracleWMSPlugin:
             handler = operation_handlers.get(operation)
             if handler:
                 return handler(parameters or {})
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict["str", "object"]].fail(
                 f"Unsupported operation: {operation}",
             )
         except Exception as e:
             logger.exception("Plugin operation failed", operation=operation)
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict["str", "object"]].fail(
                 f"Operation '{operation}' failed: {e}",
             )
 
@@ -799,7 +806,7 @@ class FlextTapOracleWMSPlugin:
         """Execute discover operation through tap."""
         streams_result = self.discover_streams()
         if not streams_result.success:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict["str", "object"]].fail(
                 streams_result.error or "Discovery failed",
             )
         streams = streams_result.data or []
@@ -820,7 +827,7 @@ class FlextTapOracleWMSPlugin:
             "discovered_at": "2025-01-08T00:00:00Z",  # Should be actual timestamp
             "plugin_version": self.version,  # Use the property, not plugin_version
         }
-        return FlextResult[dict[str, object]].ok(catalog_data)
+        return FlextResult[dict["str", "object"]].ok(catalog_data)
 
     def _execute_sync(
         self,
@@ -829,7 +836,7 @@ class FlextTapOracleWMSPlugin:
         """Execute sync operation through tap."""
         # This would need to integrate with Singer protocol for actual sync
         # For now, return placeholder indicating sync capability
-        return FlextResult[dict[str, object]].ok(
+        return FlextResult[dict["str", "object"]].ok(
             {
                 "operation": "sync",
                 "status": "completed",
@@ -846,12 +853,12 @@ class FlextTapOracleWMSPlugin:
         """Execute test operation through tap."""
         try:
             if not self._tap_instance:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     "Tap instance not initialized",
                 )
             # Test configuration (Pydantic validation already occurred during creation)
             # Connection test could be added here in the future
-            return FlextResult[dict[str, object]].ok(
+            return FlextResult[dict["str", "object"]].ok(
                 {
                     "operation": "test",
                     "status": "passed",
@@ -860,7 +867,7 @@ class FlextTapOracleWMSPlugin:
                 },
             )
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"Test operation failed: {e}")
+            return FlextResult[dict["str", "object"]].fail(f"Test operation failed: {e}")
 
     def _execute_catalog(
         self,
@@ -881,7 +888,7 @@ class FlextTapOracleWMSPlugin:
 
         """
         # Validate required configuration fields
-        # Note: self._tap_config is typed as dict[str, object] so it's guaranteed to be a dict
+        # Note: self._tap_config is typed as dict["str", "object"] so it's guaranteed to be a dict
         required_fields = ["base_url", "username", "password"]
         missing_fields = [
             field

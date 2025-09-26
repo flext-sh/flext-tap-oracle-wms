@@ -13,7 +13,7 @@ from typing import Final
 
 from pydantic import Field, SecretStr, field_validator
 
-from flext_core import FlextConstants, FlextModels, FlextResult, FlextTypes
+from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult, FlextTypes
 from flext_oracle_wms import (
     FlextOracleWmsSemanticConstants as _WmsConstants,
 )
@@ -47,11 +47,11 @@ class FlextTapOracleWMSConstants(FlextConstants):
     MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = 1000  # Singer-specific maximum
 
 
-class FlextTapOracleWMSConfig(FlextModels.Config):
+class FlextTapOracleWMSConfig(FlextConfig):
     """Configuration for Oracle WMS tap.
 
     Type-safe configuration with validation for Oracle WMS data extraction.
-    Follows FLEXT patterns using FlextModels.Config for comprehensive validation.
+    Follows FLEXT patterns using FlextConfig for comprehensive validation.
     """
 
     # Connection settings
@@ -261,7 +261,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
         return v
 
     def validate_business_rules(self: object) -> FlextResult[None]:
-        """Validate Oracle WMS tap configuration business rules using FlextModels.Config pattern.
+        """Validate Oracle WMS tap configuration business rules using FlextConfig pattern.
 
         Consolidates all validation logic into a single comprehensive method.
 
@@ -394,7 +394,7 @@ class FlextTapOracleWMSConfig(FlextModels.Config):
                 )
 
             validation_data = {
-                "valid": True,
+                "valid": "True",
                 "base_url": self.base_url,
                 "api_version": self.api_version,
                 "streams_included": len(self.include_entities)
