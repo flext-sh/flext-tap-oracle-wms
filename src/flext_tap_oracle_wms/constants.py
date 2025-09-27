@@ -15,12 +15,12 @@ class FlextTapOracleWmsConstants(FlextConstants):
     """Oracle WMS tap extraction-specific constants following flext-core patterns."""
 
     # Oracle WMS Connection Configuration
-    DEFAULT_WMS_TIMEOUT = 30
-    DEFAULT_FETCH_SIZE = 1000
+    DEFAULT_WMS_TIMEOUT = FlextConstants.Network.DEFAULT_TIMEOUT
+    DEFAULT_FETCH_SIZE = FlextConstants.Performance.BatchProcessing.DEFAULT_SIZE
 
-    # Singer Tap Configuration
-    DEFAULT_BATCH_SIZE = 1000
-    MAX_BATCH_SIZE = 10000
+    # Singer Tap Configuration - using FlextConstants composition
+    DEFAULT_BATCH_SIZE = FlextConstants.Performance.BatchProcessing.DEFAULT_SIZE
+    MAX_BATCH_SIZE = FlextConstants.Performance.BatchProcessing.MAX_ITEMS
 
     # WMS Entity Types
     WMS_ENTITY_TYPES: ClassVar[list[str]] = [
