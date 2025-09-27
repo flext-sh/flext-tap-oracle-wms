@@ -158,7 +158,8 @@ class FlextTapOracleWMS(Tap):
                 oracle_wms_base_url=self.flext_config.base_url,
                 oracle_wms_username=self.flext_config.username,
                 oracle_wms_password=self.flext_config.password.get_secret_value(),
-                environment=development, oracle_wms_timeout=self.flext_config.timeout,
+                environment="development",  # Fixed: should be string literal
+                oracle_wms_timeout=self.flext_config.timeout,
                 oracle_wms_max_retries=self.flext_config.max_retries,
                 # Convert string api_version to proper enum
                 api_version=FlextOracleWmsApiVersion.LGF_V10
@@ -267,7 +268,7 @@ class FlextTapOracleWMS(Tap):
         entities: list[str] = (
             discovery_result if isinstance(discovery_result, list) else []
         )
-        for entity_name in entities:
+        for _entity_name in entities:
             # For now, create a simple schema as the entities are just strings
             # In production, you'd need to query each entity to get its schema
             stream: dict[str, object] = {
@@ -281,11 +282,11 @@ class FlextTapOracleWMS(Tap):
                         "name": {"type": ["string", "null"]},
                         "created_at": {
                             "type": ["string", "null"],
-                            "format": date - time,
+                            "format": "date-time",
                         },
                         "updated_at": {
                             "type": ["string", "null"],
-                            "format": date - time,
+                            "format": "date-time",
                         },
                     },
                 },
@@ -329,20 +330,19 @@ class FlextTapOracleWMS(Tap):
         try:
             for field in fields:
                 # Map Oracle WMS types to Singer types
-                singer_type = "string"  # Default
                 # Handle field as object with attributes
                 field_data_type = getattr(field, "data_type", "STRING")
                 field_name = getattr(field, "name", str(field))
                 field_nullable = getattr(field, "is_nullable", True)
-                if field_data_type in {"NUMBER", "INTEGER", "DECIMAL"}:
-                    singer_type = "number"
-                elif field_data_type == "BOOLEAN":
-                    singer_type = "boolean"
+                if (
+                    field_data_type in {"NUMBER", "INTEGER", "DECIMAL"}
+                    or field_data_type == "BOOLEAN"
+                ):
+                    pass
                 elif field_data_type in {"DATE", "TIMESTAMP"}:
-                    singer_type = "string"
                     properties[str(field_name)] = {
                         "type": "singer_type",
-                        "format": date - time,
+                        "format": "date-time",
                     }
                     continue
                 properties[str(field_name)] = {"type": "singer_type"}
@@ -867,7 +867,9 @@ class FlextTapOracleWMSPlugin:
                 },
             )
         except Exception as e:
-            return FlextResult[dict["str", "object"]].fail(f"Test operation failed: {e}")
+            return FlextResult[dict["str", "object"]].fail(
+                f"Test operation failed: {e}"
+            )
 
     def _execute_catalog(
         self,
