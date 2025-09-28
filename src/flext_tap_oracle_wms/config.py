@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import Final
 
 from pydantic import Field, SecretStr, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult, FlextTypes
 from flext_oracle_wms import (
@@ -216,6 +217,66 @@ class FlextTapOracleWMSConfig(FlextConfig):
         default=True,
         description="Validate record schemas during extraction",
     )
+
+    model_config = SettingsConfigDict(
+        env_prefix="FLEXT_TAP_ORACLE_WMS_",
+        case_sensitive=False,
+        extra="ignore",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+        arbitrary_types_allowed=True,
+        frozen=False,
+    )
+
+    @classmethod
+    def get_global_instance(cls) -> Self:
+        """Get the global singleton instance using enhanced FlextConfig pattern."""
+        return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")
+
+    @classmethod
+    def create_for_development(cls, **overrides: object) -> Self:
+        """Create configuration for development environment."""
+        dev_overrides: dict[str, object] = {
+            "timeout": 60,
+            "max_retries": 5,
+            "page_size": 50,
+            "enable_request_logging": True,
+            "enable_parallel_extraction": True,
+            **overrides,
+        }
+        return cls.get_or_create_shared_instance(
+            project_name="flext-tap-oracle-wms", **dev_overrides
+        )
+
+    @classmethod
+    def create_for_production(cls, **overrides: object) -> Self:
+        """Create configuration for production environment."""
+        prod_overrides: dict[str, object] = {
+            "timeout": 30,
+            "max_retries": 3,
+            "page_size": 100,
+            "enable_request_logging": False,
+            "enable_parallel_extraction": False,
+            **overrides,
+        }
+        return cls.get_or_create_shared_instance(
+            project_name="flext-tap-oracle-wms", **prod_overrides
+        )
+
+    @classmethod
+    def create_for_testing(cls, **overrides: object) -> Self:
+        """Create configuration for testing environment."""
+        test_overrides: dict[str, object] = {
+            "timeout": 10,
+            "max_retries": 1,
+            "page_size": 10,
+            "enable_request_logging": True,
+            "enable_parallel_extraction": True,
+            **overrides,
+        }
+        return cls.get_or_create_shared_instance(
+            project_name="flext-tap-oracle-wms", **test_overrides
+        )
 
     @field_validator("base_url")
     @classmethod
