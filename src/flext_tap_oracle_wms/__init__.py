@@ -22,16 +22,11 @@ from flext_tap_oracle_wms.exceptions import (
     FlextTapOracleWMSError,
     FlextTapOracleWMSValidationError,
 )
-
-# Standardized [Project]Models pattern
 from flext_tap_oracle_wms.models import FlextTapOracleWmsModels
 from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
-try:
-    __version__ = importlib.metadata.version("flext-tap-oracle-wms")
-except importlib.metadata.PackageNotFoundError:
-    __version__ = "0.9.0"
+__version__ = importlib.metadata.version("flext-tap-oracle-wms")
 
 __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
@@ -51,7 +46,6 @@ __all__: FlextTypes.Core.StringList = [
     "FlextTapOracleWMSPlugin",
     "FlextTapOracleWMSStream",
     "FlextTapOracleWMSValidationError",
-    # Standardized [Project]Models pattern
     "FlextTapOracleWmsModels",
     "FlextTapOracleWmsUtilities",
     "FlextTypes",

@@ -14,7 +14,6 @@ import importlib.metadata
 from collections.abc import Awaitable, Coroutine, Sequence
 from typing import ClassVar, cast, override
 
-# from flext_plugin import ConcretePluginContext  # Not available
 from singer_sdk import Stream, Tap
 
 from flext_core import (
@@ -81,7 +80,6 @@ class FlextTapOracleWMS(Tap):
         "required": ["base_url", "username", "password"],
     }
 
-    @override
     @override
     def __init__(
         self,
@@ -480,7 +478,6 @@ class FlextTapOracleWMS(Tap):
                     break
 
     @override
-    @override
     def execute(self, message: str | None = None) -> FlextResult[None]:
         """Execute tap in Singer mode.
 
@@ -639,7 +636,6 @@ class FlextTapOracleWMSPlugin:
         }
 
     @override
-    @override
     def __init__(self, config: dict[str, object]) -> None:
         """Initialize Oracle WMS tap plugin with configuration.
 
@@ -709,7 +705,6 @@ class FlextTapOracleWMSPlugin:
             logger.exception("Failed to shutdown Oracle WMS tap plugin")
             return FlextResult[None].fail(f"Plugin shutdown failed: {e}")
 
-    @override
     @override
     def execute(
         self,
