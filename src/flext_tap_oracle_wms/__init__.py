@@ -23,6 +23,7 @@ from flext_tap_oracle_wms.exceptions import (
     FlextTapOracleWMSValidationError,
 )
 from flext_tap_oracle_wms.models import FlextTapOracleWmsModels
+from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols
 from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
@@ -47,6 +48,7 @@ __all__: FlextTypes.Core.StringList = [
     "FlextTapOracleWMSStream",
     "FlextTapOracleWMSValidationError",
     "FlextTapOracleWmsModels",
+    "FlextTapOracleWmsProtocols",
     "FlextTapOracleWmsUtilities",
     "FlextTypes",
     "__version__",

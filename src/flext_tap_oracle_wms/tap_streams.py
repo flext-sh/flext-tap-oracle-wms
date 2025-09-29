@@ -17,7 +17,6 @@ from singer_sdk import Stream, Tap
 
 from flext_core import FlextLogger, FlextResult, FlextTypes
 from flext_oracle_wms import FlextOracleWmsClient
-from flext_tap_oracle_wms.utils import run_async
 
 logger = FlextLogger(__name__)
 
@@ -41,9 +40,26 @@ class FlextTapOracleWMSStream(Stream):
     ) -> None:
         """Initialize stream."""
         super().__init__(tap=tap, name=name or self.name, schema=schema)
+
+        # ZERO TOLERANCE FIX: Initialize utilities for ALL stream business logic
+        from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
+
+        self._utilities = FlextTapOracleWmsUtilities()
+
         # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
         self._client: FlextOracleWmsClient | None = None
-        self._page_size = self.config.get("page_size", 100)
+
+        # ZERO TOLERANCE FIX: Use utilities for stream configuration processing
+        page_size_result = (
+            self._utilities.ConfigurationProcessing.validate_stream_page_size(
+                self.config.get("page_size", 100)
+            )
+        )
+        if page_size_result.is_success:
+            self._page_size = page_size_result.unwrap()
+        else:
+            # Fall back to default if validation fails
+            self._page_size = 100
 
         # Initialize instance variables for dynamic configuration
         self.stream_primary_keys: list[str] = []
@@ -91,7 +107,8 @@ class FlextTapOracleWMSStream(Stream):
         coro: Coroutine[object, object, object] | Awaitable[object],
     ) -> object:
         """Run async coroutine in sync context."""
-        return run_async(coro)
+        # ZERO TOLERANCE FIX: Use utilities instead of loose function
+        return self._utilities.AsyncUtilities.run_async(coro)
 
     def get_records(
         self,
