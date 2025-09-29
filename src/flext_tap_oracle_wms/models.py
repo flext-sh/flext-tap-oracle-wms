@@ -6,10 +6,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any, Literal
+from datetime import UTC, datetime
+from typing import Any, Literal, Self
 
-from pydantic import Field, SecretStr
+from pydantic import (
+    ConfigDict,
+    Field,
+    SecretStr,
+    computed_field,
+    field_serializer,
+    model_validator,
+)
 
 from flext_core import FlextModels, FlextTypes
 

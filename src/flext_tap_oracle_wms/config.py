@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Final
+from typing import Final, Self
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
@@ -39,13 +39,17 @@ class FlextTapOracleWMSConstants(FlextConstants):
     MIN_PAGE_SIZE: Final[int] = _WmsConstants.Pagination.MIN_PAGE_SIZE
     MAX_PAGE_SIZE: Final[int] = _WmsConstants.Pagination.MAX_PAGE_SIZE
     MIN_TIMEOUT: Final[int] = 1  # Singer-specific minimum
-    MAX_TIMEOUT: Final[int] = 300  # Singer-specific maximum
+    MAX_TIMEOUT: Final[int] = (
+        FlextConstants.Network.DEFAULT_TIMEOUT * 10
+    )  # Singer-specific maximum
 
     # CONSUME discovery settings from flext-oracle-wms
     DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = (
         _WmsConstants.Processing.DEFAULT_SAMPLE_SIZE
     )
-    MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = 1000  # Singer-specific maximum
+    MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = (
+        FlextConstants.Performance.BatchProcessing.DEFAULT_SIZE
+    )  # Singer-specific maximum
 
 
 class FlextTapOracleWMSConfig(FlextConfig):
@@ -237,9 +241,9 @@ class FlextTapOracleWMSConfig(FlextConfig):
     def create_for_development(cls, **overrides: object) -> Self:
         """Create configuration for development environment."""
         dev_overrides: dict[str, object] = {
-            "timeout": 60,
-            "max_retries": 5,
-            "page_size": 50,
+            "timeout": FlextConstants.Network.DEFAULT_TIMEOUT * 2,
+            "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS + 2,
+            "page_size": FlextTapOracleWMSConstants.DEFAULT_PAGE_SIZE // 2,
             "enable_request_logging": True,
             "enable_parallel_extraction": True,
             **overrides,
@@ -252,9 +256,9 @@ class FlextTapOracleWMSConfig(FlextConfig):
     def create_for_production(cls, **overrides: object) -> Self:
         """Create configuration for production environment."""
         prod_overrides: dict[str, object] = {
-            "timeout": 30,
-            "max_retries": 3,
-            "page_size": 100,
+            "timeout": FlextConstants.Network.DEFAULT_TIMEOUT,
+            "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+            "page_size": FlextTapOracleWMSConstants.DEFAULT_PAGE_SIZE,
             "enable_request_logging": False,
             "enable_parallel_extraction": False,
             **overrides,
@@ -267,9 +271,9 @@ class FlextTapOracleWMSConfig(FlextConfig):
     def create_for_testing(cls, **overrides: object) -> Self:
         """Create configuration for testing environment."""
         test_overrides: dict[str, object] = {
-            "timeout": 10,
+            "timeout": FlextConstants.Network.DEFAULT_TIMEOUT // 3,
             "max_retries": 1,
-            "page_size": 10,
+            "page_size": FlextTapOracleWMSConstants.MIN_PAGE_SIZE,
             "enable_request_logging": True,
             "enable_parallel_extraction": True,
             **overrides,
@@ -444,7 +448,9 @@ class FlextTapOracleWMSConfig(FlextConfig):
                     )
 
             # Validate performance settings
-            max_parallel_streams_without_rate_limit = 5
+            max_parallel_streams_without_rate_limit = (
+                FlextTapOracleWMSConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
+            )
             if (
                 self.enable_parallel_extraction
                 and self.max_parallel_streams > max_parallel_streams_without_rate_limit

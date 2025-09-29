@@ -13,7 +13,6 @@ from singer_sdk import Stream, Tap
 
 from flext_core import FlextLogger, FlextResult, FlextTypes
 from flext_oracle_wms import FlextOracleWmsClient
-from flext_tap_oracle_wms.utils import run_async
 
 logger = FlextLogger(__name__)
 
@@ -41,9 +40,26 @@ class FlextTapOracleWMSStream(Stream):
     ) -> None:
         """Initialize stream."""
         super().__init__(tap=tap, name=name or self.name, schema=schema)
+
+        # ZERO TOLERANCE FIX: Initialize utilities for ALL stream business logic
+        from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
+
+        self._utilities = FlextTapOracleWmsUtilities()
+
         # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
         self._client: FlextOracleWmsClient | None = None
-        self._page_size = self.config.get("page_size", 100)
+
+        # ZERO TOLERANCE FIX: Use utilities for stream configuration processing
+        page_size_result = (
+            self._utilities.ConfigurationProcessing.validate_stream_page_size(
+                self.config.get("page_size", 100)
+            )
+        )
+        if page_size_result.is_success:
+            self._page_size = page_size_result.unwrap()
+        else:
+            # Fall back to default if validation fails
+            self._page_size = 100
 
     @property
     def client(self: object) -> FlextOracleWmsClient:
@@ -75,7 +91,8 @@ class FlextTapOracleWMSStream(Stream):
         coro: Coroutine[object, object, object] | Awaitable[object],
     ) -> object:
         """Run async coroutine in sync context."""
-        return run_async(coro)
+        # ZERO TOLERANCE FIX: Use utilities instead of duplicate code
+        return self._utilities.AsyncUtilities.run_async(coro)
 
     def get_records(
         self,
@@ -240,9 +257,27 @@ class FlextTapOracleWMSStream(Stream):
         for record in records:
             # Ensure record is a dict for processing
             if isinstance(record, dict):
-                processed_record = self.post_process(record, context)
-                if processed_record is not None:
-                    yield processed_record
+                # ZERO TOLERANCE FIX: Use utilities for record processing
+                processed_record_result = (
+                    self._utilities.DataProcessing.process_wms_record(
+                        record=record, stream_name=self.name, context=context
+                    )
+                )
+
+                if processed_record_result.is_success:
+                    processed_record = processed_record_result.unwrap()
+                    # Apply additional post-processing
+                    final_record = self.post_process(processed_record, context)
+                    if final_record is not None:
+                        yield final_record
+                else:
+                    # Log processing error but continue with original record
+                    logger.warning(
+                        f"Record processing failed: {processed_record_result.error}"
+                    )
+                    processed_record = self.post_process(record, context)
+                    if processed_record is not None:
+                        yield processed_record
 
     def post_process(
         self,

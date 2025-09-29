@@ -28,7 +28,6 @@ from flext_oracle_wms import (
 from flext_tap_oracle_wms.config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
-from flext_tap_oracle_wms.utils import run_async
 
 logger = FlextLogger(__name__)
 
@@ -100,10 +99,23 @@ class FlextTapOracleWMS(Tap):
             validate_config: Whether to validate configuration
 
         """
+        # ZERO TOLERANCE FIX: Initialize utilities for ALL business logic
+        from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
+
+        self._utilities = FlextTapOracleWmsUtilities()
+
         # Convert config to FlextTapOracleWMSConfig if needed
         flext_config: FlextTapOracleWMSConfig | None = None
         if config is not None and not isinstance(config, FlextTapOracleWMSConfig):
             try:
+                # ZERO TOLERANCE FIX: Use utilities for configuration processing
+                config_validation_result = (
+                    self._utilities.ConfigurationProcessing.validate_wms_config(config)
+                )
+                if config_validation_result.is_failure:
+                    msg = f"Configuration validation failed: {config_validation_result.error}"
+                    raise FlextTapOracleWMSConfigurationError(msg)
+
                 # Convert dict to proper types for Pydantic model
                 config_dict: dict[str, object] = (
                     dict(config) if hasattr(config, "items") else config
@@ -114,12 +126,26 @@ class FlextTapOracleWMS(Tap):
                 raise FlextTapOracleWMSConfigurationError(msg) from e
         else:
             flext_config = config
+
+        # ZERO TOLERANCE FIX: Use utilities for additional config validation
+        if flext_config is not None:
+            additional_validation_result = (
+                self._utilities.ConfigurationProcessing.validate_wms_connection_params(
+                    flext_config.model_dump(exclude_unset=True)
+                )
+            )
+            if additional_validation_result.is_failure:
+                msg = f"WMS connection validation failed: {additional_validation_result.error}"
+                raise FlextTapOracleWMSConfigurationError(msg)
+
         # Store typed config
         self._flext_config: FlextTapOracleWMSConfig | None = flext_config
+
         # Initialize instance attributes before parent init
         self._wms_client: FlextOracleWmsClient | None = None
         self._discovery: FlextOracleWmsClient | None = None
         self._is_started = False
+
         # Initialize parent with dict config for Singer SDK compatibility
         config_dict: dict[str, object] = (
             flext_config.model_dump(exclude_unset=True) if flext_config else {}
@@ -145,7 +171,8 @@ class FlextTapOracleWMS(Tap):
         coro: Coroutine[object, object, object] | Awaitable[object],
     ) -> object:
         """Run async coroutine in sync context."""
-        return run_async(coro)
+        # ZERO TOLERANCE FIX: Use utilities instead of duplicate code
+        return self._utilities.AsyncUtilities.run_async(coro)
 
     @property
     def wms_client(self) -> FlextOracleWmsClient:
@@ -509,10 +536,33 @@ class FlextTapOracleWMS(Tap):
         """
         logger.info("Validating configuration")
         try:
+            # ZERO TOLERANCE FIX: Use utilities for comprehensive configuration validation
+            comprehensive_validation_result = self._utilities.ConfigurationProcessing.validate_wms_configuration_comprehensive(
+                self.flext_config.model_dump(exclude_unset=True)
+            )
+            if comprehensive_validation_result.is_failure:
+                return FlextResult[dict["str", "object"]].fail(
+                    f"Comprehensive configuration validation failed: {comprehensive_validation_result.error}"
+                )
+
             # Validate config model
             validation_result = self.flext_config.validate_oracle_wms_config()
             if validation_result.is_failure:
                 return validation_result
+
+            # ZERO TOLERANCE FIX: Use utilities for WMS API connection testing
+            connection_test_result = (
+                self._utilities.WmsApiProcessing.test_wms_api_connection(
+                    base_url=self.flext_config.base_url,
+                    auth_token=getattr(self.flext_config, "auth_token", None),
+                    timeout=getattr(self.flext_config, "timeout", 30),
+                )
+            )
+            if connection_test_result.is_failure:
+                return FlextResult[dict["str", "object"]].fail(
+                    f"WMS API connection test failed: {connection_test_result.error}"
+                )
+
             # Test connection by attempting entity discovery
             try:
                 discovery_result = self._run_async(self.wms_client.discover_entities())
@@ -533,13 +583,21 @@ class FlextTapOracleWMS(Tap):
                 return FlextResult[dict["str", "object"]].fail(
                     f"Connection test failed: {e}",
                 )
-            validation_info = {
-                "valid": "True",
-                "connection": "success",
-                "base_url": self.flext_config.base_url,
-                "api_version": self.flext_config.api_version,
-                "health": getattr(discovery_result, "value", None),
-            }
+
+            # ZERO TOLERANCE FIX: Use utilities for validation info generation
+            validation_info_result = (
+                self._utilities.DataProcessing.generate_validation_info(
+                    config_data=self.flext_config.model_dump(exclude_unset=True),
+                    connection_result=connection_test_result.unwrap(),
+                    discovery_result=getattr(discovery_result, "value", None),
+                )
+            )
+            if validation_info_result.is_failure:
+                return FlextResult[dict["str", "object"]].fail(
+                    f"Validation info generation failed: {validation_info_result.error}"
+                )
+
+            validation_info = validation_info_result.unwrap()
             logger.info("Configuration validated successfully")
             return FlextResult[dict["str", "object"]].ok(validation_info)
         except Exception as e:
