@@ -12,6 +12,7 @@ from typing import Any, Literal, Self
 from pydantic import (
     ConfigDict,
     Field,
+    FieldSerializationInfo,
     SecretStr,
     computed_field,
     field_serializer,
