@@ -147,7 +147,9 @@ class FlextTapOracleWmsModels(FlextModels):
         return self
 
     @field_serializer("*", when_used="json")
-    def serialize_with_wms_metadata(self, value: Any, _info) -> Any:
+    def serialize_with_wms_metadata(
+        self, value: Any, _info: FieldSerializationInfo
+    ) -> Any:
         """Add Singer Oracle WMS tap metadata to all serialized fields."""
         if isinstance(value, dict):
             return {
