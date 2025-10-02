@@ -105,7 +105,10 @@ class TestConfigValidation:
 
         result = config_overlap.validate_oracle_wms_config()
         assert result.is_failure
-        assert "cannot be both included and excluded" in result.error
+        assert (
+            result.error is not None
+            and "cannot be both included and excluded" in result.error
+        )
 
     def test_date_validation(self) -> None:
         """Test date format validation."""
@@ -142,7 +145,10 @@ class TestConfigValidation:
 
         result = config_bad_range.validate_oracle_wms_config()
         assert result.is_failure
-        assert "Start date must be before end date" in result.error
+        assert (
+            result.error is not None
+            and "Start date must be before end date" in result.error
+        )
 
     def test_immutability(self) -> None:
         """Test configuration immutability."""
@@ -186,7 +192,9 @@ class TestConfigValidation:
 
         result = config_parallel.validate_oracle_wms_config()
         assert result.is_failure
-        assert "Rate limiting must be enabled" in result.error
+        assert (
+            result.error is not None and "Rate limiting must be enabled" in result.error
+        )
 
     def test_get_stream_config(self) -> None:
         """Test stream-specific configuration."""

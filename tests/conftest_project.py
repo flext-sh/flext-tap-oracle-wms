@@ -70,7 +70,7 @@ def mock_wms_client() -> MagicMock:
     client = MagicMock()
 
     # Mock successful connection
-    client.connect.return_value = FlextResult[None].ok(None)
+    client.connect.return_value = FlextResult[None].ok()
 
     # Mock list entities
     client.list_entities.return_value = FlextResult[list[str]].ok(

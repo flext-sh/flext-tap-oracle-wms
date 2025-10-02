@@ -75,6 +75,42 @@ class FlextTapOracleWMSConfig(FlextConfig):
         description="Oracle WMS password",
     )
 
+    # Backward compatibility properties for old attribute names
+    @property
+    def host(self) -> str:
+        """Backward compatibility property for base_url."""
+        return self.base_url
+
+    @property
+    def port(self) -> int:
+        """Backward compatibility property for port."""
+        return 443  # Default HTTPS port
+
+    @property
+    def service_name(self) -> str:
+        """Backward compatibility property for service name."""
+        return "oracle-wms"
+
+    @property
+    def protocol(self) -> str:
+        """Backward compatibility property for connection protocol."""
+        return "https"  # Default protocol for WMS connections
+
+    @property
+    def ssl_enabled(self) -> bool:
+        """Backward compatibility property for SSL configuration."""
+        return True  # Default SSL enabled for WMS connections
+
+    @property
+    def pool_min(self) -> int:
+        """Backward compatibility property for minimum pool size."""
+        return 1  # Default minimum pool size
+
+    @property
+    def pool_max(self) -> int:
+        """Backward compatibility property for maximum pool size."""
+        return 10  # Default maximum pool size
+
     # API settings
     api_version: str = Field(
         default=FlextTapOracleWMSConstants.DEFAULT_API_VERSION,

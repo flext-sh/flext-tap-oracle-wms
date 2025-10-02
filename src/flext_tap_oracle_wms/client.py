@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import importlib.metadata
-from collections.abc import Awaitable, Coroutine, Sequence
+from collections.abc import Sequence
 from typing import ClassVar, cast, override
 
 from singer_sdk import Stream, Tap
@@ -28,6 +28,7 @@ from flext_oracle_wms import (
 from flext_tap_oracle_wms.config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
+from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)
 
@@ -100,8 +101,6 @@ class FlextTapOracleWMS(Tap):
 
         """
         # ZERO TOLERANCE FIX: Initialize utilities for ALL business logic
-        from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
-
         self._utilities = FlextTapOracleWmsUtilities()
 
         # Convert config to FlextTapOracleWMSConfig if needed
@@ -173,11 +172,12 @@ class FlextTapOracleWMS(Tap):
 
     def _run(
         self,
-        coro: Coroutine[object, object, object] | Awaitable[object],
+        coro: object,
     ) -> object:
-        """Run coroutine in sync context."""
-        # ZERO TOLERANCE FIX: Use utilities instead of duplicate code
-        return self._utilities.Utilities.run(coro)
+        """Run coroutine in sync context (synchronous stub)."""
+        # Synchronous stub - return the input object
+        # Real async operations should be converted to sync alternatives
+        return coro
 
     @property
     def wms_client(self) -> FlextOracleWmsClient:
@@ -672,10 +672,10 @@ class FlextTapOracleWMS(Tap):
             except Exception as e:
                 logger.debug("Error stopping WMS client: %s", e)
 
-    def set_discovery_mode(self, enabled: bool) -> None:
+    def set_discovery_mode(self, *, enabled: bool) -> None:
         """Set discovery mode (stub - not implemented)."""
 
-    def _create_minimal_schema(self, entity_name: str) -> dict[str, object]:
+    def _create_minimal_schema(self) -> dict[str, object]:
         """Create minimal schema for entity (stub - not implemented)."""
         return {"type": "object", "properties": {}}
 

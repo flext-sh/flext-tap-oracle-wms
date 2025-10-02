@@ -29,7 +29,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Connection details or error
 
             """
-            ...
 
         def test_wms_connectivity(
             self, connection_config: dict[str, object]
@@ -43,7 +42,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[bool]: Connection test result or error
 
             """
-            ...
 
         def validate_wms_credentials(
             self, connection_config: dict[str, object]
@@ -57,7 +55,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Validation results or error
 
             """
-            ...
 
         def get_warehouse_context(
             self, connection_config: dict[str, object]
@@ -71,7 +68,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Warehouse context or error
 
             """
-            ...
 
     @runtime_checkable
     class InventoryDiscoveryProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -89,7 +85,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Discovered items or error
 
             """
-            ...
 
         def discover_locations(
             self, discovery_config: dict[str, object]
@@ -103,7 +98,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Discovered locations or error
 
             """
-            ...
 
         def discover_inventory_balances(
             self, discovery_config: dict[str, object]
@@ -117,7 +111,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Discovered balances or error
 
             """
-            ...
 
         def discover_lot_tracking(
             self, discovery_config: dict[str, object]
@@ -131,7 +124,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Discovered lot tracking data or error
 
             """
-            ...
 
     @runtime_checkable
     class OrderProcessingProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -150,7 +142,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Inbound orders data or error
 
             """
-            ...
 
         def extract_outbound_orders(
             self,
@@ -165,7 +156,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Outbound orders data or error
 
             """
-            ...
 
         def extract_picking_data(
             self,
@@ -180,7 +170,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Picking operations data or error
 
             """
-            ...
 
         def extract_shipping_data(
             self,
@@ -195,7 +184,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Shipping operations data or error
 
             """
-            ...
 
     @runtime_checkable
     class WarehouseOperationsProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -214,7 +202,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Task management data or error
 
             """
-            ...
 
         def extract_labor_tracking(
             self,
@@ -229,7 +216,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Labor tracking data or error
 
             """
-            ...
 
         def extract_equipment_data(
             self,
@@ -244,7 +230,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Equipment data or error
 
             """
-            ...
 
         def extract_cycle_counts(
             self,
@@ -259,7 +244,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Cycle count data or error
 
             """
-            ...
 
     @runtime_checkable
     class StreamGenerationProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -280,7 +264,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Stream definition or error
 
             """
-            ...
 
         def generate_order_stream(
             self,
@@ -297,7 +280,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Stream definition or error
 
             """
-            ...
 
         def generate_operational_stream(
             self,
@@ -314,7 +296,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Stream definition or error
 
             """
-            ...
 
         def determine_replication_strategy(
             self,
@@ -331,7 +312,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[str]: Replication method (FULL_TABLE, INCREMENTAL, SNAPSHOT) or error
 
             """
-            ...
 
     @runtime_checkable
     class PerformanceProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -349,7 +329,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Optimization results or error
 
             """
-            ...
 
         def configure_batch_processing(
             self, batch_config: dict[str, object]
@@ -363,7 +342,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Batch configuration result or error
 
             """
-            ...
 
         def monitor_extraction_performance(
             self, performance_metrics: dict[str, object]
@@ -377,7 +355,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Performance analysis or error
 
             """
-            ...
 
         def optimize_real_time_sync(
             self, sync_config: dict[str, object]
@@ -391,7 +368,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Sync optimization results or error
 
             """
-            ...
 
     @runtime_checkable
     class ValidationProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -412,7 +388,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Validation results or error
 
             """
-            ...
 
         def check_order_integrity(
             self,
@@ -429,7 +404,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Integrity check results or error
 
             """
-            ...
 
         def detect_data_anomalies(
             self,
@@ -446,7 +420,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[list[dict[str, object]]]: Detected anomalies or error
 
             """
-            ...
 
         def validate_warehouse_rules(
             self,
@@ -463,7 +436,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Rules validation results or error
 
             """
-            ...
 
     @runtime_checkable
     class MonitoringProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -482,7 +454,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[bool]: Metric tracking success status
 
             """
-            ...
 
         def monitor_warehouse_health(
             self, warehouse_id: str
@@ -496,7 +467,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Health status or error
 
             """
-            ...
 
         def get_operational_status(
             self, status_config: dict[str, object]
@@ -510,7 +480,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Operational status or error
 
             """
-            ...
 
         def create_monitoring_dashboard(
             self, dashboard_config: dict[str, object]
@@ -524,7 +493,6 @@ class FlextTapOracleWmsProtocols(FlextProtocols):
                 FlextResult[dict[str, object]]: Dashboard creation result or error
 
             """
-            ...
 
     # Convenience aliases for easier downstream usage
     TapOracleWmsConnectionProtocol = WmsConnectionProtocol

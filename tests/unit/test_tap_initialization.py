@@ -216,7 +216,7 @@ class TestTapInitialization:
             mock_discovery.describe_entity_sync.return_value = None
             tap = FlextTapOracleWMS(config=config)
             # Create minimal schema
-            schema = tap._create_minimal_schema("test_entity")
+            schema = tap._create_minimal_schema()
             if schema["type"] != "object":
                 msg: str = f"Expected {'object'}, got {schema['type']}"
                 raise AssertionError(msg)

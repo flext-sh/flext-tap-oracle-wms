@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT.
 
 from __future__ import annotations
 
-import importlib.metadata
+from typing import Final
 
 from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
 from flext_meltano import FlextMeltanoBridge, FlextMeltanoConfig, FlextMeltanoService
@@ -26,12 +26,16 @@ from flext_tap_oracle_wms.models import FlextTapOracleWmsModels
 from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols
 from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
+from flext_tap_oracle_wms.version import VERSION, FlextTapOracleWmsVersion
 
-__version__ = importlib.metadata.version("flext-tap-oracle-wms")
+PROJECT_VERSION: Final[FlextTapOracleWmsVersion] = VERSION
 
-__version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
+__version__: str = VERSION.version
+__version_info__: tuple[int | str, ...] = VERSION.version_info
 
-__all__: FlextTypes.Core.StringList = [
+__all__ = [
+    "PROJECT_VERSION",
+    "VERSION",
     "FlextLogger",
     "FlextMeltanoBridge",
     "FlextMeltanoConfig",
@@ -50,6 +54,7 @@ __all__: FlextTypes.Core.StringList = [
     "FlextTapOracleWmsModels",
     "FlextTapOracleWmsProtocols",
     "FlextTapOracleWmsUtilities",
+    "FlextTapOracleWmsVersion",
     "FlextTypes",
     "__version__",
     "__version_info__",
