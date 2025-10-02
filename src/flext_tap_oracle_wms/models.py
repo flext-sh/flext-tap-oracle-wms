@@ -7,8 +7,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any, Literal, Self
+from typing import Literal, Self
 
+from flext_core import FlextConstants, FlextModels, FlextTypes
 from pydantic import (
     ConfigDict,
     Field,
@@ -19,8 +20,30 @@ from pydantic import (
     model_validator,
 )
 
-from flext_core import FlextConstants, FlextModels, FlextTypes
 from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants
+
+# Oracle WMS authentication constants
+basic = "basic"
+oauth2 = "oauth2"
+
+# Replication method constants
+FULL_TABLE = "FULL_TABLE"
+INCREMENTAL = "INCREMENTAL"
+
+# Status constants
+available = "available"
+automatic = "automatic"
+unsupported = "unsupported"
+
+# Error type constants
+AUTHENTICATION = "AUTHENTICATION"
+AUTHORIZATION = "AUTHORIZATION"
+RATE_LIMIT = "RATE_LIMIT"
+TIMEOUT = "TIMEOUT"
+SERVER_ERROR = "SERVER_ERROR"
+NETWORK = "NETWORK"
+VALIDATION = "VALIDATION"
+linear = "linear"
 
 
 class FlextTapOracleWmsModels(FlextModels):
@@ -94,7 +117,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
     @computed_field
     @property
-    def wms_tap_system_summary(self) -> dict[str, Any]:
+    def wms_tap_system_summary(self) -> dict[str, object]:
         """Comprehensive Singer Oracle WMS tap system summary with warehouse extraction capabilities."""
         return {
             "total_models": self.active_wms_tap_models_count,
@@ -156,8 +179,8 @@ class FlextTapOracleWmsModels(FlextModels):
 
     @field_serializer("*", when_used="json")
     def serialize_with_wms_metadata(
-        self, value: Any, _info: FieldSerializationInfo
-    ) -> Any:
+        self, value: object, _info: FieldSerializationInfo
+    ) -> object:
         """Add Singer Oracle WMS tap metadata to all serialized fields."""
         if isinstance(value, dict):
             return {
@@ -205,7 +228,7 @@ class FlextTapOracleWmsModels(FlextModels):
         base_url: str = Field(..., description="Oracle WMS instance URL")
         username: str = Field(..., description="WMS username")
         password: SecretStr = Field(..., description="WMS password")
-        auth_method: Literal["basic", "oauth2"] = Field(
+        auth_method: Literal[basic, oauth2] = Field(
             default="basic", description="Authentication method"
         )
 
@@ -228,7 +251,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def wms_auth_summary(self) -> dict[str, Any]:
+        def wms_auth_summary(self) -> dict[str, object]:
             """Oracle WMS authentication configuration summary."""
             return {
                 "wms_instance": {
@@ -300,7 +323,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def wms_entity_context(self) -> dict[str, Any]:
+        def wms_entity_context(self) -> dict[str, object]:
             """Oracle WMS entity organizational context."""
             return {
                 "entity_identity": {
@@ -377,7 +400,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def item_characteristics_summary(self) -> dict[str, Any]:
+        def item_characteristics_summary(self) -> dict[str, object]:
             """Oracle WMS item characteristics summary."""
             return {
                 "item_identity": {
@@ -460,7 +483,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def location_hierarchy_summary(self) -> dict[str, Any]:
+        def location_hierarchy_summary(self) -> dict[str, object]:
             """Oracle WMS location hierarchy and capacity summary."""
             return {
                 "location_identity": {
@@ -541,7 +564,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def inventory_allocation_summary(self) -> dict[str, Any]:
+        def inventory_allocation_summary(self) -> dict[str, object]:
             """Oracle WMS inventory allocation and availability summary."""
             total_qty = self.quantity_on_hand or 0.0
             allocated_qty = self.quantity_allocated or 0.0
@@ -647,7 +670,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def order_lifecycle_summary(self) -> dict[str, Any]:
+        def order_lifecycle_summary(self) -> dict[str, object]:
             """Oracle WMS order lifecycle and progress summary."""
             fulfillment_progress = "unknown"
             if self.order_status:
@@ -749,7 +772,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def shipment_tracking_summary(self) -> dict[str, Any]:
+        def shipment_tracking_summary(self) -> dict[str, object]:
             """Oracle WMS shipment tracking and delivery summary."""
             delivery_status = "unknown"
             if self.actual_delivery:
@@ -851,7 +874,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def user_access_summary(self) -> dict[str, Any]:
+        def user_access_summary(self) -> dict[str, object]:
             """Oracle WMS user access and activity summary."""
             full_name = f"{self.first_name or ''} {self.last_name or ''}".strip()
 
@@ -924,19 +947,19 @@ class FlextTapOracleWmsModels(FlextModels):
 
         stream_name: str = Field(..., description="Singer stream name")
         primary_keys: list[str] = Field(..., description="Primary key field names")
-        replication_method: Literal["FULL_TABLE", "INCREMENTAL"] = Field(
+        replication_method: Literal[FULL_TABLE, INCREMENTAL] = Field(
             default="FULL_TABLE", description="Replication method"
         )
         replication_key: str | None = Field(
             None, description="Replication key field name"
         )
-        inclusion: Literal["available", "automatic", "unsupported"] = Field(
+        inclusion: Literal[available, automatic, unsupported] = Field(
             default="available", description="Stream inclusion setting"
         )
 
         @computed_field
         @property
-        def stream_metadata_summary(self) -> dict[str, Any]:
+        def stream_metadata_summary(self) -> dict[str, object]:
             """Oracle WMS stream metadata summary."""
             return {
                 "stream_identity": {
@@ -952,7 +975,7 @@ class FlextTapOracleWmsModels(FlextModels):
                 },
             }
 
-        def to_singer_metadata(self) -> list[dict[str, Any]]:
+        def to_singer_metadata(self) -> list[dict[str, object]]:
             """Convert to Singer metadata format."""
             metadata = [
                 {
@@ -997,7 +1020,7 @@ class FlextTapOracleWmsModels(FlextModels):
             ..., description="Schema properties"
         )
 
-        def to_singer_schema(self) -> dict[str, Any]:
+        def to_singer_schema(self) -> dict[str, object]:
             """Convert to Singer schema format."""
             return {
                 "type": "object",
@@ -1037,7 +1060,7 @@ class FlextTapOracleWmsModels(FlextModels):
             ..., description="Stream metadata"
         )
 
-        def to_singer_catalog_entry(self) -> dict[str, Any]:
+        def to_singer_catalog_entry(self) -> dict[str, object]:
             """Convert to Singer catalog entry format."""
             return {
                 "tap_stream_id": self.tap_stream_id,
@@ -1080,7 +1103,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         # Filtering configuration
-        entity_filters: dict[str, dict[str, Any]] = Field(
+        entity_filters: dict[str, dict[str, object]] = Field(
             default_factory=dict, description="Entity-specific filters"
         )
         field_selection: dict[str, list[str]] = Field(
@@ -1097,7 +1120,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def extraction_config_summary(self) -> dict[str, Any]:
+        def extraction_config_summary(self) -> dict[str, object]:
             """Oracle WMS extraction configuration summary."""
             return {
                 "extraction_scope": {
@@ -1155,7 +1178,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         success: bool = Field(..., description="Response success indicator")
-        data: Any | None = Field(None, description="Response data payload")
+        data: object | None = Field(None, description="Response data payload")
         total_count: int | None = Field(
             None, description="Total entity count (for pagination)"
         )
@@ -1166,7 +1189,7 @@ class FlextTapOracleWmsModels(FlextModels):
         # Error information
         error_code: str | None = Field(None, description="Error code if failed")
         error_message: str | None = Field(None, description="Error message if failed")
-        error_details: dict[str, Any] | None = Field(
+        error_details: dict[str, object] | None = Field(
             None, description="Detailed error information"
         )
 
@@ -1182,7 +1205,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         @computed_field
         @property
-        def wms_api_response_summary(self) -> dict[str, Any]:
+        def wms_api_response_summary(self) -> dict[str, object]:
             """Oracle WMS API response summary."""
             return {
                 "response_status": {
@@ -1252,13 +1275,13 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         error_type: Literal[
-            "AUTHENTICATION",
-            "AUTHORIZATION",
-            "RATE_LIMIT",
-            "TIMEOUT",
-            "SERVER_ERROR",
-            "NETWORK",
-            "VALIDATION",
+            AUTHENTICATION,
+            AUTHORIZATION,
+            RATE_LIMIT,
+            TIMEOUT,
+            SERVER_ERROR,
+            NETWORK,
+            VALIDATION,
         ] = Field(..., description="Error category")
         http_status_code: int | None = Field(None, description="HTTP status code")
         retry_after_seconds: int | None = Field(
@@ -1271,7 +1294,7 @@ class FlextTapOracleWmsModels(FlextModels):
             None, description="WMS entity type being processed"
         )
         request_method: str | None = Field(None, description="HTTP method used")
-        request_params: dict[str, Any] | None = Field(
+        request_params: dict[str, object] | None = Field(
             None, description="Request parameters"
         )
 
@@ -1285,13 +1308,13 @@ class FlextTapOracleWmsModels(FlextModels):
         max_retry_attempts: int | None = Field(
             None, description="Maximum retry attempts for this error"
         )
-        backoff_strategy: Literal["linear", "exponential", "fixed"] | None = Field(
+        backoff_strategy: Literal[linear, exponential, fixed] | None = Field(
             None, description="Recommended backoff strategy"
         )
 
         @computed_field
         @property
-        def wms_error_context_summary(self) -> dict[str, Any]:
+        def wms_error_context_summary(self) -> dict[str, object]:
             """Oracle WMS error context summary."""
             return {
                 "error_classification": {
