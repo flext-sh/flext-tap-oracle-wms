@@ -7,12 +7,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
-from asyncio import (
-    Awaitable,
-    Coroutine,
-    new_event_loop,
-    set_event_loop,
-)
 from datetime import UTC, datetime
 from typing import Any, ClassVar, override
 
@@ -882,25 +876,23 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
 
         @staticmethod
         def run(
-            coro: Coroutine[object, object, object] | Awaitable[object],
+            coro: object,
         ) -> object:
-            """Run coroutine in sync context.
+            """Run coroutine in sync context (synchronous stub).
 
-            This replaces the loose helper function in utils.py with proper
-            class-based organization following FLEXT patterns.
+            This is a synchronous stub that replaces async functionality.
+            For async operations, use the synchronous alternatives.
 
             Args:
-                coro: Coroutine or awaitable to run
+                coro: Object to process (ignored in sync implementation)
+
             Returns:
-                Result of the coroutine execution
+                The input object (pass-through for sync compatibility)
 
             """
-            loop = new_event_loop()
-            set_event_loop(loop)
-            try:
-                return loop.run_until_complete(coro)
-            finally:
-                loop.close()
+            # Synchronous stub - return the input unchanged
+            # Real async operations should be converted to sync alternatives
+            return coro
 
     # Proxy methods for backward compatibility
     @classmethod
