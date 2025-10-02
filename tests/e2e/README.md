@@ -191,27 +191,26 @@ tests/fixtures/e2e/
 ### **Command Execution Testing**
 
 ```python
-import asyncio
 import json
 from pathlib import Path
 
-async def run_tap_command(args: FlextTypes.Core.StringList, input_data: str | None = None, timeout: int = 300):
-    """Execute tap command and capture results using asyncio."""
+def run_tap_command(args: FlextTypes.Core.StringList, input_data: str | None = None, timeout: int = 300):
+    """Execute tap command and capture results using """
     cmd = ["tap-oracle-wms", *args]
-    process = await asyncio.create_subprocess_exec(
+    process = create_subprocess_exec(
         *cmd,
-        stdin=asyncio.subprocess.PIPE if input_data else None,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+        stdin=subprocess.PIPE if input_data else None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     try:
-        stdout, stderr = await asyncio.wait_for(
+        stdout, stderr = wait_for(
             process.communicate(input=input_data.encode() if input_data else None),
             timeout=timeout,
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         process.kill()
-        await process.communicate()
+        process.communicate()
         raise
     return CLIResult(
         returncode=process.returncode,
@@ -223,7 +222,7 @@ async def run_tap_command(args: FlextTypes.Core.StringList, input_data: str | No
 def test_cli_discovery_execution():
     """Test CLI discovery command execution."""
     with e2e_mock_environment():
-        result = await run_tap_command([
+        result = run_tap_command([
             "--config", "tests/fixtures/e2e/basic_e2e.json",
             "--discover"
         ])
@@ -343,7 +342,7 @@ def test_e2e_network_failures():
     """Test E2E behavior during network failures."""
     with e2e_mock_environment() as env:
         # Start extraction
-        process = start_tap_process_async([
+        process = start_tap_process([
             "--config", "config.json",
             "--catalog", "catalog.json"
         ])

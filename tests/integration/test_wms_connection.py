@@ -200,8 +200,8 @@ class TestFilteringAndSelection:
         assert len(stream_names) > 0  # Should have other streams
 
 
-class TestAsyncIntegration:
-    """Test async/sync integration with flext-oracle-wms."""
+class TestIntegration:
+    """Test /sync integration with flext-oracle-wms."""
 
     def test_client_lifecycle_management(self, tap: FlextTapOracleWMS) -> None:
         """Test proper client lifecycle management."""

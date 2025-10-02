@@ -13,6 +13,7 @@ from singer_sdk import Stream, Tap
 
 from flext_core import FlextLogger, FlextResult, FlextTypes
 from flext_oracle_wms import FlextOracleWmsClient
+from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)
 
@@ -42,8 +43,6 @@ class FlextTapOracleWMSStream(Stream):
         super().__init__(tap=tap, name=name or self.name, schema=schema)
 
         # ZERO TOLERANCE FIX: Initialize utilities for ALL stream business logic
-        from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
-
         self._utilities = FlextTapOracleWmsUtilities()
 
         # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
@@ -86,13 +85,13 @@ class FlextTapOracleWMSStream(Stream):
         """Get replication key for this stream."""
         return self.stream_replication_key
 
-    def _run_async(
+    def _run(
         self,
         coro: Coroutine[object, object, object] | Awaitable[object],
     ) -> object:
-        """Run async coroutine in sync context."""
+        """Run coroutine in sync context."""
         # ZERO TOLERANCE FIX: Use utilities instead of duplicate code
-        return self._utilities.AsyncUtilities.run_async(coro)
+        return self._utilities.Utilities.run(coro)
 
     def get_records(
         self,
@@ -147,14 +146,14 @@ class FlextTapOracleWMSStream(Stream):
         # Execute operation using dynamic method call
         execute_method = getattr(self.client, "execute", None)
         if execute_method:
-            result: FlextResult[object] = self._run_async(
+            result: FlextResult[object] = self._run(
                 execute_method(operation_name, **kwargs)
             )
         else:
             # Fallback: try direct method call
             method = getattr(self.client, operation_name, None)
             if method:
-                result: FlextResult[object] = self._run_async(method(**kwargs))
+                result: FlextResult[object] = self._run(method(**kwargs))
             else:
                 logger.error("Method %s not found on WMS client", operation_name)
                 return None
@@ -182,8 +181,8 @@ class FlextTapOracleWMSStream(Stream):
 
         """
         kwargs = {
+            "page": page,
             "limit": self._page_size,
-            "page": "page",
         }
         # Add incremental replication filter if configured
         if self.stream_replication_key:

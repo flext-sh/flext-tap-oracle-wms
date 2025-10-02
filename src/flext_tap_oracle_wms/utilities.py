@@ -7,6 +7,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
+from asyncio import (
+    Awaitable,
+    Coroutine,
+    new_event_loop,
+    set_event_loop,
+)
 from datetime import UTC, datetime
 from typing import Any, ClassVar, override
 
@@ -26,6 +32,8 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
     DEFAULT_TIMEOUT: ClassVar[int] = 30
     MAX_RETRIES: ClassVar[int] = 3
     WMS_DEFAULT_PORT: ClassVar[int] = 1521
+    MAX_PORT: ClassVar[int] = 65535
+    MIN_SKU_PARTS: ClassVar[int] = 2
 
     @override
     def __init__(self) -> None:
@@ -204,7 +212,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
                     "%Y%m%d%H%M%S",
                 ]:
                     try:
-                        dt = datetime.strptime(timestamp, fmt)
+                        dt = datetime.strptime(timestamp, fmt)  # noqa: DTZ007 - Naive datetime with immediate tzinfo assignment
                         dt = dt.replace(tzinfo=UTC)
                         return FlextResult[str].ok(dt.isoformat())
                     except ValueError:
@@ -263,7 +271,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
                 sku_info["base_sku"] = parts[0]
                 if len(parts) > 1:
                     sku_info["variant"] = parts[1]
-                if len(parts) > 2:
+                if len(parts) > FlextTapOracleWmsUtilities.MIN_SKU_PARTS:
                     sku_info["size_color"] = "-".join(parts[2:])
 
             # Extract numeric suffix (often size or version)
@@ -279,7 +287,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
         @staticmethod
         def generate_wms_stream_schema(
             sample_records: list[dict[str, Any]],
-            stream_name: str,
+            stream_name: str,  # noqa: ARG004 - Reserved for future use
         ) -> dict[str, Any]:
             """Generate JSON schema from Oracle WMS sample records.
 
@@ -307,7 +315,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
                     )
                     if sanitized_key not in properties:
                         properties[sanitized_key] = (
-                            FlextTapOracleWmsUtilities.StreamUtilities._infer_wms_type(
+                            FlextTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
                                 value
                             )
                         )
@@ -319,7 +327,9 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
             }
 
         @staticmethod
-        def _infer_wms_type(value: Any) -> dict[str, Any]:
+        def infer_wms_type(
+            value: str | float | dict | list | None,
+        ) -> dict[str, Any]:
             """Infer JSON schema type from Oracle WMS value.
 
             Args:
@@ -341,7 +351,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
                 if value:
                     # Infer type from first element
                     item_type = (
-                        FlextTapOracleWmsUtilities.StreamUtilities._infer_wms_type(
+                        FlextTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
                             value[0]
                         )
                     )
@@ -448,7 +458,11 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
             # Validate port if provided
             if "port" in config:
                 port = config["port"]
-                if not isinstance(port, int) or port <= 0 or port > 65535:
+                if (
+                    not isinstance(port, int)
+                    or port <= 0
+                    or port > FlextTapOracleWmsUtilities.MAX_PORT
+                ):
                     return FlextResult[dict[str, Any]].fail(
                         "Port must be a valid integer between 1 and 65535"
                     )
@@ -639,7 +653,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
         def generate_validation_info(
             config_data: dict[str, Any],
             connection_result: dict[str, Any],
-            discovery_result: Any = None,
+            discovery_result: dict[str, Any] | None = None,
         ) -> FlextResult[dict[str, Any]]:
             """Generate comprehensive validation information.
 
@@ -720,7 +734,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
             state: dict[str, Any],
             stream_name: str,
             bookmark_key: str,
-        ) -> Any:
+        ) -> str | int | float | datetime | None:
             """Get bookmark value for a Oracle WMS stream.
 
             Args:
@@ -744,7 +758,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
             state: dict[str, Any],
             stream_name: str,
             bookmark_key: str,
-            bookmark_value: Any,
+            bookmark_value: str | float | datetime | None,
         ) -> dict[str, Any]:
             """Set bookmark value for a Oracle WMS stream.
 
@@ -863,14 +877,14 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
                 "total_estimated_seconds": network_time + processing_time + query_time,
             }
 
-    class AsyncUtilities:
-        """Async utilities for tap operations."""
+    class Utilities:
+        """utilities for tap operations."""
 
         @staticmethod
-        def run_async(
+        def run(
             coro: Coroutine[object, object, object] | Awaitable[object],
         ) -> object:
-            """Run async coroutine in sync context.
+            """Run coroutine in sync context.
 
             This replaces the loose helper function in utils.py with proper
             class-based organization following FLEXT patterns.
@@ -881,10 +895,8 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
                 Result of the coroutine execution
 
             """
-            import asyncio
-
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+            loop = new_event_loop()
+            set_event_loop(loop)
             try:
                 return loop.run_until_complete(coro)
             finally:
@@ -945,7 +957,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
         state: dict[str, Any],
         stream_name: str,
         bookmark_key: str,
-        bookmark_value: Any,
+        bookmark_value: str | float | datetime | None,
     ) -> dict[str, Any]:
         """Proxy method for StateManagement.set_wms_bookmark()."""
         return cls.StateManagement.set_wms_bookmark(
