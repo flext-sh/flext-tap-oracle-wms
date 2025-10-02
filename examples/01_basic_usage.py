@@ -47,7 +47,12 @@ def main() -> int:
     catalog_result = tap.discover_catalog()
     if catalog_result.is_success:
         catalog = catalog_result.value
-        if isinstance(catalog, dict) and "streams" in catalog:
+        if (
+            catalog is not None
+            and isinstance(catalog, dict)
+            and "streams" in catalog
+            and isinstance(catalog["streams"], list)
+        ):
             for stream in catalog["streams"]:
                 if (
                     isinstance(stream, dict)

@@ -259,8 +259,7 @@ def test_tap_discovery(mock_wms_client, tap_config):
 **Focus**: Optimize stream performance and error handling
 
 ```python
-import asyncio
-from typing import AsyncIterator
+from typing import Iterator
 from singer_sdk.streams import RESTStream
 
 class OptimizedWMSStream(RESTStream):
@@ -271,9 +270,9 @@ class OptimizedWMSStream(RESTStream):
         self.name = name
         self.page_size = min(self.config.get("page_size", 1000), 1250)
 
-    async def get_records_async(self, context) -> AsyncIterator:
-        """Async record extraction for better performance."""
-        async for record in self.tap.wms_client.get_entity_data_async(self.name):
+    def get_records(self, context) -> Iterator:
+        """record extraction for better performance."""
+        for record in self.tap.wms_client.get_entity_data(self.name):
             yield record
 
     def request_decorator(self, func):

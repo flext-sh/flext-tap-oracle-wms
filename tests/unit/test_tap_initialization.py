@@ -34,7 +34,7 @@ class TestTapInitialization:
         }
         # Mock external network calls to ensure they're not made
         with (
-            patch("httpx.AsyncClient.get") as mock_get,
+            patch("httpx.Client.get") as mock_get,
             patch("httpx.Client.get") as mock_client_get,
             patch("requests.get") as mock_requests_get,
         ):
@@ -60,9 +60,9 @@ class TestTapInitialization:
             "password": "test",
             "entities": ["allocation", "order_hdr"],
         }
-        # Mock both async and sync HTTP calls
+        # Mock both and sync HTTP calls
         with (
-            patch("httpx.AsyncClient") as mock_async_client,
+            patch("httpx.Client") as mock_client,
             patch("httpx.Client") as mock_sync_client,
             patch("requests.get") as mock_requests,
             patch.object(FlextTapOracleWMS, "_create_minimal_schema") as mock_schema,
@@ -87,7 +87,7 @@ class TestTapInitialization:
                 msg: str = f"Expected {'order_hdr'}, got {streams[1].name}"
                 raise AssertionError(msg)
             # Verify no network calls were made
-            mock_async_client.assert_not_called()
+            mock_client.assert_not_called()
             mock_sync_client.assert_not_called()
             mock_requests.assert_not_called()
 
@@ -101,7 +101,7 @@ class TestTapInitialization:
             "enable_incremental": False,  # Disable incremental for simpler test
         }
         with (
-            patch("httpx.AsyncClient"),
+            patch("httpx.Client"),
             patch(
                 "flext_tap_oracle_wms.tap.FlextTapOracleWMS.discovery",
             ) as mock_discovery,
@@ -175,7 +175,7 @@ class TestTapInitialization:
         }
         # Mock all network calls to prevent real API calls during initialization
         with (
-            patch("httpx.AsyncClient"),
+            patch("httpx.Client"),
             patch("httpx.Client"),
             patch("requests.get"),
         ):
@@ -206,7 +206,7 @@ class TestTapInitialization:
         }
         # Mock all network calls completely
         with (
-            patch("httpx.AsyncClient"),
+            patch("httpx.Client"),
             patch("httpx.Client"),
             patch("requests.get"),
             patch.object(FlextTapOracleWMS, "discovery") as mock_discovery,

@@ -19,7 +19,8 @@ from pydantic import (
     model_validator,
 )
 
-from flext_core import FlextModels, FlextTypes
+from flext_core import FlextConstants, FlextModels, FlextTypes
+from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants
 
 
 class FlextTapOracleWmsModels(FlextModels):
@@ -126,16 +127,22 @@ class FlextTapOracleWmsModels(FlextModels):
     def validate_wms_tap_system_consistency(self) -> Self:
         """Validate Singer Oracle WMS tap system consistency and configuration."""
         # Singer WMS tap authentication validation
-        if hasattr(self, "_wms_authentication") and self._wms_authentication:
-            if not hasattr(self, "WmsAuthenticationConfig"):
-                msg = "WmsAuthenticationConfig required when WMS authentication configured"
-                raise ValueError(msg)
+        if (
+            hasattr(self, "_wms_authentication")
+            and self._wms_authentication
+            and not hasattr(self, "WmsAuthenticationConfig")
+        ):
+            msg = "WmsAuthenticationConfig required when WMS authentication configured"
+            raise ValueError(msg)
 
         # Stream configuration validation
-        if hasattr(self, "_stream_configurations") and self._stream_configurations:
-            if not hasattr(self, "WmsStreamMetadata"):
-                msg = "WmsStreamMetadata required for stream configurations"
-                raise ValueError(msg)
+        if (
+            hasattr(self, "_stream_configurations")
+            and self._stream_configurations
+            and not hasattr(self, "WmsStreamMetadata")
+        ):
+            msg = "WmsStreamMetadata required for stream configurations"
+            raise ValueError(msg)
 
         # Singer protocol compliance validation
         if hasattr(self, "_singer_mode") and self._singer_mode:
@@ -234,8 +241,12 @@ class FlextTapOracleWmsModels(FlextModels):
                 "organizational_context": {
                     "company_code": self.company_code,
                     "facility_code": self.facility_code,
-                    "username": self.username[:3] + "..."
-                    if len(self.username) > 3
+                    "username": self.username[
+                        : FlextTapOracleWmsConstants.Processing.USERNAME_TRUNCATION_LENGTH
+                    ]
+                    + "..."
+                    if len(self.username)
+                    > FlextTapOracleWmsConstants.Processing.USERNAME_TRUNCATION_LENGTH
                     else self.username,
                 },
                 "performance_settings": {
@@ -559,9 +570,11 @@ class FlextTapOracleWmsModels(FlextModels):
                     "allocation_rate": allocation_rate,
                     "availability_rate": availability_rate,
                     "utilization_status": "high"
-                    if allocation_rate > 0.8
+                    if allocation_rate
+                    > FlextTapOracleWmsConstants.Processing.HIGH_ALLOCATION_THRESHOLD
                     else "medium"
-                    if allocation_rate > 0.5
+                    if allocation_rate
+                    > FlextTapOracleWmsConstants.Processing.MEDIUM_ALLOCATION_THRESHOLD
                     else "low",
                 },
                 "status_info": {
@@ -1110,8 +1123,12 @@ class FlextTapOracleWmsModels(FlextModels):
             if not self.entities:
                 msg = "At least one entity must be specified"
                 raise ValueError(msg)
-            if self.page_size <= 0 or self.page_size > 1250:
-                msg = "Page size must be between 1 and 1250"
+            if (
+                self.page_size <= 0
+                or self.page_size
+                > FlextTapOracleWmsConstants.Processing.ORACLE_WMS_PAGE_SIZE_LIMIT
+            ):
+                msg = f"Page size must be between 1 and {FlextTapOracleWmsConstants.Processing.ORACLE_WMS_PAGE_SIZE_LIMIT}"
                 raise ValueError(msg)
             return self
 
@@ -1315,9 +1332,11 @@ class FlextTapOracleWmsModels(FlextModels):
         def validate_wms_error_context(self) -> Self:
             """Validate Oracle WMS error context."""
             if self.http_status_code is not None and not (
-                100 <= self.http_status_code <= 599
+                FlextConstants.Http.StatusCodes.MIN_VALID
+                <= self.http_status_code
+                <= FlextConstants.Http.StatusCodes.MAX_VALID
             ):
-                msg = "HTTP status code must be between 100 and 599"
+                msg = f"HTTP status code must be between {FlextConstants.Http.StatusCodes.MIN_VALID} and {FlextConstants.Http.StatusCodes.MAX_VALID}"
                 raise ValueError(msg)
             if self.retry_after_seconds is not None and self.retry_after_seconds < 0:
                 msg = "Retry after seconds cannot be negative"

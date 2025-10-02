@@ -49,6 +49,10 @@ class FlextTapOracleWmsConstants(FlextConstants):
         DEFAULT_PAGE_SIZE = FlextOracleWmsConstants.Processing.DEFAULT_BATCH_SIZE
         MAX_RECORDS_PER_BATCH = FlextOracleWmsConstants.Processing.MAX_BATCH_SIZE
         DEFAULT_API_TIMEOUT = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
+        ORACLE_WMS_PAGE_SIZE_LIMIT = 1250
+        USERNAME_TRUNCATION_LENGTH = 3
+        HIGH_ALLOCATION_THRESHOLD = 0.8
+        MEDIUM_ALLOCATION_THRESHOLD = 0.5
 
     class Extraction:
         """WMS-specific extraction configuration."""
