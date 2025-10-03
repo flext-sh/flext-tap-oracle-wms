@@ -252,7 +252,7 @@ from flext_core import TAnyDict
 def extract_records(
     entity: str,
     config: TAnyDict,
-    filters: Optional[Dict[str, object]] = None
+    filters: Optional[FlextTypes.Dict] = None
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety

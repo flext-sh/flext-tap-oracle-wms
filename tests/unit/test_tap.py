@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes
 from flext_tap_oracle_wms import (
     FlextTapOracleWMS,
     FlextTapOracleWMSConfig,
@@ -35,7 +35,7 @@ class TestFlextTapOracleWMS:
 
     def test_tap_initialization_with_dict(self) -> None:
         """Test tap initialization with dict config."""
-        config_dict: dict[str, object] = {
+        config_dict: FlextTypes.Dict = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
             "password": "test_password",
@@ -48,7 +48,7 @@ class TestFlextTapOracleWMS:
 
     def test_tap_initialization_invalid_config(self) -> None:
         """Test tap initialization with invalid config."""
-        config_dict: dict[str, object] = {
+        config_dict: FlextTypes.Dict = {
             "base_url": "invalid-url",  # Missing protocol
             "username": "test_user",
             "password": "test_password",
@@ -137,9 +137,7 @@ class TestFlextTapOracleWMS:
 
         # Mock discovery
         mock_discovery = MagicMock()
-        mock_discovery.discover_entities.return_value = FlextResult[
-            dict[str, object]
-        ].ok(
+        mock_discovery.discover_entities.return_value = FlextResult[FlextTypes.Dict].ok(
             data={
                 "inventory": {"type": "object", "properties": {}},
                 "locations": {"type": "object", "properties": {}},
@@ -225,7 +223,7 @@ class TestFlextTapOracleWMS:
         # Mock client
         mock_client = MagicMock()
         mock_client.connect.return_value = FlextResult[None].ok(data=None)
-        mock_client.list_entities.return_value = FlextResult[list[str]].ok([
+        mock_client.list_entities.return_value = FlextResult[FlextTypes.StringList].ok([
             "inventory"
         ])
         mock_client_class.return_value = mock_client

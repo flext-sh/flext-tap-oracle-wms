@@ -10,7 +10,7 @@ from typing import ClassVar
 
 from flext_oracle_wms.constants import FlextOracleWmsConstants
 
-from flext_core import FlextConstants
+from flext_core import FlextConstants, FlextTypes
 
 
 class FlextTapOracleWmsConstants(FlextConstants):
@@ -28,7 +28,7 @@ class FlextTapOracleWmsConstants(FlextConstants):
     MAX_BATCH_SIZE = FlextConstants.Performance.BatchProcessing.MAX_ITEMS
 
     # WMS Entity Types from Oracle WMS constants
-    WMS_ENTITY_TYPES: ClassVar[list[str]] = [
+    WMS_ENTITY_TYPES: ClassVar[FlextTypes.StringList] = [
         "INVENTORY",
         "SHIPMENT",
         "PICKING",

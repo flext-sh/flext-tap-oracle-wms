@@ -346,7 +346,7 @@ class TestOracleWMSE2EComplete:
         paginator = None  # Placeholder until implementation
 
         # Test pagination flow
-        pages_tested: list[str] = []
+        pages_tested: FlextTypes.StringList = []
 
         # Page 1
         response1 = Mock()
@@ -375,7 +375,7 @@ class TestOracleWMSE2EComplete:
 
     def test_error_recovery_and_resilience(
         self,
-        real_wms_config: FlextTypes.Core.Dict,
+        real_wms_config: FlextTypes.Dict,
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         # Test with invalid credentials
