@@ -231,7 +231,7 @@ class EntityDiscovery:
             self.logger.error(f"Metadata retrieval failed for {entity}: {e}")
             return FlextResult.failure(f"Metadata error: {e}")
 
-    def generate_schema(self, entity: str) -> FlextResult[Dict[str, object]]:
+    def generate_schema(self, entity: str) -> FlextResult[FlextTypes.Dict]:
         """Generate Singer schema from WMS metadata."""
         metadata_result = self.get_entity_metadata(entity)
         if not metadata_result.success:
@@ -288,7 +288,7 @@ class FlextTapOracleWMSStream(Stream):
         self.tap = tap
 
     @property
-    def schema(self) -> Dict[str, object]:
+    def schema(self) -> FlextTypes.Dict:
         """Get stream schema from WMS metadata."""
         discovery = EntityDiscovery(self.tap.wms_client_manager.client)
         schema_result = discovery.generate_schema(self.name)
@@ -298,7 +298,7 @@ class FlextTapOracleWMSStream(Stream):
 
         return schema_result.data
 
-    def get_records(self, context) -> Iterator[Dict[str, object]]:
+    def get_records(self, context) -> Iterator[FlextTypes.Dict]:
         """Extract records using WMS client."""
         try:
             for record in self.tap.wms_client_manager.client.get_entity_data(self.name):
@@ -412,7 +412,7 @@ class FlextTapOracleWMS(Tap):
 class FlextTapOracleWMSStream(Stream):
     """Stream with observability integration."""
 
-    def get_records(self, context) -> Iterator[Dict[str, object]]:
+    def get_records(self, context) -> Iterator[FlextTypes.Dict]:
         """Record extraction with comprehensive monitoring."""
         with self.tap.tracing.span(f"extract_{self.name}"):
             start_time = time.time()

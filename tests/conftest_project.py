@@ -73,7 +73,7 @@ def mock_wms_client() -> MagicMock:
     client.connect.return_value = FlextResult[None].ok()
 
     # Mock list entities
-    client.list_entities.return_value = FlextResult[list[str]].ok(
+    client.list_entities.return_value = FlextResult[FlextTypes.StringList].ok(
         [
             "inventory",
             "locations",
@@ -83,7 +83,7 @@ def mock_wms_client() -> MagicMock:
     )
 
     # Mock get records
-    client.get_records.return_value = FlextResult[list[dict[str, object]]].ok(
+    client.get_records.return_value = FlextResult[list[FlextTypes.Dict]].ok(
         [
             {"id": "1", "name": "Test Item 1", "quantity": 100},
             {"id": "2", "name": "Test Item 2", "quantity": 200},
@@ -92,7 +92,7 @@ def mock_wms_client() -> MagicMock:
 
     # Mock get entity metadata
     client.get_entity_metadata.return_value = FlextResult[
-        dict[str, str | list[str]]
+        dict[str, str | FlextTypes.StringList]
     ].ok(
         {
             "display_name": "Inventory",
@@ -116,7 +116,7 @@ def tap_instance(sample_config: FlextTapOracleWMSConfig) -> FlextTapOracleWMS:
 
 
 @pytest.fixture
-def sample_catalog() -> FlextTypes.Core.Dict:
+def sample_catalog() -> FlextTypes.Dict:
     """Sample Singer catalog."""
     return {
         "type": "CATALOG",
@@ -150,7 +150,7 @@ def sample_catalog() -> FlextTypes.Core.Dict:
 
 
 @pytest.fixture
-def sample_state() -> FlextTypes.Core.Dict:
+def sample_state() -> FlextTypes.Dict:
     """Sample Singer state."""
     return {
         "bookmarks": {
@@ -190,7 +190,7 @@ def mock_request() -> MagicMock:
 
 
 # Marker for tests requiring real Oracle WMS
-def pytest_collection_modifyitems(_config: object, items: list[object]) -> None:
+def pytest_collection_modifyitems(_config: object, items: FlextTypes.List) -> None:
     """Add markers to tests based on their location."""
     for item in items:
         # Add oracle_wms marker to integration tests
@@ -220,7 +220,7 @@ def _real_tap_instance(real_config: FlextTapOracleWMSConfig) -> FlextTapOracleWM
 
 
 @pytest.fixture
-def _test_config_extraction() -> FlextTypes.Core.Dict:
+def _test_config_extraction() -> FlextTypes.Dict:
     """Test configuration for extraction tests."""
     return {
         "base_url": "https://test.wms.example.com",

@@ -171,7 +171,7 @@ class EntityDiscovery:
         """Get available entities from WMS."""
         return self.wms_client.get_available_entities()
 
-    def get_entity_schema(self, entity: str) -> Dict[str, object]:
+    def get_entity_schema(self, entity: str) -> FlextTypes.Dict:
         """Get schema for specific entity."""
         return self.wms_client.get_entity_schema(entity)
 ```
