@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Final, cast
 
 from flext_core.metadata import (
+    FlextProjectMetadata,
     FlextProjectVersion,
     build_metadata_exports,
 )
