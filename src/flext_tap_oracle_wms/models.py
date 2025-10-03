@@ -1308,7 +1308,7 @@ class FlextTapOracleWmsModels(FlextModels):
         max_retry_attempts: int | None = Field(
             None, description="Maximum retry attempts for this error"
         )
-        backoff_strategy: Literal[linear, exponential, fixed] | None = Field(
+        backoff_strategy: Literal["linear", "exponential", "fixed"] | None = Field(
             None, description="Recommended backoff strategy"
         )
 
