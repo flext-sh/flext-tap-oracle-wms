@@ -14,18 +14,20 @@ import importlib.metadata
 from collections.abc import Sequence
 from typing import ClassVar, cast, override
 
-from flext_oracle_wms import (
-    FlextOracleWmsApiVersion,
-    FlextOracleWmsClient,
-    FlextOracleWmsClientConfig,
-)
-from singer_sdk import Stream, Tap
-
 from flext_core import (
     FlextLogger,
     FlextResult,
     FlextTypes,
 )
+
+# Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
+from flext_meltano import FlextStream as Stream, FlextTap as Tap
+from flext_oracle_wms import (
+    FlextOracleWmsApiVersion,
+    FlextOracleWmsClient,
+    FlextOracleWmsClientConfig,
+)
+
 from flext_tap_oracle_wms.config import FlextTapOracleWMSConfig
 from flext_tap_oracle_wms.exceptions import FlextTapOracleWMSConfigurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
