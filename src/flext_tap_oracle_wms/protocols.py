@@ -38,7 +38,7 @@ class FlextTapOracleWmsProtocols:
 
             def establish_wms_connection(
                 self, config: FlextTypes.Dict
-            ) -> FlextResult[FlextTypes.Any]: ...
+            ) -> FlextResult[object]: ...
 
         @runtime_checkable
         class InventoryDiscoveryProtocol(FlextProtocols.Domain.Service, Protocol):

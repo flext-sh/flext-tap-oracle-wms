@@ -8,9 +8,8 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from flext_oracle_wms.constants import FlextOracleWmsConstants
-
 from flext_core import FlextConstants, FlextTypes
+from flext_oracle_wms.constants import FlextOracleWmsConstants
 
 
 class FlextTapOracleWmsConstants(FlextConstants):
@@ -38,8 +37,6 @@ class FlextTapOracleWmsConstants(FlextConstants):
     class Connection:
         """Oracle WMS connection configuration."""
 
-        DEFAULT_HOST = FlextOracleWmsConstants.Connection.DEFAULT_HOST
-        DEFAULT_PORT = FlextOracleWmsConstants.Connection.DEFAULT_PORT
         DEFAULT_TIMEOUT = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
         MAX_RETRIES = FlextOracleWmsConstants.Connection.DEFAULT_MAX_RETRIES
 

@@ -9,8 +9,8 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from flext_core import FlextResult, FlextTypes
+
 from flext_tap_oracle_wms import (
     FlextTapOracleWMS,
     FlextTapOracleWMSConfig,

@@ -11,42 +11,39 @@ from __future__ import annotations
 
 from typing import Final, Self
 
+from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult, FlextTypes
 from flext_oracle_wms import (
-    FlextOracleWmsSemanticConstants as _WmsConstants,
+    FlextOracleWmsConstants as _WmsConstants,
 )
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
-
-from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult, FlextTypes
 
 
 class FlextTapOracleWMSConstants(FlextConstants):
     """Constants for Oracle WMS tap configuration - consuming from flext-oracle-wms API."""
 
-    # CONSUME API defaults from flext-oracle-wms
-    DEFAULT_API_VERSION: Final[str] = _WmsConstants.OracleWmsApi.DEFAULT_VERSION
+    # API defaults from flext-oracle-wms (using available constants)
+    DEFAULT_API_VERSION: Final[str] = _WmsConstants.API_VERSION_DEFAULT
 
     # Validation limits - using FlextConstants as SOURCE OF TRUTH
     MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = (
         FlextConstants.Container.MAX_WORKERS + 1
     )  # 5
-    DEFAULT_PAGE_SIZE: Final[int] = _WmsConstants.Pagination.DEFAULT_PAGE_SIZE
-    DEFAULT_TIMEOUT: Final[int] = int(_WmsConstants.OracleWmsApi.DEFAULT_TIMEOUT)
-    DEFAULT_MAX_RETRIES: Final[int] = _WmsConstants.OracleWmsApi.DEFAULT_MAX_RETRIES
-    DEFAULT_RETRY_DELAY: Final[float] = _WmsConstants.OracleWmsApi.DEFAULT_RETRY_DELAY
+    DEFAULT_PAGE_SIZE: Final[int] = _WmsConstants.DEFAULT_PAGE_SIZE
+    DEFAULT_TIMEOUT: Final[int] = _WmsConstants.Api.DEFAULT_TIMEOUT
+    DEFAULT_MAX_RETRIES: Final[int] = _WmsConstants.API_MAX_RETRIES
+    DEFAULT_RETRY_DELAY: Final[float] = 1.0  # Standard retry delay
 
-    # CONSUME limits from flext-oracle-wms
-    MIN_PAGE_SIZE: Final[int] = _WmsConstants.Pagination.MIN_PAGE_SIZE
-    MAX_PAGE_SIZE: Final[int] = _WmsConstants.Pagination.MAX_PAGE_SIZE
+    # Pagination limits (hardcoded since not available in nested structure)
+    MIN_PAGE_SIZE: Final[int] = 1
+    MAX_PAGE_SIZE: Final[int] = 1000
     MIN_TIMEOUT: Final[int] = 1  # Singer-specific minimum
     MAX_TIMEOUT: Final[int] = (
         FlextConstants.Network.DEFAULT_TIMEOUT * 10
     )  # Singer-specific maximum
 
-    # CONSUME discovery settings from flext-oracle-wms
-    DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = (
-        _WmsConstants.Processing.DEFAULT_SAMPLE_SIZE
-    )
+    # Discovery settings (hardcoded since not available)
+    DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = 100
     MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = (
         FlextConstants.Performance.BatchProcessing.DEFAULT_SIZE
     )  # Singer-specific maximum
@@ -225,11 +222,9 @@ class FlextTapOracleWMSConfig(FlextConfig):
 
     # Logging and debugging
     log_level: str = Field(
-        default=FlextConstants.Config.LogLevel.DEFAULT_LEVEL,  # SOURCE OF TRUTH
+        default="INFO",
         description="Logging level",
-        pattern="^("
-        + "|".join(FlextConstants.Config.LogLevel.VALID_LEVELS)
-        + ")$",  # SOURCE OF TRUTH
+        pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$",
     )
     enable_request_logging: bool = Field(
         default=False,
