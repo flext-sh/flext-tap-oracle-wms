@@ -19,8 +19,6 @@ from flext_core import (
     FlextResult,
     FlextTypes,
 )
-
-# Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
 from flext_meltano import FlextStream as Stream, FlextTap as Tap
 from flext_oracle_wms import (
     FlextOracleWmsApiVersion,
