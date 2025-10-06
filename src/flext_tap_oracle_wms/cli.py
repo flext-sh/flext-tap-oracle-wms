@@ -48,9 +48,7 @@ def main() -> None:
 
         >>> from flext_meltano import SingerCliTranslator, FlextMeltanoModels
         >>> params = FlextMeltanoModels.TapRunParams(
-        ...     tap_name="tap-oracle-wms",
-        ...     config_file="config.json",
-        ...     discover=True
+        ...     tap_name="tap-oracle-wms", config_file="config.json", discover=True
         ... )
         >>> command = SingerCliTranslator.translate_tap_run(params)
         >>> # Executes: ["tap-oracle-wms", "--config", "config.json", "--discover"]
