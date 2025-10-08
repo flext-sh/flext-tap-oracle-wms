@@ -24,7 +24,6 @@
     ]
     description = "FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System"
     keywords = [
-        "",
         "data-extraction",
         "enterprise",
         "etl",

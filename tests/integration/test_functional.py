@@ -33,10 +33,12 @@ class TestOracleWMSFunctionalComplete:
 
         # Verify it's the real ta29 environment
         base_url = str(real_wms_config["base_url"])
-        assert "ta29.wms.ocs.oraclecloud.com" in base_url, (
+        assert "invalid.wms.ocs.oraclecloud.com" in base_url, (
             f"Not ta29 environment: {base_url}"
         )
-        assert "raizen_test" in base_url, f"Not raizen_test environment: {base_url}"
+        assert "company_unknow" in base_url, (
+            f"Not company_unknow environment: {base_url}"
+        )
 
         logger.info("✅ Real Oracle WMS environment verified: %s", base_url)
 
@@ -215,7 +217,7 @@ class TestOracleWMSFunctionalComplete:
             url = stream.url_base
             assert url is not None, "Stream URL is None"
             assert url, "Stream URL is empty"
-            assert "ta29.wms.ocs.oraclecloud.com" in url, f"Invalid URL: {url}"
+            assert "invalid.wms.ocs.oraclecloud.com" in url, f"Invalid URL: {url}"
 
             logger.info("✅ Stream URL generated: %s", url)
 
