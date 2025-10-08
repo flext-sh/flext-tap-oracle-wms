@@ -78,8 +78,8 @@ class TestStreamsFunctional:
         # Test URL base
         url_base = stream.url_base
         assert url_base.startswith("https://"), f"URL must be HTTPS: {url_base}"
-        assert "ta29.wms.ocs.oraclecloud.com" in url_base
-        assert "raizen_test" in url_base
+        assert "invalid.wms.ocs.oraclecloud.com" in url_base
+        assert "company_unknow" in url_base
 
         # Test URL parameters
         url_params = stream.get_url_params(context=None, next_page_token=None)

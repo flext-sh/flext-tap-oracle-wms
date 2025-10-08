@@ -1,5 +1,5 @@
 {
-  "base_url": "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+  "base_url": "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
   "username": "USER_WMS_INTEGRA",
   "password": "jmCyS7BK94YvhS@",
   "auth_method": "basic",

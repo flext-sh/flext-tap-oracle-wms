@@ -7,8 +7,7 @@ Shows how to use the tap with flext-oracle-wms integration.
 import os
 import sys
 
-from pydantic import SecretStr
-
+# from pydantic import SecretStr  # Not needed
 from flext_tap_oracle_wms import (
     FlextMeltanoTapOracleWMS,
     FlextMeltanoTapOracleWMSConfig,
@@ -25,10 +24,10 @@ def main() -> int:
     config = FlextMeltanoTapOracleWMSConfig(
         base_url=os.getenv(
             "ORACLE_WMS_BASE_URL",
-            "https://ta29.wms.ocs.oraclecloud.com/raizen_test",
+            "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
         ),
         username=os.getenv("ORACLE_WMS_USERNAME", "USER_WMS_INTEGRA"),
-        password=SecretStr(os.getenv("ORACLE_WMS_PASSWORD", "your_password")),
+        password=os.getenv("ORACLE_WMS_PASSWORD", "your_password"),
         api_version="v10",
         page_size=100,
         verify_ssl=True,
