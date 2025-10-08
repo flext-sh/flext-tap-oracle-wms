@@ -14,7 +14,7 @@ __version__: Final[str] = f"{MAJOR}.{MINOR}.{PATCH}"
 __version_info__: Final[tuple[int, int, int]] = (MAJOR, MINOR, PATCH)
 
 
-class FlextTapOracleWmsVersion:
+class FlextMeltanoTapOracleWmsVersion:
     """Version information container for flext-tap-oracle-wms."""
 
     def __init__(self) -> None:
@@ -25,11 +25,18 @@ class FlextTapOracleWmsVersion:
         self.version_info = __version_info__
 
     @classmethod
-    def current(cls) -> FlextTapOracleWmsVersion:
+    def current(cls) -> FlextMeltanoTapOracleWmsVersion:
         """Return current version information."""
         return cls()
 
 
-VERSION: Final[FlextTapOracleWmsVersion] = FlextTapOracleWmsVersion.current()
+VERSION: Final[FlextMeltanoTapOracleWmsVersion] = (
+    FlextMeltanoTapOracleWmsVersion.current()
+)
 
-__all__ = ["VERSION", "FlextTapOracleWmsVersion", "__version__", "__version_info__"]
+__all__ = [
+    "VERSION",
+    "FlextMeltanoTapOracleWmsVersion",
+    "__version__",
+    "__version_info__",
+]

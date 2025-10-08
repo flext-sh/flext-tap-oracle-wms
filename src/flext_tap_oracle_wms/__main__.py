@@ -1,7 +1,7 @@
 """Python module execution entry point for FLEXT Tap Oracle WMS.
 
 Enables execution via `python -m flext_tap_oracle_wms` with full Singer SDK
-CLI support and flext-meltano SingerCliTranslator compatibility.
+CLI support and flext-meltano FlextMeltanoSingerCliTranslator compatibility.
 
 Usage:
     python -m flext_tap_oracle_wms --config config.json --discover

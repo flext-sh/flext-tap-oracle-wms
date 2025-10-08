@@ -16,8 +16,8 @@ from flext_core import FlextResult, FlextTypes
 from pydantic import SecretStr
 
 from flext_tap_oracle_wms import (
-    FlextTapOracleWMS,
-    FlextTapOracleWMSConfig,
+    FlextMeltanoTapOracleWMS,
+    FlextMeltanoTapOracleWMSConfig,
 )
 
 
@@ -36,9 +36,9 @@ def oracle_wms_environment() -> None:
 
 
 @pytest.fixture
-def sample_config() -> FlextTapOracleWMSConfig:
+def sample_config() -> FlextMeltanoTapOracleWMSConfig:
     """Sample configuration for tests."""
-    return FlextTapOracleWMSConfig(
+    return FlextMeltanoTapOracleWMSConfig(
         base_url="https://test.wms.example.com",
         username="test_user",
         password=SecretStr("test_password"),
@@ -51,9 +51,9 @@ def sample_config() -> FlextTapOracleWMSConfig:
 
 
 @pytest.fixture
-def real_config(_oracle_wms_environment: None) -> FlextTapOracleWMSConfig:
+def real_config(_oracle_wms_environment: None) -> FlextMeltanoTapOracleWMSConfig:
     """Real configuration from environment."""
-    return FlextTapOracleWMSConfig(
+    return FlextMeltanoTapOracleWMSConfig(
         base_url=os.environ.get("ORACLE_WMS_BASE_URL", ""),
         username=os.environ.get("ORACLE_WMS_USERNAME", ""),
         password=SecretStr(os.environ.get("ORACLE_WMS_PASSWORD", "")),
@@ -106,9 +106,11 @@ def mock_wms_client() -> MagicMock:
 
 
 @pytest.fixture
-def tap_instance(sample_config: FlextTapOracleWMSConfig) -> FlextTapOracleWMS:
+def tap_instance(
+    sample_config: FlextMeltanoTapOracleWMSConfig,
+) -> FlextMeltanoTapOracleWMS:
     """Create tap instance with sample config."""
-    return FlextTapOracleWMS(config=sample_config)
+    return FlextMeltanoTapOracleWMS(config=sample_config)
 
 
 # Removed fixtures for authenticator and discovery_instance
@@ -214,9 +216,11 @@ def reset_environment() -> Generator[None]:
 
 
 @pytest.fixture
-def _real_tap_instance(real_config: FlextTapOracleWMSConfig) -> FlextTapOracleWMS:
+def _real_tap_instance(
+    real_config: FlextMeltanoTapOracleWMSConfig,
+) -> FlextMeltanoTapOracleWMS:
     """Real tap instance for integration tests."""
-    return FlextTapOracleWMS(config=real_config)
+    return FlextMeltanoTapOracleWMS(config=real_config)
 
 
 @pytest.fixture

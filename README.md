@@ -13,7 +13,7 @@ Singer-compliant tap for extracting data from Oracle Warehouse Management System
 poetry install
 
 # Test basic functionality
-python -c "from flext_tap_oracle_wms import FlextTapOracleWms; tap = FlextTapOracleWms(); print('✅ Working')"
+python -c "from flext_tap_oracle_wms import FlextMeltanoTapOracleWms; tap = FlextMeltanoTapOracleWms(); print('✅ Working')"
 
 # Development setup
 make setup
@@ -211,10 +211,10 @@ export TAP_ORACLE_WMS_START_DATE="2024-01-01T00:00:00Z"
 
 ```python
 # Singer tap using FLEXT patterns
-from flext_tap_oracle_wms import FlextTapOracleWms
+from flext_tap_oracle_wms import FlextMeltanoTapOracleWms
 from flext_core import FlextResult
 
-tap = FlextTapOracleWms()
+tap = FlextMeltanoTapOracleWms()
 streams = tap.discover_streams()
 ```
 
