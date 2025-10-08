@@ -12,7 +12,7 @@ from flext_core import FlextConstants, FlextTypes
 from flext_oracle_wms.constants import FlextOracleWmsConstants
 
 
-class FlextTapOracleWmsConstants(FlextConstants):
+class FlextMeltanoTapOracleWmsConstants(FlextConstants):
     """Oracle WMS tap extraction-specific constants following flext-core patterns.
 
     Composes with FlextOracleWmsConstants to avoid duplication and ensure consistency.
@@ -59,4 +59,4 @@ class FlextTapOracleWmsConstants(FlextConstants):
         MAX_ENTITY_BATCH_SIZE = FlextOracleWmsConstants.Processing.MAX_BATCH_SIZE
 
 
-__all__ = ["FlextTapOracleWmsConstants"]
+__all__ = ["FlextMeltanoTapOracleWmsConstants"]

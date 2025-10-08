@@ -8,7 +8,7 @@ The tap supports standard Singer protocol operations:
 - Discovery: Generate catalog with `--discover`
 - Extraction: Run data extraction with `--config`, `--catalog`, `--state`
 
-Integration with flext-meltano's SingerCliTranslator enables automated
+Integration with flext-meltano's FlextMeltanoSingerCliTranslator enables automated
 command generation and pipeline orchestration.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -17,7 +17,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms.client import FlextTapOracleWMS
+from flext_tap_oracle_wms.client import FlextMeltanoTapOracleWMS
 
 
 def main() -> None:
@@ -44,20 +44,23 @@ def main() -> None:
         tap-oracle-wms --config config.json --catalog catalog.json --state state.json
 
     Integration:
-        Compatible with flext-meltano SingerCliTranslator for orchestration:
+        Compatible with flext-meltano FlextMeltanoSingerCliTranslator for orchestration:
 
-        >>> from flext_meltano import SingerCliTranslator, FlextMeltanoModels
+        >>> from flext_meltano import (
+        ...     FlextMeltanoSingerCliTranslator,
+        ...     FlextMeltanoModels,
+        ... )
         >>> params = FlextMeltanoModels.TapRunParams(
         ...     tap_name="tap-oracle-wms", config_file="config.json", discover=True
         ... )
-        >>> command = SingerCliTranslator.translate_tap_run(params)
+        >>> command = FlextMeltanoSingerCliTranslator.translate_tap_run(params)
         >>> # Executes: ["tap-oracle-wms", "--config", "config.json", "--discover"]
 
     Raises:
         SystemExit: On configuration errors or execution failures
 
     """
-    FlextTapOracleWMS.cli()
+    FlextMeltanoTapOracleWMS.cli()
 
 
 if __name__ == "__main__":

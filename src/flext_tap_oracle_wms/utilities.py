@@ -13,7 +13,7 @@ from typing import ClassVar, override
 from flext_core import FlextResult, FlextTypes, FlextUtilities
 
 
-class FlextTapOracleWmsUtilities(FlextUtilities):
+class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
     """Single unified utilities class for Singer tap Oracle WMS operations.
 
     Follows FLEXT unified class pattern with nested helper classes for
@@ -265,7 +265,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
                 sku_info["base_sku"] = parts[0]
                 if len(parts) > 1:
                     sku_info["variant"] = parts[1]
-                if len(parts) > FlextTapOracleWmsUtilities.MIN_SKU_PARTS:
+                if len(parts) > FlextMeltanoTapOracleWmsUtilities.MIN_SKU_PARTS:
                     sku_info["size_color"] = "-".join(parts[2:])
 
             # Extract numeric suffix (often size or version)
@@ -304,12 +304,12 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
 
             for record in sample_records:
                 for key, value in record.items():
-                    sanitized_key = FlextTapOracleWmsUtilities.WmsDataProcessing.sanitize_wms_field_name(
+                    sanitized_key = FlextMeltanoTapOracleWmsUtilities.WmsDataProcessing.sanitize_wms_field_name(
                         key
                     )
                     if sanitized_key not in properties:
                         properties[sanitized_key] = (
-                            FlextTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
+                            FlextMeltanoTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
                                 value
                             )
                         )
@@ -344,10 +344,8 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
             if isinstance(value, list):
                 if value:
                     # Infer type from first element
-                    item_type = (
-                        FlextTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
-                            value[0]
-                        )
+                    item_type = FlextMeltanoTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
+                        value[0]
                     )
                     return {"type": "array", "items": item_type}
                 return {"type": "array", "items": {"type": "string"}}
@@ -382,10 +380,12 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
 
             """
             if record_count <= 0:
-                return FlextTapOracleWmsUtilities.DEFAULT_BATCH_SIZE
+                return FlextMeltanoTapOracleWmsUtilities.DEFAULT_BATCH_SIZE
 
             calculated_size = max(1, record_count // target_batches)
-            return min(calculated_size, FlextTapOracleWmsUtilities.DEFAULT_BATCH_SIZE)
+            return min(
+                calculated_size, FlextMeltanoTapOracleWmsUtilities.DEFAULT_BATCH_SIZE
+            )
 
         @staticmethod
         def create_wms_replication_key_schema(
@@ -455,7 +455,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
                 if (
                     not isinstance(port, int)
                     or port <= 0
-                    or port > FlextTapOracleWmsUtilities.MAX_PORT
+                    or port > FlextMeltanoTapOracleWmsUtilities.MAX_PORT
                 ):
                     return FlextResult[FlextTypes.Dict].fail(
                         "Port must be a valid integer between 1 and 65535"
@@ -535,7 +535,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
 
             """
             # Delegate to existing ConfigValidation
-            return FlextTapOracleWmsUtilities.ConfigValidation.validate_wms_connection_config(
+            return FlextMeltanoTapOracleWmsUtilities.ConfigValidation.validate_wms_connection_config(
                 config
             )
 
@@ -583,16 +583,14 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
 
             """
             # Basic validation first
-            basic_result = (
-                FlextTapOracleWmsUtilities.ConfigurationProcessing.validate_wms_config(
-                    config
-                )
+            basic_result = FlextMeltanoTapOracleWmsUtilities.ConfigurationProcessing.validate_wms_config(
+                config
             )
             if basic_result.is_failure:
                 return basic_result
 
             # Connection params validation
-            params_result = FlextTapOracleWmsUtilities.ConfigurationProcessing.validate_wms_connection_params(
+            params_result = FlextMeltanoTapOracleWmsUtilities.ConfigurationProcessing.validate_wms_connection_params(
                 config
             )
             if params_result.is_failure:
@@ -600,7 +598,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
 
             # Stream configuration validation if present
             if "streams" in config:
-                stream_result = FlextTapOracleWmsUtilities.ConfigValidation.validate_wms_stream_config(
+                stream_result = FlextMeltanoTapOracleWmsUtilities.ConfigValidation.validate_wms_stream_config(
                     config
                 )
                 if stream_result.is_failure:
@@ -743,7 +741,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
 
             """
             stream_state = (
-                FlextTapOracleWmsUtilities.StateManagement.get_wms_stream_state(
+                FlextMeltanoTapOracleWmsUtilities.StateManagement.get_wms_stream_state(
                     state, stream_name
                 )
             )
@@ -832,7 +830,7 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
                 max(
                     100, table_size_estimate // 100
                 ),  # At least 100, at most 1% of table
-                FlextTapOracleWmsUtilities.DEFAULT_BATCH_SIZE,
+                FlextMeltanoTapOracleWmsUtilities.DEFAULT_BATCH_SIZE,
             )
 
         @staticmethod
@@ -960,5 +958,5 @@ class FlextTapOracleWmsUtilities(FlextUtilities):
 
 
 __all__ = [
-    "FlextTapOracleWmsUtilities",
+    "FlextMeltanoTapOracleWmsUtilities",
 ]

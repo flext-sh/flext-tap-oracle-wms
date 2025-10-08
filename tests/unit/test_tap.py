@@ -12,20 +12,20 @@ import pytest
 from flext_core import FlextResult, FlextTypes
 
 from flext_tap_oracle_wms import (
-    FlextTapOracleWMS,
-    FlextTapOracleWMSConfig,
-    FlextTapOracleWMSConfigurationError,
+    FlextMeltanoTapOracleWMS,
+    FlextMeltanoTapOracleWMSConfig,
+    FlextMeltanoTapOracleWMSConfigurationError,
 )
 
 
-class TestFlextTapOracleWMS:
-    """Test FlextTapOracleWMS class."""
+class TestFlextMeltanoTapOracleWMS:
+    """Test FlextMeltanoTapOracleWMS class."""
 
     def test_tap_initialization_with_config(
-        self, sample_config: FlextTapOracleWMSConfig
+        self, sample_config: FlextMeltanoTapOracleWMSConfig
     ) -> None:
         """Test tap initialization with config."""
-        tap = FlextTapOracleWMS(config=sample_config)
+        tap = FlextMeltanoTapOracleWMS(config=sample_config)
 
         assert tap.name == "flext-tap-oracle-wms"
         assert tap.flext_config == sample_config
@@ -41,7 +41,7 @@ class TestFlextTapOracleWMS:
             "password": "test_password",
         }
 
-        tap = FlextTapOracleWMS(config=config_dict)
+        tap = FlextMeltanoTapOracleWMS(config=config_dict)
 
         assert tap.flext_config.base_url == "https://test.wms.example.com"
         assert tap.flext_config.username == "test_user"
@@ -54,14 +54,14 @@ class TestFlextTapOracleWMS:
             "password": "test_password",
         }
 
-        with pytest.raises(FlextTapOracleWMSConfigurationError):
-            FlextTapOracleWMS(config=config_dict)
+        with pytest.raises(FlextMeltanoTapOracleWMSConfigurationError):
+            FlextMeltanoTapOracleWMS(config=config_dict)
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
     def test_wms_client_property(
         self,
         mock_client_class: MagicMock,
-        tap_instance: FlextTapOracleWMS,
+        tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test WMS client property lazy initialization."""
         # Mock client instance
@@ -84,7 +84,7 @@ class TestFlextTapOracleWMS:
     def test_wms_client_connection_failure(
         self,
         mock_client_class: MagicMock,
-        tap_instance: FlextTapOracleWMS,
+        tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test WMS client connection failure."""
         # Mock failed connection
@@ -92,7 +92,7 @@ class TestFlextTapOracleWMS:
         mock_client.connect.return_value = FlextResult[None].fail("Connection refused")
         mock_client_class.return_value = mock_client
 
-        with pytest.raises(FlextTapOracleWMSConfigurationError) as exc_info:
+        with pytest.raises(FlextMeltanoTapOracleWMSConfigurationError) as exc_info:
             _ = tap_instance.wms_client
 
         assert "Failed to connect to Oracle WMS" in str(exc_info.value)
@@ -103,7 +103,7 @@ class TestFlextTapOracleWMS:
         self,
         mock_client_class: MagicMock,
         mock_discovery_class: MagicMock,
-        tap_instance: FlextTapOracleWMS,
+        tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test tap initialization."""
         # Mock client
@@ -127,7 +127,7 @@ class TestFlextTapOracleWMS:
         self,
         mock_client_class: MagicMock,
         mock_discovery_class: MagicMock,
-        tap_instance: FlextTapOracleWMS,
+        tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test catalog discovery."""
         # Mock client
@@ -156,7 +156,7 @@ class TestFlextTapOracleWMS:
         mock_discovery.discover_entities.assert_called_once()
         mock_discovery.build_catalog.assert_called_once()
 
-    def test_stream_discovery(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_stream_discovery(self, tap_instance: FlextMeltanoTapOracleWMS) -> None:
         """Test stream discovery."""
         streams = tap_instance.discover_streams()
 
@@ -167,11 +167,11 @@ class TestFlextTapOracleWMS:
 
     def test_discover_streams_with_include(
         self,
-        sample_config: FlextTapOracleWMSConfig,
+        sample_config: FlextMeltanoTapOracleWMSConfig,
     ) -> None:
         """Test stream discovery with include filter."""
         sample_config.include_entities = ["inventory", "locations"]
-        tap = FlextTapOracleWMS(config=sample_config)
+        tap = FlextMeltanoTapOracleWMS(config=sample_config)
 
         streams = tap.discover_streams()
         stream_names = [stream.name for stream in streams]
@@ -182,11 +182,11 @@ class TestFlextTapOracleWMS:
 
     def test_discover_streams_with_exclude(
         self,
-        sample_config: FlextTapOracleWMSConfig,
+        sample_config: FlextMeltanoTapOracleWMSConfig,
     ) -> None:
         """Test stream discovery with exclude filter."""
         sample_config.exclude_entities = ["shipments", "receipts"]
-        tap = FlextTapOracleWMS(config=sample_config)
+        tap = FlextMeltanoTapOracleWMS(config=sample_config)
 
         streams = tap.discover_streams()
         stream_names = [stream.name for stream in streams]
@@ -196,7 +196,7 @@ class TestFlextTapOracleWMS:
         assert "shipments" not in stream_names
         assert "receipts" not in stream_names
 
-    def test_execute_normal_mode(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_execute_normal_mode(self, tap_instance: FlextMeltanoTapOracleWMS) -> None:
         """Test execute without message (normal tap mode)."""
         with patch.object(tap_instance, "run") as mock_run:
             result = tap_instance.execute()
@@ -205,7 +205,7 @@ class TestFlextTapOracleWMS:
             mock_run.assert_called_once()
 
     def test_execute_with_message_unsupported(
-        self, tap_instance: FlextTapOracleWMS
+        self, tap_instance: FlextMeltanoTapOracleWMS
     ) -> None:
         """Test execute with message (not supported for tap)."""
         result = tap_instance.execute("some message")
@@ -217,7 +217,7 @@ class TestFlextTapOracleWMS:
     def test_validate_configuration(
         self,
         mock_client_class: MagicMock,
-        tap_instance: FlextTapOracleWMS,
+        tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test configuration validation."""
         # Mock client
@@ -235,17 +235,23 @@ class TestFlextTapOracleWMS:
         assert result.value["connection"] == "success"
         mock_client.list_entities.assert_called_once_with(limit=1)
 
-    def test_get_implementation_name(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_get_implementation_name(
+        self, tap_instance: FlextMeltanoTapOracleWMS
+    ) -> None:
         """Test get implementation name."""
         assert tap_instance.get_implementation_name() == "FLEXT Oracle WMS Tap"
 
-    def test_get_implementation_version(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_get_implementation_version(
+        self, tap_instance: FlextMeltanoTapOracleWMS
+    ) -> None:
         """Test get implementation version."""
         version = tap_instance.get_implementation_version()
         assert isinstance(version, str)
         assert "." in version  # Should be semantic version
 
-    def test_get_implementation_metrics(self, tap_instance: FlextTapOracleWMS) -> None:
+    def test_get_implementation_metrics(
+        self, tap_instance: FlextMeltanoTapOracleWMS
+    ) -> None:
         """Test get implementation metrics."""
         result = tap_instance.get_implementation_metrics()
 

@@ -12,24 +12,27 @@ from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
 from flext_meltano import FlextMeltanoBridge, FlextMeltanoConfig, FlextMeltanoService
 
 from flext_tap_oracle_wms.cli import main
-from flext_tap_oracle_wms.client import FlextTapOracleWMS, FlextTapOracleWMSPlugin
+from flext_tap_oracle_wms.client import (
+    FlextMeltanoTapOracleWMS,
+    FlextMeltanoTapOracleWMSPlugin,
+)
 from flext_tap_oracle_wms.config import (
-    FlextTapOracleWMSConfig,
-    FlextTapOracleWMSConstants,
+    FlextMeltanoTapOracleWMSConfig,
+    FlextMeltanoTapOracleWMSConstants,
 )
 from flext_tap_oracle_wms.exceptions import (
-    FlextTapOracleWMSConfigurationError,
-    FlextTapOracleWMSConnectionError,
-    FlextTapOracleWMSError,
-    FlextTapOracleWMSValidationError,
+    FlextMeltanoTapOracleWMSConfigurationError,
+    FlextMeltanoTapOracleWMSConnectionError,
+    FlextMeltanoTapOracleWMSError,
+    FlextMeltanoTapOracleWMSValidationError,
 )
-from flext_tap_oracle_wms.models import FlextTapOracleWmsModels
-from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols
-from flext_tap_oracle_wms.streams import FlextTapOracleWMSStream
-from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
-from flext_tap_oracle_wms.version import VERSION, FlextTapOracleWmsVersion
+from flext_tap_oracle_wms.models import FlextMeltanoTapOracleWmsModels
+from flext_tap_oracle_wms.protocols import FlextMeltanoTapOracleWmsProtocols
+from flext_tap_oracle_wms.streams import FlextMeltanoTapOracleWMSStream
+from flext_tap_oracle_wms.utilities import FlextMeltanoTapOracleWmsUtilities
+from flext_tap_oracle_wms.version import VERSION, FlextMeltanoTapOracleWmsVersion
 
-PROJECT_VERSION: Final[FlextTapOracleWmsVersion] = VERSION
+PROJECT_VERSION: Final[FlextMeltanoTapOracleWmsVersion] = VERSION
 
 __version__: str = VERSION.version
 __version_info__: tuple[int | str, ...] = VERSION.version_info
@@ -41,21 +44,21 @@ __all__ = [
     "FlextMeltanoBridge",
     "FlextMeltanoConfig",
     "FlextMeltanoService",
+    "FlextMeltanoTapOracleWMS",
+    "FlextMeltanoTapOracleWMSConfig",
+    "FlextMeltanoTapOracleWMSConfigurationError",
+    "FlextMeltanoTapOracleWMSConnectionError",
+    "FlextMeltanoTapOracleWMSConstants",
+    "FlextMeltanoTapOracleWMSError",
+    "FlextMeltanoTapOracleWMSPlugin",
+    "FlextMeltanoTapOracleWMSStream",
+    "FlextMeltanoTapOracleWMSValidationError",
+    "FlextMeltanoTapOracleWmsModels",
+    "FlextMeltanoTapOracleWmsProtocols",
+    "FlextMeltanoTapOracleWmsUtilities",
+    "FlextMeltanoTapOracleWmsVersion",
     "FlextModels",
     "FlextResult",
-    "FlextTapOracleWMS",
-    "FlextTapOracleWMSConfig",
-    "FlextTapOracleWMSConfigurationError",
-    "FlextTapOracleWMSConnectionError",
-    "FlextTapOracleWMSConstants",
-    "FlextTapOracleWMSError",
-    "FlextTapOracleWMSPlugin",
-    "FlextTapOracleWMSStream",
-    "FlextTapOracleWMSValidationError",
-    "FlextTapOracleWmsModels",
-    "FlextTapOracleWmsProtocols",
-    "FlextTapOracleWmsUtilities",
-    "FlextTapOracleWmsVersion",
     "FlextTypes",
     "__version__",
     "__version_info__",

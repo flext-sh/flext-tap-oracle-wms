@@ -23,7 +23,7 @@ from flext_core import FlextTypes
 
 
 # Singer Oracle WMS tap domain TypeVars
-class FlextTapOracleWmsTypes(FlextTypes):
+class FlextMeltanoTapOracleWmsTypes(FlextTypes):
     """Singer Oracle WMS tap-specific type definitions extending FlextTypes.
 
     Domain-specific type system for Singer Oracle WMS tap operations.
@@ -244,5 +244,5 @@ class FlextTapOracleWmsTypes(FlextTypes):
 # =============================================================================
 
 __all__: FlextTypes.StringList = [
-    "FlextTapOracleWmsTypes",
+    "FlextMeltanoTapOracleWmsTypes",
 ]

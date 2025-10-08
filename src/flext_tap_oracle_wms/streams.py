@@ -12,15 +12,15 @@ from typing import ClassVar, override
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
 # Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
-from flext_meltano import FlextStream as Stream, FlextTap as Tap
+from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient
 
-from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
+from flext_tap_oracle_wms.utilities import FlextMeltanoTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)
 
 
-class FlextTapOracleWMSStream(Stream):
+class FlextMeltanoTapOracleWMSStream(Stream):
     """Dynamic stream for Oracle WMS entities.
 
     Uses flext-oracle-wms client for all data operations.
@@ -43,7 +43,7 @@ class FlextTapOracleWMSStream(Stream):
         super().__init__(tap=tap, name=name or self.name, schema=schema)
 
         # ZERO TOLERANCE FIX: Initialize utilities for ALL stream business logic
-        self._utilities = FlextTapOracleWmsUtilities()
+        self._utilities = FlextMeltanoTapOracleWmsUtilities()
 
         # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
         self._client: FlextOracleWmsClient | None = None
@@ -64,12 +64,12 @@ class FlextTapOracleWMSStream(Stream):
     def client(self: object) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
         if self._client is None:
-            # Access WMS client from tap (FlextTapOracleWMS)
+            # Access WMS client from tap (FlextMeltanoTapOracleWMS)
             tap_instance = getattr(self, "tap", None) or getattr(self, "_tap", None)
             if tap_instance and hasattr(tap_instance, "wms_client"):
                 self._client = tap_instance.wms_client
             else:
-                msg = "WMS client not available - tap must be FlextTapOracleWMS"
+                msg = "WMS client not available - tap must be FlextMeltanoTapOracleWMS"
                 raise RuntimeError(msg)
 
         if self._client is None:

@@ -15,31 +15,31 @@ from flext_core import FlextExceptions
 
 
 # Define exceptions inheriting from FlextExceptions
-class FlextTapOracleWMSError(FlextExceptions.Error):
+class FlextMeltanoTapOracleWMSError(FlextExceptions.Error):
     """Base exception for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSValidationError(FlextExceptions.ValidationError):
+class FlextMeltanoTapOracleWMSValidationError(FlextExceptions.ValidationError):
     """Validation error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSConfigurationError(FlextExceptions.ConfigurationError):
+class FlextMeltanoTapOracleWMSConfigurationError(FlextExceptions.ConfigurationError):
     """Configuration error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSProcessingError(FlextExceptions.ProcessingError):
+class FlextMeltanoTapOracleWMSProcessingError(FlextExceptions.ProcessingError):
     """Processing error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSConnectionError(FlextExceptions.ConnectionError):
+class FlextMeltanoTapOracleWMSConnectionError(FlextExceptions.ConnectionError):
     """Connection error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSAuthenticationError(FlextExceptions.AuthenticationError):
+class FlextMeltanoTapOracleWMSAuthenticationError(FlextExceptions.AuthenticationError):
     """Authentication error for Oracle WMS tap operations."""
 
 
-class FlextTapOracleWMSTimeoutError(FlextExceptions.TimeoutError):
+class FlextMeltanoTapOracleWMSTimeoutError(FlextExceptions.TimeoutError):
     """Timeout error for Oracle WMS tap operations."""
 
 
@@ -57,12 +57,12 @@ class ValidationContext:
 
 
 __all__ = [
-    "FlextTapOracleWMSAuthenticationError",
-    "FlextTapOracleWMSConfigurationError",
-    "FlextTapOracleWMSConnectionError",
-    "FlextTapOracleWMSError",
-    "FlextTapOracleWMSProcessingError",
-    "FlextTapOracleWMSTimeoutError",
-    "FlextTapOracleWMSValidationError",
+    "FlextMeltanoTapOracleWMSAuthenticationError",
+    "FlextMeltanoTapOracleWMSConfigurationError",
+    "FlextMeltanoTapOracleWMSConnectionError",
+    "FlextMeltanoTapOracleWMSError",
+    "FlextMeltanoTapOracleWMSProcessingError",
+    "FlextMeltanoTapOracleWMSTimeoutError",
+    "FlextMeltanoTapOracleWMSValidationError",
     "ValidationContext",
 ]
