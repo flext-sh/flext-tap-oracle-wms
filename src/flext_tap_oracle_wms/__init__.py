@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT.
 
 from __future__ import annotations
 
+from flext_tap_oracle_wms.__version__ import __version__, __version_info__
+
 from typing import Final
 
 from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
