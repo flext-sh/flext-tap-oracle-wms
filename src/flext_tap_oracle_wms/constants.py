@@ -8,11 +8,11 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from flext_core import FlextConstants, FlextTypes
+from flext_core import FlextCore
 from flext_oracle_wms.constants import FlextOracleWmsConstants
 
 
-class FlextMeltanoTapOracleWmsConstants(FlextConstants):
+class FlextMeltanoTapOracleWmsConstants(FlextCore.Constants):
     """Oracle WMS tap extraction-specific constants following flext-core patterns.
 
     Composes with FlextOracleWmsConstants to avoid duplication and ensure consistency.
@@ -22,12 +22,12 @@ class FlextMeltanoTapOracleWmsConstants(FlextConstants):
     DEFAULT_WMS_TIMEOUT = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
     DEFAULT_FETCH_SIZE = FlextOracleWmsConstants.Processing.DEFAULT_BATCH_SIZE
 
-    # Singer Tap Configuration - using FlextConstants composition
-    DEFAULT_BATCH_SIZE = FlextConstants.Performance.BatchProcessing.DEFAULT_SIZE
-    MAX_BATCH_SIZE = FlextConstants.Performance.BatchProcessing.MAX_ITEMS
+    # Singer Tap Configuration - using FlextCore.Constants composition
+    DEFAULT_BATCH_SIZE = FlextCore.Constants.Performance.BatchProcessing.DEFAULT_SIZE
+    MAX_BATCH_SIZE = FlextCore.Constants.Performance.BatchProcessing.MAX_ITEMS
 
     # WMS Entity Types from Oracle WMS constants
-    WMS_ENTITY_TYPES: ClassVar[FlextTypes.StringList] = [
+    WMS_ENTITY_TYPES: ClassVar[FlextCore.Types.StringList] = [
         "INVENTORY",
         "SHIPMENT",
         "PICKING",

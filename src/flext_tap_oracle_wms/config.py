@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Final, Self
 
-from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult, FlextTypes
+from flext_core import FlextCore
 from flext_oracle_wms import (
     FlextOracleWmsConstants as _WmsConstants,
 )
@@ -19,15 +19,15 @@ from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
 
-class FlextMeltanoTapOracleWMSConstants(FlextConstants):
+class FlextMeltanoTapOracleWMSConstants(FlextCore.Constants):
     """Constants for Oracle WMS tap configuration - consuming from flext-oracle-wms API."""
 
     # API defaults from flext-oracle-wms (using available constants)
     DEFAULT_API_VERSION: Final[str] = _WmsConstants.API_VERSION_DEFAULT
 
-    # Validation limits - using FlextConstants as SOURCE OF TRUTH
+    # Validation limits - using FlextCore.Constants as SOURCE OF TRUTH
     MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = (
-        FlextConstants.Container.MAX_WORKERS + 1
+        FlextCore.Constants.Container.MAX_WORKERS + 1
     )  # 5
     DEFAULT_PAGE_SIZE: Final[int] = _WmsConstants.DEFAULT_PAGE_SIZE
     DEFAULT_TIMEOUT: Final[int] = _WmsConstants.Api.DEFAULT_TIMEOUT
@@ -39,21 +39,21 @@ class FlextMeltanoTapOracleWMSConstants(FlextConstants):
     MAX_PAGE_SIZE: Final[int] = 1000
     MIN_TIMEOUT: Final[int] = 1  # Singer-specific minimum
     MAX_TIMEOUT: Final[int] = (
-        FlextConstants.Network.DEFAULT_TIMEOUT * 10
+        FlextCore.Constants.Network.DEFAULT_TIMEOUT * 10
     )  # Singer-specific maximum
 
     # Discovery settings (hardcoded since not available)
     DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = 100
     MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = (
-        FlextConstants.Performance.BatchProcessing.DEFAULT_SIZE
+        FlextCore.Constants.Performance.BatchProcessing.DEFAULT_SIZE
     )  # Singer-specific maximum
 
 
-class FlextMeltanoTapOracleWMSConfig(FlextConfig):
+class FlextMeltanoTapOracleWMSConfig(FlextCore.Config):
     """Configuration for Oracle WMS tap.
 
     Type-safe configuration with validation for Oracle WMS data extraction.
-    Follows FLEXT patterns using FlextConfig for comprehensive validation.
+    Follows FLEXT patterns using FlextCore.Config for comprehensive validation.
     """
 
     # Connection settings
@@ -151,11 +151,11 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     )
 
     # Stream selection
-    include_entities: FlextTypes.StringList | None = Field(
+    include_entities: FlextCore.Types.StringList | None = Field(
         default=None,
         description="List of entities to include (default: all)",
     )
-    exclude_entities: FlextTypes.StringList | None = Field(
+    exclude_entities: FlextCore.Types.StringList | None = Field(
         default=None,
         description="List of entities to exclude",
     )
@@ -172,7 +172,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         description="Enable flattening of nested structures",
     )
     max_flattening_depth: int = Field(
-        default=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,  # 3
+        default=FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS,  # 3
         description="Maximum depth for schema flattening",
         ge=0,
         le=10,
@@ -184,7 +184,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         description="Enable rate limiting",
     )
     max_requests_per_minute: int = Field(
-        default=FlextConstants.Utilities.SECONDS_PER_MINUTE,  # 60
+        default=FlextCore.Constants.Utilities.SECONDS_PER_MINUTE,  # 60
         description="Maximum requests per minute",
         ge=1,
         le=1000,
@@ -195,17 +195,17 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         default=None,
         description="Custom User-Agent header",
     )
-    additional_headers: FlextTypes.StringDict | None = Field(
+    additional_headers: FlextCore.Types.StringDict | None = Field(
         default=None,
         description="Additional HTTP headers",
     )
 
     # Column filtering
-    column_mappings: dict[str, FlextTypes.StringDict] | None = Field(
+    column_mappings: dict[str, FlextCore.Types.StringDict] | None = Field(
         default=None,
         description="Column name mappings per stream",
     )
-    ignored_columns: FlextTypes.StringList | None = Field(
+    ignored_columns: FlextCore.Types.StringList | None = Field(
         default=None,
         description="Columns to ignore globally",
     )
@@ -237,7 +237,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         description="Enable parallel stream extraction",
     )
     max_parallel_streams: int = Field(
-        default=FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,  # 3
+        default=FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS,  # 3
         description="Maximum number of parallel streams",
         ge=1,
         le=10,
@@ -265,15 +265,15 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
 
     @classmethod
     def get_global_instance(cls) -> Self:
-        """Get the global singleton instance using enhanced FlextConfig pattern."""
+        """Get the global singleton instance using enhanced FlextCore.Config pattern."""
         return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")
 
     @classmethod
     def create_for_development(cls, **overrides: object) -> Self:
         """Create configuration for development environment."""
-        dev_overrides: FlextTypes.Dict = {
-            "timeout": FlextConstants.Network.DEFAULT_TIMEOUT * 2,
-            "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS + 2,
+        dev_overrides: FlextCore.Types.Dict = {
+            "timeout": FlextCore.Constants.Network.DEFAULT_TIMEOUT * 2,
+            "max_retries": FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS + 2,
             "page_size": FlextMeltanoTapOracleWMSConstants.DEFAULT_PAGE_SIZE // 2,
             "enable_request_logging": True,
             "enable_parallel_extraction": True,
@@ -286,9 +286,9 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     @classmethod
     def create_for_production(cls, **overrides: object) -> Self:
         """Create configuration for production environment."""
-        prod_overrides: FlextTypes.Dict = {
-            "timeout": FlextConstants.Network.DEFAULT_TIMEOUT,
-            "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
+        prod_overrides: FlextCore.Types.Dict = {
+            "timeout": FlextCore.Constants.Network.DEFAULT_TIMEOUT,
+            "max_retries": FlextCore.Constants.Reliability.MAX_RETRY_ATTEMPTS,
             "page_size": FlextMeltanoTapOracleWMSConstants.DEFAULT_PAGE_SIZE,
             "enable_request_logging": False,
             "enable_parallel_extraction": False,
@@ -301,8 +301,8 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     @classmethod
     def create_for_testing(cls, **overrides: object) -> Self:
         """Create configuration for testing environment."""
-        test_overrides: FlextTypes.Dict = {
-            "timeout": FlextConstants.Network.DEFAULT_TIMEOUT // 3,
+        test_overrides: FlextCore.Types.Dict = {
+            "timeout": FlextCore.Constants.Network.DEFAULT_TIMEOUT // 3,
             "max_retries": 1,
             "page_size": FlextMeltanoTapOracleWMSConstants.MIN_PAGE_SIZE,
             "enable_request_logging": True,
@@ -316,11 +316,11 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     @field_validator("base_url")
     @classmethod
     def validate_base_url(cls, v: str) -> str:
-        """Validate base URL using centralized FlextModels validation."""
-        # Use centralized FlextModels validation instead of duplicate logic
+        """Validate base URL using centralized FlextCore.Models validation."""
+        # Use centralized FlextCore.Models validation instead of duplicate logic
         stripped_url = v.rstrip("/")  # Remove trailing slash
-        validation_result: FlextResult[object] = FlextModels.create_validated_http_url(
-            stripped_url
+        validation_result: FlextCore.Result[object] = (
+            FlextCore.Models.create_validated_http_url(stripped_url)
         )
         if validation_result.is_failure:
             error_msg = f"Invalid base URL: {validation_result.error}"
@@ -331,8 +331,8 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     @classmethod
     def validate_entity_lists(
         cls,
-        v: FlextTypes.StringList | None,
-    ) -> FlextTypes.StringList | None:
+        v: FlextCore.Types.StringList | None,
+    ) -> FlextCore.Types.StringList | None:
         """Validate entity lists are unique."""
         if v is not None:
             unique_entities = list(dict.fromkeys(v))
@@ -344,11 +344,11 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     @field_validator("start_date", "end_date")
     @classmethod
     def validate_dates(cls, v: str | None) -> str | None:
-        """Validate date format using centralized FlextModels validation."""
+        """Validate date format using centralized FlextCore.Models validation."""
         if v is not None:
-            # Use centralized FlextModels validation instead of duplicate logic
-            validation_result: FlextResult[object] = (
-                FlextModels.create_validated_iso_date(v)
+            # Use centralized FlextCore.Models validation instead of duplicate logic
+            validation_result: FlextCore.Result[object] = (
+                FlextCore.Models.create_validated_iso_date(v)
             )
             if validation_result.is_failure:
                 error_msg = f"Invalid date format: {validation_result.error}"
@@ -356,8 +356,8 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
             return validation_result.unwrap()
         return v
 
-    def validate_business_rules(self: object) -> FlextResult[None]:
-        """Validate Oracle WMS tap configuration business rules using FlextConfig pattern.
+    def validate_business_rules(self: object) -> FlextCore.Result[None]:
+        """Validate Oracle WMS tap configuration business rules using FlextCore.Config pattern.
 
         Consolidates all validation logic into a single comprehensive method.
 
@@ -378,67 +378,67 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
             if not validation.success:
                 return validation
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def _validate_required_fields(self: object) -> FlextResult[None]:
+    def _validate_required_fields(self: object) -> FlextCore.Result[None]:
         """Validate required fields."""
         if not self.base_url or not self.username or not self.password:
-            return FlextResult[None].fail(
+            return FlextCore.Result[None].fail(
                 "base_url, username, and password are required",
             )
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def _validate_url_format(self: object) -> FlextResult[None]:
+    def _validate_url_format(self: object) -> FlextCore.Result[None]:
         """Validate URL format."""
         if not self.base_url.startswith(("http://", "https://")):
-            return FlextResult[None].fail(
+            return FlextCore.Result[None].fail(
                 "base_url must start with http:// or https://",
             )
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def _validate_page_size(self: object) -> FlextResult[None]:
+    def _validate_page_size(self: object) -> FlextCore.Result[None]:
         """Validate page size limits."""
         if not (
             FlextMeltanoTapOracleWMSConstants.MIN_PAGE_SIZE
             <= self.page_size
             <= FlextMeltanoTapOracleWMSConstants.MAX_PAGE_SIZE
         ):
-            return FlextResult[None].fail(
+            return FlextCore.Result[None].fail(
                 f"page_size must be between {FlextMeltanoTapOracleWMSConstants.MIN_PAGE_SIZE} and {FlextMeltanoTapOracleWMSConstants.MAX_PAGE_SIZE}",
             )
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def _validate_timeout(self: object) -> FlextResult[None]:
+    def _validate_timeout(self: object) -> FlextCore.Result[None]:
         """Validate timeout."""
         if self.timeout <= 0:
-            return FlextResult[None].fail("timeout must be positive")
-        return FlextResult[None].ok(None)
+            return FlextCore.Result[None].fail("timeout must be positive")
+        return FlextCore.Result[None].ok(None)
 
-    def _validate_entity_settings(self: object) -> FlextResult[None]:
+    def _validate_entity_settings(self: object) -> FlextCore.Result[None]:
         """Validate entity settings."""
         if self.include_entities and self.exclude_entities:
             common = set(self.include_entities) & set(self.exclude_entities)
             if common:
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     f"Entities cannot be both included and excluded: {common}",
                 )
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def _validate_date_range(self: object) -> FlextResult[None]:
-        """Validate date range using centralized FlextModels validation."""
+    def _validate_date_range(self: object) -> FlextCore.Result[None]:
+        """Validate date range using centralized FlextCore.Models validation."""
         if self.start_date and self.end_date:
-            # Use centralized FlextModels date range validation instead of duplicate logic
-            validation_result = FlextModels.create_validated_date_range(
+            # Use centralized FlextCore.Models date range validation instead of duplicate logic
+            validation_result = FlextCore.Models.create_validated_date_range(
                 self.start_date,
                 self.end_date,
             )
             if validation_result.is_failure:
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     validation_result.error or "Date range validation failed",
                 )
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def _validate_performance_settings(self: object) -> FlextResult[None]:
+    def _validate_performance_settings(self: object) -> FlextCore.Result[None]:
         """Validate performance settings."""
         if (
             self.enable_parallel_extraction
@@ -446,16 +446,18 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
             > FlextMeltanoTapOracleWMSConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
             and not self.enable_rate_limiting
         ):
-            return FlextResult[None].fail(
+            return FlextCore.Result[None].fail(
                 f"Rate limiting must be enabled for more than {FlextMeltanoTapOracleWMSConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT} parallel streams",
             )
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def validate_oracle_wms_config(self: object) -> FlextResult[FlextTypes.Dict]:
+    def validate_oracle_wms_config(
+        self: object,
+    ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Validate Oracle WMS specific configuration.
 
         Returns:
-            FlextResult with validation status
+            FlextCore.Result with validation status
 
         """
         try:
@@ -463,18 +465,18 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
             if self.include_entities and self.exclude_entities:
                 common = set(self.include_entities) & set(self.exclude_entities)
                 if common:
-                    return FlextResult[FlextTypes.Dict].fail(
+                    return FlextCore.Result[FlextCore.Types.Dict].fail(
                         f"Entities cannot be both included and excluded: {common}",
                     )
 
-            # Validate date range using centralized FlextModels validation
+            # Validate date range using centralized FlextCore.Models validation
             if self.start_date and self.end_date:
-                date_range_result = FlextModels.create_validated_date_range(
+                date_range_result = FlextCore.Models.create_validated_date_range(
                     self.start_date,
                     self.end_date,
                 )
                 if date_range_result.is_failure:
-                    return FlextResult[FlextTypes.Dict].fail(
+                    return FlextCore.Result[FlextCore.Types.Dict].fail(
                         date_range_result.error or "Date range validation failed",
                     )
 
@@ -485,7 +487,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
                 and self.max_parallel_streams > max_parallel_streams_without_rate_limit
                 and not self.enable_rate_limiting
             ):
-                return FlextResult[FlextTypes.Dict].fail(
+                return FlextCore.Result[FlextCore.Types.Dict].fail(
                     f"Rate limiting must be enabled for more than {max_parallel_streams_without_rate_limit} parallel streams",
                 )
 
@@ -501,18 +503,18 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
                 else 0,
             }
 
-            return FlextResult[FlextTypes.Dict].ok(validation_data)
+            return FlextCore.Result[FlextCore.Types.Dict].ok(validation_data)
 
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
                 f"Configuration validation failed: {e}",
             )
 
-    def validate_domain_rules(self: object) -> FlextResult[None]:
+    def validate_domain_rules(self: object) -> FlextCore.Result[None]:
         """Validate Oracle WMS tap-specific domain rules.
 
         Returns:
-            FlextResult indicating validation success or failure
+            FlextCore.Result indicating validation success or failure
 
         """
         try:
@@ -524,11 +526,11 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
             ]
 
             for validation_method in validation_methods:
-                result: FlextResult[object] = validation_method()
+                result: FlextCore.Result[object] = validation_method()
                 if result.is_failure:
                     return result
 
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
 
         except Exception as e:
-            return FlextResult[None].fail(f"Domain rule validation failed: {e}")
+            return FlextCore.Result[None].fail(f"Domain rule validation failed: {e}")

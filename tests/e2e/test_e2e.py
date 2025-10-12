@@ -16,7 +16,7 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 
 import pytest
-from flext_core import FlextLogger, FlextTypes
+from flext_core import FlextCore
 
 from flext_tap_oracle_wms import (
     FlextMeltanoTapOracleWMS,
@@ -25,7 +25,7 @@ from flext_tap_oracle_wms import (
     # WMSPaginator,  # Not implemented yet
 )
 
-logger = FlextLogger(__name__)
+logger = FlextCore.Logger(__name__)
 
 
 @pytest.mark.e2e
@@ -346,7 +346,7 @@ class TestOracleWMSE2EComplete:
         paginator = None  # Placeholder until implementation
 
         # Test pagination flow
-        pages_tested: FlextTypes.StringList = []
+        pages_tested: FlextCore.Types.StringList = []
 
         # Page 1
         response1 = Mock()
@@ -375,7 +375,7 @@ class TestOracleWMSE2EComplete:
 
     def test_error_recovery_and_resilience(
         self,
-        real_wms_config: FlextTypes.Dict,
+        real_wms_config: FlextCore.Types.Dict,
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         # Test with invalid credentials

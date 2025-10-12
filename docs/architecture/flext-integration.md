@@ -51,21 +51,21 @@ graph TB
 
 ```python
 from flext_core import (
-    FlextConfig,          # Configuration base class
-    FlextLogger,          # Standardized logging
+    FlextCore.Config,          # Configuration base class
+    FlextCore.Logger,          # Standardized logging
     TAnyDict,
     TEntityId,           # Entity identifier type
-    FlextResult,       # Result handling pattern
+    FlextCore.Result,       # Result handling pattern
 )
 
-class WMSConfig(FlextConfig):
+class WMSConfig(FlextCore.Config):
     """Configuration using flext-core patterns."""
 
     base_url: str
     auth_method: str
     company_code: str
     facility_code: str
-    entities: List[str] = Field(default=["item", "inventory"])
+    entities: FlextCore.Types.StringList = Field(default=["item", "inventory"])
 
     class Config:
         """Pydantic configuration."""
@@ -77,16 +77,16 @@ class FlextMeltanoTapOracleWMS:
 
     def __init__(self, config: TAnyDict):
         self.config = WMSConfig(**config)
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
-    def discover_streams(self) -> FlextResult[List[Stream]]:
-        """Return streams using FlextResult pattern."""
+    def discover_streams(self) -> FlextCore.Result[List[Stream]]:
+        """Return streams using FlextCore.Result pattern."""
         try:
             streams = self._build_streams()
-            return FlextResult.success(streams)
+            return FlextCore.Result.success(streams)
         except Exception as e:
             self.logger.error(f"Stream discovery failed: {e}")
-            return FlextResult.failure(f"Discovery error: {e}")
+            return FlextCore.Result.failure(f"Discovery error: {e}")
 ```
 
 #### Type System Integration
@@ -119,7 +119,7 @@ class FlextMeltanoTapOracleWMSStream:
 #### Logging Integration
 
 ```python
-from flext_core import FlextLogger
+from flext_core import FlextCore
 
 class FlextMeltanoTapOracleWMSStream:
     """Stream with standardized logging."""
@@ -127,7 +127,7 @@ class FlextMeltanoTapOracleWMSStream:
     def __init__(self, tap, name: str):
         self.tap = tap
         self.name = name
-        self.logger = FlextLogger(f"{__name__}.{name}")
+        self.logger = FlextCore.Logger(f"{__name__}.{name}")
 
     def get_records(self, context):
         """Extract records with comprehensive logging."""
@@ -166,7 +166,7 @@ class WMSClientManager:
     def __init__(self, config: WMSConfig):
         self.config = config
         self._client = None
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
     @property
     def client(self) -> FlextOracleWmsClient:
@@ -182,21 +182,21 @@ class WMSClientManager:
             )
         return self._client
 
-    def test_connection(self) -> FlextResult[bool]:
+    def test_connection(self) -> FlextCore.Result[bool]:
         """Test WMS connection using library client."""
         try:
             result = self.client.test_connection()
             if result:
                 self.logger.info("WMS connection successful")
-                return FlextResult.success(True)
+                return FlextCore.Result.success(True)
             else:
-                return FlextResult.failure("WMS connection test failed")
+                return FlextCore.Result.failure("WMS connection test failed")
         except FlextOracleWmsAuthenticationError as e:
             self.logger.error(f"WMS authentication failed: {e}")
-            return FlextResult.failure(f"Authentication error: {e}")
+            return FlextCore.Result.failure(f"Authentication error: {e}")
         except FlextOracleWmsError as e:
             self.logger.error(f"WMS client error: {e}")
-            return FlextResult.failure(f"WMS error: {e}")
+            return FlextCore.Result.failure(f"WMS error: {e}")
 ```
 
 #### Entity Discovery Integration
@@ -210,38 +210,38 @@ class EntityDiscovery:
 
     def __init__(self, wms_client: FlextOracleWmsClient):
         self.wms_client = wms_client
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
-    def discover_entities(self) -> FlextResult[List[str]]:
+    def discover_entities(self) -> FlextCore.Result[FlextCore.Types.StringList]:
         """Discover available entities using WMS client."""
         try:
             entities = self.wms_client.get_available_entities()
             self.logger.info(f"Discovered {len(entities)} WMS entities")
-            return FlextResult.success(entities)
+            return FlextCore.Result.success(entities)
         except Exception as e:
             self.logger.error(f"Entity discovery failed: {e}")
-            return FlextResult.failure(f"Discovery error: {e}")
+            return FlextCore.Result.failure(f"Discovery error: {e}")
 
-    def get_entity_metadata(self, entity: str) -> FlextResult[WMSEntityMetadata]:
+    def get_entity_metadata(self, entity: str) -> FlextCore.Result[WMSEntityMetadata]:
         """Get entity metadata using library client."""
         try:
             metadata = self.wms_client.get_entity_metadata(entity)
-            return FlextResult.success(metadata)
+            return FlextCore.Result.success(metadata)
         except Exception as e:
             self.logger.error(f"Metadata retrieval failed for {entity}: {e}")
-            return FlextResult.failure(f"Metadata error: {e}")
+            return FlextCore.Result.failure(f"Metadata error: {e}")
 
-    def generate_schema(self, entity: str) -> FlextResult[FlextTypes.Dict]:
+    def generate_schema(self, entity: str) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Generate Singer schema from WMS metadata."""
         metadata_result = self.get_entity_metadata(entity)
         if not metadata_result.success:
-            return FlextResult.failure(metadata_result.error)
+            return FlextCore.Result.failure(metadata_result.error)
 
         try:
             schema = self._convert_metadata_to_schema(metadata_result.data)
-            return FlextResult.success(schema)
+            return FlextCore.Result.success(schema)
         except Exception as e:
-            return FlextResult.failure(f"Schema generation error: {e}")
+            return FlextCore.Result.failure(f"Schema generation error: {e}")
 ```
 
 ### 3. flext-meltano Integration
@@ -288,7 +288,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         self.tap = tap
 
     @property
-    def schema(self) -> FlextTypes.Dict:
+    def schema(self) -> FlextCore.Types.Dict:
         """Get stream schema from WMS metadata."""
         discovery = EntityDiscovery(self.tap.wms_client_manager.client)
         schema_result = discovery.generate_schema(self.name)
@@ -298,7 +298,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
 
         return schema_result.data
 
-    def get_records(self, context) -> Iterator[FlextTypes.Dict]:
+    def get_records(self, context) -> Iterator[FlextCore.Types.Dict]:
         """Extract records using WMS client."""
         try:
             for record in self.tap.wms_client_manager.client.get_entity_data(self.name):
@@ -330,7 +330,7 @@ class WMSMeltanoConfig(MeltanoConfig):
     oauth_client_secret: Optional[str] = Field(None, description="OAuth2 client secret")
 
     # Extraction settings
-    entities: List[str] = Field(
+    entities: FlextCore.Types.StringList = Field(
         default=["item", "inventory"],
         description="List of WMS entities to extract"
     )
@@ -412,7 +412,7 @@ class FlextMeltanoTapOracleWMS(Tap):
 class FlextMeltanoTapOracleWMSStream(Stream):
     """Stream with observability integration."""
 
-    def get_records(self, context) -> Iterator[FlextTypes.Dict]:
+    def get_records(self, context) -> Iterator[FlextCore.Types.Dict]:
         """Record extraction with comprehensive monitoring."""
         with self.tap.tracing.span(f"extract_{self.name}"):
             start_time = time.time()

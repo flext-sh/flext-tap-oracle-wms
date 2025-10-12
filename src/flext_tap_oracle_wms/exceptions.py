@@ -11,35 +11,39 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from flext_core import FlextExceptions
+from flext_core import FlextCore
 
 
-# Define exceptions inheriting from FlextExceptions
-class FlextMeltanoTapOracleWMSError(FlextExceptions.Error):
+# Define exceptions inheriting from FlextCore.Exceptions
+class FlextMeltanoTapOracleWMSError(FlextCore.Exceptions.Error):
     """Base exception for Oracle WMS tap operations."""
 
 
-class FlextMeltanoTapOracleWMSValidationError(FlextExceptions.ValidationError):
+class FlextMeltanoTapOracleWMSValidationError(FlextCore.Exceptions.ValidationError):
     """Validation error for Oracle WMS tap operations."""
 
 
-class FlextMeltanoTapOracleWMSConfigurationError(FlextExceptions.ConfigurationError):
+class FlextMeltanoTapOracleWMSConfigurationError(
+    FlextCore.Exceptions.ConfigurationError
+):
     """Configuration error for Oracle WMS tap operations."""
 
 
-class FlextMeltanoTapOracleWMSProcessingError(FlextExceptions.ProcessingError):
+class FlextMeltanoTapOracleWMSProcessingError(FlextCore.Exceptions.ProcessingError):
     """Processing error for Oracle WMS tap operations."""
 
 
-class FlextMeltanoTapOracleWMSConnectionError(FlextExceptions.ConnectionError):
+class FlextMeltanoTapOracleWMSConnectionError(FlextCore.Exceptions.ConnectionError):
     """Connection error for Oracle WMS tap operations."""
 
 
-class FlextMeltanoTapOracleWMSAuthenticationError(FlextExceptions.AuthenticationError):
+class FlextMeltanoTapOracleWMSAuthenticationError(
+    FlextCore.Exceptions.AuthenticationError
+):
     """Authentication error for Oracle WMS tap operations."""
 
 
-class FlextMeltanoTapOracleWMSTimeoutError(FlextExceptions.TimeoutError):
+class FlextMeltanoTapOracleWMSTimeoutError(FlextCore.Exceptions.TimeoutError):
     """Timeout error for Oracle WMS tap operations."""
 
 
