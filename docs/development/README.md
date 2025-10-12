@@ -206,11 +206,11 @@ tests/
 
 ```python
 # Example of FLEXT-compliant code
-from flext_core import FlextConfig, FlextLogger, FlextResult
+from flext_core import FlextCore
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import Field, validator
 
-class WMSConfig(FlextConfig):
+class WMSConfig(FlextCore.Config):
     """FLEXT-compliant configuration."""
 
     base_url: str = Field(..., description="WMS instance URL")
@@ -229,16 +229,16 @@ class FlextMeltanoTapOracleWMS:
 
     def __init__(self, config: dict):
         self.config = WMSConfig(**config)
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
-    def discover_streams(self) -> FlextResult[List[Stream]]:
-        """Use FlextResult pattern for error handling."""
+    def discover_streams(self) -> FlextCore.Result[List[Stream]]:
+        """Use FlextCore.Result pattern for error handling."""
         try:
             streams = self._build_streams()
-            return FlextResult.success(streams)
+            return FlextCore.Result.success(streams)
         except Exception as e:
             self.logger.error(f"Discovery failed: {e}")
-            return FlextResult.failure(str(e))
+            return FlextCore.Result.failure(str(e))
 ```
 
 ### Type Safety Requirements
@@ -252,7 +252,7 @@ from flext_core import TAnyDict
 def extract_records(
     entity: str,
     config: TAnyDict,
-    filters: Optional[FlextTypes.Dict] = None
+    filters: Optional[FlextCore.Types.Dict] = None
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety
@@ -262,9 +262,9 @@ def extract_records(
 ### Error Handling Standards
 
 ```python
-from flext_core import FlextExceptions.Error
+from flext_core import FlextCore
 
-class WMSTapError(FlextExceptions.Error):
+class WMSTapError(FlextCore.Exceptions.Error):
     """Base error for WMS tap."""
     pass
 

@@ -304,12 +304,12 @@ def sample_wms_response():
 
 ```python
 def assert_flext_result_success(result):
-    """Assert FlextResult indicates success."""
+    """Assert FlextCore.Result indicates success."""
     assert result.success, f"Expected success, got error: {result.error_message}"
     assert result.data is not None, "Expected result data"
 
 def assert_flext_result_error(result, expected_error_type=None):
-    """Assert FlextResult indicates error with optional type check."""
+    """Assert FlextCore.Result indicates error with optional type check."""
     assert not result.success, "Expected error result"
     assert result.error_message, "Expected error message"
     if expected_error_type:

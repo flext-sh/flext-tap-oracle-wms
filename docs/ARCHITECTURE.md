@@ -148,7 +148,7 @@ graph TB
 class WMSEntityConfig:
     entity_name: str
     replication_method: str
-    fields: List[str]
+    fields: FlextCore.Types.StringList
 
 # Application Layer (orchestration)
 class EntityDiscovery:
@@ -196,16 +196,16 @@ class FlextMeltanoTapOracleWMSStream(RESTStream):
 
 ```python
 from pydantic import BaseModel, Field
-from flext_core import FlextConfig
+from flext_core import FlextCore
 
-class WMSConfig(FlextConfig):
+class WMSConfig(FlextCore.Config):
     """Unified WMS tap configuration."""
 
     base_url: str
     auth_method: str = Field(..., regex="^(basic|oauth2)$")
     company_code: str
     facility_code: str
-    entities: List[str] = Field(default_factory=lambda: ["item", "inventory"])
+    entities: FlextCore.Types.StringList = Field(default_factory=lambda: ["item", "inventory"])
 
     # Authentication fields
     username: Optional[str] = None
@@ -293,7 +293,7 @@ class WMSCache:
     """Simple LRU cache for WMS responses."""
 
     @lru_cache(maxsize=1000)
-    def get_entity_schema(self, entity_name: str) -> FlextTypes.Dict:
+    def get_entity_schema(self, entity_name: str) -> FlextCore.Types.Dict:
         """Cache entity schemas for discovery."""
         return self._fetch_schema(entity_name)
 ```
@@ -323,9 +323,9 @@ class WMSConnectionManager:
 ### 1. Exception Hierarchy
 
 ```python
-from flext_core import FlextExceptions.Error
+from flext_core import FlextCore
 
-class WMSTapError(FlextExceptions.Error):
+class WMSTapError(FlextCore.Exceptions.Error):
     """Base exception for WMS tap errors."""
     pass
 

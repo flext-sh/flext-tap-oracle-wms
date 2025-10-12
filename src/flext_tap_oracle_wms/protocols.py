@@ -2,11 +2,11 @@
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextProtocols, FlextResult, FlextTypes
+from flext_core import FlextCore
 
 
 class FlextMeltanoTapOracleWmsProtocols:
-    """Singer Tap Oracle WMS protocols with explicit re-exports from FlextProtocols foundation.
+    """Singer Tap Oracle WMS protocols with explicit re-exports from FlextCore.Protocols foundation.
 
     Domain Extension Pattern (Phase 3):
     - Explicit re-export of foundation protocols (not inheritance)
@@ -18,12 +18,12 @@ class FlextMeltanoTapOracleWmsProtocols:
     # RE-EXPORT FOUNDATION PROTOCOLS (EXPLICIT PATTERN)
     # ============================================================================
 
-    Foundation = FlextProtocols.Foundation
-    Domain = FlextProtocols.Domain
-    Application = FlextProtocols.Application
-    Infrastructure = FlextProtocols.Infrastructure
-    Extensions = FlextProtocols.Extensions
-    Commands = FlextProtocols.Commands
+    Foundation = FlextCore.Protocols.Foundation
+    Domain = FlextCore.Protocols.Domain
+    Application = FlextCore.Protocols.Application
+    Infrastructure = FlextCore.Protocols.Infrastructure
+    Extensions = FlextCore.Protocols.Extensions
+    Commands = FlextCore.Protocols.Commands
 
     # ============================================================================
     # SINGER TAP ORACLE WMS-SPECIFIC PROTOCOLS (DOMAIN NAMESPACE)
@@ -33,64 +33,66 @@ class FlextMeltanoTapOracleWmsProtocols:
         """Singer Tap Oracle WMS domain protocols for Oracle Warehouse Management System extraction."""
 
         @runtime_checkable
-        class WmsConnectionProtocol(FlextProtocols.Domain.Service, Protocol):
+        class WmsConnectionProtocol(FlextCore.Protocols.Domain.Service, Protocol):
             """Protocol for Oracle WMS connection operations."""
 
             def establish_wms_connection(
-                self, config: FlextTypes.Dict
-            ) -> FlextResult[object]: ...
+                self, config: FlextCore.Types.Dict
+            ) -> FlextCore.Result[object]: ...
 
         @runtime_checkable
-        class InventoryDiscoveryProtocol(FlextProtocols.Domain.Service, Protocol):
+        class InventoryDiscoveryProtocol(FlextCore.Protocols.Domain.Service, Protocol):
             """Protocol for WMS inventory discovery."""
 
             def discover_inventory(
-                self, config: FlextTypes.Dict
-            ) -> FlextResult[list[FlextTypes.Dict]]: ...
+                self, config: FlextCore.Types.Dict
+            ) -> FlextCore.Result[list[FlextCore.Types.Dict]]: ...
 
         @runtime_checkable
-        class OrderProcessingProtocol(FlextProtocols.Domain.Service, Protocol):
+        class OrderProcessingProtocol(FlextCore.Protocols.Domain.Service, Protocol):
             """Protocol for WMS order processing."""
 
             def process_orders(
-                self, config: FlextTypes.Dict
-            ) -> FlextResult[list[FlextTypes.Dict]]: ...
+                self, config: FlextCore.Types.Dict
+            ) -> FlextCore.Result[list[FlextCore.Types.Dict]]: ...
 
         @runtime_checkable
-        class WarehouseOperationsProtocol(FlextProtocols.Domain.Service, Protocol):
+        class WarehouseOperationsProtocol(FlextCore.Protocols.Domain.Service, Protocol):
             """Protocol for WMS warehouse operations."""
 
             def get_warehouse_operations(
-                self, config: FlextTypes.Dict
-            ) -> FlextResult[list[FlextTypes.Dict]]: ...
+                self, config: FlextCore.Types.Dict
+            ) -> FlextCore.Result[list[FlextCore.Types.Dict]]: ...
 
         @runtime_checkable
-        class StreamGenerationProtocol(FlextProtocols.Domain.Service, Protocol):
+        class StreamGenerationProtocol(FlextCore.Protocols.Domain.Service, Protocol):
             """Protocol for Singer stream generation."""
 
             def generate_catalog(
-                self, config: FlextTypes.Dict
-            ) -> FlextResult[FlextTypes.Dict]: ...
+                self, config: FlextCore.Types.Dict
+            ) -> FlextCore.Result[FlextCore.Types.Dict]: ...
 
         @runtime_checkable
-        class PerformanceProtocol(FlextProtocols.Domain.Service, Protocol):
+        class PerformanceProtocol(FlextCore.Protocols.Domain.Service, Protocol):
             """Protocol for WMS extraction performance."""
 
-            def optimize_query(self, query: str) -> FlextResult[str]: ...
+            def optimize_query(self, query: str) -> FlextCore.Result[str]: ...
 
         @runtime_checkable
-        class ValidationProtocol(FlextProtocols.Domain.Service, Protocol):
+        class ValidationProtocol(FlextCore.Protocols.Domain.Service, Protocol):
             """Protocol for WMS data validation."""
 
-            def validate_config(self, config: FlextTypes.Dict) -> FlextResult[bool]: ...
+            def validate_config(
+                self, config: FlextCore.Types.Dict
+            ) -> FlextCore.Result[bool]: ...
 
         @runtime_checkable
-        class MonitoringProtocol(FlextProtocols.Domain.Service, Protocol):
+        class MonitoringProtocol(FlextCore.Protocols.Domain.Service, Protocol):
             """Protocol for WMS extraction monitoring."""
 
             def track_progress(
                 self, entity: str, records: int
-            ) -> FlextResult[None]: ...
+            ) -> FlextCore.Result[None]: ...
 
     # ============================================================================
     # BACKWARD COMPATIBILITY ALIASES (100% COMPATIBILITY)

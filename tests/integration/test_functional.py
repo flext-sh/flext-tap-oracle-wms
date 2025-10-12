@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextLogger, FlextTypes
+from flext_core import FlextCore
 
 from flext_tap_oracle_wms import (
     FlextMeltanoTapOracleWMS,
@@ -15,7 +15,7 @@ from flext_tap_oracle_wms import (
     # create_wms_tap_config,  # Not implemented yet
 )
 
-logger = FlextLogger(__name__)
+logger = FlextCore.Logger(__name__)
 
 
 @pytest.mark.functional
@@ -23,7 +23,7 @@ class TestOracleWMSFunctionalComplete:
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
     def test_real_wms_environment_verification(
-        self, real_wms_config: FlextTypes.Dict
+        self, real_wms_config: FlextCore.Types.Dict
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -44,7 +44,7 @@ class TestOracleWMSFunctionalComplete:
 
     def test_tap_initialization_real_config(
         self,
-        real_wms_config: FlextTypes.Dict,
+        real_wms_config: FlextCore.Types.Dict,
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         # CRITICAL: This must work without errors
@@ -357,7 +357,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.functional
     def test_error_handling_and_validation(
         self,
-        real_wms_config: FlextTypes.Dict,
+        real_wms_config: FlextCore.Types.Dict,
     ) -> None:
         """Test error handling with invalid configurations."""
         # Test with invalid URL
@@ -386,7 +386,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.functional
     def test_configuration_validation(
         self,
-        real_wms_config: FlextTypes.Dict,
+        real_wms_config: FlextCore.Types.Dict,
     ) -> None:
         """Test configuration validation and type conversion."""
         # Test configuration creation
