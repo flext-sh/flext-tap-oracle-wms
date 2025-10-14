@@ -252,7 +252,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
                         case dict() as record_dict:
                             coerced_records.append(record_dict)
                         case _:
-                            # Convert non-dict records to dict format
+                            # Convert non-dict records to dict[str, object] format
                             coerced_records.append({"value": "record"})
                 records = coerced_records
             case _:
@@ -274,7 +274,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
 
         """
         for record in records:
-            # Ensure record is a dict for processing
+            # Ensure record is a dict[str, object] for processing
             if isinstance(record, dict):
                 processed_record = self.post_process(record, context)
                 if processed_record is not None:

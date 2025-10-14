@@ -90,7 +90,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Initialize the Oracle WMS tap.
 
         Args:
-            config: Configuration dict or FlextMeltanoTapOracleWMSConfig instance
+            config: Configuration dict[str, object] or FlextMeltanoTapOracleWMSConfig instance
             catalog: Singer catalog
             state: Singer state
             parse_env_config: Whether to parse config from environment
@@ -114,9 +114,9 @@ class FlextMeltanoTapOracleWMS(Tap):
                     msg = f"Configuration validation failed: {config_validation_result.error}"
                     raise FlextMeltanoTapOracleWMSConfigurationError(msg)
 
-                # Convert dict to proper types for Pydantic model
+                # Convert dict[str, object] to proper types for Pydantic model
                 config_dict: FlextCore.Types.Dict = (
-                    dict(config) if hasattr(config, "items") else config
+                    dict[str, object](config) if hasattr(config, "items") else config
                 )
                 flext_config = FlextMeltanoTapOracleWMSConfig.model_validate(
                     config_dict
@@ -146,7 +146,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         self._discovery: FlextOracleWmsClient | None = None
         self._is_started = False
 
-        # Initialize parent with dict config for Singer SDK compatibility
+        # Initialize parent with dict[str, object] config for Singer SDK compatibility
         config_dict: FlextCore.Types.Dict = (
             flext_config.model_dump(exclude_unset=True) if flext_config else {}
         )

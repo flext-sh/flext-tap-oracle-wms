@@ -370,7 +370,9 @@ class TestOracleWMSFunctionalComplete:
         try:
             catalog = tap.catalog_dict
             # If we get here, check if it's a graceful fallback
-            assert isinstance(catalog, dict), "Catalog should be dict even on errors"
+            assert isinstance(catalog, dict), (
+                "Catalog should be dict[str, object] even on errors"
+            )
         except Exception as e:
             # Errors should be meaningful
             error_msg = str(e).lower()
