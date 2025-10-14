@@ -34,7 +34,7 @@ class TestFlextMeltanoTapOracleWMS:
         assert tap.discovery is not None  # Discovery property returns wms_client
 
     def test_tap_initialization_with_dict(self) -> None:
-        """Test tap initialization with dict config."""
+        """Test tap initialization with dict[str, object] config."""
         config_dict: FlextCore.Types.Dict = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",

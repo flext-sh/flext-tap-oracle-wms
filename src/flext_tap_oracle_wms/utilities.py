@@ -322,7 +322,7 @@ class FlextMeltanoTapOracleWmsUtilities(FlextCore.Utilities):
 
         @staticmethod
         def infer_wms_type(
-            value: str | float | dict | list | None,
+            value: str | float | dict[str, object] | list | None,
         ) -> FlextCore.Types.Dict:
             """Infer JSON schema type from Oracle WMS value.
 
