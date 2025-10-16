@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping, Sequence
 from typing import override
 
-from flext_core import FlextCore
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 # Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
@@ -22,7 +22,7 @@ from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms.utilities import FlextMeltanoTapOracleWmsUtilities
 
-logger = FlextCore.Logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextMeltanoTapOracleWMSStream(Stream):
@@ -39,7 +39,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         self,
         tap: Tap,
         name: str | None = None,
-        schema: FlextCore.Types.Dict | None = None,
+        schema: FlextTypes.Dict | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
@@ -64,7 +64,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
             self._page_size = 100
 
         # Initialize instance variables for dynamic configuration
-        self.stream_primary_keys: FlextCore.Types.StringList = []
+        self.stream_primary_keys: FlextTypes.StringList = []
         self.stream_replication_key: str | None = None
 
     @property
@@ -115,7 +115,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
     def get_records(
         self,
         context: Mapping[str, object] | None,
-    ) -> Iterable[FlextCore.Types.JsonDict]:
+    ) -> Iterable[FlextTypes.JsonDict]:
         """Get records from Oracle WMS.
 
         Args:
@@ -129,9 +129,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         while has_more:
             try:
                 # Get page data
-                page_result: FlextCore.Result[object] = self._fetch_page_data(
-                    page, context
-                )
+                page_result: FlextResult[object] = self._fetch_page_data(page, context)
                 if page_result is None:
                     break
                 records, has_more = page_result
@@ -150,7 +148,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         self,
         page: int,
         context: Mapping[str, object] | None,
-    ) -> tuple[list[FlextCore.Types.JsonDict], bool] | None:
+    ) -> tuple[list[FlextTypes.JsonDict], bool] | None:
         """Fetch data for a specific page.
 
         Args:
@@ -167,14 +165,14 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         # Execute operation using dynamic method call
         execute_method = getattr(self.client, "execute", None)
         if execute_method:
-            result: FlextCore.Result[object] = self._run(
+            result: FlextResult[object] = self._run(
                 execute_method(operation_name, **kwargs)
             )
         else:
             # Fallback: try direct method call
             method = getattr(self.client, operation_name, None)
             if method:
-                result: FlextCore.Result[object] = self._run(method(**kwargs))
+                result: FlextResult[object] = self._run(method(**kwargs))
             else:
                 logger.error("Method %s not found on WMS client", operation_name)
                 return None
@@ -184,14 +182,14 @@ class FlextMeltanoTapOracleWMSStream(Stream):
             logger.error("Failed to get records for %s: %s", self.name, error_msg)
             return None
         # Extract and process response data
-        data: FlextCore.Types.Dict = getattr(result, "value", result)
+        data: FlextTypes.Dict = getattr(result, "value", result)
         return self._extract_records_from_response(data)
 
     def _build_operation_kwargs(
         self,
         page: int,
         context: Mapping[str, object] | None,
-    ) -> FlextCore.Types.JsonDict:
+    ) -> FlextTypes.JsonDict:
         """Build kwargs for the operation call.
 
         Args:
@@ -218,8 +216,8 @@ class FlextMeltanoTapOracleWMSStream(Stream):
 
     def _extract_records_from_response(
         self,
-        data: FlextCore.Types.Dict | FlextCore.Types.List | object,
-    ) -> tuple[list[FlextCore.Types.JsonDict], bool]:
+        data: FlextTypes.Dict | FlextTypes.List | object,
+    ) -> tuple[list[FlextTypes.JsonDict], bool]:
         """Extract records and pagination info from API response.
 
         Args:
@@ -244,10 +242,10 @@ class FlextMeltanoTapOracleWMSStream(Stream):
             case _:
                 raw_records = []
                 has_more = False
-        # Ensure records is always a list of FlextCore.Types.Dict
+        # Ensure records is always a list of FlextTypes.Dict
         match raw_records:
             case list() as records_list:
-                coerced_records: list[FlextCore.Types.JsonDict] = []
+                coerced_records: list[FlextTypes.JsonDict] = []
                 for record in records_list:
                     match record:
                         case dict() as record_dict:
@@ -262,9 +260,9 @@ class FlextMeltanoTapOracleWMSStream(Stream):
 
     def _process_page_records(
         self,
-        records: list[FlextCore.Types.JsonDict],
+        records: list[FlextTypes.JsonDict],
         context: Mapping[str, object] | None,
-    ) -> Iterable[FlextCore.Types.JsonDict]:
+    ) -> Iterable[FlextTypes.JsonDict]:
         """Process and yield records from a page.
 
         Args:
@@ -283,9 +281,9 @@ class FlextMeltanoTapOracleWMSStream(Stream):
 
     def post_process(
         self,
-        row: FlextCore.Types.JsonDict,
+        row: FlextTypes.JsonDict,
         context: Mapping[str, object] | None = None,
-    ) -> FlextCore.Types.JsonDict | None:
+    ) -> FlextTypes.JsonDict | None:
         """Post-process a record.
 
         Args:
@@ -297,18 +295,14 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         """
         # Apply column mappings if configured
         if self.config:
-            column_mappings: FlextCore.Types.Dict = self.config.get(
-                "column_mappings", {}
-            )
+            column_mappings: FlextTypes.Dict = self.config.get("column_mappings", {})
             if self.name in column_mappings:
                 mappings = column_mappings[self.name]
                 for old_name, new_name in mappings.items():
                     if old_name in row:
                         row[new_name] = row.pop(old_name)
             # Remove ignored columns
-            ignored_columns: FlextCore.Types.List = self.config.get(
-                "ignored_columns", []
-            )
+            ignored_columns: FlextTypes.List = self.config.get("ignored_columns", [])
             for column in ignored_columns:
                 row.pop(column, None)
 

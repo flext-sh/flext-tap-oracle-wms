@@ -15,7 +15,7 @@ import importlib.metadata
 from collections.abc import Sequence
 from typing import ClassVar, cast, override
 
-from flext_core import FlextCore
+from flext_core import FlextLogger, FlextResult, FlextTypes
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import (
     FlextOracleWmsApiVersion,
@@ -28,7 +28,7 @@ from flext_tap_oracle_wms.exceptions import FlextMeltanoTapOracleWMSConfiguratio
 from flext_tap_oracle_wms.streams import FlextMeltanoTapOracleWMSStream
 from flext_tap_oracle_wms.utilities import FlextMeltanoTapOracleWmsUtilities
 
-logger = FlextCore.Logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextMeltanoTapOracleWMS(Tap):
@@ -43,7 +43,7 @@ class FlextMeltanoTapOracleWMS(Tap):
     """
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[FlextCore.Types.Dict] = {
+    config_jsonschema: ClassVar[FlextTypes.Dict] = {
         "type": "object",
         "properties": {
             "base_url": {
@@ -81,9 +81,9 @@ class FlextMeltanoTapOracleWMS(Tap):
     @override
     def __init__(
         self,
-        config: FlextCore.Types.Dict | FlextMeltanoTapOracleWMSConfig | None = None,
-        catalog: FlextCore.Types.Dict | None = None,
-        state: FlextCore.Types.Dict | None = None,
+        config: FlextTypes.Dict | FlextMeltanoTapOracleWMSConfig | None = None,
+        catalog: FlextTypes.Dict | None = None,
+        state: FlextTypes.Dict | None = None,
         *,
         parse_env_config: bool = True,
         validate_config: bool = True,
@@ -116,7 +116,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                     raise FlextMeltanoTapOracleWMSConfigurationError(msg)
 
                 # Convert dict[str, object] to proper types for Pydantic model
-                config_dict: FlextCore.Types.Dict = (
+                config_dict: FlextTypes.Dict = (
                     dict[str, object](config) if hasattr(config, "items") else config
                 )
                 flext_config = FlextMeltanoTapOracleWMSConfig.model_validate(
@@ -148,7 +148,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         self._is_started = False
 
         # Initialize parent with dict[str, object] config for Singer SDK compatibility
-        config_dict: FlextCore.Types.Dict = (
+        config_dict: FlextTypes.Dict = (
             flext_config.model_dump(exclude_unset=True) if flext_config else {}
         )
         super().__init__(
@@ -226,7 +226,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         # Use the WMS client directly as it has discovery capabilities
         return self.wms_client
 
-    def initialize(self) -> FlextCore.Result[None]:
+    def initialize(self) -> FlextResult[None]:
         """Initialize the tap."""
         logger.info("Initializing Oracle WMS tap")
         try:
@@ -234,22 +234,22 @@ class FlextMeltanoTapOracleWMS(Tap):
             if self.flext_config.validate_config:
                 validation_result = self.validate_configuration()
                 if validation_result.is_failure:
-                    return FlextCore.Result[None].fail(
+                    return FlextResult[None].fail(
                         validation_result.error or "Configuration validation failed",
                     )
             # Ensure client is created and started
             _ = self.wms_client
             logger.info("Oracle WMS tap initialized successfully")
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
             logger.exception("Failed to initialize tap")
-            return FlextCore.Result[None].fail(str(e))
+            return FlextResult[None].fail(str(e))
 
-    def discover_catalog(self) -> FlextCore.Result[FlextCore.Types.Dict]:
+    def discover_catalog(self) -> FlextResult[FlextTypes.Dict]:
         """Discover available streams and their schemas.
 
         Returns:
-            FlextCore.Result containing Singer catalog
+            FlextResult containing Singer catalog
 
         """
         logger.info("Discovering Oracle WMS catalog")
@@ -258,7 +258,7 @@ class FlextMeltanoTapOracleWMS(Tap):
             if not self._is_started:
                 init_result = self.initialize()
                 if init_result.is_failure:
-                    return FlextCore.Result[dict["str", "object"]].fail(
+                    return FlextResult[dict["str", "object"]].fail(
                         init_result.error or "Initialization failed",
                     )
             # Use flext-oracle-wms discovery
@@ -275,7 +275,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                     getattr(discovery_result, "error", "Discovery failed")
                     or "Discovery failed"
                 )
-                return FlextCore.Result[dict["str", "object"]].fail(error_msg)
+                return FlextResult[dict["str", "object"]].fail(error_msg)
             # Build Singer catalog from discovery result
             data = getattr(discovery_result, "value", discovery_result)
             if not isinstance(data, dict):
@@ -288,22 +288,22 @@ class FlextMeltanoTapOracleWMS(Tap):
                 if isinstance(streams, list):
                     stream_count = len(streams)
             logger.info("Discovered %d streams", stream_count)
-            return FlextCore.Result[dict["str", "object"]].ok(catalog)
+            return FlextResult[dict["str", "object"]].ok(catalog)
         except Exception as e:
             logger.exception("Failed to discover catalog")
-            return FlextCore.Result[dict["str", "object"]].fail(str(e))
+            return FlextResult[dict["str", "object"]].fail(str(e))
 
-    def _build_singer_catalog(self, discovery_result: object) -> FlextCore.Types.Dict:
+    def _build_singer_catalog(self, discovery_result: object) -> FlextTypes.Dict:
         """Build Singer catalog from Oracle WMS discovery result."""
-        streams: list[FlextCore.Types.Dict] = []
+        streams: list[FlextTypes.Dict] = []
         # discovery_result should be a list of entities
-        entities: FlextCore.Types.StringList = (
+        entities: FlextTypes.StringList = (
             discovery_result if isinstance(discovery_result, list) else []
         )
         for _entity_name in entities:
             # For now, create a simple schema as the entities are just strings
             # In production, you'd need to query each entity to get its schema
-            stream: FlextCore.Types.Dict = {
+            stream: FlextTypes.Dict = {
                 "tap_stream_id": "entity_name",
                 "stream": "entity_name",
                 "schema": {
@@ -353,9 +353,9 @@ class FlextMeltanoTapOracleWMS(Tap):
             "streams": "streams",
         }
 
-    def _convert_fields_to_properties(self, fields: object) -> FlextCore.Types.Dict:
+    def _convert_fields_to_properties(self, fields: object) -> FlextTypes.Dict:
         """Convert Oracle WMS fields to Singer properties."""
-        properties: FlextCore.Types.Dict = {}
+        properties: FlextTypes.Dict = {}
         # Ensure fields is iterable
         if not hasattr(fields, "__iter__"):
             return properties
@@ -409,7 +409,7 @@ class FlextMeltanoTapOracleWMS(Tap):
 
     def _get_stream_definitions_from_catalog(
         self,
-    ) -> list[FlextCore.Types.Dict]:
+    ) -> list[FlextTypes.Dict]:
         """Get stream definitions from discovered catalog.
 
         Returns:
@@ -433,7 +433,7 @@ class FlextMeltanoTapOracleWMS(Tap):
 
     def _create_streams_from_definitions(
         self,
-        stream_definitions: list[FlextCore.Types.Dict],
+        stream_definitions: list[FlextTypes.Dict],
     ) -> list[FlextMeltanoTapOracleWMSStream]:
         """Create stream instances from stream definitions.
 
@@ -456,7 +456,7 @@ class FlextMeltanoTapOracleWMS(Tap):
 
     def _create_single_stream(
         self,
-        stream_def: FlextCore.Types.Dict,
+        stream_def: FlextTypes.Dict,
     ) -> FlextMeltanoTapOracleWMSStream | None:
         """Create a single stream from definition.
 
@@ -476,7 +476,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         stream = FlextMeltanoTapOracleWMSStream(
             tap=self,
             name=str(stream_name) if stream_name else None,
-            schema=cast("FlextCore.Types.Dict", stream_schema)
+            schema=cast("FlextTypes.Dict", stream_schema)
             if isinstance(stream_schema, dict)
             else None,
         )
@@ -487,7 +487,7 @@ class FlextMeltanoTapOracleWMS(Tap):
     def _configure_stream_metadata(
         self,
         stream: FlextMeltanoTapOracleWMSStream,
-        stream_def: FlextCore.Types.Dict,
+        stream_def: FlextTypes.Dict,
     ) -> None:
         """Configure stream metadata from definition.
 
@@ -497,13 +497,13 @@ class FlextMeltanoTapOracleWMS(Tap):
 
         """
         # Set primary keys if available from metadata
-        metadata_list: FlextCore.Types.Dict = stream_def.get("metadata", [])
+        metadata_list: FlextTypes.Dict = stream_def.get("metadata", [])
         if isinstance(metadata_list, list):
             for metadata in metadata_list:
                 if isinstance(metadata, dict) and metadata.get("breadcrumb") == []:
-                    table_metadata: FlextCore.Types.Dict = metadata.get("metadata", {})
+                    table_metadata: FlextTypes.Dict = metadata.get("metadata", {})
                     if isinstance(table_metadata, dict):
-                        pk_list: FlextCore.Types.List = table_metadata.get(
+                        pk_list: FlextTypes.List = table_metadata.get(
                             "table-key-properties", []
                         )
                         if pk_list:
@@ -512,35 +512,33 @@ class FlextMeltanoTapOracleWMS(Tap):
                     break
 
     @override
-    def execute(self, message: str | None = None) -> FlextCore.Result[None]:
+    def execute(self, message: str | None = None) -> FlextResult[None]:
         """Execute tap in Singer mode.
 
         Args:
             message: Optional Singer message to process
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         try:
             # If message provided, process it
             if message:
                 # This is target mode, not supported for tap
-                return FlextCore.Result[None].fail(
-                    "Tap does not support message processing"
-                )
+                return FlextResult[None].fail("Tap does not support message processing")
             # Run tap using sync_all from Singer SDK
             # Use sync_all method from Singer SDK
             self.sync_all()
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
             logger.exception("Tap execution failed")
-            return FlextCore.Result[None].fail(str(e))
+            return FlextResult[None].fail(str(e))
 
-    def validate_configuration(self) -> FlextCore.Result[FlextCore.Types.Dict]:
+    def validate_configuration(self) -> FlextResult[FlextTypes.Dict]:
         """Validate tap configuration.
 
         Returns:
-            FlextCore.Result with validation status
+            FlextResult with validation status
 
         """
         logger.info("Validating configuration")
@@ -550,7 +548,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                 self.flext_config.model_dump(exclude_unset=True)
             )
             if comprehensive_validation_result.is_failure:
-                return FlextCore.Result[dict["str", "object"]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     f"Comprehensive configuration validation failed: {comprehensive_validation_result.error}"
                 )
 
@@ -568,7 +566,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                 )
             )
             if connection_test_result.is_failure:
-                return FlextCore.Result[dict["str", "object"]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     f"WMS API connection test failed: {connection_test_result.error}"
                 )
 
@@ -585,11 +583,11 @@ class FlextMeltanoTapOracleWMS(Tap):
                         "error",
                         "Unknown connection error",
                     )
-                    return FlextCore.Result[dict["str", "object"]].fail(
+                    return FlextResult[dict["str", "object"]].fail(
                         f"Connection test failed: {error_msg}",
                     )
             except Exception as e:
-                return FlextCore.Result[dict["str", "object"]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     f"Connection test failed: {e}",
                 )
 
@@ -602,16 +600,16 @@ class FlextMeltanoTapOracleWMS(Tap):
                 )
             )
             if validation_info_result.is_failure:
-                return FlextCore.Result[dict["str", "object"]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     f"Validation info generation failed: {validation_info_result.error}"
                 )
 
             validation_info = validation_info_result.unwrap()
             logger.info("Configuration validated successfully")
-            return FlextCore.Result[dict["str", "object"]].ok(validation_info)
+            return FlextResult[dict["str", "object"]].ok(validation_info)
         except Exception as e:
             logger.exception("Configuration validation failed")
-            return FlextCore.Result[dict["str", "object"]].fail(str(e))
+            return FlextResult[dict["str", "object"]].fail(str(e))
 
     def get_implementation_name(self) -> str:
         """Get implementation name."""
@@ -624,7 +622,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         except Exception as e:
             # EXPLICIT TRANSPARENCY: Version metadata retrieval fallback with proper error handling
             # This is NOT security-sensitive fake data generation - it's version fallback
-            logger = FlextCore.Logger(__name__)
+            logger = FlextLogger(__name__)
             logger.debug(f"Package version retrieval failed: {type(e).__name__}: {e}")
             logger.info(
                 "Using fallback version 0.9.0 - legitimate version metadata fallback",
@@ -636,11 +634,11 @@ class FlextMeltanoTapOracleWMS(Tap):
             # Required for tap functionality - NOT security-sensitive data generation
             return "0.9.0"
 
-    def get_implementation_metrics(self) -> FlextCore.Result[FlextCore.Types.Dict]:
+    def get_implementation_metrics(self) -> FlextResult[FlextTypes.Dict]:
         """Get implementation metrics.
 
         Returns:
-            FlextCore.Result containing metrics
+            FlextResult containing metrics
 
         """
         metrics = {
@@ -660,7 +658,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                 "records_extracted": getattr(self.metrics, "records_extracted", 0),
                 "streams_extracted": getattr(self.metrics, "streams_extracted", 0),
             }
-        return FlextCore.Result[dict["str", "object"]].ok(metrics)
+        return FlextResult[dict["str", "object"]].ok(metrics)
 
     def __del__(self) -> None:
         """Cleanup when tap is destroyed."""
@@ -679,7 +677,7 @@ class FlextMeltanoTapOracleWMS(Tap):
     def set_discovery_mode(self, *, enabled: bool) -> None:
         """Set discovery mode (stub - not implemented)."""
 
-    def _create_minimal_schema(self) -> FlextCore.Types.Dict:
+    def _create_minimal_schema(self) -> FlextTypes.Dict:
         """Create minimal schema for entity (stub - not implemented)."""
         return {"type": "object", "properties": {}}
 
@@ -700,7 +698,7 @@ class FlextMeltanoTapOracleWMSPlugin:
       - Integration with FLEXT ecosystem plugin registry
     """
 
-    def get_info(self) -> FlextCore.Types.Dict:
+    def get_info(self) -> FlextTypes.Dict:
         """Get plugin information (required by FlextPlugin interface)."""
         return {
             "name": self.name,
@@ -710,7 +708,7 @@ class FlextMeltanoTapOracleWMSPlugin:
         }
 
     @override
-    def __init__(self, config: FlextCore.Types.Dict) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize Oracle WMS tap plugin with configuration.
 
         Args:
@@ -722,7 +720,7 @@ class FlextMeltanoTapOracleWMSPlugin:
 
         """
         # Store configuration for tap creation
-        self._tap_config: FlextCore.Types.Dict = config
+        self._tap_config: FlextTypes.Dict = config
         self._tap_instance: FlextMeltanoTapOracleWMS | None = None
         self._name = "flext-tap-oracle-wms"
         self._version = "0.9.0"
@@ -738,17 +736,17 @@ class FlextMeltanoTapOracleWMSPlugin:
         """Get the plugin version."""
         return self._version
 
-    def initialize(self, _context: object) -> FlextCore.Result[None]:
+    def initialize(self, _context: object) -> FlextResult[None]:
         """Initialize plugin with provided context (FlextPlugin interface)."""
         # Initialize with context (required by FlextPlugin interface)
         # For now, we ignore context and use internal initialization
         return self.initialize_tap()
 
-    def initialize_tap(self) -> FlextCore.Result[None]:
+    def initialize_tap(self) -> FlextResult[None]:
         """Initialize the plugin by creating tap instance.
 
         Returns:
-            FlextCore.Result indicating initialization success or failure
+            FlextResult indicating initialization success or failure
         Architecture:
             Lazy initialization pattern - tap instance created on first use
             to allow configuration validation and error handling at plugin level.
@@ -757,41 +755,41 @@ class FlextMeltanoTapOracleWMSPlugin:
         try:
             # Create tap instance using composition
             self._tap_instance = FlextMeltanoTapOracleWMS(
-                config=cast("FlextCore.Types.Dict", self._tap_config),
+                config=cast("FlextTypes.Dict", self._tap_config),
             )
             # Note: FlextMeltanoTapOracleWMS.config is a Pydantic model, not a dict
             # Validation is handled by Pydantic during model creation
             logger.info("Oracle WMS tap instance created successfully")
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
             logger.exception("Failed to initialize Oracle WMS tap")
-            return FlextCore.Result[None].fail(f"Tap initialization failed: {e}")
+            return FlextResult[None].fail(f"Tap initialization failed: {e}")
 
-    def shutdown(self) -> FlextCore.Result[None]:
+    def shutdown(self) -> FlextResult[None]:
         """Shutdown plugin and release resources (FlextPlugin interface)."""
         try:
             if self._tap_instance:
                 # Release tap instance resources if needed
                 self._tap_instance = None
                 logger.info("Oracle WMS tap plugin shutdown successfully")
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
             logger.exception("Failed to shutdown Oracle WMS tap plugin")
-            return FlextCore.Result[None].fail(f"Plugin shutdown failed: {e}")
+            return FlextResult[None].fail(f"Plugin shutdown failed: {e}")
 
     @override
     def execute(
         self,
         operation: str,
-        parameters: FlextCore.Types.Dict | None = None,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        parameters: FlextTypes.Dict | None = None,
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute plugin operations via tap instance.
 
         Args:
             operation: Operation to execute ("discover", "sync", etc.)
             parameters: Optional operation parameters
         Returns:
-            FlextCore.Result containing operation results or error information
+            FlextResult containing operation results or error information
         Operations:
             - "discover": Discover available streams and schemas
             - "sync": Sync data from selected streams
@@ -802,7 +800,7 @@ class FlextMeltanoTapOracleWMSPlugin:
         if not self._tap_instance:
             init_result = self.initialize_tap()
             if not init_result.success:
-                return FlextCore.Result[dict["str", "object"]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     f"Plugin initialization failed: {init_result.error}",
                 )
         try:
@@ -816,20 +814,20 @@ class FlextMeltanoTapOracleWMSPlugin:
             handler = operation_handlers.get(operation)
             if handler:
                 return handler(parameters or {})
-            return FlextCore.Result[dict["str", "object"]].fail(
+            return FlextResult[dict["str", "object"]].fail(
                 f"Unsupported operation: {operation}",
             )
         except Exception as e:
             logger.exception("Plugin operation failed", operation=operation)
-            return FlextCore.Result[dict["str", "object"]].fail(
+            return FlextResult[dict["str", "object"]].fail(
                 f"Operation '{operation}' failed: {e}",
             )
 
-    def discover_streams(self) -> FlextCore.Result[Sequence[Stream]]:
+    def discover_streams(self) -> FlextResult[Sequence[Stream]]:
         """Discover available streams through tap instance.
 
         Returns:
-            FlextCore.Result containing discovered streams or error information
+            FlextResult containing discovered streams or error information
         Architecture:
             Delegates to tap instance while maintaining plugin interface.
             This allows plugin consumers to work with streams without
@@ -839,24 +837,22 @@ class FlextMeltanoTapOracleWMSPlugin:
         if not self._tap_instance:
             init_result = self.initialize_tap()
             if not init_result.success:
-                return FlextCore.Result[Sequence[Stream]].fail(
+                return FlextResult[Sequence[Stream]].fail(
                     f"Plugin initialization failed: {init_result.error}",
                 )
         try:
             # Ensure tap instance exists (replaced assertion with proper error handling)
             if self._tap_instance is None:
-                return FlextCore.Result[Sequence[Stream]].fail(
+                return FlextResult[Sequence[Stream]].fail(
                     "Tap instance not properly initialized",
                 )
             # Get streams from tap using Singer SDK interface
             streams = list(self._tap_instance.discover_streams())
             logger.info("Streams discovered", count=len(streams))
-            return FlextCore.Result[Sequence[Stream]].ok(streams)
+            return FlextResult[Sequence[Stream]].ok(streams)
         except Exception as e:
             logger.exception("Stream discovery failed")
-            return FlextCore.Result[Sequence[Stream]].fail(
-                f"Stream discovery failed: {e}"
-            )
+            return FlextResult[Sequence[Stream]].fail(f"Stream discovery failed: {e}")
 
     def get_tap_instance(self) -> FlextMeltanoTapOracleWMS | None:
         """Get underlying tap instance for advanced operations.
@@ -872,16 +868,16 @@ class FlextMeltanoTapOracleWMSPlugin:
 
     def _execute_discover(
         self,
-        _parameters: FlextCore.Types.Dict,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        _parameters: FlextTypes.Dict,
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute discover operation through tap."""
         streams_result = self.discover_streams()
         if not streams_result.success:
-            return FlextCore.Result[dict["str", "object"]].fail(
+            return FlextResult[dict["str", "object"]].fail(
                 streams_result.error or "Discovery failed",
             )
         streams = streams_result.data or []
-        catalog_data: FlextCore.Types.Dict = {
+        catalog_data: FlextTypes.Dict = {
             "streams": [
                 {
                     "tap_stream_id": stream.tap_stream_id,
@@ -898,16 +894,16 @@ class FlextMeltanoTapOracleWMSPlugin:
             "discovered_at": "2025-01-08T00:00:00Z",  # Should be actual timestamp
             "plugin_version": self.version,  # Use the property, not plugin_version
         }
-        return FlextCore.Result[dict["str", "object"]].ok(catalog_data)
+        return FlextResult[dict["str", "object"]].ok(catalog_data)
 
     def _execute_sync(
         self,
-        _parameters: FlextCore.Types.Dict,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        _parameters: FlextTypes.Dict,
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute sync operation through tap."""
         # This would need to integrate with Singer protocol for actual sync
         # For now, return placeholder indicating sync capability
-        return FlextCore.Result[dict["str", "object"]].ok(
+        return FlextResult[dict["str", "object"]].ok(
             {
                 "operation": "sync",
                 "status": "completed",
@@ -919,17 +915,17 @@ class FlextMeltanoTapOracleWMSPlugin:
 
     def _execute_test(
         self,
-        _parameters: FlextCore.Types.Dict,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        _parameters: FlextTypes.Dict,
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute test operation through tap."""
         try:
             if not self._tap_instance:
-                return FlextCore.Result[dict["str", "object"]].fail(
+                return FlextResult[dict["str", "object"]].fail(
                     "Tap instance not initialized",
                 )
             # Test configuration (Pydantic validation already occurred during creation)
             # Connection test could be added here in the future
-            return FlextCore.Result[dict["str", "object"]].ok(
+            return FlextResult[dict["str", "object"]].ok(
                 {
                     "operation": "test",
                     "status": "passed",
@@ -938,22 +934,22 @@ class FlextMeltanoTapOracleWMSPlugin:
                 },
             )
         except Exception as e:
-            return FlextCore.Result[dict["str", "object"]].fail(
+            return FlextResult[dict["str", "object"]].fail(
                 f"Test operation failed: {e}"
             )
 
     def _execute_catalog(
         self,
-        parameters: FlextCore.Types.Dict,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        parameters: FlextTypes.Dict,
+    ) -> FlextResult[FlextTypes.Dict]:
         """Execute catalog generation through tap."""
         return self._execute_discover(parameters)
 
-    def validate_business_rules(self) -> FlextCore.Result[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate plugin business rules and configuration.
 
         Returns:
-            FlextCore.Result indicating validation success or failure
+            FlextResult indicating validation success or failure
         Business Rules:
             - Configuration must be valid dictionary
             - Required configuration fields must be present
@@ -969,22 +965,22 @@ class FlextMeltanoTapOracleWMSPlugin:
             if field not in self._tap_config or not self._tap_config[field]
         ]
         if missing_fields:
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"Missing required configuration fields: {missing_fields}",
             )
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
 
 def create_oracle_wms_tap_plugin(
-    config: FlextCore.Types.Dict,
-) -> FlextCore.Result[FlextMeltanoTapOracleWMSPlugin]:
+    config: FlextTypes.Dict,
+) -> FlextResult[FlextMeltanoTapOracleWMSPlugin]:
     """Create Oracle WMS tap plugin instance.
 
     Args:
       config: Configuration dictionary for plugin creation
 
     Returns:
-      FlextCore.Result containing plugin instance or error information
+      FlextResult containing plugin instance or error information
 
     Architecture:
       Provides factory pattern for plugin creation with proper error handling.
@@ -997,15 +993,15 @@ def create_oracle_wms_tap_plugin(
         # Validate plugin configuration
         validation = plugin.validate_business_rules()
         if not validation.success:
-            return FlextCore.Result[FlextMeltanoTapOracleWMSPlugin].fail(
+            return FlextResult[FlextMeltanoTapOracleWMSPlugin].fail(
                 f"Plugin validation failed: {validation.error}",
             )
 
         logger.info("Oracle WMS tap plugin created successfully")
-        return FlextCore.Result[FlextMeltanoTapOracleWMSPlugin].ok(plugin)
+        return FlextResult[FlextMeltanoTapOracleWMSPlugin].ok(plugin)
 
     except Exception as e:
         logger.exception("Failed to create Oracle WMS tap plugin")
-        return FlextCore.Result[FlextMeltanoTapOracleWMSPlugin].fail(
+        return FlextResult[FlextMeltanoTapOracleWMSPlugin].fail(
             f"Plugin creation failed: {e}"
         )

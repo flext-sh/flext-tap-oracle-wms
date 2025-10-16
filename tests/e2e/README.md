@@ -194,7 +194,7 @@ tests/fixtures/e2e/
 import json
 from pathlib import Path
 
-def run_tap_command(args: FlextCore.Types.StringList, input_data: str | None = None, timeout: int = 300):
+def run_tap_command(args: FlextTypes.StringList, input_data: str | None = None, timeout: int = 300):
     """Execute tap command and capture results using """
     cmd = ["tap-oracle-wms", *args]
     process = create_subprocess_exec(
