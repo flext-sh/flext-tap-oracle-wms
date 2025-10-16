@@ -562,12 +562,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
 
             # Validate URL format
             base_url = config["base_url"]
-            if not isinstance(base_url, str) or not base_url.startswith(
-                (
-                    "http://",
-                    "https://",
-                )
-            ):
+            if not isinstance(base_url, str) or not base_url.startswith((
+                "http://",
+                "https://",
+            )):
                 return FlextResult[FlextTypes.Dict].fail("Invalid base_url format")
 
             return FlextResult[FlextTypes.Dict].ok(config)

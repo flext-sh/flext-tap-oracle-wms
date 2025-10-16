@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Final
 
-from flext_core import FlextLogger, FlextModels, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextModels, FlextResult
 from flext_meltano import FlextMeltanoBridge, FlextMeltanoConfig, FlextMeltanoService
 
 from flext_tap_oracle_wms.cli import main
@@ -19,11 +19,6 @@ from flext_tap_oracle_wms.client import (
 from flext_tap_oracle_wms.config import (
     FlextMeltanoTapOracleWMSConfig,
     FlextMeltanoTapOracleWMSConstants,
-)
-    FlextMeltanoTapOracleWMSConfigurationError,
-    FlextMeltanoTapOracleWMSConnectionError,
-    FlextMeltanoTapOracleWMSError,
-    FlextMeltanoTapOracleWMSValidationError,
 )
 from flext_tap_oracle_wms.models import FlextMeltanoTapOracleWmsModels
 from flext_tap_oracle_wms.protocols import FlextMeltanoTapOracleWmsProtocols
@@ -58,7 +53,7 @@ __all__ = [
     "FlextMeltanoTapOracleWmsVersion",
     "FlextModels",
     "FlextResult",
-    "FlextTypes",
+    "FlextTypes.Dict",
     "__version__",
     "__version_info__",
     "main",
