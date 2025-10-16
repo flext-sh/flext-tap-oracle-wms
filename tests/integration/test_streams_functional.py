@@ -15,7 +15,7 @@ from unittest.mock import Mock
 import pytest
 import requests
 from flext_api import FlextApiConstants
-from flext_core import FlextCore
+from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import (
     FlextMeltanoTapOracleWMS,
@@ -25,7 +25,7 @@ from flext_tap_oracle_wms import (
     # WMSPaginator,
 )
 
-logger = FlextCore.Logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class TestStreamsFunctional:

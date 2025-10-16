@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Literal, Self
 
-from flext_core import FlextCore
+from flext_core import FlextConstants, FlextModels, FlextTypes
 from pydantic import (
     ConfigDict,
     Field,
@@ -47,8 +47,8 @@ VALIDATION = "VALIDATION"
 linear = "linear"
 
 
-class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
-    """Oracle WMS tap models extending flext-core FlextCore.Models.
+class FlextMeltanoTapOracleWmsModels(FlextModels):
+    """Oracle WMS tap models extending flext-core FlextModels.
 
     Provides comprehensive models for Oracle WMS entity extraction, authentication,
     stream configuration, and Singer protocol compliance following standardized patterns.
@@ -89,7 +89,6 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
     # Advanced Pydantic 2.11 Features - Singer Oracle WMS Tap Domain
 
     @computed_field
-    @property
     def active_wms_tap_models_count(self) -> int:
         """Count of active Oracle WMS tap models with warehouse extraction capabilities."""
         count = 0
@@ -117,8 +116,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         return count
 
     @computed_field
-    @property
-    def wms_tap_system_summary(self) -> FlextCore.Types.Dict:
+    def wms_tap_system_summary(self) -> FlextTypes.Dict:
         """Comprehensive Singer Oracle WMS tap system summary with warehouse extraction capabilities."""
         return {
             "total_models": self.active_wms_tap_models_count,
@@ -205,7 +203,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
             }
         return value
 
-    class WmsAuthenticationConfig(FlextCore.Models.BaseConfig):
+    class WmsAuthenticationConfig(FlextModels.BaseConfig):
         """Oracle WMS authentication configuration."""
 
         # Pydantic 2.11 Configuration - Authentication Features
@@ -251,8 +249,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         @computed_field
-        @property
-        def wms_auth_summary(self) -> FlextCore.Types.Dict:
+        def wms_auth_summary(self) -> FlextTypes.Dict:
             """Oracle WMS authentication configuration summary."""
             return {
                 "wms_instance": {
@@ -294,7 +291,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
                 raise ValueError(msg)
             return self
 
-    class WmsEntityBase(FlextCore.Models.Entity):
+    class WmsEntityBase(FlextModels.Entity):
         """Base model for Oracle WMS entities."""
 
         # Pydantic 2.11 Configuration - Entity Base Features
@@ -323,8 +320,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         facility_code: str | None = Field(None, description="Associated facility code")
 
         @computed_field
-        @property
-        def wms_entity_context(self) -> FlextCore.Types.Dict:
+        def wms_entity_context(self) -> FlextTypes.Dict:
             """Oracle WMS entity organizational context."""
             return {
                 "entity_identity": {
@@ -400,8 +396,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         @computed_field
-        @property
-        def item_characteristics_summary(self) -> FlextCore.Types.Dict:
+        def item_characteristics_summary(self) -> FlextTypes.Dict:
             """Oracle WMS item characteristics summary."""
             return {
                 "item_identity": {
@@ -483,8 +478,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         @computed_field
-        @property
-        def location_hierarchy_summary(self) -> FlextCore.Types.Dict:
+        def location_hierarchy_summary(self) -> FlextTypes.Dict:
             """Oracle WMS location hierarchy and capacity summary."""
             return {
                 "location_identity": {
@@ -564,8 +558,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         unit_of_measure: str | None = Field(None, description="Unit of measure")
 
         @computed_field
-        @property
-        def inventory_allocation_summary(self) -> FlextCore.Types.Dict:
+        def inventory_allocation_summary(self) -> FlextTypes.Dict:
             """Oracle WMS inventory allocation and availability summary."""
             total_qty = self.quantity_on_hand or 0.0
             allocated_qty = self.quantity_allocated or 0.0
@@ -670,8 +663,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         total_volume: float | None = Field(None, description="Total order volume")
 
         @computed_field
-        @property
-        def order_lifecycle_summary(self) -> FlextCore.Types.Dict:
+        def order_lifecycle_summary(self) -> FlextTypes.Dict:
             """Oracle WMS order lifecycle and progress summary."""
             fulfillment_progress = "unknown"
             if self.order_status:
@@ -772,8 +764,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         @computed_field
-        @property
-        def shipment_tracking_summary(self) -> FlextCore.Types.Dict:
+        def shipment_tracking_summary(self) -> FlextTypes.Dict:
             """Oracle WMS shipment tracking and delivery summary."""
             delivery_status = "unknown"
             if self.actual_delivery:
@@ -874,8 +865,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         login_count: int | None = Field(None, description="Total login count")
 
         @computed_field
-        @property
-        def user_access_summary(self) -> FlextCore.Types.Dict:
+        def user_access_summary(self) -> FlextTypes.Dict:
             """Oracle WMS user access and activity summary."""
             full_name = f"{self.first_name or ''} {self.last_name or ''}".strip()
 
@@ -925,7 +915,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
                 raise ValueError(msg)
             return self
 
-    class WmsStreamMetadata(FlextCore.Models.BaseConfig):
+    class WmsStreamMetadata(FlextModels.BaseConfig):
         """Stream metadata for Oracle WMS streams."""
 
         # Pydantic 2.11 Configuration - Stream Metadata Features
@@ -947,7 +937,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         stream_name: str = Field(..., description="Singer stream name")
-        primary_keys: FlextCore.Types.StringList = Field(
+        primary_keys: FlextTypes.StringList = Field(
             ..., description="Primary key field names"
         )
         replication_method: Literal[FULL_TABLE, INCREMENTAL] = Field(
@@ -961,8 +951,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         @computed_field
-        @property
-        def stream_metadata_summary(self) -> FlextCore.Types.Dict:
+        def stream_metadata_summary(self) -> FlextTypes.Dict:
             """Oracle WMS stream metadata summary."""
             return {
                 "stream_identity": {
@@ -978,7 +967,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
                 },
             }
 
-        def to_singer_metadata(self) -> list[FlextCore.Types.Dict]:
+        def to_singer_metadata(self) -> list[FlextTypes.Dict]:
             """Convert to Singer metadata format."""
             metadata = [
                 {
@@ -996,7 +985,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
 
             return metadata
 
-    class WmsStreamSchema(FlextCore.Models.BaseConfig):
+    class WmsStreamSchema(FlextModels.BaseConfig):
         """Schema definition for Oracle WMS streams."""
 
         # Pydantic 2.11 Configuration - Stream Schema Features
@@ -1019,18 +1008,16 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         stream_name: str = Field(..., description="Stream name")
-        properties: FlextCore.Types.NestedDict = Field(
-            ..., description="Schema properties"
-        )
+        properties: FlextTypes.NestedDict = Field(..., description="Schema properties")
 
-        def to_singer_schema(self) -> FlextCore.Types.Dict:
+        def to_singer_schema(self) -> FlextTypes.Dict:
             """Convert to Singer schema format."""
             return {
                 "type": "object",
                 "properties": self.properties,
             }
 
-    class WmsCatalogStream(FlextCore.Models.BaseConfig):
+    class WmsCatalogStream(FlextModels.BaseConfig):
         """Complete catalog stream definition for Oracle WMS."""
 
         # Pydantic 2.11 Configuration - Catalog Stream Features
@@ -1063,7 +1050,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
             ..., description="Stream metadata"
         )
 
-        def to_singer_catalog_entry(self) -> FlextCore.Types.Dict:
+        def to_singer_catalog_entry(self) -> FlextTypes.Dict:
             """Convert to Singer catalog entry format."""
             return {
                 "tap_stream_id": self.tap_stream_id,
@@ -1072,7 +1059,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
                 "metadata": self.metadata.to_singer_metadata(),
             }
 
-    class WmsExtractionConfig(FlextCore.Models.BaseConfig):
+    class WmsExtractionConfig(FlextModels.BaseConfig):
         """Configuration for WMS data extraction."""
 
         # Pydantic 2.11 Configuration - Extraction Features
@@ -1092,7 +1079,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
             },
         )
 
-        entities: FlextCore.Types.StringList = Field(
+        entities: FlextTypes.StringList = Field(
             default_factory=list, description="WMS entities to extract"
         )
         page_size: int = Field(
@@ -1106,10 +1093,10 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         # Filtering configuration
-        entity_filters: FlextCore.Types.NestedDict = Field(
+        entity_filters: FlextTypes.NestedDict = Field(
             default_factory=dict, description="Entity-specific filters"
         )
-        field_selection: dict[str, FlextCore.Types.StringList] = Field(
+        field_selection: dict[str, FlextTypes.StringList] = Field(
             default_factory=dict, description="Field selection by entity"
         )
 
@@ -1122,8 +1109,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         @computed_field
-        @property
-        def extraction_config_summary(self) -> FlextCore.Types.Dict:
+        def extraction_config_summary(self) -> FlextTypes.Dict:
             """Oracle WMS extraction configuration summary."""
             return {
                 "extraction_scope": {
@@ -1158,7 +1144,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
                 raise ValueError(msg)
             return self
 
-    class WmsApiResponse(FlextCore.Models.BaseModel):
+    class WmsApiResponse(FlextModels.BaseModel):
         """Standardized Oracle WMS API response wrapper."""
 
         # Pydantic 2.11 Configuration - API Response Features
@@ -1192,7 +1178,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         # Error information
         error_code: str | None = Field(None, description="Error code if failed")
         error_message: str | None = Field(None, description="Error message if failed")
-        error_details: FlextCore.Types.Dict | None = Field(
+        error_details: FlextTypes.Dict | None = Field(
             None, description="Detailed error information"
         )
 
@@ -1207,8 +1193,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         @computed_field
-        @property
-        def wms_api_response_summary(self) -> FlextCore.Types.Dict:
+        def wms_api_response_summary(self) -> FlextTypes.Dict:
             """Oracle WMS API response summary."""
             return {
                 "response_status": {
@@ -1256,7 +1241,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
                 raise ValueError(msg)
             return self
 
-    class WmsErrorContext(FlextCore.Models.BaseModel):
+    class WmsErrorContext(FlextModels.BaseModel):
         """Error context for Oracle WMS API error handling."""
 
         # Pydantic 2.11 Configuration - Error Context Features
@@ -1297,7 +1282,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
             None, description="WMS entity type being processed"
         )
         request_method: str | None = Field(None, description="HTTP method used")
-        request_params: FlextCore.Types.Dict | None = Field(
+        request_params: FlextTypes.Dict | None = Field(
             None, description="Request parameters"
         )
 
@@ -1316,8 +1301,7 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         )
 
         @computed_field
-        @property
-        def wms_error_context_summary(self) -> FlextCore.Types.Dict:
+        def wms_error_context_summary(self) -> FlextTypes.Dict:
             """Oracle WMS error context summary."""
             return {
                 "error_classification": {
@@ -1358,11 +1342,11 @@ class FlextMeltanoTapOracleWmsModels(FlextCore.Models):
         def validate_wms_error_context(self) -> Self:
             """Validate Oracle WMS error context."""
             if self.http_status_code is not None and not (
-                FlextCore.Constants.Http.StatusCodes.MIN_VALID
+                FlextConstants.Http.StatusCodes.MIN_VALID
                 <= self.http_status_code
-                <= FlextCore.Constants.Http.StatusCodes.MAX_VALID
+                <= FlextConstants.Http.StatusCodes.MAX_VALID
             ):
-                msg = f"HTTP status code must be between {FlextCore.Constants.Http.StatusCodes.MIN_VALID} and {FlextCore.Constants.Http.StatusCodes.MAX_VALID}"
+                msg = f"HTTP status code must be between {FlextConstants.Http.StatusCodes.MIN_VALID} and {FlextConstants.Http.StatusCodes.MAX_VALID}"
                 raise ValueError(msg)
             if self.retry_after_seconds is not None and self.retry_after_seconds < 0:
                 msg = "Retry after seconds cannot be negative"

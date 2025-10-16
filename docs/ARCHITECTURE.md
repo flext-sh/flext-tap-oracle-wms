@@ -148,7 +148,7 @@ graph TB
 class WMSEntityConfig:
     entity_name: str
     replication_method: str
-    fields: FlextCore.Types.StringList
+    fields: FlextTypes.StringList
 
 # Application Layer (orchestration)
 class EntityDiscovery:
@@ -196,16 +196,35 @@ class FlextMeltanoTapOracleWMSStream(RESTStream):
 
 ```python
 from pydantic import BaseModel, Field
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
-class WMSConfig(FlextCore.Config):
+class WMSConfig(FlextConfig):
     """Unified WMS tap configuration."""
 
     base_url: str
     auth_method: str = Field(..., regex="^(basic|oauth2)$")
     company_code: str
     facility_code: str
-    entities: FlextCore.Types.StringList = Field(default_factory=lambda: ["item", "inventory"])
+    entities: FlextTypes.StringList = Field(default_factory=lambda: ["item", "inventory"])
 
     # Authentication fields
     username: Optional[str] = None
@@ -293,7 +312,7 @@ class WMSCache:
     """Simple LRU cache for WMS responses."""
 
     @lru_cache(maxsize=1000)
-    def get_entity_schema(self, entity_name: str) -> FlextCore.Types.Dict:
+    def get_entity_schema(self, entity_name: str) -> FlextTypes.Dict:
         """Cache entity schemas for discovery."""
         return self._fetch_schema(entity_name)
 ```
@@ -323,9 +342,28 @@ class WMSConnectionManager:
 ### 1. Exception Hierarchy
 
 ```python
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
-class WMSTapError(FlextCore.Exceptions.Error):
+class WMSTapError(FlextExceptions.Error):
     """Base exception for WMS tap errors."""
     pass
 
