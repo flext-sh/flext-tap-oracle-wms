@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Final, Self
 
-from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult, FlextTypes
+from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult
 from flext_oracle_wms import (
     FlextOracleWmsConstants as _WmsConstants,
 )
@@ -152,11 +152,11 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     )
 
     # Stream selection
-    include_entities: FlextTypes.StringList | None = Field(
+    include_entities: list[str] | None = Field(
         default=None,
         description="List of entities to include (default: all)",
     )
-    exclude_entities: FlextTypes.StringList | None = Field(
+    exclude_entities: list[str] | None = Field(
         default=None,
         description="List of entities to exclude",
     )
@@ -196,17 +196,17 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         default=None,
         description="Custom User-Agent header",
     )
-    additional_headers: FlextTypes.StringDict | None = Field(
+    additional_headers: dict[str, str] | None = Field(
         default=None,
         description="Additional HTTP headers",
     )
 
     # Column filtering
-    column_mappings: dict[str, FlextTypes.StringDict] | None = Field(
+    column_mappings: dict[str, dict[str, str]] | None = Field(
         default=None,
         description="Column name mappings per stream",
     )
-    ignored_columns: FlextTypes.StringList | None = Field(
+    ignored_columns: list[str] | None = Field(
         default=None,
         description="Columns to ignore globally",
     )
@@ -272,7 +272,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     @classmethod
     def create_for_development(cls, **overrides: object) -> Self:
         """Create configuration for development environment."""
-        dev_overrides: FlextTypes.Dict = {
+        dev_overrides: dict[str, object] = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT * 2,
             "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS + 2,
             "page_size": FlextMeltanoTapOracleWMSConstants.DEFAULT_PAGE_SIZE // 2,
@@ -287,7 +287,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     @classmethod
     def create_for_production(cls, **overrides: object) -> Self:
         """Create configuration for production environment."""
-        prod_overrides: FlextTypes.Dict = {
+        prod_overrides: dict[str, object] = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT,
             "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
             "page_size": FlextMeltanoTapOracleWMSConstants.DEFAULT_PAGE_SIZE,
@@ -302,7 +302,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     @classmethod
     def create_for_testing(cls, **overrides: object) -> Self:
         """Create configuration for testing environment."""
-        test_overrides: FlextTypes.Dict = {
+        test_overrides: dict[str, object] = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT // 3,
             "max_retries": 1,
             "page_size": FlextMeltanoTapOracleWMSConstants.MIN_PAGE_SIZE,
@@ -332,8 +332,8 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     @classmethod
     def validate_entity_lists(
         cls,
-        v: FlextTypes.StringList | None,
-    ) -> FlextTypes.StringList | None:
+        v: list[str] | None,
+    ) -> list[str] | None:
         """Validate entity lists are unique."""
         if v is not None:
             unique_entities = list(dict.fromkeys(v))
@@ -454,7 +454,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
 
     def validate_oracle_wms_config(
         self: object,
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[dict[str, object]]:
         """Validate Oracle WMS specific configuration.
 
         Returns:
@@ -466,7 +466,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
             if self.include_entities and self.exclude_entities:
                 common = set(self.include_entities) & set(self.exclude_entities)
                 if common:
-                    return FlextResult[FlextTypes.Dict].fail(
+                    return FlextResult[dict[str, object]].fail(
                         f"Entities cannot be both included and excluded: {common}",
                     )
 
@@ -477,7 +477,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
                     self.end_date,
                 )
                 if date_range_result.is_failure:
-                    return FlextResult[FlextTypes.Dict].fail(
+                    return FlextResult[dict[str, object]].fail(
                         date_range_result.error or "Date range validation failed",
                     )
 
@@ -488,7 +488,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
                 and self.max_parallel_streams > max_parallel_streams_without_rate_limit
                 and not self.enable_rate_limiting
             ):
-                return FlextResult[FlextTypes.Dict].fail(
+                return FlextResult[dict[str, object]].fail(
                     f"Rate limiting must be enabled for more than {max_parallel_streams_without_rate_limit} parallel streams",
                 )
 
@@ -504,10 +504,10 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
                 else 0,
             }
 
-            return FlextResult[FlextTypes.Dict].ok(validation_data)
+            return FlextResult[dict[str, object]].ok(validation_data)
 
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"Configuration validation failed: {e}",
             )
 

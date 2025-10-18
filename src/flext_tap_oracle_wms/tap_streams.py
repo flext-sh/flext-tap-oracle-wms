@@ -39,7 +39,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         self,
         tap: Tap,
         name: str | None = None,
-        schema: FlextTypes.Dict | None = None,
+        schema: dict[str, object] | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
@@ -64,7 +64,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
             self._page_size = 100
 
         # Initialize instance variables for dynamic configuration
-        self.stream_primary_keys: FlextTypes.StringList = []
+        self.stream_primary_keys: list[str] = []
         self.stream_replication_key: str | None = None
 
     @property
@@ -182,7 +182,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
             logger.error("Failed to get records for %s: %s", self.name, error_msg)
             return None
         # Extract and process response data
-        data: FlextTypes.Dict = getattr(result, "value", result)
+        data: dict[str, object] = getattr(result, "value", result)
         return self._extract_records_from_response(data)
 
     def _build_operation_kwargs(
@@ -216,7 +216,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
 
     def _extract_records_from_response(
         self,
-        data: FlextTypes.Dict | FlextTypes.List | object,
+        data: dict[str, object] | list[object] | object,
     ) -> tuple[list[FlextTypes.JsonDict], bool]:
         """Extract records and pagination info from API response.
 
@@ -242,7 +242,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
             case _:
                 raw_records = []
                 has_more = False
-        # Ensure records is always a list of FlextTypes.Dict
+        # Ensure records is always a list of dict[str, object]
         match raw_records:
             case list() as records_list:
                 coerced_records: list[FlextTypes.JsonDict] = []
@@ -295,14 +295,14 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         """
         # Apply column mappings if configured
         if self.config:
-            column_mappings: FlextTypes.Dict = self.config.get("column_mappings", {})
+            column_mappings: dict[str, object] = self.config.get("column_mappings", {})
             if self.name in column_mappings:
                 mappings = column_mappings[self.name]
                 for old_name, new_name in mappings.items():
                     if old_name in row:
                         row[new_name] = row.pop(old_name)
             # Remove ignored columns
-            ignored_columns: FlextTypes.List = self.config.get("ignored_columns", [])
+            ignored_columns: list[object] = self.config.get("ignored_columns", [])
             for column in ignored_columns:
                 row.pop(column, None)
 

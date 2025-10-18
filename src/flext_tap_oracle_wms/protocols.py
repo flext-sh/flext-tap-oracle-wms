@@ -2,7 +2,7 @@
 
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextProtocols, FlextResult, FlextTypes
+from flext_core import FlextProtocols, FlextResult
 
 
 class FlextMeltanoTapOracleWmsProtocols:
@@ -30,7 +30,7 @@ class FlextMeltanoTapOracleWmsProtocols:
             """Protocol for Oracle WMS connection operations."""
 
             def establish_wms_connection(
-                self, config: FlextTypes.Dict
+                self, config: dict[str, object]
             ) -> FlextResult[object]: ...
 
         @runtime_checkable
@@ -38,32 +38,32 @@ class FlextMeltanoTapOracleWmsProtocols:
             """Protocol for WMS inventory discovery."""
 
             def discover_inventory(
-                self, config: FlextTypes.Dict
-            ) -> FlextResult[list[FlextTypes.Dict]]: ...
+                self, config: dict[str, object]
+            ) -> FlextResult[list[dict[str, object]]]: ...
 
         @runtime_checkable
         class OrderProcessingProtocol(FlextProtocols.Service, Protocol):
             """Protocol for WMS order processing."""
 
             def process_orders(
-                self, config: FlextTypes.Dict
-            ) -> FlextResult[list[FlextTypes.Dict]]: ...
+                self, config: dict[str, object]
+            ) -> FlextResult[list[dict[str, object]]]: ...
 
         @runtime_checkable
         class WarehouseOperationsProtocol(FlextProtocols.Service, Protocol):
             """Protocol for WMS warehouse operations."""
 
             def get_warehouse_operations(
-                self, config: FlextTypes.Dict
-            ) -> FlextResult[list[FlextTypes.Dict]]: ...
+                self, config: dict[str, object]
+            ) -> FlextResult[list[dict[str, object]]]: ...
 
         @runtime_checkable
         class StreamGenerationProtocol(FlextProtocols.Service, Protocol):
             """Protocol for Singer stream generation."""
 
             def generate_catalog(
-                self, config: FlextTypes.Dict
-            ) -> FlextResult[FlextTypes.Dict]: ...
+                self, config: dict[str, object]
+            ) -> FlextResult[dict[str, object]]: ...
 
         @runtime_checkable
         class PerformanceProtocol(FlextProtocols.Service, Protocol):
@@ -75,7 +75,9 @@ class FlextMeltanoTapOracleWmsProtocols:
         class ValidationProtocol(FlextProtocols.Service, Protocol):
             """Protocol for WMS data validation."""
 
-            def validate_config(self, config: FlextTypes.Dict) -> FlextResult[bool]: ...
+            def validate_config(
+                self, config: dict[str, object]
+            ) -> FlextResult[bool]: ...
 
         @runtime_checkable
         class MonitoringProtocol(FlextProtocols.Service, Protocol):
