@@ -13,7 +13,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 from pydantic import SecretStr
 
 from flext_tap_oracle_wms import (
@@ -74,7 +74,7 @@ def mock_wms_client() -> MagicMock:
     client.connect.return_value = FlextResult[None].ok()
 
     # Mock list entities
-    client.list_entities.return_value = FlextResult[FlextTypes.StringList].ok(
+    client.list_entities.return_value = FlextResult[list[str]].ok(
         [
             "inventory",
             "locations",
@@ -84,7 +84,7 @@ def mock_wms_client() -> MagicMock:
     )
 
     # Mock get records
-    client.get_records.return_value = FlextResult[list[FlextTypes.Dict]].ok(
+    client.get_records.return_value = FlextResult[list[dict[str, object]]].ok(
         [
             {"id": "1", "name": "Test Item 1", "quantity": 100},
             {"id": "2", "name": "Test Item 2", "quantity": 200},
@@ -93,7 +93,7 @@ def mock_wms_client() -> MagicMock:
 
     # Mock get entity metadata
     client.get_entity_metadata.return_value = FlextResult[
-        dict[str, str | FlextTypes.StringList]
+        dict[str, str | list[str]]
     ].ok(
         {
             "display_name": "Inventory",
@@ -119,7 +119,7 @@ def tap_instance(
 
 
 @pytest.fixture
-def sample_catalog() -> FlextTypes.Dict:
+def sample_catalog() -> dict[str, object]:
     """Sample Singer catalog."""
     return {
         "type": "CATALOG",
@@ -153,7 +153,7 @@ def sample_catalog() -> FlextTypes.Dict:
 
 
 @pytest.fixture
-def sample_state() -> FlextTypes.Dict:
+def sample_state() -> dict[str, object]:
     """Sample Singer state."""
     return {
         "bookmarks": {
@@ -193,7 +193,7 @@ def mock_request() -> MagicMock:
 
 
 # Marker for tests requiring real Oracle WMS
-def pytest_collection_modifyitems(_config: object, items: FlextTypes.List) -> None:
+def pytest_collection_modifyitems(_config: object, items: list[object]) -> None:
     """Add markers to tests based on their location."""
     for item in items:
         # Add oracle_wms marker to integration tests
@@ -225,7 +225,7 @@ def _real_tap_instance(
 
 
 @pytest.fixture
-def _test_config_extraction() -> FlextTypes.Dict:
+def _test_config_extraction() -> dict[str, object]:
     """Test configuration for extraction tests."""
     return {
         "base_url": "https://test.wms.example.com",

@@ -53,8 +53,8 @@ __all__ = [
     "FlextMeltanoTapOracleWmsVersion",
     "FlextModels",
     "FlextResult",
-    "FlextTypes.Dict",
     "__version__",
     "__version_info__",
+    "dict[str, object]",
     "main",
 ]
