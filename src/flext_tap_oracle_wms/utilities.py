@@ -208,7 +208,7 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
                 ]:
                     try:
                         # Use timezone-aware parsing where possible
-                        dt = datetime.strptime(timestamp, fmt)  # noqa: DTZ007
+                        dt = datetime.strptime(timestamp, fmt)
                         # Assume UTC for naive datetime objects
                         if dt.tzinfo is None:
                             dt = dt.replace(tzinfo=UTC)
@@ -326,7 +326,7 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
 
         @staticmethod
         def infer_wms_type(
-            value: str | float | dict[str, object] | list | None,
+            value: object,
         ) -> dict[str, object]:
             """Infer JSON schema type from Oracle WMS value.
 
@@ -357,7 +357,7 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
                 return {"type": "object", "additionalProperties": True}
 
             # String type with WMS-specific format detection
-            schema = {"type": "string"}
+            schema: dict[str, object] = {"type": "string"}
 
             str_value = str(value)
             # Check for WMS date patterns
@@ -677,8 +677,9 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
                 if isinstance(discovery_result, list):
                     validation_info["entities_discovered"] = len(discovery_result)
                 elif isinstance(discovery_result, dict):
-                    validation_info["entities_discovered"] = len(
-                        discovery_result.get("entities", [])
+                    entities = discovery_result.get("entities", [])
+                    validation_info["entities_discovered"] = (
+                        len(entities) if isinstance(entities, list) else 0
                     )
                 else:
                     validation_info["entities_discovered"] = 0
@@ -702,7 +703,12 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
                 dict[str, object]: Stream state
 
             """
-            return state.get("bookmarks", {}).get(stream_name, {})
+            if not isinstance(state, dict):
+                return {}
+            bookmarks = state.get("bookmarks", {})
+            if not isinstance(bookmarks, dict):
+                return {}
+            return bookmarks.get(stream_name, {})
 
         @staticmethod
         def set_wms_stream_state(
@@ -724,7 +730,9 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             if "bookmarks" not in state:
                 state["bookmarks"] = {}
 
-            state["bookmarks"][stream_name] = stream_state
+            bookmarks = state["bookmarks"]
+            if isinstance(bookmarks, dict):
+                bookmarks[stream_name] = stream_state
             return state
 
         @staticmethod
@@ -749,7 +757,12 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
                     state, stream_name
                 )
             )
-            return stream_state.get(bookmark_key)
+            bookmark_value = stream_state.get(bookmark_key)
+            if bookmark_value is not None and not isinstance(
+                bookmark_value, (str, int, float, datetime)
+            ):
+                return None
+            return bookmark_value
 
         @staticmethod
         def set_wms_bookmark(
@@ -772,10 +785,13 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """
             if "bookmarks" not in state:
                 state["bookmarks"] = {}
-            if stream_name not in state["bookmarks"]:
-                state["bookmarks"][stream_name] = {}
-
-            state["bookmarks"][stream_name][bookmark_key] = bookmark_value
+            bookmarks = state["bookmarks"]
+            if isinstance(bookmarks, dict):
+                if stream_name not in bookmarks:
+                    bookmarks[stream_name] = {}
+                stream_bookmarks = bookmarks[stream_name]
+                if isinstance(stream_bookmarks, dict):
+                    stream_bookmarks[bookmark_key] = bookmark_value
             return state
 
         @staticmethod

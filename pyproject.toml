@@ -59,17 +59,6 @@
 [tool.ruff]
     extend = "../ruff-shared.toml"
 
-[tool.bandit]
-    exclude_dirs = [
-        "build",
-        "dist",
-        "tests",
-    ]
-    skips = [
-        "B101",
-        "B601",
-    ]
-
 [tool.poetry]
     [[tool.poetry.packages]]
         from    = "src"
@@ -80,21 +69,6 @@
         "flext_tap_oracle_wms",
     ]
 
-[tool.pyrefly]
-    python-version = "3.13"
-    search-path = [
-        "examples",
-        "src",
-        "tests",
-    ]
-
-
-        # SubConfig: Disable unknown-name error for models.py
-        # This handles forward references to classes defined later in the same file
-        [[tool.pyrefly.sub-config]]
-            matches = "**/models.py"
-            [tool.pyrefly.sub-config.errors]
-                unknown-name = false
     [tool.poetry.dependencies]
         httpx    = ">=0.27.0"
         pydantic = ">=2.11.7"
@@ -126,39 +100,6 @@
     testpaths = [
         "tests",
     ]
-
-[tool.coverage.run]
-    branch = true
-    omit = [
-        "*/.venv/*",
-        "*/__pycache__/*",
-        "*/test_*",
-        "*/tests/*",
-        "*/venv/*",
-    ]
-    source = [
-        "src",
-    ]
-
-[tool.coverage.report]
-    exclude_lines = [
-        "@(abc\\.)?abstractmethod",
-        "class .*\\bProtocol\\):",
-        "def __repr__",
-        "if 0:",
-        "if __name__ == .__main__.:",
-        "if self.debug:",
-        "if settings.DEBUG",
-        "pragma: no cover",
-        "raise AssertionError",
-        "raise NotImplementedError",
-    ]
-
-[tool.coverage.html]
-    directory = "reports/coverage"
-
-[tool.coverage.xml]
-    output = "reports/coverage.xml"
 
     [tool.ruff.lint.isort]
         known-first-party = [

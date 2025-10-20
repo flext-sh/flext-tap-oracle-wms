@@ -61,20 +61,20 @@ def main() -> int:
                     and "schema" in stream
                     and "properties" in stream["schema"]
                 ):
-                    print(f"Found stream: {stream.get('tap_stream_id', 'unknown')}")
+                    pass
     else:
         return 1
 
     # Example 3: Discover available streams
     streams = tap.discover_streams()
     for stream in streams:
-        print(f"Available stream: {stream.name}")
+        pass
 
     # Example 4: Get implementation info
 
     metrics_result = tap.get_implementation_metrics()
     if metrics_result.is_success:
-        print("Implementation metrics retrieved successfully")
+        pass
 
     # Example 5: Extract data (commented out to avoid actual API calls)
     """
