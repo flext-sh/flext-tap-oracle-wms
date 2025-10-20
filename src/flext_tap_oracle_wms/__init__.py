@@ -20,6 +20,12 @@ from flext_tap_oracle_wms.config import (
     FlextMeltanoTapOracleWMSConfig,
     FlextMeltanoTapOracleWMSConstants,
 )
+from flext_tap_oracle_wms.exceptions import (
+    FlextMeltanoTapOracleWMSConfigurationError,
+    FlextMeltanoTapOracleWMSConnectionError,
+    FlextMeltanoTapOracleWMSError,
+    FlextMeltanoTapOracleWMSValidationError,
+)
 from flext_tap_oracle_wms.models import FlextMeltanoTapOracleWmsModels
 from flext_tap_oracle_wms.protocols import FlextMeltanoTapOracleWmsProtocols
 from flext_tap_oracle_wms.streams import FlextMeltanoTapOracleWMSStream
@@ -55,6 +61,5 @@ __all__ = [
     "FlextResult",
     "__version__",
     "__version_info__",
-    "dict[str, object]",
     "main",
 ]
