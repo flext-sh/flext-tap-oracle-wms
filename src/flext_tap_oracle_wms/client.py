@@ -91,14 +91,14 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Initialize the Oracle WMS tap.
 
         Args:
-            config: Configuration dict[str, object] or FlextMeltanoTapOracleWMSConfig instance
-            catalog: Singer catalog
-            state: Singer state
-            parse_env_config: Whether to parse config from environment
-            validate_config: Whether to validate configuration
+        config: Configuration dict[str, object] or FlextMeltanoTapOracleWMSConfig instance
+        catalog: Singer catalog
+        state: Singer state
+        parse_env_config: Whether to parse config from environment
+        validate_config: Whether to validate configuration
 
         """
-        # ZERO TOLERANCE FIX: Initialize utilities for ALL business logic
+        # Zero Tolerance FIX: Initialize utilities for ALL business logic
         self._utilities = FlextMeltanoTapOracleWmsUtilities()
 
         # Convert config to FlextMeltanoTapOracleWMSConfig if needed
@@ -107,7 +107,7 @@ class FlextMeltanoTapOracleWMS(Tap):
             config, FlextMeltanoTapOracleWMSConfig
         ):
             try:
-                # ZERO TOLERANCE FIX: Use utilities for configuration processing
+                # Zero Tolerance FIX: Use utilities for configuration processing
                 config_validation_result = (
                     self._utilities.ConfigurationProcessing.validate_wms_config(config)
                 )
@@ -128,7 +128,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         else:
             flext_config = config
 
-        # ZERO TOLERANCE FIX: Use utilities for additional config validation
+        # Zero Tolerance FIX: Use utilities for additional config validation
         if flext_config is not None:
             additional_validation_result = (
                 self._utilities.ConfigurationProcessing.validate_wms_connection_params(
@@ -249,7 +249,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Discover available streams and their schemas.
 
         Returns:
-            FlextResult containing Singer catalog
+        FlextResult containing Singer catalog
 
         """
         logger.info("Discovering Oracle WMS catalog")
@@ -394,7 +394,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Discover available streams dynamically from Oracle WMS.
 
         Returns:
-            List of Stream instances
+        List of Stream instances
 
         """
         logger.info("Discovering streams dynamically")
@@ -413,7 +413,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Get stream definitions from discovered catalog.
 
         Returns:
-            List of stream definition dictionaries
+        List of stream definition dictionaries
 
         """
         # Discover the catalog to get available entities
@@ -438,9 +438,9 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Create stream instances from stream definitions.
 
         Args:
-            stream_definitions: List of stream definition dictionaries
+        stream_definitions: List of stream definition dictionaries
         Returns:
-            List of created Stream instances
+        List of created Stream instances
 
         """
         streams: list[FlextMeltanoTapOracleWMSStream] = []
@@ -461,9 +461,9 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Create a single stream from definition.
 
         Args:
-            stream_def: Stream definition dictionary
+        stream_def: Stream definition dictionary
         Returns:
-            Created FlextMeltanoTapOracleWMSStream instance or None if invalid
+        Created FlextMeltanoTapOracleWMSStream instance or None if invalid
 
         """
         # Extract stream information
@@ -492,8 +492,8 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Configure stream metadata from definition.
 
         Args:
-            stream: FlextMeltanoTapOracleWMSStream instance to configure
-            stream_def: Stream definition dictionary
+        stream: FlextMeltanoTapOracleWMSStream instance to configure
+        stream_def: Stream definition dictionary
 
         """
         # Set primary keys if available from metadata
@@ -516,9 +516,9 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Execute tap in Singer mode.
 
         Args:
-            message: Optional Singer message to process
+        message: Optional Singer message to process
         Returns:
-            FlextResult indicating success or failure
+        FlextResult indicating success or failure
 
         """
         try:
@@ -538,18 +538,18 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Validate tap configuration.
 
         Returns:
-            FlextResult with validation status
+        FlextResult with validation status
 
         """
         logger.info("Validating configuration")
         try:
-            # ZERO TOLERANCE FIX: Use utilities for comprehensive configuration validation
+            # Zero Tolerance FIX: Use utilities for complete configuration validation
             comprehensive_validation_result = self._utilities.ConfigurationProcessing.validate_wms_configuration_comprehensive(
                 self.flext_config.model_dump(exclude_unset=True)
             )
             if comprehensive_validation_result.is_failure:
                 return FlextResult[dict["str", "object"]].fail(
-                    f"Comprehensive configuration validation failed: {comprehensive_validation_result.error}"
+                    f"Complete configuration validation failed: {comprehensive_validation_result.error}"
                 )
 
             # Validate config model
@@ -557,7 +557,7 @@ class FlextMeltanoTapOracleWMS(Tap):
             if validation_result.is_failure:
                 return validation_result
 
-            # ZERO TOLERANCE FIX: Use utilities for WMS API connection testing
+            # Zero Tolerance FIX: Use utilities for WMS API connection testing
             connection_test_result = (
                 self._utilities.WmsApiProcessing.test_wms_api_connection(
                     base_url=self.flext_config.base_url,
@@ -591,7 +591,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                     f"Connection test failed: {e}",
                 )
 
-            # ZERO TOLERANCE FIX: Use utilities for validation info generation
+            # Zero Tolerance FIX: Use utilities for validation info generation
             validation_info_result = (
                 self._utilities.DataProcessing.generate_validation_info(
                     config_data=self.flext_config.model_dump(exclude_unset=True),
@@ -638,7 +638,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Get implementation metrics.
 
         Returns:
-            FlextResult containing metrics
+        FlextResult containing metrics
 
         """
         metrics = {
@@ -691,11 +691,11 @@ class FlextMeltanoTapOracleWMSPlugin:
     - Separation: Interface plugin vs implementation tap
     - DRY: Reuses plugin infrastructure from flext-plugin
     Features:
-      - Plugin lifecycle management via flext-plugin
-      - Configuration validation and business rules
-      - Clean separation of plugin interface vs tap implementation
-      - Enterprise-grade error handling and logging
-      - Integration with FLEXT ecosystem plugin registry
+    - Plugin lifecycle management via flext-plugin
+    - Configuration validation and business rules
+    - Clean separation of plugin interface vs tap implementation
+    - error handling and logging
+    - Integration with FLEXT ecosystem plugin registry
     """
 
     def get_info(self) -> dict[str, object]:
@@ -712,11 +712,11 @@ class FlextMeltanoTapOracleWMSPlugin:
         """Initialize Oracle WMS tap plugin with configuration.
 
         Args:
-            config: Configuration dictionary for tap initialization
+        config: Configuration dictionary for tap initialization
         Architecture:
-            Uses composition pattern - creates internal tap instance rather
-            than inheriting from Tap directly, maintaining clean separation
-            between plugin interface and Singer implementation.
+        Uses composition pattern - creates internal tap instance rather
+        than inheriting from Tap directly, maintaining clean separation
+        between plugin interface and Singer implementation.
 
         """
         # Store configuration for tap creation
@@ -746,10 +746,10 @@ class FlextMeltanoTapOracleWMSPlugin:
         """Initialize the plugin by creating tap instance.
 
         Returns:
-            FlextResult indicating initialization success or failure
+        FlextResult indicating initialization success or failure
         Architecture:
-            Lazy initialization pattern - tap instance created on first use
-            to allow configuration validation and error handling at plugin level.
+        Lazy initialization pattern - tap instance created on first use
+        to allow configuration validation and error handling at plugin level.
 
         """
         try:
@@ -827,11 +827,11 @@ class FlextMeltanoTapOracleWMSPlugin:
         """Discover available streams through tap instance.
 
         Returns:
-            FlextResult containing discovered streams or error information
+        FlextResult containing discovered streams or error information
         Architecture:
-            Delegates to tap instance while maintaining plugin interface.
-            This allows plugin consumers to work with streams without
-            direct tap knowledge.
+        Delegates to tap instance while maintaining plugin interface.
+        This allows plugin consumers to work with streams without
+        direct tap knowledge.
 
         """
         if not self._tap_instance:
@@ -855,13 +855,13 @@ class FlextMeltanoTapOracleWMSPlugin:
             return FlextResult[Sequence[Stream]].fail(f"Stream discovery failed: {e}")
 
     def get_tap_instance(self) -> FlextMeltanoTapOracleWMS | None:
-        """Get underlying tap instance for advanced operations.
+        """Get underlying tap instance for operations.
 
         Returns:
-            Tap instance if initialized, None otherwise
+        Tap instance if initialized, None otherwise
         Note:
-            This is an escape hatch for operations that require direct
-            tap access. Prefer using plugin interface methods when possible.
+        This is an escape hatch for operations that require direct
+        tap access. Prefer using plugin interface methods when possible.
 
         """
         return self._tap_instance
@@ -949,11 +949,11 @@ class FlextMeltanoTapOracleWMSPlugin:
         """Validate plugin business rules and configuration.
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
         Business Rules:
-            - Configuration must be valid dictionary
-            - Required configuration fields must be present
-            - Tap instance must be creatable with configuration
+        - Configuration must be valid dictionary
+        - Required configuration fields must be present
+        - Tap instance must be creatable with configuration
 
         """
         # Validate required configuration fields
@@ -977,14 +977,14 @@ def create_oracle_wms_tap_plugin(
     """Create Oracle WMS tap plugin instance.
 
     Args:
-      config: Configuration dictionary for plugin creation
+    config: Configuration dictionary for plugin creation
 
     Returns:
-      FlextResult containing plugin instance or error information
+    FlextResult containing plugin instance or error information
 
     Architecture:
-      Provides factory pattern for plugin creation with proper error handling.
-      Follows flext-plugin factory function patterns for consistency.
+    Provides factory pattern for plugin creation with proper error handling.
+    Follows flext-plugin factory function patterns for consistency.
 
     """
     try:

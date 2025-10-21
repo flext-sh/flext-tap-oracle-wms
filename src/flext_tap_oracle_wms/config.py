@@ -54,7 +54,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     """Configuration for Oracle WMS tap.
 
     Type-safe configuration with validation for Oracle WMS data extraction.
-    Follows FLEXT patterns using FlextConfig for comprehensive validation.
+    Follows FLEXT patterns using FlextConfig for complete validation.
     """
 
     # Connection settings
@@ -360,7 +360,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     def validate_business_rules(self: object) -> FlextResult[None]:
         """Validate Oracle WMS tap configuration business rules using FlextConfig pattern.
 
-        Consolidates all validation logic into a single comprehensive method.
+        Consolidates all validation logic into a single complete method.
 
         """
         # Run all validations
@@ -458,7 +458,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         """Validate Oracle WMS specific configuration.
 
         Returns:
-            FlextResult with validation status
+        FlextResult with validation status
 
         """
         try:
@@ -515,7 +515,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         """Validate Oracle WMS tap-specific domain rules.
 
         Returns:
-            FlextResult indicating validation success or failure
+        FlextResult indicating validation success or failure
 
         """
         try:

@@ -47,12 +47,12 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Create Singer schema message.
 
             Args:
-                stream_name: Name of the stream
-                schema: JSON schema for the stream
-                key_properties: List of key property names
+            stream_name: Name of the stream
+            schema: JSON schema for the stream
+            key_properties: List of key property names
 
             Returns:
-                dict[str, object]: Singer schema message
+            dict[str, object]: Singer schema message
 
             """
             return {
@@ -71,12 +71,12 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Create Singer record message.
 
             Args:
-                stream_name: Name of the stream
-                record: Record data
-                time_extracted: Timestamp when record was extracted
+            stream_name: Name of the stream
+            record: Record data
+            time_extracted: Timestamp when record was extracted
 
             Returns:
-                dict[str, object]: Singer record message
+            dict[str, object]: Singer record message
 
             """
             extracted_time = time_extracted or datetime.now(UTC)
@@ -92,10 +92,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Create Singer state message.
 
             Args:
-                state: State data
+            state: State data
 
             Returns:
-                dict[str, object]: Singer state message
+            dict[str, object]: Singer state message
 
             """
             return {
@@ -108,7 +108,7 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Write Singer message to stdout.
 
             Args:
-                message: Singer message to write
+            message: Singer message to write
 
             """
 
@@ -120,10 +120,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Normalize Oracle WMS identifier.
 
             Args:
-                identifier: WMS identifier to normalize
+            identifier: WMS identifier to normalize
 
             Returns:
-                str: Normalized identifier
+            str: Normalized identifier
 
             """
             if not identifier:
@@ -140,10 +140,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Extract facility code from WMS location string.
 
             Args:
-                location: WMS location string
+            location: WMS location string
 
             Returns:
-                str: Facility code or empty string if not found
+            str: Facility code or empty string if not found
 
             """
             if not location:
@@ -158,10 +158,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Parse Oracle WMS quantity string to float.
 
             Args:
-                quantity_str: WMS quantity string
+            quantity_str: WMS quantity string
 
             Returns:
-                FlextResult[float]: Parsed quantity or error
+            FlextResult[float]: Parsed quantity or error
 
             """
             if not quantity_str:
@@ -188,10 +188,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Convert Oracle WMS timestamp to ISO format.
 
             Args:
-                timestamp: WMS timestamp string
+            timestamp: WMS timestamp string
 
             Returns:
-                FlextResult[str]: ISO formatted timestamp or error
+            FlextResult[str]: ISO formatted timestamp or error
 
             """
             if not timestamp:
@@ -228,10 +228,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Sanitize Oracle WMS field name for JSON schema.
 
             Args:
-                field_name: WMS field name
+            field_name: WMS field name
 
             Returns:
-                str: Sanitized field name
+            str: Sanitized field name
 
             """
             if not field_name:
@@ -251,10 +251,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Extract SKU information from Oracle WMS item code.
 
             Args:
-                item_code: WMS item code
+            item_code: WMS item code
 
             Returns:
-                dict[str, str]: SKU information components
+            dict[str, str]: SKU information components
 
             """
             if not item_code:
@@ -290,11 +290,11 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Generate JSON schema from Oracle WMS sample records.
 
             Args:
-                sample_records: List of sample WMS records
-                stream_name: Name of the stream
+            sample_records: List of sample WMS records
+            stream_name: Name of the stream
 
             Returns:
-                dict[str, object]: JSON schema
+            dict[str, object]: JSON schema
 
             """
             if not sample_records:
@@ -331,10 +331,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Infer JSON schema type from Oracle WMS value.
 
             Args:
-                value: Value to analyze
+            value: Value to analyze
 
             Returns:
-                dict[str, object]: JSON schema type definition
+            dict[str, object]: JSON schema type definition
 
             """
             if value is None:
@@ -376,11 +376,11 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Calculate optimal batch size for Oracle WMS processing.
 
             Args:
-                record_count: Total number of records
-                target_batches: Target number of batches
+            record_count: Total number of records
+            target_batches: Target number of batches
 
             Returns:
-                int: Optimal batch size
+            int: Optimal batch size
 
             """
             if record_count <= 0:
@@ -399,11 +399,11 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Create replication key schema for Oracle WMS streams.
 
             Args:
-                stream_name: Name of the stream
-                replication_key: Replication key field name
+            stream_name: Name of the stream
+            replication_key: Replication key field name
 
             Returns:
-                dict[str, object]: Replication key schema
+            dict[str, object]: Replication key schema
 
             """
             return {
@@ -425,10 +425,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Validate Oracle WMS connection configuration.
 
             Args:
-                config: Configuration dictionary
+            config: Configuration dictionary
 
             Returns:
-                FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, object]]: Validated config or error
 
             """
             required_fields = ["host", "database", "username", "password"]
@@ -482,10 +482,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Validate Oracle WMS stream configuration.
 
             Args:
-                config: Stream configuration
+            config: Stream configuration
 
             Returns:
-                FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, object]]: Validated config or error
 
             """
             if "streams" not in config:
@@ -523,7 +523,7 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             return FlextResult[dict[str, object]].ok(config)
 
     class ConfigurationProcessing:
-        """Advanced configuration processing utilities."""
+        """configuration processing utilities."""
 
         @staticmethod
         def validate_wms_config(
@@ -532,10 +532,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Validate basic WMS configuration.
 
             Args:
-                config: Configuration dictionary
+            config: Configuration dictionary
 
             Returns:
-                FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, object]]: Validated config or error
 
             """
             # Delegate to existing ConfigValidation
@@ -550,10 +550,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Validate WMS connection parameters.
 
             Args:
-                config: Configuration dictionary
+            config: Configuration dictionary
 
             Returns:
-                FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, object]]: Validated config or error
 
             """
             required_params = ["base_url", "username", "password"]
@@ -577,13 +577,13 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
         def validate_wms_configuration_comprehensive(
             config: dict[str, object],
         ) -> FlextResult[dict[str, object]]:
-            """Comprehensive WMS configuration validation.
+            """Complete WMS configuration validation.
 
             Args:
-                config: Configuration dictionary
+            config: Configuration dictionary
 
             Returns:
-                FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, object]]: Validated config or error
 
             """
             # Basic validation first
@@ -620,12 +620,12 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Test WMS API connection.
 
             Args:
-                base_url: WMS API base URL
-                auth_token: Optional authentication token
-                timeout: Connection timeout
+            base_url: WMS API base URL
+            auth_token: Optional authentication token
+            timeout: Connection timeout
 
             Returns:
-                FlextResult[dict[str, object]]: Connection test result
+            FlextResult[dict[str, object]]: Connection test result
 
             """
             if not base_url:
@@ -645,7 +645,7 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             return FlextResult[dict[str, object]].ok(connection_info)
 
     class DataProcessing:
-        """Advanced data processing utilities."""
+        """data processing utilities."""
 
         @staticmethod
         def generate_validation_info(
@@ -653,15 +653,15 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             connection_result: dict[str, object],
             discovery_result: dict[str, object] | None = None,
         ) -> FlextResult[dict[str, object]]:
-            """Generate comprehensive validation information.
+            """Generate complete validation information.
 
             Args:
-                config_data: Configuration data
-                connection_result: Connection test result
-                discovery_result: Optional discovery result
+            config_data: Configuration data
+            connection_result: Connection test result
+            discovery_result: Optional discovery result
 
             Returns:
-                FlextResult[dict[str, object]]: Validation information
+            FlextResult[dict[str, object]]: Validation information
 
             """
             validation_info = {
@@ -696,11 +696,11 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Get state for a specific Oracle WMS stream.
 
             Args:
-                state: Complete state dictionary
-                stream_name: Name of the stream
+            state: Complete state dictionary
+            stream_name: Name of the stream
 
             Returns:
-                dict[str, object]: Stream state
+            dict[str, object]: Stream state
 
             """
             if not isinstance(state, dict):
@@ -719,12 +719,12 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Set state for a specific Oracle WMS stream.
 
             Args:
-                state: Complete state dictionary
-                stream_name: Name of the stream
-                stream_state: State data for the stream
+            state: Complete state dictionary
+            stream_name: Name of the stream
+            stream_state: State data for the stream
 
             Returns:
-                dict[str, object]: Updated state
+            dict[str, object]: Updated state
 
             """
             if "bookmarks" not in state:
@@ -744,12 +744,12 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Get bookmark value for a Oracle WMS stream.
 
             Args:
-                state: Complete state dictionary
-                stream_name: Name of the stream
-                bookmark_key: Bookmark key
+            state: Complete state dictionary
+            stream_name: Name of the stream
+            bookmark_key: Bookmark key
 
             Returns:
-                object: Bookmark value or None
+            object: Bookmark value or None
 
             """
             stream_state = (
@@ -774,13 +774,13 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Set bookmark value for a Oracle WMS stream.
 
             Args:
-                state: Complete state dictionary
-                stream_name: Name of the stream
-                bookmark_key: Bookmark key
-                bookmark_value: Bookmark value
+            state: Complete state dictionary
+            stream_name: Name of the stream
+            bookmark_key: Bookmark key
+            bookmark_value: Bookmark value
 
             Returns:
-                dict[str, object]: Updated state
+            dict[str, object]: Updated state
 
             """
             if "bookmarks" not in state:
@@ -803,12 +803,12 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Create incremental state for Oracle WMS stream.
 
             Args:
-                stream_name: Name of the stream
-                last_updated: Last update timestamp
-                records_processed: Number of records processed
+            stream_name: Name of the stream
+            last_updated: Last update timestamp
+            records_processed: Number of records processed
 
             Returns:
-                dict[str, object]: Incremental state
+            dict[str, object]: Incremental state
 
             """
             return {
@@ -833,11 +833,11 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Calculate optimal fetch size for Oracle WMS queries.
 
             Args:
-                table_size_estimate: Estimated number of records
-                memory_limit_mb: Memory limit in MB
+            table_size_estimate: Estimated number of records
+            memory_limit_mb: Memory limit in MB
 
             Returns:
-                int: Optimal fetch size
+            int: Optimal fetch size
 
             """
             # Estimate memory per record (conservative estimate for WMS data)
@@ -862,12 +862,12 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             """Estimate extraction time for Oracle WMS data.
 
             Args:
-                record_count: Number of records to extract
-                avg_record_size_bytes: Average record size in bytes
-                network_speed_mbps: Network speed in Mbps
+            record_count: Number of records to extract
+            avg_record_size_bytes: Average record size in bytes
+            network_speed_mbps: Network speed in Mbps
 
             Returns:
-                FlextTypes.FloatDict: Time estimates in seconds
+            FlextTypes.FloatDict: Time estimates in seconds
 
             """
             total_bytes = record_count * avg_record_size_bytes
@@ -904,10 +904,10 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             For async operations, use the synchronous alternatives.
 
             Args:
-                coro: Object to process (ignored in sync implementation)
+            coro: Object to process (ignored in sync implementation)
 
             Returns:
-                The input object (pass-through for sync compatibility)
+            The input object (pass-through for sync compatibility)
 
             """
             # Synchronous stub - return the input unchanged

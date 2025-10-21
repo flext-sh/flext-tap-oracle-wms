@@ -50,7 +50,7 @@ linear = "linear"
 class FlextMeltanoTapOracleWmsModels(FlextModels):
     """Oracle WMS tap models extending flext-core FlextModels.
 
-    Provides comprehensive models for Oracle WMS entity extraction, authentication,
+    Provides complete models for Oracle WMS entity extraction, authentication,
     stream configuration, and Singer protocol compliance following standardized patterns.
     """
 
@@ -117,7 +117,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
 
     @computed_field
     def wms_tap_system_summary(self) -> dict[str, object]:
-        """Comprehensive Singer Oracle WMS tap system summary with warehouse extraction capabilities."""
+        """Complete Singer Oracle WMS tap system summary with warehouse extraction capabilities."""
         return {
             "total_models": self.active_wms_tap_models_count,
             "tap_type": "singer_oracle_wms_warehouse_extractor",
