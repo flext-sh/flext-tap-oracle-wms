@@ -45,13 +45,13 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         """Initialize stream."""
         super().__init__(tap=tap, name=name or self.name, schema=schema)
 
-        # ZERO TOLERANCE FIX: Initialize utilities for ALL stream business logic
+        # Zero Tolerance FIX: Initialize utilities for ALL stream business logic
         self._utilities = FlextMeltanoTapOracleWmsUtilities()
 
         # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
         self._client: FlextOracleWmsClient | None = None
 
-        # ZERO TOLERANCE FIX: Use utilities for stream configuration processing
+        # Zero Tolerance FIX: Use utilities for stream configuration processing
         page_size_result = (
             self._utilities.ConfigurationProcessing.validate_stream_page_size(
                 self.config.get("page_size", 100)
@@ -109,7 +109,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         coro: Coroutine[object, object, object] | Awaitable[object],
     ) -> object:
         """Run coroutine in sync context."""
-        # ZERO TOLERANCE FIX: Use utilities instead of loose function
+        # Zero Tolerance FIX: Use utilities instead of loose function
         return self._utilities.Utilities.run(coro)
 
     def get_records(
@@ -119,9 +119,9 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         """Get records from Oracle WMS.
 
         Args:
-            context: Stream context
+        context: Stream context
         Yields:
-            Stream records
+        Stream records
 
         """
         page = 1
@@ -152,10 +152,10 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         """Fetch data for a specific page.
 
         Args:
-            page: Page number to fetch
-            context: Stream context
+        page: Page number to fetch
+        context: Stream context
         Returns:
-            Tuple of (records, has_more) or None if failed
+        Tuple of (records, has_more) or None if failed
 
         """
         # Build operation parameters
@@ -193,10 +193,10 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         """Build kwargs for the operation call.
 
         Args:
-            page: Page number
-            context: Stream context
+        page: Page number
+        context: Stream context
         Returns:
-            Operation kwargs dict
+        Operation kwargs dict
 
         """
         kwargs = {
@@ -221,9 +221,9 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         """Extract records and pagination info from API response.
 
         Args:
-            data: Raw response data
+        data: Raw response data
         Returns:
-            Tuple of (records, has_more)
+        Tuple of (records, has_more)
 
         """
         match data:
@@ -266,10 +266,10 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         """Process and yield records from a page.
 
         Args:
-            records: List of records to process
-            context: Stream context
+        records: List of records to process
+        context: Stream context
         Yields:
-            Processed records
+        Processed records
 
         """
         for record in records:
@@ -287,10 +287,10 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         """Post-process a record.
 
         Args:
-            row: Record to process
-            context: Stream context
+        row: Record to process
+        context: Stream context
         Returns:
-            Processed record or None to skip
+        Processed record or None to skip
 
         """
         # Apply column mappings if configured
