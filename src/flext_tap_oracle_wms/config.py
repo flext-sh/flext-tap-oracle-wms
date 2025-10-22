@@ -16,7 +16,7 @@ from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult
 from flext_oracle_wms import (
     FlextOracleWmsConstants as _WmsConstants,
 )
-from pydantic import Field, SecretStr, field_validator
+from pydantic import AnyUrl, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
 
@@ -58,7 +58,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     """
 
     # Connection settings
-    base_url: str = Field(
+    base_url: AnyUrl = Field(
         ...,
         description="Oracle WMS base URL",
         examples=["https://wms.example.com/api"],
@@ -313,20 +313,6 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         return cls.get_or_create_shared_instance(
             project_name="flext-tap-oracle-wms", **test_overrides
         )
-
-    @field_validator("base_url")
-    @classmethod
-    def validate_base_url(cls, v: str) -> str:
-        """Validate base URL using centralized FlextModels validation."""
-        # Use centralized FlextModels validation instead of duplicate logic
-        stripped_url = v.rstrip("/")  # Remove trailing slash
-        validation_result: FlextResult[object] = FlextModels.create_validated_http_url(
-            stripped_url
-        )
-        if validation_result.is_failure:
-            error_msg = f"Invalid base URL: {validation_result.error}"
-            raise ValueError(error_msg)
-        return stripped_url
 
     @field_validator("include_entities", "exclude_entities")
     @classmethod
