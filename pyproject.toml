@@ -19,8 +19,9 @@
     ]
     dependencies = [
         "pydantic-settings>=2.10.1",
-        "pydantic>=2.11.7",
+        "pydantic (>=2.12.3)",
         "requests>=2.31.0",
+        "pydantic-core (>=2.41.4)",
     ]
     description = "FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System"
     keywords = [
@@ -71,7 +72,7 @@
 
     [tool.poetry.dependencies]
         httpx    = ">=0.27.0"
-        pydantic = ">=2.11.7"
+        pydantic = ">=2.12.3"
         python   = ">=3.13,<3.14"
         requests = ">=2.31.0"
 
@@ -110,15 +111,15 @@
             develop = true
             path    = "../flext-core"
 
-        [tool.poetry.dependencies.flext-meltano]
+                [tool.poetry.dependencies.flext-meltano]
             develop = true
             path    = "../flext-meltano"
 
-        [tool.poetry.dependencies.flext-oracle-wms]
+                        [tool.poetry.dependencies.flext-oracle-wms]
             develop = true
             path    = "../flext-oracle-wms"
 
-        [tool.poetry.dependencies.flext-observability]
+                                [tool.poetry.dependencies.flext-observability]
             develop = true
             path    = "../flext-observability"
 
@@ -138,17 +139,18 @@
         vulture        = ">=2.13"
 
     [tool.poetry.group.test.dependencies]
-        factory-boy         = ">=3.3.1"
+        
+        
+factory-boy         = ">=3.3.1"
         faker               = ">=37.4.0"
         hypothesis          = ">=6.125.0"
         pytest              = ">=8.4.0"
         pytest-benchmark    = ">=5.1.0"
         pytest-clarity      = ">=1.0.1"
-        pytest-cov          = ">=6.2.0"
+        pytest-cov = "=7.0.0"
         pytest-deadfixtures = ">=2.2.1"
         pytest-env          = ">=1.1.5"
         pytest-mock         = ">=3.14.0"
-        pytest-randomly     = ">=3.16.0"
         pytest-sugar        = ">=1.0.0"
         pytest-timeout      = ">=2.4.0"
         pytest-xdist        = ">=3.8.0"
