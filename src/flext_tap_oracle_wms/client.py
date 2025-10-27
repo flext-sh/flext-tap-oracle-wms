@@ -508,7 +508,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                         )
                         if pk_list:
                             # Set primary keys dynamically using setattr for class variables
-                            setattr(stream.__class__, "primary_keys", pk_list)
+                            stream.__class__.primary_keys = pk_list
                     break
 
     @override
