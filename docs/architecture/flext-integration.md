@@ -65,7 +65,7 @@ class WMSConfig(FlextConfig):
     auth_method: str
     company_code: str
     facility_code: str
-    entities: FlextTypes.StringList = Field(default=["item", "inventory"])
+    entities: t.StringList = Field(default=["item", "inventory"])
 
     class Config:
         """Pydantic configuration."""
@@ -127,18 +127,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class FlextMeltanoTapOracleWMSStream:
     """Stream with standardized logging."""
@@ -231,7 +231,7 @@ class EntityDiscovery:
         self.wms_client = wms_client
         self.logger = FlextLogger(__name__)
 
-    def discover_entities(self) -> FlextResult[FlextTypes.StringList]:
+    def discover_entities(self) -> FlextResult[t.StringList]:
         """Discover available entities using WMS client."""
         try:
             entities = self.wms_client.get_available_entities()
@@ -250,7 +250,7 @@ class EntityDiscovery:
             self.logger.error(f"Metadata retrieval failed for {entity}: {e}")
             return FlextResult.failure(f"Metadata error: {e}")
 
-    def generate_schema(self, entity: str) -> FlextResult[FlextTypes.Dict]:
+    def generate_schema(self, entity: str) -> FlextResult[t.Dict]:
         """Generate Singer schema from WMS metadata."""
         metadata_result = self.get_entity_metadata(entity)
         if not metadata_result.success:
@@ -307,7 +307,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         self.tap = tap
 
     @property
-    def schema(self) -> FlextTypes.Dict:
+    def schema(self) -> t.Dict:
         """Get stream schema from WMS metadata."""
         discovery = EntityDiscovery(self.tap.wms_client_manager.client)
         schema_result = discovery.generate_schema(self.name)
@@ -317,7 +317,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
 
         return schema_result.data
 
-    def get_records(self, context) -> Iterator[FlextTypes.Dict]:
+    def get_records(self, context) -> Iterator[t.Dict]:
         """Extract records using WMS client."""
         try:
             for record in self.tap.wms_client_manager.client.get_entity_data(self.name):
@@ -349,7 +349,7 @@ class WMSMeltanoConfig(MeltanoConfig):
     oauth_client_secret: Optional[str] = Field(None, description="OAuth2 client secret")
 
     # Extraction settings
-    entities: FlextTypes.StringList = Field(
+    entities: t.StringList = Field(
         default=["item", "inventory"],
         description="List of WMS entities to extract"
     )
@@ -431,7 +431,7 @@ class FlextMeltanoTapOracleWMS(Tap):
 class FlextMeltanoTapOracleWMSStream(Stream):
     """Stream with observability integration."""
 
-    def get_records(self, context) -> Iterator[FlextTypes.Dict]:
+    def get_records(self, context) -> Iterator[t.Dict]:
         """Record extraction with comprehensive monitoring."""
         with self.tap.tracing.span(f"extract_{self.name}"):
             start_time = time.time()

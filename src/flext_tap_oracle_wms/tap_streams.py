@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping, Sequence
 from typing import override
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextResult, t
 
 # Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
@@ -115,7 +115,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
     def get_records(
         self,
         context: Mapping[str, object] | None,
-    ) -> Iterable[FlextTypes.JsonDict]:
+    ) -> Iterable[t.JsonDict]:
         """Get records from Oracle WMS.
 
         Args:
@@ -148,7 +148,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         self,
         page: int,
         context: Mapping[str, object] | None,
-    ) -> tuple[list[FlextTypes.JsonDict], bool] | None:
+    ) -> tuple[list[t.JsonDict], bool] | None:
         """Fetch data for a specific page.
 
         Args:
@@ -189,7 +189,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         self,
         page: int,
         context: Mapping[str, object] | None,
-    ) -> FlextTypes.JsonDict:
+    ) -> t.JsonDict:
         """Build kwargs for the operation call.
 
         Args:
@@ -217,7 +217,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
     def _extract_records_from_response(
         self,
         data: dict[str, object] | list[object] | object,
-    ) -> tuple[list[FlextTypes.JsonDict], bool]:
+    ) -> tuple[list[t.JsonDict], bool]:
         """Extract records and pagination info from API response.
 
         Args:
@@ -245,7 +245,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         # Ensure records is always a list of dict[str, object]
         match raw_records:
             case list() as records_list:
-                coerced_records: list[FlextTypes.JsonDict] = []
+                coerced_records: list[t.JsonDict] = []
                 for record in records_list:
                     match record:
                         case dict() as record_dict:
@@ -260,9 +260,9 @@ class FlextMeltanoTapOracleWMSStream(Stream):
 
     def _process_page_records(
         self,
-        records: list[FlextTypes.JsonDict],
+        records: list[t.JsonDict],
         context: Mapping[str, object] | None,
-    ) -> Iterable[FlextTypes.JsonDict]:
+    ) -> Iterable[t.JsonDict]:
         """Process and yield records from a page.
 
         Args:
@@ -281,9 +281,9 @@ class FlextMeltanoTapOracleWMSStream(Stream):
 
     def post_process(
         self,
-        row: FlextTypes.JsonDict,
+        row: t.JsonDict,
         context: Mapping[str, object] | None = None,
-    ) -> FlextTypes.JsonDict | None:
+    ) -> t.JsonDict | None:
         """Post-process a record.
 
         Args:

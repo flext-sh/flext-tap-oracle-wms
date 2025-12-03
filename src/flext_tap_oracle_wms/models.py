@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Literal, Self
 
-from flext_core import FlextConstants, FlextModels, FlextTypes
+from flext_core import FlextConstants, FlextModels, t
 from pydantic import (
     ConfigDict,
     Field,
@@ -1006,7 +1006,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         )
 
         stream_name: str = Field(..., description="Stream name")
-        properties: FlextTypes.NestedDict = Field(..., description="Schema properties")
+        properties: t.NestedDict = Field(..., description="Schema properties")
 
         def to_singer_schema(self) -> dict[str, object]:
             """Convert to Singer schema format."""
@@ -1091,7 +1091,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         )
 
         # Filtering configuration
-        entity_filters: FlextTypes.NestedDict = Field(
+        entity_filters: t.NestedDict = Field(
             default_factory=dict, description="Entity-specific filters"
         )
         field_selection: dict[str, list[str]] = Field(

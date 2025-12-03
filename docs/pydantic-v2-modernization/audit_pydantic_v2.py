@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
 
-from flext_core import FlextTypes
+from flext_core import t
 
 
 @dataclass
@@ -47,7 +47,7 @@ class AuditResult:
     high: list[AuditViolation] = field(default_factory=list)
     medium: list[AuditViolation] = field(default_factory=list)
     recommendations: list[str] = field(default_factory=list)
-    stats: dict[str, FlextTypes.JsonValue] = field(default_factory=dict)
+    stats: dict[str, t.JsonValue] = field(default_factory=dict)
 
     @property
     def total_violations(self) -> int:

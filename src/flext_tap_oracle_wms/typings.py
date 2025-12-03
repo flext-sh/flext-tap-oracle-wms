@@ -1,11 +1,11 @@
 """FLEXT Tap Oracle WMS Types - Domain-specific Singer Oracle WMS tap type definitions.
 
-This module provides Singer Oracle WMS tap-specific type definitions extending FlextTypes.
+This module provides Singer Oracle WMS tap-specific type definitions extending t.
 Follows FLEXT standards:
 - Domain-specific complex types only
 - No simple aliases to primitive types
 - Python 3.13+ syntax
-- Extends FlextTypes properly
+- Extends t properly
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from flext_core import FlextTypes
+from flext_core import t
 
 # =============================================================================
 # TAP ORACLE WMS-SPECIFIC TYPE VARIABLES - Domain-specific TypeVars for Singer Oracle WMS operations
@@ -24,8 +24,8 @@ from flext_core import FlextTypes
 
 
 # Singer Oracle WMS tap domain TypeVars
-class FlextMeltanoTapOracleWmsTypes(FlextTypes):
-    """Singer Oracle WMS tap-specific type definitions extending FlextTypes.
+class FlextMeltanoTapOracleWmsTypes(t):
+    """Singer Oracle WMS tap-specific type definitions extending t.
 
     Domain-specific type system for Singer Oracle WMS tap operations.
     Contains ONLY complex Oracle WMS tap-specific types, no simple aliases.
@@ -40,13 +40,11 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Singer tap protocol complex types."""
 
         type TapConfiguration = dict[str, str | int | bool | dict[str, object]]
-        type StreamConfiguration = dict[
-            str, str | bool | dict[str, FlextTypes.JsonValue]
-        ]
-        type CatalogDefinition = dict[str, str | list[dict[str, FlextTypes.JsonValue]]]
-        type SchemaDefinition = dict[str, str | dict[str, FlextTypes.JsonValue] | bool]
-        type MessageOutput = dict[str, str | dict[str, FlextTypes.JsonValue]]
-        type StateManagement = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
+        type StreamConfiguration = dict[str, str | bool | dict[str, t.JsonValue]]
+        type CatalogDefinition = dict[str, str | list[dict[str, t.JsonValue]]]
+        type SchemaDefinition = dict[str, str | dict[str, t.JsonValue] | bool]
+        type MessageOutput = dict[str, str | dict[str, t.JsonValue]]
+        type StateManagement = dict[str, str | int | dict[str, t.JsonValue]]
 
     # =========================================================================
     # ORACLE WMS WAREHOUSE TYPES - Complex warehouse management types
@@ -56,12 +54,10 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Oracle WMS warehouse management complex types."""
 
         type WarehouseConfiguration = dict[str, str | int | bool | dict[str, object]]
-        type FacilityDefinition = dict[
-            str, str | list[str] | dict[str, FlextTypes.JsonValue]
-        ]
-        type LocationManagement = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type FacilityDefinition = dict[str, str | list[str] | dict[str, t.JsonValue]]
+        type LocationManagement = dict[str, str | dict[str, t.JsonValue]]
         type ZoneConfiguration = dict[str, str | dict[str, object]]
-        type WarehouseMetadata = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type WarehouseMetadata = dict[str, str | dict[str, t.JsonValue]]
         type LayoutDefinition = dict[str, str | bool | dict[str, object]]
 
     # =========================================================================
@@ -72,10 +68,10 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Oracle WMS inventory management complex types."""
 
         type InventoryConfiguration = dict[str, str | int | bool | dict[str, object]]
-        type ItemMasterData = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type ItemMasterData = dict[str, str | dict[str, t.JsonValue]]
         type StockLevelTracking = dict[str, int | float | dict[str, object]]
         type AllocationManagement = dict[str, int | str | dict[str, object]]
-        type InventoryMetrics = dict[str, int | float | dict[str, FlextTypes.JsonValue]]
+        type InventoryMetrics = dict[str, int | float | dict[str, t.JsonValue]]
         type CycleCountData = dict[str, str | int | dict[str, object]]
 
     # =========================================================================
@@ -86,9 +82,9 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Oracle WMS order management complex types."""
 
         type OrderConfiguration = dict[str, str | int | dict[str, object]]
-        type OrderProcessing = dict[str, str | bool | dict[str, FlextTypes.JsonValue]]
+        type OrderProcessing = dict[str, str | bool | dict[str, t.JsonValue]]
         type FulfillmentWorkflow = dict[str, str | int | dict[str, object]]
-        type PickingInstructions = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type PickingInstructions = dict[str, str | dict[str, t.JsonValue]]
         type ShippingConfiguration = dict[str, bool | str | dict[str, object]]
         type OrderTracking = dict[str, str | int | dict[str, object]]
 
@@ -100,14 +96,10 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Oracle WMS labor management complex types."""
 
         type LaborConfiguration = dict[str, str | bool | dict[str, object]]
-        type WorkforceManagement = dict[
-            str, int | float | dict[str, FlextTypes.JsonValue]
-        ]
-        type TaskAssignment = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type WorkforceManagement = dict[str, int | float | dict[str, t.JsonValue]]
+        type TaskAssignment = dict[str, str | dict[str, t.JsonValue]]
         type ProductivityMetrics = dict[str, float | int | dict[str, object]]
-        type PerformanceTracking = dict[
-            str, int | float | dict[str, FlextTypes.JsonValue]
-        ]
+        type PerformanceTracking = dict[str, int | float | dict[str, t.JsonValue]]
         type WorkforceScheduling = dict[str, str | int | dict[str, object]]
 
     # =========================================================================
@@ -118,10 +110,10 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Oracle WMS transportation management complex types."""
 
         type TransportConfiguration = dict[str, str | int | bool | dict[str, object]]
-        type CarrierManagement = dict[str, str | dict[str, FlextTypes.JsonValue]]
-        type ShipmentTracking = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type CarrierManagement = dict[str, str | dict[str, t.JsonValue]]
+        type ShipmentTracking = dict[str, str | dict[str, t.JsonValue]]
         type DeliveryScheduling = dict[str, str | bool | dict[str, object]]
-        type TransportMetrics = dict[str, int | float | dict[str, FlextTypes.JsonValue]]
+        type TransportMetrics = dict[str, int | float | dict[str, t.JsonValue]]
         type RouteOptimization = dict[str, str | list[str] | dict[str, object]]
 
     # =========================================================================
@@ -133,12 +125,10 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type ExtractionConfiguration = dict[str, str | bool | dict[str, object]]
         type ExtractionFilter = dict[str, str | list[str] | dict[str, object]]
-        type ExtractionMapping = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type ExtractionMapping = dict[str, str | dict[str, t.JsonValue]]
         type ExtractionResult = dict[str, bool | list[dict[str, object]]]
-        type ExtractionMetrics = dict[
-            str, int | float | dict[str, FlextTypes.JsonValue]
-        ]
-        type ExtractionState = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
+        type ExtractionMetrics = dict[str, int | float | dict[str, t.JsonValue]]
+        type ExtractionState = dict[str, str | int | dict[str, t.JsonValue]]
 
     # =========================================================================
     # STREAM PROCESSING TYPES - Complex stream handling types
@@ -148,11 +138,11 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Stream processing complex types."""
 
         type StreamConfiguration = dict[str, str | bool | int | dict[str, object]]
-        type StreamMetadata = dict[str, str | dict[str, FlextTypes.JsonValue]]
-        type StreamRecord = dict[str, FlextTypes.JsonValue | dict[str, object]]
-        type StreamState = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
+        type StreamMetadata = dict[str, str | dict[str, t.JsonValue]]
+        type StreamRecord = dict[str, t.JsonValue | dict[str, object]]
+        type StreamState = dict[str, str | int | dict[str, t.JsonValue]]
         type StreamBookmark = dict[str, str | int | dict[str, object]]
-        type StreamSchema = dict[str, str | dict[str, FlextTypes.JsonValue] | bool]
+        type StreamSchema = dict[str, str | dict[str, t.JsonValue] | bool]
 
     # =========================================================================
     # ERROR HANDLING TYPES - Complex error management types
@@ -163,28 +153,26 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type ErrorConfiguration = dict[str, bool | str | int | dict[str, object]]
         type ErrorRecovery = dict[str, str | bool | dict[str, object]]
-        type ErrorReporting = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
+        type ErrorReporting = dict[str, str | int | dict[str, t.JsonValue]]
         type ErrorClassification = dict[str, str | int | dict[str, object]]
-        type ErrorMetrics = dict[str, int | float | dict[str, FlextTypes.JsonValue]]
-        type ErrorTracking = list[
-            dict[str, str | int | dict[str, FlextTypes.JsonValue]]
-        ]
+        type ErrorMetrics = dict[str, int | float | dict[str, t.JsonValue]]
+        type ErrorTracking = list[dict[str, str | int | dict[str, t.JsonValue]]]
 
     # =========================================================================
-    # SINGER TAP ORACLE WMS PROJECT TYPES - Domain-specific project types extending FlextTypes
+    # SINGER TAP ORACLE WMS PROJECT TYPES - Domain-specific project types extending t
     # =========================================================================
 
-    class Project(FlextTypes):
-        """Singer Tap Oracle WMS-specific project types extending FlextTypes.
+    class Project(t):
+        """Singer Tap Oracle WMS-specific project types extending t.
 
         Adds Singer tap Oracle WMS-specific project types while inheriting
-        generic types from FlextTypes. Follows domain separation principle:
+        generic types from t. Follows domain separation principle:
         Singer tap Oracle WMS domain owns WMS extraction and Singer protocol-specific types.
         """
 
         # Singer tap Oracle WMS-specific project types extending the generic ones
         type ProjectType = Literal[
-            # Generic types inherited from FlextTypes
+            # Generic types inherited from t
             "library",
             "application",
             "service",
