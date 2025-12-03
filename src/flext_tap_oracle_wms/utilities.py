@@ -11,15 +11,15 @@ import re
 from datetime import UTC, datetime
 from typing import ClassVar, override
 
-from flext_core import FlextResult, FlextTypes, FlextUtilities
+from flext_core import FlextResult, t, u
 
 
-class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
+class FlextMeltanoTapOracleWmsUtilities(u):
     """Single unified utilities class for Singer tap Oracle WMS operations.
 
     Follows FLEXT unified class pattern with nested helper classes for
     domain-specific Singer tap functionality with Oracle WMS data sources.
-    Extends FlextUtilities with Oracle WMS tap-specific operations.
+    Extends uWMS tap-specific operations.
     """
 
     # Configuration constants
@@ -858,7 +858,7 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             record_count: int,
             avg_record_size_bytes: int = 2048,
             network_speed_mbps: float = 100.0,
-        ) -> FlextTypes.FloatDict:
+        ) -> t.FloatDict:
             """Estimate extraction time for Oracle WMS data.
 
             Args:
@@ -867,7 +867,7 @@ class FlextMeltanoTapOracleWmsUtilities(FlextUtilities):
             network_speed_mbps: Network speed in Mbps
 
             Returns:
-            FlextTypes.FloatDict: Time estimates in seconds
+            t.FloatDict: Time estimates in seconds
 
             """
             total_bytes = record_count * avg_record_size_bytes

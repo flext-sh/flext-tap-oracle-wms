@@ -148,7 +148,7 @@ graph TB
 class WMSEntityConfig:
     entity_name: str
     replication_method: str
-    fields: FlextTypes.StringList
+    fields: t.StringList
 
 # Application Layer (orchestration)
 class EntityDiscovery:
@@ -204,18 +204,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class WMSConfig(FlextConfig):
     """Unified WMS tap configuration."""
@@ -224,7 +224,7 @@ class WMSConfig(FlextConfig):
     auth_method: str = Field(..., regex="^(basic|oauth2)$")
     company_code: str
     facility_code: str
-    entities: FlextTypes.StringList = Field(default_factory=lambda: ["item", "inventory"])
+    entities: t.StringList = Field(default_factory=lambda: ["item", "inventory"])
 
     # Authentication fields
     username: Optional[str] = None
@@ -312,7 +312,7 @@ class WMSCache:
     """Simple LRU cache for WMS responses."""
 
     @lru_cache(maxsize=1000)
-    def get_entity_schema(self, entity_name: str) -> FlextTypes.Dict:
+    def get_entity_schema(self, entity_name: str) -> t.Dict:
         """Cache entity schemas for discovery."""
         return self._fetch_schema(entity_name)
 ```
@@ -350,18 +350,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class WMSTapError(FlextExceptions.Error):
     """Base exception for WMS tap errors."""
