@@ -436,14 +436,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         self,
         stream_definitions: list[dict[str, object]],
     ) -> list[FlextMeltanoTapOracleWMSStream]:
-        """Create stream instances from stream definitions.
-
-        Args:
-        stream_definitions: List of stream definition dictionaries
-        Returns:
-        List of created Stream instances
-
-        """
+        """Create stream instances from stream definitions."""
         streams: list[FlextMeltanoTapOracleWMSStream] = []
         for stream_def in stream_definitions:
             try:
@@ -459,14 +452,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         self,
         stream_def: dict[str, object],
     ) -> FlextMeltanoTapOracleWMSStream | None:
-        """Create a single stream from definition.
-
-        Args:
-        stream_def: Stream definition dictionary
-        Returns:
-        Created FlextMeltanoTapOracleWMSStream instance or None if invalid
-
-        """
+        """Create a single stream from definition."""
         # Extract stream information
         stream_name = stream_def.get("stream")
         stream_schema = stream_def.get("schema")
@@ -515,14 +501,7 @@ class FlextMeltanoTapOracleWMS(Tap):
 
     @override
     def execute(self, message: str | None = None) -> FlextResult[None]:
-        """Execute tap in Singer mode.
-
-        Args:
-        message: Optional Singer message to process
-        Returns:
-        FlextResult indicating success or failure
-
-        """
+        """Execute tap in Singer mode."""
         try:
             # If message provided, process it
             if message:
@@ -711,16 +690,7 @@ class FlextMeltanoTapOracleWMSPlugin:
 
     @override
     def __init__(self, config: dict[str, object]) -> None:
-        """Initialize Oracle WMS tap plugin with configuration.
-
-        Args:
-        config: Configuration dictionary for tap initialization
-        Architecture:
-        Uses composition pattern - creates internal tap instance rather
-        than inheriting from Tap directly, maintaining clean separation
-        between plugin interface and Singer implementation.
-
-        """
+        """Initialize Oracle WMS tap plugin with configuration using composition pattern."""
         # Store configuration for tap creation
         self._tap_config: dict[str, object] = config
         self._tap_instance: FlextMeltanoTapOracleWMS | None = None

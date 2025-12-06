@@ -116,14 +116,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         self,
         context: Mapping[str, object] | None,
     ) -> Iterable[t.JsonDict]:
-        """Get records from Oracle WMS.
-
-        Args:
-        context: Stream context
-        Yields:
-        Stream records
-
-        """
+        """Get records from Oracle WMS."""
         page = 1
         has_more = True
         while has_more:
@@ -149,15 +142,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         page: int,
         context: Mapping[str, object] | None,
     ) -> tuple[list[t.JsonDict], bool] | None:
-        """Fetch data for a specific page.
-
-        Args:
-        page: Page number to fetch
-        context: Stream context
-        Returns:
-        Tuple of (records, has_more) or None if failed
-
-        """
+        """Fetch data for a specific page."""
         # Build operation parameters
         operation_name = f"get_{self.name}"
         kwargs = self._build_operation_kwargs(page, context)
@@ -190,15 +175,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         page: int,
         context: Mapping[str, object] | None,
     ) -> t.JsonDict:
-        """Build kwargs for the operation call.
-
-        Args:
-        page: Page number
-        context: Stream context
-        Returns:
-        Operation kwargs dict
-
-        """
+        """Build kwargs for the operation call."""
         kwargs = {
             "page": page,
             "limit": self._page_size,
@@ -218,14 +195,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         self,
         data: dict[str, object] | list[object] | object,
     ) -> tuple[list[t.JsonDict], bool]:
-        """Extract records and pagination info from API response.
-
-        Args:
-        data: Raw response data
-        Returns:
-        Tuple of (records, has_more)
-
-        """
+        """Extract records and pagination info from API response."""
         match data:
             case dict() as data_dict:
                 raw_records = data_dict.get(
@@ -263,15 +233,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         records: list[t.JsonDict],
         context: Mapping[str, object] | None,
     ) -> Iterable[t.JsonDict]:
-        """Process and yield records from a page.
-
-        Args:
-        records: List of records to process
-        context: Stream context
-        Yields:
-        Processed records
-
-        """
+        """Process and yield records from a page."""
         for record in records:
             # Ensure record is a dict[str, object] for processing
             if isinstance(record, dict):
@@ -284,15 +246,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         row: t.JsonDict,
         context: Mapping[str, object] | None = None,
     ) -> t.JsonDict | None:
-        """Post-process a record.
-
-        Args:
-        row: Record to process
-        context: Stream context
-        Returns:
-        Processed record or None to skip
-
-        """
+        """Post-process a record."""
         # Apply column mappings if configured
         if self.config:
             column_mappings: dict[str, object] = self.config.get("column_mappings", {})
