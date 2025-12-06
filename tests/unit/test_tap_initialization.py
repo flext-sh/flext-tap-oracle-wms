@@ -22,7 +22,8 @@ class TestTapInitialization:
 
     @patch("flext_tap_oracle_wms.tap.FlextMeltanoTapOracleWMS.discover_streams")
     def test_tap_initialization_without_network_calls(
-        self, mock_discover: MagicMock
+        self,
+        mock_discover: MagicMock,
     ) -> None:
         """Test tap initialization without network calls."""
         # Mock discover_streams to return empty list during initialization
@@ -67,7 +68,8 @@ class TestTapInitialization:
             patch("httpx.Client") as mock_sync_client,
             patch("requests.get") as mock_requests,
             patch.object(
-                FlextMeltanoTapOracleWMS, "_create_minimal_schema"
+                FlextMeltanoTapOracleWMS,
+                "_create_minimal_schema",
             ) as mock_schema,
         ):
             # Mock the discovery metadata fetch
@@ -214,7 +216,8 @@ class TestTapInitialization:
             patch("requests.get"),
             patch.object(FlextMeltanoTapOracleWMS, "discovery") as mock_discovery,
             patch.object(
-                FlextMeltanoTapOracleWMS, "_discover_entities_sync"
+                FlextMeltanoTapOracleWMS,
+                "_discover_entities_sync",
             ) as mock_entities,
         ):
             mock_entities.return_value = {"test_entity": "http://test.url"}

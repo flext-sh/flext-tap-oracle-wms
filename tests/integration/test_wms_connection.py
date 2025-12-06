@@ -170,7 +170,8 @@ class TestFilteringAndSelection:
     """Test entity filtering and selection."""
 
     def test_entity_inclusion_filter(
-        self, real_config: FlextMeltanoTapOracleWMSConfig
+        self,
+        real_config: FlextMeltanoTapOracleWMSConfig,
     ) -> None:
         """Test including specific entities."""
         config = FlextMeltanoTapOracleWMSConfig(
@@ -187,7 +188,8 @@ class TestFilteringAndSelection:
         assert "orders" not in stream_names  # Should be excluded
 
     def test_entity_exclusion_filter(
-        self, real_config: FlextMeltanoTapOracleWMSConfig
+        self,
+        real_config: FlextMeltanoTapOracleWMSConfig,
     ) -> None:
         """Test excluding specific entities."""
         config = FlextMeltanoTapOracleWMSConfig(

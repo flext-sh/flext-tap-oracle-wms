@@ -23,7 +23,8 @@ class TestFlextMeltanoTapOracleWMS:
     """Test FlextMeltanoTapOracleWMS class."""
 
     def test_tap_initialization_with_config(
-        self, sample_config: FlextMeltanoTapOracleWMSConfig
+        self,
+        sample_config: FlextMeltanoTapOracleWMSConfig,
     ) -> None:
         """Test tap initialization with config."""
         tap = FlextMeltanoTapOracleWMS(config=sample_config)
@@ -208,7 +209,8 @@ class TestFlextMeltanoTapOracleWMS:
             mock_run.assert_called_once()
 
     def test_execute_with_message_unsupported(
-        self, tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test execute with message (not supported for tap)."""
         result = tap_instance.execute("some message")
@@ -227,7 +229,7 @@ class TestFlextMeltanoTapOracleWMS:
         mock_client = MagicMock()
         mock_client.connect.return_value = FlextResult[None].ok(data=None)
         mock_client.list_entities.return_value = FlextResult[list[str]].ok([
-            "inventory"
+            "inventory",
         ])
         mock_client_class.return_value = mock_client
 
@@ -239,13 +241,15 @@ class TestFlextMeltanoTapOracleWMS:
         mock_client.list_entities.assert_called_once_with(limit=1)
 
     def test_get_implementation_name(
-        self, tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test get implementation name."""
         assert tap_instance.get_implementation_name() == "FLEXT Oracle WMS Tap"
 
     def test_get_implementation_version(
-        self, tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test get implementation version."""
         version = tap_instance.get_implementation_version()
@@ -253,7 +257,8 @@ class TestFlextMeltanoTapOracleWMS:
         assert "." in version  # Should be semantic version
 
     def test_get_implementation_metrics(
-        self, tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test get implementation metrics."""
         result = tap_instance.get_implementation_metrics()

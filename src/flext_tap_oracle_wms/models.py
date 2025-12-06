@@ -73,7 +73,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                     "tap_name": "tap-oracle-wms",
                     "extraction_mode": "warehouse_incremental_replication",
                     "wms_instance": "https://mycompany-wms.oracle.com",
-                }
+                },
             ],
             "tags": [
                 "singer",
@@ -178,7 +178,9 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
 
     @field_serializer("*", when_used="json")
     def serialize_with_wms_metadata(
-        self, value: object, _info: FieldSerializationInfo
+        self,
+        value: object,
+        _info: FieldSerializationInfo,
     ) -> object:
         """Add Singer Oracle WMS tap metadata to all serialized fields."""
         if isinstance(value, dict):
@@ -192,7 +194,8 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                 },
             }
         if isinstance(value, (str, int, float, bool)) and hasattr(
-            self, "_include_wms_metadata"
+            self,
+            "_include_wms_metadata",
         ):
             return {
                 "value": value,
@@ -219,7 +222,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "username": "wms_user",
                         "company_code": "COMP01",
                         "facility_code": "WH001",
-                    }
+                    },
                 ],
             },
         )
@@ -228,24 +231,35 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         username: str = Field(..., description="WMS username")
         password: SecretStr = Field(..., description="WMS password")
         auth_method: Literal[basic, oauth2] = Field(
-            default="basic", description="Authentication method"
+            default="basic",
+            description="Authentication method",
         )
 
         # Organizational configuration
         company_code: str = Field(..., description="Company code identifier")
         facility_code: str = Field(
-            ..., description="Facility/warehouse code identifier"
+            ...,
+            description="Facility/warehouse code identifier",
         )
 
         # Optional authentication settings
         request_timeout: int = Field(
-            default=120, ge=30, le=600, description="Request timeout in seconds"
+            default=120,
+            ge=30,
+            le=600,
+            description="Request timeout in seconds",
         )
         max_retries: int = Field(
-            default=3, ge=1, le=10, description="Maximum retry attempts"
+            default=3,
+            ge=1,
+            le=10,
+            description="Maximum retry attempts",
         )
         concurrent_requests: int = Field(
-            default=3, ge=1, le=5, description="Concurrent requests limit"
+            default=3,
+            ge=1,
+            le=5,
+            description="Concurrent requests limit",
         )
 
         @computed_field
@@ -306,7 +320,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "entity_id": "ENTITY_001",
                         "company_code": "COMP01",
                         "facility_code": "WH001",
-                    }
+                    },
                 ],
             },
         )
@@ -314,7 +328,8 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         entity_id: str = Field(..., description="Unique entity identifier")
         entity_name: str | None = Field(None, description="Entity display name")
         date_time_stamp: datetime | None = Field(
-            None, description="WMS timestamp for replication"
+            None,
+            description="WMS timestamp for replication",
         )
         company_code: str | None = Field(None, description="Associated company code")
         facility_code: str | None = Field(None, description="Associated facility code")
@@ -363,7 +378,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "item_desc": "Widget A",
                         "item_category": "WIDGETS",
                         "weight": 1.5,
-                    }
+                    },
                 ],
             },
         )
@@ -371,11 +386,13 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         item_id: str = Field(..., description="Unique item identifier")
         item_desc: str | None = Field(None, description="Item description")
         item_category: str | None = Field(
-            None, description="Item category classification"
+            None,
+            description="Item category classification",
         )
         item_type: str | None = Field(None, description="Item type")
         item_status: str | None = Field(
-            None, description="Item status (Active/Inactive)"
+            None,
+            description="Item status (Active/Inactive)",
         )
 
         # Physical attributes
@@ -389,10 +406,12 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         unit_of_measure: str | None = Field(None, description="Primary unit of measure")
         lot_control: str | None = Field(None, description="Lot control flag")
         expiry_date_tracking: str | None = Field(
-            None, description="Expiry date tracking flag"
+            None,
+            description="Expiry date tracking flag",
         )
         serial_number_tracking: str | None = Field(
-            None, description="Serial number tracking flag"
+            None,
+            description="Serial number tracking flag",
         )
 
         @computed_field
@@ -451,14 +470,15 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "location_type": "PICK",
                         "zone_id": "ZONE_A",
                         "max_weight": 500.0,
-                    }
+                    },
                 ],
             },
         )
 
         location_id: str = Field(..., description="Unique location identifier")
         location_type: str | None = Field(
-            None, description="Location type (Pick, Reserve, etc.)"
+            None,
+            description="Location type (Pick, Reserve, etc.)",
         )
         location_status: str | None = Field(None, description="Location status")
         zone_id: str | None = Field(None, description="Zone identifier")
@@ -474,7 +494,8 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         max_weight: float | None = Field(None, description="Maximum weight capacity")
         max_volume: float | None = Field(None, description="Maximum volume capacity")
         location_capacity: int | None = Field(
-            None, description="Location unit capacity"
+            None,
+            description="Location unit capacity",
         )
 
         @computed_field
@@ -535,7 +556,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "location_id": "A01-B02-T03-P01",
                         "quantity_on_hand": 100.0,
                         "quantity_available": 75.0,
-                    }
+                    },
                 ],
             },
         )
@@ -632,14 +653,15 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "order_type": "OUTBOUND",
                         "order_status": "RELEASED",
                         "total_lines": 5,
-                    }
+                    },
                 ],
             },
         )
 
         order_id: str = Field(..., description="Unique order identifier")
         order_type: str | None = Field(
-            None, description="Order type (Outbound, Inbound, etc.)"
+            None,
+            description="Order type (Outbound, Inbound, etc.)",
         )
         order_status: str | None = Field(None, description="Order status")
         priority: int | None = Field(None, description="Order priority")
@@ -652,7 +674,8 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         # Temporal information
         order_date: datetime | None = Field(None, description="Order creation date")
         requested_date: datetime | None = Field(
-            None, description="Requested delivery date"
+            None,
+            description="Requested delivery date",
         )
         shipped_date: datetime | None = Field(None, description="Actual ship date")
 
@@ -738,7 +761,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "shipment_status": "IN_TRANSIT",
                         "carrier_id": "CARRIER_001",
                         "tracking_number": "1Z999AA1234567890",
-                    }
+                    },
                 ],
             },
         )
@@ -757,10 +780,12 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         # Temporal information
         ship_date: datetime | None = Field(None, description="Ship date")
         estimated_delivery: datetime | None = Field(
-            None, description="Estimated delivery date"
+            None,
+            description="Estimated delivery date",
         )
         actual_delivery: datetime | None = Field(
-            None, description="Actual delivery date"
+            None,
+            description="Actual delivery date",
         )
 
         @computed_field
@@ -831,7 +856,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "user_name": "warehouse_operator",
                         "user_type": "EMPLOYEE",
                         "role_id": "PICKER",
-                    }
+                    },
                 ],
             },
         )
@@ -839,10 +864,12 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         user_id: str = Field(..., description="Unique user identifier")
         user_name: str = Field(..., description="User login name")
         user_type: str | None = Field(
-            None, description="User type (Employee, Admin, etc.)"
+            None,
+            description="User type (Employee, Admin, etc.)",
         )
         user_status: str | None = Field(
-            None, description="User status (Active/Inactive)"
+            None,
+            description="User status (Active/Inactive)",
         )
 
         # User details
@@ -855,12 +882,14 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         role_id: str | None = Field(None, description="Assigned role identifier")
         permission_level: str | None = Field(None, description="Permission level")
         default_facility: str | None = Field(
-            None, description="Default facility assignment"
+            None,
+            description="Default facility assignment",
         )
 
         # Activity tracking
         last_login_date: datetime | None = Field(
-            None, description="Last login timestamp"
+            None,
+            description="Last login timestamp",
         )
         login_count: int | None = Field(None, description="Total login count")
 
@@ -896,7 +925,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                     "is_active_user": bool(
                         self.last_login_date
                         and self.login_count
-                        and self.login_count > 0
+                        and self.login_count > 0,
                     ),
                 },
             }
@@ -931,7 +960,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "primary_keys": ["item_id"],
                         "replication_method": "INCREMENTAL",
                         "replication_key": "date_time_stamp",
-                    }
+                    },
                 ],
             },
         )
@@ -939,13 +968,16 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         stream_name: str = Field(..., description="Singer stream name")
         primary_keys: list[str] = Field(..., description="Primary key field names")
         replication_method: Literal[FULL_TABLE, INCREMENTAL] = Field(
-            default="FULL_TABLE", description="Replication method"
+            default="FULL_TABLE",
+            description="Replication method",
         )
         replication_key: str | None = Field(
-            None, description="Replication key field name"
+            None,
+            description="Replication key field name",
         )
         inclusion: Literal[available, automatic, unsupported] = Field(
-            default="available", description="Stream inclusion setting"
+            default="available",
+            description="Stream inclusion setting",
         )
 
         @computed_field
@@ -1000,7 +1032,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                             "item_id": {"type": "string"},
                             "item_desc": {"type": "string"},
                         },
-                    }
+                    },
                 ],
             },
         )
@@ -1034,7 +1066,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                             "stream_name": "items",
                             "primary_keys": ["item_id"],
                         },
-                    }
+                    },
                 ],
             },
         )
@@ -1042,10 +1074,12 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         tap_stream_id: str = Field(..., description="Unique tap stream identifier")
         stream_name: str = Field(..., description="Stream name")
         stream_schema: FlextMeltanoTapOracleWmsModels.WmsStreamSchema = Field(
-            ..., description="Stream schema definition"
+            ...,
+            description="Stream schema definition",
         )
         metadata: FlextMeltanoTapOracleWmsModels.WmsStreamMetadata = Field(
-            ..., description="Stream metadata"
+            ...,
+            description="Stream metadata",
         )
 
         def to_singer_catalog_entry(self) -> dict[str, object]:
@@ -1072,13 +1106,14 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "entities": ["items", "locations", "inventory"],
                         "page_size": 1000,
                         "concurrent_requests": 3,
-                    }
+                    },
                 ],
             },
         )
 
         entities: list[str] = Field(
-            default_factory=list, description="WMS entities to extract"
+            default_factory=list,
+            description="WMS entities to extract",
         )
         page_size: int = Field(
             default=1000,
@@ -1087,23 +1122,30 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
             description="Records per page (Oracle WMS limit: 1250)",
         )
         start_date: str | None = Field(
-            None, description="Start date for incremental extraction (ISO format)"
+            None,
+            description="Start date for incremental extraction (ISO format)",
         )
 
         # Filtering configuration
         entity_filters: t.NestedDict = Field(
-            default_factory=dict, description="Entity-specific filters"
+            default_factory=dict,
+            description="Entity-specific filters",
         )
         field_selection: dict[str, list[str]] = Field(
-            default_factory=dict, description="Field selection by entity"
+            default_factory=dict,
+            description="Field selection by entity",
         )
 
         # Performance configuration
         concurrent_requests: int = Field(
-            default=3, ge=1, le=5, description="Concurrent request limit"
+            default=3,
+            ge=1,
+            le=5,
+            description="Concurrent request limit",
         )
         batch_processing: bool = Field(
-            default=True, description="Enable batch processing"
+            default=True,
+            description="Enable batch processing",
         )
 
         @computed_field
@@ -1159,7 +1201,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "page_size": 100,
                         "page_number": 1,
                         "has_more": True,
-                    }
+                    },
                 ],
             },
         )
@@ -1167,7 +1209,8 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         success: bool = Field(..., description="Response success indicator")
         data: object | None = Field(None, description="Response data payload")
         total_count: int | None = Field(
-            None, description="Total entity count (for pagination)"
+            None,
+            description="Total entity count (for pagination)",
         )
         page_size: int | None = Field(None, description="Current page size")
         page_number: int | None = Field(None, description="Current page number")
@@ -1177,17 +1220,20 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         error_code: str | None = Field(None, description="Error code if failed")
         error_message: str | None = Field(None, description="Error message if failed")
         error_details: dict[str, object] | None = Field(
-            None, description="Detailed error information"
+            None,
+            description="Detailed error information",
         )
 
         # Metadata
         timestamp: datetime = Field(
-            default_factory=datetime.utcnow, description="Response timestamp"
+            default_factory=datetime.utcnow,
+            description="Response timestamp",
         )
         api_version: str | None = Field(None, description="WMS API version")
         request_id: str | None = Field(None, description="Request correlation ID")
         processing_time_ms: int | None = Field(
-            None, description="Server processing time"
+            None,
+            description="Server processing time",
         )
 
         @computed_field
@@ -1255,7 +1301,7 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                         "http_status_code": 408,
                         "entity_type": "items",
                         "is_retryable": True,
-                    }
+                    },
                 ],
             },
         )
@@ -1271,31 +1317,38 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
         ] = Field(..., description="Error category")
         http_status_code: int | None = Field(None, description="HTTP status code")
         retry_after_seconds: int | None = Field(
-            None, description="Retry after duration"
+            None,
+            description="Retry after duration",
         )
 
         # Context information
         endpoint: str | None = Field(None, description="WMS API endpoint that failed")
         entity_type: str | None = Field(
-            None, description="WMS entity type being processed"
+            None,
+            description="WMS entity type being processed",
         )
         request_method: str | None = Field(None, description="HTTP method used")
         request_params: dict[str, object] | None = Field(
-            None, description="Request parameters"
+            None,
+            description="Request parameters",
         )
 
         # Recovery information
         is_retryable: bool = Field(
-            default=False, description="Whether error is retryable"
+            default=False,
+            description="Whether error is retryable",
         )
         suggested_action: str | None = Field(
-            None, description="Suggested recovery action"
+            None,
+            description="Suggested recovery action",
         )
         max_retry_attempts: int | None = Field(
-            None, description="Maximum retry attempts for this error"
+            None,
+            description="Maximum retry attempts for this error",
         )
         backoff_strategy: Literal["linear", "exponential", "fixed"] | None = Field(
-            None, description="Recommended backoff strategy"
+            None,
+            description="Recommended backoff strategy",
         )
 
         @computed_field
