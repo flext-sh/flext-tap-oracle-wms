@@ -208,7 +208,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
                 ]:
                     try:
                         # Use timezone-aware parsing where possible
-                        dt = datetime.strptime(timestamp, fmt)
+                        dt = datetime.strptime(timestamp, fmt)  # noqa: DTZ007
                         # Assume UTC for naive datetime objects
                         if dt.tzinfo is None:
                             dt = dt.replace(tzinfo=UTC)
@@ -291,7 +291,6 @@ class FlextMeltanoTapOracleWmsUtilities(u):
 
             Args:
             sample_records: List of sample WMS records
-            stream_name: Name of the stream
 
             Returns:
             dict[str, object]: JSON schema

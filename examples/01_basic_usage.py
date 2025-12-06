@@ -67,7 +67,7 @@ def main() -> int:
 
     # Example 3: Discover available streams
     streams = tap.discover_streams()
-    for stream in streams:
+    for _stream in streams:
         pass
 
     # Example 4: Get implementation info

@@ -91,29 +91,19 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
     @computed_field
     def active_wms_tap_models_count(self) -> int:
         """Count of active Oracle WMS tap models with warehouse extraction capabilities."""
-        count = 0
-        # Count core Singer Oracle WMS tap models
-        if hasattr(self, "WmsAuthenticationConfig"):
-            count += 1
-        if hasattr(self, "WmsItemEntity"):
-            count += 1
-        if hasattr(self, "WmsLocationEntity"):
-            count += 1
-        if hasattr(self, "WmsInventoryEntity"):
-            count += 1
-        if hasattr(self, "WmsOrderEntity"):
-            count += 1
-        if hasattr(self, "WmsShipmentEntity"):
-            count += 1
-        if hasattr(self, "WmsUserEntity"):
-            count += 1
-        if hasattr(self, "WmsStreamMetadata"):
-            count += 1
-        if hasattr(self, "WmsExtractionConfig"):
-            count += 1
-        if hasattr(self, "WmsApiResponse"):
-            count += 1
-        return count
+        model_names = [
+            "WmsAuthenticationConfig",
+            "WmsItemEntity",
+            "WmsLocationEntity",
+            "WmsInventoryEntity",
+            "WmsOrderEntity",
+            "WmsShipmentEntity",
+            "WmsUserEntity",
+            "WmsStreamMetadata",
+            "WmsExtractionConfig",
+            "WmsApiResponse",
+        ]
+        return sum(1 for name in model_names if hasattr(self, name))
 
     @computed_field
     def wms_tap_system_summary(self) -> dict[str, object]:

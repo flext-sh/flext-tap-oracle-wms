@@ -32,7 +32,9 @@ class FlextMeltanoTapOracleWmsProtocols:
             def establish_wms_connection(
                 self,
                 config: dict[str, object],
-            ) -> FlextResult[object]: ...
+            ) -> FlextResult[object]:
+                """Establish connection to Oracle WMS."""
+                ...
 
         @runtime_checkable
         class InventoryDiscoveryProtocol(p.Service, Protocol):
@@ -41,7 +43,9 @@ class FlextMeltanoTapOracleWmsProtocols:
             def discover_inventory(
                 self,
                 config: dict[str, object],
-            ) -> FlextResult[list[dict[str, object]]]: ...
+            ) -> FlextResult[list[dict[str, object]]]:
+                """Discover WMS inventory."""
+                ...
 
         @runtime_checkable
         class OrderProcessingProtocol(p.Service, Protocol):
@@ -50,7 +54,9 @@ class FlextMeltanoTapOracleWmsProtocols:
             def process_orders(
                 self,
                 config: dict[str, object],
-            ) -> FlextResult[list[dict[str, object]]]: ...
+            ) -> FlextResult[list[dict[str, object]]]:
+                """Process WMS orders."""
+                ...
 
         @runtime_checkable
         class WarehouseOperationsProtocol(p.Service, Protocol):
@@ -59,7 +65,9 @@ class FlextMeltanoTapOracleWmsProtocols:
             def get_warehouse_operations(
                 self,
                 config: dict[str, object],
-            ) -> FlextResult[list[dict[str, object]]]: ...
+            ) -> FlextResult[list[dict[str, object]]]:
+                """Get WMS warehouse operations."""
+                ...
 
         @runtime_checkable
         class StreamGenerationProtocol(p.Service, Protocol):
@@ -68,13 +76,17 @@ class FlextMeltanoTapOracleWmsProtocols:
             def generate_catalog(
                 self,
                 config: dict[str, object],
-            ) -> FlextResult[dict[str, object]]: ...
+            ) -> FlextResult[dict[str, object]]:
+                """Generate Singer catalog."""
+                ...
 
         @runtime_checkable
         class PerformanceProtocol(p.Service, Protocol):
             """Protocol for WMS extraction performance."""
 
-            def optimize_query(self, query: str) -> FlextResult[str]: ...
+            def optimize_query(self, query: str) -> FlextResult[str]:
+                """Optimize WMS query."""
+                ...
 
         @runtime_checkable
         class ValidationProtocol(p.Service, Protocol):
@@ -83,7 +95,9 @@ class FlextMeltanoTapOracleWmsProtocols:
             def validate_config(
                 self,
                 config: dict[str, object],
-            ) -> FlextResult[bool]: ...
+            ) -> FlextResult[bool]:
+                """Validate WMS configuration."""
+                ...
 
         @runtime_checkable
         class MonitoringProtocol(p.Service, Protocol):
@@ -93,7 +107,9 @@ class FlextMeltanoTapOracleWmsProtocols:
                 self,
                 entity: str,
                 records: int,
-            ) -> FlextResult[None]: ...
+            ) -> FlextResult[None]:
+                """Track WMS extraction progress."""
+                ...
 
     # ============================================================================
     # BACKWARD COMPATIBILITY ALIASES (100% COMPATIBILITY)
