@@ -30,7 +30,8 @@ class FlextMeltanoTapOracleWmsProtocols:
             """Protocol for Oracle WMS connection operations."""
 
             def establish_wms_connection(
-                self, config: dict[str, object]
+                self,
+                config: dict[str, object],
             ) -> FlextResult[object]: ...
 
         @runtime_checkable
@@ -38,7 +39,8 @@ class FlextMeltanoTapOracleWmsProtocols:
             """Protocol for WMS inventory discovery."""
 
             def discover_inventory(
-                self, config: dict[str, object]
+                self,
+                config: dict[str, object],
             ) -> FlextResult[list[dict[str, object]]]: ...
 
         @runtime_checkable
@@ -46,7 +48,8 @@ class FlextMeltanoTapOracleWmsProtocols:
             """Protocol for WMS order processing."""
 
             def process_orders(
-                self, config: dict[str, object]
+                self,
+                config: dict[str, object],
             ) -> FlextResult[list[dict[str, object]]]: ...
 
         @runtime_checkable
@@ -54,7 +57,8 @@ class FlextMeltanoTapOracleWmsProtocols:
             """Protocol for WMS warehouse operations."""
 
             def get_warehouse_operations(
-                self, config: dict[str, object]
+                self,
+                config: dict[str, object],
             ) -> FlextResult[list[dict[str, object]]]: ...
 
         @runtime_checkable
@@ -62,7 +66,8 @@ class FlextMeltanoTapOracleWmsProtocols:
             """Protocol for Singer stream generation."""
 
             def generate_catalog(
-                self, config: dict[str, object]
+                self,
+                config: dict[str, object],
             ) -> FlextResult[dict[str, object]]: ...
 
         @runtime_checkable
@@ -76,7 +81,8 @@ class FlextMeltanoTapOracleWmsProtocols:
             """Protocol for WMS data validation."""
 
             def validate_config(
-                self, config: dict[str, object]
+                self,
+                config: dict[str, object],
             ) -> FlextResult[bool]: ...
 
         @runtime_checkable
@@ -84,30 +90,82 @@ class FlextMeltanoTapOracleWmsProtocols:
             """Protocol for WMS extraction monitoring."""
 
             def track_progress(
-                self, entity: str, records: int
+                self,
+                entity: str,
+                records: int,
             ) -> FlextResult[None]: ...
 
     # ============================================================================
     # BACKWARD COMPATIBILITY ALIASES (100% COMPATIBILITY)
     # ============================================================================
 
-    WmsConnectionProtocol = TapOracleWms.WmsConnectionProtocol
-    InventoryDiscoveryProtocol = TapOracleWms.InventoryDiscoveryProtocol
-    OrderProcessingProtocol = TapOracleWms.OrderProcessingProtocol
-    WarehouseOperationsProtocol = TapOracleWms.WarehouseOperationsProtocol
-    StreamGenerationProtocol = TapOracleWms.StreamGenerationProtocol
-    PerformanceProtocol = TapOracleWms.PerformanceProtocol
-    ValidationProtocol = TapOracleWms.ValidationProtocol
-    MonitoringProtocol = TapOracleWms.MonitoringProtocol
+    @runtime_checkable
+    class WmsConnectionProtocol(TapOracleWms.WmsConnectionProtocol):
+        """WmsConnectionProtocol - real inheritance."""
 
-    TapOracleWmsConnectionProtocol = TapOracleWms.WmsConnectionProtocol
-    TapOracleWmsInventoryDiscoveryProtocol = TapOracleWms.InventoryDiscoveryProtocol
-    TapOracleWmsOrderProcessingProtocol = TapOracleWms.OrderProcessingProtocol
-    TapOracleWmsWarehouseOperationsProtocol = TapOracleWms.WarehouseOperationsProtocol
-    TapOracleWmsStreamGenerationProtocol = TapOracleWms.StreamGenerationProtocol
-    TapOracleWmsPerformanceProtocol = TapOracleWms.PerformanceProtocol
-    TapOracleWmsValidationProtocol = TapOracleWms.ValidationProtocol
-    TapOracleWmsMonitoringProtocol = TapOracleWms.MonitoringProtocol
+    @runtime_checkable
+    class InventoryDiscoveryProtocol(TapOracleWms.InventoryDiscoveryProtocol):
+        """InventoryDiscoveryProtocol - real inheritance."""
+
+    @runtime_checkable
+    class OrderProcessingProtocol(TapOracleWms.OrderProcessingProtocol):
+        """OrderProcessingProtocol - real inheritance."""
+
+    @runtime_checkable
+    class WarehouseOperationsProtocol(TapOracleWms.WarehouseOperationsProtocol):
+        """WarehouseOperationsProtocol - real inheritance."""
+
+    @runtime_checkable
+    class StreamGenerationProtocol(TapOracleWms.StreamGenerationProtocol):
+        """StreamGenerationProtocol - real inheritance."""
+
+    @runtime_checkable
+    class PerformanceProtocol(TapOracleWms.PerformanceProtocol):
+        """PerformanceProtocol - real inheritance."""
+
+    @runtime_checkable
+    class ValidationProtocol(TapOracleWms.ValidationProtocol):
+        """ValidationProtocol - real inheritance."""
+
+    @runtime_checkable
+    class MonitoringProtocol(TapOracleWms.MonitoringProtocol):
+        """MonitoringProtocol - real inheritance."""
+
+    @runtime_checkable
+    class TapOracleWmsConnectionProtocol(TapOracleWms.WmsConnectionProtocol):
+        """TapOracleWmsConnectionProtocol - real inheritance."""
+
+    @runtime_checkable
+    class TapOracleWmsInventoryDiscoveryProtocol(
+        TapOracleWms.InventoryDiscoveryProtocol,
+    ):
+        """TapOracleWmsInventoryDiscoveryProtocol - real inheritance."""
+
+    @runtime_checkable
+    class TapOracleWmsOrderProcessingProtocol(TapOracleWms.OrderProcessingProtocol):
+        """TapOracleWmsOrderProcessingProtocol - real inheritance."""
+
+    @runtime_checkable
+    class TapOracleWmsWarehouseOperationsProtocol(
+        TapOracleWms.WarehouseOperationsProtocol,
+    ):
+        """TapOracleWmsWarehouseOperationsProtocol - real inheritance."""
+
+    @runtime_checkable
+    class TapOracleWmsStreamGenerationProtocol(TapOracleWms.StreamGenerationProtocol):
+        """TapOracleWmsStreamGenerationProtocol - real inheritance."""
+
+    @runtime_checkable
+    class TapOracleWmsPerformanceProtocol(TapOracleWms.PerformanceProtocol):
+        """TapOracleWmsPerformanceProtocol - real inheritance."""
+
+    @runtime_checkable
+    class TapOracleWmsValidationProtocol(TapOracleWms.ValidationProtocol):
+        """TapOracleWmsValidationProtocol - real inheritance."""
+
+    @runtime_checkable
+    class TapOracleWmsMonitoringProtocol(TapOracleWms.MonitoringProtocol):
+        """TapOracleWmsMonitoringProtocol - real inheritance."""
 
 
 __all__ = [

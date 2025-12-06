@@ -52,7 +52,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         # Zero Tolerance FIX: Use utilities for stream configuration processing
         page_size_result = (
             self._utilities.ConfigurationProcessing.validate_stream_page_size(
-                self.config.get("page_size", 100)
+                self.config.get("page_size", 100),
             )
         )
         if page_size_result.is_success:
@@ -148,7 +148,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         execute_method = getattr(self.client, "execute", None)
         if execute_method:
             result: FlextResult[object] = self._run(
-                execute_method(operation_name, **kwargs)
+                execute_method(operation_name, **kwargs),
             )
         else:
             # Fallback: try direct method call
@@ -260,7 +260,9 @@ class FlextMeltanoTapOracleWMSStream(Stream):
                 # Zero Tolerance FIX: Use utilities for record processing
                 processed_record_result = (
                     self._utilities.DataProcessing.process_wms_record(
-                        record=record, stream_name=self.name, context=context
+                        record=record,
+                        stream_name=self.name,
+                        context=context,
                     )
                 )
 
@@ -273,7 +275,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
                 else:
                     # Log processing error but continue with original record
                     logger.warning(
-                        f"Record processing failed: {processed_record_result.error}"
+                        f"Record processing failed: {processed_record_result.error}",
                     )
                     processed_record = self.post_process(record, context)
                     if processed_record is not None:

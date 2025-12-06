@@ -117,7 +117,8 @@ class TestExtractionPerformance:
         time.time() - start_time
 
     def test_memory_usage_during_large_extraction(
-        self, tap: FlextMeltanoTapOracleWMS
+        self,
+        tap: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test memory usage during large extractions."""
         process = psutil.Process()

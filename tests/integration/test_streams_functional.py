@@ -32,7 +32,8 @@ class TestStreamsFunctional:
     """Test streams functionality."""
 
     def test_stream_creation_with_real_wms_data(
-        self, real_tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        real_tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test stream creation with real Oracle WMS data."""
         # Get a real schema from discovery
@@ -60,7 +61,8 @@ class TestStreamsFunctional:
         logger.info("✅ Stream created successfully: %s", stream_id)
 
     def test_wms_api_url_generation(
-        self, real_tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        real_tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test URL generation for Oracle WMS API."""
         catalog = real_tap_instance.catalog_dict
@@ -93,7 +95,8 @@ class TestStreamsFunctional:
         logger.info("✅ Parameters: %s", list(url_params.keys()))
 
     def test_stream_authentication_with_credentials(
-        self, real_tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        real_tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test stream authentication with real credentials."""
         catalog = real_tap_instance.catalog_dict
@@ -125,7 +128,8 @@ class TestStreamsFunctional:
         logger.info("✅ Authentication configured correctly")
 
     def test_http_headers_generation(
-        self, real_tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        real_tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test HTTP headers generation."""
         catalog = real_tap_instance.catalog_dict
@@ -226,7 +230,8 @@ class TestStreamsFunctional:
                 }, f"Unexpected timestamp field: {replication_key}"
 
     def test_pagination_parameter_generation(
-        self, real_tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        real_tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test pagination parameter generation."""
         catalog = real_tap_instance.catalog_dict
@@ -270,7 +275,8 @@ class TestStreamsFunctional:
         logger.info("✅ Pagination token handling working")
 
     def test_incremental_filtering_with_timestamps(
-        self, real_tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        real_tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test incremental filtering with timestamps."""
         catalog = real_tap_instance.catalog_dict

@@ -24,7 +24,8 @@ class TestOracleWMSFunctionalComplete:
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
     def test_real_wms_environment_verification(
-        self, real_wms_config: dict[str, object]
+        self,
+        real_wms_config: dict[str, object],
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -59,7 +60,8 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.discovery
     def test_automatic_entity_discovery(
-        self, real_tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        real_tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """CRITICAL: Test automatic entity discovery with REAL Oracle WMS."""
         # This will make REAL network calls to Oracle WMS
@@ -129,7 +131,8 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.singer
     def test_valid_singer_schema_generation(
-        self, real_tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        real_tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test schema generation produces valid Singer schemas."""
         catalog = real_tap_instance.catalog_dict
@@ -318,7 +321,8 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.functional
     def test_filtering_and_ordering_parameters(
-        self, real_tap_instance: FlextMeltanoTapOracleWMS
+        self,
+        real_tap_instance: FlextMeltanoTapOracleWMS,
     ) -> None:
         """Test filtering and ordering parameters."""
         catalog = real_tap_instance.catalog_dict

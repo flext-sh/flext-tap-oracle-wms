@@ -104,7 +104,8 @@ class FlextMeltanoTapOracleWMS(Tap):
         # Convert config to FlextMeltanoTapOracleWMSConfig if needed
         flext_config: FlextMeltanoTapOracleWMSConfig | None = None
         if config is not None and not isinstance(
-            config, FlextMeltanoTapOracleWMSConfig
+            config,
+            FlextMeltanoTapOracleWMSConfig,
         ):
             try:
                 # Zero Tolerance FIX: Use utilities for configuration processing
@@ -120,7 +121,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                     dict[str, object](config) if hasattr(config, "items") else config
                 )
                 flext_config = FlextMeltanoTapOracleWMSConfig.model_validate(
-                    config_dict
+                    config_dict,
                 )
             except Exception as e:
                 msg = f"Invalid configuration: {e}"
@@ -132,7 +133,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         if flext_config is not None:
             additional_validation_result = (
                 self._utilities.ConfigurationProcessing.validate_wms_connection_params(
-                    flext_config.model_dump(exclude_unset=True)
+                    flext_config.model_dump(exclude_unset=True),
                 )
             )
             if additional_validation_result.is_failure:
@@ -504,7 +505,8 @@ class FlextMeltanoTapOracleWMS(Tap):
                     table_metadata: dict[str, object] = metadata.get("metadata", {})
                     if isinstance(table_metadata, dict):
                         pk_list: list[object] = table_metadata.get(
-                            "table-key-properties", []
+                            "table-key-properties",
+                            [],
                         )
                         if pk_list:
                             # Set primary keys dynamically using setattr for class variables
@@ -545,11 +547,11 @@ class FlextMeltanoTapOracleWMS(Tap):
         try:
             # Zero Tolerance FIX: Use utilities for complete configuration validation
             comprehensive_validation_result = self._utilities.ConfigurationProcessing.validate_wms_configuration_comprehensive(
-                self.flext_config.model_dump(exclude_unset=True)
+                self.flext_config.model_dump(exclude_unset=True),
             )
             if comprehensive_validation_result.is_failure:
                 return FlextResult[dict["str", "object"]].fail(
-                    f"Complete configuration validation failed: {comprehensive_validation_result.error}"
+                    f"Complete configuration validation failed: {comprehensive_validation_result.error}",
                 )
 
             # Validate config model
@@ -567,7 +569,7 @@ class FlextMeltanoTapOracleWMS(Tap):
             )
             if connection_test_result.is_failure:
                 return FlextResult[dict["str", "object"]].fail(
-                    f"WMS API connection test failed: {connection_test_result.error}"
+                    f"WMS API connection test failed: {connection_test_result.error}",
                 )
 
             # Test connection by attempting entity discovery
@@ -601,7 +603,7 @@ class FlextMeltanoTapOracleWMS(Tap):
             )
             if validation_info_result.is_failure:
                 return FlextResult[dict["str", "object"]].fail(
-                    f"Validation info generation failed: {validation_info_result.error}"
+                    f"Validation info generation failed: {validation_info_result.error}",
                 )
 
             validation_info = validation_info_result.unwrap()
@@ -935,7 +937,7 @@ class FlextMeltanoTapOracleWMSPlugin:
             )
         except Exception as e:
             return FlextResult[dict["str", "object"]].fail(
-                f"Test operation failed: {e}"
+                f"Test operation failed: {e}",
             )
 
     def _execute_catalog(
@@ -1003,5 +1005,5 @@ def create_oracle_wms_tap_plugin(
     except Exception as e:
         logger.exception("Failed to create Oracle WMS tap plugin")
         return FlextResult[FlextMeltanoTapOracleWMSPlugin].fail(
-            f"Plugin creation failed: {e}"
+            f"Plugin creation failed: {e}",
         )

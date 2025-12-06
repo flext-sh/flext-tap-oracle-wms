@@ -281,7 +281,8 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
             **overrides,
         }
         return cls.get_or_create_shared_instance(
-            project_name="flext-tap-oracle-wms", **dev_overrides
+            project_name="flext-tap-oracle-wms",
+            **dev_overrides,
         )
 
     @classmethod
@@ -296,7 +297,8 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
             **overrides,
         }
         return cls.get_or_create_shared_instance(
-            project_name="flext-tap-oracle-wms", **prod_overrides
+            project_name="flext-tap-oracle-wms",
+            **prod_overrides,
         )
 
     @classmethod
@@ -311,7 +313,8 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
             **overrides,
         }
         return cls.get_or_create_shared_instance(
-            project_name="flext-tap-oracle-wms", **test_overrides
+            project_name="flext-tap-oracle-wms",
+            **test_overrides,
         )
 
     @field_validator("include_entities", "exclude_entities")

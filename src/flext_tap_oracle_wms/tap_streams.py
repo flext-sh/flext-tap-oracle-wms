@@ -54,7 +54,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         # Zero Tolerance FIX: Use utilities for stream configuration processing
         page_size_result = (
             self._utilities.ConfigurationProcessing.validate_stream_page_size(
-                self.config.get("page_size", 100)
+                self.config.get("page_size", 100),
             )
         )
         if page_size_result.is_success:
@@ -166,7 +166,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         execute_method = getattr(self.client, "execute", None)
         if execute_method:
             result: FlextResult[object] = self._run(
-                execute_method(operation_name, **kwargs)
+                execute_method(operation_name, **kwargs),
             )
         else:
             # Fallback: try direct method call

@@ -172,7 +172,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
                 cleaned = re.sub(r"[^\d.-]", "", str(quantity_str))
                 if not cleaned:
                     return FlextResult[float].fail(
-                        f"No numeric data in quantity: {quantity_str}"
+                        f"No numeric data in quantity: {quantity_str}",
                     )
 
                 quantity = float(cleaned)
@@ -180,7 +180,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
 
             except ValueError as e:
                 return FlextResult[float].fail(
-                    f"Invalid quantity format: {quantity_str} - {e}"
+                    f"Invalid quantity format: {quantity_str} - {e}",
                 )
 
         @staticmethod
@@ -217,7 +217,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
                         continue
 
                 return FlextResult[str].fail(
-                    f"Unsupported timestamp format: {timestamp}"
+                    f"Unsupported timestamp format: {timestamp}",
                 )
 
             except Exception as e:
@@ -309,12 +309,12 @@ class FlextMeltanoTapOracleWmsUtilities(u):
             for record in sample_records:
                 for key, value in record.items():
                     sanitized_key = FlextMeltanoTapOracleWmsUtilities.WmsDataProcessing.sanitize_wms_field_name(
-                        key
+                        key,
                     )
                     if sanitized_key not in properties:
                         properties[sanitized_key] = (
                             FlextMeltanoTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
-                                value
+                                value,
                             )
                         )
 
@@ -349,7 +349,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
                 if value:
                     # Infer type from first element
                     item_type = FlextMeltanoTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
-                        value[0]
+                        value[0],
                     )
                     return {"type": "array", "items": item_type}
                 return {"type": "array", "items": {"type": "string"}}
@@ -371,7 +371,8 @@ class FlextMeltanoTapOracleWmsUtilities(u):
 
         @staticmethod
         def calculate_wms_batch_size(
-            record_count: int, target_batches: int = 10
+            record_count: int,
+            target_batches: int = 10,
         ) -> int:
             """Calculate optimal batch size for Oracle WMS processing.
 
@@ -388,7 +389,8 @@ class FlextMeltanoTapOracleWmsUtilities(u):
 
             calculated_size = max(1, record_count // target_batches)
             return min(
-                calculated_size, FlextMeltanoTapOracleWmsUtilities.DEFAULT_BATCH_SIZE
+                calculated_size,
+                FlextMeltanoTapOracleWmsUtilities.DEFAULT_BATCH_SIZE,
             )
 
         @staticmethod
@@ -436,21 +438,21 @@ class FlextMeltanoTapOracleWmsUtilities(u):
 
             if missing_fields:
                 return FlextResult[dict[str, object]].fail(
-                    f"Missing required WMS connection fields: {', '.join(missing_fields)}"
+                    f"Missing required WMS connection fields: {', '.join(missing_fields)}",
                 )
 
             # Validate host format
             host = config["host"]
             if not isinstance(host, str) or not host.strip():
                 return FlextResult[dict[str, object]].fail(
-                    "Host must be a non-empty string"
+                    "Host must be a non-empty string",
                 )
 
             # Validate database format
             database = config["database"]
             if not isinstance(database, str) or not database.strip():
                 return FlextResult[dict[str, object]].fail(
-                    "Database must be a non-empty string"
+                    "Database must be a non-empty string",
                 )
 
             # Validate port if provided
@@ -462,7 +464,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
                     or port > FlextMeltanoTapOracleWmsUtilities.MAX_PORT
                 ):
                     return FlextResult[dict[str, object]].fail(
-                        "Port must be a valid integer between 1 and 65535"
+                        "Port must be a valid integer between 1 and 65535",
                     )
 
             # Validate WMS-specific settings
@@ -470,7 +472,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
                 schema = config["schema"]
                 if not isinstance(schema, str) or not schema.strip():
                     return FlextResult[dict[str, object]].fail(
-                        "Schema must be a non-empty string"
+                        "Schema must be a non-empty string",
                     )
 
             return FlextResult[dict[str, object]].ok(config)
@@ -490,26 +492,26 @@ class FlextMeltanoTapOracleWmsUtilities(u):
             """
             if "streams" not in config:
                 return FlextResult[dict[str, object]].fail(
-                    "Configuration must include 'streams' section"
+                    "Configuration must include 'streams' section",
                 )
 
             streams = config["streams"]
             if not isinstance(streams, dict):
                 return FlextResult[dict[str, object]].fail(
-                    "Streams configuration must be a dictionary"
+                    "Streams configuration must be a dictionary",
                 )
 
             # Validate each stream
             for stream_name, stream_config in streams.items():
                 if not isinstance(stream_config, dict):
                     return FlextResult[dict[str, object]].fail(
-                        f"Stream '{stream_name}' configuration must be a dictionary"
+                        f"Stream '{stream_name}' configuration must be a dictionary",
                     )
 
                 # Check for required stream fields
                 if "selected" not in stream_config:
                     return FlextResult[dict[str, object]].fail(
-                        f"Stream '{stream_name}' must have 'selected' field"
+                        f"Stream '{stream_name}' must have 'selected' field",
                     )
 
                 # Validate WMS-specific stream settings
@@ -517,7 +519,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
                     table_name = stream_config["table_name"]
                     if not isinstance(table_name, str) or not table_name.strip():
                         return FlextResult[dict[str, object]].fail(
-                            f"Stream '{stream_name}' table_name must be a non-empty string"
+                            f"Stream '{stream_name}' table_name must be a non-empty string",
                         )
 
             return FlextResult[dict[str, object]].ok(config)
@@ -540,7 +542,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
             """
             # Delegate to existing ConfigValidation
             return FlextMeltanoTapOracleWmsUtilities.ConfigValidation.validate_wms_connection_config(
-                config
+                config,
             )
 
         @staticmethod
@@ -560,7 +562,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
             for param in required_params:
                 if param not in config:
                     return FlextResult[dict[str, object]].fail(
-                        f"Missing required parameter: {param}"
+                        f"Missing required parameter: {param}",
                     )
 
             # Validate URL format
@@ -588,14 +590,14 @@ class FlextMeltanoTapOracleWmsUtilities(u):
             """
             # Basic validation first
             basic_result = FlextMeltanoTapOracleWmsUtilities.ConfigurationProcessing.validate_wms_config(
-                config
+                config,
             )
             if basic_result.is_failure:
                 return basic_result
 
             # Connection params validation
             params_result = FlextMeltanoTapOracleWmsUtilities.ConfigurationProcessing.validate_wms_connection_params(
-                config
+                config,
             )
             if params_result.is_failure:
                 return params_result
@@ -603,7 +605,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
             # Stream configuration validation if present
             if "streams" in config:
                 stream_result = FlextMeltanoTapOracleWmsUtilities.ConfigValidation.validate_wms_stream_config(
-                    config
+                    config,
                 )
                 if stream_result.is_failure:
                     return stream_result
@@ -615,7 +617,9 @@ class FlextMeltanoTapOracleWmsUtilities(u):
 
         @staticmethod
         def test_wms_api_connection(
-            base_url: str, auth_token: str | None = None, timeout: int = 30
+            base_url: str,
+            auth_token: str | None = None,
+            timeout: int = 30,
         ) -> FlextResult[dict[str, object]]:
             """Test WMS API connection.
 
@@ -691,7 +695,8 @@ class FlextMeltanoTapOracleWmsUtilities(u):
 
         @staticmethod
         def get_wms_stream_state(
-            state: dict[str, object], stream_name: str
+            state: dict[str, object],
+            stream_name: str,
         ) -> dict[str, object]:
             """Get state for a specific Oracle WMS stream.
 
@@ -754,12 +759,14 @@ class FlextMeltanoTapOracleWmsUtilities(u):
             """
             stream_state = (
                 FlextMeltanoTapOracleWmsUtilities.StateManagement.get_wms_stream_state(
-                    state, stream_name
+                    state,
+                    stream_name,
                 )
             )
             bookmark_value = stream_state.get(bookmark_key)
             if bookmark_value is not None and not isinstance(
-                bookmark_value, (str, int, float, datetime)
+                bookmark_value,
+                (str, int, float, datetime),
             ):
                 return None
             return bookmark_value
@@ -818,8 +825,8 @@ class FlextMeltanoTapOracleWmsUtilities(u):
                         "last_update_date": last_updated.isoformat(),
                         "records_processed": records_processed,
                         "extraction_timestamp": datetime.now(UTC).isoformat(),
-                    }
-                }
+                    },
+                },
             }
 
     class PerformanceUtilities:
@@ -848,7 +855,8 @@ class FlextMeltanoTapOracleWmsUtilities(u):
             return min(
                 max_records_in_memory,
                 max(
-                    100, table_size_estimate // 100
+                    100,
+                    table_size_estimate // 100,
                 ),  # At least 100, at most 1% of table
                 FlextMeltanoTapOracleWmsUtilities.DEFAULT_BATCH_SIZE,
             )
@@ -924,7 +932,9 @@ class FlextMeltanoTapOracleWmsUtilities(u):
     ) -> dict[str, object]:
         """Proxy method for SingerUtilities.create_schema_message()."""
         return cls.SingerUtilities.create_schema_message(
-            stream_name, schema, key_properties
+            stream_name,
+            schema,
+            key_properties,
         )
 
     @classmethod
@@ -936,7 +946,9 @@ class FlextMeltanoTapOracleWmsUtilities(u):
     ) -> dict[str, object]:
         """Proxy method for SingerUtilities.create_record_message()."""
         return cls.SingerUtilities.create_record_message(
-            stream_name, record, time_extracted
+            stream_name,
+            record,
+            time_extracted,
         )
 
     @classmethod
@@ -951,14 +963,17 @@ class FlextMeltanoTapOracleWmsUtilities(u):
 
     @classmethod
     def validate_wms_connection_config(
-        cls, config: dict[str, object]
+        cls,
+        config: dict[str, object],
     ) -> FlextResult[dict[str, object]]:
         """Proxy method for ConfigValidation.validate_wms_connection_config()."""
         return cls.ConfigValidation.validate_wms_connection_config(config)
 
     @classmethod
     def get_wms_stream_state(
-        cls, state: dict[str, object], stream_name: str
+        cls,
+        state: dict[str, object],
+        stream_name: str,
     ) -> dict[str, object]:
         """Proxy method for StateManagement.get_wms_stream_state()."""
         return cls.StateManagement.get_wms_stream_state(state, stream_name)
@@ -973,7 +988,10 @@ class FlextMeltanoTapOracleWmsUtilities(u):
     ) -> dict[str, object]:
         """Proxy method for StateManagement.set_wms_bookmark()."""
         return cls.StateManagement.set_wms_bookmark(
-            state, stream_name, bookmark_key, bookmark_value
+            state,
+            stream_name,
+            bookmark_key,
+            bookmark_value,
         )
 
 
