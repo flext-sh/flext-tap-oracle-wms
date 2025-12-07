@@ -10,7 +10,7 @@ This directory contains the core implementation of FLEXT Tap Oracle WMS, a Singe
 
 #### **Main Interface**
 
-- [`tap.py`](tap.py) - Main FlextMeltanoTapOracleWMS class implementing Singer SDK patterns
+- [`tap.py`](tap.py) - Main FlextTapOracleWms class implementing Singer SDK patterns
 - [`cli.py`](cli.py) - Command-line interface and entry point
 - [`streams.py`](streams.py) - Stream definitions with WMS-specific pagination
 
@@ -88,7 +88,7 @@ The module integrates with FLEXT ecosystem components:
 ### **Main Tap Usage**
 
 ```python
-from flext_tap_oracle_wms.tap import FlextMeltanoTapOracleWMS
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 config = {
     "base_url": "https://wms.example.com",
@@ -99,7 +99,7 @@ config = {
     "facility_code": "FACILITY"
 }
 
-tap = FlextMeltanoTapOracleWMS(config)
+tap = FlextTapOracleWms(config)
 streams = tap.discover_streams()
 ```
 

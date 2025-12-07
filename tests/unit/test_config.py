@@ -10,15 +10,15 @@ from __future__ import annotations
 import pytest
 from pydantic import SecretStr, ValidationError
 
-from flext_tap_oracle_wms import FlextMeltanoTapOracleWMSConfig
+from flext_tap_oracle_wms import FlextTapOracleWmsConfig
 
 
-class TestFlextMeltanoTapOracleWMSConfig:
+class TestFlextTapOracleWmsConfig:
     """Test configuration class."""
 
     def test_minimal_config(self) -> None:
         """Test creating config with minimal fields."""
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com",
             username="test_user",
             password=SecretStr("test_pass"),
@@ -38,7 +38,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
 
     def test_full_config(self) -> None:
         """Test creating config with all fields."""
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             # Connection
             base_url="https://prod.wms.example.com",
             username="prod_user",
@@ -95,7 +95,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
     def test_base_url_validation(self) -> None:
         """Test base URL validation."""
         # Valid URLs
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com/",
             username="user",
             password=SecretStr("pass"),
@@ -104,7 +104,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
 
         # Invalid URL - missing protocol
         with pytest.raises(ValidationError) as exc_info:
-            FlextMeltanoTapOracleWMSConfig(
+            FlextTapOracleWmsConfig(
                 base_url="wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -115,7 +115,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
         """Test entity list validation."""
         # Duplicate entities should raise error
         with pytest.raises(ValidationError) as exc_info:
-            FlextMeltanoTapOracleWMSConfig(
+            FlextTapOracleWmsConfig(
                 base_url="https://wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -126,7 +126,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
     def test_date_validation(self) -> None:
         """Test date format validation."""
         # Valid ISO dates
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -137,7 +137,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
 
         # Invalid date format
         with pytest.raises(ValidationError) as exc_info:
-            FlextMeltanoTapOracleWMSConfig(
+            FlextTapOracleWmsConfig(
                 base_url="https://wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -149,7 +149,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
         """Test numeric field validation."""
         # Invalid page size
         with pytest.raises(ValidationError):
-            FlextMeltanoTapOracleWMSConfig(
+            FlextTapOracleWmsConfig(
                 base_url="https://wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -158,7 +158,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
 
         # Invalid timeout
         with pytest.raises(ValidationError):
-            FlextMeltanoTapOracleWMSConfig(
+            FlextTapOracleWmsConfig(
                 base_url="https://wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -168,7 +168,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
     def test_validate_oracle_wms_config(self) -> None:
         """Test Oracle WMS specific validation."""
         # Valid config
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -178,7 +178,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
         assert result.value["valid"] is True
 
         # Conflicting include/exclude
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -190,7 +190,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
         assert "cannot be both included and excluded" in str(result.error)
 
         # Invalid date range
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -203,7 +203,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
 
     def test_get_oracle_wms_client_config(self) -> None:
         """Test getting client configuration."""
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -223,7 +223,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
 
     def test_get_stream_config(self) -> None:
         """Test getting stream-specific configuration."""
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -250,7 +250,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
 
     def test_config_immutability(self) -> None:
         """Test that config is immutable."""
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -262,7 +262,7 @@ class TestFlextMeltanoTapOracleWMSConfig:
 
     def test_password_hiding(self) -> None:
         """Test password is hidden in string representation."""
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("super_secret_password"),

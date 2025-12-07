@@ -26,7 +26,7 @@ __url__ = _metadata["Home-Page"]
 
 
 # Version class for typed version information
-class FlextMeltanoTapOracleWmsVersion:
+class FlextTapOracleWmsVersion:
     """Typed version information for flext-tap-oracle-wms."""
 
     def __init__(self, version: str, version_info: tuple[int | str, ...]) -> None:
@@ -40,17 +40,15 @@ class FlextMeltanoTapOracleWmsVersion:
 
     def __repr__(self) -> str:
         """Return repr representation."""
-        return (
-            f"FlextMeltanoTapOracleWmsVersion({self.version!r}, {self.version_info!r})"
-        )
+        return f"FlextTapOracleWmsVersion({self.version!r}, {self.version_info!r})"
 
 
 # Create version instance
-VERSION = FlextMeltanoTapOracleWmsVersion(__version__, __version_info__)
+VERSION = FlextTapOracleWmsVersion(__version__, __version_info__)
 
 __all__ = [
     "VERSION",
-    "FlextMeltanoTapOracleWmsVersion",
+    "FlextTapOracleWmsVersion",
     "__author__",
     "__author_email__",
     "__description__",

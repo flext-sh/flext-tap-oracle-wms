@@ -23,15 +23,15 @@ from flext_oracle_wms import (
     FlextOracleWmsClientConfig,
 )
 
-from flext_tap_oracle_wms.config import FlextMeltanoTapOracleWMSConfig
-from flext_tap_oracle_wms.exceptions import FlextMeltanoTapOracleWMSConfigurationError
-from flext_tap_oracle_wms.streams import FlextMeltanoTapOracleWMSStream
-from flext_tap_oracle_wms.utilities import FlextMeltanoTapOracleWmsUtilities
+from flext_tap_oracle_wms.config import FlextTapOracleWmsConfig
+from flext_tap_oracle_wms.exceptions import FlextTapOracleWmsConfigurationError
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
+from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)
 
 
-class FlextMeltanoTapOracleWMS(Tap):
+class FlextTapOracleWms(Tap):
     """Oracle WMS tap using FLEXT patterns.
 
     Implements Singer tap for Oracle Warehouse Management System with:
@@ -81,7 +81,7 @@ class FlextMeltanoTapOracleWMS(Tap):
     @override
     def __init__(
         self,
-        config: dict[str, object] | FlextMeltanoTapOracleWMSConfig | None = None,
+        config: dict[str, object] | FlextTapOracleWmsConfig | None = None,
         catalog: dict[str, object] | None = None,
         state: dict[str, object] | None = None,
         *,
@@ -91,7 +91,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Initialize the Oracle WMS tap.
 
         Args:
-        config: Configuration dict[str, object] or FlextMeltanoTapOracleWMSConfig instance
+        config: Configuration dict[str, object] or FlextTapOracleWmsConfig instance
         catalog: Singer catalog
         state: Singer state
         parse_env_config: Whether to parse config from environment
@@ -99,13 +99,13 @@ class FlextMeltanoTapOracleWMS(Tap):
 
         """
         # Zero Tolerance FIX: Initialize utilities for ALL business logic
-        self._utilities = FlextMeltanoTapOracleWmsUtilities()
+        self._utilities = FlextTapOracleWmsUtilities()
 
-        # Convert config to FlextMeltanoTapOracleWMSConfig if needed
-        flext_config: FlextMeltanoTapOracleWMSConfig | None = None
+        # Convert config to FlextTapOracleWmsConfig if needed
+        flext_config: FlextTapOracleWmsConfig | None = None
         if config is not None and not isinstance(
             config,
-            FlextMeltanoTapOracleWMSConfig,
+            FlextTapOracleWmsConfig,
         ):
             try:
                 # Zero Tolerance FIX: Use utilities for configuration processing
@@ -114,18 +114,18 @@ class FlextMeltanoTapOracleWMS(Tap):
                 )
                 if config_validation_result.is_failure:
                     msg = f"Configuration validation failed: {config_validation_result.error}"
-                    raise FlextMeltanoTapOracleWMSConfigurationError(msg)
+                    raise FlextTapOracleWmsConfigurationError(msg)
 
                 # Convert dict[str, object] to proper types for Pydantic model
                 config_dict: dict[str, object] = (
                     dict[str, object](config) if hasattr(config, "items") else config
                 )
-                flext_config = FlextMeltanoTapOracleWMSConfig.model_validate(
+                flext_config = FlextTapOracleWmsConfig.model_validate(
                     config_dict,
                 )
             except Exception as e:
                 msg = f"Invalid configuration: {e}"
-                raise FlextMeltanoTapOracleWMSConfigurationError(msg) from e
+                raise FlextTapOracleWmsConfigurationError(msg) from e
         else:
             flext_config = config
 
@@ -138,10 +138,10 @@ class FlextMeltanoTapOracleWMS(Tap):
             )
             if additional_validation_result.is_failure:
                 msg = f"WMS connection validation failed: {additional_validation_result.error}"
-                raise FlextMeltanoTapOracleWMSConfigurationError(msg)
+                raise FlextTapOracleWmsConfigurationError(msg)
 
         # Store typed config
-        self._flext_config: FlextMeltanoTapOracleWMSConfig | None = flext_config
+        self._flext_config: FlextTapOracleWmsConfig | None = flext_config
 
         # Initialize instance attributes before parent init
         self._wms_client: FlextOracleWmsClient | None = None
@@ -166,11 +166,11 @@ class FlextMeltanoTapOracleWMS(Tap):
         self.schema_generator = None
 
     @property
-    def flext_config(self) -> FlextMeltanoTapOracleWMSConfig:
+    def flext_config(self) -> FlextTapOracleWmsConfig:
         """Get typed configuration."""
         if self._flext_config is None:
             # Create from parent config
-            self._flext_config = FlextMeltanoTapOracleWMSConfig(**self.config)
+            self._flext_config = FlextTapOracleWmsConfig(**self.config)
         return self._flext_config
 
     def _run(
@@ -216,7 +216,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                         or "Unknown error"
                     )
                     msg = f"Failed to initialize Oracle WMS client: {error_msg}"
-                    raise FlextMeltanoTapOracleWMSConfigurationError(msg)
+                    raise FlextTapOracleWmsConfigurationError(msg)
                 self._is_started = True
 
         return self._wms_client
@@ -391,7 +391,7 @@ class FlextMeltanoTapOracleWMS(Tap):
             logger.warning("Fields object is not iterable")
         return properties
 
-    def discover_streams(self) -> Sequence[FlextMeltanoTapOracleWMSStream]:
+    def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
         """Discover available streams dynamically from Oracle WMS.
 
         Returns:
@@ -435,9 +435,9 @@ class FlextMeltanoTapOracleWMS(Tap):
     def _create_streams_from_definitions(
         self,
         stream_definitions: list[dict[str, object]],
-    ) -> list[FlextMeltanoTapOracleWMSStream]:
+    ) -> list[FlextTapOracleWmsStream]:
         """Create stream instances from stream definitions."""
-        streams: list[FlextMeltanoTapOracleWMSStream] = []
+        streams: list[FlextTapOracleWmsStream] = []
         for stream_def in stream_definitions:
             try:
                 stream = self._create_single_stream(stream_def)
@@ -451,7 +451,7 @@ class FlextMeltanoTapOracleWMS(Tap):
     def _create_single_stream(
         self,
         stream_def: dict[str, object],
-    ) -> FlextMeltanoTapOracleWMSStream | None:
+    ) -> FlextTapOracleWmsStream | None:
         """Create a single stream from definition."""
         # Extract stream information
         stream_name = stream_def.get("stream")
@@ -460,7 +460,7 @@ class FlextMeltanoTapOracleWMS(Tap):
             logger.warning("Stream missing name, skipping")
             return None
         # Create a dynamic stream instance
-        stream = FlextMeltanoTapOracleWMSStream(
+        stream = FlextTapOracleWmsStream(
             tap=self,
             name=str(stream_name) if stream_name else None,
             schema=cast("dict[str, object]", stream_schema)
@@ -473,13 +473,13 @@ class FlextMeltanoTapOracleWMS(Tap):
 
     def _configure_stream_metadata(
         self,
-        stream: FlextMeltanoTapOracleWMSStream,
+        stream: FlextTapOracleWmsStream,
         stream_def: dict[str, object],
     ) -> None:
         """Configure stream metadata from definition.
 
         Args:
-        stream: FlextMeltanoTapOracleWMSStream instance to configure
+        stream: FlextTapOracleWmsStream instance to configure
         stream_def: Stream definition dictionary
 
         """
@@ -663,12 +663,12 @@ class FlextMeltanoTapOracleWMS(Tap):
         return {"type": "object", "properties": {}}
 
 
-class FlextMeltanoTapOracleWMSPlugin:
+class FlextTapOracleWmsPlugin:
     """Oracle WMS Tap Plugin using plugin architecture pattern.
 
     Plugin architecture implementation:
     - Abstraction: Inherits from FlextPlugin (abstract)
-    - Composition: Contains FlextMeltanoTapOracleWMS (concrete)
+    - Composition: Contains FlextTapOracleWms (concrete)
     - Separation: Interface plugin vs implementation tap
     - DRY: Reuses plugin infrastructure from flext-plugin
     Features:
@@ -693,7 +693,7 @@ class FlextMeltanoTapOracleWMSPlugin:
         """Initialize Oracle WMS tap plugin with configuration using composition pattern."""
         # Store configuration for tap creation
         self._tap_config: dict[str, object] = config
-        self._tap_instance: FlextMeltanoTapOracleWMS | None = None
+        self._tap_instance: FlextTapOracleWms | None = None
         self._name = "flext-tap-oracle-wms"
         self._version = "0.9.0"
         logger.info("Oracle WMS tap plugin initialized", plugin_name=self._name)
@@ -726,10 +726,10 @@ class FlextMeltanoTapOracleWMSPlugin:
         """
         try:
             # Create tap instance using composition
-            self._tap_instance = FlextMeltanoTapOracleWMS(
+            self._tap_instance = FlextTapOracleWms(
                 config=cast("dict[str, object]", self._tap_config),
             )
-            # Note: FlextMeltanoTapOracleWMS.config is a Pydantic model, not a dict
+            # Note: FlextTapOracleWms.config is a Pydantic model, not a dict
             # Validation is handled by Pydantic during model creation
             logger.info("Oracle WMS tap instance created successfully")
             return FlextResult[None].ok(None)
@@ -826,7 +826,7 @@ class FlextMeltanoTapOracleWMSPlugin:
             logger.exception("Stream discovery failed")
             return FlextResult[Sequence[Stream]].fail(f"Stream discovery failed: {e}")
 
-    def get_tap_instance(self) -> FlextMeltanoTapOracleWMS | None:
+    def get_tap_instance(self) -> FlextTapOracleWms | None:
         """Get underlying tap instance for operations.
 
         Returns:
@@ -945,7 +945,7 @@ class FlextMeltanoTapOracleWMSPlugin:
 
 def create_oracle_wms_tap_plugin(
     config: dict[str, object],
-) -> FlextResult[FlextMeltanoTapOracleWMSPlugin]:
+) -> FlextResult[FlextTapOracleWmsPlugin]:
     """Create Oracle WMS tap plugin instance.
 
     Args:
@@ -960,20 +960,20 @@ def create_oracle_wms_tap_plugin(
 
     """
     try:
-        plugin = FlextMeltanoTapOracleWMSPlugin(config)
+        plugin = FlextTapOracleWmsPlugin(config)
 
         # Validate plugin configuration
         validation = plugin.validate_business_rules()
         if not validation.success:
-            return FlextResult[FlextMeltanoTapOracleWMSPlugin].fail(
+            return FlextResult[FlextTapOracleWmsPlugin].fail(
                 f"Plugin validation failed: {validation.error}",
             )
 
         logger.info("Oracle WMS tap plugin created successfully")
-        return FlextResult[FlextMeltanoTapOracleWMSPlugin].ok(plugin)
+        return FlextResult[FlextTapOracleWmsPlugin].ok(plugin)
 
     except Exception as e:
         logger.exception("Failed to create Oracle WMS tap plugin")
-        return FlextResult[FlextMeltanoTapOracleWMSPlugin].fail(
+        return FlextResult[FlextTapOracleWmsPlugin].fail(
             f"Plugin creation failed: {e}",
         )

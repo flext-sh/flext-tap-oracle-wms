@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from unittest.mock import MagicMock, patch
 
-from flext_tap_oracle_wms import FlextMeltanoTapOracleWMS
+from flext_tap_oracle_wms import FlextTapOracleWms
 
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
@@ -20,7 +20,7 @@ EXPECTED_BULK_SIZE = 2
 class TestTapInitialization:
     """Test tap initialization behavior."""
 
-    @patch("flext_tap_oracle_wms.tap.FlextMeltanoTapOracleWMS.discover_streams")
+    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWms.discover_streams")
     def test_tap_initialization_without_network_calls(
         self,
         mock_discover: MagicMock,
@@ -41,7 +41,7 @@ class TestTapInitialization:
             patch("requests.get") as mock_requests_get,
         ):
             # Initialize tap - should not trigger external network calls
-            tap = FlextMeltanoTapOracleWMS(config=config)
+            tap = FlextTapOracleWms(config=config)
             # Verify no external network calls were made
             mock_get.assert_not_called()
             mock_client_get.assert_not_called()
@@ -68,7 +68,7 @@ class TestTapInitialization:
             patch("httpx.Client") as mock_sync_client,
             patch("requests.get") as mock_requests,
             patch.object(
-                FlextMeltanoTapOracleWMS,
+                FlextTapOracleWms,
                 "_create_minimal_schema",
             ) as mock_schema,
         ):
@@ -80,7 +80,7 @@ class TestTapInitialization:
                     "mod_ts": {"type": "string", "format": "date-time"},
                 },
             }
-            tap = FlextMeltanoTapOracleWMS(config=config)
+            tap = FlextTapOracleWms(config=config)
             # Discover streams in sync mode
             streams = tap.discover_streams()
             # Should create minimal streams without API calls
@@ -108,7 +108,7 @@ class TestTapInitialization:
         with (
             patch("httpx.Client"),
             patch(
-                "flext_tap_oracle_wms.tap.FlextMeltanoTapOracleWMS.discovery",
+                "flext_tap_oracle_wms.tap.FlextTapOracleWms.discovery",
             ) as mock_discovery,
         ):
             # Mock the discovery property to avoid actual network calls
@@ -118,7 +118,7 @@ class TestTapInitialization:
                     "name": {"type": "string", "nullable": True},
                 },
             }
-            tap = FlextMeltanoTapOracleWMS(config=config)
+            tap = FlextTapOracleWms(config=config)
             # Set discovery mode
             tap.set_discovery_mode(enabled=True)
             # Now discovery should work
@@ -128,7 +128,7 @@ class TestTapInitialization:
                 raise AssertionError(msg)
             assert streams[0].name == "test_entity"
 
-    @patch("flext_tap_oracle_wms.tap.FlextMeltanoTapOracleWMS.discover_streams")
+    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWms.discover_streams")
     @patch("flext_tap_oracle_wms.cache.CacheManagerAdapter")
     def test_lazy_loading_discovery(
         self,
@@ -149,7 +149,7 @@ class TestTapInitialization:
             "password": "test",
             "entities": ["allocation", "order_hdr"],
         }
-        tap = FlextMeltanoTapOracleWMS(config=config)
+        tap = FlextTapOracleWms(config=config)
         # Initially, discovery should be None
         assert tap._discovery is None
         assert tap._schema_generator is None
@@ -164,7 +164,7 @@ class TestTapInitialization:
             # Verify schema generator is properly initialized
             _ = schema_gen  # Used to satisfy mypy
 
-    @patch("flext_tap_oracle_wms.tap.FlextMeltanoTapOracleWMS.discover_streams")
+    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWms.discover_streams")
     def test_configuration_type_conversion(self, mock_discover: MagicMock) -> None:
         """Test configuration type conversion."""
         # Mock discover_streams to return empty list during initialization
@@ -184,7 +184,7 @@ class TestTapInitialization:
             patch("httpx.Client"),
             patch("requests.get"),
         ):
-            tap = FlextMeltanoTapOracleWMS(config=config)
+            tap = FlextTapOracleWms(config=config)
             # Verify types are correct
             assert isinstance(tap.config["page_size"], int)
             if tap.config["page_size"] != 100:
@@ -214,15 +214,15 @@ class TestTapInitialization:
             patch("httpx.Client"),
             patch("httpx.Client"),
             patch("requests.get"),
-            patch.object(FlextMeltanoTapOracleWMS, "discovery") as mock_discovery,
+            patch.object(FlextTapOracleWms, "discovery") as mock_discovery,
             patch.object(
-                FlextMeltanoTapOracleWMS,
+                FlextTapOracleWms,
                 "_discover_entities_sync",
             ) as mock_entities,
         ):
             mock_entities.return_value = {"test_entity": "http://test.url"}
             mock_discovery.describe_entity_sync.return_value = None
-            tap = FlextMeltanoTapOracleWMS(config=config)
+            tap = FlextTapOracleWms(config=config)
             # Create minimal schema
             schema = tap._create_minimal_schema()
             if schema["type"] != "object":

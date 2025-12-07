@@ -100,14 +100,14 @@ This module provides the main entry points for the Oracle WMS tap,
 following Singer SDK patterns and FLEXT ecosystem standards.
 """
 
-from flext_tap_oracle_wms.tap import FlextMeltanoTapOracleWMS
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from flext_tap_oracle_wms.config import WMSConfig
 from flext_tap_oracle_wms.version import VERSION
 
 __version__ = VERSION.version
 
 __all__: t.StringList = [
-    "FlextMeltanoTapOracleWMS",
+    "FlextTapOracleWms",
     "WMSConfig",
     "VERSION",
     "__version__",
@@ -135,7 +135,7 @@ __version_info__: Final[tuple[int | str, ...]] = cast(
 
 ```python
 # Standard ecosystem usage
-from flext_tap_oracle_wms import FlextMeltanoTapOracleWMS, WMSConfig
+from flext_tap_oracle_wms import FlextTapOracleWms, WMSConfig
 ```
 
 ### **Application Layer - Tap Implementation**
@@ -173,10 +173,10 @@ from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms.config import WMSConfig
-from flext_tap_oracle_wms.streams import FlextMeltanoTapOracleWMSStream
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.discovery import EntityDiscovery
 
-class FlextMeltanoTapOracleWMS(Tap):
+class FlextTapOracleWms(Tap):
     """
     Oracle WMS Singer tap implementation.
 
@@ -216,7 +216,7 @@ class FlextMeltanoTapOracleWMS(Tap):
             raise RuntimeError(f"Stream discovery failed: {entities_result.error}")
 
         return [
-            FlextMeltanoTapOracleWMSStream(tap=self, name=entity)
+            FlextTapOracleWmsStream(tap=self, name=entity)
             for entity in entities_result.data
             if entity in self.config.entities
         ]
@@ -227,7 +227,7 @@ class FlextMeltanoTapOracleWMS(Tap):
 **Usage Pattern**:
 
 ```python
-from flext_tap_oracle_wms import FlextMeltanoTapOracleWMS
+from flext_tap_oracle_wms import FlextTapOracleWms
 
 config = {
     "base_url": "https://wms.example.com",
@@ -236,7 +236,7 @@ config = {
     # ... other config
 }
 
-tap = FlextMeltanoTapOracleWMS(config)
+tap = FlextTapOracleWms(config)
 streams = tap.discover_streams()
 ```
 
@@ -284,7 +284,7 @@ class WMSPaginator(BaseHATEOASPaginator):
         links = response.json().get("links", {})
         return links.get("next")
 
-class FlextMeltanoTapOracleWMSStream(RESTStream):
+class FlextTapOracleWmsStream(RESTStream):
     """
     Base WMS stream for entity data extraction.
 
@@ -686,8 +686,8 @@ Following FLEXT ecosystem patterns with Singer tap specificity:
 
 ```python
 # Core modules - descriptive and focused
-tap.py                      # Main tap implementation (FlextMeltanoTapOracleWMS)
-streams.py                  # Stream definitions (FlextMeltanoTapOracleWMSStream, WMSPaginator)
+tap.py                      # Main tap implementation (FlextTapOracleWms)
+streams.py                  # Stream definitions (FlextTapOracleWmsStream, WMSPaginator)
 config.py                   # Configuration management (WMSConfig)
 discovery.py                # Entity discovery (EntityDiscovery)
 schema.py                   # Schema utilities (SchemaGenerator)
@@ -701,9 +701,9 @@ exceptions.py               # Project exceptions (WMSTapError, etc.)
 
 ```python
 # Main classes follow FLEXT + Singer patterns
-FlextMeltanoTapOracleWMS               # Main tap class (Singer SDK pattern)
+FlextTapOracleWms               # Main tap class (Singer SDK pattern)
 WMSConfig                  # Configuration (FLEXT pattern)
-FlextMeltanoTapOracleWMSStream                  # Stream implementation (Singer + WMS context)
+FlextTapOracleWmsStream                  # Stream implementation (Singer + WMS context)
 WMSPaginator              # Pagination handler (Singer + WMS context)
 EntityDiscovery           # Business logic class (descriptive)
 SchemaGenerator           # Utility class (descriptive)
@@ -821,7 +821,7 @@ from custom_result import CustomResult  # Use FlextResult instead
 
 ```python
 # Standard Singer tap structure
-class FlextMeltanoTapOracleWMS(Tap):
+class FlextTapOracleWms(Tap):
     """Main tap following Singer SDK patterns."""
 
     name = "tap-oracle-wms"                    # Tap identifier
@@ -835,7 +835,7 @@ class FlextMeltanoTapOracleWMS(Tap):
         """Custom sync logic if needed."""
         pass
 
-class FlextMeltanoTapOracleWMSStream(RESTStream):
+class FlextTapOracleWmsStream(RESTStream):
     """Stream following Singer RESTStream pattern."""
 
     @property
@@ -876,7 +876,7 @@ self.logger.info("Starting extraction", entity=entity_name)
 
 ```python
 # Application Layer - orchestrates business logic
-class FlextMeltanoTapOracleWMS:
+class FlextTapOracleWms:
     def discover_streams(self):
         # Orchestrates discovery without business logic
         discovery = EntityDiscovery(self.wms_client)

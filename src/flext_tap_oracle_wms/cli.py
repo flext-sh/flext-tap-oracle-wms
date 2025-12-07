@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms.client import FlextMeltanoTapOracleWMS
+from flext_tap_oracle_wms.client import FlextTapOracleWms
 
 
 def main() -> None:
@@ -61,7 +61,7 @@ def main() -> None:
         SystemExit: On configuration errors or execution failures
 
     """
-    FlextMeltanoTapOracleWMS.cli()
+    FlextTapOracleWms.cli()
 
 
 if __name__ == "__main__":

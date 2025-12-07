@@ -13,7 +13,7 @@ Singer-compliant tap for extracting data from Oracle Warehouse Management System
 poetry install
 
 # Test basic functionality
-python -c "from flext_tap_oracle_wms import FlextMeltanoTapOracleWms; tap = FlextMeltanoTapOracleWms(); print('✅ Working')"
+python -c "from flext_tap_oracle_wms import FlextTapOracleWms; tap = FlextTapOracleWms(); print('✅ Working')"
 
 # Development setup
 make setup
@@ -211,7 +211,7 @@ export TAP_ORACLE_WMS_START_DATE="2024-01-01T00:00:00Z"
 
 ```python
 # Singer tap using FLEXT patterns
-from flext_tap_oracle_wms import FlextMeltanoTapOracleWms
+from flext_tap_oracle_wms import FlextTapOracleWms
 from flext_core import FlextBus
 from flext_core import FlextConfig
 from flext_core import FlextConstants
@@ -233,7 +233,7 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
-tap = FlextMeltanoTapOracleWms()
+tap = FlextTapOracleWms()
 streams = tap.discover_streams()
 ```
 
@@ -292,10 +292,9 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ## Links
 
-For verified project capabilities and accurate status information, see [ACTUAL_CAPABILITIES.md](../ACTUAL_CAPABILITIES.md).
 
-- **[flext-core](../flext-core)**: Foundation library
-- **[flext-oracle-wms](../flext-oracle-wms)**: Oracle WMS integration
+- **[flext-core](https://github.com/organization/flext/tree/main/flext-core/)**: Foundation library
+- **[flext-oracle-wms](https://github.com/organization/flext/tree/main/flext-oracle-wms/)**: Oracle WMS integration
 - **[CLAUDE.md](CLAUDE.md)**: Development guidance
 
 ---

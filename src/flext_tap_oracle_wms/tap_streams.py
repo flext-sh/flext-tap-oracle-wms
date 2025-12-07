@@ -20,12 +20,12 @@ from flext_core import FlextLogger, FlextResult, t
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient
 
-from flext_tap_oracle_wms.utilities import FlextMeltanoTapOracleWmsUtilities
+from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)
 
 
-class FlextMeltanoTapOracleWMSStream(Stream):
+class FlextTapOracleWmsStream(Stream):
     """Dynamic stream for Oracle WMS entities.
 
     Uses flext-oracle-wms client for all data operations.
@@ -46,7 +46,7 @@ class FlextMeltanoTapOracleWMSStream(Stream):
         super().__init__(tap=tap, name=name or self.name, schema=schema)
 
         # Zero Tolerance FIX: Initialize utilities for ALL stream business logic
-        self._utilities = FlextMeltanoTapOracleWmsUtilities()
+        self._utilities = FlextTapOracleWmsUtilities()
 
         # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
         self._client: FlextOracleWmsClient | None = None
@@ -71,12 +71,12 @@ class FlextMeltanoTapOracleWMSStream(Stream):
     def client(self: object) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
         if self._client is None:
-            # Access WMS client from tap (FlextMeltanoTapOracleWMS)
+            # Access WMS client from tap (FlextTapOracleWms)
             tap_instance = getattr(self, "tap", None) or getattr(self, "_tap", None)
             if tap_instance and hasattr(tap_instance, "wms_client"):
                 self._client = tap_instance.wms_client
             else:
-                msg = "WMS client not available - tap must be FlextMeltanoTapOracleWMS"
+                msg = "WMS client not available - tap must be FlextTapOracleWms"
                 raise RuntimeError(msg)
 
         if self._client is None:
