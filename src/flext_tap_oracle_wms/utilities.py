@@ -208,7 +208,7 @@ class FlextMeltanoTapOracleWmsUtilities(u):
                 ]:
                     try:
                         # Use timezone-aware parsing where possible
-                        dt = datetime.strptime(timestamp, fmt)  # noqa: DTZ007
+                        dt = datetime.strptime(timestamp, fmt)
                         # Assume UTC for naive datetime objects
                         if dt.tzinfo is None:
                             dt = dt.replace(tzinfo=UTC)
