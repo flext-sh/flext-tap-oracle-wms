@@ -11,8 +11,8 @@ import pytest
 from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import (
-    FlextMeltanoTapOracleWMS,
-    FlextMeltanoTapOracleWMSStream,
+    FlextTapOracleWms,
+    FlextTapOracleWmsStream,
     # create_wms_tap_config,  # Not implemented yet
 )
 
@@ -50,7 +50,7 @@ class TestOracleWMSFunctionalComplete:
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         # CRITICAL: This must work without errors
-        tap = FlextMeltanoTapOracleWMS(config=real_wms_config)
+        tap = FlextTapOracleWms(config=real_wms_config)
 
         assert tap is not None
         assert hasattr(tap, "config")
@@ -61,7 +61,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.discovery
     def test_automatic_entity_discovery(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """CRITICAL: Test automatic entity discovery with REAL Oracle WMS."""
         # This will make REAL network calls to Oracle WMS
@@ -132,7 +132,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.singer
     def test_valid_singer_schema_generation(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test schema generation produces valid Singer schemas."""
         catalog = real_tap_instance.catalog_dict
@@ -184,7 +184,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.functional
     def test_real_data_extraction_sample(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test REAL data extraction with small sample."""
         catalog = real_tap_instance.catalog_dict
@@ -203,7 +203,7 @@ class TestOracleWMSFunctionalComplete:
 
         try:
             # This should make REAL API calls
-            stream = FlextMeltanoTapOracleWMSStream(
+            stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
                 name=stream_id,
                 schema=test_stream["schema"],
@@ -232,7 +232,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.singer
     def test_pagination_functionality(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test pagination parameters are correctly configured."""
         catalog = real_tap_instance.catalog_dict
@@ -244,7 +244,7 @@ class TestOracleWMSFunctionalComplete:
         test_stream = streams[0]
         stream_id = test_stream["tap_stream_id"]
 
-        stream = FlextMeltanoTapOracleWMSStream(
+        stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=stream_id,
             schema=test_stream["schema"],
@@ -269,7 +269,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.functional
     def test_replication_key_detection(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test automatic replication key detection."""
         catalog = real_tap_instance.catalog_dict
@@ -322,7 +322,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.functional
     def test_filtering_and_ordering_parameters(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test filtering and ordering parameters."""
         catalog = real_tap_instance.catalog_dict
@@ -334,7 +334,7 @@ class TestOracleWMSFunctionalComplete:
         test_stream = streams[0]
         stream_id = test_stream["tap_stream_id"]
 
-        stream = FlextMeltanoTapOracleWMSStream(
+        stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=stream_id,
             schema=test_stream["schema"],
@@ -369,7 +369,7 @@ class TestOracleWMSFunctionalComplete:
         invalid_config = real_wms_config.copy()
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
 
-        tap = FlextMeltanoTapOracleWMS(config=invalid_config)
+        tap = FlextTapOracleWms(config=invalid_config)
 
         # Discovery should handle network errors gracefully
         try:
@@ -415,7 +415,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.singer
     def test_singer_protocol_compliance(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test Singer protocol compliance."""
         # Test catalog generation
@@ -451,7 +451,7 @@ class TestOracleWMSFunctionalComplete:
 
     def test_comprehensive_functionality_summary(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """FINAL COMPREHENSIVE TEST: Verify all functionality works together."""
         summary = {
@@ -498,7 +498,7 @@ class TestOracleWMSFunctionalComplete:
             # 6. Pagination
             if catalog.get("streams"):
                 test_stream = catalog["streams"][0]
-                stream = FlextMeltanoTapOracleWMSStream(
+                stream = FlextTapOracleWmsStream(
                     real_tap_instance,
                     test_stream["tap_stream_id"],
                     test_stream["schema"],

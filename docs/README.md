@@ -9,7 +9,6 @@ This directory contains comprehensive documentation for FLEXT Tap Oracle WMS, in
 ### **Project Analysis and Planning**
 
 - **[TODO.md](TODO.md)** - Critical issues analysis and comprehensive refactoring plan
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete architectural documentation and patterns
 
 ### **Development Standards**
 
@@ -111,10 +110,10 @@ This directory contains comprehensive documentation for FLEXT Tap Oracle WMS, in
 
 This tap is part of the larger FLEXT enterprise data integration platform:
 
-- **[flext-core](../../flext-core/)** - Foundation patterns and utilities
-- **[flext-oracle-wms](../../flext-oracle-wms/)** - Oracle WMS API integration
-- **[flext-meltano](../../flext-meltano/)** - Singer/Meltano orchestration
-- **[flext-observability](../../flext-observability/)** - Monitoring and metrics
+- **[flext-core](https://github.com/organization/flext/tree/main/flext-core/)** - Foundation patterns and utilities
+- **[flext-oracle-wms](https://github.com/organization/flext/tree/main/flext-oracle-wms/)** - Oracle WMS API integration
+- **[flext-meltano](https://github.com/organization/flext/tree/main/flext-meltano/)** - Singer/Meltano orchestration
+- **[flext-observability](https://github.com/organization/flext/tree/main/flext-observability/)** - Monitoring and metrics
 
 ## Usage and Navigation
 

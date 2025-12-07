@@ -20,7 +20,7 @@ from pydantic import AnyUrl, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
 
-class FlextMeltanoTapOracleWMSConstants(FlextConstants):
+class FlextTapOracleWmsConstants(FlextConstants):
     """Constants for Oracle WMS tap configuration - consuming from flext-oracle-wms API."""
 
     # API defaults from flext-oracle-wms (using available constants)
@@ -50,7 +50,7 @@ class FlextMeltanoTapOracleWMSConstants(FlextConstants):
     )  # Singer-specific maximum
 
 
-class FlextMeltanoTapOracleWMSConfig(FlextConfig):
+class FlextTapOracleWmsConfig(FlextConfig):
     """Configuration for Oracle WMS tap.
 
     Type-safe configuration with validation for Oracle WMS data extraction.
@@ -111,23 +111,23 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
 
     # API settings
     api_version: str = Field(
-        default=FlextMeltanoTapOracleWMSConstants.DEFAULT_API_VERSION,
+        default=FlextTapOracleWmsConstants.DEFAULT_API_VERSION,
         description="Oracle WMS API version",
     )
     timeout: int = Field(
-        default=FlextMeltanoTapOracleWMSConstants.DEFAULT_TIMEOUT,
+        default=FlextTapOracleWmsConstants.DEFAULT_TIMEOUT,
         description="Request timeout in seconds",
-        ge=FlextMeltanoTapOracleWMSConstants.MIN_TIMEOUT,
-        le=FlextMeltanoTapOracleWMSConstants.MAX_TIMEOUT,
+        ge=FlextTapOracleWmsConstants.MIN_TIMEOUT,
+        le=FlextTapOracleWmsConstants.MAX_TIMEOUT,
     )
     max_retries: int = Field(
-        default=FlextMeltanoTapOracleWMSConstants.DEFAULT_MAX_RETRIES,
+        default=FlextTapOracleWmsConstants.DEFAULT_MAX_RETRIES,
         description="Maximum number of retries for failed requests",
         ge=0,
         le=10,
     )
     retry_delay: float = Field(
-        default=FlextMeltanoTapOracleWMSConstants.DEFAULT_RETRY_DELAY,
+        default=FlextTapOracleWmsConstants.DEFAULT_RETRY_DELAY,
         description="Delay between retries in seconds",
         ge=0.1,
         le=60.0,
@@ -135,10 +135,10 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
 
     # Pagination settings
     page_size: int = Field(
-        default=FlextMeltanoTapOracleWMSConstants.DEFAULT_PAGE_SIZE,
+        default=FlextTapOracleWmsConstants.DEFAULT_PAGE_SIZE,
         description="Number of records per page",
-        ge=FlextMeltanoTapOracleWMSConstants.MIN_PAGE_SIZE,
-        le=FlextMeltanoTapOracleWMSConstants.MAX_PAGE_SIZE,
+        ge=FlextTapOracleWmsConstants.MIN_PAGE_SIZE,
+        le=FlextTapOracleWmsConstants.MAX_PAGE_SIZE,
     )
 
     # SSL settings
@@ -163,10 +163,10 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
 
     # Discovery settings
     discovery_sample_size: int = Field(
-        default=FlextMeltanoTapOracleWMSConstants.DEFAULT_DISCOVERY_SAMPLE_SIZE,
+        default=FlextTapOracleWmsConstants.DEFAULT_DISCOVERY_SAMPLE_SIZE,
         description="Number of records to sample for schema discovery",
         ge=1,
-        le=FlextMeltanoTapOracleWMSConstants.MAX_DISCOVERY_SAMPLE_SIZE,
+        le=FlextTapOracleWmsConstants.MAX_DISCOVERY_SAMPLE_SIZE,
     )
     enable_schema_flattening: bool = Field(
         default=True,
@@ -275,7 +275,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         dev_overrides: dict[str, object] = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT * 2,
             "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS + 2,
-            "page_size": FlextMeltanoTapOracleWMSConstants.DEFAULT_PAGE_SIZE // 2,
+            "page_size": FlextTapOracleWmsConstants.DEFAULT_PAGE_SIZE // 2,
             "enable_request_logging": True,
             "enable_parallel_extraction": True,
             **overrides,
@@ -291,7 +291,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         prod_overrides: dict[str, object] = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT,
             "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
-            "page_size": FlextMeltanoTapOracleWMSConstants.DEFAULT_PAGE_SIZE,
+            "page_size": FlextTapOracleWmsConstants.DEFAULT_PAGE_SIZE,
             "enable_request_logging": False,
             "enable_parallel_extraction": False,
             **overrides,
@@ -307,7 +307,7 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         test_overrides: dict[str, object] = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT // 3,
             "max_retries": 1,
-            "page_size": FlextMeltanoTapOracleWMSConstants.MIN_PAGE_SIZE,
+            "page_size": FlextTapOracleWmsConstants.MIN_PAGE_SIZE,
             "enable_request_logging": True,
             "enable_parallel_extraction": True,
             **overrides,
@@ -389,12 +389,12 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
     def _validate_page_size(self: object) -> FlextResult[None]:
         """Validate page size limits."""
         if not (
-            FlextMeltanoTapOracleWMSConstants.MIN_PAGE_SIZE
+            FlextTapOracleWmsConstants.MIN_PAGE_SIZE
             <= self.page_size
-            <= FlextMeltanoTapOracleWMSConstants.MAX_PAGE_SIZE
+            <= FlextTapOracleWmsConstants.MAX_PAGE_SIZE
         ):
             return FlextResult[None].fail(
-                f"page_size must be between {FlextMeltanoTapOracleWMSConstants.MIN_PAGE_SIZE} and {FlextMeltanoTapOracleWMSConstants.MAX_PAGE_SIZE}",
+                f"page_size must be between {FlextTapOracleWmsConstants.MIN_PAGE_SIZE} and {FlextTapOracleWmsConstants.MAX_PAGE_SIZE}",
             )
         return FlextResult[None].ok(None)
 
@@ -433,11 +433,11 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
         if (
             self.enable_parallel_extraction
             and self.max_parallel_streams
-            > FlextMeltanoTapOracleWMSConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
+            > FlextTapOracleWmsConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
             and not self.enable_rate_limiting
         ):
             return FlextResult[None].fail(
-                f"Rate limiting must be enabled for more than {FlextMeltanoTapOracleWMSConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT} parallel streams",
+                f"Rate limiting must be enabled for more than {FlextTapOracleWmsConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT} parallel streams",
             )
         return FlextResult[None].ok(None)
 
@@ -471,7 +471,9 @@ class FlextMeltanoTapOracleWMSConfig(FlextConfig):
                     )
 
             # Validate performance settings
-            max_parallel_streams_without_rate_limit = FlextMeltanoTapOracleWMSConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
+            max_parallel_streams_without_rate_limit = (
+                FlextTapOracleWmsConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
+            )
             if (
                 self.enable_parallel_extraction
                 and self.max_parallel_streams > max_parallel_streams_without_rate_limit

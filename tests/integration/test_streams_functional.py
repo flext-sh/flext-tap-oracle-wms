@@ -1,4 +1,4 @@
-"""Functional tests for FlextMeltanoTapOracleWMSStream with real Oracle WMS data.
+"""Functional tests for FlextTapOracleWmsStream with real Oracle WMS data.
 
 Tests stream functionality with REAL Oracle WMS instance using .env configuration.
 
@@ -18,8 +18,8 @@ from flext_api import FlextApiConstants
 from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import (
-    FlextMeltanoTapOracleWMS,
-    FlextMeltanoTapOracleWMSStream,
+    FlextTapOracleWms,
+    FlextTapOracleWmsStream,
     # ReplicationKeyTimestampStrategy,  # Not implemented yet
     # ResponseParser,
     # WMSPaginator,
@@ -33,7 +33,7 @@ class TestStreamsFunctional:
 
     def test_stream_creation_with_real_wms_data(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test stream creation with real Oracle WMS data."""
         # Get a real schema from discovery
@@ -47,7 +47,7 @@ class TestStreamsFunctional:
         stream_id = stream_config["tap_stream_id"]
 
         # Create stream instance
-        stream = FlextMeltanoTapOracleWMSStream(
+        stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=stream_id,
             schema=stream_config["schema"],
@@ -62,7 +62,7 @@ class TestStreamsFunctional:
 
     def test_wms_api_url_generation(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test URL generation for Oracle WMS API."""
         catalog = real_tap_instance.catalog_dict
@@ -72,7 +72,7 @@ class TestStreamsFunctional:
             pytest.skip("No streams discovered")
 
         test_stream = streams[0]
-        stream = FlextMeltanoTapOracleWMSStream(
+        stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=test_stream["tap_stream_id"],
             schema=test_stream["schema"],
@@ -96,7 +96,7 @@ class TestStreamsFunctional:
 
     def test_stream_authentication_with_credentials(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test stream authentication with real credentials."""
         catalog = real_tap_instance.catalog_dict
@@ -106,7 +106,7 @@ class TestStreamsFunctional:
             pytest.skip("No streams discovered")
 
         test_stream = streams[0]
-        stream = FlextMeltanoTapOracleWMSStream(
+        stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=test_stream["tap_stream_id"],
             schema=test_stream["schema"],
@@ -129,7 +129,7 @@ class TestStreamsFunctional:
 
     def test_http_headers_generation(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test HTTP headers generation."""
         catalog = real_tap_instance.catalog_dict
@@ -139,7 +139,7 @@ class TestStreamsFunctional:
             pytest.skip("No streams discovered")
 
         test_stream = streams[0]
-        stream = FlextMeltanoTapOracleWMSStream(
+        stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=test_stream["tap_stream_id"],
             schema=test_stream["schema"],
@@ -166,7 +166,7 @@ class TestStreamsFunctional:
 
     def test_replication_key_detection(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test automatic replication key detection."""
         catalog = real_tap_instance.catalog_dict
@@ -176,7 +176,7 @@ class TestStreamsFunctional:
         full_table_streams = []
 
         for stream_config in streams[:5]:  # Test first 5 streams
-            stream = FlextMeltanoTapOracleWMSStream(
+            stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
                 name=stream_config["tap_stream_id"],
                 schema=stream_config["schema"],
@@ -196,7 +196,7 @@ class TestStreamsFunctional:
 
     def test_timestamp_replication_key_detection(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test timestamp field detection for replication keys."""
         catalog = real_tap_instance.catalog_dict
@@ -205,7 +205,7 @@ class TestStreamsFunctional:
         timestamp_streams = []
 
         for stream_config in streams[:3]:  # Test first 3 streams
-            stream = FlextMeltanoTapOracleWMSStream(
+            stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
                 name=stream_config["tap_stream_id"],
                 schema=stream_config["schema"],
@@ -231,7 +231,7 @@ class TestStreamsFunctional:
 
     def test_pagination_parameter_generation(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test pagination parameter generation."""
         catalog = real_tap_instance.catalog_dict
@@ -241,7 +241,7 @@ class TestStreamsFunctional:
             pytest.skip("No streams discovered")
 
         test_stream = streams[0]
-        stream = FlextMeltanoTapOracleWMSStream(
+        stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=test_stream["tap_stream_id"],
             schema=test_stream["schema"],
@@ -276,7 +276,7 @@ class TestStreamsFunctional:
 
     def test_incremental_filtering_with_timestamps(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test incremental filtering with timestamps."""
         catalog = real_tap_instance.catalog_dict
@@ -285,7 +285,7 @@ class TestStreamsFunctional:
         # Find a stream with incremental replication
         incremental_stream = None
         for stream_config in streams:
-            stream = FlextMeltanoTapOracleWMSStream(
+            stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
                 name=stream_config["tap_stream_id"],
                 schema=stream_config["schema"],
@@ -365,7 +365,7 @@ class TestStreamsFunctional:
 
     def test_stream_ordering_configuration(
         self,
-        real_tap_instance: FlextMeltanoTapOracleWMS,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test ordering configuration for different replication methods."""
         catalog = real_tap_instance.catalog_dict
@@ -374,7 +374,7 @@ class TestStreamsFunctional:
         ordering_configs = []
 
         for stream_config in streams[:3]:  # Test first 3 streams
-            stream = FlextMeltanoTapOracleWMSStream(
+            stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
                 name=stream_config["tap_stream_id"],
                 schema=stream_config["schema"],

@@ -16,8 +16,8 @@ graph TB
     end
 
     subgraph "Tap Implementation"
-        TAP[FlextMeltanoTapOracleWMS<br/>Main Tap Class]
-        STREAMS[FlextMeltanoTapOracleWMSStream<br/>Data Streams]
+        TAP[FlextTapOracleWms<br/>Main Tap Class]
+        STREAMS[FlextTapOracleWmsStream<br/>Data Streams]
         CONFIG[WMSConfig<br/>Configuration]
         DISCOVERY[EntityDiscovery<br/>Schema Discovery]
         AUTH[WMSAuth<br/>Authentication]
@@ -72,7 +72,7 @@ class WMSConfig(FlextConfig):
         env_prefix = "TAP_ORACLE_WMS_"
         case_sensitive = False
 
-class FlextMeltanoTapOracleWMS:
+class FlextTapOracleWms:
     """Main tap implementation using flext-core patterns."""
 
     def __init__(self, config: TAnyDict):
@@ -99,7 +99,7 @@ OracleWmsRecord = TAnyDict        # WMS record data
 OracleWmsEntityId = TEntityId     # Entity identifiers
 OracleWmsValue = TValue           # Field values
 
-class FlextMeltanoTapOracleWMSStream:
+class FlextTapOracleWmsStream:
     """Stream using flext-core type system."""
 
     def get_records(self, context) -> Iterator[TAnyDict]:
@@ -140,7 +140,7 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
-class FlextMeltanoTapOracleWMSStream:
+class FlextTapOracleWmsStream:
     """Stream with standardized logging."""
 
     def __init__(self, tap, name: str):
@@ -274,7 +274,7 @@ from flext_meltano import (
     singer_typing as th,
 )
 
-class FlextMeltanoTapOracleWMS(Tap):
+class FlextTapOracleWms(Tap):
     """Tap implementation using flext-meltano patterns."""
 
     name = "tap-oracle-wms"
@@ -293,15 +293,15 @@ class FlextMeltanoTapOracleWMS(Tap):
             raise RuntimeError(f"Stream discovery failed: {entities_result.error}")
 
         return [
-            FlextMeltanoTapOracleWMSStream(tap=self, name=entity)
+            FlextTapOracleWmsStream(tap=self, name=entity)
             for entity in entities_result.data
             if entity in self.config.entities
         ]
 
-class FlextMeltanoTapOracleWMSStream(Stream):
+class FlextTapOracleWmsStream(Stream):
     """WMS stream using flext-meltano base class."""
 
-    def __init__(self, tap: FlextMeltanoTapOracleWMS, name: str):
+    def __init__(self, tap: FlextTapOracleWms, name: str):
         super().__init__(tap)
         self.name = name
         self.tap = tap
@@ -387,7 +387,7 @@ from flext_observability import (
     FlextTracing,
 )
 
-class FlextMeltanoTapOracleWMS(Tap):
+class FlextTapOracleWms(Tap):
     """Tap with comprehensive observability."""
 
     def __init__(self, config: dict):
@@ -428,7 +428,7 @@ class FlextMeltanoTapOracleWMS(Tap):
                 )
                 raise
 
-class FlextMeltanoTapOracleWMSStream(Stream):
+class FlextTapOracleWmsStream(Stream):
     """Stream with observability integration."""
 
     def get_records(self, context) -> Iterator[t.Dict]:

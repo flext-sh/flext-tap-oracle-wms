@@ -21,7 +21,7 @@ from pydantic import (
     model_validator,
 )
 
-from flext_tap_oracle_wms.constants import FlextMeltanoTapOracleWmsConstants
+from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants
 
 # Oracle WMS authentication constants
 basic = "basic"
@@ -47,7 +47,7 @@ VALIDATION = "VALIDATION"
 linear = "linear"
 
 
-class FlextMeltanoTapOracleWmsModels(FlextModels):
+class FlextTapOracleWmsModels(FlextModels):
     """Oracle WMS tap models extending flext-core FlextModels.
 
     Provides complete models for Oracle WMS entity extraction, authentication,
@@ -267,11 +267,11 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                     "company_code": self.company_code,
                     "facility_code": self.facility_code,
                     "username": self.username[
-                        : FlextMeltanoTapOracleWmsConstants.Processing.USERNAME_TRUNCATION_LENGTH
+                        : FlextTapOracleWmsConstants.Processing.USERNAME_TRUNCATION_LENGTH
                     ]
                     + "..."
                     if len(self.username)
-                    > FlextMeltanoTapOracleWmsConstants.Processing.USERNAME_TRUNCATION_LENGTH
+                    > FlextTapOracleWmsConstants.Processing.USERNAME_TRUNCATION_LENGTH
                     else self.username,
                 },
                 "performance_settings": {
@@ -599,10 +599,10 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
                     "availability_rate": availability_rate,
                     "utilization_status": "high"
                     if allocation_rate
-                    > FlextMeltanoTapOracleWmsConstants.Processing.HIGH_ALLOCATION_THRESHOLD
+                    > FlextTapOracleWmsConstants.Processing.HIGH_ALLOCATION_THRESHOLD
                     else "medium"
                     if allocation_rate
-                    > FlextMeltanoTapOracleWmsConstants.Processing.MEDIUM_ALLOCATION_THRESHOLD
+                    > FlextTapOracleWmsConstants.Processing.MEDIUM_ALLOCATION_THRESHOLD
                     else "low",
                 },
                 "status_info": {
@@ -1063,11 +1063,11 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
 
         tap_stream_id: str = Field(..., description="Unique tap stream identifier")
         stream_name: str = Field(..., description="Stream name")
-        stream_schema: FlextMeltanoTapOracleWmsModels.WmsStreamSchema = Field(
+        stream_schema: FlextTapOracleWmsModels.WmsStreamSchema = Field(
             ...,
             description="Stream schema definition",
         )
-        metadata: FlextMeltanoTapOracleWmsModels.WmsStreamMetadata = Field(
+        metadata: FlextTapOracleWmsModels.WmsStreamMetadata = Field(
             ...,
             description="Stream metadata",
         )
@@ -1168,9 +1168,9 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
             if (
                 self.page_size <= 0
                 or self.page_size
-                > FlextMeltanoTapOracleWmsConstants.Processing.ORACLE_WMS_PAGE_SIZE_LIMIT
+                > FlextTapOracleWmsConstants.Processing.ORACLE_WMS_PAGE_SIZE_LIMIT
             ):
-                msg = f"Page size must be between 1 and {FlextMeltanoTapOracleWmsConstants.Processing.ORACLE_WMS_PAGE_SIZE_LIMIT}"
+                msg = f"Page size must be between 1 and {FlextTapOracleWmsConstants.Processing.ORACLE_WMS_PAGE_SIZE_LIMIT}"
                 raise ValueError(msg)
             return self
 
@@ -1396,5 +1396,5 @@ class FlextMeltanoTapOracleWmsModels(FlextModels):
 
 
 __all__ = [
-    "FlextMeltanoTapOracleWmsModels",
+    "FlextTapOracleWmsModels",
 ]

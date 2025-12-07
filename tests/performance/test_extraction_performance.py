@@ -14,8 +14,8 @@ import pytest
 from dotenv import load_dotenv
 
 from flext_tap_oracle_wms import (
-    FlextMeltanoTapOracleWMS,
-    FlextMeltanoTapOracleWMSConfig,
+    FlextTapOracleWms,
+    FlextTapOracleWmsConfig,
 )
 
 # Load environment variables
@@ -24,9 +24,9 @@ load_dotenv(env_path)
 
 
 @pytest.fixture
-def performance_config() -> FlextMeltanoTapOracleWMSConfig:
+def performance_config() -> FlextTapOracleWmsConfig:
     """Create configuration for performance testing."""
-    return FlextMeltanoTapOracleWMSConfig(
+    return FlextTapOracleWmsConfig(
         base_url=os.getenv("ORACLE_WMS_BASE_URL"),
         username=os.getenv("ORACLE_WMS_USERNAME"),
         password=os.getenv("ORACLE_WMS_PASSWORD"),
@@ -38,16 +38,16 @@ def performance_config() -> FlextMeltanoTapOracleWMSConfig:
 
 
 @pytest.fixture
-def tap(performance_config: FlextMeltanoTapOracleWMSConfig) -> FlextMeltanoTapOracleWMS:
+def tap(performance_config: FlextTapOracleWmsConfig) -> FlextTapOracleWms:
     """Create tap instance for performance testing."""
-    return FlextMeltanoTapOracleWMS(config=performance_config)
+    return FlextTapOracleWms(config=performance_config)
 
 
 @pytest.mark.performance
 class TestExtractionPerformance:
     """Test data extraction performance."""
 
-    def test_catalog_discovery_performance(self, tap: FlextMeltanoTapOracleWMS) -> None:
+    def test_catalog_discovery_performance(self, tap: FlextTapOracleWms) -> None:
         """Benchmark catalog discovery time."""
         # Initialize tap
         tap.initialize()
@@ -65,7 +65,7 @@ class TestExtractionPerformance:
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
     def test_pagination_performance(
         self,
-        tap: FlextMeltanoTapOracleWMS,
+        tap: FlextTapOracleWms,
         page_size: int,
     ) -> None:
         """Benchmark different page sizes."""
@@ -94,7 +94,7 @@ class TestExtractionPerformance:
 
         time.time() - start_time
 
-    def test_concurrent_streams_extraction(self, tap: FlextMeltanoTapOracleWMS) -> None:
+    def test_concurrent_streams_extraction(self, tap: FlextTapOracleWms) -> None:
         """Test extracting multiple streams concurrently."""
         tap.initialize()
         streams = tap.discover_streams()[:3]  # Test first 3 streams
@@ -118,7 +118,7 @@ class TestExtractionPerformance:
 
     def test_memory_usage_during_large_extraction(
         self,
-        tap: FlextMeltanoTapOracleWMS,
+        tap: FlextTapOracleWms,
     ) -> None:
         """Test memory usage during large extractions."""
         process = psutil.Process()
@@ -153,24 +153,24 @@ class TestRateLimitingPerformance:
 
     def test_rate_limiting_impact(
         self,
-        performance_config: FlextMeltanoTapOracleWMSConfig,
+        performance_config: FlextTapOracleWmsConfig,
     ) -> None:
         """Compare performance with and without rate limiting."""
         # Without rate limiting
-        config_no_limit = FlextMeltanoTapOracleWMSConfig(
+        config_no_limit = FlextTapOracleWmsConfig(
             **performance_config.model_dump(),
             enable_rate_limiting=False,
         )
-        tap_no_limit = FlextMeltanoTapOracleWMS(config=config_no_limit)
+        tap_no_limit = FlextTapOracleWms(config=config_no_limit)
         tap_no_limit.initialize()
 
         # With rate limiting
-        config_with_limit = FlextMeltanoTapOracleWMSConfig(
+        config_with_limit = FlextTapOracleWmsConfig(
             **performance_config.model_dump(),
             enable_rate_limiting=True,
             max_requests_per_minute=60,
         )
-        tap_with_limit = FlextMeltanoTapOracleWMS(config=config_with_limit)
+        tap_with_limit = FlextTapOracleWms(config=config_with_limit)
         tap_with_limit.initialize()
 
         # Test both

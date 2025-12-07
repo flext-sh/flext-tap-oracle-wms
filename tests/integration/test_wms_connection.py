@@ -14,8 +14,8 @@ import pytest
 from dotenv import load_dotenv
 
 from flext_tap_oracle_wms import (
-    FlextMeltanoTapOracleWMS,
-    FlextMeltanoTapOracleWMSConfig,
+    FlextTapOracleWms,
+    FlextTapOracleWmsConfig,
 )
 
 # Load environment variables
@@ -24,9 +24,9 @@ load_dotenv(env_path)
 
 
 @pytest.fixture
-def real_config() -> FlextMeltanoTapOracleWMSConfig:
+def real_config() -> FlextTapOracleWmsConfig:
     """Create real configuration from environment."""
-    return FlextMeltanoTapOracleWMSConfig(
+    return FlextTapOracleWmsConfig(
         base_url=os.getenv("ORACLE_WMS_BASE_URL"),
         username=os.getenv("ORACLE_WMS_USERNAME"),
         password=os.getenv("ORACLE_WMS_PASSWORD"),
@@ -40,27 +40,27 @@ def real_config() -> FlextMeltanoTapOracleWMSConfig:
 
 
 @pytest.fixture
-def tap(real_config: FlextMeltanoTapOracleWMSConfig) -> FlextMeltanoTapOracleWMS:
+def tap(real_config: FlextTapOracleWmsConfig) -> FlextTapOracleWms:
     """Create tap instance with real configuration."""
-    return FlextMeltanoTapOracleWMS(config=real_config)
+    return FlextTapOracleWms(config=real_config)
 
 
 class TestRealConnection:
     """Test real Oracle WMS connection."""
 
-    def test_configuration_validation(self, tap: FlextMeltanoTapOracleWMS) -> None:
+    def test_configuration_validation(self, tap: FlextTapOracleWms) -> None:
         """Test configuration validation."""
         result = tap.validate_configuration()
         assert result.is_success
         assert result.value["valid"] is True
         assert "health" in result.value
 
-    def test_tap_initialization(self, tap: FlextMeltanoTapOracleWMS) -> None:
+    def test_tap_initialization(self, tap: FlextTapOracleWms) -> None:
         """Test tap initialization."""
         result = tap.initialize()
         assert result.is_success
 
-    def test_catalog_discovery(self, tap: FlextMeltanoTapOracleWMS) -> None:
+    def test_catalog_discovery(self, tap: FlextTapOracleWms) -> None:
         """Test catalog discovery."""
         # Initialize first
         init_result = tap.initialize()
@@ -78,7 +78,7 @@ class TestRealConnection:
         for stream in catalog["streams"]:
             stream.get("schema", {}).get("properties", {})
 
-    def test_stream_discovery(self, tap: FlextMeltanoTapOracleWMS) -> None:
+    def test_stream_discovery(self, tap: FlextTapOracleWms) -> None:
         """Test stream discovery."""
         streams = tap.discover_streams()
         assert len(streams) > 0
@@ -86,7 +86,7 @@ class TestRealConnection:
         for _stream in streams:
             pass
 
-    def test_stream_schemas_validation(self, tap: FlextMeltanoTapOracleWMS) -> None:
+    def test_stream_schemas_validation(self, tap: FlextTapOracleWms) -> None:
         """Test stream schemas."""
         streams = tap.discover_streams()
 
@@ -106,7 +106,7 @@ class TestRealDataExtraction:
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
     def test_extract_stream_data(
         self,
-        tap: FlextMeltanoTapOracleWMS,
+        tap: FlextTapOracleWms,
         stream_name: str,
     ) -> None:
         """Test extracting data from specific streams."""
@@ -138,7 +138,7 @@ class TestRealDataExtraction:
         except Exception as e:
             pytest.fail(f"Failed to extract records from {stream_name}: {e}")
 
-    def test_pagination_functionality(self, tap: FlextMeltanoTapOracleWMS) -> None:
+    def test_pagination_functionality(self, tap: FlextTapOracleWms) -> None:
         """Test pagination functionality."""
         # Use a stream with many records
         tap.initialize()
@@ -171,14 +171,14 @@ class TestFilteringAndSelection:
 
     def test_entity_inclusion_filter(
         self,
-        real_config: FlextMeltanoTapOracleWMSConfig,
+        real_config: FlextTapOracleWmsConfig,
     ) -> None:
         """Test including specific entities."""
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             **real_config.model_dump(),
             include_entities=["inventory", "locations"],
         )
-        tap = FlextMeltanoTapOracleWMS(config=config)
+        tap = FlextTapOracleWms(config=config)
 
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
@@ -189,14 +189,14 @@ class TestFilteringAndSelection:
 
     def test_entity_exclusion_filter(
         self,
-        real_config: FlextMeltanoTapOracleWMSConfig,
+        real_config: FlextTapOracleWmsConfig,
     ) -> None:
         """Test excluding specific entities."""
-        config = FlextMeltanoTapOracleWMSConfig(
+        config = FlextTapOracleWmsConfig(
             **real_config.model_dump(),
             exclude_entities=["orders", "shipments"],
         )
-        tap = FlextMeltanoTapOracleWMS(config=config)
+        tap = FlextTapOracleWms(config=config)
 
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
@@ -209,7 +209,7 @@ class TestFilteringAndSelection:
 class TestIntegration:
     """Test /sync integration with flext-oracle-wms."""
 
-    def test_client_lifecycle_management(self, tap: FlextMeltanoTapOracleWMS) -> None:
+    def test_client_lifecycle_management(self, tap: FlextTapOracleWms) -> None:
         """Test proper client lifecycle management."""
         # Initialize should start the client
         init_result = tap.initialize()
@@ -225,12 +225,12 @@ class TestIntegration:
 
     def test_error_handling(self) -> None:
         """Test error handling with invalid configuration."""
-        bad_config = FlextMeltanoTapOracleWMSConfig(
+        bad_config = FlextTapOracleWmsConfig(
             base_url="https://invalid.example.com",
             username="invalid",
             password="invalid",
         )
-        tap = FlextMeltanoTapOracleWMS(config=bad_config)
+        tap = FlextTapOracleWms(config=bad_config)
 
         # Should handle connection errors gracefully
         result = tap.validate_configuration()

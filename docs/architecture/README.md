@@ -8,21 +8,13 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 ### Architecture Analysis
 
-- **[current-state.md](current-state.md)** - Detailed analysis of current over-engineered architecture
-- **[target-state.md](target-state.md)** - Target architecture following FLEXT and Singer SDK best practices
-- **[comparison.md](comparison.md)** - Side-by-side comparison of current vs target architecture
 
 ### Integration Documentation
 
 - **[flext-integration.md](flext-integration.md)** - Integration patterns with FLEXT ecosystem components
-- **[singer-compliance.md](singer-compliance.md)** - Singer SDK specification compliance architecture
-- **[data-flow.md](data-flow.md)** - Data flow architecture and processing patterns
 
 ### Design Patterns
 
-- **[clean-architecture.md](clean-architecture.md)** - Clean Architecture implementation in Singer taps
-- **[dependency-injection.md](dependency-injection.md)** - Dependency injection patterns using flext-core
-- **[error-handling.md](error-handling.md)** - Comprehensive error handling and recovery architecture
 
 ## Architecture Principles
 
@@ -147,12 +139,11 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 - **[../README.md](../README.md)** - Complete documentation overview
 - **[../TODO.md](../TODO.md)** - Critical issues and refactoring plan
-- **[../REFACTORING_PLAN.md](../REFACTORING_PLAN.md)** - Detailed implementation strategy
 
 ### FLEXT Ecosystem
 
-- **[flext-core Architecture](../../../flext-core/docs/architecture/)** - Foundation patterns
-- **[flext-oracle-wms Integration](../../../flext-oracle-wms/docs/)** - WMS client integration
+- **[flext-core Architecture](https://github.com/organization/flext/tree/main/flext-core/docs/architecture/)** - Foundation patterns
+- **[flext-oracle-wms Integration](https://github.com/organization/flext/tree/main/flext-oracle-wms/docs/)** - WMS client integration
 - **[FLEXT Platform Architecture](../../../../docs/architecture/)** - Ecosystem overview
 
 ### External References

@@ -243,7 +243,7 @@ class WMSConfig(FlextConfig):
         # Business logic validation
         return v
 
-class FlextMeltanoTapOracleWMS:
+class FlextTapOracleWms:
     """FLEXT-compliant tap implementation."""
 
     def __init__(self, config: dict):

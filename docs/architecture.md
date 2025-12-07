@@ -170,18 +170,18 @@ class WMSAuthenticator:
 from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
-class FlextMeltanoTapOracleWMS(Tap):
+class FlextTapOracleWms(Tap):
     name = "tap-oracle-wms"
     config_jsonschema = WMSConfigSchema.model_json_schema()
 
     def discover_streams(self) -> List[Stream]:
         """Discover available streams from WMS API."""
         return [
-            FlextMeltanoTapOracleWMSStream(tap=self, name=entity, path=f"/api/{entity}")
+            FlextTapOracleWmsStream(tap=self, name=entity, path=f"/api/{entity}")
             for entity in self.config["entities"]
         ]
 
-class FlextMeltanoTapOracleWMSStream(RESTStream):
+class FlextTapOracleWmsStream(RESTStream):
     """Standard Singer stream for WMS entities."""
 
     def get_records(self, context):
@@ -444,7 +444,7 @@ def mock_wms_client():
 def test_stream_extraction(mock_wms_client):
     """Test stream data extraction with mocked client."""
     with patch('flext_tap_oracle_wms.streams.get_wms_client', return_value=mock_wms_client):
-        stream = FlextMeltanoTapOracleWMSStream(tap=mock_tap, name="item")
+        stream = FlextTapOracleWmsStream(tap=mock_tap, name="item")
         records = list(stream.get_records(None))
         assert len(records) == 2
         assert records[0]["id"] == "1"

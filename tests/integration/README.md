@@ -48,7 +48,7 @@ This directory contains integration tests for FLEXT Tap Oracle WMS, focusing on 
 def test_tap_stream_integration():
     """Test tap and stream components working together."""
     with mock_wms_server():
-        tap = FlextMeltanoTapOracleWMS(test_config)
+        tap = FlextTapOracleWms(test_config)
         streams = tap.discover_streams()
 
         # Verify stream discovery
@@ -124,7 +124,7 @@ def test_etl_integration_flow():
     """Test complete data extraction and transformation flow."""
     with mock_wms_data_server():
         # Initialize tap with test configuration
-        tap = FlextMeltanoTapOracleWMS(test_config)
+        tap = FlextTapOracleWms(test_config)
 
         # Discover available streams
         catalog = tap.discover_streams()
@@ -304,7 +304,7 @@ def test_data_integration_flow(mock_wms_server, integration_config):
                        json=load_fixture("item_data.json"))
 
     # Execute integration flow
-    tap = FlextMeltanoTapOracleWMS(integration_config)
+    tap = FlextTapOracleWms(integration_config)
     catalog = tap.discover_streams()
 
     # Validate results
@@ -327,7 +327,7 @@ def test_data_integration_flow(mock_wms_server, integration_config):
 def test_high_volume_integration():
     """Test integration with high-volume data extraction."""
     with mock_large_dataset():
-        tap = FlextMeltanoTapOracleWMS(high_volume_config)
+        tap = FlextTapOracleWms(high_volume_config)
 
         # Test with large dataset
         records = list(tap.extract_all_data())
@@ -345,7 +345,7 @@ def test_concurrent_stream_integration():
     import concurrent.futures
 
     with mock_wms_server():
-        tap = FlextMeltanoTapOracleWMS(test_config)
+        tap = FlextTapOracleWms(test_config)
         streams = tap.discover_streams()
 
         # Test concurrent extraction
@@ -367,7 +367,7 @@ def test_concurrent_stream_integration():
 def test_network_failure_integration():
     """Test integration behavior during network failures."""
     with mock_network_failures():
-        tap = FlextMeltanoTapOracleWMS(test_config)
+        tap = FlextTapOracleWms(test_config)
 
         # Simulate network issues
         with pytest.raises(NetworkError):

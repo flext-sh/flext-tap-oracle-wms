@@ -9,8 +9,8 @@ import sys
 
 # from pydantic import SecretStr  # Not needed
 from flext_tap_oracle_wms import (
-    FlextMeltanoTapOracleWMS,
-    FlextMeltanoTapOracleWMSConfig,
+    FlextTapOracleWms,
+    FlextTapOracleWmsConfig,
 )
 
 
@@ -21,7 +21,7 @@ def main() -> int:
       int: Description.
 
     """  # Configuration from environment or hardcoded
-    config = FlextMeltanoTapOracleWMSConfig(
+    config = FlextTapOracleWmsConfig(
         base_url=os.getenv(
             "ORACLE_WMS_BASE_URL",
             "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
@@ -38,7 +38,7 @@ def main() -> int:
     )
 
     # Create tap
-    tap = FlextMeltanoTapOracleWMS(config=config)
+    tap = FlextTapOracleWms(config=config)
 
     # Example 1: Validate configuration
     validation_result = tap.validate_configuration()
