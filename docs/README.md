@@ -40,7 +40,7 @@ This directory contains comprehensive documentation for FLEXT Tap Oracle WMS, in
 - **Multiple discovery systems** requiring consolidation
 - **Complex configuration approaches** requiring simplification
 
-### **[ARCHITECTURE.md](ARCHITECTURE.md) - Architectural Documentation**
+### **[architecture.md](architecture.md) - Architectural Documentation**
 
 **Purpose**: Complete architectural documentation for current and target states
 **Key Content**:
@@ -121,12 +121,12 @@ This tap is part of the larger FLEXT enterprise data integration platform:
 
 1. **Start with**: [CLAUDE.md](../CLAUDE.md) for development guidance
 2. **Understand Issues**: [TODO.md](TODO.md) for critical issues and refactoring plan
-3. **Architecture Overview**: [ARCHITECTURE.md](ARCHITECTURE.md) for system design
+3. **Architecture Overview**: [architecture.md](architecture.md) for system design
 4. **Standards**: [standards/](standards/) for development patterns
 
 ### **For Architects**
 
-1. **Current State**: [ARCHITECTURE.md](ARCHITECTURE.md) for complete architectural analysis
+1. **Current State**: [architecture.md](architecture.md) for complete architectural analysis
 2. **Issues Analysis**: [TODO.md](TODO.md) for architectural problems and solutions
 3. **Target Design**: Architecture documentation for simplified target state
 4. **Integration**: FLEXT ecosystem positioning and integration patterns
@@ -134,7 +134,7 @@ This tap is part of the larger FLEXT enterprise data integration platform:
 ### **For Project Managers**
 
 1. **Status Overview**: [TODO.md](TODO.md) for project status and timeline
-2. **Scope Understanding**: Architecture documentation for complexity assessment
+2. **Scope Understanding**: [architecture.md](architecture.md) for complexity assessment
 3. **Resource Planning**: Refactoring timeline and resource requirements
 4. **Quality Metrics**: Quality standards and success criteria
 

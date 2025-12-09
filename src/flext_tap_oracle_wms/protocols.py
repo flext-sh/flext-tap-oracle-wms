@@ -15,97 +15,117 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
     Architecture:
     - EXTENDS: FlextDbOracleProtocols (inherits .Database.* protocols)
     - EXTENDS: FlextMeltanoProtocols (inherits .Meltano.* protocols)
-    - ADDS: Tap Oracle WMS-specific protocols in TapOracleWms namespace
+    - ADDS: Tap Oracle WMS-specific protocols in Tap.OracleWms namespace
     - PROVIDES: Root-level alias `p` for convenient access
+
+    Usage:
+    from flext_tap_oracle_wms.protocols import p
+
+    # Foundation protocols (inherited)
+    result: p.Result[str]
+    service: p.Service[str]
+
+    # Oracle protocols (inherited)
+    connection: p.Database.ConnectionProtocol
+
+    # Meltano protocols (inherited)
+    tap: p.Meltano.TapProtocol
+
+    # Tap Oracle WMS-specific protocols
+    wms_connection: p.Tap.OracleWms.WmsConnectionProtocol
     """
 
-    class TapOracleWms:
-        """Singer Tap Oracle WMS domain protocols for Oracle Warehouse Management System extraction."""
+    class Tap:
+        """Singer Tap domain protocols."""
 
-        @runtime_checkable
-        class WmsConnectionProtocol(p_db_oracle.Service[object], Protocol):
-            """Protocol for Oracle WMS connection operations."""
+        class OracleWms:
+            """Singer Tap Oracle WMS domain protocols for Oracle Warehouse Management System extraction."""
 
-            def establish_wms_connection(
-                self,
-                config: dict[str, object],
-            ) -> p_meltano.Result[object]:
-                """Establish connection to Oracle WMS."""
-                ...
+            @runtime_checkable
+            class WmsConnectionProtocol(p_db_oracle.Service[object], Protocol):
+                """Protocol for Oracle WMS connection operations."""
 
-        @runtime_checkable
-        class InventoryDiscoveryProtocol(p_db_oracle.Service[object], Protocol):
-            """Protocol for WMS inventory discovery."""
+                def establish_wms_connection(
+                    self,
+                    config: dict[str, object],
+                ) -> p_meltano.Result[object]:
+                    """Establish connection to Oracle WMS."""
+                    ...
 
-            def discover_inventory(
-                self,
-                config: dict[str, object],
-            ) -> p_meltano.Result[list[dict[str, object]]]:
-                """Discover WMS inventory."""
+            @runtime_checkable
+            class InventoryDiscoveryProtocol(p_db_oracle.Service[object], Protocol):
+                """Protocol for WMS inventory discovery."""
 
-        @runtime_checkable
-        class OrderProcessingProtocol(p_db_oracle.Service[object], Protocol):
-            """Protocol for WMS order processing."""
+                def discover_inventory(
+                    self,
+                    config: dict[str, object],
+                ) -> p_meltano.Result[list[dict[str, object]]]:
+                    """Discover WMS inventory."""
+                    ...
 
-            def process_orders(
-                self,
-                config: dict[str, object],
-            ) -> p_meltano.Result[list[dict[str, object]]]:
-                """Process WMS orders."""
-                ...
+            @runtime_checkable
+            class OrderProcessingProtocol(p_db_oracle.Service[object], Protocol):
+                """Protocol for WMS order processing."""
 
-        @runtime_checkable
-        class WarehouseOperationsProtocol(p_db_oracle.Service[object], Protocol):
-            """Protocol for WMS warehouse operations."""
+                def process_orders(
+                    self,
+                    config: dict[str, object],
+                ) -> p_meltano.Result[list[dict[str, object]]]:
+                    """Process WMS orders."""
+                    ...
 
-            def get_warehouse_operations(
-                self,
-                config: dict[str, object],
-            ) -> p_meltano.Result[list[dict[str, object]]]:
-                """Get WMS warehouse operations."""
-                ...
+            @runtime_checkable
+            class WarehouseOperationsProtocol(p_db_oracle.Service[object], Protocol):
+                """Protocol for WMS warehouse operations."""
 
-        @runtime_checkable
-        class StreamGenerationProtocol(p_db_oracle.Service[object], Protocol):
-            """Protocol for Singer stream generation."""
+                def get_warehouse_operations(
+                    self,
+                    config: dict[str, object],
+                ) -> p_meltano.Result[list[dict[str, object]]]:
+                    """Get WMS warehouse operations."""
+                    ...
 
-            def generate_catalog(
-                self,
-                config: dict[str, object],
-            ) -> p_meltano.Result[dict[str, object]]:
-                """Generate Singer catalog."""
-                ...
+            @runtime_checkable
+            class StreamGenerationProtocol(p_db_oracle.Service[object], Protocol):
+                """Protocol for Singer stream generation."""
 
-        @runtime_checkable
-        class PerformanceProtocol(p_db_oracle.Service[object], Protocol):
-            """Protocol for WMS extraction performance."""
+                def generate_catalog(
+                    self,
+                    config: dict[str, object],
+                ) -> p_meltano.Result[dict[str, object]]:
+                    """Generate Singer catalog."""
+                    ...
 
-            def optimize_query(self, query: str) -> p_meltano.Result[str]:
-                """Optimize WMS query."""
-                ...
+            @runtime_checkable
+            class PerformanceProtocol(p_db_oracle.Service[object], Protocol):
+                """Protocol for WMS extraction performance."""
 
-        @runtime_checkable
-        class ValidationProtocol(p_db_oracle.Service[object], Protocol):
-            """Protocol for WMS data validation."""
+                def optimize_query(self, query: str) -> p_meltano.Result[str]:
+                    """Optimize WMS query."""
+                    ...
 
-            def validate_config(
-                self,
-                config: dict[str, object],
-            ) -> p_meltano.Result[bool]:
-                """Validate WMS configuration."""
-                ...
+            @runtime_checkable
+            class ValidationProtocol(p_db_oracle.Service[object], Protocol):
+                """Protocol for WMS data validation."""
 
-        @runtime_checkable
-        class MonitoringProtocol(p_db_oracle.Service[object], Protocol):
-            """Protocol for WMS extraction monitoring."""
+                def validate_config(
+                    self,
+                    config: dict[str, object],
+                ) -> p_meltano.Result[bool]:
+                    """Validate WMS configuration."""
+                    ...
 
-            def track_progress(
-                self,
-                entity: str,
-                records: int,
-            ) -> p_meltano.Result[bool]:
-                """Track WMS extraction progress."""
-                ...
+            @runtime_checkable
+            class MonitoringProtocol(p_db_oracle.Service[object], Protocol):
+                """Protocol for WMS extraction monitoring."""
+
+                def track_progress(
+                    self,
+                    entity: str,
+                    records: int,
+                ) -> p_meltano.Result[bool]:
+                    """Track WMS extraction progress."""
+                    ...
 
 
 # Runtime alias for simplified usage

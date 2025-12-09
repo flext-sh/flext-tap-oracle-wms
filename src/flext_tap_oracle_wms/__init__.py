@@ -26,11 +26,14 @@ from flext_tap_oracle_wms.exceptions import (
     FlextTapOracleWmsError,
     FlextTapOracleWmsValidationError,
 )
-from flext_tap_oracle_wms.models import FlextTapOracleWmsModels
+from flext_tap_oracle_wms.models import FlextTapOracleWmsModels, m, m_tap_oracle_wms
 from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 from flext_tap_oracle_wms.version import VERSION, FlextTapOracleWmsVersion
+
+# Domain-specific aliases
+u = FlextTapOracleWmsUtilities  # Utilities (FlextTapOracleWmsUtilities extends FlextUtilities)
 
 PROJECT_VERSION: Final[FlextTapOracleWmsVersion] = VERSION
 
@@ -61,5 +64,9 @@ __all__ = [
     "FlextTapOracleWmsVersion",
     "__version__",
     "__version_info__",
+    "m",
+    "m_tap_oracle_wms",
     "main",
+    # Domain-specific aliases
+    "u",
 ]

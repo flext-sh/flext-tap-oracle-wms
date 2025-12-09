@@ -21,18 +21,14 @@ class FlextTapOracleWmsConstants(FlextConstants):
     """
 
     # Oracle WMS Connection Configuration
-    DEFAULT_WMS_TIMEOUT: Final[int] = (
-        FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
-    )
+    DEFAULT_WMS_TIMEOUT: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
     DEFAULT_FETCH_SIZE: Final[int] = (
         FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
     )
 
     # Singer Tap Configuration - using FlextConstants composition
     # Note: DEFAULT_BATCH_SIZE inherited from FlextConstants (Final, cannot override)
-    MAX_BATCH_SIZE: Final[int] = (
-        FlextConstants.Performance.BatchProcessing.MAX_ITEMS
-    )
+    MAX_BATCH_SIZE: Final[int] = FlextConstants.Performance.BatchProcessing.MAX_ITEMS
 
     # WMS Entity Types - Oracle WMS tap-specific
     class WmsEntityType(StrEnum):
@@ -51,12 +47,8 @@ class FlextTapOracleWmsConstants(FlextConstants):
     class Connection:
         """Oracle WMS connection configuration."""
 
-        DEFAULT_TIMEOUT: Final[int] = (
-            FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
-        )
-        MAX_RETRIES: Final[int] = (
-            FlextOracleWmsConstants.Connection.DEFAULT_MAX_RETRIES
-        )
+        DEFAULT_TIMEOUT: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
+        MAX_RETRIES: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_MAX_RETRIES
 
     class TapWmsProcessing:
         """WMS tap processing configuration.
