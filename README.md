@@ -292,7 +292,6 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ## Links
 
-
 - **[flext-core](https://github.com/organization/flext/tree/main/flext-core/)**: Foundation library
 - **[flext-oracle-wms](https://github.com/organization/flext/tree/main/flext-oracle-wms/)**: Oracle WMS integration
 - **[CLAUDE.md](CLAUDE.md)**: Development guidance

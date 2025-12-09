@@ -8,13 +8,11 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 ### Architecture Analysis
 
-
 ### Integration Documentation
 
 - **[flext-integration.md](flext-integration.md)** - Integration patterns with FLEXT ecosystem components
 
 ### Design Patterns
-
 
 ## Architecture Principles
 
