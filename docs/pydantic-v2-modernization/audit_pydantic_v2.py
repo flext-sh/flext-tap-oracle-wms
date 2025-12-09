@@ -66,43 +66,55 @@ class AuditResult:
         ]
 
         if self.critical:
-            lines.extend([
-                "🔴 CRITICAL VIOLATIONS (MUST FIX):",
-                "-" * 70,
-            ])
+            lines.extend(
+                [
+                    "🔴 CRITICAL VIOLATIONS (MUST FIX):",
+                    "-" * 70,
+                ]
+            )
             for v in self.critical:
-                lines.extend([
-                    f"  {v.pattern}",
-                    f"    File: {v.file}:{v.line}",
-                    f"    Detail: {v.detail}",
-                    "",
-                ])
+                lines.extend(
+                    [
+                        f"  {v.pattern}",
+                        f"    File: {v.file}:{v.line}",
+                        f"    Detail: {v.detail}",
+                        "",
+                    ]
+                )
 
         if self.high:
-            lines.extend([
-                "🟠 HIGH PRIORITY VIOLATIONS (SHOULD FIX):",
-                "-" * 70,
-            ])
+            lines.extend(
+                [
+                    "🟠 HIGH PRIORITY VIOLATIONS (SHOULD FIX):",
+                    "-" * 70,
+                ]
+            )
             for v in self.high:
-                lines.extend([
-                    f"  {v.pattern}",
-                    f"    File: {v.file}:{v.line}",
-                    f"    Detail: {v.detail}",
-                    "",
-                ])
+                lines.extend(
+                    [
+                        f"  {v.pattern}",
+                        f"    File: {v.file}:{v.line}",
+                        f"    Detail: {v.detail}",
+                        "",
+                    ]
+                )
 
         if self.recommendations:
-            lines.extend([
-                "💡 RECOMMENDATIONS:",
-                "-" * 70,
-            ])
+            lines.extend(
+                [
+                    "💡 RECOMMENDATIONS:",
+                    "-" * 70,
+                ]
+            )
             lines.extend([f"  • {rec}" for rec in self.recommendations])
             lines.append("")
 
-        lines.extend([
-            "📊 STATISTICS:",
-            "-" * 70,
-        ])
+        lines.extend(
+            [
+                "📊 STATISTICS:",
+                "-" * 70,
+            ]
+        )
         for key, value in self.stats.items():
             lines.append(f"  {key}: {value}")
 

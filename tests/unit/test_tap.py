@@ -228,9 +228,11 @@ class TestFlextTapOracleWms:
         # Mock client
         mock_client = MagicMock()
         mock_client.connect.return_value = FlextResult[None].ok(data=None)
-        mock_client.list_entities.return_value = FlextResult[list[str]].ok([
-            "inventory",
-        ])
+        mock_client.list_entities.return_value = FlextResult[list[str]].ok(
+            [
+                "inventory",
+            ]
+        )
         mock_client_class.return_value = mock_client
 
         result = tap_instance.validate_configuration()

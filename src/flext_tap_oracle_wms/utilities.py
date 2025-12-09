@@ -569,10 +569,12 @@ class FlextTapOracleWmsUtilities(u_core):
 
             # Validate URL format
             base_url = config["base_url"]
-            if not isinstance(base_url, str) or not base_url.startswith((
-                "http://",
-                "https://",
-            )):
+            if not isinstance(base_url, str) or not base_url.startswith(
+                (
+                    "http://",
+                    "https://",
+                )
+            ):
                 return FlextResult[dict[str, object]].fail("Invalid base_url format")
 
             return FlextResult[dict[str, object]].ok(config)
