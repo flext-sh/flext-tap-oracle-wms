@@ -11,10 +11,11 @@ import re
 from datetime import UTC, datetime
 from typing import ClassVar, override
 
-from flext_core import FlextResult, t, u
+from flext_core import FlextResult, t
+from flext_core.utilities import FlextUtilities as u_core
 
 
-class FlextTapOracleWmsUtilities(u):
+class FlextTapOracleWmsUtilities(u_core):
     """Single unified utilities class for Singer tap Oracle WMS operations.
 
     Follows FLEXT unified class pattern with nested helper classes for

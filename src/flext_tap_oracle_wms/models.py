@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from typing import Literal, Self
 
 from flext_core import FlextConstants, FlextModels, t
+from flext_core.utilities import u
 from pydantic import (
     ConfigDict,
     Field,
@@ -53,6 +54,14 @@ class FlextTapOracleWmsModels(FlextModels):
     Provides complete models for Oracle WMS entity extraction, authentication,
     stream configuration, and Singer protocol compliance following standardized patterns.
     """
+
+    def __init_subclass__(cls, **kwargs: object) -> None:
+        """Warn when FlextTapOracleWmsModels is subclassed directly."""
+        super().__init_subclass__(**kwargs)
+        u.Deprecation.warn_once(
+            f"subclass:{cls.__name__}",
+            "Subclassing FlextTapOracleWmsModels is deprecated. Use FlextModels.TapOracleWms instead.",
+        )
 
     # Pydantic 2.11 Configuration - Enterprise Singer Oracle WMS Tap Features
     model_config = ConfigDict(
@@ -1395,6 +1404,12 @@ class FlextTapOracleWmsModels(FlextModels):
             return self
 
 
+# Short aliases
+m = FlextTapOracleWmsModels
+m_tap_oracle_wms = FlextTapOracleWmsModels
+
 __all__ = [
     "FlextTapOracleWmsModels",
+    "m",
+    "m_tap_oracle_wms",
 ]

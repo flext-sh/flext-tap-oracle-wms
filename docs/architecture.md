@@ -536,3 +536,20 @@ class SecureWMSConfig(WMSConfig):
 ---
 
 **Status**: Architecture Defined · 1.0.0 Release Preparation | **Next**: Implementation of simplified architecture | **Updated**: 2025-08-13
+
+## Related Documentation
+
+**Within Project**:
+- [Getting Started](getting-started.md) - Installation and basic usage
+- [API Reference](api-reference.md) - Complete API documentation
+- [Examples](../examples/) - Working code examples
+
+**Across Projects**:
+- [flext-core Foundation](https://github.com/organization/flext/tree/main/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
+- [flext-core Service Patterns](https://github.com/organization/flext/tree/main/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
+- [flext-oracle-wms Integration](https://github.com/organization/flext/tree/main/flext-oracle-wms/CLAUDE.md) - Oracle WMS Cloud integration
+- [flext-meltano Pipelines](https://github.com/organization/flext/tree/main/flext-meltano/CLAUDE.md) - Data integration and ELT orchestration
+
+**External Resources**:
+- [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
+- [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
