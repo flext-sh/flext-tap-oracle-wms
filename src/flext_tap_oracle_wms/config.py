@@ -343,7 +343,7 @@ class FlextTapOracleWmsConfig(FlextConfig):
             if validation_result.is_failure:
                 error_msg = f"Invalid date format: {validation_result.error}"
                 raise ValueError(error_msg)
-            return validation_result.unwrap()
+            return validation_result.value
         return v
 
     def validate_business_rules(self: object) -> FlextResult[None]:

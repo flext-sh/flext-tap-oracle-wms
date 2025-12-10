@@ -56,7 +56,7 @@ class FlextTapOracleWmsStream(Stream):
             )
         )
         if page_size_result.is_success:
-            self._page_size = page_size_result.unwrap()
+            self._page_size = page_size_result.value
         else:
             # Fall back to default if validation fails
             self._page_size = 100
@@ -229,7 +229,7 @@ class FlextTapOracleWmsStream(Stream):
                 )
 
                 if processed_record_result.is_success:
-                    processed_record = processed_record_result.unwrap()
+                    processed_record = processed_record_result.value
                     # Apply additional post-processing
                     final_record = self.post_process(processed_record, context)
                     if final_record is not None:
