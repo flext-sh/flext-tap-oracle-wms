@@ -576,7 +576,7 @@ class FlextTapOracleWms(Tap):
             validation_info_result = (
                 self._utilities.DataProcessing.generate_validation_info(
                     config_data=self.flext_config.model_dump(exclude_unset=True),
-                    connection_result=connection_test_result.unwrap(),
+                    connection_result=connection_test_result.value,
                     discovery_result=getattr(discovery_result, "value", None),
                 )
             )
@@ -585,7 +585,7 @@ class FlextTapOracleWms(Tap):
                     f"Validation info generation failed: {validation_info_result.error}",
                 )
 
-            validation_info = validation_info_result.unwrap()
+            validation_info = validation_info_result.value
             logger.info("Configuration validated successfully")
             return FlextResult[dict["str", "object"]].ok(validation_info)
         except Exception as e:

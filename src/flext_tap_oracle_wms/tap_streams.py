@@ -58,7 +58,7 @@ class FlextTapOracleWmsStream(Stream):
             )
         )
         if page_size_result.is_success:
-            self._page_size = page_size_result.unwrap()
+            self._page_size = page_size_result.value
         else:
             # Fall back to default if validation fails
             self._page_size = 100
