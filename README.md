@@ -213,7 +213,7 @@ export TAP_ORACLE_WMS_START_DATE="2024-01-01T00:00:00Z"
 # Singer tap using FLEXT patterns
 from flext_tap_oracle_wms import FlextTapOracleWms
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

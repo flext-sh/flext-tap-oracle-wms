@@ -41,18 +41,12 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type TapConfiguration = dict[str, str | int | bool | dict[str, object]]
         type StreamConfiguration = dict[
-            str, str | bool | dict[str, FlextTypes.Json.JsonValue]
+            str, str | bool | dict[str, FlextTypes.JsonValue]
         ]
-        type CatalogDefinition = dict[
-            str, str | list[dict[str, FlextTypes.Json.JsonValue]]
-        ]
-        type SchemaDefinition = dict[
-            str, str | dict[str, FlextTypes.Json.JsonValue] | bool
-        ]
-        type MessageOutput = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
-        type StateManagement = dict[
-            str, str | int | dict[str, FlextTypes.Json.JsonValue]
-        ]
+        type CatalogDefinition = dict[str, str | list[dict[str, FlextTypes.JsonValue]]]
+        type SchemaDefinition = dict[str, str | dict[str, FlextTypes.JsonValue] | bool]
+        type MessageOutput = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type StateManagement = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
 
     # =========================================================================
     # ORACLE WMS WAREHOUSE TYPES - Complex warehouse management types
@@ -63,11 +57,11 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type WarehouseConfiguration = dict[str, str | int | bool | dict[str, object]]
         type FacilityDefinition = dict[
-            str, str | list[str] | dict[str, FlextTypes.Json.JsonValue]
+            str, str | list[str] | dict[str, FlextTypes.JsonValue]
         ]
-        type LocationManagement = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
+        type LocationManagement = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type ZoneConfiguration = dict[str, str | dict[str, object]]
-        type WarehouseMetadata = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
+        type WarehouseMetadata = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type LayoutDefinition = dict[str, str | bool | dict[str, object]]
 
     # =========================================================================
@@ -78,12 +72,10 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Oracle WMS inventory management complex types."""
 
         type InventoryConfiguration = dict[str, str | int | bool | dict[str, object]]
-        type ItemMasterData = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
+        type ItemMasterData = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type StockLevelTracking = dict[str, int | float | dict[str, object]]
         type AllocationManagement = dict[str, int | str | dict[str, object]]
-        type InventoryMetrics = dict[
-            str, int | float | dict[str, FlextTypes.Json.JsonValue]
-        ]
+        type InventoryMetrics = dict[str, int | float | dict[str, FlextTypes.JsonValue]]
         type CycleCountData = dict[str, str | int | dict[str, object]]
 
     # =========================================================================
@@ -94,11 +86,9 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Oracle WMS order management complex types."""
 
         type OrderConfiguration = dict[str, str | int | dict[str, object]]
-        type OrderProcessing = dict[
-            str, str | bool | dict[str, FlextTypes.Json.JsonValue]
-        ]
+        type OrderProcessing = dict[str, str | bool | dict[str, FlextTypes.JsonValue]]
         type FulfillmentWorkflow = dict[str, str | int | dict[str, object]]
-        type PickingInstructions = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
+        type PickingInstructions = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type ShippingConfiguration = dict[str, bool | str | dict[str, object]]
         type OrderTracking = dict[str, str | int | dict[str, object]]
 
@@ -111,12 +101,12 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type LaborConfiguration = dict[str, str | bool | dict[str, object]]
         type WorkforceManagement = dict[
-            str, int | float | dict[str, FlextTypes.Json.JsonValue]
+            str, int | float | dict[str, FlextTypes.JsonValue]
         ]
-        type TaskAssignment = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
+        type TaskAssignment = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type ProductivityMetrics = dict[str, float | int | dict[str, object]]
         type PerformanceTracking = dict[
-            str, int | float | dict[str, FlextTypes.Json.JsonValue]
+            str, int | float | dict[str, FlextTypes.JsonValue]
         ]
         type WorkforceScheduling = dict[str, str | int | dict[str, object]]
 
@@ -128,12 +118,10 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Oracle WMS transportation management complex types."""
 
         type TransportConfiguration = dict[str, str | int | bool | dict[str, object]]
-        type CarrierManagement = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
-        type ShipmentTracking = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
+        type CarrierManagement = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type ShipmentTracking = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type DeliveryScheduling = dict[str, str | bool | dict[str, object]]
-        type TransportMetrics = dict[
-            str, int | float | dict[str, FlextTypes.Json.JsonValue]
-        ]
+        type TransportMetrics = dict[str, int | float | dict[str, FlextTypes.JsonValue]]
         type RouteOptimization = dict[str, str | list[str] | dict[str, object]]
 
     # =========================================================================
@@ -145,14 +133,12 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type ExtractionConfiguration = dict[str, str | bool | dict[str, object]]
         type ExtractionFilter = dict[str, str | list[str] | dict[str, object]]
-        type ExtractionMapping = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
+        type ExtractionMapping = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type ExtractionResult = dict[str, bool | list[dict[str, object]]]
         type ExtractionMetrics = dict[
-            str, int | float | dict[str, FlextTypes.Json.JsonValue]
+            str, int | float | dict[str, FlextTypes.JsonValue]
         ]
-        type ExtractionState = dict[
-            str, str | int | dict[str, FlextTypes.Json.JsonValue]
-        ]
+        type ExtractionState = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
 
     # =========================================================================
     # STREAM PROCESSING TYPES - Complex stream handling types
@@ -162,11 +148,11 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         """Stream processing complex types."""
 
         type StreamConfiguration = dict[str, str | bool | int | dict[str, object]]
-        type StreamMetadata = dict[str, str | dict[str, FlextTypes.Json.JsonValue]]
-        type StreamRecord = dict[str, FlextTypes.Json.JsonValue | dict[str, object]]
-        type StreamState = dict[str, str | int | dict[str, FlextTypes.Json.JsonValue]]
+        type StreamMetadata = dict[str, str | dict[str, FlextTypes.JsonValue]]
+        type StreamRecord = dict[str, FlextTypes.JsonValue | dict[str, object]]
+        type StreamState = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
         type StreamBookmark = dict[str, str | int | dict[str, object]]
-        type StreamSchema = dict[str, str | dict[str, FlextTypes.Json.JsonValue] | bool]
+        type StreamSchema = dict[str, str | dict[str, FlextTypes.JsonValue] | bool]
 
     # =========================================================================
     # ERROR HANDLING TYPES - Complex error management types
@@ -177,15 +163,11 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type ErrorConfiguration = dict[str, bool | str | int | dict[str, object]]
         type ErrorRecovery = dict[str, str | bool | dict[str, object]]
-        type ErrorReporting = dict[
-            str, str | int | dict[str, FlextTypes.Json.JsonValue]
-        ]
+        type ErrorReporting = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
         type ErrorClassification = dict[str, str | int | dict[str, object]]
-        type ErrorMetrics = dict[
-            str, int | float | dict[str, FlextTypes.Json.JsonValue]
-        ]
+        type ErrorMetrics = dict[str, int | float | dict[str, FlextTypes.JsonValue]]
         type ErrorTracking = list[
-            dict[str, str | int | dict[str, FlextTypes.Json.JsonValue]]
+            dict[str, str | int | dict[str, FlextTypes.JsonValue]]
         ]
 
     # =========================================================================

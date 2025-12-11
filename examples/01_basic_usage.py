@@ -10,7 +10,7 @@ import sys
 # from pydantic import SecretStr  # Not needed
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
-    FlextTapOracleWmsConfig,
+    FlextTapOracleWmsSettings,
 )
 
 
@@ -21,7 +21,7 @@ def main() -> int:
       int: Description.
 
     """  # Configuration from environment or hardcoded
-    config = FlextTapOracleWmsConfig(
+    config = FlextTapOracleWmsSettings(
         base_url=os.getenv(
             "ORACLE_WMS_BASE_URL",
             "https://invalid.wms.ocs.oraclecloud.com/company_unknow",

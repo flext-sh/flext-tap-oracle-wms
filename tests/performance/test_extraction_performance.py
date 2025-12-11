@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
-    FlextTapOracleWmsConfig,
+    FlextTapOracleWmsSettings,
 )
 
 # Load environment variables
@@ -24,9 +24,9 @@ load_dotenv(env_path)
 
 
 @pytest.fixture
-def performance_config() -> FlextTapOracleWmsConfig:
+def performance_config() -> FlextTapOracleWmsSettings:
     """Create configuration for performance testing."""
-    return FlextTapOracleWmsConfig(
+    return FlextTapOracleWmsSettings(
         base_url=os.getenv("ORACLE_WMS_BASE_URL"),
         username=os.getenv("ORACLE_WMS_USERNAME"),
         password=os.getenv("ORACLE_WMS_PASSWORD"),
@@ -38,7 +38,7 @@ def performance_config() -> FlextTapOracleWmsConfig:
 
 
 @pytest.fixture
-def tap(performance_config: FlextTapOracleWmsConfig) -> FlextTapOracleWms:
+def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance for performance testing."""
     return FlextTapOracleWms(config=performance_config)
 
@@ -153,11 +153,11 @@ class TestRateLimitingPerformance:
 
     def test_rate_limiting_impact(
         self,
-        performance_config: FlextTapOracleWmsConfig,
+        performance_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Compare performance with and without rate limiting."""
         # Without rate limiting
-        config_no_limit = FlextTapOracleWmsConfig(
+        config_no_limit = FlextTapOracleWmsSettings(
             **performance_config.model_dump(),
             enable_rate_limiting=False,
         )
@@ -165,7 +165,7 @@ class TestRateLimitingPerformance:
         tap_no_limit.initialize()
 
         # With rate limiting
-        config_with_limit = FlextTapOracleWmsConfig(
+        config_with_limit = FlextTapOracleWmsSettings(
             **performance_config.model_dump(),
             enable_rate_limiting=True,
             max_requests_per_minute=60,

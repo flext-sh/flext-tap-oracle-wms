@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
-    FlextTapOracleWmsConfig,
+    FlextTapOracleWmsSettings,
 )
 
 # Load environment variables
@@ -24,9 +24,9 @@ load_dotenv(env_path)
 
 
 @pytest.fixture
-def real_config() -> FlextTapOracleWmsConfig:
+def real_config() -> FlextTapOracleWmsSettings:
     """Create real configuration from environment."""
-    return FlextTapOracleWmsConfig(
+    return FlextTapOracleWmsSettings(
         base_url=os.getenv("ORACLE_WMS_BASE_URL"),
         username=os.getenv("ORACLE_WMS_USERNAME"),
         password=os.getenv("ORACLE_WMS_PASSWORD"),
@@ -40,7 +40,7 @@ def real_config() -> FlextTapOracleWmsConfig:
 
 
 @pytest.fixture
-def tap(real_config: FlextTapOracleWmsConfig) -> FlextTapOracleWms:
+def tap(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance with real configuration."""
     return FlextTapOracleWms(config=real_config)
 
@@ -171,10 +171,10 @@ class TestFilteringAndSelection:
 
     def test_entity_inclusion_filter(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test including specific entities."""
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             **real_config.model_dump(),
             include_entities=["inventory", "locations"],
         )
@@ -189,10 +189,10 @@ class TestFilteringAndSelection:
 
     def test_entity_exclusion_filter(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test excluding specific entities."""
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             **real_config.model_dump(),
             exclude_entities=["orders", "shipments"],
         )
@@ -225,7 +225,7 @@ class TestIntegration:
 
     def test_error_handling(self) -> None:
         """Test error handling with invalid configuration."""
-        bad_config = FlextTapOracleWmsConfig(
+        bad_config = FlextTapOracleWmsSettings(
             base_url="https://invalid.example.com",
             username="invalid",
             password="invalid",
