@@ -20,11 +20,11 @@ from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import (
     FlextOracleWmsApiVersion,
     FlextOracleWmsClient,
-    FlextOracleWmsClientConfig,
+    FlextOracleWmsClientSettings,
 )
 
-from flext_tap_oracle_wms.config import FlextTapOracleWmsConfig
-from flext_tap_oracle_wms.exceptions import FlextTapOracleWmsConfigurationError
+from flext_tap_oracle_wms.config import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms.exceptions import FlextTapOracleWmsSettingsurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
@@ -81,7 +81,7 @@ class FlextTapOracleWms(Tap):
     @override
     def __init__(
         self,
-        config: dict[str, object] | FlextTapOracleWmsConfig | None = None,
+        config: dict[str, object] | FlextTapOracleWmsSettings | None = None,
         catalog: dict[str, object] | None = None,
         state: dict[str, object] | None = None,
         *,
@@ -91,7 +91,7 @@ class FlextTapOracleWms(Tap):
         """Initialize the Oracle WMS tap.
 
         Args:
-        config: Configuration dict[str, object] or FlextTapOracleWmsConfig instance
+        config: Configuration dict[str, object] or FlextTapOracleWmsSettings instance
         catalog: Singer catalog
         state: Singer state
         parse_env_config: Whether to parse config from environment
@@ -101,11 +101,11 @@ class FlextTapOracleWms(Tap):
         # Zero Tolerance FIX: Initialize utilities for ALL business logic
         self._utilities = FlextTapOracleWmsUtilities()
 
-        # Convert config to FlextTapOracleWmsConfig if needed
-        flext_config: FlextTapOracleWmsConfig | None = None
+        # Convert config to FlextTapOracleWmsSettings if needed
+        flext_config: FlextTapOracleWmsSettings | None = None
         if config is not None and not isinstance(
             config,
-            FlextTapOracleWmsConfig,
+            FlextTapOracleWmsSettings,
         ):
             try:
                 # Zero Tolerance FIX: Use utilities for configuration processing
@@ -114,18 +114,18 @@ class FlextTapOracleWms(Tap):
                 )
                 if config_validation_result.is_failure:
                     msg = f"Configuration validation failed: {config_validation_result.error}"
-                    raise FlextTapOracleWmsConfigurationError(msg)
+                    raise FlextTapOracleWmsSettingsurationError(msg)
 
                 # Convert dict[str, object] to proper types for Pydantic model
                 config_dict: dict[str, object] = (
                     dict[str, object](config) if hasattr(config, "items") else config
                 )
-                flext_config = FlextTapOracleWmsConfig.model_validate(
+                flext_config = FlextTapOracleWmsSettings.model_validate(
                     config_dict,
                 )
             except Exception as e:
                 msg = f"Invalid configuration: {e}"
-                raise FlextTapOracleWmsConfigurationError(msg) from e
+                raise FlextTapOracleWmsSettingsurationError(msg) from e
         else:
             flext_config = config
 
@@ -138,10 +138,10 @@ class FlextTapOracleWms(Tap):
             )
             if additional_validation_result.is_failure:
                 msg = f"WMS connection validation failed: {additional_validation_result.error}"
-                raise FlextTapOracleWmsConfigurationError(msg)
+                raise FlextTapOracleWmsSettingsurationError(msg)
 
         # Store typed config
-        self._flext_config: FlextTapOracleWmsConfig | None = flext_config
+        self._flext_config: FlextTapOracleWmsSettings | None = flext_config
 
         # Initialize instance attributes before parent init
         self._wms_client: FlextOracleWmsClient | None = None
@@ -166,11 +166,11 @@ class FlextTapOracleWms(Tap):
         self.schema_generator = None
 
     @property
-    def flext_config(self) -> FlextTapOracleWmsConfig:
+    def flext_config(self) -> FlextTapOracleWmsSettings:
         """Get typed configuration."""
         if self._flext_config is None:
             # Create from parent config
-            self._flext_config = FlextTapOracleWmsConfig(**self.config)
+            self._flext_config = FlextTapOracleWmsSettings(**self.config)
         return self._flext_config
 
     def _run(
@@ -187,7 +187,7 @@ class FlextTapOracleWms(Tap):
         """Get or create WMS client."""
         if self._wms_client is None:
             # Create client config for flext-oracle-wms
-            client_config = FlextOracleWmsClientConfig(
+            client_config = FlextOracleWmsClientSettings(
                 oracle_wms_base_url=self.flext_config.base_url,
                 oracle_wms_username=self.flext_config.username,
                 oracle_wms_password=self.flext_config.password.get_secret_value(),
@@ -216,7 +216,7 @@ class FlextTapOracleWms(Tap):
                         or "Unknown error"
                     )
                     msg = f"Failed to initialize Oracle WMS client: {error_msg}"
-                    raise FlextTapOracleWmsConfigurationError(msg)
+                    raise FlextTapOracleWmsSettingsurationError(msg)
                 self._is_started = True
 
         return self._wms_client

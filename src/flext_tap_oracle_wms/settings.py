@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Final, Self
 
-from flext_core import FlextConfig, FlextConstants, FlextModels, FlextResult
+from flext_core import FlextConstants, FlextModels, FlextResult, FlextSettings
 from flext_oracle_wms import (
     FlextOracleWmsConstants as _WmsConstants,
 )
@@ -50,11 +50,11 @@ class FlextTapOracleWmsConstants(FlextConstants):
     )  # Singer-specific maximum
 
 
-class FlextTapOracleWmsConfig(FlextConfig):
+class FlextTapOracleWmsSettings(FlextSettings):
     """Configuration for Oracle WMS tap.
 
     Type-safe configuration with validation for Oracle WMS data extraction.
-    Follows FLEXT patterns using FlextConfig for complete validation.
+    Follows FLEXT patterns using FlextSettings for complete validation.
     """
 
     # Connection settings
@@ -266,7 +266,7 @@ class FlextTapOracleWmsConfig(FlextConfig):
 
     @classmethod
     def get_global_instance(cls) -> Self:
-        """Get the global singleton instance using enhanced FlextConfig pattern."""
+        """Get the global singleton instance using enhanced FlextSettings pattern."""
         return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")
 
     @classmethod
@@ -347,7 +347,7 @@ class FlextTapOracleWmsConfig(FlextConfig):
         return v
 
     def validate_business_rules(self: object) -> FlextResult[None]:
-        """Validate Oracle WMS tap configuration business rules using FlextConfig pattern.
+        """Validate Oracle WMS tap configuration business rules using FlextSettings pattern.
 
         Consolidates all validation logic into a single complete method.
 

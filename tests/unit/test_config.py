@@ -10,15 +10,15 @@ from __future__ import annotations
 import pytest
 from pydantic import SecretStr, ValidationError
 
-from flext_tap_oracle_wms import FlextTapOracleWmsConfig
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 
 
-class TestFlextTapOracleWmsConfig:
+class TestFlextTapOracleWmsSettings:
     """Test configuration class."""
 
     def test_minimal_config(self) -> None:
         """Test creating config with minimal fields."""
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="test_user",
             password=SecretStr("test_pass"),
@@ -38,7 +38,7 @@ class TestFlextTapOracleWmsConfig:
 
     def test_full_config(self) -> None:
         """Test creating config with all fields."""
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             # Connection
             base_url="https://prod.wms.example.com",
             username="prod_user",
@@ -95,7 +95,7 @@ class TestFlextTapOracleWmsConfig:
     def test_base_url_validation(self) -> None:
         """Test base URL validation."""
         # Valid URLs
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com/",
             username="user",
             password=SecretStr("pass"),
@@ -104,7 +104,7 @@ class TestFlextTapOracleWmsConfig:
 
         # Invalid URL - missing protocol
         with pytest.raises(ValidationError) as exc_info:
-            FlextTapOracleWmsConfig(
+            FlextTapOracleWmsSettings(
                 base_url="wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -115,7 +115,7 @@ class TestFlextTapOracleWmsConfig:
         """Test entity list validation."""
         # Duplicate entities should raise error
         with pytest.raises(ValidationError) as exc_info:
-            FlextTapOracleWmsConfig(
+            FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -126,7 +126,7 @@ class TestFlextTapOracleWmsConfig:
     def test_date_validation(self) -> None:
         """Test date format validation."""
         # Valid ISO dates
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -137,7 +137,7 @@ class TestFlextTapOracleWmsConfig:
 
         # Invalid date format
         with pytest.raises(ValidationError) as exc_info:
-            FlextTapOracleWmsConfig(
+            FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -149,7 +149,7 @@ class TestFlextTapOracleWmsConfig:
         """Test numeric field validation."""
         # Invalid page size
         with pytest.raises(ValidationError):
-            FlextTapOracleWmsConfig(
+            FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -158,7 +158,7 @@ class TestFlextTapOracleWmsConfig:
 
         # Invalid timeout
         with pytest.raises(ValidationError):
-            FlextTapOracleWmsConfig(
+            FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
                 password=SecretStr("pass"),
@@ -168,7 +168,7 @@ class TestFlextTapOracleWmsConfig:
     def test_validate_oracle_wms_config(self) -> None:
         """Test Oracle WMS specific validation."""
         # Valid config
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -178,7 +178,7 @@ class TestFlextTapOracleWmsConfig:
         assert result.value["valid"] is True
 
         # Conflicting include/exclude
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -190,7 +190,7 @@ class TestFlextTapOracleWmsConfig:
         assert "cannot be both included and excluded" in str(result.error)
 
         # Invalid date range
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -203,7 +203,7 @@ class TestFlextTapOracleWmsConfig:
 
     def test_get_oracle_wms_client_config(self) -> None:
         """Test getting client configuration."""
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -223,7 +223,7 @@ class TestFlextTapOracleWmsConfig:
 
     def test_get_stream_config(self) -> None:
         """Test getting stream-specific configuration."""
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -250,7 +250,7 @@ class TestFlextTapOracleWmsConfig:
 
     def test_config_immutability(self) -> None:
         """Test that config is immutable."""
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("pass"),
@@ -262,7 +262,7 @@ class TestFlextTapOracleWmsConfig:
 
     def test_password_hiding(self) -> None:
         """Test password is hidden in string representation."""
-        config = FlextTapOracleWmsConfig(
+        config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password=SecretStr("super_secret_password"),

@@ -21,7 +21,7 @@ from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
-    FlextTapOracleWmsConfig,
+    FlextTapOracleWmsSettings,
     FlextTapOracleWmsStream,
     # WMSPaginator,  # Not implemented yet
 )
@@ -36,7 +36,7 @@ class TestOracleWMSE2EComplete:
     @pytest.mark.usefixtures("_mock_oracle_wms")
     def test_complete_discovery_to_catalog(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test complete discovery process generating valid Singer catalog."""
         # Create tap instance with real config
@@ -91,7 +91,7 @@ class TestOracleWMSE2EComplete:
     @pytest.mark.usefixtures("_mock_oracle_wms")
     def test_catalog_serialization_and_selection(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test catalog serialization and stream selection."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -122,7 +122,7 @@ class TestOracleWMSE2EComplete:
 
     def test_single_stream_extraction_sample(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test single stream data extraction with real data."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -161,7 +161,7 @@ class TestOracleWMSE2EComplete:
 
     def test_incremental_extraction_workflow(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test incremental extraction workflow."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -213,7 +213,7 @@ class TestOracleWMSE2EComplete:
 
     def test_full_table_extraction_workflow(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test full table extraction workflow."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -261,7 +261,7 @@ class TestOracleWMSE2EComplete:
 
     def test_data_quality_validation(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test data quality and schema validation."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -410,7 +410,7 @@ class TestOracleWMSE2EComplete:
 
     def test_complete_singer_protocol_compliance(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test complete Singer protocol compliance."""
         # Test discovery mode
@@ -469,7 +469,7 @@ class TestOracleWMSE2EComplete:
 
     def test_performance_and_scalability_indicators(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test performance indicators and scalability."""
         start_time = time.time()
@@ -516,7 +516,7 @@ class TestOracleWMSE2EComplete:
 
     def test_final_e2e_integration_summary(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """FINAL E2E: Comprehensive integration summary."""
         summary = {

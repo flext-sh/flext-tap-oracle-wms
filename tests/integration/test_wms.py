@@ -14,14 +14,14 @@ import pytest
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
-    FlextTapOracleWmsConfig,
+    FlextTapOracleWmsSettings,
 )
 
 
 @pytest.fixture
-def real_config() -> FlextTapOracleWmsConfig:
+def real_config() -> FlextTapOracleWmsSettings:
     """Create real configuration from environment."""
-    return FlextTapOracleWmsConfig(
+    return FlextTapOracleWmsSettings(
         base_url=os.getenv("ORACLE_WMS_BASE_URL") or "https://test.example.com",
         username=os.getenv("ORACLE_WMS_USERNAME") or "test_user",
         password=os.getenv("ORACLE_WMS_PASSWORD") or "test_password",
@@ -39,7 +39,7 @@ class TestRealWmsIntegration:
 
     def test_tap_creation_with_real_config(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test tap can be created with real config."""
         tap = FlextTapOracleWms(config=real_config)
@@ -48,7 +48,7 @@ class TestRealWmsIntegration:
 
     def test_configuration_validation(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test configuration validation."""
         # Create tap
@@ -65,7 +65,7 @@ class TestRealWmsIntegration:
 
     def test_tap_initialization(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test tap initialization."""
         tap = FlextTapOracleWms(config=real_config)
@@ -78,7 +78,7 @@ class TestRealWmsIntegration:
 
     def test_stream_discovery(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test stream discovery."""
         tap = FlextTapOracleWms(config=real_config)
@@ -102,7 +102,7 @@ class TestRealWmsIntegration:
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
     def test_stream_extraction(
         self,
-        real_config: FlextTapOracleWmsConfig,
+        real_config: FlextTapOracleWmsSettings,
         stream_name: str,
     ) -> None:
         """Test data extraction from specific streams."""

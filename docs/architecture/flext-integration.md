@@ -51,14 +51,14 @@ graph TB
 
 ```python
 from flext_core import (
-    FlextConfig,          # Configuration base class
+    FlextSettings,          # Configuration base class
     FlextLogger,          # Standardized logging
     TAnyDict,
     TEntityId,           # Entity identifier type
     FlextResult,       # Result handling pattern
 )
 
-class WMSConfig(FlextConfig):
+class WMSConfig(FlextSettings):
     """Configuration using flext-core patterns."""
 
     base_url: str
@@ -120,7 +120,7 @@ class FlextTapOracleWmsStream:
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

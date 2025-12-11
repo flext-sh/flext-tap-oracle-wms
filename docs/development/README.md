@@ -207,7 +207,7 @@ tests/
 ```python
 # Example of FLEXT-compliant code
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -229,7 +229,7 @@ from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import Field, validator
 
-class WMSConfig(FlextConfig):
+class WMSConfig(FlextSettings):
     """FLEXT-compliant configuration."""
 
     base_url: str = Field(..., description="WMS instance URL")
@@ -282,7 +282,7 @@ def extract_records(
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

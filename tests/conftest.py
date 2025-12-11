@@ -18,7 +18,7 @@ from pydantic import SecretStr
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
-    FlextTapOracleWmsConfig,
+    FlextTapOracleWmsSettings,
 )
 
 
@@ -37,9 +37,9 @@ def oracle_wms_environment() -> None:
 
 
 @pytest.fixture
-def sample_config() -> FlextTapOracleWmsConfig:
+def sample_config() -> FlextTapOracleWmsSettings:
     """Sample configuration for tests."""
-    return FlextTapOracleWmsConfig(
+    return FlextTapOracleWmsSettings(
         base_url="https://test.wms.example.com",
         username="test_user",
         password=SecretStr("test_password"),
@@ -52,9 +52,9 @@ def sample_config() -> FlextTapOracleWmsConfig:
 
 
 @pytest.fixture
-def real_config(_oracle_wms_environment: None) -> FlextTapOracleWmsConfig:
+def real_config(_oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
     """Real configuration from environment."""
-    return FlextTapOracleWmsConfig(
+    return FlextTapOracleWmsSettings(
         base_url=os.environ.get("ORACLE_WMS_BASE_URL", ""),
         username=os.environ.get("ORACLE_WMS_USERNAME", ""),
         password=SecretStr(os.environ.get("ORACLE_WMS_PASSWORD", "")),
@@ -108,7 +108,7 @@ def mock_wms_client() -> MagicMock:
 
 @pytest.fixture
 def tap_instance(
-    sample_config: FlextTapOracleWmsConfig,
+    sample_config: FlextTapOracleWmsSettings,
 ) -> FlextTapOracleWms:
     """Create tap instance with sample config."""
     return FlextTapOracleWms(config=sample_config)
@@ -218,7 +218,7 @@ def reset_environment() -> Generator[None]:
 
 @pytest.fixture
 def _real_tap_instance(
-    real_config: FlextTapOracleWmsConfig,
+    real_config: FlextTapOracleWmsSettings,
 ) -> FlextTapOracleWms:
     """Real tap instance for integration tests."""
     return FlextTapOracleWms(config=real_config)

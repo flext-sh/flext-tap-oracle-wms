@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Final
 
 from flext_core import FlextLogger, FlextModels, FlextResult
-from flext_meltano import FlextMeltanoBridge, FlextMeltanoConfig, FlextMeltanoService
+from flext_meltano import FlextMeltanoBridge, FlextMeltanoService, FlextMeltanoSettings
 
 from flext_tap_oracle_wms.cli import main
 from flext_tap_oracle_wms.client import (
@@ -17,13 +17,13 @@ from flext_tap_oracle_wms.client import (
     FlextTapOracleWmsPlugin,
 )
 from flext_tap_oracle_wms.config import (
-    FlextTapOracleWmsConfig,
     FlextTapOracleWmsConstants,
+    FlextTapOracleWmsSettings,
 )
 from flext_tap_oracle_wms.exceptions import (
-    FlextTapOracleWmsConfigurationError,
     FlextTapOracleWmsConnectionError,
     FlextTapOracleWmsError,
+    FlextTapOracleWmsSettingsurationError,
     FlextTapOracleWmsValidationError,
 )
 from flext_tap_oracle_wms.models import FlextTapOracleWmsModels, m, m_tap_oracle_wms
@@ -45,19 +45,19 @@ __all__ = [
     "VERSION",
     "FlextLogger",
     "FlextMeltanoBridge",
-    "FlextMeltanoConfig",
     "FlextMeltanoService",
+    "FlextMeltanoSettings",
     "FlextModels",
     "FlextResult",
     "FlextTapOracleWms",
-    "FlextTapOracleWmsConfig",
-    "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsConnectionError",
     "FlextTapOracleWmsConstants",
     "FlextTapOracleWmsError",
     "FlextTapOracleWmsModels",
     "FlextTapOracleWmsPlugin",
     "FlextTapOracleWmsProtocols",
+    "FlextTapOracleWmsSettings",
+    "FlextTapOracleWmsSettingsurationError",
     "FlextTapOracleWmsStream",
     "FlextTapOracleWmsUtilities",
     "FlextTapOracleWmsValidationError",
