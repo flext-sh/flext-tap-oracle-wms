@@ -23,8 +23,8 @@ from flext_oracle_wms import (
     FlextOracleWmsClientSettings,
 )
 
-from flext_tap_oracle_wms.config import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.exceptions import FlextTapOracleWmsSettingsurationError
+from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
