@@ -101,7 +101,7 @@ following Singer SDK patterns and FLEXT ecosystem standards.
 """
 
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from flext_tap_oracle_wms.config import WMSConfig
+from flext_tap_oracle_wms.settings import WMSConfig
 from flext_tap_oracle_wms.version import VERSION
 
 __version__ = VERSION.version
@@ -172,7 +172,7 @@ from flext_core import t
 from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
 
-from flext_tap_oracle_wms.config import WMSConfig
+from flext_tap_oracle_wms.settings import WMSConfig
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.discovery import EntityDiscovery
 
@@ -606,7 +606,7 @@ WMS library without reimplementing authentication logic.
 """
 
 from flext_oracle_wms import FlextOracleWmsClient
-from flext_tap_oracle_wms.config import WMSConfig
+from flext_tap_oracle_wms.settings import WMSConfig
 
 class AuthenticationManager:
     """
@@ -790,7 +790,7 @@ from flext_core import u, TAnyDict
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # Project imports (relative)
-from flext_tap_oracle_wms.config import WMSConfig
+from flext_tap_oracle_wms.settings import WMSConfig
 from flext_tap_oracle_wms.discovery import EntityDiscovery
 from flext_tap_oracle_wms.schema import SchemaGenerator
 ```
