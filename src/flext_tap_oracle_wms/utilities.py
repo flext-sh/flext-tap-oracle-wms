@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from typing import ClassVar, override
 
 from flext_core import FlextResult, t
-from flext_core.utilities import u_core
+from flext_core.utilities import FlextUtilities as u_core
 
 
 class FlextTapOracleWmsUtilities(u_core):
