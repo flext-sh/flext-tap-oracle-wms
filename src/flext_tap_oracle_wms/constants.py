@@ -10,9 +10,8 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Final, Literal
 
+from flext_core import FlextConstants
 from flext_oracle_wms.constants import FlextOracleWmsConstants
-
-from flext import FlextConstants
 
 
 class FlextTapOracleWmsConstants(FlextConstants):
