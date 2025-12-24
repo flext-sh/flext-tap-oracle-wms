@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from typing import Final
 
-from flext_core import FlextLogger, FlextModels, FlextResult
 from flext_meltano import FlextMeltanoBridge, FlextMeltanoService, FlextMeltanoSettings
 
+from flext import FlextLogger, FlextModels, FlextResult
 from flext_tap_oracle_wms.cli import main
 from flext_tap_oracle_wms.client import (
     FlextTapOracleWms,

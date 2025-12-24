@@ -13,9 +13,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from flext_core import FlextResult
 from pydantic import SecretStr
 
+from flext import FlextResult
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,

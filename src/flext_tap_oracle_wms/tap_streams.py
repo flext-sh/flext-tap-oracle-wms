@@ -14,12 +14,11 @@ from __future__ import annotations
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping, Sequence
 from typing import override
 
-from flext_core import FlextLogger, FlextResult, t
-
 # Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient
 
+from flext import FlextLogger, FlextResult, t
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)

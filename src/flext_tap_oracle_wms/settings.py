@@ -12,12 +12,13 @@ from __future__ import annotations
 
 from typing import Final, Self
 
-from flext_core import FlextConstants, FlextModels, FlextResult, FlextSettings
 from flext_oracle_wms import (
     FlextOracleWmsConstants as _WmsConstants,
 )
 from pydantic import AnyUrl, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
+
+from flext import FlextConstants, FlextModels, FlextResult, FlextSettings
 
 
 class FlextTapOracleWmsConstants(FlextConstants):
