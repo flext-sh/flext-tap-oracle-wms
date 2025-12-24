@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from flext import FlextTypes
+from flext_core import FlextTypes
 
 # =============================================================================
 # TAP ORACLE WMS-SPECIFIC TYPE VARIABLES - Domain-specific TypeVars for Singer Oracle WMS operations
@@ -41,7 +41,8 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type TapConfiguration = dict[str, str | int | bool | dict[str, object]]
         type StreamConfiguration = dict[
-            str, str | bool | dict[str, FlextTypes.JsonValue],
+            str,
+            str | bool | dict[str, FlextTypes.JsonValue],
         ]
         type CatalogDefinition = dict[str, str | list[dict[str, FlextTypes.JsonValue]]]
         type SchemaDefinition = dict[str, str | dict[str, FlextTypes.JsonValue] | bool]
@@ -57,7 +58,8 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type WarehouseConfiguration = dict[str, str | int | bool | dict[str, object]]
         type FacilityDefinition = dict[
-            str, str | list[str] | dict[str, FlextTypes.JsonValue],
+            str,
+            str | list[str] | dict[str, FlextTypes.JsonValue],
         ]
         type LocationManagement = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type ZoneConfiguration = dict[str, str | dict[str, object]]
@@ -101,12 +103,14 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
 
         type LaborConfiguration = dict[str, str | bool | dict[str, object]]
         type WorkforceManagement = dict[
-            str, int | float | dict[str, FlextTypes.JsonValue],
+            str,
+            int | float | dict[str, FlextTypes.JsonValue],
         ]
         type TaskAssignment = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type ProductivityMetrics = dict[str, float | int | dict[str, object]]
         type PerformanceTracking = dict[
-            str, int | float | dict[str, FlextTypes.JsonValue],
+            str,
+            int | float | dict[str, FlextTypes.JsonValue],
         ]
         type WorkforceScheduling = dict[str, str | int | dict[str, object]]
 
@@ -136,7 +140,8 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         type ExtractionMapping = dict[str, str | dict[str, FlextTypes.JsonValue]]
         type ExtractionResult = dict[str, bool | list[dict[str, object]]]
         type ExtractionMetrics = dict[
-            str, int | float | dict[str, FlextTypes.JsonValue],
+            str,
+            int | float | dict[str, FlextTypes.JsonValue],
         ]
         type ExtractionState = dict[str, str | int | dict[str, FlextTypes.JsonValue]]
 

@@ -15,6 +15,7 @@ import importlib.metadata
 from collections.abc import Sequence
 from typing import ClassVar, cast, override
 
+from flext_core import FlextLogger, FlextResult
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import (
     FlextOracleWmsApiVersion,
@@ -22,7 +23,6 @@ from flext_oracle_wms import (
     FlextOracleWmsClientSettings,
 )
 
-from flext import FlextLogger, FlextResult
 from flext_tap_oracle_wms.config import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.exceptions import FlextTapOracleWmsSettingsurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream

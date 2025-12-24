@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
 
-from flext import t
+from flext_core import t
 
 
 @dataclass
