@@ -10,7 +10,6 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Literal, Self
 
-from flext_core import FlextConstants, FlextModels, t
 from flext_core.utilities import u
 from pydantic import (
     ConfigDict,
@@ -22,6 +21,7 @@ from pydantic import (
     model_validator,
 )
 
+from flext import FlextConstants, FlextModels, t
 from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants
 
 # Oracle WMS authentication constants

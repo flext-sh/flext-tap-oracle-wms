@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextLogger
+from flext import FlextLogger
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,

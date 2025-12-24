@@ -15,7 +15,7 @@ from unittest.mock import Mock
 import pytest
 import requests
 from flext_api import FlextApiConstants
-from flext_core import FlextLogger
+from flext import FlextLogger
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
