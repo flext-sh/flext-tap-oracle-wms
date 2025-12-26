@@ -8,9 +8,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext import FlextLogger
+from flext_core import FlextLogger
 
-from flext_tap_oracle_wms import (
+
+
     FlextTapOracleWms,
     FlextTapOracleWmsStream,
     # create_wms_tap_config,  # Not implemented yet

@@ -10,9 +10,10 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-from flext import FlextResult
+from flext_core import FlextResult
 
-from flext_tap_oracle_wms import (
+
+
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsSettingsurationError,
