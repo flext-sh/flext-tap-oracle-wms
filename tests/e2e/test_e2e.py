@@ -17,9 +17,10 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 
 import pytest
-from flext import FlextLogger
+from flext_core import FlextLogger
 
-from flext_tap_oracle_wms import (
+
+
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStream,
