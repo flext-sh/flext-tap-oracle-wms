@@ -13,7 +13,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes as t
 from pydantic import SecretStr
 
 from flext_tap_oracle_wms import (
@@ -71,7 +71,7 @@ def mock_wms_client() -> MagicMock:
     client = MagicMock()
 
     # Mock successful connection
-    client.connect.return_value = FlextResult[None].ok()
+    client.connect.return_value = FlextResult[None].ok(None)
 
     # Mock list entities
     client.list_entities.return_value = FlextResult[list[str]].ok(
@@ -84,7 +84,9 @@ def mock_wms_client() -> MagicMock:
     )
 
     # Mock get records
-    client.get_records.return_value = FlextResult[list[dict[str, object]]].ok(
+    client.get_records.return_value = FlextResult[
+        list[dict[str, t.GeneralValueType]]
+    ].ok(
         [
             {"id": "1", "name": "Test Item 1", "quantity": 100},
             {"id": "2", "name": "Test Item 2", "quantity": 200},
@@ -119,7 +121,7 @@ def tap_instance(
 
 
 @pytest.fixture
-def sample_catalog() -> dict[str, object]:
+def sample_catalog() -> dict[str, t.GeneralValueType]:
     """Sample Singer catalog."""
     return {
         "type": "CATALOG",
@@ -153,7 +155,7 @@ def sample_catalog() -> dict[str, object]:
 
 
 @pytest.fixture
-def sample_state() -> dict[str, object]:
+def sample_state() -> dict[str, t.GeneralValueType]:
     """Sample Singer state."""
     return {
         "bookmarks": {
@@ -193,7 +195,9 @@ def mock_request() -> MagicMock:
 
 
 # Marker for tests requiring real Oracle WMS
-def pytest_collection_modifyitems(_config: object, items: list[object]) -> None:
+def pytest_collection_modifyitems(
+    _config: object, items: list[t.GeneralValueType]
+) -> None:
     """Add markers to tests based on their location."""
     for item in items:
         # Add oracle_wms marker to integration tests
@@ -225,7 +229,7 @@ def _real_tap_instance(
 
 
 @pytest.fixture
-def _test_config_extraction() -> dict[str, object]:
+def _test_config_extraction() -> dict[str, t.GeneralValueType]:
     """Test configuration for extraction tests."""
     return {
         "base_url": "https://test.wms.example.com",

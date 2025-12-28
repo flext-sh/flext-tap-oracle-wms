@@ -115,7 +115,7 @@ class FlextTapOracleWmsModels(FlextModels):
         return sum(1 for name in model_names if hasattr(self, name))
 
     @computed_field
-    def wms_tap_system_summary(self) -> dict[str, object]:
+    def wms_tap_system_summary(self) -> dict[str, t.GeneralValueType]:
         """Complete Singer Oracle WMS tap system summary with warehouse extraction capabilities."""
         return {
             "total_models": self.active_wms_tap_models_count,
@@ -262,7 +262,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         @computed_field
-        def wms_auth_summary(self) -> dict[str, object]:
+        def wms_auth_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS authentication configuration summary."""
             return {
                 "wms_instance": {
@@ -334,7 +334,7 @@ class FlextTapOracleWmsModels(FlextModels):
         facility_code: str | None = Field(None, description="Associated facility code")
 
         @computed_field
-        def wms_entity_context(self) -> dict[str, object]:
+        def wms_entity_context(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS entity organizational context."""
             return {
                 "entity_identity": {
@@ -414,7 +414,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         @computed_field
-        def item_characteristics_summary(self) -> dict[str, object]:
+        def item_characteristics_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS item characteristics summary."""
             return {
                 "item_identity": {
@@ -498,7 +498,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         @computed_field
-        def location_hierarchy_summary(self) -> dict[str, object]:
+        def location_hierarchy_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS location hierarchy and capacity summary."""
             return {
                 "location_identity": {
@@ -578,7 +578,7 @@ class FlextTapOracleWmsModels(FlextModels):
         unit_of_measure: str | None = Field(None, description="Unit of measure")
 
         @computed_field
-        def inventory_allocation_summary(self) -> dict[str, object]:
+        def inventory_allocation_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS inventory allocation and availability summary."""
             total_qty = self.quantity_on_hand or 0.0
             allocated_qty = self.quantity_allocated or 0.0
@@ -685,7 +685,7 @@ class FlextTapOracleWmsModels(FlextModels):
         total_volume: float | None = Field(None, description="Total order volume")
 
         @computed_field
-        def order_lifecycle_summary(self) -> dict[str, object]:
+        def order_lifecycle_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS order lifecycle and progress summary."""
             fulfillment_progress = "unknown"
             if self.order_status:
@@ -788,7 +788,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         @computed_field
-        def shipment_tracking_summary(self) -> dict[str, object]:
+        def shipment_tracking_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS shipment tracking and delivery summary."""
             delivery_status = "unknown"
             if self.actual_delivery:
@@ -893,7 +893,7 @@ class FlextTapOracleWmsModels(FlextModels):
         login_count: int | None = Field(None, description="Total login count")
 
         @computed_field
-        def user_access_summary(self) -> dict[str, object]:
+        def user_access_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS user access and activity summary."""
             full_name = f"{self.first_name or ''} {self.last_name or ''}".strip()
 
@@ -980,7 +980,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         @computed_field
-        def stream_metadata_summary(self) -> dict[str, object]:
+        def stream_metadata_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS stream metadata summary."""
             return {
                 "stream_identity": {
@@ -996,7 +996,7 @@ class FlextTapOracleWmsModels(FlextModels):
                 },
             }
 
-        def to_singer_metadata(self) -> list[dict[str, object]]:
+        def to_singer_metadata(self) -> list[dict[str, t.GeneralValueType]]:
             """Convert to Singer metadata format."""
             metadata = [
                 {
@@ -1039,7 +1039,7 @@ class FlextTapOracleWmsModels(FlextModels):
         stream_name: str = Field(..., description="Stream name")
         properties: t.NestedDict = Field(..., description="Schema properties")
 
-        def to_singer_schema(self) -> dict[str, object]:
+        def to_singer_schema(self) -> dict[str, t.GeneralValueType]:
             """Convert to Singer schema format."""
             return {
                 "type": "object",
@@ -1081,7 +1081,7 @@ class FlextTapOracleWmsModels(FlextModels):
             description="Stream metadata",
         )
 
-        def to_singer_catalog_entry(self) -> dict[str, object]:
+        def to_singer_catalog_entry(self) -> dict[str, t.GeneralValueType]:
             """Convert to Singer catalog entry format."""
             return {
                 "tap_stream_id": self.tap_stream_id,
@@ -1148,7 +1148,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         @computed_field
-        def extraction_config_summary(self) -> dict[str, object]:
+        def extraction_config_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS extraction configuration summary."""
             return {
                 "extraction_scope": {
@@ -1218,7 +1218,7 @@ class FlextTapOracleWmsModels(FlextModels):
         # Error information
         error_code: str | None = Field(None, description="Error code if failed")
         error_message: str | None = Field(None, description="Error message if failed")
-        error_details: dict[str, object] | None = Field(
+        error_details: dict[str, t.GeneralValueType] | None = Field(
             None,
             description="Detailed error information",
         )
@@ -1236,7 +1236,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         @computed_field
-        def wms_api_response_summary(self) -> dict[str, object]:
+        def wms_api_response_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS API response summary."""
             return {
                 "response_status": {
@@ -1327,7 +1327,7 @@ class FlextTapOracleWmsModels(FlextModels):
             description="WMS entity type being processed",
         )
         request_method: str | None = Field(None, description="HTTP method used")
-        request_params: dict[str, object] | None = Field(
+        request_params: dict[str, t.GeneralValueType] | None = Field(
             None,
             description="Request parameters",
         )
@@ -1351,7 +1351,7 @@ class FlextTapOracleWmsModels(FlextModels):
         )
 
         @computed_field
-        def wms_error_context_summary(self) -> dict[str, object]:
+        def wms_error_context_summary(self) -> dict[str, t.GeneralValueType]:
             """Oracle WMS error context summary."""
             return {
                 "error_classification": {

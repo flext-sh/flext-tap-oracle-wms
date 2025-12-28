@@ -12,7 +12,13 @@ from __future__ import annotations
 
 from typing import Final, Self
 
-from flext_core import FlextConstants, FlextModels, FlextResult, FlextSettings
+from flext_core import (
+    FlextConstants,
+    FlextModels,
+    FlextResult,
+    FlextSettings,
+    FlextTypes as t,
+)
 from flext_oracle_wms import (
     FlextOracleWmsConstants as _WmsConstants,
 )
@@ -272,7 +278,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
     @classmethod
     def create_for_development(cls, **overrides: object) -> Self:
         """Create configuration for development environment."""
-        dev_overrides: dict[str, object] = {
+        dev_overrides: dict[str, t.GeneralValueType] = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT * 2,
             "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS + 2,
             "page_size": FlextTapOracleWmsConstants.DEFAULT_PAGE_SIZE // 2,
@@ -288,7 +294,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
     @classmethod
     def create_for_production(cls, **overrides: object) -> Self:
         """Create configuration for production environment."""
-        prod_overrides: dict[str, object] = {
+        prod_overrides: dict[str, t.GeneralValueType] = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT,
             "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
             "page_size": FlextTapOracleWmsConstants.DEFAULT_PAGE_SIZE,
@@ -304,7 +310,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
     @classmethod
     def create_for_testing(cls, **overrides: object) -> Self:
         """Create configuration for testing environment."""
-        test_overrides: dict[str, object] = {
+        test_overrides: dict[str, t.GeneralValueType] = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT // 3,
             "max_retries": 1,
             "page_size": FlextTapOracleWmsConstants.MIN_PAGE_SIZE,
@@ -443,7 +449,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
 
     def validate_oracle_wms_config(
         self: object,
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[dict[str, t.GeneralValueType]]:
         """Validate Oracle WMS specific configuration.
 
         Returns:
@@ -455,7 +461,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
             if self.include_entities and self.exclude_entities:
                 common = set(self.include_entities) & set(self.exclude_entities)
                 if common:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict[str, t.GeneralValueType]].fail(
                         f"Entities cannot be both included and excluded: {common}",
                     )
 
@@ -466,7 +472,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
                     self.end_date,
                 )
                 if date_range_result.is_failure:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict[str, t.GeneralValueType]].fail(
                         date_range_result.error or "Date range validation failed",
                     )
 
@@ -479,7 +485,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
                 and self.max_parallel_streams > max_parallel_streams_without_rate_limit
                 and not self.enable_rate_limiting
             ):
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
                     f"Rate limiting must be enabled for more than {max_parallel_streams_without_rate_limit} parallel streams",
                 )
 
@@ -495,10 +501,10 @@ class FlextTapOracleWmsSettings(FlextSettings):
                 else 0,
             }
 
-            return FlextResult[dict[str, object]].ok(validation_data)
+            return FlextResult[dict[str, t.GeneralValueType]].ok(validation_data)
 
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[dict[str, t.GeneralValueType]].fail(
                 f"Configuration validation failed: {e}",
             )
 

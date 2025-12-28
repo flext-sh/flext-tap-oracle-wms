@@ -23,14 +23,14 @@ class TestsFlextTapOracleWmsProtocols(FlextTestsProtocols, FlextTapOracleWmsProt
     - tp.TapOracleWms.* (from FlextTapOracleWmsProtocols)
     """
 
-    class Tests:
-        """Project-specific test protocols.
+    class TapOracleWms(FlextTapOracleWmsProtocols.TapOracleWms):
+        """TapOracleWms-specific protocols."""
 
-        Extends FlextTestsProtocols.Tests with TapOracleWms-specific protocols.
-        """
+        class Tests:
+            """Project-specific test protocols.
 
-        class TapOracleWms:
-            """TapOracleWms-specific test protocols."""
+            Extends FlextTestsProtocols.Tests with TapOracleWms-specific protocols.
+            """
 
 
 # Runtime aliases

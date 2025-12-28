@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextLogger
+from flext_core import FlextTypes as t, FlextLogger
 
 
 
@@ -26,7 +26,7 @@ class TestOracleWMSFunctionalComplete:
 
     def test_real_wms_environment_verification(
         self,
-        real_wms_config: dict[str, object],
+        real_wms_config: dict[str, t.GeneralValueType],
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -47,7 +47,7 @@ class TestOracleWMSFunctionalComplete:
 
     def test_tap_initialization_real_config(
         self,
-        real_wms_config: dict[str, object],
+        real_wms_config: dict[str, t.GeneralValueType],
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         # CRITICAL: This must work without errors
@@ -363,7 +363,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.functional
     def test_error_handling_and_validation(
         self,
-        real_wms_config: dict[str, object],
+        real_wms_config: dict[str, t.GeneralValueType],
     ) -> None:
         """Test error handling with invalid configurations."""
         # Test with invalid URL
@@ -377,7 +377,7 @@ class TestOracleWMSFunctionalComplete:
             catalog = tap.catalog_dict
             # If we get here, check if it's a graceful fallback
             assert isinstance(catalog, dict), (
-                "Catalog should be dict[str, object] even on errors"
+                "Catalog should be dict[str, t.GeneralValueType] even on errors"
             )
         except Exception as e:
             # Errors should be meaningful
@@ -394,7 +394,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.functional
     def test_configuration_validation(
         self,
-        real_wms_config: dict[str, object],
+        real_wms_config: dict[str, t.GeneralValueType],
     ) -> None:
         """Test configuration validation and type conversion."""
         # Test configuration creation

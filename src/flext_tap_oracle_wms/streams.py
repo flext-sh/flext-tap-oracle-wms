@@ -37,7 +37,7 @@ class FlextTapOracleWmsStream(Stream):
         self,
         tap: Tap,
         name: str | None = None,
-        schema: dict[str, object] | None = None,
+        schema: dict[str, t.GeneralValueType] | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
@@ -96,7 +96,7 @@ class FlextTapOracleWmsStream(Stream):
 
     def get_records(
         self,
-        context: Mapping[str, object] | None,
+        context: Mapping[str, t.GeneralValueType] | None,
     ) -> Iterable[t.JsonDict]:
         """Get records from Oracle WMS."""
         page = 1
@@ -122,7 +122,7 @@ class FlextTapOracleWmsStream(Stream):
     def _fetch_page_data(
         self,
         page: int,
-        context: Mapping[str, object] | None,
+        context: Mapping[str, t.GeneralValueType] | None,
     ) -> tuple[list[t.JsonDict], bool] | None:
         """Fetch data for a specific page."""
         # Build operation parameters
@@ -149,13 +149,13 @@ class FlextTapOracleWmsStream(Stream):
             logger.error("Failed to get records for %s: %s", self.name, error_msg)
             return None
         # Extract and process response data
-        data: dict[str, object] = getattr(result, "value", result)
+        data: dict[str, t.GeneralValueType] = getattr(result, "value", result)
         return self._extract_records_from_response(data)
 
     def _build_operation_kwargs(
         self,
         page: int,
-        context: Mapping[str, object] | None,
+        context: Mapping[str, t.GeneralValueType] | None,
     ) -> t.JsonDict:
         """Build kwargs for the operation call."""
         kwargs = {
@@ -175,7 +175,7 @@ class FlextTapOracleWmsStream(Stream):
 
     def _extract_records_from_response(
         self,
-        data: dict[str, object] | list[object] | object,
+        data: dict[str, t.GeneralValueType] | list[t.GeneralValueType] | object,
     ) -> tuple[list[t.JsonDict], bool]:
         """Extract records and pagination info from API response."""
         match data:
@@ -194,7 +194,7 @@ class FlextTapOracleWmsStream(Stream):
             case _:
                 raw_records = []
                 has_more = False
-        # Ensure records is always a list of dict[str, object]
+        # Ensure records is always a list of dict[str, t.GeneralValueType]
         match raw_records:
             case list() as records_list:
                 coerced_records: list[t.JsonDict] = []
@@ -203,7 +203,7 @@ class FlextTapOracleWmsStream(Stream):
                         case dict() as record_dict:
                             coerced_records.append(record_dict)
                         case _:
-                            # Convert non-dict records to dict[str, object] format
+                            # Convert non-dict records to dict[str, t.GeneralValueType] format
                             coerced_records.append({"value": "record"})
                 records = coerced_records
             case _:
@@ -213,11 +213,11 @@ class FlextTapOracleWmsStream(Stream):
     def _process_page_records(
         self,
         records: list[t.JsonDict],
-        context: Mapping[str, object] | None,
+        context: Mapping[str, t.GeneralValueType] | None,
     ) -> Iterable[t.JsonDict]:
         """Process and yield records from a page."""
         for record in records:
-            # Ensure record is a dict[str, object] for processing
+            # Ensure record is a dict[str, t.GeneralValueType] for processing
             if isinstance(record, dict):
                 # Zero Tolerance FIX: Use utilities for record processing
                 processed_record_result = (
@@ -246,19 +246,23 @@ class FlextTapOracleWmsStream(Stream):
     def post_process(
         self,
         row: t.JsonDict,
-        context: Mapping[str, object] | None = None,
+        context: Mapping[str, t.GeneralValueType] | None = None,
     ) -> t.JsonDict | None:
         """Post-process a record."""
         # Apply column mappings if configured
         if self.config:
-            column_mappings: dict[str, object] = self.config.get("column_mappings", {})
+            column_mappings: dict[str, t.GeneralValueType] = self.config.get(
+                "column_mappings", {}
+            )
             if self.name in column_mappings:
                 mappings = column_mappings[self.name]
                 for old_name, new_name in mappings.items():
                     if old_name in row:
                         row[new_name] = row.pop(old_name)
             # Remove ignored columns
-            ignored_columns: list[object] = self.config.get("ignored_columns", [])
+            ignored_columns: list[t.GeneralValueType] = self.config.get(
+                "ignored_columns", []
+            )
             for column in ignored_columns:
                 row.pop(column, None)
 
