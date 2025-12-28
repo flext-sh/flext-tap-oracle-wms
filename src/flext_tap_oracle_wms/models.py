@@ -1349,7 +1349,10 @@ class FlextTapOracleWmsModels(FlextModels):
 
         def _determine_error_severity(self) -> str:
             """Determine error severity based on type and status code."""
-            if self.error_type in {c.ErrorType.AUTHENTICATION, c.ErrorType.AUTHORIZATION}:
+            if self.error_type in {
+                c.ErrorType.AUTHENTICATION,
+                c.ErrorType.AUTHORIZATION,
+            }:
                 return "critical"
             if self.error_type in {c.ErrorType.TIMEOUT, c.ErrorType.RATE_LIMIT}:
                 return "warning"
