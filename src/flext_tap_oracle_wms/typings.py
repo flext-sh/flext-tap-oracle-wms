@@ -216,6 +216,21 @@ class FlextMeltanoTapOracleWmsTypes(_t):
         type SingerProtocolConfig = dict[str, bool | str | dict[str, object]]
         type TapOracleWmsPipelineConfig = dict[str, object]
 
+        # Singer tap Oracle WMS-specific Literal type aliases (referencing constants.py StrEnums)
+        type ReplicationMethodLiteral = Literal["FULL_TABLE", "INCREMENTAL"]
+        type AuthenticationMethodLiteral = Literal["basic", "oauth2"]
+        type StreamInclusionLiteral = Literal["available", "automatic", "unsupported"]
+        type ErrorTypeLiteral = Literal[
+            "AUTHENTICATION",
+            "AUTHORIZATION",
+            "RATE_LIMIT",
+            "TIMEOUT",
+            "SERVER_ERROR",
+            "NETWORK",
+            "VALIDATION",
+        ]
+        type BackoffStrategyLiteral = Literal["linear", "exponential", "fixed"]
+
 
 # =============================================================================
 # PUBLIC API EXPORTS - Singer Oracle WMS tap TypeVars and types

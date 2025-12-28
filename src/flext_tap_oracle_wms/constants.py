@@ -83,6 +83,43 @@ class FlextTapOracleWmsConstants(FlextConstants):
             FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
         )
 
+    class ReplicationMethod(StrEnum):
+        """Replication method types using StrEnum for type safety."""
+
+        FULL_TABLE = "FULL_TABLE"
+        INCREMENTAL = "INCREMENTAL"
+
+    class AuthenticationMethod(StrEnum):
+        """Authentication method types using StrEnum for type safety."""
+
+        BASIC = "basic"
+        OAUTH2 = "oauth2"
+
+    class StreamInclusion(StrEnum):
+        """Stream inclusion status types using StrEnum for type safety."""
+
+        AVAILABLE = "available"
+        AUTOMATIC = "automatic"
+        UNSUPPORTED = "unsupported"
+
+    class ErrorType(StrEnum):
+        """Error type constants using StrEnum for type safety."""
+
+        AUTHENTICATION = "AUTHENTICATION"
+        AUTHORIZATION = "AUTHORIZATION"
+        RATE_LIMIT = "RATE_LIMIT"
+        TIMEOUT = "TIMEOUT"
+        SERVER_ERROR = "SERVER_ERROR"
+        NETWORK = "NETWORK"
+        VALIDATION = "VALIDATION"
+
+    class BackoffStrategy(StrEnum):
+        """Backoff strategy types using StrEnum for type safety."""
+
+        LINEAR = "linear"
+        EXPONENTIAL = "exponential"
+        FIXED = "fixed"
+
     # Type-safe literals - PEP 695 syntax for type checking
     # All Literal types reference StrEnum members where available - NO string duplication!
     type WmsEntityTypeLiteral = Literal[

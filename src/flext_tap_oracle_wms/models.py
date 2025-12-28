@@ -8,9 +8,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Literal, Self
+from typing import Self
 
-from flext_core import FlextConstants, FlextModels, t
+from flext_core import FlextModels, t
 from flext_core.utilities import u
 from pydantic import (
     ConfigDict,
@@ -22,30 +22,7 @@ from pydantic import (
     model_validator,
 )
 
-from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants
-
-# Oracle WMS authentication constants
-basic = "basic"
-oauth2 = "oauth2"
-
-# Replication method constants
-FULL_TABLE = "FULL_TABLE"
-INCREMENTAL = "INCREMENTAL"
-
-# Status constants
-available = "available"
-automatic = "automatic"
-unsupported = "unsupported"
-
-# Error type constants
-AUTHENTICATION = "AUTHENTICATION"
-AUTHORIZATION = "AUTHORIZATION"
-RATE_LIMIT = "RATE_LIMIT"
-TIMEOUT = "TIMEOUT"
-SERVER_ERROR = "SERVER_ERROR"
-NETWORK = "NETWORK"
-VALIDATION = "VALIDATION"
-linear = "linear"
+from flext_tap_oracle_wms.constants import c
 
 
 class FlextTapOracleWmsModels(FlextModels):
@@ -229,7 +206,7 @@ class FlextTapOracleWmsModels(FlextModels):
         base_url: str = Field(..., description="Oracle WMS instance URL")
         username: str = Field(..., description="WMS username")
         password: SecretStr = Field(..., description="WMS password")
-        auth_method: Literal[basic, oauth2] = Field(
+        auth_method: t.Project.AuthenticationMethodLiteral = Field(
             default="basic",
             description="Authentication method",
         )
@@ -966,7 +943,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
         stream_name: str = Field(..., description="Singer stream name")
         primary_keys: list[str] = Field(..., description="Primary key field names")
-        replication_method: Literal[FULL_TABLE, INCREMENTAL] = Field(
+        replication_method: t.Project.ReplicationMethodLiteral = Field(
             default="FULL_TABLE",
             description="Replication method",
         )
@@ -974,7 +951,7 @@ class FlextTapOracleWmsModels(FlextModels):
             None,
             description="Replication key field name",
         )
-        inclusion: Literal[available, automatic, unsupported] = Field(
+        inclusion: t.Project.StreamInclusionLiteral = Field(
             default="available",
             description="Stream inclusion setting",
         )
@@ -1305,15 +1282,9 @@ class FlextTapOracleWmsModels(FlextModels):
             },
         )
 
-        error_type: Literal[
-            AUTHENTICATION,
-            AUTHORIZATION,
-            RATE_LIMIT,
-            TIMEOUT,
-            SERVER_ERROR,
-            NETWORK,
-            VALIDATION,
-        ] = Field(..., description="Error category")
+        error_type: t.Project.ErrorTypeLiteral = Field(
+            ..., description="Error category"
+        )
         http_status_code: int | None = Field(None, description="HTTP status code")
         retry_after_seconds: int | None = Field(
             None,
@@ -1345,7 +1316,7 @@ class FlextTapOracleWmsModels(FlextModels):
             None,
             description="Maximum retry attempts for this error",
         )
-        backoff_strategy: Literal["linear", "exponential", "fixed"] | None = Field(
+        backoff_strategy: t.Project.BackoffStrategyLiteral | None = Field(
             None,
             description="Recommended backoff strategy",
         )
@@ -1378,13 +1349,13 @@ class FlextTapOracleWmsModels(FlextModels):
 
         def _determine_error_severity(self) -> str:
             """Determine error severity based on type and status code."""
-            if self.error_type in {"AUTHENTICATION", "AUTHORIZATION"}:
+            if self.error_type in {c.ErrorType.AUTHENTICATION, c.ErrorType.AUTHORIZATION}:
                 return "critical"
-            if self.error_type in {"TIMEOUT", "RATE_LIMIT"}:
+            if self.error_type in {c.ErrorType.TIMEOUT, c.ErrorType.RATE_LIMIT}:
                 return "warning"
-            if self.error_type == "SERVER_ERROR":
+            if self.error_type == c.ErrorType.SERVER_ERROR:
                 return "error"
-            if self.error_type in {"NETWORK", "VALIDATION"}:
+            if self.error_type in {c.ErrorType.NETWORK, c.ErrorType.VALIDATION}:
                 return "warning"
             return "unknown"
 
