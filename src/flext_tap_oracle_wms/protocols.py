@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
+from flext_core import FlextTypes as t
 from flext_db_oracle.protocols import FlextDbOracleProtocols as p_db_oracle
 from flext_meltano.protocols import FlextMeltanoProtocols as p_meltano
 
@@ -53,7 +54,7 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
 
                 def establish_wms_connection(
                     self,
-                    config: dict[str, object],
+                    config: dict[str, t.GeneralValueType],
                 ) -> p_meltano.Result[object]:
                     """Establish connection to Oracle WMS."""
                     ...
@@ -64,8 +65,8 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
 
                 def discover_inventory(
                     self,
-                    config: dict[str, object],
-                ) -> p_meltano.Result[list[dict[str, object]]]:
+                    config: dict[str, t.GeneralValueType],
+                ) -> p_meltano.Result[list[dict[str, t.GeneralValueType]]]:
                     """Discover WMS inventory."""
                     ...
 
@@ -75,8 +76,8 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
 
                 def process_orders(
                     self,
-                    config: dict[str, object],
-                ) -> p_meltano.Result[list[dict[str, object]]]:
+                    config: dict[str, t.GeneralValueType],
+                ) -> p_meltano.Result[list[dict[str, t.GeneralValueType]]]:
                     """Process WMS orders."""
                     ...
 
@@ -86,8 +87,8 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
 
                 def get_warehouse_operations(
                     self,
-                    config: dict[str, object],
-                ) -> p_meltano.Result[list[dict[str, object]]]:
+                    config: dict[str, t.GeneralValueType],
+                ) -> p_meltano.Result[list[dict[str, t.GeneralValueType]]]:
                     """Get WMS warehouse operations."""
                     ...
 
@@ -97,8 +98,8 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
 
                 def generate_catalog(
                     self,
-                    config: dict[str, object],
-                ) -> p_meltano.Result[dict[str, object]]:
+                    config: dict[str, t.GeneralValueType],
+                ) -> p_meltano.Result[dict[str, t.GeneralValueType]]:
                     """Generate Singer catalog."""
                     ...
 
@@ -116,7 +117,7 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
 
                 def validate_config(
                     self,
-                    config: dict[str, object],
+                    config: dict[str, t.GeneralValueType],
                 ) -> p_meltano.Result[bool]:
                     """Validate WMS configuration."""
                     ...

@@ -42,9 +42,9 @@ class FlextTapOracleWmsUtilities(u_core):
         @staticmethod
         def create_schema_message(
             stream_name: str,
-            schema: dict[str, object],
+            schema: dict[str, t.GeneralValueType],
             key_properties: list[str] | None = None,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Create Singer schema message.
 
             Args:
@@ -53,7 +53,7 @@ class FlextTapOracleWmsUtilities(u_core):
             key_properties: List of key property names
 
             Returns:
-            dict[str, object]: Singer schema message
+            dict[str, t.GeneralValueType]: Singer schema message
 
             """
             return {
@@ -66,9 +66,9 @@ class FlextTapOracleWmsUtilities(u_core):
         @staticmethod
         def create_record_message(
             stream_name: str,
-            record: dict[str, object],
+            record: dict[str, t.GeneralValueType],
             time_extracted: datetime | None = None,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Create Singer record message.
 
             Args:
@@ -77,7 +77,7 @@ class FlextTapOracleWmsUtilities(u_core):
             time_extracted: Timestamp when record was extracted
 
             Returns:
-            dict[str, object]: Singer record message
+            dict[str, t.GeneralValueType]: Singer record message
 
             """
             extracted_time = time_extracted or datetime.now(UTC)
@@ -89,14 +89,16 @@ class FlextTapOracleWmsUtilities(u_core):
             }
 
         @staticmethod
-        def create_state_message(state: dict[str, object]) -> dict[str, object]:
+        def create_state_message(
+            state: dict[str, t.GeneralValueType],
+        ) -> dict[str, t.GeneralValueType]:
             """Create Singer state message.
 
             Args:
             state: State data
 
             Returns:
-            dict[str, object]: Singer state message
+            dict[str, t.GeneralValueType]: Singer state message
 
             """
             return {
@@ -105,7 +107,7 @@ class FlextTapOracleWmsUtilities(u_core):
             }
 
         @staticmethod
-        def write_message(message: dict[str, object]) -> None:
+        def write_message(message: dict[str, t.GeneralValueType]) -> None:
             """Write Singer message to stdout.
 
             Args:
@@ -248,14 +250,14 @@ class FlextTapOracleWmsUtilities(u_core):
             return sanitized
 
         @staticmethod
-        def extract_sku_info(item_code: str) -> dict[str, str]:
+        def extract_sku_info(item_code: str) -> dict[str, t.GeneralValueType]:
             """Extract SKU information from Oracle WMS item code.
 
             Args:
             item_code: WMS item code
 
             Returns:
-            dict[str, str]: SKU information components
+            dict[str, t.GeneralValueType]: SKU information components
 
             """
             if not item_code:
@@ -285,16 +287,16 @@ class FlextTapOracleWmsUtilities(u_core):
 
         @staticmethod
         def generate_wms_stream_schema(
-            sample_records: list[dict[str, object]],
+            sample_records: list[dict[str, t.GeneralValueType]],
             _stream_name: str,  # Reserved for future use (e.g., stream-specific schema generation)
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Generate JSON schema from Oracle WMS sample records.
 
             Args:
             sample_records: List of sample WMS records
 
             Returns:
-            dict[str, object]: JSON schema
+            dict[str, t.GeneralValueType]: JSON schema
 
             """
             if not sample_records:
@@ -304,7 +306,7 @@ class FlextTapOracleWmsUtilities(u_core):
                     "additionalProperties": True,
                 }
 
-            properties: dict[str, object] = {}
+            properties: dict[str, t.GeneralValueType] = {}
 
             for record in sample_records:
                 for key, value in record.items():
@@ -327,14 +329,14 @@ class FlextTapOracleWmsUtilities(u_core):
         @staticmethod
         def infer_wms_type(
             value: object,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Infer JSON schema type from Oracle WMS value.
 
             Args:
             value: Value to analyze
 
             Returns:
-            dict[str, object]: JSON schema type definition
+            dict[str, t.GeneralValueType]: JSON schema type definition
 
             """
             if value is None:
@@ -359,7 +361,7 @@ class FlextTapOracleWmsUtilities(u_core):
                 return {"type": "object", "additionalProperties": True}
 
             # String type with WMS-specific format detection
-            schema: dict[str, object] = {"type": "string"}
+            schema: dict[str, t.GeneralValueType] = {"type": "string"}
 
             str_value = str(value)
             # Check for WMS date patterns
@@ -399,7 +401,7 @@ class FlextTapOracleWmsUtilities(u_core):
         def create_wms_replication_key_schema(
             stream_name: str,
             replication_key: str = "last_update_date",
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Create replication key schema for Oracle WMS streams.
 
             Args:
@@ -407,7 +409,7 @@ class FlextTapOracleWmsUtilities(u_core):
             replication_key: Replication key field name
 
             Returns:
-            dict[str, object]: Replication key schema
+            dict[str, t.GeneralValueType]: Replication key schema
 
             """
             return {
@@ -424,36 +426,36 @@ class FlextTapOracleWmsUtilities(u_core):
 
         @staticmethod
         def validate_wms_connection_config(
-            config: dict[str, object],
-        ) -> FlextResult[dict[str, object]]:
+            config: dict[str, t.GeneralValueType],
+        ) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Validate Oracle WMS connection configuration.
 
             Args:
             config: Configuration dictionary
 
             Returns:
-            FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, t.GeneralValueType]]: Validated config or error
 
             """
             required_fields = ["host", "database", "username", "password"]
             missing_fields = [field for field in required_fields if field not in config]
 
             if missing_fields:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
                     f"Missing required WMS connection fields: {', '.join(missing_fields)}",
                 )
 
             # Validate host format
             host = config["host"]
             if not isinstance(host, str) or not host.strip():
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
                     "Host must be a non-empty string",
                 )
 
             # Validate database format
             database = config["database"]
             if not isinstance(database, str) or not database.strip():
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
                     "Database must be a non-empty string",
                 )
 
@@ -465,7 +467,7 @@ class FlextTapOracleWmsUtilities(u_core):
                     or port <= 0
                     or port > FlextTapOracleWmsUtilities.MAX_PORT
                 ):
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict[str, t.GeneralValueType]].fail(
                         "Port must be a valid integer between 1 and 65535",
                     )
 
@@ -473,46 +475,46 @@ class FlextTapOracleWmsUtilities(u_core):
             if "schema" in config:
                 schema = config["schema"]
                 if not isinstance(schema, str) or not schema.strip():
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict[str, t.GeneralValueType]].fail(
                         "Schema must be a non-empty string",
                     )
 
-            return FlextResult[dict[str, object]].ok(config)
+            return FlextResult[dict[str, t.GeneralValueType]].ok(config)
 
         @staticmethod
         def validate_wms_stream_config(
-            config: dict[str, object],
-        ) -> FlextResult[dict[str, object]]:
+            config: dict[str, t.GeneralValueType],
+        ) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Validate Oracle WMS stream configuration.
 
             Args:
             config: Stream configuration
 
             Returns:
-            FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, t.GeneralValueType]]: Validated config or error
 
             """
             if "streams" not in config:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
                     "Configuration must include 'streams' section",
                 )
 
             streams = config["streams"]
             if not isinstance(streams, dict):
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
                     "Streams configuration must be a dictionary",
                 )
 
             # Validate each stream
             for stream_name, stream_config in streams.items():
                 if not isinstance(stream_config, dict):
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict[str, t.GeneralValueType]].fail(
                         f"Stream '{stream_name}' configuration must be a dictionary",
                     )
 
                 # Check for required stream fields
                 if "selected" not in stream_config:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict[str, t.GeneralValueType]].fail(
                         f"Stream '{stream_name}' must have 'selected' field",
                     )
 
@@ -520,26 +522,26 @@ class FlextTapOracleWmsUtilities(u_core):
                 if "table_name" in stream_config:
                     table_name = stream_config["table_name"]
                     if not isinstance(table_name, str) or not table_name.strip():
-                        return FlextResult[dict[str, object]].fail(
+                        return FlextResult[dict[str, t.GeneralValueType]].fail(
                             f"Stream '{stream_name}' table_name must be a non-empty string",
                         )
 
-            return FlextResult[dict[str, object]].ok(config)
+            return FlextResult[dict[str, t.GeneralValueType]].ok(config)
 
     class ConfigurationProcessing:
         """configuration processing utilities."""
 
         @staticmethod
         def validate_wms_config(
-            config: dict[str, object],
-        ) -> FlextResult[dict[str, object]]:
+            config: dict[str, t.GeneralValueType],
+        ) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Validate basic WMS configuration.
 
             Args:
             config: Configuration dictionary
 
             Returns:
-            FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, t.GeneralValueType]]: Validated config or error
 
             """
             # Delegate to existing ConfigValidation
@@ -549,21 +551,21 @@ class FlextTapOracleWmsUtilities(u_core):
 
         @staticmethod
         def validate_wms_connection_params(
-            config: dict[str, object],
-        ) -> FlextResult[dict[str, object]]:
+            config: dict[str, t.GeneralValueType],
+        ) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Validate WMS connection parameters.
 
             Args:
             config: Configuration dictionary
 
             Returns:
-            FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, t.GeneralValueType]]: Validated config or error
 
             """
             required_params = ["base_url", "username", "password"]
             for param in required_params:
                 if param not in config:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[dict[str, t.GeneralValueType]].fail(
                         f"Missing required parameter: {param}",
                     )
 
@@ -573,21 +575,23 @@ class FlextTapOracleWmsUtilities(u_core):
                 "http://",
                 "https://",
             )):
-                return FlextResult[dict[str, object]].fail("Invalid base_url format")
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
+                    "Invalid base_url format"
+                )
 
-            return FlextResult[dict[str, object]].ok(config)
+            return FlextResult[dict[str, t.GeneralValueType]].ok(config)
 
         @staticmethod
         def validate_wms_configuration_comprehensive(
-            config: dict[str, object],
-        ) -> FlextResult[dict[str, object]]:
+            config: dict[str, t.GeneralValueType],
+        ) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Complete WMS configuration validation.
 
             Args:
             config: Configuration dictionary
 
             Returns:
-            FlextResult[dict[str, object]]: Validated config or error
+            FlextResult[dict[str, t.GeneralValueType]]: Validated config or error
 
             """
             # Basic validation first
@@ -614,7 +618,7 @@ class FlextTapOracleWmsUtilities(u_core):
                 if stream_result.is_failure:
                     return stream_result
 
-            return FlextResult[dict[str, object]].ok(config)
+            return FlextResult[dict[str, t.GeneralValueType]].ok(config)
 
     class WmsApiProcessing:
         """WMS API processing utilities."""
@@ -624,7 +628,7 @@ class FlextTapOracleWmsUtilities(u_core):
             base_url: str,
             auth_token: str | None = None,
             timeout: int = 30,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Test WMS API connection.
 
             Args:
@@ -633,14 +637,18 @@ class FlextTapOracleWmsUtilities(u_core):
             timeout: Connection timeout
 
             Returns:
-            FlextResult[dict[str, object]]: Connection test result
+            FlextResult[dict[str, t.GeneralValueType]]: Connection test result
 
             """
             if not base_url:
-                return FlextResult[dict[str, object]].fail("Base URL cannot be empty")
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
+                    "Base URL cannot be empty"
+                )
 
             if not base_url.startswith(("http://", "https://")):
-                return FlextResult[dict[str, object]].fail("Invalid URL format")
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
+                    "Invalid URL format"
+                )
 
             # Basic connection validation (would normally make HTTP request)
             connection_info = {
@@ -650,17 +658,17 @@ class FlextTapOracleWmsUtilities(u_core):
                 "auth_provided": auth_token is not None,
             }
 
-            return FlextResult[dict[str, object]].ok(connection_info)
+            return FlextResult[dict[str, t.GeneralValueType]].ok(connection_info)
 
     class DataProcessing:
         """data processing utilities."""
 
         @staticmethod
         def generate_validation_info(
-            config_data: dict[str, object],
-            connection_result: dict[str, object],
-            discovery_result: dict[str, object] | None = None,
-        ) -> FlextResult[dict[str, object]]:
+            config_data: dict[str, t.GeneralValueType],
+            connection_result: dict[str, t.GeneralValueType],
+            discovery_result: dict[str, t.GeneralValueType] | None = None,
+        ) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Generate complete validation information.
 
             Args:
@@ -669,7 +677,7 @@ class FlextTapOracleWmsUtilities(u_core):
             discovery_result: Optional discovery result
 
             Returns:
-            FlextResult[dict[str, object]]: Validation information
+            FlextResult[dict[str, t.GeneralValueType]]: Validation information
 
             """
             validation_info = {
@@ -692,16 +700,16 @@ class FlextTapOracleWmsUtilities(u_core):
                 else:
                     validation_info["entities_discovered"] = 0
 
-            return FlextResult[dict[str, object]].ok(validation_info)
+            return FlextResult[dict[str, t.GeneralValueType]].ok(validation_info)
 
     class StateManagement:
         """State management utilities for incremental syncs."""
 
         @staticmethod
         def get_wms_stream_state(
-            state: dict[str, object],
+            state: dict[str, t.GeneralValueType],
             stream_name: str,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Get state for a specific Oracle WMS stream.
 
             Args:
@@ -709,7 +717,7 @@ class FlextTapOracleWmsUtilities(u_core):
             stream_name: Name of the stream
 
             Returns:
-            dict[str, object]: Stream state
+            dict[str, t.GeneralValueType]: Stream state
 
             """
             if not isinstance(state, dict):
@@ -721,10 +729,10 @@ class FlextTapOracleWmsUtilities(u_core):
 
         @staticmethod
         def set_wms_stream_state(
-            state: dict[str, object],
+            state: dict[str, t.GeneralValueType],
             stream_name: str,
-            stream_state: dict[str, object],
-        ) -> dict[str, object]:
+            stream_state: dict[str, t.GeneralValueType],
+        ) -> dict[str, t.GeneralValueType]:
             """Set state for a specific Oracle WMS stream.
 
             Args:
@@ -733,7 +741,7 @@ class FlextTapOracleWmsUtilities(u_core):
             stream_state: State data for the stream
 
             Returns:
-            dict[str, object]: Updated state
+            dict[str, t.GeneralValueType]: Updated state
 
             """
             if "bookmarks" not in state:
@@ -746,7 +754,7 @@ class FlextTapOracleWmsUtilities(u_core):
 
         @staticmethod
         def get_wms_bookmark(
-            state: dict[str, object],
+            state: dict[str, t.GeneralValueType],
             stream_name: str,
             bookmark_key: str,
         ) -> str | int | float | datetime | None:
@@ -777,11 +785,11 @@ class FlextTapOracleWmsUtilities(u_core):
 
         @staticmethod
         def set_wms_bookmark(
-            state: dict[str, object],
+            state: dict[str, t.GeneralValueType],
             stream_name: str,
             bookmark_key: str,
             bookmark_value: str | float | datetime | None,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Set bookmark value for a Oracle WMS stream.
 
             Args:
@@ -791,7 +799,7 @@ class FlextTapOracleWmsUtilities(u_core):
             bookmark_value: Bookmark value
 
             Returns:
-            dict[str, object]: Updated state
+            dict[str, t.GeneralValueType]: Updated state
 
             """
             if "bookmarks" not in state:
@@ -810,7 +818,7 @@ class FlextTapOracleWmsUtilities(u_core):
             stream_name: str,
             last_updated: datetime,
             records_processed: int = 0,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.GeneralValueType]:
             """Create incremental state for Oracle WMS stream.
 
             Args:
@@ -819,7 +827,7 @@ class FlextTapOracleWmsUtilities(u_core):
             records_processed: Number of records processed
 
             Returns:
-            dict[str, object]: Incremental state
+            dict[str, t.GeneralValueType]: Incremental state
 
             """
             return {
@@ -931,9 +939,9 @@ class FlextTapOracleWmsUtilities(u_core):
     def create_schema_message(
         cls,
         stream_name: str,
-        schema: dict[str, object],
+        schema: dict[str, t.GeneralValueType],
         key_properties: list[str] | None = None,
-    ) -> dict[str, object]:
+    ) -> dict[str, t.GeneralValueType]:
         """Proxy method for SingerUtilities.create_schema_message()."""
         return cls.SingerUtilities.create_schema_message(
             stream_name,
@@ -945,9 +953,9 @@ class FlextTapOracleWmsUtilities(u_core):
     def create_record_message(
         cls,
         stream_name: str,
-        record: dict[str, object],
+        record: dict[str, t.GeneralValueType],
         time_extracted: datetime | None = None,
-    ) -> dict[str, object]:
+    ) -> dict[str, t.GeneralValueType]:
         """Proxy method for SingerUtilities.create_record_message()."""
         return cls.SingerUtilities.create_record_message(
             stream_name,
@@ -968,28 +976,28 @@ class FlextTapOracleWmsUtilities(u_core):
     @classmethod
     def validate_wms_connection_config(
         cls,
-        config: dict[str, object],
-    ) -> FlextResult[dict[str, object]]:
+        config: dict[str, t.GeneralValueType],
+    ) -> FlextResult[dict[str, t.GeneralValueType]]:
         """Proxy method for ConfigValidation.validate_wms_connection_config()."""
         return cls.ConfigValidation.validate_wms_connection_config(config)
 
     @classmethod
     def get_wms_stream_state(
         cls,
-        state: dict[str, object],
+        state: dict[str, t.GeneralValueType],
         stream_name: str,
-    ) -> dict[str, object]:
+    ) -> dict[str, t.GeneralValueType]:
         """Proxy method for StateManagement.get_wms_stream_state()."""
         return cls.StateManagement.get_wms_stream_state(state, stream_name)
 
     @classmethod
     def set_wms_bookmark(
         cls,
-        state: dict[str, object],
+        state: dict[str, t.GeneralValueType],
         stream_name: str,
         bookmark_key: str,
         bookmark_value: str | float | datetime | None,
-    ) -> dict[str, object]:
+    ) -> dict[str, t.GeneralValueType]:
         """Proxy method for StateManagement.set_wms_bookmark()."""
         return cls.StateManagement.set_wms_bookmark(
             state,

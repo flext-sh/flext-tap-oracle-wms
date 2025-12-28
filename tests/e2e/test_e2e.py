@@ -17,7 +17,7 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 
 import pytest
-from flext_core import FlextLogger
+from flext_core import FlextTypes as t, FlextLogger
 
 
 
@@ -377,7 +377,7 @@ class TestOracleWMSE2EComplete:
 
     def test_error_recovery_and_resilience(
         self,
-        real_wms_config: dict[str, object],
+        real_wms_config: dict[str, t.GeneralValueType],
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         # Test with invalid credentials
