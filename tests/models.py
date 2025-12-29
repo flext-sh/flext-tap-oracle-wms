@@ -27,12 +27,6 @@ class TestsFlextTapOracleWmsModels(FlextTestsModels, FlextTapOracleWmsModels):
     - m.* (production models via alternative alias)
     """
 
-    # class Tests:
-        """Project-specific test fixtures namespace."""
-
-        class TapOracleWms:
-            """Tap Oracle WMS-specific test fixtures."""
-
 
 # Short aliases per FLEXT convention
 tm = TestsFlextTapOracleWmsModels
