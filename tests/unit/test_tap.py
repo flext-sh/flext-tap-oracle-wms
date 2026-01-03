@@ -69,7 +69,7 @@ class TestFlextTapOracleWms:
         """Test WMS client property lazy initialization."""
         # Mock client instance
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult[None].ok(data=None)
+        mock_client.connect.return_value = FlextResult[None].ok(value=None)
         mock_client_class.return_value = mock_client
 
         # First access creates client
@@ -111,7 +111,7 @@ class TestFlextTapOracleWms:
         """Test tap initialization."""
         # Mock client
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult[None].ok(data=None)
+        mock_client.connect.return_value = FlextResult[None].ok(value=None)
         mock_client_class.return_value = mock_client
 
         # Mock discovery
@@ -135,7 +135,7 @@ class TestFlextTapOracleWms:
         """Test catalog discovery."""
         # Mock client
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult[None].ok(data=None)
+        mock_client.connect.return_value = FlextResult[None].ok(value=None)
         mock_client_class.return_value = mock_client
 
         # Mock discovery
@@ -143,7 +143,7 @@ class TestFlextTapOracleWms:
         mock_discovery.discover_entities.return_value = FlextResult[
             dict[str, t.GeneralValueType]
         ].ok(
-            data={
+            value={
                 "inventory": {"type": "object", "properties": {}},
                 "locations": {"type": "object", "properties": {}},
             },
@@ -228,7 +228,7 @@ class TestFlextTapOracleWms:
         """Test configuration validation."""
         # Mock client
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult[None].ok(data=None)
+        mock_client.connect.return_value = FlextResult[None].ok(value=None)
         mock_client.list_entities.return_value = FlextResult[list[str]].ok([
             "inventory",
         ])

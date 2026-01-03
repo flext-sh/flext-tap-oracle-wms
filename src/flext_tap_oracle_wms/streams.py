@@ -62,7 +62,7 @@ class FlextTapOracleWmsStream(Stream):
             self._page_size = 100
 
     @property
-    def client(self: object) -> FlextOracleWmsClient:
+    def client(self) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
         if self._client is None:
             # Access WMS client from tap (FlextTapOracleWms)
@@ -78,11 +78,11 @@ class FlextTapOracleWmsStream(Stream):
             raise RuntimeError(msg)
         return self._client
 
-    def get_primary_keys(self: object) -> list[str]:
+    def get_primary_keys(self) -> list[str]:
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
 
-    def get_replication_key(self: object) -> str | None:
+    def get_replication_key(self) -> str | None:
         """Get replication key for this stream."""
         return self.stream_replication_key
 
