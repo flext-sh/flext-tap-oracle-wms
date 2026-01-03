@@ -781,7 +781,7 @@ class FlextTapOracleWmsPlugin:
         """
         if not self._tap_instance:
             init_result = self.initialize_tap()
-            if not init_result.success:
+            if not init_result.is_success:
                 return FlextResult[dict[str, t.GeneralValueType]].fail(
                     f"Plugin initialization failed: {init_result.error}",
                 )
@@ -818,7 +818,7 @@ class FlextTapOracleWmsPlugin:
         """
         if not self._tap_instance:
             init_result = self.initialize_tap()
-            if not init_result.success:
+            if not init_result.is_success:
                 return FlextResult[Sequence[Stream]].fail(
                     f"Plugin initialization failed: {init_result.error}",
                 )
@@ -854,7 +854,7 @@ class FlextTapOracleWmsPlugin:
     ) -> FlextResult[dict[str, t.GeneralValueType]]:
         """Execute discover operation through tap."""
         streams_result = self.discover_streams()
-        if not streams_result.success:
+        if not streams_result.is_success:
             return FlextResult[dict[str, t.GeneralValueType]].fail(
                 streams_result.error or "Discovery failed",
             )
@@ -974,7 +974,7 @@ def create_oracle_wms_tap_plugin(
 
         # Validate plugin configuration
         validation = plugin.validate_business_rules()
-        if not validation.success:
+        if not validation.is_success:
             return FlextResult[FlextTapOracleWmsPlugin].fail(
                 f"Plugin validation failed: {validation.error}",
             )

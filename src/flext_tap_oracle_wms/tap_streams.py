@@ -68,7 +68,7 @@ class FlextTapOracleWmsStream(Stream):
         self.stream_replication_key: str | None = None
 
     @property
-    def client(self: object) -> FlextOracleWmsClient:
+    def client(self) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
         if self._client is None:
             # Access WMS client from tap (FlextTapOracleWms)
@@ -85,7 +85,7 @@ class FlextTapOracleWmsStream(Stream):
         return self._client
 
     @property
-    def primary_keys(self: object) -> Sequence[str]:
+    def primary_keys(self) -> Sequence[str]:
         """Get primary keys for this stream."""
         return self.stream_primary_keys or []
 
@@ -95,7 +95,7 @@ class FlextTapOracleWmsStream(Stream):
         self.stream_primary_keys = list(value)
 
     @property
-    def replication_key(self: object) -> str | None:
+    def replication_key(self) -> str | None:
         """Get replication key for this stream."""
         return self.stream_replication_key
 
