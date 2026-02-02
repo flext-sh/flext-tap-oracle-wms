@@ -42,7 +42,7 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
     wms_connection: p.Tap.OracleWms.WmsConnectionProtocol
     """
 
-    class Tap:
+    class TapOracleWms:
         """Singer Tap domain protocols."""
 
         class OracleWms:
