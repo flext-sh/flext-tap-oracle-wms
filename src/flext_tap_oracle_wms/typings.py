@@ -36,7 +36,7 @@ class FlextMeltanoTapOracleWmsTypes(_t):
     # SINGER TAP TYPES - Complex Singer protocol types
     # =========================================================================
 
-    class SingerTap:
+    class TapOracleWms:
         """Singer tap protocol complex types."""
 
         type TapConfiguration = dict[str, str | int | bool | dict[str, object]]

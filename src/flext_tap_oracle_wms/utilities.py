@@ -36,7 +36,7 @@ class FlextTapOracleWmsUtilities(u_core):
         """Initialize Oracle WMS tap utilities."""
         super().__init__()
 
-    class SingerUtilities:
+    class TapOracleWms:
         """Singer protocol utilities for tap operations."""
 
         @staticmethod

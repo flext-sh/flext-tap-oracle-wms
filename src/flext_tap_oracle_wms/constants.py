@@ -44,7 +44,7 @@ class FlextTapOracleWmsConstants(FlextConstants):
         PICKING = "PICKING"
         RECEIVING = "RECEIVING"
 
-    class Connection:
+    class TapOracleWms:
         """Oracle WMS connection configuration."""
 
         DEFAULT_TIMEOUT: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
