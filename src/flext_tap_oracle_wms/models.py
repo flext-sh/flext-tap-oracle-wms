@@ -310,8 +310,12 @@ class FlextTapOracleWmsModels(FlextModels):
                 None,
                 description="WMS timestamp for replication",
             )
-            company_code: str | None = Field(None, description="Associated company code")
-            facility_code: str | None = Field(None, description="Associated facility code")
+            company_code: str | None = Field(
+                None, description="Associated company code"
+            )
+            facility_code: str | None = Field(
+                None, description="Associated facility code"
+            )
 
             @computed_field
             def wms_entity_context(self) -> dict[str, t.GeneralValueType]:
@@ -382,7 +386,9 @@ class FlextTapOracleWmsModels(FlextModels):
             height: float | None = Field(None, description="Item height")
 
             # Business attributes
-            unit_of_measure: str | None = Field(None, description="Primary unit of measure")
+            unit_of_measure: str | None = Field(
+                None, description="Primary unit of measure"
+            )
             lot_control: str | None = Field(None, description="Lot control flag")
             expiry_date_tracking: str | None = Field(
                 None,
@@ -470,8 +476,12 @@ class FlextTapOracleWmsModels(FlextModels):
             position: str | None = Field(None, description="Position identifier")
 
             # Capacity attributes
-            max_weight: float | None = Field(None, description="Maximum weight capacity")
-            max_volume: float | None = Field(None, description="Maximum volume capacity")
+            max_weight: float | None = Field(
+                None, description="Maximum weight capacity"
+            )
+            max_volume: float | None = Field(
+                None, description="Maximum volume capacity"
+            )
             location_capacity: int | None = Field(
                 None,
                 description="Location unit capacity",
@@ -543,13 +553,21 @@ class FlextTapOracleWmsModels(FlextModels):
             item_id: str = Field(..., description="Item identifier")
             location_id: str = Field(..., description="Location identifier")
             lot_number: str | None = Field(None, description="Lot number")
-            lot_expiry_date: datetime | None = Field(None, description="Lot expiry date")
+            lot_expiry_date: datetime | None = Field(
+                None, description="Lot expiry date"
+            )
 
             # Quantity information
             quantity_on_hand: float | None = Field(None, description="Quantity on hand")
-            quantity_allocated: float | None = Field(None, description="Quantity allocated")
-            quantity_available: float | None = Field(None, description="Quantity available")
-            quantity_reserved: float | None = Field(None, description="Quantity reserved")
+            quantity_allocated: float | None = Field(
+                None, description="Quantity allocated"
+            )
+            quantity_available: float | None = Field(
+                None, description="Quantity available"
+            )
+            quantity_reserved: float | None = Field(
+                None, description="Quantity reserved"
+            )
             quantity_damaged: float | None = Field(None, description="Quantity damaged")
 
             # Status information
@@ -660,7 +678,9 @@ class FlextTapOracleWmsModels(FlextModels):
 
             # Order details
             total_lines: int | None = Field(None, description="Total order lines")
-            total_quantity: float | None = Field(None, description="Total order quantity")
+            total_quantity: float | None = Field(
+                None, description="Total order quantity"
+            )
             total_weight: float | None = Field(None, description="Total order weight")
             total_volume: float | None = Field(None, description="Total order volume")
 
@@ -676,7 +696,9 @@ class FlextTapOracleWmsModels(FlextModels):
                         "PACKED": "75%",
                         "SHIPPED": "100%",
                     }
-                    fulfillment_progress = status_mapping.get(self.order_status, "unknown")
+                    fulfillment_progress = status_mapping.get(
+                        self.order_status, "unknown"
+                    )
 
                 return {
                     "order_identity": {
@@ -749,12 +771,20 @@ class FlextTapOracleWmsModels(FlextModels):
             shipment_status: str | None = Field(None, description="Shipment status")
             shipment_type: str | None = Field(None, description="Shipment type")
             carrier_id: str | None = Field(None, description="Carrier identifier")
-            tracking_number: str | None = Field(None, description="Carrier tracking number")
+            tracking_number: str | None = Field(
+                None, description="Carrier tracking number"
+            )
 
             # Shipment details
-            total_weight: float | None = Field(None, description="Total shipment weight")
-            total_volume: float | None = Field(None, description="Total shipment volume")
-            total_orders: int | None = Field(None, description="Total orders in shipment")
+            total_weight: float | None = Field(
+                None, description="Total shipment weight"
+            )
+            total_volume: float | None = Field(
+                None, description="Total shipment volume"
+            )
+            total_orders: int | None = Field(
+                None, description="Total orders in shipment"
+            )
 
             # Temporal information
             ship_date: datetime | None = Field(None, description="Ship date")
@@ -797,7 +827,9 @@ class FlextTapOracleWmsModels(FlextModels):
                         "total_orders": self.total_orders or 0,
                     },
                     "delivery_timeline": {
-                        "ship_date": self.ship_date.isoformat() if self.ship_date else None,
+                        "ship_date": self.ship_date.isoformat()
+                        if self.ship_date
+                        else None,
                         "estimated_delivery": self.estimated_delivery.isoformat()
                         if self.estimated_delivery
                         else None,
@@ -888,7 +920,9 @@ class FlextTapOracleWmsModels(FlextModels):
                     "contact_info": {
                         "email": self.email_address,
                         "phone": self.phone_number,
-                        "has_contact_info": bool(self.email_address or self.phone_number),
+                        "has_contact_info": bool(
+                            self.email_address or self.phone_number
+                        ),
                     },
                     "access_control": {
                         "role_id": self.role_id,
@@ -1144,7 +1178,9 @@ class FlextTapOracleWmsModels(FlextModels):
                     "filtering": {
                         "entity_filters": len(self.entity_filters),
                         "field_selections": len(self.field_selection),
-                        "has_filters": bool(self.entity_filters or self.field_selection),
+                        "has_filters": bool(
+                            self.entity_filters or self.field_selection
+                        ),
                     },
                 }
 
@@ -1197,7 +1233,9 @@ class FlextTapOracleWmsModels(FlextModels):
 
             # Error information
             error_code: str | None = Field(None, description="Error code if failed")
-            error_message: str | None = Field(None, description="Error message if failed")
+            error_message: str | None = Field(
+                None, description="Error message if failed"
+            )
             error_details: dict[str, t.GeneralValueType] | None = Field(
                 None,
                 description="Detailed error information",
@@ -1205,7 +1243,7 @@ class FlextTapOracleWmsModels(FlextModels):
 
             # Metadata
             timestamp: datetime = Field(
-                default_factory=datetime.utcnow,
+                default_factory=lambda: datetime.now(UTC),
                 description="Response timestamp",
             )
             api_version: str | None = Field(None, description="WMS API version")
@@ -1295,7 +1333,9 @@ class FlextTapOracleWmsModels(FlextModels):
             )
 
             # Context information
-            endpoint: str | None = Field(None, description="WMS API endpoint that failed")
+            endpoint: str | None = Field(
+                None, description="WMS API endpoint that failed"
+            )
             entity_type: str | None = Field(
                 None,
                 description="WMS entity type being processed",
@@ -1375,7 +1415,10 @@ class FlextTapOracleWmsModels(FlextModels):
                 ):
                     msg = f"HTTP status code must be between {FlextConstants.FlextWeb.StatusCodes.MIN_VALID} and {FlextConstants.FlextWeb.StatusCodes.MAX_VALID}"
                     raise ValueError(msg)
-                if self.retry_after_seconds is not None and self.retry_after_seconds < 0:
+                if (
+                    self.retry_after_seconds is not None
+                    and self.retry_after_seconds < 0
+                ):
                     msg = "Retry after seconds cannot be negative"
                     raise ValueError(msg)
                 return self
