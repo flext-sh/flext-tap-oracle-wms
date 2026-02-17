@@ -6,6 +6,8 @@
 
 **FLEXT-Tap-Oracle-WMS** is a Singer-compliant tap for extracting data from Oracle Warehouse Management Systems. It integrates seamlessly with Meltano and the FLEXT ecosystem to provide reliable streams for inventory, orders, and operational metrics.
 
+Part of the [FLEXT](https://github.com/flext/flext) ecosystem.
+
 ## 🚀 Key Features
 
 - **Comprehensive Coverage**: 10 functional streams including Inventory, Allocation, Orders, Shipments, Locations, and Items.
