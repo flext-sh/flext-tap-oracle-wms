@@ -264,7 +264,7 @@ class FlextTapOracleWmsUtilities(u_core):
                 return {}
 
             # Common WMS SKU patterns
-            sku_info = {"original": item_code}
+            sku_info: dict[str, t.GeneralValueType] = {"original": item_code}
 
             # Extract components based on common patterns
             if "-" in item_code:
@@ -725,7 +725,10 @@ class FlextTapOracleWmsUtilities(u_core):
             bookmarks = state.get("bookmarks", {})
             if not isinstance(bookmarks, dict):
                 return {}
-            return bookmarks.get(stream_name, {})
+            stream_state = bookmarks.get(stream_name, {})
+            if isinstance(stream_state, dict):
+                return stream_state
+            return {}
 
         @staticmethod
         def set_wms_stream_state(
@@ -878,7 +881,7 @@ class FlextTapOracleWmsUtilities(u_core):
             record_count: int,
             avg_record_size_bytes: int = 2048,
             network_speed_mbps: float = 100.0,
-        ) -> t.FloatDict:
+        ) -> dict[str, float]:
             """Estimate extraction time for Oracle WMS data.
 
             Args:
@@ -887,7 +890,7 @@ class FlextTapOracleWmsUtilities(u_core):
             network_speed_mbps: Network speed in Mbps
 
             Returns:
-            t.FloatDict: Time estimates in seconds
+            dict[str, float]: Time estimates in seconds
 
             """
             total_bytes = record_count * avg_record_size_bytes
@@ -912,56 +915,13 @@ class FlextTapOracleWmsUtilities(u_core):
             }
 
     class Utilities:
-        """utilities for tap operations."""
+        """Utilities for tap operations."""
 
         @staticmethod
         def run(
-            coro: object,
-        ) -> object:
-            """Run coroutine in sync context (synchronous stub).
-
-            This is a synchronous stub that replaces async functionality.
-            For async operations, use the synchronous alternatives.
-
-            Args:
-            coro: Object to process (ignored in sync implementation)
-
-            Returns:
-            The input object (pass-through for sync compatibility)
-
-            """
-            # Synchronous stub - return the input unchanged
-            # Real async operations should be converted to sync alternatives
+            coro: t.GeneralValueType,
+        ) -> t.GeneralValueType:
             return coro
-
-    # Proxy methods for backward compatibility
-    @classmethod
-    def create_schema_message(
-        cls,
-        stream_name: str,
-        schema: dict[str, t.GeneralValueType],
-        key_properties: list[str] | None = None,
-    ) -> dict[str, t.GeneralValueType]:
-        """Proxy method for SingerUtilities.create_schema_message()."""
-        return cls.SingerUtilities.create_schema_message(
-            stream_name,
-            schema,
-            key_properties,
-        )
-
-    @classmethod
-    def create_record_message(
-        cls,
-        stream_name: str,
-        record: dict[str, t.GeneralValueType],
-        time_extracted: datetime | None = None,
-    ) -> dict[str, t.GeneralValueType]:
-        """Proxy method for SingerUtilities.create_record_message()."""
-        return cls.SingerUtilities.create_record_message(
-            stream_name,
-            record,
-            time_extracted,
-        )
 
     @classmethod
     def normalize_wms_identifier(cls, identifier: str) -> str:

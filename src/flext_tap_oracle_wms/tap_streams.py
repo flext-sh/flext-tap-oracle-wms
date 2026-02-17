@@ -106,8 +106,9 @@ class FlextTapOracleWmsStream(Stream):
 
     def _run(
         self,
-        coro: Coroutine[object, object, object] | Awaitable[object],
-    ) -> object:
+        coro: Coroutine[t.GeneralValueType, t.GeneralValueType, t.GeneralValueType]
+        | Awaitable[t.GeneralValueType],
+    ) -> t.GeneralValueType:
         """Run coroutine in sync context."""
         # Zero Tolerance FIX: Use utilities instead of loose function
         return self._utilities.Utilities.run(coro)
@@ -115,7 +116,7 @@ class FlextTapOracleWmsStream(Stream):
     def get_records(
         self,
         context: Mapping[str, t.GeneralValueType] | None,
-    ) -> Iterable[t.JsonDict]:
+    ) -> Iterable[dict[str, t.JsonValue]]:
         """Get records from Oracle WMS."""
         page = 1
         has_more = True
@@ -141,7 +142,7 @@ class FlextTapOracleWmsStream(Stream):
         self,
         page: int,
         context: Mapping[str, t.GeneralValueType] | None,
-    ) -> tuple[list[t.JsonDict], bool] | None:
+    ) -> tuple[list[dict[str, t.JsonValue]], bool] | None:
         """Fetch data for a specific page."""
         # Build operation parameters
         operation_name = f"get_{self.name}"
@@ -174,7 +175,7 @@ class FlextTapOracleWmsStream(Stream):
         self,
         page: int,
         context: Mapping[str, t.GeneralValueType] | None,
-    ) -> t.JsonDict:
+    ) -> dict[str, t.JsonValue]:
         """Build kwargs for the operation call."""
         kwargs = {
             "page": page,
@@ -194,7 +195,7 @@ class FlextTapOracleWmsStream(Stream):
     def _extract_records_from_response(
         self,
         data: dict[str, t.GeneralValueType] | list[t.GeneralValueType] | object,
-    ) -> tuple[list[t.JsonDict], bool]:
+    ) -> tuple[list[dict[str, t.JsonValue]], bool]:
         """Extract records and pagination info from API response."""
         match data:
             case dict() as data_dict:
@@ -215,7 +216,7 @@ class FlextTapOracleWmsStream(Stream):
         # Ensure records is always a list of dict[str, t.GeneralValueType]
         match raw_records:
             case list() as records_list:
-                coerced_records: list[t.JsonDict] = []
+                coerced_records: list[dict[str, t.JsonValue]] = []
                 for record in records_list:
                     match record:
                         case dict() as record_dict:
@@ -230,9 +231,9 @@ class FlextTapOracleWmsStream(Stream):
 
     def _process_page_records(
         self,
-        records: list[t.JsonDict],
+        records: list[dict[str, t.JsonValue]],
         context: Mapping[str, t.GeneralValueType] | None,
-    ) -> Iterable[t.JsonDict]:
+    ) -> Iterable[dict[str, t.JsonValue]]:
         """Process and yield records from a page."""
         for record in records:
             # Ensure record is a dict[str, t.GeneralValueType] for processing
@@ -243,9 +244,9 @@ class FlextTapOracleWmsStream(Stream):
 
     def post_process(
         self,
-        row: t.JsonDict,
+        row: dict[str, t.JsonValue],
         context: Mapping[str, t.GeneralValueType] | None = None,
-    ) -> t.JsonDict | None:
+    ) -> dict[str, t.JsonValue] | None:
         """Post-process a record."""
         # Apply column mappings if configured
         if self.config:

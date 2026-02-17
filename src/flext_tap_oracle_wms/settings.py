@@ -10,11 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from datetime import datetime
 from typing import Final, Self
 
 from flext_core import (
     FlextConstants,
-    FlextModels,
     FlextResult,
     FlextSettings,
     FlextTypes as t,
@@ -78,42 +79,6 @@ class FlextTapOracleWmsSettings(FlextSettings):
         ...,
         description="Oracle WMS password",
     )
-
-    # Backward compatibility properties for old attribute names
-    @property
-    def host(self) -> str:
-        """Backward compatibility property for base_url."""
-        return self.base_url
-
-    @property
-    def port(self) -> int:
-        """Backward compatibility property for port."""
-        return 443  # Default HTTPS port
-
-    @property
-    def service_name(self) -> str:
-        """Backward compatibility property for service name."""
-        return "oracle-wms"
-
-    @property
-    def protocol(self) -> str:
-        """Backward compatibility property for connection protocol."""
-        return "https"  # Default protocol for WMS connections
-
-    @property
-    def ssl_enabled(self) -> bool:
-        """Backward compatibility property for SSL configuration."""
-        return True  # Default SSL enabled for WMS connections
-
-    @property
-    def pool_min(self) -> int:
-        """Backward compatibility property for minimum pool size."""
-        return 1  # Default minimum pool size
-
-    @property
-    def pool_max(self) -> int:
-        """Backward compatibility property for maximum pool size."""
-        return 10  # Default maximum pool size
 
     # API settings
     api_version: str = Field(
@@ -202,13 +167,13 @@ class FlextTapOracleWmsSettings(FlextSettings):
         default=None,
         description="Custom User-Agent header",
     )
-    additional_headers: dict[str, str] | None = Field(
+    additional_headers: Mapping[str, str] | None = Field(
         default=None,
         description="Additional HTTP headers",
     )
 
     # Column filtering
-    column_mappings: dict[str, dict[str, str]] | None = Field(
+    column_mappings: Mapping[str, Mapping[str, str]] | None = Field(
         default=None,
         description="Column name mappings per stream",
     )
@@ -276,9 +241,9 @@ class FlextTapOracleWmsSettings(FlextSettings):
         return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")
 
     @classmethod
-    def create_for_development(cls, **overrides: object) -> Self:
+    def create_for_development(cls, **overrides: t.GeneralValueType) -> Self:
         """Create configuration for development environment."""
-        dev_overrides: dict[str, t.GeneralValueType] = {
+        dev_overrides = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT * 2,
             "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS + 2,
             "page_size": FlextTapOracleWmsConstants.DEFAULT_PAGE_SIZE // 2,
@@ -292,9 +257,9 @@ class FlextTapOracleWmsSettings(FlextSettings):
         )
 
     @classmethod
-    def create_for_production(cls, **overrides: object) -> Self:
+    def create_for_production(cls, **overrides: t.GeneralValueType) -> Self:
         """Create configuration for production environment."""
-        prod_overrides: dict[str, t.GeneralValueType] = {
+        prod_overrides = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT,
             "max_retries": FlextConstants.Reliability.MAX_RETRY_ATTEMPTS,
             "page_size": FlextTapOracleWmsConstants.DEFAULT_PAGE_SIZE,
@@ -308,9 +273,9 @@ class FlextTapOracleWmsSettings(FlextSettings):
         )
 
     @classmethod
-    def create_for_testing(cls, **overrides: object) -> Self:
+    def create_for_testing(cls, **overrides: t.GeneralValueType) -> Self:
         """Create configuration for testing environment."""
-        test_overrides: dict[str, t.GeneralValueType] = {
+        test_overrides = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT // 3,
             "max_retries": 1,
             "page_size": FlextTapOracleWmsConstants.MIN_PAGE_SIZE,
@@ -340,16 +305,13 @@ class FlextTapOracleWmsSettings(FlextSettings):
     @field_validator("start_date", "end_date")
     @classmethod
     def validate_dates(cls, v: str | None) -> str | None:
-        """Validate date format using centralized FlextModels validation."""
         if v is not None:
-            # Use centralized FlextModels validation instead of duplicate logic
-            validation_result: FlextResult[object] = (
-                FlextModels.create_validated_iso_date(v)
-            )
-            if validation_result.is_failure:
-                error_msg = f"Invalid date format: {validation_result.error}"
-                raise ValueError(error_msg)
-            return validation_result.value
+            normalized = v.replace("Z", "+00:00")
+            try:
+                datetime.fromisoformat(normalized)
+            except ValueError as exc:
+                msg = f"Invalid date format: {v}"
+                raise ValueError(msg) from exc
         return v
 
     def validate_business_rules(self) -> FlextResult[None]:
@@ -386,7 +348,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
 
     def _validate_url_format(self) -> FlextResult[None]:
         """Validate URL format."""
-        if not self.base_url.startswith(("http://", "https://")):
+        if self.base_url.scheme not in {"http", "https"}:
             return FlextResult[None].fail(
                 "base_url must start with http:// or https://",
             )
@@ -421,17 +383,11 @@ class FlextTapOracleWmsSettings(FlextSettings):
         return FlextResult[None].ok(None)
 
     def _validate_date_range(self) -> FlextResult[None]:
-        """Validate date range using centralized FlextModels validation."""
         if self.start_date and self.end_date:
-            # Use centralized FlextModels date range validation instead of duplicate logic
-            validation_result = FlextModels.create_validated_date_range(
-                self.start_date,
-                self.end_date,
-            )
-            if validation_result.is_failure:
-                return FlextResult[None].fail(
-                    validation_result.error or "Date range validation failed",
-                )
+            start_value = datetime.fromisoformat(self.start_date)
+            end_value = datetime.fromisoformat(self.end_date)
+            if start_value > end_value:
+                return FlextResult[None].fail("start_date must be <= end_date")
         return FlextResult[None].ok(None)
 
     def _validate_performance_settings(self) -> FlextResult[None]:
@@ -447,88 +403,5 @@ class FlextTapOracleWmsSettings(FlextSettings):
             )
         return FlextResult[None].ok(None)
 
-    def validate_oracle_wms_config(
-        self,
-    ) -> FlextResult[dict[str, t.GeneralValueType]]:
-        """Validate Oracle WMS specific configuration.
-
-        Returns:
-        FlextResult with validation status
-
-        """
-        try:
-            # Check for conflicting settings
-            if self.include_entities and self.exclude_entities:
-                common = set(self.include_entities) & set(self.exclude_entities)
-                if common:
-                    return FlextResult[dict[str, t.GeneralValueType]].fail(
-                        f"Entities cannot be both included and excluded: {common}",
-                    )
-
-            # Validate date range using centralized FlextModels validation
-            if self.start_date and self.end_date:
-                date_range_result = FlextModels.create_validated_date_range(
-                    self.start_date,
-                    self.end_date,
-                )
-                if date_range_result.is_failure:
-                    return FlextResult[dict[str, t.GeneralValueType]].fail(
-                        date_range_result.error or "Date range validation failed",
-                    )
-
-            # Validate performance settings
-            max_parallel_streams_without_rate_limit = (
-                FlextTapOracleWmsConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
-            )
-            if (
-                self.enable_parallel_extraction
-                and self.max_parallel_streams > max_parallel_streams_without_rate_limit
-                and not self.enable_rate_limiting
-            ):
-                return FlextResult[dict[str, t.GeneralValueType]].fail(
-                    f"Rate limiting must be enabled for more than {max_parallel_streams_without_rate_limit} parallel streams",
-                )
-
-            validation_data = {
-                "valid": "True",
-                "base_url": self.base_url,
-                "api_version": self.api_version,
-                "streams_included": len(self.include_entities)
-                if self.include_entities
-                else "all",
-                "streams_excluded": len(self.exclude_entities)
-                if self.exclude_entities
-                else 0,
-            }
-
-            return FlextResult[dict[str, t.GeneralValueType]].ok(validation_data)
-
-        except Exception as e:
-            return FlextResult[dict[str, t.GeneralValueType]].fail(
-                f"Configuration validation failed: {e}",
-            )
-
     def validate_domain_rules(self) -> FlextResult[None]:
-        """Validate Oracle WMS tap-specific domain rules.
-
-        Returns:
-        FlextResult indicating validation success or failure
-
-        """
-        try:
-            # Run all validation checks in sequence
-            validation_methods = [
-                self._validate_required_fields,
-                self._validate_url_format,
-                self._validate_date_range,
-            ]
-
-            for validation_method in validation_methods:
-                result: FlextResult[object] = validation_method()
-                if result.is_failure:
-                    return result
-
-            return FlextResult[None].ok(None)
-
-        except Exception as e:
-            return FlextResult[None].fail(f"Domain rule validation failed: {e}")
+        return self.validate_business_rules()

@@ -177,8 +177,8 @@ class FlextTapOracleWms(Tap):
 
     def _run(
         self,
-        coro: object,
-    ) -> object:
+        coro: t.GeneralValueType,
+    ) -> t.GeneralValueType:
         """Run coroutine in sync context (synchronous stub)."""
         # Synchronous stub - return the input object
         # Real async operations should be converted to sync alternatives
@@ -544,9 +544,11 @@ class FlextTapOracleWms(Tap):
                 )
 
             # Validate config model
-            validation_result = self.flext_config.validate_oracle_wms_config()
+            validation_result = self.flext_config.validate_business_rules()
             if validation_result.is_failure:
-                return validation_result
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
+                    validation_result.error or "Configuration validation failed",
+                )
 
             # Zero Tolerance FIX: Use utilities for WMS API connection testing
             connection_test_result = (
@@ -718,7 +720,7 @@ class FlextTapOracleWmsPlugin:
         """Get the plugin version."""
         return self._version
 
-    def initialize(self, _context: object) -> FlextResult[None]:
+    def initialize(self, _context: t.GeneralValueType) -> FlextResult[None]:
         """Initialize plugin with provided context (FlextPlugin interface)."""
         # Initialize with context (required by FlextPlugin interface)
         # For now, we ignore context and use internal initialization
