@@ -342,7 +342,7 @@ class TestStreamsFunctional:
             "next_page": "/api/entity/item?page=2",
         }
 
-        records = mock_response.json().get("items", [])
+        records = mock_response.model_dump_json().get("items", [])
         assert len(records) == 2
         assert records[0]["id"] == 1
         assert records[1]["code"] == "ITEM002"
@@ -353,13 +353,13 @@ class TestStreamsFunctional:
             {"id": 4, "code": "ITEM004"},
         ]
 
-        records = mock_response.json().get("items", [])
+        records = mock_response.model_dump_json().get("items", [])
         assert len(records) == 2
         assert records[0]["id"] == 3
 
         # Test empty response
         mock_response.json.return_value = {}
-        records = mock_response.json().get("items", [])
+        records = mock_response.model_dump_json().get("items", [])
         assert len(records) == 0
 
         logger.info("✅ Response parsing working for all formats")

@@ -536,7 +536,7 @@ class FlextTapOracleWmsUtilities(u_core):
             """Validate stream page size."""
             if page_size <= 0:
                 return FlextResult[bool].fail("Page size must be positive")
-            return FlextResult[bool].ok(True)
+            return FlextResult[bool].ok(value=True)
 
         @staticmethod
         def validate_wms_config(
