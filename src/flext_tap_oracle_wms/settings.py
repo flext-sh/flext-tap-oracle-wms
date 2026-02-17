@@ -89,12 +89,6 @@ class FlextTapOracleWmsSettings(FlextSettings):
         le=FlextTapOracleWmsConstants.MAX_TIMEOUT,
     )
 
-    timeout: int = Field(
-        default=FlextTapOracleWmsConstants.DEFAULT_TIMEOUT,
-        description="Request timeout in seconds",
-        ge=FlextTapOracleWmsConstants.MIN_TIMEOUT,
-        le=FlextTapOracleWmsConstants.MAX_TIMEOUT,
-    )
     max_retries: int = Field(
         default=FlextTapOracleWmsConstants.DEFAULT_MAX_RETRIES,
         description="Maximum number of retries for failed requests",
@@ -197,10 +191,6 @@ class FlextTapOracleWmsSettings(FlextSettings):
     )
 
     # API settings
-    api_version: str = Field(
-        default=FlextTapOracleWmsConstants.DEFAULT_API_VERSION,
-        description="Oracle WMS API version",
-    )
     enable_request_logging: bool = Field(
         default=False,
         description="Enable detailed request/response logging",
@@ -327,7 +317,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
                 raise ValueError(msg) from exc
         return v
 
-    def validate_business_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[bool]:
         """Validate Oracle WMS tap configuration business rules using FlextSettings pattern.
 
         Consolidates all validation logic into a single complete method.
@@ -349,61 +339,61 @@ class FlextTapOracleWmsSettings(FlextSettings):
             if not validation.is_success:
                 return validation
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(value=True)
 
-    def _validate_required_fields(self) -> FlextResult[None]:
+    def _validate_required_fields(self) -> FlextResult[bool]:
         """Validate required fields."""
         if not self.base_url or not self.username or not self.password:
-            return FlextResult[None].fail(
+            return FlextResult[bool].fail(
                 "base_url, username, and password are required",
             )
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(value=True)
 
-    def _validate_url_format(self) -> FlextResult[None]:
+    def _validate_url_format(self) -> FlextResult[bool]:
         """Validate URL format."""
         if self.base_url.scheme not in {"http", "https"}:
-            return FlextResult[None].fail(
+            return FlextResult[bool].fail(
                 "base_url must start with http:// or https://",
             )
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(value=True)
 
-    def _validate_page_size(self) -> FlextResult[None]:
+    def _validate_page_size(self) -> FlextResult[bool]:
         """Validate page size limits."""
         if not (
             FlextTapOracleWmsConstants.MIN_PAGE_SIZE
             <= self.page_size
             <= FlextTapOracleWmsConstants.MAX_PAGE_SIZE
         ):
-            return FlextResult[None].fail(
+            return FlextResult[bool].fail(
                 f"page_size must be between {FlextTapOracleWmsConstants.MIN_PAGE_SIZE} and {FlextTapOracleWmsConstants.MAX_PAGE_SIZE}",
             )
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(value=True)
 
-    def _validate_timeout(self) -> FlextResult[None]:
+    def _validate_timeout(self) -> FlextResult[bool]:
         """Validate timeout."""
         if self.timeout <= 0:
-            return FlextResult[None].fail("timeout must be positive")
-        return FlextResult[None].ok(None)
+            return FlextResult[bool].fail("timeout must be positive")
+        return FlextResult[bool].ok(value=True)
 
-    def _validate_entity_settings(self) -> FlextResult[None]:
+    def _validate_entity_settings(self) -> FlextResult[bool]:
         """Validate entity settings."""
         if self.include_entities and self.exclude_entities:
             common = set(self.include_entities) & set(self.exclude_entities)
             if common:
-                return FlextResult[None].fail(
+                return FlextResult[bool].fail(
                     f"Entities cannot be both included and excluded: {common}",
                 )
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(value=True)
 
-    def _validate_date_range(self) -> FlextResult[None]:
+    def _validate_date_range(self) -> FlextResult[bool]:
         if self.start_date and self.end_date:
             start_value = datetime.fromisoformat(self.start_date)
             end_value = datetime.fromisoformat(self.end_date)
             if start_value > end_value:
-                return FlextResult[None].fail("start_date must be <= end_date")
-        return FlextResult[None].ok(None)
+                return FlextResult[bool].fail("start_date must be <= end_date")
+        return FlextResult[bool].ok(value=True)
 
-    def _validate_performance_settings(self) -> FlextResult[None]:
+    def _validate_performance_settings(self) -> FlextResult[bool]:
         """Validate performance settings."""
         if (
             self.enable_parallel_extraction
@@ -411,10 +401,10 @@ class FlextTapOracleWmsSettings(FlextSettings):
             > FlextTapOracleWmsConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT
             and not self.enable_rate_limiting
         ):
-            return FlextResult[None].fail(
+            return FlextResult[bool].fail(
                 f"Rate limiting must be enabled for more than {FlextTapOracleWmsConstants.MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT} parallel streams",
             )
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(value=True)
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_domain_rules(self) -> FlextResult[bool]:
         return self.validate_business_rules()

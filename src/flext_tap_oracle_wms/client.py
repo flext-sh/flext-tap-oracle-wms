@@ -229,7 +229,7 @@ class FlextTapOracleWms(Tap):
         # Use the WMS client directly as it has discovery capabilities
         return self.wms_client
 
-    def initialize(self) -> FlextResult[None]:
+    def initialize(self) -> FlextResult[bool]:
         """Initialize the tap."""
         logger.info("Initializing Oracle WMS tap")
         try:
@@ -237,16 +237,16 @@ class FlextTapOracleWms(Tap):
             if self.flext_config.validate_config:
                 validation_result = self.validate_configuration()
                 if validation_result.is_failure:
-                    return FlextResult[None].fail(
+                    return FlextResult[bool].fail(
                         validation_result.error or "Configuration validation failed",
                     )
             # Ensure client is created and started
             _ = self.wms_client
             logger.info("Oracle WMS tap initialized successfully")
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(value=True)
         except Exception as e:
             logger.exception("Failed to initialize tap")
-            return FlextResult[None].fail(str(e))
+            return FlextResult[bool].fail(str(e))
 
     def discover_catalog(self) -> FlextResult[dict[str, t.GeneralValueType]]:
         """Discover available streams and their schemas.
@@ -510,20 +510,20 @@ class FlextTapOracleWms(Tap):
                     break
 
     @override
-    def execute(self, message: str | None = None) -> FlextResult[None]:
+    def execute(self, message: str | None = None) -> FlextResult[bool]:
         """Execute tap in Singer mode."""
         try:
             # If message provided, process it
             if message:
                 # This is target mode, not supported for tap
-                return FlextResult[None].fail("Tap does not support message processing")
+                return FlextResult[bool].fail("Tap does not support message processing")
             # Run tap using sync_all from Singer SDK
             # Use sync_all method from Singer SDK
             self.sync_all()
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(value=True)
         except Exception as e:
             logger.exception("Tap execution failed")
-            return FlextResult[None].fail(str(e))
+            return FlextResult[bool].fail(str(e))
 
     def validate_configuration(self) -> FlextResult[dict[str, t.GeneralValueType]]:
         """Validate tap configuration.
@@ -720,13 +720,13 @@ class FlextTapOracleWmsPlugin:
         """Get the plugin version."""
         return self._version
 
-    def initialize(self, _context: t.GeneralValueType) -> FlextResult[None]:
+    def initialize(self, _context: t.GeneralValueType) -> FlextResult[bool]:
         """Initialize plugin with provided context (FlextPlugin interface)."""
         # Initialize with context (required by FlextPlugin interface)
         # For now, we ignore context and use internal initialization
         return self.initialize_tap()
 
-    def initialize_tap(self) -> FlextResult[None]:
+    def initialize_tap(self) -> FlextResult[bool]:
         """Initialize the plugin by creating tap instance.
 
         Returns:
@@ -744,22 +744,22 @@ class FlextTapOracleWmsPlugin:
             # Note: FlextTapOracleWms.config is a Pydantic model, not a dict
             # Validation is handled by Pydantic during model creation
             logger.info("Oracle WMS tap instance created successfully")
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(value=True)
         except Exception as e:
             logger.exception("Failed to initialize Oracle WMS tap")
-            return FlextResult[None].fail(f"Tap initialization failed: {e}")
+            return FlextResult[bool].fail(f"Tap initialization failed: {e}")
 
-    def shutdown(self) -> FlextResult[None]:
+    def shutdown(self) -> FlextResult[bool]:
         """Shutdown plugin and release resources (FlextPlugin interface)."""
         try:
             if self._tap_instance:
                 # Release tap instance resources if needed
                 self._tap_instance = None
                 logger.info("Oracle WMS tap plugin shutdown successfully")
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(value=True)
         except Exception as e:
             logger.exception("Failed to shutdown Oracle WMS tap plugin")
-            return FlextResult[None].fail(f"Plugin shutdown failed: {e}")
+            return FlextResult[bool].fail(f"Plugin shutdown failed: {e}")
 
     @override
     def execute(
@@ -929,7 +929,7 @@ class FlextTapOracleWmsPlugin:
         """Execute catalog generation through tap."""
         return self._execute_discover(parameters)
 
-    def validate_business_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[bool]:
         """Validate plugin business rules and configuration.
 
         Returns:
@@ -949,10 +949,10 @@ class FlextTapOracleWmsPlugin:
             if field not in self._tap_config or not self._tap_config[field]
         ]
         if missing_fields:
-            return FlextResult[None].fail(
+            return FlextResult[bool].fail(
                 f"Missing required configuration fields: {missing_fields}",
             )
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(value=True)
 
 
 def create_oracle_wms_tap_plugin(
