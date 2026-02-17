@@ -1051,7 +1051,7 @@ class FlextTapOracleWmsModels(FlextModels):
             )
 
             stream_name: str = Field(..., description="Stream name")
-            properties: t.NestedDict = Field(..., description="Schema properties")
+            properties: dict[str, t.GeneralValueType] = Field(..., description="Schema properties")
 
             def to_singer_schema(self) -> dict[str, t.GeneralValueType]:
                 """Convert to Singer schema format."""
@@ -1140,7 +1140,7 @@ class FlextTapOracleWmsModels(FlextModels):
             )
 
             # Filtering configuration
-            entity_filters: t.NestedDict = Field(
+            entity_filters: dict[str, t.GeneralValueType] = Field(
                 default_factory=dict,
                 description="Entity-specific filters",
             )

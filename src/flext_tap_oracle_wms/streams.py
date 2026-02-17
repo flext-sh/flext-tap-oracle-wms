@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Awaitable, Coroutine, Iterable, Mapping
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, FlextResult, t
+from flext_core import FlextLogger, t
 
 # Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
@@ -97,14 +97,14 @@ class FlextTapOracleWmsStream(Stream):
     def get_records(
         self,
         context: Mapping[str, t.GeneralValueType] | None,
-    ) -> Iterable[t.JsonDict]:
+    ) -> Iterable[dict[str, t.JsonValue]]:
         """Get records from Oracle WMS."""
         page = 1
         has_more = True
         while has_more:
             try:
                 # Get page data
-                page_result: FlextResult[object] = self._fetch_page_data(page, context)
+                page_result = self._fetch_page_data(page, context)
                 if page_result is None:
                     break
                 records, has_more = page_result
@@ -123,7 +123,7 @@ class FlextTapOracleWmsStream(Stream):
         self,
         page: int,
         context: Mapping[str, t.GeneralValueType] | None,
-    ) -> tuple[list[t.JsonDict], bool] | None:
+    ) -> tuple[list[dict[str, t.JsonValue]], bool] | None:
         """Fetch data for a specific page."""
         # Build operation parameters
         operation_name = f"get_{self.name}"
@@ -132,14 +132,14 @@ class FlextTapOracleWmsStream(Stream):
         # Execute operation using dynamic method call
         execute_method = getattr(self.client, "execute", None)
         if execute_method:
-            result: FlextResult[object] = self._run(
+            result = self._run(
                 execute_method(operation_name, **kwargs),
             )
         else:
             # Fallback: try direct method call
             method = getattr(self.client, operation_name, None)
             if method:
-                result: FlextResult[object] = self._run(method(**kwargs))
+                result = self._run(method(**kwargs))
             else:
                 logger.error("Method %s not found on WMS client", operation_name)
                 return None
@@ -149,14 +149,14 @@ class FlextTapOracleWmsStream(Stream):
             logger.error("Failed to get records for %s: %s", self.name, error_msg)
             return None
         # Extract and process response data
-        data: dict[str, t.GeneralValueType] = getattr(result, "value", result)
+        data: t.GeneralValueType = getattr(result, "value", result)
         return self._extract_records_from_response(data)
 
     def _build_operation_kwargs(
         self,
         page: int,
         context: Mapping[str, t.GeneralValueType] | None,
-    ) -> t.JsonDict:
+    ) -> dict[str, t.JsonValue]:
         """Build kwargs for the operation call."""
         kwargs = {
             "page": page,
@@ -175,8 +175,8 @@ class FlextTapOracleWmsStream(Stream):
 
     def _extract_records_from_response(
         self,
-        data: dict[str, t.GeneralValueType] | list[t.GeneralValueType] | object,
-    ) -> tuple[list[t.JsonDict], bool]:
+        data: t.GeneralValueType,
+    ) -> tuple[list[dict[str, t.JsonValue]], bool]:
         """Extract records and pagination info from API response."""
         match data:
             case dict() as data_dict:
@@ -197,7 +197,7 @@ class FlextTapOracleWmsStream(Stream):
         # Ensure records is always a list of dict[str, t.GeneralValueType]
         match raw_records:
             case list() as records_list:
-                coerced_records: list[t.JsonDict] = []
+                coerced_records: list[dict[str, t.JsonValue]] = []
                 for record in records_list:
                     match record:
                         case dict() as record_dict:
@@ -212,9 +212,9 @@ class FlextTapOracleWmsStream(Stream):
 
     def _process_page_records(
         self,
-        records: list[t.JsonDict],
+        records: list[dict[str, t.JsonValue]],
         context: Mapping[str, t.GeneralValueType] | None,
-    ) -> Iterable[t.JsonDict]:
+    ) -> Iterable[dict[str, t.JsonValue]]:
         """Process and yield records from a page."""
         for record in records:
             # Ensure record is a dict[str, t.GeneralValueType] for processing
@@ -245,26 +245,27 @@ class FlextTapOracleWmsStream(Stream):
 
     def post_process(
         self,
-        row: t.JsonDict,
+        row: dict[str, t.JsonValue],
         context: Mapping[str, t.GeneralValueType] | None = None,
-    ) -> t.JsonDict | None:
+    ) -> dict[str, t.JsonValue] | None:
         """Post-process a record."""
         # Apply column mappings if configured
         if self.config:
-            column_mappings: dict[str, t.GeneralValueType] = self.config.get(
-                "column_mappings", {}
-            )
-            if self.name in column_mappings:
-                mappings = column_mappings[self.name]
-                for old_name, new_name in mappings.items():
-                    if old_name in row:
-                        row[new_name] = row.pop(old_name)
+            column_mappings_raw = self.config.get("column_mappings", {})
+            if isinstance(column_mappings_raw, dict):
+                mappings = column_mappings_raw.get(self.name)
+                if isinstance(mappings, dict):
+                    for old_name, new_name in mappings.items():
+                        if isinstance(old_name, str) and isinstance(new_name, str):
+                            if old_name in row:
+                                row[new_name] = row.pop(old_name)
             # Remove ignored columns
             ignored_columns: list[t.GeneralValueType] = self.config.get(
                 "ignored_columns", []
             )
             for column in ignored_columns:
-                row.pop(column, None)
+                if isinstance(column, str):
+                    row.pop(column, None)
 
         # Add context information if available
         if context:
