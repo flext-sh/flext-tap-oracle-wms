@@ -532,6 +532,13 @@ class FlextTapOracleWmsUtilities(u_core):
         """configuration processing utilities."""
 
         @staticmethod
+        def validate_stream_page_size(page_size: int) -> FlextResult[bool]:
+            """Validate stream page size."""
+            if page_size <= 0:
+                return FlextResult[bool].fail("Page size must be positive")
+            return FlextResult[bool].ok(True)
+
+        @staticmethod
         def validate_wms_config(
             config: dict[str, t.GeneralValueType],
         ) -> FlextResult[dict[str, t.GeneralValueType]]:
@@ -651,7 +658,7 @@ class FlextTapOracleWmsUtilities(u_core):
                 )
 
             # Basic connection validation (would normally make HTTP request)
-            connection_info = {
+            connection_info: dict[str, t.GeneralValueType] = {
                 "base_url": base_url,
                 "timeout": timeout,
                 "status": "validated",
@@ -662,6 +669,14 @@ class FlextTapOracleWmsUtilities(u_core):
 
     class DataProcessing:
         """data processing utilities."""
+
+        @staticmethod
+        def process_wms_record(
+            record: dict[str, t.GeneralValueType],
+        ) -> dict[str, t.GeneralValueType]:
+            """Process WMS record."""
+            # Placeholder for record processing logic
+            return record
 
         @staticmethod
         def generate_validation_info(

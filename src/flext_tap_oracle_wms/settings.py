@@ -34,23 +34,20 @@ class FlextTapOracleWmsConstants(FlextConstants):
     DEFAULT_API_VERSION: Final[str] = _WmsConstants.API_VERSION_DEFAULT
 
     # Validation limits - using FlextConstants as SOURCE OF TRUTH
-    MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = (
-        FlextConstants.Container.MAX_WORKERS + 1
-    )  # 5
-    DEFAULT_PAGE_SIZE: Final[int] = _WmsConstants.DEFAULT_PAGE_SIZE
-    DEFAULT_TIMEOUT: Final[int] = _WmsConstants.Api.DEFAULT_TIMEOUT
-    DEFAULT_MAX_RETRIES: Final[int] = _WmsConstants.API_MAX_RETRIES
+    MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = 5
+    # DEFAULT_PAGE_SIZE: Final[int] = _WmsConstants.DEFAULT_PAGE_SIZE - Removed to avoid override conflict
+    # DEFAULT_TIMEOUT: Final[int] = _WmsConstants.Api.DEFAULT_TIMEOUT - Removed
+    DEFAULT_MAX_RETRIES: Final[int] = 3
     DEFAULT_RETRY_DELAY: Final[float] = 1.0  # Standard retry delay
 
     # Pagination limits (hardcoded since not available in nested structure)
-    MIN_PAGE_SIZE: Final[int] = 1
-    MAX_PAGE_SIZE: Final[int] = 1000
+    # MIN_PAGE_SIZE: Final[int] = 1 - Removed
+    # MAX_PAGE_SIZE: Final[int] = 1000 - Removed
     MIN_TIMEOUT: Final[int] = 1  # Singer-specific minimum
-    MAX_TIMEOUT: Final[int] = (
-        FlextConstants.Network.DEFAULT_TIMEOUT * 10
-    )  # Singer-specific maximum
+    MAX_TIMEOUT: Final[int] = 300  # Singer-specific maximum
 
     # Discovery settings (hardcoded since not available)
+
     DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = 100
     MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = (
         FlextConstants.Performance.BatchProcessing.DEFAULT_SIZE
@@ -82,9 +79,16 @@ class FlextTapOracleWmsSettings(FlextSettings):
 
     # API settings
     api_version: str = Field(
-        default=FlextTapOracleWmsConstants.DEFAULT_API_VERSION,
+        default="v1",
         description="Oracle WMS API version",
     )
+    timeout: int = Field(
+        default=30,
+        description="Request timeout in seconds",
+        ge=FlextTapOracleWmsConstants.MIN_TIMEOUT,
+        le=FlextTapOracleWmsConstants.MAX_TIMEOUT,
+    )
+
     timeout: int = Field(
         default=FlextTapOracleWmsConstants.DEFAULT_TIMEOUT,
         description="Request timeout in seconds",
@@ -97,7 +101,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         ge=0,
         le=10,
     )
-    retry_delay: float = Field(
+    retry_delay_seconds: float = Field(
         default=FlextTapOracleWmsConstants.DEFAULT_RETRY_DELAY,
         description="Delay between retries in seconds",
         ge=0.1,
@@ -156,7 +160,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         description="Enable rate limiting",
     )
     max_requests_per_minute: int = Field(
-        default=FlextConstants.Utilities.SECONDS_PER_MINUTE,  # 60
+        default=60,
         description="Maximum requests per minute",
         ge=1,
         le=1000,
@@ -192,11 +196,10 @@ class FlextTapOracleWmsSettings(FlextSettings):
         description="End date for data extraction (ISO format)",
     )
 
-    # Logging and debugging
-    log_level: str = Field(
-        default="INFO",
-        description="Logging level",
-        pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$",
+    # API settings
+    api_version: str = Field(
+        default=FlextTapOracleWmsConstants.DEFAULT_API_VERSION,
+        description="Oracle WMS API version",
     )
     enable_request_logging: bool = Field(
         default=False,
@@ -236,8 +239,18 @@ class FlextTapOracleWmsSettings(FlextSettings):
     )
 
     @classmethod
+    def get_or_create_shared_instance(
+        cls,
+        project_name: str,
+        **overrides: t.GeneralValueType,
+    ) -> Self:
+        from typing import Any
+
+        init_kwargs: dict[str, Any] = overrides
+        return cls(**init_kwargs)
+
+    @classmethod
     def get_global_instance(cls) -> Self:
-        """Get the global singleton instance using enhanced FlextSettings pattern."""
         return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")
 
     @classmethod

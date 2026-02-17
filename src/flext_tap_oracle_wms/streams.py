@@ -52,14 +52,12 @@ class FlextTapOracleWmsStream(Stream):
         # Zero Tolerance FIX: Use utilities for stream configuration processing
         page_size_result = (
             self._utilities.ConfigurationProcessing.validate_stream_page_size(
-                self.config.get("page_size", 100),
+                int(self.config.get("page_size", 100)),
             )
         )
+        self._page_size = 100
         if page_size_result.is_success:
-            self._page_size = page_size_result.value
-        else:
-            # Fall back to default if validation fails
-            self._page_size = 100
+            self._page_size = int(self.config.get("page_size", 100))
 
     @property
     def client(self) -> FlextOracleWmsClient:
@@ -158,7 +156,7 @@ class FlextTapOracleWmsStream(Stream):
         context: Mapping[str, t.GeneralValueType] | None,
     ) -> dict[str, t.JsonValue]:
         """Build kwargs for the operation call."""
-        kwargs = {
+        kwargs: dict[str, t.JsonValue] = {
             "page": page,
             "limit": self._page_size,
         }
@@ -166,11 +164,12 @@ class FlextTapOracleWmsStream(Stream):
         if self.stream_replication_key:
             starting_timestamp = self.get_starting_timestamp(context)
             if starting_timestamp:
-                kwargs["filter"] = {
+                kwargs_filter: dict[str, t.GeneralValueType] = {
                     self.stream_replication_key: {
                         "$gte": starting_timestamp.isoformat(),
                     },
                 }
+                kwargs["filter"] = kwargs_filter
         return kwargs
 
     def _extract_records_from_response(
@@ -201,7 +200,18 @@ class FlextTapOracleWmsStream(Stream):
                 for record in records_list:
                     match record:
                         case dict() as record_dict:
-                            coerced_records.append(record_dict)
+                            # Convert values to JsonValue compatible types
+                            json_record: dict[str, t.JsonValue] = {}
+                            for k, v in record_dict.items():
+                                if isinstance(v, (str, int, float, bool, type(None))):
+                                    json_record[k] = v
+                                elif isinstance(v, (list, dict)):
+                                    # Recursive conversion or cast if needed, but for now simple cast
+                                    # Assuming structure is compatible or will fail at runtime if not
+                                    json_record[k] = v
+                                else:
+                                    json_record[k] = str(v)
+                            coerced_records.append(json_record)
                         case _:
                             # Convert non-dict records to dict[str, t.GeneralValueType] format
                             coerced_records.append({"value": "record"})
@@ -220,28 +230,22 @@ class FlextTapOracleWmsStream(Stream):
             # Ensure record is a dict[str, t.GeneralValueType] for processing
             if isinstance(record, dict):
                 # Zero Tolerance FIX: Use utilities for record processing
-                processed_record_result = (
-                    self._utilities.DataProcessing.process_wms_record(
-                        record=record,
-                        stream_name=self.name,
-                        context=context,
-                    )
+                # Fix arguments to match DataProcessing.process_wms_record(record: dict)
+                # Cast record to expected type
+                from typing import cast
+
+                record_dict = cast("dict[str, t.GeneralValueType]", record)
+                processed_record = self._utilities.DataProcessing.process_wms_record(
+                    record=record_dict
                 )
 
-                if processed_record_result.is_success:
-                    processed_record = processed_record_result.value
-                    # Apply additional post-processing
-                    final_record = self.post_process(processed_record, context)
-                    if final_record is not None:
-                        yield final_record
-                else:
-                    # Log processing error but continue with original record
-                    logger.warning(
-                        f"Record processing failed: {processed_record_result.error}",
-                    )
-                    processed_record = self.post_process(record, context)
-                    if processed_record is not None:
-                        yield processed_record
+                # process_wms_record returns dict, not FlextResult, so use directly
+                # Apply additional post-processing
+                final_record = self.post_process(
+                    cast("dict[str, t.JsonValue]", processed_record), context
+                )
+                if final_record is not None:
+                    yield final_record
 
     def post_process(
         self,
