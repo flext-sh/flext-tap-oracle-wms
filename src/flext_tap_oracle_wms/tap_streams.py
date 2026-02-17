@@ -54,14 +54,12 @@ class FlextTapOracleWmsStream(Stream):
         # Zero Tolerance FIX: Use utilities for stream configuration processing
         page_size_result = (
             self._utilities.ConfigurationProcessing.validate_stream_page_size(
-                self.config.get("page_size", 100),
+                int(self.config.get("page_size", 100)),
             )
         )
+        self._page_size = 100
         if page_size_result.is_success:
-            self._page_size = page_size_result.value
-        else:
-            # Fall back to default if validation fails
-            self._page_size = 100
+            self._page_size = int(self.config.get("page_size", 100))
 
         # Initialize instance variables for dynamic configuration
         self.stream_primary_keys: list[str] = []
@@ -90,9 +88,9 @@ class FlextTapOracleWmsStream(Stream):
         return self.stream_primary_keys or []
 
     @primary_keys.setter
-    def primary_keys(self, value: Sequence[str]) -> None:
+    def primary_keys(self, new_value: Sequence[str]) -> None:
         """Set primary keys for this stream."""
-        self.stream_primary_keys = list(value)
+        self.stream_primary_keys = list(new_value)
 
     @property
     def replication_key(self) -> str | None:
@@ -100,9 +98,9 @@ class FlextTapOracleWmsStream(Stream):
         return self.stream_replication_key
 
     @replication_key.setter
-    def replication_key(self, value: str | None) -> None:
+    def replication_key(self, new_value: str | None) -> None:
         """Set replication key for this stream."""
-        self.stream_replication_key = value
+        self.stream_replication_key = new_value
 
     def _run(
         self,
@@ -177,7 +175,7 @@ class FlextTapOracleWmsStream(Stream):
         context: Mapping[str, t.GeneralValueType] | None,
     ) -> dict[str, t.JsonValue]:
         """Build kwargs for the operation call."""
-        kwargs = {
+        kwargs: dict[str, t.JsonValue] = {
             "page": page,
             "limit": self._page_size,
         }
@@ -185,11 +183,12 @@ class FlextTapOracleWmsStream(Stream):
         if self._replication_key:
             starting_timestamp = self.get_starting_timestamp(context)
             if starting_timestamp:
-                kwargs["filter"] = {
+                kwargs_filter: dict[str, t.GeneralValueType] = {
                     self._replication_key: {
                         "$gte": starting_timestamp.isoformat(),
                     },
                 }
+                kwargs["filter"] = kwargs_filter
         return kwargs
 
     def _extract_records_from_response(
@@ -220,7 +219,17 @@ class FlextTapOracleWmsStream(Stream):
                 for record in records_list:
                     match record:
                         case dict() as record_dict:
-                            coerced_records.append(record_dict)
+                            # Convert values to JsonValue compatible types
+                            json_record: dict[str, t.JsonValue] = {}
+                            for k, v in record_dict.items():
+                                if isinstance(v, (str, int, float, bool, type(None))):
+                                    json_record[k] = v
+                                elif isinstance(v, (list, dict)):
+                                    # Recursive conversion or cast if needed
+                                    json_record[k] = v
+                                else:
+                                    json_record[k] = str(v)
+                            coerced_records.append(json_record)
                         case _:
                             # Convert non-dict records to dict[str, t.GeneralValueType] format
                             coerced_records.append({"value": "record"})
@@ -238,9 +247,23 @@ class FlextTapOracleWmsStream(Stream):
         for record in records:
             # Ensure record is a dict[str, t.GeneralValueType] for processing
             if isinstance(record, dict):
-                processed_record = self.post_process(record, context)
-                if processed_record is not None:
-                    yield processed_record
+                # Zero Tolerance FIX: Use utilities for record processing
+                # Fix arguments to match DataProcessing.process_wms_record(record: dict)
+                # Cast record to expected type
+                from typing import cast
+
+                record_dict = cast("dict[str, t.GeneralValueType]", record)
+                processed_record = self._utilities.DataProcessing.process_wms_record(
+                    record=record_dict
+                )
+
+                # process_wms_record returns dict, not FlextResult, so use directly
+                # Apply additional post-processing
+                final_record = self.post_process(
+                    cast("dict[str, t.JsonValue]", processed_record), context
+                )
+                if final_record is not None:
+                    yield final_record
 
     def post_process(
         self,

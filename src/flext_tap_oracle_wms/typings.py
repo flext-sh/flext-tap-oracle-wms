@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Literal
 
 from flext_core import FlextTypes
@@ -8,8 +7,8 @@ from flext_core import FlextTypes
 
 class FlextMeltanoTapOracleWmsTypes(FlextTypes):
     class Core:
-        type Dict = Mapping[str, FlextTypes.GeneralValueType]
-        type Headers = Mapping[str, str]
+        type Dict = dict[str, FlextTypes.GeneralValueType]
+        type Headers = dict[str, str]
 
     class Project:
         type ProjectType = Literal[

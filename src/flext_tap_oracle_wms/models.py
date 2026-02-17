@@ -1051,7 +1051,9 @@ class FlextTapOracleWmsModels(FlextModels):
             )
 
             stream_name: str = Field(..., description="Stream name")
-            properties: dict[str, t.GeneralValueType] = Field(..., description="Schema properties")
+            properties: dict[str, t.GeneralValueType] = Field(
+                ..., description="Schema properties"
+            )
 
             def to_singer_schema(self) -> dict[str, t.GeneralValueType]:
                 """Convert to Singer schema format."""

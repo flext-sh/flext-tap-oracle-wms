@@ -21,7 +21,9 @@ class FlextTapOracleWmsConstants(FlextConstants):
     """
 
     # Oracle WMS Connection Configuration
-    DEFAULT_WMS_TIMEOUT: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
+    # DEFAULT_WMS_TIMEOUT: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
+    # Using local Connection class to break cycle
+    DEFAULT_WMS_TIMEOUT: Final[int] = 30
     DEFAULT_FETCH_SIZE: Final[int] = (
         FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
     )
@@ -47,8 +49,8 @@ class FlextTapOracleWmsConstants(FlextConstants):
     class TapOracleWms:
         """Oracle WMS connection configuration."""
 
-        DEFAULT_TIMEOUT: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
-        MAX_RETRIES: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_MAX_RETRIES
+        DEFAULT_TIMEOUT: Final[int] = 30
+        MAX_RETRIES: Final[int] = 3
 
     class TapWmsProcessing:
         """WMS tap processing configuration.
@@ -62,9 +64,7 @@ class FlextTapOracleWmsConstants(FlextConstants):
         MAX_RECORDS_PER_BATCH: Final[int] = (
             FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
         )
-        DEFAULT_API_TIMEOUT: Final[int] = (
-            FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
-        )
+        DEFAULT_API_TIMEOUT: Final[int] = 30
         ORACLE_WMS_PAGE_SIZE_LIMIT: Final[int] = 1250
         USERNAME_TRUNCATION_LENGTH: Final[int] = 3
         HIGH_ALLOCATION_THRESHOLD: Final[float] = 0.8
@@ -76,9 +76,7 @@ class FlextTapOracleWmsConstants(FlextConstants):
         DEFAULT_ENTITY_LIMIT: Final[int] = (
             FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
         )
-        DEFAULT_DISCOVERY_TIMEOUT: Final[int] = (
-            FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
-        )
+        DEFAULT_DISCOVERY_TIMEOUT: Final[int] = 30
         MAX_ENTITY_BATCH_SIZE: Final[int] = (
             FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
         )
