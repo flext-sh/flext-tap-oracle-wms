@@ -57,6 +57,14 @@
         flext-tap-oracle-wms = "flext_tap_oracle_wms.tap:main"
         tap-oracle-wms       = "flext_tap_oracle_wms.tap:main"
 
+    [tool.pyrefly]
+        search-path = [
+            "../typings",
+            "../typings/generated",
+            "src",
+            "tests",
+        ]
+
 [tool.ruff]
     extend = "../ruff-shared.toml"
 
