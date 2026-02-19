@@ -1,7 +1,7 @@
 # Architecture Documentation
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Documentation Structure](#documentation-structure)
   - [Architecture Analysis](#architecture-analysis)
@@ -31,6 +31,7 @@
   - [Project Documentation](#project-documentation)
   - [FLEXT Ecosystem](#flext-ecosystem)
   - [External References](#external-references)
+
 <!-- TOC END -->
 
 ## Overview
@@ -52,28 +53,28 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 ### FLEXT Ecosystem Principles
 
 1. **Simplicity Over Complexity**: Favor simple, maintainable solutions
-2. **Single Responsibility**: Each component has one clear purpose
-3. **Dependency Inversion**: Depend on abstractions, not concretions
-4. **Configuration as Code**: All configuration should be version-controlled and validated
-5. **Observability by Design**: Built-in monitoring and logging
+1. **Single Responsibility**: Each component has one clear purpose
+1. **Dependency Inversion**: Depend on abstractions, not concretions
+1. **Configuration as Code**: All configuration should be version-controlled and validated
+1. **Observability by Design**: Built-in monitoring and logging
 
 ### Singer SDK Compliance
 
 1. **Stream-Based Architecture**: Data flows through well-defined streams
-2. **Schema Discovery**: Dynamic schema discovery from source systems
-3. **Incremental Extraction**: Support for both full table and incremental replication
-4. **State Management**: Proper state handling for resumable extractions
-5. **Error Recovery**: Graceful error handling and recovery mechanisms
+1. **Schema Discovery**: Dynamic schema discovery from source systems
+1. **Incremental Extraction**: Support for both full table and incremental replication
+1. **State Management**: Proper state handling for resumable extractions
+1. **Error Recovery**: Graceful error handling and recovery mechanisms
 
 ## Current Architecture Issues
 
 ### Critical Problems
 
 1. **Over-Engineering**: 26 components for simple functionality
-2. **Code Duplication**: Multiple competing implementations
-3. **Test Infrastructure**: 27% of tests disabled
-4. **Configuration Chaos**: 4 different configuration systems
-5. **FLEXT Integration**: Inconsistent use of ecosystem patterns
+1. **Code Duplication**: Multiple competing implementations
+1. **Test Infrastructure**: 27% of tests disabled
+1. **Configuration Chaos**: 4 different configuration systems
+1. **FLEXT Integration**: Inconsistent use of ecosystem patterns
 
 ### Impact Assessment
 
@@ -117,12 +118,12 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 ### Quantitative Benefits
 
-| Metric              | Current   | Target  | Improvement |
-| ------------------- | --------- | ------- | ----------- |
-| **Maintainability** | Very Low  | High    | 400%        |
-| **Test Coverage**   | ~70%      | 100%    | 43%         |
-| **Build Time**      | ~2 min    | <30 sec | 300%        |
-| **Code Complexity** | Very High | Low     | 80%         |
+| Metric              | Current   | Target   | Improvement |
+| ------------------- | --------- | -------- | ----------- |
+| **Maintainability** | Very Low  | High     | 400%        |
+| **Test Coverage**   | ~70%      | 100%     | 43%         |
+| **Build Time**      | ~2 min    | \<30 sec | 300%        |
+| **Code Complexity** | Very High | Low      | 80%         |
 
 ### Qualitative Benefits
 
@@ -136,32 +137,32 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 ### ADR-001: Complete Rewrite vs Incremental Refactoring
 
-**Decision**: Complete rewrite of the tap implementation  
-**Rationale**: 90% code reduction is more efficiently achieved through rewrite  
+**Decision**: Complete rewrite of the tap implementation\
+**Rationale**: 90% code reduction is more efficiently achieved through rewrite\
 **Status**: Approved · 1.0.0 Release Preparation
 
 ### ADR-002: FLEXT Ecosystem Integration Strategy
 
-**Decision**: Full integration with flext-core, flext-oracle-wms, and flext-meltano  
-**Rationale**: Consistency with ecosystem patterns and reduced maintenance burden  
+**Decision**: Full integration with flext-core, flext-oracle-wms, and flext-meltano\
+**Rationale**: Consistency with ecosystem patterns and reduced maintenance burden\
 **Status**: Approved · 1.0.0 Release Preparation
 
 ### ADR-003: Singer SDK Compliance Level
 
-**Decision**: Full Singer SDK specification compliance  
-**Rationale**: Ensures interoperability with Meltano and other Singer ecosystem tools  
+**Decision**: Full Singer SDK specification compliance\
+**Rationale**: Ensures interoperability with Meltano and other Singer ecosystem tools\
 **Status**: Approved · 1.0.0 Release Preparation
 
 ### ADR-004: Testing Strategy
 
-**Decision**: 100% test coverage with comprehensive mocking  
-**Rationale**: Address current issue of disabled tests and ensure reliability  
+**Decision**: 100% test coverage with comprehensive mocking\
+**Rationale**: Address current issue of disabled tests and ensure reliability\
 **Status**: Approved · 1.0.0 Release Preparation
 
 ### ADR-005: Configuration Management
 
-**Decision**: Single configuration system using Pydantic and flext-core patterns  
-**Rationale**: Eliminate configuration chaos and provide consistent validation  
+**Decision**: Single configuration system using Pydantic and flext-core patterns\
+**Rationale**: Eliminate configuration chaos and provide consistent validation\
 **Status**: Approved · 1.0.0 Release Preparation
 
 ## Related Documentation
@@ -183,6 +184,6 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 - **[Clean Architecture Principles](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)** - Architectural patterns
 - **[Meltano Documentation](https://docs.meltano.com/)** - Orchestration platform
 
----
+______________________________________________________________________
 
 **Updated**: 2025-08-13 | **Status**: Architecture Defined · 1.0.0 Release Preparation | **Next**: Implementation Planning

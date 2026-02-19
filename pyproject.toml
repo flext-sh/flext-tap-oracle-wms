@@ -153,7 +153,17 @@ per_rule_ignores.DEP002 = [
 ]
 
 [tool.pytest]
-ini_options.addopts = [ "--maxfail=1", "--strict-config", "--strict-markers", "--tb=short", "-ra" ]
+ini_options.addopts = [
+  "--strict-config",
+  "--strict-markers",
+  "--tb=short",
+  "-p no:sugar",
+  "-q",
+  "-ra",
+  "--timeout=30",
+  "--timeout-method=signal",
+  "--durations=0",
+]
 ini_options.markers = [
   "e2e: End-to-end tests",
   "integration: Integration tests",

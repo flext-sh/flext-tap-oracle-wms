@@ -121,10 +121,10 @@ class FlextTapOracleWmsConstants(FlextConstants):
     # Type-safe literals - PEP 695 syntax for type checking
     # All Literal types reference StrEnum members where available - NO string duplication!
     type WmsEntityTypeLiteral = Literal[
-        WmsEntityType.INVENTORY,
-        WmsEntityType.SHIPMENT,
-        WmsEntityType.PICKING,
-        WmsEntityType.RECEIVING,
+        "INVENTORY",
+        "SHIPMENT",
+        "PICKING",
+        "RECEIVING",
     ]
     """Oracle WMS entity type literal - references WmsEntityType StrEnum members."""
 

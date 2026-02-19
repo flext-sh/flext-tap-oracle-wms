@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Coroutine, Iterable, Mapping
+from collections.abc import Iterable, Mapping
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, t
@@ -86,11 +86,9 @@ class FlextTapOracleWmsStream(Stream):
 
     def _run(
         self,
-        coro: Coroutine[object, object, object] | Awaitable[object],
-    ) -> object:
-        """Run coroutine in sync context."""
-        # Zero Tolerance FIX: Use utilities instead of duplicate code
-        return self._utilities.Utilities.run(coro)
+        value: t.GeneralValueType,
+    ) -> t.GeneralValueType:
+        return value
 
     def get_records(
         self,
@@ -147,7 +145,13 @@ class FlextTapOracleWmsStream(Stream):
             logger.error("Failed to get records for %s: %s", self.name, error_msg)
             return None
         # Extract and process response data
-        data: t.GeneralValueType = getattr(result, "value", result)
+        data_raw = getattr(result, "value", result)
+        data: t.GeneralValueType = (
+            data_raw
+            if isinstance(data_raw, (str, int, float, bool, dict, list))
+            or data_raw is None
+            else {}
+        )
         return self._extract_records_from_response(data)
 
     def _build_operation_kwargs(
@@ -234,7 +238,13 @@ class FlextTapOracleWmsStream(Stream):
                     record=record_dict
                 )
                 if isinstance(processed_record, dict):
-                    final_record = self.post_process(processed_record, context)
+                    json_row: dict[str, t.JsonValue] = {
+                        str(k): v
+                        for k, v in processed_record.items()
+                        if isinstance(v, (str, int, float, bool, dict, list))
+                        or v is None
+                    }
+                    final_record = self.post_process(json_row, context)
                     if final_record is not None:
                         yield final_record
 
