@@ -6,6 +6,7 @@
 > Project profile: `flext-tap-oracle-wms`
 
 
+
 <!-- TOC START -->
 - Quick Diagnosis
   - Health Check Commands
@@ -35,6 +36,7 @@
   - Self-Service Resources
   - Community Support
   - Reporting Issues
+  - Your minimal example here
 - Prevention
   - Best Practices
 - Resources
