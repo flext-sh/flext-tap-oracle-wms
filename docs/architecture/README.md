@@ -1,5 +1,38 @@
 # Architecture Documentation
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Documentation Structure](#documentation-structure)
+  - [Architecture Analysis](#architecture-analysis)
+  - [Integration Documentation](#integration-documentation)
+  - [Design Patterns](#design-patterns)
+- [Architecture Principles](#architecture-principles)
+  - [FLEXT Ecosystem Principles](#flext-ecosystem-principles)
+  - [Singer SDK Compliance](#singer-sdk-compliance)
+- [Current Architecture Issues](#current-architecture-issues)
+  - [Critical Problems](#critical-problems)
+  - [Impact Assessment](#impact-assessment)
+- [Architecture Migration Strategy](#architecture-migration-strategy)
+  - [Phase 1: Analysis and Planning](#phase-1-analysis-and-planning)
+  - [Phase 2: Foundation](#phase-2-foundation)
+  - [Phase 3: Implementation](#phase-3-implementation)
+  - [Phase 4: Integration](#phase-4-integration)
+- [Target Architecture Benefits](#target-architecture-benefits)
+  - [Quantitative Benefits](#quantitative-benefits)
+  - [Qualitative Benefits](#qualitative-benefits)
+- [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
+  - [ADR-001: Complete Rewrite vs Incremental Refactoring](#adr-001-complete-rewrite-vs-incremental-refactoring)
+  - [ADR-002: FLEXT Ecosystem Integration Strategy](#adr-002-flext-ecosystem-integration-strategy)
+  - [ADR-003: Singer SDK Compliance Level](#adr-003-singer-sdk-compliance-level)
+  - [ADR-004: Testing Strategy](#adr-004-testing-strategy)
+  - [ADR-005: Configuration Management](#adr-005-configuration-management)
+- [Related Documentation](#related-documentation)
+  - [Project Documentation](#project-documentation)
+  - [FLEXT Ecosystem](#flext-ecosystem)
+  - [External References](#external-references)
+<!-- TOC END -->
+
 ## Overview
 
 This directory contains comprehensive architectural documentation for FLEXT Tap Oracle WMS, including current state analysis, target architecture, and FLEXT ecosystem integration patterns.

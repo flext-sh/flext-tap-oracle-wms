@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Final, Self
+from typing import Any, Final, Self
 
 from flext_core import (
     FlextConstants,
@@ -234,13 +234,14 @@ class FlextTapOracleWmsSettings(FlextSettings):
         project_name: str,
         **overrides: t.GeneralValueType,
     ) -> Self:
-        from typing import Any
-
+        """Create or return a shared instance for this project."""
+        _ = project_name
         init_kwargs: dict[str, Any] = overrides
         return cls(**init_kwargs)
 
     @classmethod
     def get_global_instance(cls) -> Self:
+        """Return the global singleton settings instance."""
         return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")
 
     @classmethod
@@ -308,6 +309,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
     @field_validator("start_date", "end_date")
     @classmethod
     def validate_dates(cls, v: str | None) -> str | None:
+        """Validate date fields using ISO-8601 compatible parsing."""
         if v is not None:
             normalized = v.replace("Z", "+00:00")
             try:
@@ -407,4 +409,5 @@ class FlextTapOracleWmsSettings(FlextSettings):
         return FlextResult[bool].ok(value=True)
 
     def validate_domain_rules(self) -> FlextResult[bool]:
+        """Validate domain rules using the canonical business-rules gate."""
         return self.validate_business_rules()

@@ -1,5 +1,42 @@
 # Test Documentation
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Current Test Status](#current-test-status)
+  - [Test Coverage Analysis](#test-coverage-analysis)
+- [Test Structure](#test-structure)
+- [Disabled Tests Analysis](#disabled-tests-analysis)
+  - [Critical Disabled Files](#critical-disabled-files)
+- [Test Execution Guide](#test-execution-guide)
+  - [Working Tests (Current)](#working-tests-current)
+  - [Test Markers](#test-markers)
+  - [Environment Variables](#environment-variables)
+- [Testing Strategy](#testing-strategy)
+  - [Unit Testing Strategy](#unit-testing-strategy)
+  - [Integration Testing Strategy (Planned)](#integration-testing-strategy-planned)
+  - [E2E Testing Strategy (Future)](#e2e-testing-strategy-future)
+- [Test Data Management](#test-data-management)
+  - [Current Test Data](#current-test-data)
+  - [Required Test Data Structure](#required-test-data-structure)
+- [Mocking Strategy](#mocking-strategy)
+  - [WMS Client Mocking](#wms-client-mocking)
+  - [Configuration Mocking](#configuration-mocking)
+- [Test Re-enabling Plan](#test-re-enabling-plan)
+  - [Phase 1: Infrastructure (Week 1)](#phase-1-infrastructure-week-1)
+  - [Phase 2: Core Tests (Week 2)](#phase-2-core-tests-week-2)
+  - [Phase 3: Integration Tests (Week 3)](#phase-3-integration-tests-week-3)
+  - [Phase 4: E2E Tests (Week 4)](#phase-4-e2e-tests-week-4)
+- [Quality Standards](#quality-standards)
+  - [Test Quality Requirements](#test-quality-requirements)
+  - [Test Naming Conventions](#test-naming-conventions)
+- [Troubleshooting Test Issues](#troubleshooting-test-issues)
+  - [Common Test Problems](#common-test-problems)
+- [Contributing to Tests](#contributing-to-tests)
+  - [Adding New Tests](#adding-new-tests)
+  - [Test Review Checklist](#test-review-checklist)
+<!-- TOC END -->
+
 ## Overview
 
 This directory contains the test suite for FLEXT Tap Oracle WMS. The testing strategy covers unit, integration, and end-to-end testing with a focus on Singer protocol compliance and FLEXT ecosystem integration.

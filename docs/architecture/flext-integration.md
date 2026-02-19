@@ -1,5 +1,25 @@
 # FLEXT Ecosystem Integration
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [FLEXT Ecosystem Architecture](#flext-ecosystem-architecture)
+- [Integration Patterns](#integration-patterns)
+  - [1. flext-core Integration](#1-flext-core-integration)
+  - [2. flext-oracle-wms Integration](#2-flext-oracle-wms-integration)
+  - [3. flext-meltano Integration](#3-flext-meltano-integration)
+  - [4. flext-observability Integration](#4-flext-observability-integration)
+- [Integration Benefits](#integration-benefits)
+  - [Consistency](#consistency)
+  - [Maintainability](#maintainability)
+  - [Observability](#observability)
+  - [Scalability](#scalability)
+- [Migration Considerations](#migration-considerations)
+  - [Current Integration Issues](#current-integration-issues)
+  - [Migration Strategy](#migration-strategy)
+  - [Validation Steps](#validation-steps)
+<!-- TOC END -->
+
 ## Overview
 
 This document describes the integration patterns between FLEXT Tap Oracle WMS and the FLEXT ecosystem components, including flext-core, flext-oracle-wms, flext-meltano, and flext-observability.

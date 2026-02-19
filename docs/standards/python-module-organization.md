@@ -1,5 +1,48 @@
 # Python Module Organization & Semantic Patterns
 
+
+<!-- TOC START -->
+- [🏗️ **Module Architecture Overview**](#-module-architecture-overview)
+  - [**Core Design Principles**](#core-design-principles)
+- [📁 **Target Module Structure & Responsibilities**](#-target-module-structure-responsibilities)
+  - [**Current State Analysis**](#current-state-analysis)
+  - [**Target Simplified Structure**](#target-simplified-structure)
+- [📦 **Module Definitions & Semantic Patterns**](#-module-definitions-semantic-patterns)
+  - [**Foundation Layer - Public API**](#foundation-layer-public-api)
+  - [**Application Layer - Tap Implementation**](#application-layer-tap-implementation)
+  - [**Application Layer - Stream Implementation**](#application-layer-stream-implementation)
+  - [**Infrastructure Layer - Configuration**](#infrastructure-layer-configuration)
+  - [**Domain Layer - Discovery & Schema**](#domain-layer-discovery-schema)
+  - [**Infrastructure Layer - Authentication & Utilities**](#infrastructure-layer-authentication-utilities)
+- [🎯 **Semantic Naming Conventions**](#-semantic-naming-conventions)
+  - [**Module Naming Standards**](#module-naming-standards)
+  - [**Class Naming Standards**](#class-naming-standards)
+  - [**Function and Method Naming**](#function-and-method-naming)
+- [📦 **Import Patterns & Dependencies**](#-import-patterns-dependencies)
+  - [**Dependency Hierarchy**](#dependency-hierarchy)
+  - [**Standard Import Patterns**](#standard-import-patterns)
+  - [**Anti-Patterns (Forbidden)**](#anti-patterns-forbidden)
+- [🏛️ **Architectural Patterns for Singer Taps**](#-architectural-patterns-for-singer-taps)
+  - [**Singer SDK Integration Pattern**](#singer-sdk-integration-pattern)
+  - [**FLEXT Integration Pattern**](#flext-integration-pattern)
+  - [**Clean Architecture Boundaries**](#clean-architecture-boundaries)
+- [🔄 **Migration Strategy from Current Architecture**](#-migration-strategy-from-current-architecture)
+  - [**Refactoring Approach**](#refactoring-approach)
+  - [**Migration Validation**](#migration-validation)
+- [🧪 **Testing Module Organization**](#-testing-module-organization)
+  - [**Test Structure Alignment**](#test-structure-alignment)
+  - [**Testing Patterns**](#testing-patterns)
+- [📏 **Quality Standards & Validation**](#-quality-standards-validation)
+  - [**Module Quality Metrics**](#module-quality-metrics)
+  - [**Documentation Standards**](#documentation-standards)
+- [🌐 **FLEXT Ecosystem Integration Standards**](#-flext-ecosystem-integration-standards)
+  - [**Consistent Pattern Usage**](#consistent-pattern-usage)
+  - [**Library Integration**](#library-integration)
+- [📋 **Module Creation Checklist**](#-module-creation-checklist)
+  - [**New Module Standards**](#new-module-standards)
+  - [**Refactoring Validation**](#refactoring-validation)
+<!-- TOC END -->
+
 **FLEXT Tap Oracle WMS - Singer Tap Module Architecture & Best Practices**
 
 ---
