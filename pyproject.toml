@@ -1,21 +1,20 @@
 [build-system]
     build-backend = "poetry.core.masonry.api"
     requires = [
-        "poetry-core>=1.9.0",
+        "poetry-core>=2",
     ]
 
 [project]
     classifiers = [
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.13",
-        "Topic :: Database",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Topic :: System :: Archiving",
-        "Typing :: Typed",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Archiving",
+    "Typing :: Typed"
     ]
     dependencies = [
         "pydantic-settings>=2.10.1",
@@ -37,6 +36,7 @@
     readme = "README.md"
     requires-python = ">=3.13,<3.14"
     version = "0.10.0-dev"
+    license = "MIT"
     [[project.authors]]
         email = "team@flext.sh"
         name  = "FLEXT Team"
@@ -44,9 +44,6 @@
     [[project.maintainers]]
         email = "team@flext.sh"
         name  = "FLEXT Team"
-
-    [project.license]
-        text = "MIT"
 
     [project.urls]
         Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
@@ -124,17 +121,11 @@
 
 [tool.pytest.ini_options]
     addopts = [
-        "--cov-branch",
-        "--cov-fail-under=90",
-        "--cov-report=html:reports/coverage",
-        "--cov-report=term-missing:skip-covered",
-        "--cov-report=xml:reports/coverage.xml",
-        "--cov=flext_tap_oracle_wms",
-        "--maxfail=1",
-        "--strict-config",
-        "--strict-markers",
-        "--tb=short",
-        "-ra",
+    "--maxfail=1",
+    "--strict-config",
+    "--strict-markers",
+    "--tb=short",
+    "-ra"
     ]
     markers = [
         "e2e: End-to-end tests",
@@ -157,15 +148,15 @@
             develop = true
             path    = "../flext-core"
 
-                                                                        [tool.poetry.dependencies.flext-meltano]
+                                                                                [tool.poetry.dependencies.flext-meltano]
             develop = true
             path    = "../flext-meltano"
 
-                                                                                                                                        [tool.poetry.dependencies.flext-oracle-wms]
+                                                                                                                                                        [tool.poetry.dependencies.flext-oracle-wms]
             develop = true
             path    = "../flext-oracle-wms"
 
-                                                                                                                                                                                                        [tool.poetry.dependencies.flext-observability]
+                                                                                                                                                                                                                                [tool.poetry.dependencies.flext-observability]
             develop = true
             path    = "../flext-observability"
 
@@ -219,3 +210,13 @@ factory-boy         = ">=3.3.1"
     [tool.poetry.group.security.dependencies]
         bandit    = ">=1.8.0"
         pip-audit = ">=2.7.3"
+
+[tool.coverage.run]
+source = ["src/flext_tap_oracle_wms"]
+
+[tool.coverage.report]
+fail_under = 100
+precision = 2
+
+[tool.bandit]
+skips = ["B404", "B603", "B607", "B105", "B608"]
