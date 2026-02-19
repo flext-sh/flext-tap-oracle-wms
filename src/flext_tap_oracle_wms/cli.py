@@ -61,7 +61,7 @@ def main() -> None:
         SystemExit: On configuration errors or execution failures
 
     """
-    FlextTapOracleWms.cli()
+    FlextTapOracleWms().cli()
 
 
 if __name__ == "__main__":

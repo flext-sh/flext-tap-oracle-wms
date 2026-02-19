@@ -1,7 +1,7 @@
 # Configuration Examples
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Configuration Structure](#configuration-structure)
   - [Basic Configuration Format](#basic-configuration-format)
@@ -36,6 +36,7 @@
   - [Data Warehouse Integration](#data-warehouse-integration)
   - [Real-time Inventory Monitoring](#real-time-inventory-monitoring)
   - [Compliance Reporting](#compliance-reporting)
+
 <!-- TOC END -->
 
 ## Overview
@@ -513,7 +514,7 @@ tap-oracle-wms --config config.json --discover
 }
 ```
 
----
+______________________________________________________________________
 
 **Updated**: 2025-08-13
 **Status**: Configuration examples available for all common use cases · 1.0.0 Release Preparation

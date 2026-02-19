@@ -1,7 +1,7 @@
 # Unit Tests
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Test Structure](#test-structure)
   - [**Working Unit Tests**](#working-unit-tests)
@@ -30,6 +30,7 @@
 - [Contributing to Unit Tests](#contributing-to-unit-tests)
   - [**Adding New Tests**](#adding-new-tests)
   - [**Test Review Checklist**](#test-review-checklist)
+
 <!-- TOC END -->
 
 ## Overview
@@ -59,12 +60,14 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 #### **Configuration Tests**
 
 - **[test_config_mapper_comprehensive.py](test_config_mapper_comprehensive.py)** - Configuration mapping
+
   - Configuration transformation
   - Default value application
   - Validation rule mapping
   - Type conversion handling
 
 - **[test_config.py](test_config.py)** - Basic configuration validation
+
   - Configuration model testing
   - Required field validation
   - Type checking and constraints
@@ -359,14 +362,14 @@ def assert_flext_result_error(result, expected_error_type=None):
    pytest tests/unit/
    ```
 
-2. **Mock Configuration**
+1. **Mock Configuration**
 
    ```bash
    # Debug mock setup
    pytest tests/unit/test_specific.py -v -s --tb=short
    ```
 
-3. **Coverage Issues**
+1. **Coverage Issues**
 
    ```bash
    # Clean coverage data
@@ -396,10 +399,10 @@ def test_debug_example():
 ### **Adding New Tests**
 
 1. **Identify Component**: Determine which component needs testing
-2. **Create Test File**: Follow naming convention `test_[component].py`
-3. **Write Isolated Tests**: Use mocks to eliminate dependencies
-4. **Follow Patterns**: Use established test patterns and fixtures
-5. **Document Purpose**: Clear docstrings explaining test intent
+1. **Create Test File**: Follow naming convention `test_[component].py`
+1. **Write Isolated Tests**: Use mocks to eliminate dependencies
+1. **Follow Patterns**: Use established test patterns and fixtures
+1. **Document Purpose**: Clear docstrings explaining test intent
 
 ### **Test Review Checklist**
 
@@ -411,6 +414,6 @@ def test_debug_example():
 - [ ] Test executes quickly (< 100ms per test)
 - [ ] Test is deterministic and reliable
 
----
+______________________________________________________________________
 
 **Status**: Core unit tests working with good coverage · 1.0.0 Release Preparation | **Priority**: Maintain isolation and coverage | **Updated**: 2025-08-13

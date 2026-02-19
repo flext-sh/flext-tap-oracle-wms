@@ -14,9 +14,8 @@ from flext_tap_oracle_wms.client import (
     FlextTapOracleWms,
     FlextTapOracleWmsPlugin,
 )
-from flext_tap_oracle_wms.config import (
+from flext_tap_oracle_wms.constants import (
     FlextTapOracleWmsConstants,
-    FlextTapOracleWmsSettings,
 )
 from flext_tap_oracle_wms.exceptions import (
     FlextTapOracleWmsConnectionError,
@@ -26,8 +25,14 @@ from flext_tap_oracle_wms.exceptions import (
 )
 from flext_tap_oracle_wms.models import FlextTapOracleWmsModels, m, m_tap_oracle_wms
 from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols
+from flext_tap_oracle_wms.settings import (
+    FlextTapOracleWmsSettings,
+)
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
-from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities as u
+from flext_tap_oracle_wms.utilities import (
+    FlextTapOracleWmsUtilities,
+    FlextTapOracleWmsUtilities as u,
+)
 from flext_tap_oracle_wms.version import (
     VERSION,
     VERSION as PROJECT_VERSION,

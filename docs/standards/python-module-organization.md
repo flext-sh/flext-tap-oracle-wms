@@ -1,51 +1,52 @@
 # Python Module Organization & Semantic Patterns
 
-
 <!-- TOC START -->
-- [🏗️ **Module Architecture Overview**](#-module-architecture-overview)
+
+- [🏗️ **Module Architecture Overview**](#module-architecture-overview)
   - [**Core Design Principles**](#core-design-principles)
-- [📁 **Target Module Structure & Responsibilities**](#-target-module-structure-responsibilities)
+- [📁 **Target Module Structure & Responsibilities**](#target-module-structure-responsibilities)
   - [**Current State Analysis**](#current-state-analysis)
   - [**Target Simplified Structure**](#target-simplified-structure)
-- [📦 **Module Definitions & Semantic Patterns**](#-module-definitions-semantic-patterns)
+- [📦 **Module Definitions & Semantic Patterns**](#module-definitions-semantic-patterns)
   - [**Foundation Layer - Public API**](#foundation-layer-public-api)
   - [**Application Layer - Tap Implementation**](#application-layer-tap-implementation)
   - [**Application Layer - Stream Implementation**](#application-layer-stream-implementation)
   - [**Infrastructure Layer - Configuration**](#infrastructure-layer-configuration)
   - [**Domain Layer - Discovery & Schema**](#domain-layer-discovery-schema)
   - [**Infrastructure Layer - Authentication & Utilities**](#infrastructure-layer-authentication-utilities)
-- [🎯 **Semantic Naming Conventions**](#-semantic-naming-conventions)
+- [🎯 **Semantic Naming Conventions**](#semantic-naming-conventions)
   - [**Module Naming Standards**](#module-naming-standards)
   - [**Class Naming Standards**](#class-naming-standards)
   - [**Function and Method Naming**](#function-and-method-naming)
-- [📦 **Import Patterns & Dependencies**](#-import-patterns-dependencies)
+- [📦 **Import Patterns & Dependencies**](#import-patterns-dependencies)
   - [**Dependency Hierarchy**](#dependency-hierarchy)
   - [**Standard Import Patterns**](#standard-import-patterns)
   - [**Anti-Patterns (Forbidden)**](#anti-patterns-forbidden)
-- [🏛️ **Architectural Patterns for Singer Taps**](#-architectural-patterns-for-singer-taps)
+- [🏛️ **Architectural Patterns for Singer Taps**](#architectural-patterns-for-singer-taps)
   - [**Singer SDK Integration Pattern**](#singer-sdk-integration-pattern)
   - [**FLEXT Integration Pattern**](#flext-integration-pattern)
   - [**Clean Architecture Boundaries**](#clean-architecture-boundaries)
-- [🔄 **Migration Strategy from Current Architecture**](#-migration-strategy-from-current-architecture)
+- [🔄 **Migration Strategy from Current Architecture**](#migration-strategy-from-current-architecture)
   - [**Refactoring Approach**](#refactoring-approach)
   - [**Migration Validation**](#migration-validation)
-- [🧪 **Testing Module Organization**](#-testing-module-organization)
+- [🧪 **Testing Module Organization**](#testing-module-organization)
   - [**Test Structure Alignment**](#test-structure-alignment)
   - [**Testing Patterns**](#testing-patterns)
-- [📏 **Quality Standards & Validation**](#-quality-standards-validation)
+- [📏 **Quality Standards & Validation**](#quality-standards-validation)
   - [**Module Quality Metrics**](#module-quality-metrics)
   - [**Documentation Standards**](#documentation-standards)
-- [🌐 **FLEXT Ecosystem Integration Standards**](#-flext-ecosystem-integration-standards)
+- [🌐 **FLEXT Ecosystem Integration Standards**](#flext-ecosystem-integration-standards)
   - [**Consistent Pattern Usage**](#consistent-pattern-usage)
   - [**Library Integration**](#library-integration)
-- [📋 **Module Creation Checklist**](#-module-creation-checklist)
+- [📋 **Module Creation Checklist**](#module-creation-checklist)
   - [**New Module Standards**](#new-module-standards)
   - [**Refactoring Validation**](#refactoring-validation)
+
 <!-- TOC END -->
 
 **FLEXT Tap Oracle WMS - Singer Tap Module Architecture & Best Practices**
 
----
+______________________________________________________________________
 
 ## 🏗️ **Module Architecture Overview**
 
@@ -54,12 +55,12 @@ FLEXT Tap Oracle WMS follows a **simplified layered module architecture** aligne
 ### **Core Design Principles**
 
 1. **Singer SDK Compliance**: Follows Singer specification and SDK patterns
-2. **FLEXT Integration**: Leverages flext-core foundation and ecosystem libraries
-3. **Single Responsibility**: Each module has one clear purpose
-4. **Railway-Oriented**: FlextResult[T] threading through all operations
-5. **Simplicity Over Complexity**: Favor maintainable solutions over engineering sophistication
+1. **FLEXT Integration**: Leverages flext-core foundation and ecosystem libraries
+1. **Single Responsibility**: Each module has one clear purpose
+1. **Railway-Oriented**: FlextResult[T] threading through all operations
+1. **Simplicity Over Complexity**: Favor maintainable solutions over engineering sophistication
 
----
+______________________________________________________________________
 
 ## 📁 **Target Module Structure & Responsibilities**
 
@@ -128,7 +129,7 @@ src/flext_tap_oracle_wms/
 - **FLEXT ecosystem integration** using foundation patterns
 - **Singer SDK compliance** without over-engineering
 
----
+______________________________________________________________________
 
 ## 📦 **Module Definitions & Semantic Patterns**
 
@@ -719,7 +720,7 @@ class WMSSchemaError(WMSTapError):
 
 **Responsibility**: Authentication delegation and project-specific error handling.
 
----
+______________________________________________________________________
 
 ## 🎯 **Semantic Naming Conventions**
 
@@ -778,7 +779,7 @@ def schema(self) -> t.Dict:               # Computed property
 
 **Pattern**: Verbs for actions, nouns for properties, clear business intent.
 
----
+______________________________________________________________________
 
 ## 📦 **Import Patterns & Dependencies**
 
@@ -856,7 +857,7 @@ from flext_tap_oracle_wms import *
 from custom_result import CustomResult  # Use FlextResult instead
 ```
 
----
+______________________________________________________________________
 
 ## 🏛️ **Architectural Patterns for Singer Taps**
 
@@ -938,7 +939,7 @@ class AuthenticationManager:
         pass
 ```
 
----
+______________________________________________________________________
 
 ## 🔄 **Migration Strategy from Current Architecture**
 
@@ -1029,7 +1030,7 @@ Configuration Systems: 1 FlextSettings-based
 Test Coverage: 100% (all tests enabled)
 ```
 
----
+______________________________________________________________________
 
 ## 🧪 **Testing Module Organization**
 
@@ -1078,7 +1079,7 @@ def test_entity_discovery():
     pass
 ```
 
----
+______________________________________________________________________
 
 ## 📏 **Quality Standards & Validation**
 
@@ -1125,7 +1126,7 @@ def discover_entities(self) -> FlextResult[t.StringList]:
     pass
 ```
 
----
+______________________________________________________________________
 
 ## 🌐 **FLEXT Ecosystem Integration Standards**
 
@@ -1180,7 +1181,7 @@ class CustomWMSClient:                       # Use FlextOracleWmsClient
 class CustomTap(BaseTap):                    # Use flext_meltano.Tap
 ```
 
----
+______________________________________________________________________
 
 ## 📋 **Module Creation Checklist**
 
@@ -1208,7 +1209,7 @@ class CustomTap(BaseTap):                    # Use flext_meltano.Tap
 - [ ] **Singer Compliance**: Singer protocol tests passing
 - [ ] **Documentation**: Complete documentation update
 
----
+______________________________________________________________________
 
 **Last Updated**: August 4, 2025
 **Target Audience**: FLEXT Tap Oracle WMS developers and architects

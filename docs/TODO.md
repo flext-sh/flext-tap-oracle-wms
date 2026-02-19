@@ -1,48 +1,49 @@
 # FLEXT-TAP-ORACLE-WMS - Desvios e Falhas de Projeto
 
-
 <!-- TOC START -->
-- [🚨 PROBLEMAS CRÍTICOS - AÇÃO IMEDIATA NECESSÁRIA](#-problemas-crticos-ao-imediata-necessria)
+
+- [🚨 PROBLEMAS CRÍTICOS - AÇÃO IMEDIATA NECESSÁRIA](#problemas-crticos-ao-imediata-necessria)
   - [1. **SUPER-ENGENHARIA ARQUITETURAL MASSIVA**](#1-super-engenharia-arquitetural-massiva)
   - [2. **CRISE DE TESTES DESABILITADOS**](#2-crise-de-testes-desabilitados)
   - [3. **DUPLICAÇÃO CRÍTICA DE DEPENDÊNCIAS**](#3-duplicao-crtica-de-dependncias)
-- [⚠️ PROBLEMAS DE ALTA PRIORIDADE](#-problemas-de-alta-prioridade)
+- [⚠️ PROBLEMAS DE ALTA PRIORIDADE](#problemas-de-alta-prioridade)
   - [4. **CAOS NA ARQUITETURA DE CONFIGURAÇÃO**](#4-caos-na-arquitetura-de-configurao)
   - [5. **REDUNDÂNCIA NO SISTEMA DE DISCOVERY**](#5-redundncia-no-sistema-de-discovery)
   - [6. **VIOLAÇÕES DA INTEGRAÇÃO FLEXT**](#6-violaes-da-integrao-flext)
-- [📋 PROBLEMAS DE PRIORIDADE MÉDIA](#-problemas-de-prioridade-mdia)
+- [📋 PROBLEMAS DE PRIORIDADE MÉDIA](#problemas-de-prioridade-mdia)
   - [7. **IMPLEMENTAÇÃO DE STREAM SUPER-COMPLEXA**](#7-implementao-de-stream-super-complexa)
   - [8. **INCONSISTÊNCIAS NO SISTEMA DE TIPOS**](#8-inconsistncias-no-sistema-de-tipos)
   - [9. **DEFINIÇÕES DE SCHEMA HARDCODED**](#9-definies-de-schema-hardcoded)
-- [🔧 PROBLEMAS DE BAIXA PRIORIDADE](#-problemas-de-baixa-prioridade)
+- [🔧 PROBLEMAS DE BAIXA PRIORIDADE](#problemas-de-baixa-prioridade)
   - [10. **LOGGING EXCESSIVO E COMENTÁRIOS VERBOSOS**](#10-logging-excessivo-e-comentrios-verbosos)
   - [11. **TRATAMENTO DE ERRO INCONSISTENTE**](#11-tratamento-de-erro-inconsistente)
   - [12. **PROLIFERAÇÃO DE ARQUIVOS DE CONFIGURAÇÃO**](#12-proliferao-de-arquivos-de-configurao)
-- [📊 ESTATÍSTICAS DO PROJETO](#-estatsticas-do-projeto)
+- [📊 ESTATÍSTICAS DO PROJETO](#estatsticas-do-projeto)
   - [Métricas de Código](#mtricas-de-cdigo)
   - [Análise de Complexidade](#anlise-de-complexidade)
-- [🎯 PLANO DE REFATORAÇÃO RECOMENDADO](#-plano-de-refatorao-recomendado)
+- [🎯 PLANO DE REFATORAÇÃO RECOMENDADO](#plano-de-refatorao-recomendado)
   - [FASE 1: EMERGÊNCIA (1-2 semanas)](#fase-1-emergncia-1-2-semanas)
   - [FASE 2: REFATORAÇÃO ESTRUTURAL (3-4 semanas)](#fase-2-refatorao-estrutural-3-4-semanas)
   - [FASE 3: OTIMIZAÇÃO (2-3 semanas)](#fase-3-otimizao-2-3-semanas)
-- [⚡ ALTERNATIVA: REESCRITA COMPLETA](#-alternativa-reescrita-completa)
+- [⚡ ALTERNATIVA: REESCRITA COMPLETA](#alternativa-reescrita-completa)
   - [Justificativa para Reescrita](#justificativa-para-reescrita)
-- [🚨 RECOMENDAÇÃO FINAL](#-recomendao-final)
+- [🚨 RECOMENDAÇÃO FINAL](#recomendao-final)
+
 <!-- TOC END -->
 
-**Data de Análise**: 2025-08-04  
-**Versão**: 0.9.9  
+**Data de Análise**: 2025-08-04\
+**Versão**: 0.9.9\
 **Status**: CRÍTICO - Necessita refatoração massiva · 1.0.0 Release Preparation
 **Linhas de Código**: 8.179 linhas em 26 arquivos Python
 
----
+______________________________________________________________________
 
 ## 🚨 PROBLEMAS CRÍTICOS - AÇÃO IMEDIATA NECESSÁRIA
 
 ### 1. **SUPER-ENGENHARIA ARQUITETURAL MASSIVA**
 
-**Severidade**: CRÍTICO  
-**Localização**: Todo o codebase  
+**Severidade**: CRÍTICO\
+**Localização**: Todo o codebase\
 **Problema**: 26 componentes especializados para um simples Singer tap
 
 **Evidências**:
@@ -73,8 +74,8 @@ src/flext_tap_oracle_wms/entity_discovery.py    - Terceiro sistema de discovery
 
 ### 2. **CRISE DE TESTES DESABILITADOS**
 
-**Severidade**: CRÍTICO  
-**Localização**: Diretório `/tests/`  
+**Severidade**: CRÍTICO\
+**Localização**: Diretório `/tests/`\
 **Problema**: 7 arquivos de teste desabilitados (27% da suíte de testes)
 
 **Testes Desabilitados**:
@@ -99,8 +100,8 @@ tests/unit/test_discovery.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup
 
 ### 3. **DUPLICAÇÃO CRÍTICA DE DEPENDÊNCIAS**
 
-**Severidade**: CRÍTICO  
-**Localização**: `src/flext_tap_oracle_wms/client.py`  
+**Severidade**: CRÍTICO\
+**Localização**: `src/flext_tap_oracle_wms/client.py`\
 **Problema**: Arquivo inteiro existe apenas para re-exportar FlextOracleWmsClient
 
 **Código Problemático**:
@@ -120,22 +121,22 @@ WMSClient = FlextOracleWmsClient  # Apenas um alias!
 
 **Ação Requerida**: Remover client.py e usar flext-oracle-wms diretamente
 
----
+______________________________________________________________________
 
 ## ⚠️ PROBLEMAS DE ALTA PRIORIDADE
 
 ### 4. **CAOS NA ARQUITETURA DE CONFIGURAÇÃO**
 
-**Severidade**: ALTO  
-**Localização**: Múltiplos arquivos  
+**Severidade**: ALTO\
+**Localização**: Múltiplos arquivos\
 **Problema**: 3 sistemas de configuração competindo entre si
 
 **Sistemas de Configuração Identificados**:
 
 1. `TapOracleWMSConfig` em `config.py`
-2. `OracleWmsTapConfiguration` em `domain/models.py`
-3. `ConfigMapper` em `config_mapper.py`
-4. **21 arquivos de exemplo** em `examples/configs/`
+1. `OracleWmsTapConfiguration` em `domain/models.py`
+1. `ConfigMapper` em `config_mapper.py`
+1. **21 arquivos de exemplo** em `examples/configs/`
 
 **Problemas**:
 
@@ -148,15 +149,15 @@ WMSClient = FlextOracleWmsClient  # Apenas um alias!
 
 ### 5. **REDUNDÂNCIA NO SISTEMA DE DISCOVERY**
 
-**Severidade**: ALTO  
-**Localização**: 3 arquivos de discovery  
+**Severidade**: ALTO\
+**Localização**: 3 arquivos de discovery\
 **Problema**: Três implementações de discovery sobrepostas
 
 **Implementações Redundantes**:
 
 1. `EntityDiscovery` em `discovery.py` - Implementação "legada"
-2. `discover_oracle_wms_with_modern_singer()` em `modern_discovery.py` - "Moderna"
-3. Funções em `entity_discovery.py` - Camada adicional
+1. `discover_oracle_wms_with_modern_singer()` em `modern_discovery.py` - "Moderna"
+1. Funções em `entity_discovery.py` - Camada adicional
 
 **Problemas**:
 
@@ -168,8 +169,8 @@ WMSClient = FlextOracleWmsClient  # Apenas um alias!
 
 ### 6. **VIOLAÇÕES DA INTEGRAÇÃO FLEXT**
 
-**Severidade**: ALTO  
-**Localização**: Todo o codebase  
+**Severidade**: ALTO\
+**Localização**: Todo o codebase\
 **Problema**: Uso inconsistente dos padrões flext-core
 
 **Violações Identificadas**:
@@ -181,14 +182,14 @@ WMSClient = FlextOracleWmsClient  # Apenas um alias!
 
 **Ação Requerida**: Refatorar para usar padrões flext-core consistentemente
 
----
+______________________________________________________________________
 
 ## 📋 PROBLEMAS DE PRIORIDADE MÉDIA
 
 ### 7. **IMPLEMENTAÇÃO DE STREAM SUPER-COMPLEXA**
 
-**Severidade**: MÉDIO  
-**Localização**: `src/flext_tap_oracle_wms/streams.py`  
+**Severidade**: MÉDIO\
+**Localização**: `src/flext_tap_oracle_wms/streams.py`\
 **Problema**: Uso excessivo de design patterns para operações simples
 
 **Patterns Desnecessários**:
@@ -202,8 +203,8 @@ WMSClient = FlextOracleWmsClient  # Apenas um alias!
 
 ### 8. **INCONSISTÊNCIAS NO SISTEMA DE TIPOS**
 
-**Severidade**: MÉDIO  
-**Localização**: Múltiplos arquivos  
+**Severidade**: MÉDIO\
+**Localização**: Múltiplos arquivos\
 **Problema**: Type aliases desnecessários e confusos
 
 **Aliases Problemáticos**:
@@ -218,19 +219,19 @@ OracleWmsConfigDict = TAnyDict
 
 ### 9. **DEFINIÇÕES DE SCHEMA HARDCODED**
 
-**Severidade**: MÉDIO  
-**Localização**: `src/flext_tap_oracle_wms/tap.py`  
+**Severidade**: MÉDIO\
+**Localização**: `src/flext_tap_oracle_wms/tap.py`\
 **Problema**: Schemas JSON massivos embutidos na lógica de negócio
 
 **Ação Requerida**: Extrair schemas para arquivos separados
 
----
+______________________________________________________________________
 
 ## 🔧 PROBLEMAS DE BAIXA PRIORIDADE
 
 ### 10. **LOGGING EXCESSIVO E COMENTÁRIOS VERBOSOS**
 
-**Severidade**: BAIXO  
+**Severidade**: BAIXO\
 **Problema**: Logs verbosos com emojis e comentários excessivos
 
 **Exemplos**:
@@ -241,15 +242,15 @@ OracleWmsConfigDict = TAnyDict
 
 ### 11. **TRATAMENTO DE ERRO INCONSISTENTE**
 
-**Severidade**: BAIXO  
+**Severidade**: BAIXO\
 **Problema**: Padrões mistos de tratamento de erro
 
 ### 12. **PROLIFERAÇÃO DE ARQUIVOS DE CONFIGURAÇÃO**
 
-**Severidade**: BAIXO  
+**Severidade**: BAIXO\
 **Problema**: 21+ arquivos de configuração de exemplo sem diferenciação clara
 
----
+______________________________________________________________________
 
 ## 📊 ESTATÍSTICAS DO PROJETO
 
@@ -268,7 +269,7 @@ OracleWmsConfigDict = TAnyDict
 - **Sistemas de Discovery**: 3 implementações
 - **Camadas de Abstração**: 5+ camadas (excessivo)
 
----
+______________________________________________________________________
 
 ## 🎯 PLANO DE REFATORAÇÃO RECOMENDADO
 
@@ -277,11 +278,13 @@ OracleWmsConfigDict = TAnyDict
 **Prioridade**: CRÍTICA
 
 1. **Reabilitar Testes Críticos**
+
    - [ ] Restaurar testes de integração essenciais
    - [ ] Criar mocks para dependências WMS externas
    - [ ] Implementar testes E2E básicos funcionais
 
-2. **Simplificação Imediata**
+1. **Simplificação Imediata**
+
    - [ ] Remover `client.py` - usar flext-oracle-wms diretamente
    - [ ] Escolher um sistema de discovery e remover outros 2
    - [ ] Consolidar configuração em uma única classe
@@ -291,11 +294,13 @@ OracleWmsConfigDict = TAnyDict
 **Prioridade**: ALTA
 
 1. **Arquitetura Simplificada**
+
    - [ ] Reduzir de 26 para 8 componentes máximo
    - [ ] Implementar arquitetura Singer tap padrão
    - [ ] Usar padrões flext-core consistentemente
 
-2. **Consolidação de Código**
+1. **Consolidação de Código**
+
    - [ ] Unificar sistemas de configuração
    - [ ] Simplificar implementação de streams
    - [ ] Extrair schemas hardcoded
@@ -305,16 +310,18 @@ OracleWmsConfigDict = TAnyDict
 **Prioridade**: MÉDIA
 
 1. **Qualidade e Performance**
+
    - [ ] Implementar error handling consistente
    - [ ] Otimizar performance de streams
    - [ ] Melhorar logging e observabilidade
 
-2. **Documentação e Manutenibilidade**
+1. **Documentação e Manutenibilidade**
+
    - [ ] Atualizar documentação arquitetural
    - [ ] Criar guias de desenvolvimento
    - [ ] Implementar métricas de qualidade
 
----
+______________________________________________________________________
 
 ## ⚡ ALTERNATIVA: REESCRITA COMPLETA
 
@@ -331,7 +338,7 @@ Dado o nível de super-engenharia (8.179 linhas vs 400-800 necessárias), uma **
 
 **Tempo Estimado**: 4-6 semanas vs 8-10 semanas de refatoração
 
----
+______________________________________________________________________
 
 ## 🚨 RECOMENDAÇÃO FINAL
 
@@ -352,6 +359,6 @@ Este projeto representa um **exemplo clássico de super-engenharia** que viola p
 **Próximos Passos Imediatos**:
 
 1. Decisão: Refatoração vs Reescrita
-2. Reabilitação imediata de testes críticos
-3. Consolidação de sistemas de configuração e discovery
-4. Estabelecimento de arquitetura target simplificada
+1. Reabilitação imediata de testes críticos
+1. Consolidação de sistemas de configuração e discovery
+1. Estabelecimento de arquitetura target simplificada

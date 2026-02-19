@@ -31,7 +31,7 @@ class FlextTapOracleWmsConstants(FlextConstants):
     """Constants for Oracle WMS tap configuration - consuming from flext-oracle-wms API."""
 
     # API defaults from flext-oracle-wms (using available constants)
-    DEFAULT_API_VERSION: Final[str] = _WmsConstants.API_VERSION_DEFAULT
+    DEFAULT_API_VERSION: Final[str] = str(_WmsConstants.API_CONFIG["version_default"])
 
     # Validation limits - using FlextConstants as SOURCE OF TRUTH
     MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = 5

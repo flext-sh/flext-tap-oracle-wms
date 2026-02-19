@@ -1,7 +1,7 @@
 # FLEXT Tap Oracle WMS - Core Module
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Module Structure](#module-structure)
   - [Core Components](#core-components)
@@ -27,6 +27,7 @@
 - [Contributing](#contributing)
   - [**Development Workflow**](#development-workflow)
   - [**Code Review Focus**](#code-review-focus)
+
 <!-- TOC END -->
 
 ## Overview
@@ -189,16 +190,16 @@ result = validator.validate_config(config)
 ### **Architectural Issues**
 
 1. **Excessive Component Count**: 26 files for a Singer tap is over-engineered
-2. **Code Duplication**: Multiple discovery and configuration systems
-3. **Complex Abstractions**: Unnecessary abstraction layers
-4. **Integration Complexity**: Overlapping responsibilities with flext-oracle-wms
+1. **Code Duplication**: Multiple discovery and configuration systems
+1. **Complex Abstractions**: Unnecessary abstraction layers
+1. **Integration Complexity**: Overlapping responsibilities with flext-oracle-wms
 
 ### **Simplification Strategy**
 
 1. **Consolidate Discovery**: Merge discovery components into single module
-2. **Simplify Configuration**: Single configuration approach using FLEXT patterns
-3. **Reduce Abstractions**: Eliminate unnecessary interfaces and adapters
-4. **Leverage FLEXT Libraries**: Use flext-oracle-wms instead of duplicating functionality
+1. **Simplify Configuration**: Single configuration approach using FLEXT patterns
+1. **Reduce Abstractions**: Eliminate unnecessary interfaces and adapters
+1. **Leverage FLEXT Libraries**: Use flext-oracle-wms instead of duplicating functionality
 
 See [docs/TODO.md](../../docs/TODO.md) for complete refactoring plan.
 
@@ -228,10 +229,10 @@ See [tests/README.md](../../tests/README.md) for complete testing documentation.
 ### **Development Workflow**
 
 1. Follow FLEXT ecosystem patterns
-2. Maintain Singer SDK compliance
-3. Use comprehensive type hints
-4. Write enterprise-grade documentation
-5. Ensure test coverage above 90%
+1. Maintain Singer SDK compliance
+1. Use comprehensive type hints
+1. Write enterprise-grade documentation
+1. Ensure test coverage above 90%
 
 ### **Code Review Focus**
 
@@ -241,6 +242,6 @@ See [tests/README.md](../../tests/README.md) for complete testing documentation.
 - Performance optimization
 - Security best practices
 
----
+______________________________________________________________________
 
 **Status**: 1.0.0 Release Preparation | **Architecture**: Requires Refactoring | **Updated**: 2025-08-13
