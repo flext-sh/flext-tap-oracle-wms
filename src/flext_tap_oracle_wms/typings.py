@@ -1,3 +1,5 @@
+"""Type aliases for the Oracle WMS tap package."""
+
 from __future__ import annotations
 
 from typing import Literal
@@ -6,11 +8,17 @@ from flext_core import FlextTypes
 
 
 class FlextMeltanoTapOracleWmsTypes(FlextTypes):
+    """Namespace for Oracle WMS tap type aliases."""
+
     class Core:
+        """Core shared aliases for this package."""
+
         type Dict = dict[str, FlextTypes.GeneralValueType]
         type Headers = dict[str, str]
 
     class Project:
+        """Project-level aliases and constrained literals."""
+
         type ProjectType = Literal[
             "library",
             "application",

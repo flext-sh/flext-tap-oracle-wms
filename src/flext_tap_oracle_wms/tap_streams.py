@@ -247,23 +247,14 @@ class FlextTapOracleWmsStream(Stream):
         for record in records:
             # Ensure record is a dict[str, t.GeneralValueType] for processing
             if isinstance(record, dict):
-                # Zero Tolerance FIX: Use utilities for record processing
-                # Fix arguments to match DataProcessing.process_wms_record(record: dict)
-                # Cast record to expected type
-                from typing import cast
-
-                record_dict = cast("dict[str, t.GeneralValueType]", record)
+                record_dict: dict[str, t.GeneralValueType] = dict(record)
                 processed_record = self._utilities.DataProcessing.process_wms_record(
                     record=record_dict
                 )
-
-                # process_wms_record returns dict, not FlextResult, so use directly
-                # Apply additional post-processing
-                final_record = self.post_process(
-                    cast("dict[str, t.JsonValue]", processed_record), context
-                )
-                if final_record is not None:
-                    yield final_record
+                if isinstance(processed_record, dict):
+                    final_record = self.post_process(processed_record, context)
+                    if final_record is not None:
+                        yield final_record
 
     def post_process(
         self,

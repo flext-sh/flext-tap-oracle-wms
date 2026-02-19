@@ -1,5 +1,34 @@
 # FLEXT Tap Oracle WMS - Core Module
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Module Structure](#module-structure)
+  - [Core Components](#core-components)
+- [Architecture Overview](#architecture-overview)
+  - [**Current Architecture Status**](#current-architecture-status)
+  - [**FLEXT Ecosystem Integration**](#flext-ecosystem-integration)
+  - [**Singer SDK Compliance**](#singer-sdk-compliance)
+- [Key Components Usage](#key-components-usage)
+  - [**Main Tap Usage**](#main-tap-usage)
+  - [**Authentication**](#authentication)
+  - [**Entity Discovery**](#entity-discovery)
+  - [**Configuration Validation**](#configuration-validation)
+- [Development Guidelines](#development-guidelines)
+  - [**Quality Standards**](#quality-standards)
+  - [**Code Patterns**](#code-patterns)
+  - [**FLEXT Integration**](#flext-integration)
+- [Refactoring Notes](#refactoring-notes)
+  - [**Architectural Issues**](#architectural-issues)
+  - [**Simplification Strategy**](#simplification-strategy)
+- [Testing](#testing)
+  - [**Test Coverage**](#test-coverage)
+  - [**Running Tests**](#running-tests)
+- [Contributing](#contributing)
+  - [**Development Workflow**](#development-workflow)
+  - [**Code Review Focus**](#code-review-focus)
+<!-- TOC END -->
+
 ## Overview
 
 This directory contains the core implementation of FLEXT Tap Oracle WMS, a Singer-compliant tap for extracting data from Oracle Warehouse Management Systems. The module provides comprehensive WMS integration capabilities while following FLEXT ecosystem patterns.

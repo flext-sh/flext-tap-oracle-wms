@@ -936,6 +936,7 @@ class FlextTapOracleWmsUtilities(u_core):
         def run(
             coro: t.GeneralValueType,
         ) -> t.GeneralValueType:
+            """Execute or passthrough coroutine-like input in sync contexts."""
             return coro
 
     @classmethod

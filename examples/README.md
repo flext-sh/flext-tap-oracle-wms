@@ -1,5 +1,43 @@
 # Configuration Examples
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Configuration Structure](#configuration-structure)
+  - [Basic Configuration Format](#basic-configuration-format)
+- [Available Configuration Examples](#available-configuration-examples)
+  - [Basic Configurations](#basic-configurations)
+  - [Authentication Examples](#authentication-examples)
+  - [Entity Configuration Examples](#entity-configuration-examples)
+- [Specialized Configuration Examples](#specialized-configuration-examples)
+  - [Performance-Oriented Configuration](#performance-oriented-configuration)
+  - [Filtering and Selection Examples](#filtering-and-selection-examples)
+  - [Date-Based Configuration Examples](#date-based-configuration-examples)
+- [Environment-Specific Configurations](#environment-specific-configurations)
+  - [Development Environment](#development-environment)
+  - [Staging Environment](#staging-environment)
+  - [Production Environment](#production-environment)
+- [Configuration Usage Patterns](#configuration-usage-patterns)
+  - [Local Development](#local-development)
+  - [Meltano Integration](#meltano-integration)
+  - [Environment Variables](#environment-variables)
+- [Configuration Validation](#configuration-validation)
+  - [Required Fields](#required-fields)
+  - [Authentication Requirements](#authentication-requirements)
+  - [Optional Settings](#optional-settings)
+- [Troubleshooting Configurations](#troubleshooting-configurations)
+  - [Common Configuration Issues](#common-configuration-issues)
+  - [Debug Configuration](#debug-configuration)
+- [Best Practices](#best-practices)
+  - [Configuration Security](#configuration-security)
+  - [Performance Optimization](#performance-optimization)
+  - [Monitoring and Logging](#monitoring-and-logging)
+- [Configuration Examples by Use Case](#configuration-examples-by-use-case)
+  - [Data Warehouse Integration](#data-warehouse-integration)
+  - [Real-time Inventory Monitoring](#real-time-inventory-monitoring)
+  - [Compliance Reporting](#compliance-reporting)
+<!-- TOC END -->
+
 ## Overview
 
 This directory contains comprehensive configuration examples for FLEXT Tap Oracle WMS, demonstrating various use cases from basic setups to complex production environments.

@@ -1,5 +1,38 @@
 # End-to-End Tests
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Current Status](#current-status)
+- [Test Structure](#test-structure)
+  - [**Disabled E2E Tests**](#disabled-e2e-tests)
+- [E2E Testing Strategy](#e2e-testing-strategy)
+  - [**Complete User Workflows**](#complete-user-workflows)
+  - [**Singer Protocol Compliance**](#singer-protocol-compliance)
+- [Mock Environment Architecture](#mock-environment-architecture)
+  - [**E2E Mock Infrastructure**](#e2e-mock-infrastructure)
+  - [**Test Data Management**](#test-data-management)
+- [CLI Testing Framework](#cli-testing-framework)
+  - [**Command Execution Testing**](#command-execution-testing)
+  - [**Output Validation Framework**](#output-validation-framework)
+- [Performance E2E Testing](#performance-e2e-testing)
+  - [**Performance Benchmarks**](#performance-benchmarks)
+  - [**Resource Usage Testing**](#resource-usage-testing)
+- [Error Scenario Testing](#error-scenario-testing)
+  - [**Network Failure Scenarios**](#network-failure-scenarios)
+  - [**Configuration Error Testing**](#configuration-error-testing)
+- [E2E Re-enabling Plan](#e2e-re-enabling-plan)
+  - [**Phase 1: Mock Environment (Week 1-2)**](#phase-1-mock-environment-week-1-2)
+  - [**Phase 2: Core E2E Tests (Week 3)**](#phase-2-core-e2e-tests-week-3)
+  - [**Phase 3: Advanced Scenarios (Week 4)**](#phase-3-advanced-scenarios-week-4)
+  - [**Phase 4: Production Validation (Week 5)**](#phase-4-production-validation-week-5)
+- [Quality Standards](#quality-standards)
+  - [**E2E Test Requirements**](#e2e-test-requirements)
+  - [**Mock Environment Standards**](#mock-environment-standards)
+- [User Acceptance Scenarios](#user-acceptance-scenarios)
+  - [**Business User Workflows**](#business-user-workflows)
+<!-- TOC END -->
+
 ## Overview
 
 This directory contains end-to-end (E2E) tests for FLEXT Tap Oracle WMS, focusing on complete user workflows and system behavior from CLI execution to data output.

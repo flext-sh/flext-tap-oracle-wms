@@ -1,5 +1,40 @@
 # Integration Tests
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Current Status](#current-status)
+- [Test Structure](#test-structure)
+  - [**Disabled Integration Tests**](#disabled-integration-tests)
+- [Integration Test Strategy](#integration-test-strategy)
+  - [**Component Integration Patterns**](#component-integration-patterns)
+  - [**Configuration Integration Testing**](#configuration-integration-testing)
+  - [**Data Flow Integration Testing**](#data-flow-integration-testing)
+- [Mock Infrastructure Requirements](#mock-infrastructure-requirements)
+  - [**Mock WMS API Server**](#mock-wms-api-server)
+  - [**Test Data Fixtures**](#test-data-fixtures)
+- [Test Execution Strategy](#test-execution-strategy)
+  - [**Planned Test Commands**](#planned-test-commands)
+  - [**Test Environment Setup**](#test-environment-setup)
+- [Re-enabling Strategy](#re-enabling-strategy)
+  - [**Phase 1: Mock Infrastructure (Week 1)**](#phase-1-mock-infrastructure-week-1)
+  - [**Phase 2: Core Integration Tests (Week 2)**](#phase-2-core-integration-tests-week-2)
+  - [**Phase 3: Advanced Integration (Week 3)**](#phase-3-advanced-integration-week-3)
+  - [**Phase 4: Comprehensive Coverage (Week 4)**](#phase-4-comprehensive-coverage-week-4)
+- [Integration Test Patterns](#integration-test-patterns)
+  - [**Mock Server Pattern**](#mock-server-pattern)
+  - [**Configuration Test Pattern**](#configuration-test-pattern)
+  - [**Data Validation Pattern**](#data-validation-pattern)
+- [Performance Integration Testing](#performance-integration-testing)
+  - [**Load Testing Integration**](#load-testing-integration)
+  - [**Concurrent Operation Testing**](#concurrent-operation-testing)
+- [Error Handling Integration](#error-handling-integration)
+  - [**Network Failure Testing**](#network-failure-testing)
+- [Quality Standards](#quality-standards)
+  - [**Integration Test Requirements**](#integration-test-requirements)
+  - [**Mock Quality Standards**](#mock-quality-standards)
+<!-- TOC END -->
+
 ## Overview
 
 This directory contains integration tests for FLEXT Tap Oracle WMS, focusing on testing component interactions and end-to-end workflows with controlled external dependencies.

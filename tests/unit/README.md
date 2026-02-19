@@ -1,5 +1,37 @@
 # Unit Tests
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Test Structure](#test-structure)
+  - [**Working Unit Tests**](#working-unit-tests)
+  - [**Basic Component Tests**](#basic-component-tests)
+- [Test Execution](#test-execution)
+  - [**Running Unit Tests**](#running-unit-tests)
+  - [**Test Markers**](#test-markers)
+- [Test Patterns](#test-patterns)
+  - [**Mock Usage Pattern**](#mock-usage-pattern)
+  - [**Configuration Testing Pattern**](#configuration-testing-pattern)
+  - [**Error Testing Pattern**](#error-testing-pattern)
+- [Test Coverage](#test-coverage)
+  - [**Current Coverage Status**](#current-coverage-status)
+  - [**Coverage Requirements**](#coverage-requirements)
+  - [**Coverage Reporting**](#coverage-reporting)
+- [Test Quality Standards](#test-quality-standards)
+  - [**Test Naming Conventions**](#test-naming-conventions)
+  - [**Test Documentation**](#test-documentation)
+  - [**Isolation Requirements**](#isolation-requirements)
+- [Common Test Utilities](#common-test-utilities)
+  - [**Mock Fixtures**](#mock-fixtures)
+  - [**Assertion Helpers**](#assertion-helpers)
+- [Troubleshooting Tests](#troubleshooting-tests)
+  - [**Common Issues**](#common-issues)
+  - [**Debugging Tests**](#debugging-tests)
+- [Contributing to Unit Tests](#contributing-to-unit-tests)
+  - [**Adding New Tests**](#adding-new-tests)
+  - [**Test Review Checklist**](#test-review-checklist)
+<!-- TOC END -->
+
 ## Overview
 
 This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tests focus on testing individual components in isolation using mocking to eliminate external dependencies.
@@ -206,11 +238,10 @@ make test
 open reports/coverage/index.html
 
 # Generate terminal coverage report
-pytest tests/unit/ --cov=src/flext_tap_oracle_wms --cov-report=term-missing
-
-# Check coverage thresholds
-pytest tests/unit/ --cov=src/flext_tap_oracle_wms --cov-fail-under=90
+pytest tests/unit/ --cov --cov-report=term-missing
 ```
+
+> Coverage thresholds are configured in `pyproject.toml` under `[tool.coverage.report]`.
 
 ## Test Quality Standards
 

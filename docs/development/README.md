@@ -1,5 +1,45 @@
 # Development Documentation
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Development Documentation Structure](#development-documentation-structure)
+  - [Testing Documentation](#testing-documentation)
+  - [Quality Standards](#quality-standards)
+  - [Development Workflows](#development-workflows)
+  - [Refactoring Documentation](#refactoring-documentation)
+- [Current Development Status](#current-development-status)
+  - [Critical Issues](#critical-issues)
+  - [Quality Metrics](#quality-metrics)
+- [Development Environment Setup](#development-environment-setup)
+  - [Prerequisites](#prerequisites)
+  - [Quick Setup](#quick-setup)
+  - [Development Dependencies](#development-dependencies)
+- [Development Workflow](#development-workflow)
+  - [1. Feature Development](#1-feature-development)
+  - [2. Testing Strategy](#2-testing-strategy)
+  - [3. Quality Assurance](#3-quality-assurance)
+- [Testing Architecture](#testing-architecture)
+  - [Current Test Issues](#current-test-issues)
+  - [Target Test Architecture](#target-test-architecture)
+- [Code Quality Standards](#code-quality-standards)
+  - [FLEXT Standards Compliance](#flext-standards-compliance)
+  - [Type Safety Requirements](#type-safety-requirements)
+  - [Error Handling Standards](#error-handling-standards)
+- [Development Tools](#development-tools)
+  - [IDE Configuration](#ide-configuration)
+  - [Git Hooks](#git-hooks)
+  - [Debugging Configuration](#debugging-configuration)
+- [Common Development Tasks](#common-development-tasks)
+  - [Adding New WMS Entity](#adding-new-wms-entity)
+  - [Debugging Common Issues](#debugging-common-issues)
+- [Contributing Guidelines](#contributing-guidelines)
+  - [Code Review Checklist](#code-review-checklist)
+  - [Pull Request Process](#pull-request-process)
+- [Migration Considerations](#migration-considerations)
+  - [Current → Target Architecture](#current-target-architecture)
+<!-- TOC END -->
+
 ## Overview
 
 This directory contains comprehensive development documentation for FLEXT Tap Oracle WMS, including testing strategies, quality standards, and development workflows.
