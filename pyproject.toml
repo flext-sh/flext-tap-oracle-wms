@@ -4,7 +4,7 @@ requires = [ "poetry-core>=2.0", "poetry-core>=2" ]
 
 [project]
 name = "flext-tap-oracle-wms"
-version = "0.11.0"
+version = "0.12.0-dev"
 description = "FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System"
 readme = "README.md"
 keywords = [
