@@ -195,7 +195,7 @@ def mock_request() -> MagicMock:
 
 # Marker for tests requiring real Oracle WMS
 def pytest_collection_modifyitems(
-    _config: object, items: list[t.GeneralValueType]
+    config: object, items: list[t.GeneralValueType]
 ) -> None:
     """Add markers to tests based on their location."""
     for item in items:

@@ -16,14 +16,9 @@ import pytest
 import requests
 from flext_api import FlextApiConstants
 from flext_core import FlextLogger
-
-
-
+from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsStream,
-    # ReplicationKeyTimestampStrategy,  # Not implemented yet
-    # ResponseParser,
-    # WMSPaginator,
 )
 
 logger = FlextLogger(__name__)

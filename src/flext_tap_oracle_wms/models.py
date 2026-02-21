@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from flext_core import FlextModels, t
+from flext_core import t
 from flext_meltano import FlextMeltanoModels
 from pydantic import BaseModel, Field
 
 
-class FlextTapOracleWmsModels(FlextMeltanoModels, FlextModels):
+class FlextTapOracleWmsModels(FlextMeltanoModels):
     """Container for stream schema and metadata payload models."""
 
     class WmsStreamSchema(BaseModel):
@@ -34,6 +34,5 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextModels):
 
 
 m = FlextTapOracleWmsModels
-m_tap_oracle_wms = FlextTapOracleWmsModels
 
-__all__ = ["FlextTapOracleWmsModels", "m", "m_tap_oracle_wms"]
+__all__ = ["FlextTapOracleWmsModels", "m"]

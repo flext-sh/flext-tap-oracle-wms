@@ -11,9 +11,7 @@ SPDX-License-Identifier: MIT
 import os
 
 import pytest
-
-
-
+from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
 )
