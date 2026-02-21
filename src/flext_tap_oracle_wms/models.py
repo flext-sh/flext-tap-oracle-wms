@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from flext_core import FlextModels, FlextTypes as t
+from flext_meltano import FlextMeltanoModels
 from pydantic import BaseModel, Field
 
 
-class FlextTapOracleWmsModels(FlextModels):
+class FlextTapOracleWmsModels(FlextMeltanoModels, FlextModels):
     """Container for stream schema and metadata payload models."""
 
     class WmsStreamSchema(BaseModel):

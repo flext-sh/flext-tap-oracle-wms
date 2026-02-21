@@ -11,6 +11,7 @@ from flext_meltano import FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsSettings
 
 from .exceptions import FlextTapOracleWmsSettingsurationError
+from .models import m
 from .settings import FlextTapOracleWmsSettings
 from .streams import FlextTapOracleWmsStream
 
@@ -88,11 +89,11 @@ class FlextTapOracleWms(Tap):
             self._wms_client = client
         return self._wms_client
 
-    def discover_catalog(self) -> FlextResult[dict[str, t.GeneralValueType]]:
+    def discover_catalog(self) -> FlextResult[m.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.is_failure:
-            return FlextResult[dict[str, t.GeneralValueType]].fail(
+            return FlextResult[m.Meltano.SingerCatalog].fail(
                 discovery_result.error or "Discovery failed",
             )
 
@@ -102,28 +103,25 @@ class FlextTapOracleWms(Tap):
             if isinstance(entity, (str, int, float, bool))
         ]
         streams = [
-            {
-                "tap_stream_id": entity,
-                "stream": entity,
-                "schema": self._schema_for_entity(),
-                "metadata": [
-                    {
-                        "breadcrumb": [],
-                        "metadata": {
+            m.Meltano.SingerCatalogEntry(
+                tap_stream_id=entity,
+                stream=entity,
+                schema=self._schema_for_entity(),
+                metadata=[
+                    m.Meltano.SingerCatalogMetadata(
+                        breadcrumb=[],
+                        metadata={
                             "inclusion": "available",
                             "forced-replication-method": "FULL_TABLE",
                             "table-key-properties": ["id"],
                         },
-                    },
+                    ),
                 ],
-            }
+            )
             for entity in entities
         ]
-        return FlextResult[dict[str, t.GeneralValueType]].ok(
-            {
-                "type": "CATALOG",
-                "streams": streams,
-            },
+        return FlextResult[m.Meltano.SingerCatalog].ok(
+            m.Meltano.SingerCatalog(streams=streams),
         )
 
     def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
@@ -133,22 +131,18 @@ class FlextTapOracleWms(Tap):
             logger.warning("Catalog discovery failed: %s", catalog_result.error)
             return []
 
-        streams_raw = catalog_result.value.get("streams", [])
-        if not isinstance(streams_raw, list):
+        streams_raw = catalog_result.value.streams
+        if not streams_raw:
             return []
 
         streams: list[FlextTapOracleWmsStream] = []
         for stream_raw in streams_raw:
-            if not isinstance(stream_raw, dict):
-                continue
-            stream_name = stream_raw.get("stream")
-            stream_schema = stream_raw.get("schema")
-            if not isinstance(stream_name, str):
-                continue
+            stream_name = stream_raw.stream
+            stream_schema = stream_raw.schema_definition
             stream = FlextTapOracleWmsStream(
                 tap=self,
                 name=stream_name,
-                schema=stream_schema if isinstance(stream_schema, dict) else {},
+                schema=stream_schema,
             )
             streams.append(stream)
         return streams
@@ -199,7 +193,7 @@ class FlextTapOracleWms(Tap):
                 logger.debug("Failed to stop WMS client: %s", stop_result.error)
 
     @staticmethod
-    def _schema_for_entity() -> dict[str, t.GeneralValueType]:
+    def _schema_for_entity() -> dict[str, t.JsonValue]:
         """Return a default Singer JSON schema for discovered entities."""
         return {
             "type": "object",
@@ -270,7 +264,14 @@ class FlextTapOracleWmsPlugin:
             )
 
         if operation == "discover":
-            return tap.discover_catalog()
+            catalog_result = tap.discover_catalog()
+            if catalog_result.is_failure:
+                return FlextResult[dict[str, t.GeneralValueType]].fail(
+                    catalog_result.error or "Discovery failed",
+                )
+            return FlextResult[dict[str, t.GeneralValueType]].ok(
+                catalog_result.value.model_dump(mode="json"),
+            )
         if operation == "sync":
             execute_result = tap.execute()
             if execute_result.is_failure:

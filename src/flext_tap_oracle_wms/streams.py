@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, t
+from flext_core import FlextLogger, FlextResult, t
 
 # Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
@@ -37,7 +37,7 @@ class FlextTapOracleWmsStream(Stream):
         self,
         tap: Tap,
         name: str | None = None,
-        schema: dict[str, t.GeneralValueType] | None = None,
+        schema: dict[str, t.JsonValue] | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
@@ -101,9 +101,15 @@ class FlextTapOracleWmsStream(Stream):
             try:
                 # Get page data
                 page_result = self._fetch_page_data(page, context)
-                if page_result is None:
+                if page_result.is_failure:
+                    logger.error(
+                        "Failed to fetch page %s for %s: %s",
+                        page,
+                        self.name,
+                        page_result.error,
+                    )
                     break
-                records, has_more = page_result
+                records, has_more = page_result.value
                 # Process and yield records
                 yield from self._process_page_records(records, context)
                 # Move to next page
@@ -119,7 +125,7 @@ class FlextTapOracleWmsStream(Stream):
         self,
         page: int,
         context: Mapping[str, t.GeneralValueType] | None,
-    ) -> tuple[list[dict[str, t.JsonValue]], bool] | None:
+    ) -> FlextResult[tuple[list[dict[str, t.JsonValue]], bool]]:
         """Fetch data for a specific page."""
         # Build operation parameters
         operation_name = f"get_{self.name}"
@@ -137,22 +143,28 @@ class FlextTapOracleWmsStream(Stream):
             if method:
                 result = self._run(method(**kwargs))
             else:
-                logger.error("Method %s not found on WMS client", operation_name)
-                return None
+                return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].fail(
+                    f"Method {operation_name} not found on WMS client",
+                )
         # Check for failure
-        if hasattr(result, "is_failure") and result.is_failure:
-            error_msg = getattr(result, "error", "Unknown error")
-            logger.error("Failed to get records for %s: %s", self.name, error_msg)
-            return None
+        if isinstance(result, FlextResult):
+            if result.is_failure:
+                return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].fail(
+                    f"Failed to get records for {self.name}: {result.error}",
+                )
+            data_raw = result.value
+        else:
+            data_raw = result
         # Extract and process response data
-        data_raw = getattr(result, "value", result)
         data: t.GeneralValueType = (
             data_raw
             if isinstance(data_raw, (str, int, float, bool, dict, list))
             or data_raw is None
             else {}
         )
-        return self._extract_records_from_response(data)
+        return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].ok(
+            self._extract_records_from_response(data),
+        )
 
     def _build_operation_kwargs(
         self,

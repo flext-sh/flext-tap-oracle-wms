@@ -11,6 +11,7 @@ from typing import Protocol, runtime_checkable
 
 from flext_core import FlextTypes as t
 from flext_db_oracle.protocols import FlextDbOracleProtocols as p_db_oracle
+from flext_meltano import FlextMeltanoModels as m
 from flext_meltano.protocols import FlextMeltanoProtocols as p_meltano
 
 
@@ -114,7 +115,7 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
                 def generate_catalog(
                     self,
                     config: Mapping[str, t.GeneralValueType],
-                ) -> p_meltano.Result[Mapping[str, t.GeneralValueType]]:
+                ) -> p_meltano.Result[m.Meltano.SingerCatalog]:
                     """Generate Singer catalog."""
                     ...
 
