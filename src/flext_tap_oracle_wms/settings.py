@@ -18,7 +18,7 @@ from flext_core import (
     FlextConstants,
     FlextResult,
     FlextSettings,
-    FlextTypes as t,
+    t,
 )
 from flext_oracle_wms import (
     FlextOracleWmsConstants as _WmsConstants,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_core import FlextModels, FlextTypes as t
+from flext_core import FlextModels, t
 from flext_meltano import FlextMeltanoModels
 from pydantic import BaseModel, Field
 

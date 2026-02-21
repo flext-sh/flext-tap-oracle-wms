@@ -6,7 +6,7 @@ import importlib.metadata
 from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
-from flext_core import FlextLogger, FlextResult, FlextTypes as t
+from flext_core import FlextLogger, FlextResult, t
 from flext_meltano import FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsSettings
 
