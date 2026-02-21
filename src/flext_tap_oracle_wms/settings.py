@@ -225,7 +225,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         str_strip_whitespace=True,
         validate_assignment=True,
         arbitrary_types_allowed=True,
-        frozen=False,
+        frozen=True,
     )
 
     @classmethod

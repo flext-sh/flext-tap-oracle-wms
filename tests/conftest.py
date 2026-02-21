@@ -51,7 +51,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
 
 
 @pytest.fixture
-def real_config(_oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
+def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
     """Real configuration from environment."""
     return FlextTapOracleWmsSettings(
         base_url=os.environ.get("ORACLE_WMS_BASE_URL", ""),
@@ -220,7 +220,7 @@ def reset_environment() -> Generator[None]:
 
 
 @pytest.fixture
-def _real_tap_instance(
+def real_tap_instance(
     real_config: FlextTapOracleWmsSettings,
 ) -> FlextTapOracleWms:
     """Real tap instance for integration tests."""

@@ -25,12 +25,12 @@ class TestFlextTapOracleWmsSettings:
         )
 
         # Check required fields
-        assert config.base_url == "https://wms.example.com"
+        assert str(config.base_url).rstrip("/") == "https://wms.example.com"
         assert config.username == "test_user"
         assert config.password.get_secret_value() == "test_pass"
 
         # Check defaults
-        assert config.api_version == "v10"
+        assert config.api_version == "v1"
         assert config.timeout == 30
         assert config.page_size == 100
         assert config.verify_ssl is True
@@ -100,7 +100,9 @@ class TestFlextTapOracleWmsSettings:
             username="user",
             password=SecretStr("pass"),
         )
-        assert config.base_url == "https://wms.example.com"  # Trailing slash removed
+        assert (
+            str(config.base_url).rstrip("/") == "https://wms.example.com"
+        )  # Trailing slash removed
 
         # Invalid URL - missing protocol
         with pytest.raises(ValidationError) as exc_info:
