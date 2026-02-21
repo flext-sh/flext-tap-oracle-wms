@@ -89,7 +89,7 @@ class FlextTapOracleWmsUtilities(u):
 
         @staticmethod
         def create_state_message(
-            state: dict[str, dict[str, str]],
+            state: dict[str, t.GeneralValueType],
         ) -> m.Meltano.SingerStateMessage:
             """Create Singer state message.
 
