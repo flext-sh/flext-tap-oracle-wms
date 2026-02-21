@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires = [ "poetry-core>=2.0", "poetry-core>=2" ]
+requires = [ "poetry-core>=2", "poetry-core>=2" ]
 
 [project]
 name = "flext-tap-oracle-wms"
@@ -17,20 +17,20 @@ keywords = [
   "typed",
 ]
 license = "MIT"
-maintainers = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
-authors = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
+maintainers = [ { email = "team@flext.sh", name = "FLEXT Team" } ]
+authors = [ { email = "team@flext.sh", name = "FLEXT Team" } ]
 requires-python = ">=3.13,<3.14"
 classifiers = [
   "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.13",
-  "Topic :: Software Development :: Libraries :: Python Modules",
-  "Typing :: Typed",
-  "Development Status :: 5 - Production/Stable",
   "Topic :: Database",
+  "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: System :: Archiving",
+  "Typing :: Typed",
 ]
 dependencies = [
   "pydantic>=2.12.3",
@@ -97,7 +97,7 @@ group.typings.dependencies.types-redis = ">=4.6.0"
 group.typings.dependencies.types-requests = ">=2.32.4"
 group.typings.dependencies.types-setuptools = ">=80.9.0"
 group.typings.dependencies.types-toml = ">=0.10.8.20240310"
-packages = [ {from = "src", include = "flext_tap_oracle_wms"} ]
+packages = [ { from = "src", include = "flext_tap_oracle_wms" } ]
 
 [tool.ruff]
 extend = "../ruff-shared.toml"
@@ -176,9 +176,9 @@ ini_options.testpaths = [
 ]
 
 [tool.coverage]
+run.source = [ "src/flext_tap_oracle_wms" ]
 report.fail_under = 100
 report.precision = 2
-run.source = [ "src/flext_tap_oracle_wms" ]
 
 [tool.pyrefly]
 project-excludes = [ "**/*_pb2*.py", "**/*_pb2_grpc*.py" ]
