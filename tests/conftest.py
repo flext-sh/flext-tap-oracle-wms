@@ -14,11 +14,12 @@ from unittest.mock import MagicMock
 
 import pytest
 from flext_core import FlextResult, t
+from pydantic import SecretStr
+
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
 )
-from pydantic import SecretStr
 
 
 @pytest.fixture(scope="session")
