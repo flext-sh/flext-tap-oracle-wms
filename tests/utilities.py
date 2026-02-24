@@ -112,9 +112,9 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
 
 
 # Alias for simplified usage
-tu = TestsFlextMeltanoTapOracleWmsUtilities
+u = TestsFlextMeltanoTapOracleWmsUtilities
 
 __all__ = [
     "TestsFlextMeltanoTapOracleWmsUtilities",
-    "tu",
+    "u",
 ]

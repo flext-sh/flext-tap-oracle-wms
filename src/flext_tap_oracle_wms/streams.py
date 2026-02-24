@@ -10,12 +10,13 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, FlextResult, t
+from flext_core import FlextLogger, FlextResult, t, u
 
 # Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient
 
+from flext_tap_oracle_wms.protocols import p
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)
@@ -65,7 +66,9 @@ class FlextTapOracleWmsStream(Stream):
         if self._client is None:
             # Access WMS client from tap (FlextTapOracleWms)
             tap_instance = getattr(self, "tap", None) or getattr(self, "_tap", None)
-            if tap_instance and hasattr(tap_instance, "wms_client"):
+            if tap_instance and u.Guards.is_type(
+                tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientProtocol
+            ):
                 self._client = tap_instance.wms_client
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWms"
@@ -174,7 +177,7 @@ class FlextTapOracleWmsStream(Stream):
         self,
         page: int,
         context: Mapping[str, t.JsonValue] | None,
-    ) -> dict[str, t.JsonValue]:
+    ) -> Mapping[str, t.JsonValue]:
         """Build kwargs for the operation call."""
         kwargs: dict[str, t.JsonValue] = {
             "page": page,

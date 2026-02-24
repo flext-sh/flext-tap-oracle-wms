@@ -152,6 +152,12 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
                     """Track WMS extraction progress."""
                     ...
 
+            @runtime_checkable
+            class TapWithWmsClientProtocol(Protocol):
+                """Protocol for tap instances that provide wms_client."""
+
+                wms_client: t.GeneralValueType
+
 
 # Runtime alias for simplified usage
 p = FlextTapOracleWmsProtocols

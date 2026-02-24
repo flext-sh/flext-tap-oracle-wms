@@ -17,9 +17,9 @@ class TestsFlextTapOracleWmsProtocols(FlextTestsProtocols, FlextTapOracleWmsProt
     """Test protocols combining FlextTestsProtocols and FlextTapOracleWmsProtocols.
 
     Provides access to:
-    - tp.Tests.Docker.* (from FlextTestsProtocols)
-    - tp.Tests.Factory.* (from FlextTestsProtocols)
-    - tp.TapOracleWms.* (from FlextTapOracleWmsProtocols)
+    - p.Tests.Docker.* (from FlextTestsProtocols)
+    - p.Tests.Factory.* (from FlextTestsProtocols)
+    - p.TapOracleWms.* (from FlextTapOracleWmsProtocols)
     """
 
     class TapOracleWms(FlextTapOracleWmsProtocols.TapOracleWms):
@@ -34,6 +34,6 @@ class TestsFlextTapOracleWmsProtocols(FlextTestsProtocols, FlextTapOracleWmsProt
 
 # Runtime aliases
 p = TestsFlextTapOracleWmsProtocols
-tp = TestsFlextTapOracleWmsProtocols
+p = TestsFlextTapOracleWmsProtocols
 
-__all__ = ["TestsFlextTapOracleWmsProtocols", "p", "tp"]
+__all__ = ["TestsFlextTapOracleWmsProtocols", "p", "p"]
