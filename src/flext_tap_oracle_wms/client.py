@@ -45,12 +45,15 @@ class FlextTapOracleWms(Tap):
         validate_config: bool = True,
     ) -> None:
         """Initialize the tap with validated FLEXT settings."""
-        if isinstance(config, FlextTapOracleWmsSettings):
-            settings = config
-        elif isinstance(config, dict):
-            settings = FlextTapOracleWmsSettings.model_validate(config)
-        else:
-            settings = FlextTapOracleWmsSettings.model_validate({})
+        match config:
+            case FlextTapOracleWmsSettings() as settings_model:
+                settings = settings_model
+            case Mapping() as config_mapping:
+                settings = FlextTapOracleWmsSettings.model_validate(
+                    dict(config_mapping),
+                )
+            case _:
+                settings = FlextTapOracleWmsSettings.model_validate({})
 
         self._flext_config = settings
         self._wms_client: FlextOracleWmsClient | None = None
@@ -97,11 +100,13 @@ class FlextTapOracleWms(Tap):
                 discovery_result.error or "Discovery failed",
             )
 
-        entities = [
-            str(entity)
-            for entity in discovery_result.value
-            if isinstance(entity, (str, int, float, bool))
-        ]
+        entities: list[str] = []
+        for entity in discovery_result.value:
+            match entity:
+                case str() | int() | float() | bool():
+                    entities.append(str(entity))
+                case _:
+                    continue
         streams = [
             m.Meltano.SingerCatalogEntry(
                 tap_stream_id=entity,

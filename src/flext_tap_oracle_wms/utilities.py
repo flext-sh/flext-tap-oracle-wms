@@ -14,6 +14,94 @@ from typing import ClassVar, override
 from flext_core import FlextResult, t
 from flext_core.utilities import u
 from flext_meltano import FlextMeltanoModels as m
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
+
+
+class _WmsConnectionConfig(BaseModel):
+    """Validated connection payload for Oracle WMS settings."""
+
+    model_config = ConfigDict(extra="allow")
+
+    host: str
+    database: str
+    username: str
+    password: str
+    port: int | None = None
+    database_schema: str | None = Field(default=None, alias="schema")
+
+
+_STRICT_BOOL_ADAPTER = TypeAdapter(bool, config=ConfigDict(strict=True))
+_STRICT_INT_ADAPTER = TypeAdapter(int, config=ConfigDict(strict=True))
+_STRICT_FLOAT_ADAPTER = TypeAdapter(float, config=ConfigDict(strict=True))
+_STRICT_STR_ADAPTER = TypeAdapter(str, config=ConfigDict(strict=True))
+_STRICT_MAP_ADAPTER = TypeAdapter(
+    dict[str, t.GeneralValueType],
+    config=ConfigDict(strict=True),
+)
+_STRICT_LIST_ADAPTER = TypeAdapter(
+    list[t.GeneralValueType],
+    config=ConfigDict(strict=True),
+)
+_BOOKMARK_VALUE_ADAPTER = TypeAdapter(
+    str | int | float | datetime,
+    config=ConfigDict(strict=True),
+)
+
+
+def _as_bool(value: object) -> bool | None:
+    """Strict bool validation via Pydantic adapter."""
+    try:
+        return _STRICT_BOOL_ADAPTER.validate_python(value)
+    except ValidationError:
+        return None
+
+
+def _as_int(value: object) -> int | None:
+    """Strict int validation via Pydantic adapter."""
+    try:
+        return _STRICT_INT_ADAPTER.validate_python(value)
+    except ValidationError:
+        return None
+
+
+def _as_float(value: object) -> float | None:
+    """Strict float validation via Pydantic adapter."""
+    try:
+        return _STRICT_FLOAT_ADAPTER.validate_python(value)
+    except ValidationError:
+        return None
+
+
+def _as_str(value: object) -> str | None:
+    """Strict str validation via Pydantic adapter."""
+    try:
+        return _STRICT_STR_ADAPTER.validate_python(value)
+    except ValidationError:
+        return None
+
+
+def _as_map(value: object) -> dict[str, t.GeneralValueType] | None:
+    """Strict map validation via Pydantic adapter."""
+    try:
+        return _STRICT_MAP_ADAPTER.validate_python(value)
+    except ValidationError:
+        return None
+
+
+def _as_list(value: object) -> list[t.GeneralValueType] | None:
+    """Strict list validation via Pydantic adapter."""
+    try:
+        return _STRICT_LIST_ADAPTER.validate_python(value)
+    except ValidationError:
+        return None
+
+
+def _as_bookmark_value(value: object) -> str | int | float | datetime | None:
+    """Strict bookmark scalar validation via Pydantic adapter."""
+    try:
+        return _BOOKMARK_VALUE_ADAPTER.validate_python(value)
+    except ValidationError:
+        return None
 
 
 class FlextTapOracleWmsUtilities(u):
@@ -343,23 +431,24 @@ class FlextTapOracleWmsUtilities(u):
             """
             if value is None:
                 return {"type": ["null", "string"]}
-            if isinstance(value, bool):
+            if _as_bool(value) is not None:
                 return {"type": "boolean"}
-            if isinstance(value, int):
+            if _as_int(value) is not None:
                 return {"type": "integer"}
-            if isinstance(value, float):
+            if _as_float(value) is not None:
                 return {"type": "number"}
-            if isinstance(value, list):
-                if value:
+            list_value = _as_list(value)
+            if list_value is not None:
+                if list_value:
                     # Infer type from first element
                     item_type = (
                         FlextTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
-                            value[0],
+                            list_value[0],
                         )
                     )
                     return {"type": "array", "items": item_type}
                 return {"type": "array", "items": {"type": "string"}}
-            if isinstance(value, dict):
+            if _as_map(value) is not None:
                 return {"type": "object", "additionalProperties": True}
 
             # String type with WMS-specific format detection
@@ -448,24 +537,24 @@ class FlextTapOracleWmsUtilities(u):
                 )
 
             # Validate host format
-            host = config["host"]
-            if not isinstance(host, str) or not host.strip():
+            host = _as_str(config["host"])
+            if host is None or not host.strip():
                 return FlextResult[dict[str, t.GeneralValueType]].fail(
                     "Host must be a non-empty string",
                 )
 
             # Validate database format
-            database = config["database"]
-            if not isinstance(database, str) or not database.strip():
+            database = _as_str(config["database"])
+            if database is None or not database.strip():
                 return FlextResult[dict[str, t.GeneralValueType]].fail(
                     "Database must be a non-empty string",
                 )
 
             # Validate port if provided
             if "port" in config:
-                port = config["port"]
+                port = _as_int(config["port"])
                 if (
-                    not isinstance(port, int)
+                    port is None
                     or port <= 0
                     or port > FlextTapOracleWmsUtilities.MAX_PORT
                 ):
@@ -475,8 +564,8 @@ class FlextTapOracleWmsUtilities(u):
 
             # Validate WMS-specific settings
             if "schema" in config:
-                schema = config["schema"]
-                if not isinstance(schema, str) or not schema.strip():
+                schema_value = _as_str(config["schema"])
+                if schema_value is None or not schema_value.strip():
                     return FlextResult[dict[str, t.GeneralValueType]].fail(
                         "Schema must be a non-empty string",
                     )
@@ -501,15 +590,16 @@ class FlextTapOracleWmsUtilities(u):
                     "Configuration must include 'streams' section",
                 )
 
-            streams = config["streams"]
-            if not isinstance(streams, dict):
+            streams = _as_map(config["streams"])
+            if streams is None:
                 return FlextResult[dict[str, t.GeneralValueType]].fail(
                     "Streams configuration must be a dictionary",
                 )
 
             # Validate each stream
-            for stream_name, stream_config in streams.items():
-                if not isinstance(stream_config, dict):
+            for stream_name, stream_payload in streams.items():
+                stream_config = _as_map(stream_payload)
+                if stream_config is None:
                     return FlextResult[dict[str, t.GeneralValueType]].fail(
                         f"Stream '{stream_name}' configuration must be a dictionary",
                     )
@@ -522,8 +612,8 @@ class FlextTapOracleWmsUtilities(u):
 
                 # Validate WMS-specific stream settings
                 if "table_name" in stream_config:
-                    table_name = stream_config["table_name"]
-                    if not isinstance(table_name, str) or not table_name.strip():
+                    table_name = _as_str(stream_config["table_name"])
+                    if table_name is None or not table_name.strip():
                         return FlextResult[dict[str, t.GeneralValueType]].fail(
                             f"Stream '{stream_name}' table_name must be a non-empty string",
                         )
@@ -579,8 +669,8 @@ class FlextTapOracleWmsUtilities(u):
                     )
 
             # Validate URL format
-            base_url = config["base_url"]
-            if not isinstance(base_url, str) or not base_url.startswith((
+            base_url = _as_str(config["base_url"])
+            if base_url is None or not base_url.startswith((
                 "http://",
                 "https://",
             )):
@@ -684,7 +774,7 @@ class FlextTapOracleWmsUtilities(u):
         def generate_validation_info(
             config_data: dict[str, t.GeneralValueType],
             connection_result: dict[str, t.GeneralValueType],
-            discovery_result: dict[str, t.GeneralValueType] | None = None,
+            discovery_result: object | None = None,
         ) -> FlextResult[dict[str, t.GeneralValueType]]:
             """Generate complete validation information.
 
@@ -707,15 +797,16 @@ class FlextTapOracleWmsUtilities(u):
             }
 
             if discovery_result:
-                if isinstance(discovery_result, list):
-                    validation_info["entities_discovered"] = len(discovery_result)
-                elif isinstance(discovery_result, dict):
-                    entities = discovery_result.get("entities", [])
-                    validation_info["entities_discovered"] = (
-                        len(entities) if isinstance(entities, list) else 0
-                    )
+                discovery_list = _as_list(discovery_result)
+                if discovery_list is not None:
+                    validation_info["entities_discovered"] = len(discovery_list)
                 else:
-                    validation_info["entities_discovered"] = 0
+                    discovery_map = _as_map(discovery_result)
+                    if discovery_map is not None:
+                        entities = _as_list(discovery_map.get("entities", [])) or []
+                        validation_info["entities_discovered"] = len(entities)
+                    else:
+                        validation_info["entities_discovered"] = 0
 
             return FlextResult[dict[str, t.GeneralValueType]].ok(validation_info)
 
@@ -737,15 +828,13 @@ class FlextTapOracleWmsUtilities(u):
             dict[str, t.GeneralValueType]: Stream state
 
             """
-            if not isinstance(state, dict):
+            state_map = _as_map(state)
+            if state_map is None:
                 return {}
-            bookmarks = state.get("bookmarks", {})
-            if not isinstance(bookmarks, dict):
+            bookmarks = _as_map(state_map.get("bookmarks", {}))
+            if bookmarks is None:
                 return {}
-            stream_state = bookmarks.get(stream_name, {})
-            if isinstance(stream_state, dict):
-                return stream_state
-            return {}
+            return _as_map(bookmarks.get(stream_name, {})) or {}
 
         @staticmethod
         def set_wms_stream_state(
@@ -764,12 +853,9 @@ class FlextTapOracleWmsUtilities(u):
             dict[str, t.GeneralValueType]: Updated state
 
             """
-            if "bookmarks" not in state:
-                state["bookmarks"] = {}
-
-            bookmarks = state["bookmarks"]
-            if isinstance(bookmarks, dict):
-                bookmarks[stream_name] = stream_state
+            bookmarks = _as_map(state.get("bookmarks", {})) or {}
+            bookmarks[stream_name] = stream_state
+            state["bookmarks"] = bookmarks
             return state
 
         @staticmethod
@@ -796,12 +882,9 @@ class FlextTapOracleWmsUtilities(u):
                 )
             )
             bookmark_value = stream_state.get(bookmark_key)
-            if bookmark_value is not None and not isinstance(
-                bookmark_value,
-                (str, int, float, datetime),
-            ):
+            if bookmark_value is None:
                 return None
-            return bookmark_value
+            return _as_bookmark_value(bookmark_value)
 
         @staticmethod
         def set_wms_bookmark(
@@ -822,15 +905,11 @@ class FlextTapOracleWmsUtilities(u):
             dict[str, t.GeneralValueType]: Updated state
 
             """
-            if "bookmarks" not in state:
-                state["bookmarks"] = {}
-            bookmarks = state["bookmarks"]
-            if isinstance(bookmarks, dict):
-                if stream_name not in bookmarks:
-                    bookmarks[stream_name] = {}
-                stream_bookmarks = bookmarks[stream_name]
-                if isinstance(stream_bookmarks, dict):
-                    stream_bookmarks[bookmark_key] = bookmark_value
+            bookmarks = _as_map(state.get("bookmarks", {})) or {}
+            stream_bookmarks = _as_map(bookmarks.get(stream_name, {})) or {}
+            stream_bookmarks[bookmark_key] = bookmark_value
+            bookmarks[stream_name] = stream_bookmarks
+            state["bookmarks"] = bookmarks
             return state
 
         @staticmethod
