@@ -9,12 +9,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import json
 from unittest.mock import Mock
 
 import pytest
-import requests
-from flext_api import FlextApiConstants
 from flext_core import FlextLogger
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
@@ -325,37 +322,43 @@ class TestStreamsFunctional:
 
     def test_response_parsing_structure(
         self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test response parsing with mock Oracle WMS responses."""
-        # Test results array format
-        mock_response = Mock()
-        mock_response.json.return_value = {
+        catalog = real_tap_instance.catalog_dict
+        streams = catalog.get("streams", [])
+        assert len(streams) > 0
+        stream = FlextTapOracleWmsStream(
+            tap=real_tap_instance,
+            name=streams[0]["tap_stream_id"],
+            schema=streams[0]["schema"],
+        )
+
+        records, has_more = stream._extract_records_from_response({
             "results": [
                 {"id": 1, "code": "ITEM001", "mod_ts": "2024-01-01T10:00:00Z"},
                 {"id": 2, "code": "ITEM002", "mod_ts": "2024-01-01T11:00:00Z"},
             ],
             "next_page": "/api/entity/item?page=2",
-        }
+        })
 
-        records = mock_response.model_dump_json().get("items", [])
         assert len(records) == 2
         assert records[0]["id"] == 1
         assert records[1]["code"] == "ITEM002"
+        assert has_more is True
 
-        # Test direct array format
-        mock_response.json.return_value = [
+        records, has_more = stream._extract_records_from_response([
             {"id": 3, "code": "ITEM003"},
             {"id": 4, "code": "ITEM004"},
-        ]
+        ])
 
-        records = mock_response.model_dump_json().get("items", [])
         assert len(records) == 2
         assert records[0]["id"] == 3
+        assert has_more in {True, False}
 
-        # Test empty response
-        mock_response.json.return_value = {}
-        records = mock_response.model_dump_json().get("items", [])
+        records, has_more = stream._extract_records_from_response({})
         assert len(records) == 0
+        assert has_more is False
 
         logger.info("✅ Response parsing working for all formats")
 
@@ -400,61 +403,72 @@ class TestStreamsFunctional:
                 )
 
 
-@pytest.mark.skip(reason="WMSPaginator not implemented yet — placeholder stubs")
 @pytest.mark.unit
 class TestWMSPaginatorUnit:
-    """Unit tests for WMS HATEOAS paginator."""
+    @staticmethod
+    def _build_stream(real_tap_instance: FlextTapOracleWms) -> FlextTapOracleWmsStream:
+        catalog = real_tap_instance.catalog_dict
+        streams = catalog.get("streams", [])
+        assert len(streams) > 0, "No streams discovered"
+        stream_config = streams[0]
+        return FlextTapOracleWmsStream(
+            tap=real_tap_instance,
+            name=stream_config["tap_stream_id"],
+            schema=stream_config["schema"],
+        )
 
-    def test_get_next_url_with_next_page(self) -> None:
-        """Test next URL extraction from response."""
-        # paginator = WMSPaginator()  # Not implemented yet
-        paginator = None  # Placeholder until implementation
+    def test_extract_records_marks_has_more_with_next_page(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        stream = self._build_stream(real_tap_instance)
 
-        # Mock response with next_page
-        response = Mock(spec=requests.Response)
-        response.json.return_value = {
-            "results": [],
-            "next_page": "/api/v1/customers?page=2",
-        }
+        records, has_more = stream._extract_records_from_response({
+            "results": [{"id": 1, "name": "first"}],
+            "next_page": "/api/entity/item?page=2",
+        })
 
-        next_url = paginator.get_next_url(response)
-        assert next_url == "/api/v1/customers?page=2"
+        assert has_more is True
+        assert len(records) == 1
+        assert records[0]["id"] == 1
 
-    def test_get_next_url_no_next_page(self) -> None:
-        """Test handling of final page."""
-        # paginator = WMSPaginator()  # Not implemented yet
-        paginator = None  # Placeholder until implementation
+    def test_extract_records_marks_final_page_without_next_page(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        stream = self._build_stream(real_tap_instance)
 
-        response = Mock(spec=requests.Response)
-        response.json.return_value = {"results": []}
+        records, has_more = stream._extract_records_from_response({
+            "results": [{"id": 2}],
+        })
 
-        next_url = paginator.get_next_url(response)
-        assert next_url is None
+        assert len(records) == 1
+        assert has_more is False
 
-    def test_get_next_url_json_error(self) -> None:
-        """Test handling of JSON parsing errors."""
-        # paginator = WMSPaginator()  # Not implemented yet
-        paginator = None  # Placeholder until implementation
+    def test_extract_records_handles_invalid_payload_without_crash(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        stream = self._build_stream(real_tap_instance)
 
-        response = Mock(spec=requests.Response)
-        response.json.side_effect = json.JSONDecodeError("Invalid JSON", "", 0)
-        response.status_code = 200
-        response.headers = {"Content-Type": FlextApiConstants.ContentTypes.JSON}
+        records, has_more = stream._extract_records_from_response("invalid-payload")
 
-        with pytest.raises(ValueError, match="Critical pagination failure"):
-            paginator.get_next_url(response)
+        assert records == []
+        assert has_more is False
 
-    def test_has_more_pages(self) -> None:
-        """Test pagination status detection."""
-        # paginator = WMSPaginator()  # Not implemented yet
-        paginator = None  # Placeholder until implementation
+    def test_extract_records_list_payload_uses_page_size_for_has_more(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        stream = self._build_stream(real_tap_instance)
 
-        # Response with next page
-        response = Mock(spec=requests.Response)
-        response.json.return_value = {"next_page": "/api/next"}
+        full_page = [{"id": idx} for idx in range(stream._page_size)]
+        partial_page = [{"id": 1}, {"id": 2}]
 
-        assert paginator.has_more(response) is True
+        _records_full, has_more_full = stream._extract_records_from_response(full_page)
+        _records_partial, has_more_partial = stream._extract_records_from_response(
+            partial_page
+        )
 
-        # Response without next page
-        response.json.return_value = {}
-        assert paginator.has_more(response) is False
+        assert has_more_full is True
+        assert has_more_partial is False

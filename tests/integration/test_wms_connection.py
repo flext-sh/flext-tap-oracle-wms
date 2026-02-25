@@ -134,7 +134,7 @@ class TestRealDataExtraction:
 
             if records:
                 pass
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
             pytest.fail(f"Failed to extract records from {stream_name}: {e}")
 
     def test_pagination_functionality(self, tap: FlextTapOracleWms) -> None:

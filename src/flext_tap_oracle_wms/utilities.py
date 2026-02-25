@@ -314,7 +314,7 @@ class FlextTapOracleWmsUtilities(u):
                     f"Unsupported timestamp format: {timestamp}",
                 )
 
-            except Exception as e:
+            except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
                 return FlextResult[str].fail(f"Error converting timestamp: {e}")
 
         @staticmethod
