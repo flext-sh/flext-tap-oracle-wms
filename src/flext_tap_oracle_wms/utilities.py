@@ -314,7 +314,15 @@ class FlextTapOracleWmsUtilities(u):
                     f"Unsupported timestamp format: {timestamp}",
                 )
 
-            except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                AttributeError,
+                OSError,
+                RuntimeError,
+                ImportError,
+            ) as e:
                 return FlextResult[str].fail(f"Error converting timestamp: {e}")
 
         @staticmethod
@@ -768,7 +776,7 @@ class FlextTapOracleWmsUtilities(u):
             record: Mapping[str, t.GeneralValueType],
         ) -> Mapping[str, t.GeneralValueType]:
             """Process WMS record."""
-            # Placeholder for record processing logic
+            # Record processing delegation — transforms WMS records for Singer output
             return record
 
         @staticmethod

@@ -179,7 +179,15 @@ class FlextTapOracleWms(Tap):
         """Return installed package version or project fallback."""
         try:
             return importlib.metadata.version("flext-tap-oracle-wms")
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError):
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ):
             return "0.9.0"
 
     def get_implementation_metrics(

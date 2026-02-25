@@ -191,7 +191,15 @@ class PydanticV2Auditor:
         try:
             content = py_file.read_text(encoding="utf-8")
             lines = content.split("\n")
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             self.result.recommendations.append(f"Could not read {py_file}: {e}")
             return
 

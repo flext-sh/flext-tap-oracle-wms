@@ -120,7 +120,15 @@ class FlextTapOracleWmsStream(Stream):
                 # Break if no records found
                 if not records:
                     break
-            except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError):
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                AttributeError,
+                OSError,
+                RuntimeError,
+                ImportError,
+            ):
                 logger.exception("Error getting records for %s", self.name)
                 break
 
