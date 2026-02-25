@@ -65,7 +65,9 @@ class FlextTapOracleWmsStream(Stream):
         """Get WMS client from tap."""
         if self._client is None:
             # Access WMS client from tap (FlextTapOracleWms)
-            tap_instance = getattr(self, "tap", None) or getattr(self, "_tap", None)
+            tap_instance = (self.tap if hasattr(self, "tap") else None) or (
+                self._tap if hasattr(self, "_tap") else None
+            )
             if tap_instance and u.Guards.is_type(
                 tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientProtocol
             ):
@@ -141,7 +143,9 @@ class FlextTapOracleWmsStream(Stream):
         # Build operation parameters
         operation_name = f"get_{self.name}"
         kwargs = self._build_operation_kwargs(page, context)
-        execute_method = getattr(self.client, "execute", None)
+        execute_method = (
+            self.client.execute if hasattr(self.client, "execute") else None
+        )
         if execute_method is None:
             return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].fail(
                 "WMS client must implement execute(operation, **kwargs)",
