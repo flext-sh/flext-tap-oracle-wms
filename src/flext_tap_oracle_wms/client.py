@@ -62,8 +62,8 @@ class FlextTapOracleWms(Tap):
 
         super().__init__(
             config=settings.model_dump(exclude_unset=True),
-            catalog=catalog,
-            state=state,
+            catalog=dict(catalog) if catalog is not None else None,
+            state=dict(state) if state is not None else None,
             parse_env_config=parse_env_config,
             validate_config=validate_config,
         )

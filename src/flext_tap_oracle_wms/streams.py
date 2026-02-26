@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from typing import ClassVar, override
+from typing import ClassVar, cast, override
 
 from flext_core import FlextLogger, FlextResult, t, u
 
@@ -71,7 +71,10 @@ class FlextTapOracleWmsStream(Stream):
             if tap_instance and u.Guards.is_type(
                 tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientProtocol
             ):
-                self._client = tap_instance.wms_client
+                wms_tap = cast(
+                    "p.TapOracleWms.OracleWms.TapWithWmsClientProtocol", tap_instance
+                )
+                self._client = cast("FlextOracleWmsClient", wms_tap.wms_client)
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWms"
                 raise RuntimeError(msg)
@@ -265,7 +268,7 @@ class FlextTapOracleWmsStream(Stream):
             match processed_record:
                 case dict() as processed_dict:
                     json_row: dict[str, t.JsonValue] = {
-                        str(k): self._normalize_json_value(v)
+                        str(k): self._normalize_json_value(cast("t.JsonValue", v))
                         for k, v in processed_dict.items()
                     }
                     final_record = self.post_process(json_row, context)
