@@ -46,7 +46,7 @@
 
 **FLEXT Tap Oracle WMS - Singer Tap Module Architecture & Best Practices**
 
-______________________________________________________________________
+---
 
 ## 🏗️ **Module Architecture Overview**
 
@@ -60,7 +60,7 @@ FLEXT Tap Oracle WMS follows a **simplified layered module architecture** aligne
 1. **Railway-Oriented**: FlextResult[T] threading through all operations
 1. **Simplicity Over Complexity**: Favor maintainable solutions over engineering sophistication
 
-______________________________________________________________________
+---
 
 ## 📁 **Target Module Structure & Responsibilities**
 
@@ -129,7 +129,7 @@ src/flext_tap_oracle_wms/
 - **FLEXT ecosystem integration** using foundation patterns
 - **Singer SDK compliance** without over-engineering
 
-______________________________________________________________________
+---
 
 ## 📦 **Module Definitions & Semantic Patterns**
 
@@ -720,7 +720,7 @@ class WMSSchemaError(WMSTapError):
 
 **Responsibility**: Authentication delegation and project-specific error handling.
 
-______________________________________________________________________
+---
 
 ## 🎯 **Semantic Naming Conventions**
 
@@ -779,7 +779,7 @@ def schema(self) -> t.Dict:               # Computed property
 
 **Pattern**: Verbs for actions, nouns for properties, clear business intent.
 
-______________________________________________________________________
+---
 
 ## 📦 **Import Patterns & Dependencies**
 
@@ -857,7 +857,7 @@ from flext_tap_oracle_wms import *
 from custom_result import CustomResult  # Use FlextResult instead
 ```
 
-______________________________________________________________________
+---
 
 ## 🏛️ **Architectural Patterns for Singer Taps**
 
@@ -939,7 +939,7 @@ class AuthenticationManager:
         pass
 ```
 
-______________________________________________________________________
+---
 
 ## 🔄 **Migration Strategy from Current Architecture**
 
@@ -1030,7 +1030,7 @@ Configuration Systems: 1 FlextSettings-based
 Test Coverage: 100% (all tests enabled)
 ```
 
-______________________________________________________________________
+---
 
 ## 🧪 **Testing Module Organization**
 
@@ -1079,7 +1079,7 @@ def test_entity_discovery():
     pass
 ```
 
-______________________________________________________________________
+---
 
 ## 📏 **Quality Standards & Validation**
 
@@ -1126,7 +1126,7 @@ def discover_entities(self) -> FlextResult[t.StringList]:
     pass
 ```
 
-______________________________________________________________________
+---
 
 ## 🌐 **FLEXT Ecosystem Integration Standards**
 
@@ -1181,7 +1181,7 @@ class CustomWMSClient:                       # Use FlextOracleWmsClient
 class CustomTap(BaseTap):                    # Use flext_meltano.Tap
 ```
 
-______________________________________________________________________
+---
 
 ## 📋 **Module Creation Checklist**
 
@@ -1209,7 +1209,7 @@ ______________________________________________________________________
 - [ ] **Singer Compliance**: Singer protocol tests passing
 - [ ] **Documentation**: Complete documentation update
 
-______________________________________________________________________
+---
 
 **Last Updated**: August 4, 2025
 **Target Audience**: FLEXT Tap Oracle WMS developers and architects

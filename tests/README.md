@@ -86,37 +86,31 @@ tests/
 The following test files are disabled due to external WMS dependencies:
 
 1. **conftest.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Contains live WMS connection fixtures
    - **Impact**: Test configuration unavailable for integration tests
    - **Remediation**: Create mock-based fixtures
 
 1. **test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Requires live Oracle WMS instance
    - **Impact**: No end-to-end workflow validation
    - **Remediation**: Implement comprehensive mocking strategy
 
 1. **test_simple_integration.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Integration tests with external API calls
    - **Impact**: Multi-component integration not validated
    - **Remediation**: Mock WMS API responses
 
 1. **test_tap.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Tap-level testing with live connections
    - **Impact**: Core tap functionality not validated
    - **Remediation**: Mock WMS client for tap testing
 
 1. **test_config_validation.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Configuration validation with live API checks
    - **Impact**: Configuration edge cases not tested
    - **Remediation**: Separate validation logic from API calls
 
 1. **test_discovery.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup**
-
    - **Reason**: Entity discovery with live WMS metadata
    - **Impact**: Schema discovery not validated
    - **Remediation**: Mock WMS metadata responses
@@ -374,7 +368,7 @@ def test_config_validation_with_missing_auth_raises_error():
 - [ ] Test follows project testing patterns
 - [ ] Test passes consistently
 
-______________________________________________________________________
+---
 
 **Status**: Test infrastructure requires significant improvement · 1.0.0 Release Preparation
 **Priority**: Re-enable disabled tests before production use\

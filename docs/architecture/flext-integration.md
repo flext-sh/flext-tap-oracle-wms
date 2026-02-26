@@ -607,6 +607,6 @@ class WMSHealthCheck:
 1. **Integration Testing**: Test with other FLEXT ecosystem components
 1. **Observability Testing**: Verify metrics and monitoring work correctly
 
-______________________________________________________________________
+---
 
 **Updated**: 2025-08-13 | **Status**: Integration Documented · 1.0.0 Release Preparation | **Next**: Implementation Planning
