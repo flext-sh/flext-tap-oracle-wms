@@ -405,6 +405,8 @@ class TestStreamsFunctional:
 
 @pytest.mark.unit
 class TestWMSPaginatorUnit:
+    """Unit tests for WMS stream paginator extraction logic."""
+
     @staticmethod
     def _build_stream(real_tap_instance: FlextTapOracleWms) -> FlextTapOracleWmsStream:
         catalog = real_tap_instance.catalog_dict

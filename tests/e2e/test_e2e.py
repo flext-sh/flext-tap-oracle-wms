@@ -389,7 +389,15 @@ class TestOracleWMSE2EComplete:
             # If we get a catalog, it should be valid even with errors
             assert isinstance(catalog, dict)
             assert "streams" in catalog
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             # Should be a meaningful error
             error_msg = str(e).lower()
             meaningful_errors = [
@@ -577,7 +585,15 @@ class TestOracleWMSE2EComplete:
                 discovery_time < 300 and summary["streams_discovered"] > 0
             )
 
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             summary["errors"].append(str(e))
 
         # Log comprehensive summary

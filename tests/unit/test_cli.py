@@ -10,7 +10,6 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
-
 from flext_tap_oracle_wms import FlextTapOracleWms, cli as cli_module, main
 
 

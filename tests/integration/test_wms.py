@@ -131,7 +131,15 @@ class TestRealWmsIntegration:
 
             assert records is not None, "No records found"
 
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             # Check if it's an authentication or connection error
             error_msg = str(e).lower()
             if any(

@@ -123,7 +123,15 @@ class TestOracleWMSFunctionalComplete:
                     len(properties),
                 )
 
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError):
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ):
             logger.exception("❌ Entity discovery failed")
             raise
 
@@ -223,7 +231,15 @@ class TestOracleWMSFunctionalComplete:
 
             logger.info("✅ Stream URL generated: %s", url)
 
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError):
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ):
             logger.exception("❌ Stream creation failed for %s", stream_id)
             raise
 
@@ -376,7 +392,15 @@ class TestOracleWMSFunctionalComplete:
             assert isinstance(catalog, dict), (
                 "Catalog should be dict[str, t.GeneralValueType] even on errors"
             )
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             # Errors should be meaningful
             error_msg = str(e).lower()
             has_meaningful_error = (
@@ -504,7 +528,15 @@ class TestOracleWMSFunctionalComplete:
                 params = stream.get_url_params(None, None)
                 summary["pagination_configured"] = "page_size" in params
 
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             summary["errors"].append(str(e))
 
         # Log comprehensive summary

@@ -112,7 +112,7 @@ class FlextTapOracleWms(Tap):
             self._schema_generator = MagicMock()
         return self._schema_generator
 
-    def set_discovery_mode(self, enabled: bool) -> None:
+    def set_discovery_mode(self, *, enabled: bool) -> None:
         """Set tap to discovery mode."""
         self._discovery_mode = enabled
 
