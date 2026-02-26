@@ -237,7 +237,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         """Create or return a shared instance for this project."""
         _ = project_name
         init_kwargs: dict[str, t.GeneralValueType] = overrides
-        return cls(**cast(dict[str, Any], init_kwargs))
+        return cls(**cast("dict[str, Any]", init_kwargs))
 
     @classmethod
     def get_global_instance(cls) -> Self:
