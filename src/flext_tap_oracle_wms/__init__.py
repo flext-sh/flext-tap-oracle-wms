@@ -10,7 +10,7 @@ from flext_core import FlextLogger, FlextResult, t
 from flext_meltano import FlextMeltanoBridge, FlextMeltanoService, FlextMeltanoSettings
 
 from flext_tap_oracle_wms.cli import main
-from flext_tap_oracle_wms.client import (
+from flext_tap_oracle_wms.tap import (
     FlextTapOracleWms,
     FlextTapOracleWmsPlugin,
 )

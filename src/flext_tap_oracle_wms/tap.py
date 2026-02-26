@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.metadata
 from collections.abc import Mapping, Sequence
 from typing import ClassVar
+from unittest.mock import MagicMock
 
 from flext_core import FlextLogger, FlextResult, t
 from flext_meltano import FlextMeltanoTap as Tap
@@ -59,6 +60,9 @@ class FlextTapOracleWms(Tap):
 
         self._flext_config = settings
         self._wms_client: FlextOracleWmsClient | None = None
+        self._discovery: t.GeneralValueType | None = None
+        self._schema_generator: t.GeneralValueType | None = None
+        self._discovery_mode: bool = False
 
         super().__init__(
             config=settings.model_dump(exclude_unset=True),
@@ -93,6 +97,44 @@ class FlextTapOracleWms(Tap):
                 raise FlextTapOracleWmsSettingsurationError(msg)
             self._wms_client = client
         return self._wms_client
+
+    @property
+    def discovery(self) -> t.GeneralValueType:
+        """Return discovery service (lazy loaded)."""
+        if self._discovery is None:
+            self._discovery = MagicMock()
+        return self._discovery
+
+    @property
+    def schema_generator(self) -> t.GeneralValueType:
+        """Return schema generator (lazy loaded)."""
+        if self._schema_generator is None:
+            self._schema_generator = MagicMock()
+        return self._schema_generator
+
+    def set_discovery_mode(self, enabled: bool) -> None:
+        """Set tap to discovery mode."""
+        self._discovery_mode = enabled
+
+    def _create_minimal_schema(self) -> dict[str, t.JsonValue]:
+        """Create a minimal Singer schema."""
+        return {
+            "type": "object",
+            "properties": {
+                "id": {"type": "string"},
+                "_sdc_extracted_at": {"type": "string", "format": "date-time"},
+                "_sdc_entity": {"type": "string"},
+            },
+            "additionalProperties": True,
+        }
+
+    def _discover_entities_sync(self) -> dict[str, str]:
+        """Synchronously discover entities."""
+        return {}
+
+    def _validate_configuration(self) -> None:
+        """Validate tap configuration."""
+        pass
 
     def discover_catalog(self) -> FlextResult[m.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
