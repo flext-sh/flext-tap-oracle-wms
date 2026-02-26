@@ -50,7 +50,7 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
             **kwargs: t.GeneralValueType,
         ) -> dict[str, t.GeneralValueType]:
             """Create test Oracle WMS configuration."""
-            config = {
+            config: dict[str, t.GeneralValueType] = {
                 "base_url": base_url,
                 "username": username,
                 "password": password,
@@ -70,7 +70,7 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
             **kwargs: t.GeneralValueType,
         ) -> dict[str, t.GeneralValueType]:
             """Create test Oracle WMS API response."""
-            response = {
+            response: dict[str, t.GeneralValueType] = {
                 "items": data,
                 "hasMore": has_more,
             }
@@ -89,9 +89,9 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
             **kwargs: t.GeneralValueType,
         ) -> list[dict[str, t.GeneralValueType]]:
             """Generate mock Oracle WMS records for testing."""
-            records = []
+            records: list[dict[str, t.GeneralValueType]] = []
             for i in range(count):
-                record = {
+                record: dict[str, t.GeneralValueType] = {
                     "id": base_id + i,
                     "facilityId": facility_id,
                     "itemNumber": f"ITEM{i + 1:04d}",
@@ -100,7 +100,7 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
                     "modifiedDate": "2023-01-01T00:00:00Z",
                 }
                 # Add custom fields
-                record.update(dict(kwargs.items()))
+                record.update(kwargs)
                 records.append(record)
             return records
 
