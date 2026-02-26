@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Final, Self
+from typing import Any, Final, Self, cast
 
 from flext_core import (
     FlextConstants,
@@ -237,7 +237,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         """Create or return a shared instance for this project."""
         _ = project_name
         init_kwargs: dict[str, t.GeneralValueType] = overrides
-        return cls(**init_kwargs)
+        return cls(**cast(dict[str, Any], init_kwargs))
 
     @classmethod
     def get_global_instance(cls) -> Self:
