@@ -18,7 +18,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms.client import FlextTapOracleWms
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
 def main() -> None:

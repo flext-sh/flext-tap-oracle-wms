@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from collections.abc import Mapping
 from datetime import datetime
 from typing import Any, Final, Self, cast
@@ -240,6 +242,8 @@ class FlextTapOracleWmsSettings(FlextSettings):
         return cls(**cast("dict[str, Any]", init_kwargs))
 
     @classmethod
+    @override
+
     def get_global_instance(cls) -> Self:
         """Return the global singleton settings instance."""
         return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")

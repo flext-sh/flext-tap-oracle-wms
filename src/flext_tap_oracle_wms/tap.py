@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import override
+
 import importlib.metadata
 from collections.abc import Mapping, Sequence
 from typing import ClassVar
@@ -172,6 +174,8 @@ class FlextTapOracleWms(Tap):
         return FlextResult[m.Meltano.SingerCatalog].ok(
             m.Meltano.SingerCatalog(streams=streams),
         )
+
+    @override
 
     def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
         """Build stream objects from the discovered catalog."""
