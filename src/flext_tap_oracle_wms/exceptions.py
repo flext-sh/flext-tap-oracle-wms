@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from flext_core.exceptions import e
 
-class FlextTapOracleWmsError(Exception):
+
+class FlextTapOracleWmsError(e.BaseError):
     """Base exception for Oracle WMS tap failures."""
 
 
