@@ -12,6 +12,9 @@ from flext_meltano import FlextMeltanoBridge, FlextMeltanoService, FlextMeltanoS
 from flext_tap_oracle_wms.cli import main
 from flext_tap_oracle_wms.constants import (
     FlextTapOracleWmsConstants,
+    FlextTapOracleWmsConstants as c,
+)
+    FlextTapOracleWmsConstants,
 )
 from flext_tap_oracle_wms.exceptions import (
     FlextTapOracleWmsConnectionError,
@@ -64,6 +67,7 @@ __all__ = [
     "FlextTapOracleWmsVersion",
     "__version__",
     "__version_info__",
+    "c",
     "m",
     "main",
     "t",
