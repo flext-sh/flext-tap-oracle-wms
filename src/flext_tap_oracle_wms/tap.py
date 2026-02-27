@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from typing import override
-
 import importlib.metadata
 from collections.abc import Mapping, Sequence
-from typing import ClassVar
+from typing import ClassVar, override
 from unittest.mock import MagicMock
 
 from flext_core import FlextLogger, FlextResult, t
@@ -176,7 +174,6 @@ class FlextTapOracleWms(Tap):
         )
 
     @override
-
     def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
         """Build stream objects from the discovered catalog."""
         catalog_result = self.discover_catalog()

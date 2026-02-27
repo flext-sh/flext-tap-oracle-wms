@@ -7,8 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import override
-
 from collections.abc import Iterable, Mapping
 from typing import ClassVar, cast, override
 
@@ -99,7 +97,6 @@ class FlextTapOracleWmsStream(Stream):
         return value
 
     @override
-
     def get_records(
         self,
         context: Mapping[str, t.JsonValue] | None,
@@ -280,7 +277,6 @@ class FlextTapOracleWmsStream(Stream):
                     continue
 
     @override
-
     def post_process(
         self,
         row: dict[str, t.JsonValue],

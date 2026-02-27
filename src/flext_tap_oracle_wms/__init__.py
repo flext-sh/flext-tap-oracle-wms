@@ -12,7 +12,7 @@ from flext_meltano import FlextMeltanoBridge, FlextMeltanoService, FlextMeltanoS
 from flext_tap_oracle_wms.cli import main
 from flext_tap_oracle_wms.constants import (
     FlextTapOracleWmsConstants,
-    FlextTapOracleWmsConstants as c,
+    c,
 )
     FlextTapOracleWmsConstants,
 )
@@ -34,7 +34,7 @@ from flext_tap_oracle_wms.tap import (
 )
 from flext_tap_oracle_wms.utilities import (
     FlextTapOracleWmsUtilities,
-    FlextTapOracleWmsUtilities as u,
+    u,
 )
 from flext_tap_oracle_wms.version import (
     VERSION,

@@ -14,7 +14,7 @@ from typing import ClassVar, override
 
 from flext_core import FlextResult, t
 from flext_core.utilities import u
-from flext_meltano import FlextMeltanoModels as m
+from flext_meltano import m
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 
