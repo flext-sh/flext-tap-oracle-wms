@@ -11,8 +11,6 @@ from collections.abc import Iterable, Mapping
 from typing import ClassVar, cast, override
 
 from flext_core import FlextLogger, FlextResult, t, u
-
-# Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient
 

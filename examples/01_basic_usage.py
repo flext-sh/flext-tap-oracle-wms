@@ -7,7 +7,6 @@ Shows how to use the tap with flext-oracle-wms integration.
 import os
 import sys
 
-# from pydantic import SecretStr  # Not needed
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
