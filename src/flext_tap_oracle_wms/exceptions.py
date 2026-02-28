@@ -17,5 +17,6 @@ class FlextTapOracleWmsValidationError(FlextTapOracleWmsError):
     """Raised when tap configuration or payload validation fails."""
 
 
-class FlextTapOracleWmsSettingsurationError(FlextTapOracleWmsValidationError):
+class FlextTapOracleWmsConfigurationError(FlextTapOracleWmsValidationError):
+    """Raised when settings are invalid for runtime execution."""
     """Raised when settings are invalid for runtime execution."""

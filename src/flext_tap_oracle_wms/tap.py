@@ -12,7 +12,7 @@ from flext_meltano import FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsSettings
 
 from .constants import c
-from .exceptions import FlextTapOracleWmsSettingsurationError
+from .exceptions import FlextTapOracleWmsConfigurationError
 from .models import m
 from .settings import FlextTapOracleWmsSettings
 from .streams import FlextTapOracleWmsStream
@@ -53,9 +53,13 @@ class FlextTapOracleWms(Tap):
             case FlextTapOracleWmsSettings() as settings_model:
                 settings = settings_model
             case Mapping() as config_mapping:
-                settings = FlextTapOracleWmsSettings.model_validate(
-                    dict(config_mapping),
-                )
+                try:
+                    settings = FlextTapOracleWmsSettings.model_validate(
+                        dict(config_mapping),
+                    )
+                except Exception as exc:
+                    msg = f"Invalid configuration: {exc}"
+                    raise FlextTapOracleWmsConfigurationError(msg) from exc
             case _:
                 settings = FlextTapOracleWmsSettings.model_validate({})
 
@@ -95,50 +99,13 @@ class FlextTapOracleWms(Tap):
             start_result = client.start()
             if start_result.is_failure:
                 msg = start_result.error or "Failed to start Oracle WMS client"
-                raise FlextTapOracleWmsSettingsurationError(msg)
+                raise FlextTapOracleWmsConfigurationError(msg)
             self._wms_client = client
         return self._wms_client
 
-    @property
-    def discovery(self) -> t.GeneralValueType:
-        """Return discovery service (lazy loaded)."""
-        if self._discovery is None:
-            self._discovery = MagicMock()
-        return self._discovery
 
-    @property
-    def schema_generator(self) -> t.GeneralValueType:
-        """Return schema generator (lazy loaded)."""
-        if self._schema_generator is None:
-            self._schema_generator = MagicMock()
-        return self._schema_generator
 
-    def set_discovery_mode(self, *, enabled: bool) -> None:
-        """Set tap to discovery mode."""
-        self._discovery_mode = enabled
 
-    def _create_minimal_schema(self) -> dict[str, t.JsonValue]:
-        """Create a minimal Singer schema."""
-        return {
-            "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
-            "properties": {
-                "id": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
-                "_sdc_extracted_at": {
-                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING,
-                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
-                },
-                "_sdc_entity": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
-            },
-            "additionalProperties": True,
-        }
-
-    def _discover_entities_sync(self) -> dict[str, str]:
-        """Synchronously discover entities."""
-        return {}
-
-    def _validate_configuration(self) -> None:
-        """Validate tap configuration."""
-        pass
 
     def discover_catalog(self) -> FlextResult[m.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
@@ -249,10 +216,9 @@ class FlextTapOracleWms(Tap):
             },
         )
 
-    def __del__(self) -> None:
-        """Attempt graceful WMS client shutdown during object cleanup."""
-        if self._wms_client is not None:
-            stop_result = self._wms_client.stop()
+        wms_client = getattr(self, "_wms_client", None)
+        if wms_client is not None:
+            stop_result = wms_client.stop()
             if stop_result.is_failure:
                 logger.debug("Failed to stop WMS client: %s", stop_result.error)
 

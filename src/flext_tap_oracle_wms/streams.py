@@ -176,7 +176,7 @@ class FlextTapOracleWmsStream(Stream):
 
     @staticmethod
     @staticmethod
-    def _normalize_json_value(value: object) -> t.JsonValue:
+    def _normalize_json_value(value: t.GeneralValueType) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
         match value:
             case str() | int() | float() | bool() | None:

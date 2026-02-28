@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from flext_tap_oracle_wms.exceptions import (
         FlextTapOracleWmsConnectionError,
         FlextTapOracleWmsError,
-        FlextTapOracleWmsSettingsurationError,
+        FlextTapOracleWmsConfigurationError,
         FlextTapOracleWmsValidationError,
     )
     from flext_tap_oracle_wms.models import (
@@ -82,7 +82,10 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "flext_tap_oracle_wms.settings",
         "FlextTapOracleWmsSettings",
     ),
-    "FlextTapOracleWmsSettingsurationError": (
+    "FlextTapOracleWmsConfigurationError": (
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsConfigurationError",
+    ),
         "flext_tap_oracle_wms.exceptions",
         "FlextTapOracleWmsSettingsurationError",
     ),
@@ -129,7 +132,7 @@ __all__ = [
     "FlextTapOracleWmsPlugin",
     "FlextTapOracleWmsProtocols",
     "FlextTapOracleWmsSettings",
-    "FlextTapOracleWmsSettingsurationError",
+    "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsStream",
     "FlextTapOracleWmsUtilities",
     "FlextTapOracleWmsValidationError",
