@@ -49,7 +49,7 @@ _BOOKMARK_VALUE_ADAPTER = TypeAdapter(
 )
 
 
-def _as_bool(value: object) -> bool | None:
+def _as_bool(value: t.GeneralValueType) -> bool | None:
     """Strict bool validation via Pydantic adapter."""
     try:
         return _STRICT_BOOL_ADAPTER.validate_python(value)
@@ -57,7 +57,7 @@ def _as_bool(value: object) -> bool | None:
         return None
 
 
-def _as_int(value: object) -> int | None:
+def _as_int(value: t.GeneralValueType) -> int | None:
     """Strict int validation via Pydantic adapter."""
     try:
         return _STRICT_INT_ADAPTER.validate_python(value)
@@ -65,7 +65,7 @@ def _as_int(value: object) -> int | None:
         return None
 
 
-def _as_float(value: object) -> float | None:
+def _as_float(value: t.GeneralValueType) -> float | None:
     """Strict float validation via Pydantic adapter."""
     try:
         return _STRICT_FLOAT_ADAPTER.validate_python(value)
@@ -73,7 +73,7 @@ def _as_float(value: object) -> float | None:
         return None
 
 
-def _as_str(value: object) -> str | None:
+def _as_str(value: t.GeneralValueType) -> str | None:
     """Strict str validation via Pydantic adapter."""
     try:
         return _STRICT_STR_ADAPTER.validate_python(value)
@@ -81,7 +81,7 @@ def _as_str(value: object) -> str | None:
         return None
 
 
-def _as_map(value: object) -> Mapping[str, t.GeneralValueType] | None:
+def _as_map(value: t.GeneralValueType) -> Mapping[str, t.GeneralValueType] | None:
     """Strict map validation via Pydantic adapter."""
     try:
         return _STRICT_MAP_ADAPTER.validate_python(value)
@@ -89,7 +89,7 @@ def _as_map(value: object) -> Mapping[str, t.GeneralValueType] | None:
         return None
 
 
-def _as_list(value: object) -> list[t.GeneralValueType] | None:
+def _as_list(value: t.GeneralValueType) -> list[t.GeneralValueType] | None:
     """Strict list validation via Pydantic adapter."""
     try:
         return _STRICT_LIST_ADAPTER.validate_python(value)
@@ -97,7 +97,7 @@ def _as_list(value: object) -> list[t.GeneralValueType] | None:
         return None
 
 
-def _as_bookmark_value(value: object) -> str | int | float | datetime | None:
+def _as_bookmark_value(value: t.GeneralValueType) -> str | int | float | datetime | None:
     """Strict bookmark scalar validation via Pydantic adapter."""
     try:
         return _BOOKMARK_VALUE_ADAPTER.validate_python(value)
@@ -427,7 +427,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
         @staticmethod
         def infer_wms_type(
-            value: object,
+            value: t.GeneralValueType,
         ) -> Mapping[str, t.GeneralValueType]:
             """Infer JSON schema type from Oracle WMS value.
 
@@ -783,7 +783,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
         def generate_validation_info(
             config_data: Mapping[str, t.GeneralValueType],
             connection_result: Mapping[str, t.GeneralValueType],
-            discovery_result: object | None = None,
+            discovery_result: t.GeneralValueType | None = None,
         ) -> FlextResult[Mapping[str, t.GeneralValueType]]:
             """Generate complete validation information.
 
