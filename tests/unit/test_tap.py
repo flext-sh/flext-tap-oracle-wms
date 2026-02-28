@@ -14,7 +14,7 @@ from flext_core import FlextResult, t
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
-    FlextTapOracleWmsSettingsurationError,
+    FlextTapOracleWmsConfigurationError,
 )
 
 
@@ -55,7 +55,7 @@ class TestFlextTapOracleWms:
             "password": "test_password",
         }
 
-        with pytest.raises(FlextTapOracleWmsSettingsurationError):
+        with pytest.raises(FlextTapOracleWmsConfigurationError):
             FlextTapOracleWms(config=config_dict)
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
@@ -93,7 +93,7 @@ class TestFlextTapOracleWms:
         mock_client.connect.return_value = FlextResult[None].fail("Connection refused")
         mock_client_class.return_value = mock_client
 
-        with pytest.raises(FlextTapOracleWmsSettingsurationError) as exc_info:
+        with pytest.raises(FlextTapOracleWmsConfigurationError) as exc_info:
             _ = tap_instance.wms_client
 
         assert "Failed to connect to Oracle WMS" in str(exc_info.value)
