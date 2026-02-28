@@ -36,12 +36,12 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
     MAX_BATCH_SIZE: Final[int] = FlextConstants.Performance.BatchProcessing.MAX_ITEMS
 
     # WMS Entity Types - Oracle WMS tap-specific
-    class WmsEntityType(StrEnum):
+    class TapWmsEntityType(StrEnum):
         """Oracle WMS entity types using StrEnum for type safety.
 
         DRY Pattern:
-            StrEnum is the single source of truth. Use WmsEntityType.INVENTORY.value
-            or WmsEntityType.INVENTORY directly - no base strings needed.
+            StrEnum is the single source of truth. Use TapWmsEntityType.INVENTORY.value
+            or TapWmsEntityType.INVENTORY directly - no base strings needed.
         """
 
         INVENTORY = "INVENTORY"

@@ -40,5 +40,6 @@ class FlextMeltanoTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
 
 
 m = FlextMeltanoTapOracleWmsModels
+FlextTapOracleWmsModels = FlextMeltanoTapOracleWmsModels
 
-__all__ = ["FlextMeltanoTapOracleWmsModels", "m"]
+__all__ = ["FlextMeltanoTapOracleWmsModels", "FlextTapOracleWmsModels", "m"]

@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
 from typing import Protocol, runtime_checkable
 
 from flext_core import t
@@ -53,76 +52,76 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
             @runtime_checkable
             class WmsConnectionProtocol(
-                FlextProtocols.Service[t.GeneralValueType], Protocol
+                FlextProtocols.Service[t.JsonValue], Protocol
             ):
                 """Protocol for Oracle WMS connection operations."""
 
                 def establish_wms_connection(
                     self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> FlextProtocols.Result[t.GeneralValueType]:
+                    config: t.ConfigMap,
+                ) -> FlextProtocols.Result[t.JsonValue]:
                     """Establish connection to Oracle WMS."""
                     ...
 
             @runtime_checkable
             class InventoryDiscoveryProtocol(
-                FlextProtocols.Service[t.GeneralValueType],
+                FlextProtocols.Service[t.JsonValue],
                 Protocol,
             ):
                 """Protocol for WMS inventory discovery."""
 
                 def discover_inventory(
                     self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> FlextProtocols.Result[Sequence[Mapping[str, t.GeneralValueType]]]:
+                    config: t.ConfigMap,
+                ) -> FlextProtocols.Result[list[t.ConfigMap]]:
                     """Discover WMS inventory."""
                     ...
 
             @runtime_checkable
             class OrderProcessingProtocol(
-                FlextProtocols.Service[t.GeneralValueType],
+                FlextProtocols.Service[t.JsonValue],
                 Protocol,
             ):
                 """Protocol for WMS order processing."""
 
                 def process_orders(
                     self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> FlextProtocols.Result[Sequence[Mapping[str, t.GeneralValueType]]]:
+                    config: t.ConfigMap,
+                ) -> FlextProtocols.Result[list[t.ConfigMap]]:
                     """Process WMS orders."""
                     ...
 
             @runtime_checkable
             class WarehouseOperationsProtocol(
-                FlextProtocols.Service[t.GeneralValueType],
+                FlextProtocols.Service[t.JsonValue],
                 Protocol,
             ):
                 """Protocol for WMS warehouse operations."""
 
                 def get_warehouse_operations(
                     self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> FlextProtocols.Result[Sequence[Mapping[str, t.GeneralValueType]]]:
+                    config: t.ConfigMap,
+                ) -> FlextProtocols.Result[list[t.ConfigMap]]:
                     """Get WMS warehouse operations."""
                     ...
 
             @runtime_checkable
             class StreamGenerationProtocol(
-                FlextProtocols.Service[t.GeneralValueType],
+                FlextProtocols.Service[t.JsonValue],
                 Protocol,
             ):
                 """Protocol for Singer stream generation."""
 
                 def generate_catalog(
                     self,
-                    config: Mapping[str, t.GeneralValueType],
+                    config: t.ConfigMap,
                 ) -> FlextProtocols.Result[m.Meltano.SingerCatalog]:
                     """Generate Singer catalog."""
                     ...
 
             @runtime_checkable
             class PerformanceProtocol(
-                FlextProtocols.Service[t.GeneralValueType], Protocol
+                FlextProtocols.Service[t.JsonValue], Protocol
             ):
                 """Protocol for WMS extraction performance."""
 
@@ -132,20 +131,20 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
             @runtime_checkable
             class ValidationProtocol(
-                FlextProtocols.Service[t.GeneralValueType], Protocol
+                FlextProtocols.Service[t.JsonValue], Protocol
             ):
                 """Protocol for WMS data validation."""
 
                 def validate_config(
                     self,
-                    config: Mapping[str, t.GeneralValueType],
+                    config: t.ConfigMap,
                 ) -> FlextProtocols.Result[bool]:
                     """Validate WMS configuration."""
                     ...
 
             @runtime_checkable
             class MonitoringProtocol(
-                FlextProtocols.Service[t.GeneralValueType], Protocol
+                FlextProtocols.Service[t.JsonValue], Protocol
             ):
                 """Protocol for WMS extraction monitoring."""
 
