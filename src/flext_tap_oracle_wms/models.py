@@ -31,17 +31,16 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
 
             tap_stream_id: str
             stream: str
-            schema_: FlextTapOracleWmsModels.TapOracleWms.WmsStreamSchema = (
-                Field(alias="schema")
+            schema_: FlextTapOracleWmsModels.TapOracleWms.WmsStreamSchema = Field(
+                alias="schema"
             )
-            metadata: list[
-                FlextTapOracleWmsModels.TapOracleWms.WmsStreamMetadata
-            ] = Field(
-                default_factory=list,
+            metadata: list[FlextTapOracleWmsModels.TapOracleWms.WmsStreamMetadata] = (
+                Field(
+                    default_factory=list,
+                )
             )
 
 
 m = FlextTapOracleWmsModels
-FlextTapOracleWmsModels = FlextTapOracleWmsModels
 
-__all__ = ["FlextTapOracleWmsModels", "FlextTapOracleWmsModels", "m"]
+__all__ = ["FlextTapOracleWmsModels", "m"]

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core import cleanup_submodule_namespace, lazy_getattr
+from flext_core._utilities.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core import FlextLogger, FlextResult, t
@@ -33,7 +33,10 @@ if TYPE_CHECKING:
         FlextTapOracleWmsModels,
         FlextTapOracleWmsModels as m,
     )
-    from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols
+    from flext_tap_oracle_wms.protocols import (
+        FlextTapOracleWmsProtocols,
+        FlextTapOracleWmsProtocols as p,
+    )
     from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
     from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
     from flext_tap_oracle_wms.tap import FlextTapOracleWms, FlextTapOracleWmsPlugin
@@ -75,6 +78,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "c": ("flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"),
     "m": ("flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"),
     "main": ("flext_tap_oracle_wms.cli", "main"),
+    "p": ("flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"),
     "t": ("flext_core", "t"),
     "u": ("flext_tap_oracle_wms.utilities", "u"),
 }
@@ -106,6 +110,7 @@ __all__ = [
     "c",
     "m",
     "main",
+    "p",
     "t",
     "u",
 ]

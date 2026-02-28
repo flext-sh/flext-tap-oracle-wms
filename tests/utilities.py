@@ -11,16 +11,16 @@ from flext_tap_oracle_wms import t
 from flext_tests import FlextTestsUtilities
 
 
-class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
+class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
     """Utilities for flext-tap-oracle-wms tests - uses composition with FlextTestsUtilities.
 
-    Architecture: Uses composition (not inheritance) with FlextTestsUtilities and FlextMeltanoTapOracleWmsUtilities
+    Architecture: Uses composition (not inheritance) with FlextTestsUtilities and FlextTapOracleWmsUtilities
     for flext-tap-oracle-wms-specific utility definitions.
 
     Access patterns:
-    - TestsFlextMeltanoTapOracleWmsUtilities.Tests.* = flext_tests test utilities (via composition)
-    - TestsFlextMeltanoTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
-    - TestsFlextMeltanoTapOracleWmsUtilities.* = FlextTestsUtilities methods (via composition)
+    - TestsFlextTapOracleWmsUtilities.Tests.* = flext_tests test utilities (via composition)
+    - TestsFlextTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
+    - TestsFlextTapOracleWmsUtilities.* = FlextTestsUtilities methods (via composition)
 
     Rules:
     - Use composition, not inheritance (FlextTestsUtilities deprecates subclassing)
@@ -112,9 +112,9 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
 
 
 # Alias for simplified usage
-u = TestsFlextMeltanoTapOracleWmsUtilities
+u = TestsFlextTapOracleWmsUtilities
 
 __all__ = [
-    "TestsFlextMeltanoTapOracleWmsUtilities",
+    "TestsFlextTapOracleWmsUtilities",
     "u",
 ]
