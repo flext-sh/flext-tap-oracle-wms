@@ -11,6 +11,7 @@ from flext_core import FlextLogger, FlextResult, t
 from flext_meltano import FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsSettings
 
+from .constants import c
 from .exceptions import FlextTapOracleWmsSettingsurationError
 from .models import m
 from .settings import FlextTapOracleWmsSettings
@@ -24,16 +25,16 @@ class FlextTapOracleWms(Tap):
 
     name = "flext-tap-oracle-wms"
     config_jsonschema: ClassVar[dict[str, t.GeneralValueType]] = {
-        "type": "object",
+        "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
         "properties": {
-            "base_url": {"type": "string"},
-            "username": {"type": "string"},
-            "password": {"type": "string", "secret": True},
-            "api_version": {"type": "string", "default": "v1"},
-            "page_size": {"type": "integer", "default": 100},
-            "verify_ssl": {"type": "boolean", "default": True},
+            "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
+            "username": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
+            "password": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "secret": True},
+            "api_version": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "default": "v1"},
+            "page_size": {"type": c.TapOracleWms.SCHEMA_TYPE_INTEGER, "default": 100},
+            "verify_ssl": {"type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN, "default": True},
         },
-        "required": ["base_url", "username", "password"],
+        "required": list(c.TapOracleWms.REQUIRED_CONFIG_FIELDS),
     }
 
     def __init__(
@@ -119,11 +120,14 @@ class FlextTapOracleWms(Tap):
     def _create_minimal_schema(self) -> dict[str, t.JsonValue]:
         """Create a minimal Singer schema."""
         return {
-            "type": "object",
+            "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
             "properties": {
-                "id": {"type": "string"},
-                "_sdc_extracted_at": {"type": "string", "format": "date-time"},
-                "_sdc_entity": {"type": "string"},
+                "id": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
+                "_sdc_extracted_at": {
+                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING,
+                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
+                },
+                "_sdc_entity": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
             },
             "additionalProperties": True,
         }
@@ -256,12 +260,18 @@ class FlextTapOracleWms(Tap):
     def _schema_for_entity() -> Mapping[str, t.JsonValue]:
         """Return a default Singer JSON schema for discovered entities."""
         return {
-            "type": "object",
+            "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
             "properties": {
-                "id": {"type": ["string", "null"]},
-                "name": {"type": ["string", "null"]},
-                "created_at": {"type": ["string", "null"], "format": "date-time"},
-                "updated_at": {"type": ["string", "null"], "format": "date-time"},
+                "id": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL},
+                "name": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL},
+                "created_at": {
+                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL,
+                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
+                },
+                "updated_at": {
+                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL,
+                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
+                },
             },
         }
 

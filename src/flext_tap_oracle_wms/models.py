@@ -4,35 +4,41 @@ from __future__ import annotations
 
 from flext_core import t
 from flext_meltano import FlextMeltanoModels
+from flext_oracle_wms import FlextOracleWmsModels
 from pydantic import BaseModel, Field
 
 
-class FlextTapOracleWmsModels(FlextMeltanoModels):
+class FlextMeltanoTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
     """Container for stream schema and metadata payload models."""
 
-    class WmsStreamSchema(BaseModel):
-        """Singer stream schema shape."""
+    class TapOracleWms:
+        """TapOracleWms domain namespace."""
 
-        type: str = Field(default="object")
-        properties: dict[str, t.GeneralValueType] = Field(default_factory=dict)
+        class WmsStreamSchema(BaseModel):
+            """Singer stream schema shape."""
 
-    class WmsStreamMetadata(BaseModel):
-        """Singer stream metadata entry."""
+            type: str = Field(default="object")
+            properties: dict[str, t.GeneralValueType] = Field(default_factory=dict)
 
-        breadcrumb: list[str] = Field(default_factory=list)
-        metadata: dict[str, t.GeneralValueType] = Field(default_factory=dict)
+        class WmsStreamMetadata(BaseModel):
+            """Singer stream metadata entry."""
 
-    class WmsStreamDefinition(BaseModel):
-        """Singer stream definition payload."""
+            breadcrumb: list[str] = Field(default_factory=list)
+            metadata: dict[str, t.GeneralValueType] = Field(default_factory=dict)
 
-        tap_stream_id: str
-        stream: str
-        schema_: FlextTapOracleWmsModels.WmsStreamSchema = Field(alias="schema")
-        metadata: list[FlextTapOracleWmsModels.WmsStreamMetadata] = Field(
-            default_factory=list,
-        )
+        class WmsStreamDefinition(BaseModel):
+            """Singer stream definition payload."""
+
+            tap_stream_id: str
+            stream: str
+            schema_: FlextMeltanoTapOracleWmsModels.TapOracleWms.WmsStreamSchema = Field(
+                alias="schema"
+            )
+            metadata: list[FlextMeltanoTapOracleWmsModels.TapOracleWms.WmsStreamMetadata] = Field(
+                default_factory=list,
+            )
 
 
-m = FlextTapOracleWmsModels
+m = FlextMeltanoTapOracleWmsModels
 
-__all__ = ["FlextTapOracleWmsModels", "m"]
+__all__ = ["FlextMeltanoTapOracleWmsModels", "m"]

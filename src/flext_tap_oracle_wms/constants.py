@@ -22,7 +22,9 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
     """
 
     # Oracle WMS Connection Configuration
-    # DEFAULT_WMS_TIMEOUT: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
+    # DEFAULT_WMS_TIMEOUT: Final[int] = (
+    #     FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
+    # )
     # Using local Connection class to break cycle
     DEFAULT_WMS_TIMEOUT: Final[int] = 30
     DEFAULT_FETCH_SIZE: Final[int] = (
@@ -53,6 +55,19 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         DEFAULT_TIMEOUT: Final[int] = 30
         MAX_RETRIES: Final[int] = 3
 
+        # Required configuration fields
+        REQUIRED_CONFIG_FIELDS: Final[frozenset[str]] = frozenset(
+            {"base_url", "username", "password"}
+        )
+
+        # JSON schema type constants
+        SCHEMA_TYPE_STRING: Final[str] = "string"
+        SCHEMA_TYPE_OBJECT: Final[str] = "object"
+        SCHEMA_TYPE_BOOLEAN: Final[str] = "boolean"
+        SCHEMA_TYPE_INTEGER: Final[str] = "integer"
+        SCHEMA_TYPE_NULL: Final[str] = "null"
+        SCHEMA_FORMAT_DATETIME: Final[str] = "date-time"
+        SCHEMA_TYPE_STRING_OR_NULL: Final[list[str]] = ["string", "null"]
     class TapWmsProcessing:
         """WMS tap processing configuration.
 
@@ -120,7 +135,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         FIXED = "fixed"
 
     # Type-safe literals - PEP 695 syntax for type checking
-    # All Literal types reference StrEnum members where available - NO string duplication!
+    # All Literal types reference StrEnum members - NO string duplication!
     type WmsEntityTypeLiteral = Literal[
         "INVENTORY",
         "SHIPMENT",
