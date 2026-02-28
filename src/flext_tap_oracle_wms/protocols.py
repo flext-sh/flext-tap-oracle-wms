@@ -6,7 +6,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
+
+if TYPE_CHECKING:
+    from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_core import t
 from flext_core.protocols import FlextProtocols
@@ -160,7 +163,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
             class TapWithWmsClientProtocol(Protocol):
                 """Protocol for tap instances that provide wms_client."""
 
-                wms_client: t.GeneralValueType
+                wms_client: FlextOracleWmsClient
 
 
 # Runtime alias for simplified usage

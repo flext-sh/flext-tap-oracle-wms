@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, FlextResult, t, u
+from flext_core import FlextLogger, FlextResult, t
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient
 
@@ -66,10 +66,10 @@ class FlextTapOracleWmsStream(Stream):
             tap_instance = (self.tap if hasattr(self, "tap") else None) or (
                 self._tap if hasattr(self, "_tap") else None
             )
-            if tap_instance and u.Guards.is_type(
+            if tap_instance and isinstance(
                 tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientProtocol
             ):
-                wms_tap = tap_instance
+                wms_tap: p.TapOracleWms.OracleWms.TapWithWmsClientProtocol = tap_instance
                 self._client = wms_tap.wms_client
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWms"
@@ -175,7 +175,8 @@ class FlextTapOracleWmsStream(Stream):
         )
 
     @staticmethod
-    def _normalize_json_value(value: t.JsonValue) -> t.JsonValue:
+    @staticmethod
+    def _normalize_json_value(value: object) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
         match value:
             case str() | int() | float() | bool() | None:
@@ -209,47 +210,37 @@ class FlextTapOracleWmsStream(Stream):
         self,
         data: t.JsonValue,
     ) -> tuple[list[dict[str, t.JsonValue]], bool]:
-        """Extract records and pagination info from API response."""
+        raw_records: list[object] = []
+        has_more = False
+
         match data:
             case dict() as data_dict:
-                raw_records = data_dict.get(
+                raw_records_raw = data_dict.get(
                     "data",
                     data_dict.get("items", data_dict.get("results", [])),
                 )
+                if isinstance(raw_records_raw, list):
+                    raw_records = list(raw_records_raw)
                 has_more = bool(
                     data_dict.get("has_more", False)
                     or data_dict.get("next_page", False),
                 )
             case list() as data_list:
-                raw_records = data_list
+                raw_records = list(data_list)
                 has_more = len(data_list) == self._page_size
-            case _:
-                raw_records = []
-                has_more = False
-        # Ensure records is always a list of JSON-compatible dictionaries
-        match raw_records:
-            case list() as records_list:
-                coerced_records: list[dict[str, t.JsonValue]] = []
-                for record in records_list:
-                    match record:
-                        case dict() as record_dict:
-                            json_record: dict[str, t.JsonValue] = {}
-                            for k, v in record_dict.items():
-                                match v:
-                                    case str() | int() | float() | bool() | None:
-                                        json_record[k] = v
-                                    case list() | dict():
-                                        json_record[k] = v
-                                    case _:
-                                        json_record[k] = str(v)
-                            coerced_records.append(json_record)
-                        case _:
-                            # Convert non-dict records to JSON row payload format
-                            coerced_records.append({"value": "record"})
-                records = coerced_records
-            case _:
-                records = []
-        return records, has_more
+
+        coerced_records: list[dict[str, t.JsonValue]] = []
+        for record in raw_records:
+            match record:
+                case dict() as record_dict:
+                    json_record: dict[str, t.JsonValue] = {}
+                    for k, v in record_dict.items():
+                        json_record[str(k)] = self._normalize_json_value(v)
+                    coerced_records.append(json_record)
+                case _:
+                    coerced_records.append({"value": str(record)})
+
+        return coerced_records, has_more
 
     def _process_page_records(
         self,

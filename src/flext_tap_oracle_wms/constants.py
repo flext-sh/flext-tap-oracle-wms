@@ -136,7 +136,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
 
     # Type-safe literals - PEP 695 syntax for type checking
     # All Literal types reference StrEnum members - NO string duplication!
-    type WmsEntityTypeLiteral = Literal[
+    type TapWmsEntityTypeLiteral = Literal[
         "INVENTORY",
         "SHIPMENT",
         "PICKING",
