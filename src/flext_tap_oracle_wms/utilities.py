@@ -12,8 +12,9 @@ from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import ClassVar, override
 
-from flext_core import FlextResult, t, u
-from flext_meltano import m
+from flext_core import FlextResult, t
+from flext_meltano import FlextMeltanoUtilities, m
+from flext_oracle_wms import FlextOracleWmsUtilities
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 
@@ -104,7 +105,7 @@ def _as_bookmark_value(value: object) -> str | int | float | datetime | None:
         return None
 
 
-class FlextTapOracleWmsUtilities(u):
+class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities):
     """Single unified utilities class for Singer tap Oracle WMS operations.
 
     Follows FLEXT unified class pattern with nested helper classes for
@@ -1076,4 +1077,8 @@ class FlextTapOracleWmsUtilities(u):
 
 __all__ = [
     "FlextTapOracleWmsUtilities",
+    "u",
 ]
+
+
+u = FlextTapOracleWmsUtilities
