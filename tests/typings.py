@@ -13,16 +13,16 @@ from flext_tap_oracle_wms import t
 from flext_tests import FlextTestsTypes
 
 
-class TestsFlextMeltanoTapOracleWmsTypes(FlextTestsTypes):
+class TestsFlextTapOracleWmsTypes(FlextTestsTypes):
     """Types for flext-tap-oracle-wms tests - uses composition with FlextTestsTypes.
 
-    Architecture: Uses composition (not inheritance) with FlextTestsTypes and FlextMeltanoTapOracleWmsTypes
+    Architecture: Uses composition (not inheritance) with FlextTestsTypes and FlextTapOracleWmsTypes
     for flext-tap-oracle-wms-specific type definitions.
 
     Access patterns:
-    - TestsFlextMeltanoTapOracleWmsTypes.Tests.* = flext_tests test types (via composition)
-    - TestsFlextMeltanoTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
-    - TestsFlextMeltanoTapOracleWmsTypes.* = FlextTestsTypes types (via composition)
+    - TestsFlextTapOracleWmsTypes.Tests.* = flext_tests test types (via composition)
+    - TestsFlextTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
+    - TestsFlextTapOracleWmsTypes.* = FlextTestsTypes types (via composition)
 
     Rules:
     - Use composition, not inheritance (FlextTestsTypes deprecates subclassing)
@@ -69,9 +69,9 @@ class TestsFlextMeltanoTapOracleWmsTypes(FlextTestsTypes):
 
 
 # Alias for simplified usage
-tt = TestsFlextMeltanoTapOracleWmsTypes
+tt = TestsFlextTapOracleWmsTypes
 
 __all__ = [
-    "TestsFlextMeltanoTapOracleWmsTypes",
+    "TestsFlextTapOracleWmsTypes",
     "tt",
 ]

@@ -8,7 +8,7 @@ from flext_oracle_wms import FlextOracleWmsModels
 from pydantic import BaseModel, Field
 
 
-class FlextMeltanoTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
+class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
     """Container for stream schema and metadata payload models."""
 
     class TapOracleWms:
@@ -31,17 +31,17 @@ class FlextMeltanoTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
 
             tap_stream_id: str
             stream: str
-            schema_: FlextMeltanoTapOracleWmsModels.TapOracleWms.WmsStreamSchema = (
+            schema_: FlextTapOracleWmsModels.TapOracleWms.WmsStreamSchema = (
                 Field(alias="schema")
             )
             metadata: list[
-                FlextMeltanoTapOracleWmsModels.TapOracleWms.WmsStreamMetadata
+                FlextTapOracleWmsModels.TapOracleWms.WmsStreamMetadata
             ] = Field(
                 default_factory=list,
             )
 
 
-m = FlextMeltanoTapOracleWmsModels
-FlextTapOracleWmsModels = FlextMeltanoTapOracleWmsModels
+m = FlextTapOracleWmsModels
+FlextTapOracleWmsModels = FlextTapOracleWmsModels
 
-__all__ = ["FlextMeltanoTapOracleWmsModels", "FlextTapOracleWmsModels", "m"]
+__all__ = ["FlextTapOracleWmsModels", "FlextTapOracleWmsModels", "m"]

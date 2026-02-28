@@ -5,9 +5,11 @@ from __future__ import annotations
 from typing import Literal
 
 from flext_core import FlextTypes
+from flext_meltano import FlextMeltanoTypes
+from flext_oracle_wms import FlextOracleWmsTypes
 
 
-class FlextMeltanoTapOracleWmsTypes(FlextTypes):
+class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     """Namespace for Oracle WMS tap type aliases."""
 
     class Core:
@@ -55,6 +57,6 @@ class FlextMeltanoTapOracleWmsTypes(FlextTypes):
         type BackoffStrategyLiteral = Literal["linear", "exponential", "fixed"]
 
 
-t = FlextMeltanoTapOracleWmsTypes
+t = FlextTapOracleWmsTypes
 
-__all__ = ["FlextMeltanoTapOracleWmsTypes", "t"]
+__all__ = ["FlextTapOracleWmsTypes", "t"]

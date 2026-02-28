@@ -39,7 +39,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
     wms: p.OracleWms.*
 
     # Meltano protocols (inherited)
-    tap: p.Meltano.TapProtocol
+    tap: p.Meltano.Tap
 
     # Tap Oracle WMS-specific protocols
     wms_connection: p.TapOracleWms.OracleWms.WmsConnectionProtocol
