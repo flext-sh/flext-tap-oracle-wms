@@ -686,7 +686,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 "https://",
             )):
                 return FlextResult[Mapping[str, t.GeneralValueType]].fail(
-                    "Invalid base_url format"
+                    "Invalid base_url format",
                 )
 
             return FlextResult[Mapping[str, t.GeneralValueType]].ok(config)
@@ -752,12 +752,12 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if not base_url:
                 return FlextResult[Mapping[str, t.GeneralValueType]].fail(
-                    "Base URL cannot be empty"
+                    "Base URL cannot be empty",
                 )
 
             if not base_url.startswith(("http://", "https://")):
                 return FlextResult[Mapping[str, t.GeneralValueType]].fail(
-                    "Invalid URL format"
+                    "Invalid URL format",
                 )
 
             # Basic connection validation (would normally make HTTP request)

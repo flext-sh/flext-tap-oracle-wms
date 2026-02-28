@@ -75,7 +75,8 @@ class TestRealConnection:
         )
         assert hasattr(catalog, "streams") or "streams" in catalog
         catalog_streams = getattr(catalog, "streams", None) or catalog.get(
-            "streams", []
+            "streams",
+            [],
         )
         assert len(catalog_streams) > 0
 

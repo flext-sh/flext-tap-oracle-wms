@@ -49,7 +49,8 @@ class TestsFlextMeltanoTapOracleWmsTypes(FlextTestsTypes):
             "https://staging-wms.oraclecloud.com",
         ]
         type TestOracleWmsUsername = Literal[
-            "test_user", "REDACTED_LDAP_BIND_PASSWORD_user"
+            "test_user",
+            "REDACTED_LDAP_BIND_PASSWORD_user",
         ]
         type TestOracleWmsMethod = Literal["GET", "POST", "PUT", "DELETE"]
         type TestFacilityId = Literal["FAC001", "FAC002", "FAC003"]

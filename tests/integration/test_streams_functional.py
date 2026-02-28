@@ -469,7 +469,7 @@ class TestWMSPaginatorUnit:
 
         _records_full, has_more_full = stream._extract_records_from_response(full_page)
         _records_partial, has_more_partial = stream._extract_records_from_response(
-            partial_page
+            partial_page,
         )
 
         assert has_more_full is True

@@ -292,7 +292,7 @@ class FlextTapOracleWmsPlugin:
         tap = self._tap
         if tap is None:
             return FlextResult[Mapping[str, t.GeneralValueType]].fail(
-                "Tap not initialized"
+                "Tap not initialized",
             )
 
         if operation == "discover":

@@ -67,7 +67,8 @@ class FlextTapOracleWmsStream(Stream):
                 self._tap if hasattr(self, "_tap") else None
             )
             if tap_instance and isinstance(
-                tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientProtocol
+                tap_instance,
+                p.TapOracleWms.OracleWms.TapWithWmsClientProtocol,
             ):
                 wms_tap: p.TapOracleWms.OracleWms.TapWithWmsClientProtocol = (
                     tap_instance
@@ -253,7 +254,7 @@ class FlextTapOracleWmsStream(Stream):
         for record in records:
             record_dict: dict[str, t.JsonValue] = dict(record)
             processed_record = self._utilities.DataProcessing.process_wms_record(
-                record=record_dict
+                record=record_dict,
             )
             match processed_record:
                 case dict() as processed_dict:
