@@ -14,8 +14,6 @@ from flext_tap_oracle_wms.constants import (
     FlextTapOracleWmsConstants,
     c,
 )
-    FlextTapOracleWmsConstants,
-)
 from flext_tap_oracle_wms.exceptions import (
     FlextTapOracleWmsConnectionError,
     FlextTapOracleWmsError,
