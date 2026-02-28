@@ -56,9 +56,11 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         MAX_RETRIES: Final[int] = 3
 
         # Required configuration fields
-        REQUIRED_CONFIG_FIELDS: Final[frozenset[str]] = frozenset(
-            {"base_url", "username", "password"}
-        )
+        REQUIRED_CONFIG_FIELDS: Final[frozenset[str]] = frozenset({
+            "base_url",
+            "username",
+            "password",
+        })
 
         # JSON schema type constants
         SCHEMA_TYPE_STRING: Final[str] = "string"
@@ -68,6 +70,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         SCHEMA_TYPE_NULL: Final[str] = "null"
         SCHEMA_FORMAT_DATETIME: Final[str] = "date-time"
         SCHEMA_TYPE_STRING_OR_NULL: Final[list[str]] = ["string", "null"]
+
     class TapWmsProcessing:
         """WMS tap processing configuration.
 

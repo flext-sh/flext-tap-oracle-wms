@@ -11,10 +11,8 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsClient
 
-from flext_core import t
-from flext_core.protocols import FlextProtocols
-from flext_meltano import m
-from flext_meltano.protocols import FlextMeltanoProtocols
+from flext_core import FlextProtocols, t
+from flext_meltano import FlextMeltanoProtocols, m
 from flext_oracle_wms.protocols import FlextOracleWmsProtocols
 
 
@@ -54,9 +52,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
             """Singer Tap Oracle WMS domain protocols for Oracle Warehouse Management System extraction."""
 
             @runtime_checkable
-            class WmsConnectionProtocol(
-                FlextProtocols.Service[t.JsonValue], Protocol
-            ):
+            class WmsConnectionProtocol(FlextProtocols.Service[t.JsonValue], Protocol):
                 """Protocol for Oracle WMS connection operations."""
 
                 def establish_wms_connection(
@@ -123,9 +119,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
                     ...
 
             @runtime_checkable
-            class PerformanceProtocol(
-                FlextProtocols.Service[t.JsonValue], Protocol
-            ):
+            class PerformanceProtocol(FlextProtocols.Service[t.JsonValue], Protocol):
                 """Protocol for WMS extraction performance."""
 
                 def optimize_query(self, query: str) -> FlextProtocols.Result[str]:
@@ -133,9 +127,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
                     ...
 
             @runtime_checkable
-            class ValidationProtocol(
-                FlextProtocols.Service[t.JsonValue], Protocol
-            ):
+            class ValidationProtocol(FlextProtocols.Service[t.JsonValue], Protocol):
                 """Protocol for WMS data validation."""
 
                 def validate_config(
@@ -146,9 +138,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
                     ...
 
             @runtime_checkable
-            class MonitoringProtocol(
-                FlextProtocols.Service[t.JsonValue], Protocol
-            ):
+            class MonitoringProtocol(FlextProtocols.Service[t.JsonValue], Protocol):
                 """Protocol for WMS extraction monitoring."""
 
                 def track_progress(

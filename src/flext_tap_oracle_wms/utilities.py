@@ -97,7 +97,9 @@ def _as_list(value: t.GeneralValueType) -> list[t.GeneralValueType] | None:
         return None
 
 
-def _as_bookmark_value(value: t.GeneralValueType) -> str | int | float | datetime | None:
+def _as_bookmark_value(
+    value: t.GeneralValueType,
+) -> str | int | float | datetime | None:
     """Strict bookmark scalar validation via Pydantic adapter."""
     try:
         return _BOOKMARK_VALUE_ADAPTER.validate_python(value)

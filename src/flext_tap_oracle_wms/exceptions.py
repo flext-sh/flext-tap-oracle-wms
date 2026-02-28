@@ -19,4 +19,5 @@ class FlextTapOracleWmsValidationError(FlextTapOracleWmsError):
 
 class FlextTapOracleWmsConfigurationError(FlextTapOracleWmsValidationError):
     """Raised when settings are invalid for runtime execution."""
+
     """Raised when settings are invalid for runtime execution."""

@@ -5,7 +5,6 @@ from __future__ import annotations
 import importlib.metadata
 from collections.abc import Mapping, Sequence
 from typing import ClassVar, override
-from unittest.mock import MagicMock
 
 from flext_core import FlextLogger, FlextResult, t
 from flext_meltano import FlextMeltanoTap as Tap
@@ -102,10 +101,6 @@ class FlextTapOracleWms(Tap):
                 raise FlextTapOracleWmsConfigurationError(msg)
             self._wms_client = client
         return self._wms_client
-
-
-
-
 
     def discover_catalog(self) -> FlextResult[m.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
@@ -221,6 +216,7 @@ class FlextTapOracleWms(Tap):
             stop_result = wms_client.stop()
             if stop_result.is_failure:
                 logger.debug("Failed to stop WMS client: %s", stop_result.error)
+        return None
 
     @staticmethod
     def _schema_for_entity() -> Mapping[str, t.JsonValue]:

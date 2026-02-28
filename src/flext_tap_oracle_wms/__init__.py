@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core import FlextLogger, FlextResult, t
@@ -24,9 +24,9 @@ if TYPE_CHECKING:
         FlextTapOracleWmsConstants as c,
     )
     from flext_tap_oracle_wms.exceptions import (
+        FlextTapOracleWmsConfigurationError,
         FlextTapOracleWmsConnectionError,
         FlextTapOracleWmsError,
-        FlextTapOracleWmsConfigurationError,
         FlextTapOracleWmsValidationError,
     )
     from flext_tap_oracle_wms.models import (
@@ -86,9 +86,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "flext_tap_oracle_wms.exceptions",
         "FlextTapOracleWmsConfigurationError",
     ),
-        "flext_tap_oracle_wms.exceptions",
-        "FlextTapOracleWmsSettingsurationError",
-    ),
     "FlextTapOracleWmsStream": (
         "flext_tap_oracle_wms.streams",
         "FlextTapOracleWmsStream",
@@ -125,6 +122,7 @@ __all__ = [
     "FlextMeltanoSettings",
     "FlextResult",
     "FlextTapOracleWms",
+    "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsConnectionError",
     "FlextTapOracleWmsConstants",
     "FlextTapOracleWmsError",
@@ -132,7 +130,6 @@ __all__ = [
     "FlextTapOracleWmsPlugin",
     "FlextTapOracleWmsProtocols",
     "FlextTapOracleWmsSettings",
-    "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsStream",
     "FlextTapOracleWmsUtilities",
     "FlextTapOracleWmsValidationError",
