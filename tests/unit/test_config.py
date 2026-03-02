@@ -20,7 +20,7 @@ class TestFlextTapOracleWmsSettings:
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="test_user",
-            password=SecretStr("test_pass"),
+            password="test_pass",
         )
 
         # Check required fields
@@ -41,7 +41,7 @@ class TestFlextTapOracleWmsSettings:
             # Connection
             base_url="https://prod.wms.example.com",
             username="prod_user",
-            password=SecretStr("prod_pass"),
+            password="prod_pass",
             # API
             api_version="v11",
             timeout=60,
@@ -97,7 +97,7 @@ class TestFlextTapOracleWmsSettings:
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com/",
             username="user",
-            password=SecretStr("pass"),
+            password="pass",
         )
         assert (
             str(config.base_url).rstrip("/") == "https://wms.example.com"
@@ -108,7 +108,7 @@ class TestFlextTapOracleWmsSettings:
             FlextTapOracleWmsSettings(
                 base_url="wms.example.com",
                 username="user",
-                password=SecretStr("pass"),
+                password="pass",
             )
         assert "must start with http://" in str(exc_info.value)
 
@@ -119,7 +119,7 @@ class TestFlextTapOracleWmsSettings:
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
-                password=SecretStr("pass"),
+                password="pass",
                 include_entities=["inventory", "orders", "inventory"],
             )
         assert "contains duplicates" in str(exc_info.value)
@@ -130,7 +130,7 @@ class TestFlextTapOracleWmsSettings:
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
-            password=SecretStr("pass"),
+            password="pass",
             start_date="2024-01-01T00:00:00Z",
             end_date="2024-12-31T23:59:59Z",
         )
@@ -141,7 +141,7 @@ class TestFlextTapOracleWmsSettings:
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
-                password=SecretStr("pass"),
+                password="pass",
                 start_date="01/01/2024",
             )
         assert "Invalid date format" in str(exc_info.value)
@@ -153,7 +153,7 @@ class TestFlextTapOracleWmsSettings:
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
-                password=SecretStr("pass"),
+                password="pass",
                 page_size=0,  # Too small
             )
 
@@ -162,7 +162,7 @@ class TestFlextTapOracleWmsSettings:
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
-                password=SecretStr("pass"),
+                password="pass",
                 timeout=400,  # Too large
             )
 
@@ -172,7 +172,7 @@ class TestFlextTapOracleWmsSettings:
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
-            password=SecretStr("pass"),
+            password="pass",
         )
         result = config.validate_oracle_wms_config()
         assert result.is_success
@@ -182,7 +182,7 @@ class TestFlextTapOracleWmsSettings:
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
-            password=SecretStr("pass"),
+            password="pass",
             include_entities=["inventory", "orders"],
             exclude_entities=["orders", "shipments"],
         )
@@ -194,7 +194,7 @@ class TestFlextTapOracleWmsSettings:
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
-            password=SecretStr("pass"),
+            password="pass",
             start_date="2024-12-31T00:00:00Z",
             end_date="2024-01-01T00:00:00Z",
         )
@@ -207,7 +207,7 @@ class TestFlextTapOracleWmsSettings:
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
-            password=SecretStr("pass"),
+            password="pass",
             api_version="v11",
             timeout=45,
             user_agent="TestAgent/1.0",
@@ -227,7 +227,7 @@ class TestFlextTapOracleWmsSettings:
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
-            password=SecretStr("pass"),
+            password="pass",
             page_size=200,
             start_date="2024-01-01T00:00:00Z",
             column_mappings={
@@ -254,19 +254,19 @@ class TestFlextTapOracleWmsSettings:
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
-            password=SecretStr("pass"),
+            password="pass",
         )
 
         # Should not be able to modify
         with pytest.raises(ValidationError):
-            config.base_url = "https://new.example.com"
+            config.base_url = AnyUrl("https://new.example.com")
 
     def test_password_hiding(self) -> None:
         """Test password is hidden in string representation."""
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
-            password=SecretStr("super_secret_password"),
+            password="super_secret_password",
         )
 
         config_str = str(config)

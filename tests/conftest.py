@@ -56,7 +56,7 @@ def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
     return FlextTapOracleWmsSettings(
         base_url=os.environ.get("ORACLE_WMS_BASE_URL", ""),
         username=os.environ.get("ORACLE_WMS_USERNAME", ""),
-        password=SecretStr(os.environ.get("ORACLE_WMS_PASSWORD", "")),
+        password=os.environ.get("ORACLE_WMS_PASSWORD", ""),
         api_version=os.environ.get("ORACLE_WMS_API_VERSION", "v10"),
         page_size=int(os.environ.get("ORACLE_WMS_PAGE_SIZE", "100")),
         timeout=int(os.environ.get("ORACLE_WMS_TIMEOUT", "30")),
@@ -189,7 +189,7 @@ def mock_request() -> MagicMock:
     """Mock HTTP request."""
     request = MagicMock()
     request.auth = None
-    request.headers: dict[str, str] = {}
+    request.headers = {}
     return request
 
 

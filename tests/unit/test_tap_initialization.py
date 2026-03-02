@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from unittest.mock import MagicMock, patch
 
-from flext_tap_oracle_wms import FlextTapOracleWms
+from flext_tap_oracle_wms import FlextTapOracleWms, t
 
 # Copyright (c) 2025 FLEXT Team
 # Licensed under the MIT License
