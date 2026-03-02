@@ -179,7 +179,7 @@ class FlextTapOracleWmsStream(Stream):
 
     @staticmethod
     @staticmethod
-    def _normalize_json_value(value: t.GeneralValueType) -> t.JsonValue:
+    def normalize_json_value(value: t.GeneralValueType) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
         match value:
             case str() | int() | float() | bool() | None:
@@ -238,7 +238,7 @@ class FlextTapOracleWmsStream(Stream):
                 case dict() as record_dict:
                     json_record: dict[str, t.JsonValue] = {}
                     for k, v in record_dict.items():
-                        json_record[str(k)] = self._normalize_json_value(v)
+                        json_record[str(k)] = self.normalize_json_value(v)
                     coerced_records.append(json_record)
                 case _:
                     coerced_records.append({"value": str(record)})
@@ -259,7 +259,7 @@ class FlextTapOracleWmsStream(Stream):
             match processed_record:
                 case dict() as processed_dict:
                     json_row: dict[str, t.JsonValue] = {
-                        str(k): self._normalize_json_value(v)
+                        str(k): self.normalize_json_value(v)
                         for k, v in processed_dict.items()
                     }
                     final_record = self.post_process(json_row, context)
