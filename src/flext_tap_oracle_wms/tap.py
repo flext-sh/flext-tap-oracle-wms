@@ -121,7 +121,7 @@ class FlextTapOracleWms(Tap):
             m.Meltano.SingerCatalogEntry(
                 tap_stream_id=entity,
                 stream=entity,
-                schema=self._schema_for_entity(),
+                schema=dict(self._schema_for_entity()),
                 metadata=[
                     m.Meltano.SingerCatalogMetadata(
                         breadcrumb=[],
@@ -210,14 +210,6 @@ class FlextTapOracleWms(Tap):
                 "streams_available": len(self.discover_streams()),
             },
         )
-
-        wms_client = getattr(self, "_wms_client", None)
-        if wms_client is not None:
-            stop_result = wms_client.stop()
-            if stop_result.is_failure:
-                logger.debug("Failed to stop WMS client: %s", stop_result.error)
-        return None
-
     @staticmethod
     def _schema_for_entity() -> Mapping[str, t.JsonValue]:
         """Return a default Singer JSON schema for discovered entities."""

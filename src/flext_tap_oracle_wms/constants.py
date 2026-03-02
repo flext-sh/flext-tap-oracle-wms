@@ -19,6 +19,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
     """Oracle WMS tap extraction-specific constants following flext-core patterns.
 
     Composes with FlextOracleWmsConstants to avoid duplication and ensure consistency.
+    Note: Does not override Authentication from parent classes to avoid conflicts.
     """
 
     # Oracle WMS Connection Configuration

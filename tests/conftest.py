@@ -41,7 +41,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
     return FlextTapOracleWmsSettings(
         base_url="https://test.wms.example.com",
         username="test_user",
-        password=SecretStr("test_password"),
+        password="test_password",
         api_version="v10",
         page_size=100,
         timeout=30,
@@ -189,7 +189,7 @@ def mock_request() -> MagicMock:
     """Mock HTTP request."""
     request = MagicMock()
     request.auth = None
-    request.headers = {}
+    request.headers: dict[str, str] = {}
     return request
 
 

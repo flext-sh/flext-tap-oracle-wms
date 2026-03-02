@@ -43,7 +43,7 @@ _STRICT_LIST_ADAPTER = TypeAdapter(
     list[t.GeneralValueType],
     config=ConfigDict(strict=True),
 )
-_BOOKMARK_VALUE_ADAPTER = TypeAdapter(
+_BOOKMARK_VALUE_ADAPTER: TypeAdapter[str | int | float | datetime] = TypeAdapter(
     str | int | float | datetime,
     config=ConfigDict(strict=True),
 )
