@@ -15,7 +15,7 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     class Core:
         """Core shared aliases for this package."""
 
-        type Dict = dict[str, FlextTypes.GeneralValueType]
+        type Dict = dict[str, FlextTypes.ContainerValue]
         type Headers = dict[str, str]
 
     class Project:

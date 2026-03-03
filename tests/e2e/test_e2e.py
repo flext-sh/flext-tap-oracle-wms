@@ -399,7 +399,7 @@ class TestOracleWMSE2EComplete:
     )
     def test_error_recovery_and_resilience(
         self,
-        real_wms_config: dict[str, t.GeneralValueType],
+        real_wms_config: dict[str, t.ContainerValue],
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         # Test with invalid credentials

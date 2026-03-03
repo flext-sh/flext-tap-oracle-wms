@@ -232,11 +232,11 @@ class FlextTapOracleWmsSettings(FlextSettings):
     def get_or_create_shared_instance(
         cls,
         project_name: str,
-        **overrides: t.GeneralValueType,
+        **overrides: t.ContainerValue,
     ) -> Self:
         """Create or return a shared instance for this project."""
         _ = project_name
-        init_kwargs: dict[str, t.GeneralValueType] = overrides
+        init_kwargs: dict[str, t.ContainerValue] = overrides
         return cls.model_validate(init_kwargs)
 
     @classmethod
@@ -246,7 +246,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")
 
     @classmethod
-    def create_for_development(cls, **overrides: t.GeneralValueType) -> Self:
+    def create_for_development(cls, **overrides: t.ContainerValue) -> Self:
         """Create configuration for development environment."""
         dev_overrides = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT * 2,
@@ -262,7 +262,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         )
 
     @classmethod
-    def create_for_production(cls, **overrides: t.GeneralValueType) -> Self:
+    def create_for_production(cls, **overrides: t.ContainerValue) -> Self:
         """Create configuration for production environment."""
         prod_overrides = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT,
@@ -278,7 +278,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         )
 
     @classmethod
-    def create_for_testing(cls, **overrides: t.GeneralValueType) -> Self:
+    def create_for_testing(cls, **overrides: t.ContainerValue) -> Self:
         """Create configuration for testing environment."""
         test_overrides = {
             "timeout": FlextConstants.Network.DEFAULT_TIMEOUT // 3,

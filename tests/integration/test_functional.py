@@ -27,7 +27,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_real_wms_environment_verification(
         self,
-        real_wms_config: dict[str, t.GeneralValueType],
+        real_wms_config: dict[str, t.ContainerValue],
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -51,7 +51,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_tap_initialization_real_config(
         self,
-        real_wms_config: dict[str, t.GeneralValueType],
+        real_wms_config: dict[str, t.ContainerValue],
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         # CRITICAL: This must work without errors
@@ -404,7 +404,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_error_handling_and_validation(
         self,
-        real_wms_config: dict[str, t.GeneralValueType],
+        real_wms_config: dict[str, t.ContainerValue],
     ) -> None:
         """Test error handling with invalid configurations."""
         # Test with invalid URL
@@ -418,7 +418,7 @@ class TestOracleWMSFunctionalComplete:
             catalog = tap.catalog_dict
             # If we get here, check if it's a graceful fallback
             assert isinstance(catalog, dict), (
-                "Catalog should be dict[str, t.GeneralValueType] even on errors"
+                "Catalog should be dict[str, t.ContainerValue] even on errors"
             )
         except (
             ValueError,
@@ -446,7 +446,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_configuration_validation(
         self,
-        real_wms_config: dict[str, t.GeneralValueType],
+        real_wms_config: dict[str, t.ContainerValue],
     ) -> None:
         """Test configuration validation and type conversion."""
         # Test configuration creation

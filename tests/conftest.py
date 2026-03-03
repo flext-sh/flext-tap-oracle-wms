@@ -84,7 +84,7 @@ def mock_wms_client() -> MagicMock:
 
     # Mock get records
     client.get_records.return_value = FlextResult[
-        list[dict[str, t.GeneralValueType]]
+        list[dict[str, t.ContainerValue]]
     ].ok(
         [
             {"id": "1", "name": "Test Item 1", "quantity": 100},
@@ -120,7 +120,7 @@ def tap_instance(
 
 
 @pytest.fixture
-def sample_catalog() -> dict[str, t.GeneralValueType]:
+def sample_catalog() -> dict[str, t.ContainerValue]:
     """Sample Singer catalog."""
     return {
         "type": "CATALOG",
@@ -154,7 +154,7 @@ def sample_catalog() -> dict[str, t.GeneralValueType]:
 
 
 @pytest.fixture
-def sample_state() -> dict[str, t.GeneralValueType]:
+def sample_state() -> dict[str, t.ContainerValue]:
     """Sample Singer state."""
     return {
         "bookmarks": {
@@ -226,7 +226,7 @@ def real_tap_instance(
 
 
 @pytest.fixture
-def _test_config_extraction() -> dict[str, t.GeneralValueType]:
+def _test_config_extraction() -> dict[str, t.ContainerValue]:
     """Test configuration for extraction tests."""
     return {
         "base_url": "https://test.wms.example.com",

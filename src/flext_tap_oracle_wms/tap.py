@@ -23,7 +23,7 @@ class FlextTapOracleWms(Tap):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[dict[str, t.GeneralValueType]] = {
+    config_jsonschema: ClassVar[dict[str, t.ContainerValue]] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
         "properties": {
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
@@ -38,11 +38,11 @@ class FlextTapOracleWms(Tap):
 
     def __init__(
         self,
-        config: Mapping[str, t.GeneralValueType]
+        config: Mapping[str, t.ContainerValue]
         | FlextTapOracleWmsSettings
         | None = None,
-        catalog: Mapping[str, t.GeneralValueType] | None = None,
-        state: Mapping[str, t.GeneralValueType] | None = None,
+        catalog: Mapping[str, t.ContainerValue] | None = None,
+        state: Mapping[str, t.ContainerValue] | None = None,
         *,
         parse_env_config: bool = True,
         validate_config: bool = True,
@@ -64,8 +64,8 @@ class FlextTapOracleWms(Tap):
 
         self._flext_config = settings
         self._wms_client: FlextOracleWmsClient | None = None
-        self._discovery: t.GeneralValueType | None = None
-        self._schema_generator: t.GeneralValueType | None = None
+        self._discovery: t.ContainerValue | None = None
+        self._schema_generator: t.ContainerValue | None = None
         self._discovery_mode: bool = False
 
         super().__init__(
@@ -170,9 +170,9 @@ class FlextTapOracleWms(Tap):
         self.sync_all()
         return FlextResult[bool].ok(True)
 
-    def validate_configuration(self) -> FlextResult[Mapping[str, t.GeneralValueType]]:
+    def validate_configuration(self) -> FlextResult[Mapping[str, t.ContainerValue]]:
         """Expose non-secret validated configuration fields."""
-        return FlextResult[Mapping[str, t.GeneralValueType]].ok(
+        return FlextResult[t.ConfigurationMapping].ok(
             {
                 "base_url": str(self.flext_config.base_url),
                 "api_version": self.flext_config.api_version,
@@ -201,9 +201,9 @@ class FlextTapOracleWms(Tap):
 
     def get_implementation_metrics(
         self,
-    ) -> FlextResult[Mapping[str, t.GeneralValueType]]:
+    ) -> FlextResult[Mapping[str, t.ContainerValue]]:
         """Return basic runtime metrics for observability."""
-        return FlextResult[Mapping[str, t.GeneralValueType]].ok(
+        return FlextResult[t.ConfigurationMapping].ok(
             {
                 "tap_name": self.name,
                 "version": self.get_implementation_version(),
@@ -234,7 +234,7 @@ class FlextTapOracleWms(Tap):
 class FlextTapOracleWmsPlugin:
     """Plugin wrapper exposing tap operations to the host runtime."""
 
-    def __init__(self, config: Mapping[str, t.GeneralValueType]) -> None:
+    def __init__(self, config: Mapping[str, t.ContainerValue]) -> None:
         """Initialize plugin state and hold tap configuration."""
         self._config = config
         self._tap: FlextTapOracleWms | None = None
@@ -251,7 +251,7 @@ class FlextTapOracleWmsPlugin:
         """Return plugin version."""
         return self._version
 
-    def get_info(self) -> Mapping[str, t.GeneralValueType]:
+    def get_info(self) -> Mapping[str, t.ContainerValue]:
         """Return plugin metadata for discovery and capabilities."""
         return {
             "name": self.name,
@@ -260,7 +260,7 @@ class FlextTapOracleWmsPlugin:
             "capabilities": ["discover", "sync"],
         }
 
-    def initialize(self, _context: t.GeneralValueType) -> FlextResult[bool]:
+    def initialize(self, _context: t.ContainerValue) -> FlextResult[bool]:
         """Instantiate the tap for subsequent operations."""
         self._tap = FlextTapOracleWms(config=self._config)
         return FlextResult[bool].ok(True)
@@ -273,38 +273,38 @@ class FlextTapOracleWmsPlugin:
     def execute(
         self,
         operation: str,
-        _parameters: Mapping[str, t.GeneralValueType] | None = None,
-    ) -> FlextResult[Mapping[str, t.GeneralValueType]]:
+        _parameters: Mapping[str, t.ContainerValue] | None = None,
+    ) -> FlextResult[Mapping[str, t.ContainerValue]]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
             init_result = self.initialize(None)
             if init_result.is_failure:
-                return FlextResult[Mapping[str, t.GeneralValueType]].fail(
+                return FlextResult[t.ConfigurationMapping].fail(
                     init_result.error or "Tap initialization failed",
                 )
         tap = self._tap
         if tap is None:
-            return FlextResult[Mapping[str, t.GeneralValueType]].fail(
+            return FlextResult[t.ConfigurationMapping].fail(
                 "Tap not initialized",
             )
 
         if operation == "discover":
             catalog_result = tap.discover_catalog()
             if catalog_result.is_failure:
-                return FlextResult[Mapping[str, t.GeneralValueType]].fail(
+                return FlextResult[t.ConfigurationMapping].fail(
                     catalog_result.error or "Discovery failed",
                 )
-            return FlextResult[Mapping[str, t.GeneralValueType]].ok(
+            return FlextResult[t.ConfigurationMapping].ok(
                 catalog_result.value.model_dump(mode="json"),
             )
         if operation == "sync":
             execute_result = tap.execute()
             if execute_result.is_failure:
-                return FlextResult[Mapping[str, t.GeneralValueType]].fail(
+                return FlextResult[t.ConfigurationMapping].fail(
                     execute_result.error or "Sync failed",
                 )
-            return FlextResult[Mapping[str, t.GeneralValueType]].ok({"success": True})
+            return FlextResult[t.ConfigurationMapping].ok({"success": True})
 
-        return FlextResult[Mapping[str, t.GeneralValueType]].fail(
+        return FlextResult[t.ConfigurationMapping].fail(
             f"Unsupported operation: {operation}",
         )

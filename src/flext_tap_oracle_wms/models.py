@@ -18,13 +18,13 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
             """Singer stream schema shape."""
 
             type: str = Field(default="object")
-            properties: dict[str, t.GeneralValueType] = Field(default_factory=dict)
+            properties: dict[str, t.ContainerValue] = Field(default_factory=dict)
 
         class WmsStreamMetadata(BaseModel):
             """Singer stream metadata entry."""
 
             breadcrumb: list[str] = Field(default_factory=list)
-            metadata: dict[str, t.GeneralValueType] = Field(default_factory=dict)
+            metadata: dict[str, t.ContainerValue] = Field(default_factory=dict)
 
         class WmsStreamDefinition(BaseModel):
             """Singer stream definition payload."""

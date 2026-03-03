@@ -48,10 +48,10 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
             username: str = "test_user",
             password: str = "test_pass",
             facility_ids: list[str] | None = None,
-            **kwargs: t.GeneralValueType,
-        ) -> dict[str, t.GeneralValueType]:
+            **kwargs: t.ContainerValue,
+        ) -> dict[str, t.ContainerValue]:
             """Create test Oracle WMS configuration."""
-            config: dict[str, t.GeneralValueType] = {
+            config: dict[str, t.ContainerValue] = {
                 "base_url": base_url,
                 "username": username,
                 "password": password,
@@ -63,15 +63,15 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
 
         @staticmethod
         def create_test_oracle_wms_api_response(
-            data: list[dict[str, t.GeneralValueType]],
+            data: list[dict[str, t.ContainerValue]],
             *,
             has_more: bool = False,
             next_page_url: str | None = None,
             facility_id: str | None = None,
-            **kwargs: t.GeneralValueType,
-        ) -> dict[str, t.GeneralValueType]:
+            **kwargs: t.ContainerValue,
+        ) -> dict[str, t.ContainerValue]:
             """Create test Oracle WMS API response."""
-            response: dict[str, t.GeneralValueType] = {
+            response: dict[str, t.ContainerValue] = {
                 "items": data,
                 "hasMore": has_more,
             }
@@ -87,12 +87,12 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
             count: int = 5,
             base_id: int = 1000,
             facility_id: str = "FAC001",
-            **kwargs: t.GeneralValueType,
-        ) -> list[dict[str, t.GeneralValueType]]:
+            **kwargs: t.ContainerValue,
+        ) -> list[dict[str, t.ContainerValue]]:
             """Generate mock Oracle WMS records for testing."""
-            records: list[dict[str, t.GeneralValueType]] = []
+            records: list[dict[str, t.ContainerValue]] = []
             for i in range(count):
-                record: dict[str, t.GeneralValueType] = {
+                record: dict[str, t.ContainerValue] = {
                     "id": base_id + i,
                     "facilityId": facility_id,
                     "itemNumber": f"ITEM{i + 1:04d}",
@@ -106,7 +106,7 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
             return records
 
         @staticmethod
-        def validate_oracle_wms_config(config: dict[str, t.GeneralValueType]) -> bool:
+        def validate_oracle_wms_config(config: dict[str, t.ContainerValue]) -> bool:
             """Validate Oracle WMS configuration for testing."""
             required_fields = ["base_url", "username"]
             return all(field in config and config[field] for field in required_fields)

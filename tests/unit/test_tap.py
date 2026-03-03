@@ -36,8 +36,8 @@ class TestFlextTapOracleWms:
         assert tap.discovery is not None  # Discovery property returns wms_client
 
     def test_tap_initialization_with_dict(self) -> None:
-        """Test tap initialization with dict[str, t.GeneralValueType] config."""
-        config_dict: dict[str, t.GeneralValueType] = {
+        """Test tap initialization with dict[str, t.ContainerValue] config."""
+        config_dict: dict[str, t.ContainerValue] = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
             "password": "test_password",
@@ -50,7 +50,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_invalid_config(self) -> None:
         """Test tap initialization with invalid config."""
-        config_dict: dict[str, t.GeneralValueType] = {
+        config_dict: dict[str, t.ContainerValue] = {
             "base_url": "invalid-url",  # Missing protocol
             "username": "test_user",
             "password": "test_password",
@@ -140,7 +140,7 @@ class TestFlextTapOracleWms:
         # Mock discovery
         mock_discovery = MagicMock()
         mock_discovery.discover_entities.return_value = FlextResult[
-            dict[str, t.GeneralValueType]
+            dict[str, t.ContainerValue]
         ].ok(
             value={
                 "inventory": {"type": "object", "properties": {}},

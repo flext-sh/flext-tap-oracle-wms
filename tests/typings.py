@@ -57,16 +57,16 @@ class TestsFlextTapOracleWmsTypes(FlextTestsTypes):
         type TestFacilityId = Literal["FAC001", "FAC002", "FAC003"]
 
         # Test data types
-        type MockOracleWmsRecord = dict[str, str | int | float | bool]
+        type MockOracleWmsRecord = dict[str, t.JsonPrimitive]
         type MockOracleWmsResponse = dict[
             str,
             list[MockOracleWmsRecord] | bool | str | None,
         ]
-        type TestOracleWmsScenario = dict[str, t.GeneralValueType]
+        type TestOracleWmsScenario = dict[str, t.ContainerValue]
 
         # Test result types
         type TestOracleWmsValidationResult = dict[str, bool | str | list[str]]
-        type TestOracleWmsApiResult = dict[str, t.GeneralValueType]
+        type TestOracleWmsApiResult = dict[str, t.ContainerValue]
 
 
 # Alias for simplified usage
