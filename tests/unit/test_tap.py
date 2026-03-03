@@ -140,7 +140,7 @@ class TestFlextTapOracleWms:
         # Mock discovery
         mock_discovery = MagicMock()
         mock_discovery.discover_entities.return_value = FlextResult[
-            dict[str, t.ContainerValue]
+            t.ConfigurationMapping
         ].ok(
             value={
                 "inventory": {"type": "object", "properties": {}},

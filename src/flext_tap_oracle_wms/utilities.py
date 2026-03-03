@@ -36,7 +36,7 @@ _STRICT_INT_ADAPTER = TypeAdapter(int, config=ConfigDict(strict=True))
 _STRICT_FLOAT_ADAPTER = TypeAdapter(float, config=ConfigDict(strict=True))
 _STRICT_STR_ADAPTER = TypeAdapter(str, config=ConfigDict(strict=True))
 _STRICT_MAP_ADAPTER = TypeAdapter(
-    dict[str, t.ContainerValue],
+    t.ConfigurationMapping,
     config=ConfigDict(strict=True),
 )
 _STRICT_LIST_ADAPTER = TypeAdapter(
