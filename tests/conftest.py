@@ -83,9 +83,7 @@ def mock_wms_client() -> MagicMock:
     )
 
     # Mock get records
-    client.get_records.return_value = FlextResult[
-        list[t.ConfigurationMapping]
-    ].ok(
+    client.get_records.return_value = FlextResult[list[t.ConfigurationMapping]].ok(
         [
             {"id": "1", "name": "Test Item 1", "quantity": 100},
             {"id": "2", "name": "Test Item 2", "quantity": 200},
