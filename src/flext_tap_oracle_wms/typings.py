@@ -17,6 +17,7 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
 
         type Dict = dict[str, FlextTypes.GeneralValueType]
         type Headers = dict[str, str]
+
     class Project:
         """Project-level aliases and constrained literals."""
 

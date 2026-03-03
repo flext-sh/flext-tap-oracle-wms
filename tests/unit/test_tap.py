@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from flext_core import FlextResult, t
+
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsConfigurationError,

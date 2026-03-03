@@ -8,8 +8,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
+
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from pydantic import SecretStr, ValidationError
 
 
 class TestFlextTapOracleWmsSettings:

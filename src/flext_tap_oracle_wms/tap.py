@@ -210,6 +210,7 @@ class FlextTapOracleWms(Tap):
                 "streams_available": len(self.discover_streams()),
             },
         )
+
     @staticmethod
     def _schema_for_entity() -> Mapping[str, t.JsonValue]:
         """Return a default Singer JSON schema for discovered entities."""

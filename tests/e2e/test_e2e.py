@@ -18,6 +18,7 @@ from unittest.mock import Mock
 
 import pytest
 from flext_core import FlextLogger, t
+
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
@@ -32,7 +33,9 @@ class TestOracleWMSE2EComplete:
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
 
     @pytest.mark.usefixtures("_mock_oracle_wms")
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_complete_discovery_to_catalog(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -88,7 +91,9 @@ class TestOracleWMSE2EComplete:
         )
 
     @pytest.mark.usefixtures("_mock_oracle_wms")
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_catalog_serialization_and_selection(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -120,7 +125,9 @@ class TestOracleWMSE2EComplete:
 
         logger.info("✅ Catalog serialization and selection working")
 
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_single_stream_extraction_sample(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -160,7 +167,9 @@ class TestOracleWMSE2EComplete:
 
         logger.info("✅ Single stream extraction setup successful")
 
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_incremental_extraction_workflow(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -213,7 +222,9 @@ class TestOracleWMSE2EComplete:
 
         logger.info("✅ Incremental extraction workflow validated for %s", stream.name)
 
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_full_table_extraction_workflow(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -262,7 +273,9 @@ class TestOracleWMSE2EComplete:
 
         logger.info("✅ Full table extraction workflow validated for %s", stream.name)
 
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_data_quality_validation(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -345,7 +358,9 @@ class TestOracleWMSE2EComplete:
         assert quality_report["streams_tested"] > 0, "No streams tested"
         assert quality_report["schemas_valid"] > 0, "No valid schemas found"
 
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_pagination_end_to_end(self) -> None:
         """E2E: Test pagination handling through multiple pages."""
         # paginator = WMSPaginator()  # Not implemented yet
@@ -379,7 +394,9 @@ class TestOracleWMSE2EComplete:
 
         logger.info("✅ Pagination flow tested: %s", pages_tested)
 
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_error_recovery_and_resilience(
         self,
         real_wms_config: dict[str, t.GeneralValueType],
@@ -422,7 +439,9 @@ class TestOracleWMSE2EComplete:
 
         logger.info("✅ Error recovery tested")
 
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_complete_singer_protocol_compliance(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -482,7 +501,9 @@ class TestOracleWMSE2EComplete:
 
         logger.info("✅ Complete Singer protocol compliance verified")
 
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_performance_and_scalability_indicators(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -530,7 +551,9 @@ class TestOracleWMSE2EComplete:
         )
         assert streams_count / discovery_time > 0.1, "Discovery rate too slow"
 
-    @pytest.mark.skip(reason="Integration test - requires live WMS or comprehensive mocking")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking"
+    )
     def test_final_e2e_integration_summary(
         self,
         real_config: FlextTapOracleWmsSettings,
