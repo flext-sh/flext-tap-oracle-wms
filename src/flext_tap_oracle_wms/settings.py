@@ -54,6 +54,7 @@ class FlextTapOracleWmsConstants(FlextConstants):
     )  # Singer-specific maximum
 
 
+@FlextSettings.auto_register("tap_oracle_wms")
 class FlextTapOracleWmsSettings(FlextSettings):
     """Configuration for Oracle WMS tap.
 
