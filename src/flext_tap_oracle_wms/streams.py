@@ -96,19 +96,32 @@ class FlextTapOracleWmsStream(Stream):
                 raise RuntimeError(msg)
         return self._client
 
+    @staticmethod
+    def normalize_json_value(value: t.ContainerValue) -> t.JsonValue:
+        """Normalize arbitrary values into Singer-compatible JSON values."""
+        if isinstance(value, str | int | float | bool | datetime):
+            return value
+        if value is None:
+            return ""
+        list_value = _as_list(value)
+        if list_value is not None:
+            return [
+                FlextTapOracleWmsStream.normalize_json_value(item)
+                for item in list_value
+            ]
+        map_value = _as_map(value)
+        if map_value is not None:
+            return {
+                key: FlextTapOracleWmsStream.normalize_json_value(item)
+                for key, item in map_value.items()
+            }
+        if isinstance(value, BaseModel | Path):
+            return str(value)
+        return str(value)
+
     def get_primary_keys(self) -> list[str]:
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
-
-    def get_replication_key(self) -> str | None:
-        """Get replication key for this stream."""
-        return self.stream_replication_key
-
-    def _run(
-        self,
-        value: t.JsonValue,
-    ) -> t.JsonValue:
-        return value
 
     @override
     def get_records(
@@ -150,6 +163,62 @@ class FlextTapOracleWmsStream(Stream):
                 logger.exception("Error getting records for %s", self.name)
                 break
 
+    def get_replication_key(self) -> str | None:
+        """Get replication key for this stream."""
+        return self.stream_replication_key
+
+    @override
+    def post_process(
+        self,
+        row: dict[str, t.JsonValue],
+        context: Mapping[str, t.JsonValue] | None = None,
+    ) -> dict[str, t.JsonValue] | None:
+        """Post-process a record."""
+        config_map: Mapping[str, t.ContainerValue] = self.config
+        column_mappings_raw = config_map.get("column_mappings")
+        column_mappings = _as_map(column_mappings_raw) if column_mappings_raw else None
+        if column_mappings is not None:
+            mapping_raw = column_mappings.get(self.name)
+            mapping = _as_map(mapping_raw) if mapping_raw is not None else None
+            if mapping is not None:
+                for old_name, new_name in mapping.items():
+                    new_name_str = str(new_name)
+                    if old_name in row:
+                        row[new_name_str] = row.pop(old_name)
+
+        ignored_columns_raw = config_map.get("ignored_columns")
+        ignored_columns = _as_list(ignored_columns_raw) if ignored_columns_raw else None
+        if ignored_columns is not None:
+            for column_name in ignored_columns:
+                if isinstance(column_name, str):
+                    row.pop(column_name, None)
+
+        # Add context information if available
+        if context:
+            row["_context"] = {k: str(v) for k, v in context.items()}
+
+        return row
+
+    def _build_operation_kwargs(
+        self,
+        page: int,
+        context: Mapping[str, t.JsonValue] | None,
+    ) -> Mapping[str, t.JsonValue]:
+        """Build kwargs for the operation call."""
+        kwargs: dict[str, t.JsonValue] = {
+            "page": page,
+            "limit": self._page_size,
+        }
+        # Add incremental replication filter if configured
+        if self.stream_replication_key:
+            starting_timestamp = self.get_starting_timestamp(context)
+            if starting_timestamp:
+                kwargs_filter = (
+                    f"{self.stream_replication_key}>={starting_timestamp.isoformat()}"
+                )
+                kwargs["filter"] = kwargs_filter
+        return kwargs
+
     def _fetch_page_data(
         self,
         page: int,
@@ -187,49 +256,6 @@ class FlextTapOracleWmsStream(Stream):
             (normalized, has_more),
         )
 
-    @staticmethod
-    def normalize_json_value(value: t.ContainerValue) -> t.JsonValue:
-        """Normalize arbitrary values into Singer-compatible JSON values."""
-        if isinstance(value, str | int | float | bool | datetime):
-            return value
-        if value is None:
-            return ""
-        list_value = _as_list(value)
-        if list_value is not None:
-            return [
-                FlextTapOracleWmsStream.normalize_json_value(item)
-                for item in list_value
-            ]
-        map_value = _as_map(value)
-        if map_value is not None:
-            return {
-                key: FlextTapOracleWmsStream.normalize_json_value(item)
-                for key, item in map_value.items()
-            }
-        if isinstance(value, BaseModel | Path):
-            return str(value)
-        return str(value)
-
-    def _build_operation_kwargs(
-        self,
-        page: int,
-        context: Mapping[str, t.JsonValue] | None,
-    ) -> Mapping[str, t.JsonValue]:
-        """Build kwargs for the operation call."""
-        kwargs: dict[str, t.JsonValue] = {
-            "page": page,
-            "limit": self._page_size,
-        }
-        # Add incremental replication filter if configured
-        if self.stream_replication_key:
-            starting_timestamp = self.get_starting_timestamp(context)
-            if starting_timestamp:
-                kwargs_filter = (
-                    f"{self.stream_replication_key}>={starting_timestamp.isoformat()}"
-                )
-                kwargs["filter"] = kwargs_filter
-        return kwargs
-
     def _process_page_records(
         self,
         records: list[dict[str, t.JsonValue]],
@@ -253,37 +279,11 @@ class FlextTapOracleWmsStream(Stream):
                 case _:
                     continue
 
-    @override
-    def post_process(
+    def _run(
         self,
-        row: dict[str, t.JsonValue],
-        context: Mapping[str, t.JsonValue] | None = None,
-    ) -> dict[str, t.JsonValue] | None:
-        """Post-process a record."""
-        config_map: Mapping[str, t.ContainerValue] = self.config
-        column_mappings_raw = config_map.get("column_mappings")
-        column_mappings = _as_map(column_mappings_raw) if column_mappings_raw else None
-        if column_mappings is not None:
-            mapping_raw = column_mappings.get(self.name)
-            mapping = _as_map(mapping_raw) if mapping_raw is not None else None
-            if mapping is not None:
-                for old_name, new_name in mapping.items():
-                    new_name_str = str(new_name)
-                    if old_name in row:
-                        row[new_name_str] = row.pop(old_name)
-
-        ignored_columns_raw = config_map.get("ignored_columns")
-        ignored_columns = _as_list(ignored_columns_raw) if ignored_columns_raw else None
-        if ignored_columns is not None:
-            for column_name in ignored_columns:
-                if isinstance(column_name, str):
-                    row.pop(column_name, None)
-
-        # Add context information if available
-        if context:
-            row["_context"] = {k: str(v) for k, v in context.items()}
-
-        return row
+        value: t.JsonValue,
+    ) -> t.JsonValue:
+        return value
 
 
 # Stream discovery is now fully dynamic - no predefined stream classes needed

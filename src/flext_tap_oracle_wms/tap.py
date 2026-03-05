@@ -107,6 +107,25 @@ class FlextTapOracleWms(Tap):
             self._wms_client = client
         return self._wms_client
 
+    @staticmethod
+    def _schema_for_entity() -> Mapping[str, t.JsonValue]:
+        """Return a default Singer JSON schema for discovered entities."""
+        return {
+            "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
+            "properties": {
+                "id": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL},
+                "name": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL},
+                "created_at": {
+                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL,
+                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
+                },
+                "updated_at": {
+                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL,
+                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
+                },
+            },
+        }
+
     def discover_catalog(self) -> FlextResult[m.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
         discovery_result = self.wms_client.discover_entities()
@@ -169,13 +188,15 @@ class FlextTapOracleWms(Tap):
         self.sync_all()
         return FlextResult[bool].ok(True)
 
-    def validate_configuration(self) -> FlextResult[t.ConfigurationMapping]:
-        """Expose non-secret validated configuration fields."""
+    def get_implementation_metrics(
+        self,
+    ) -> FlextResult[t.ConfigurationMapping]:
+        """Return basic runtime metrics for observability."""
         return FlextResult[t.ConfigurationMapping].ok(
             {
-                "base_url": str(self.flext_config.base_url),
-                "api_version": self.flext_config.api_version,
-                "page_size": self.flext_config.page_size,
+                "tap_name": self.name,
+                "version": self.get_implementation_version(),
+                "streams_available": len(self.discover_streams()),
             },
         )
 
@@ -198,36 +219,15 @@ class FlextTapOracleWms(Tap):
         ):
             return "0.9.0"
 
-    def get_implementation_metrics(
-        self,
-    ) -> FlextResult[t.ConfigurationMapping]:
-        """Return basic runtime metrics for observability."""
+    def validate_configuration(self) -> FlextResult[t.ConfigurationMapping]:
+        """Expose non-secret validated configuration fields."""
         return FlextResult[t.ConfigurationMapping].ok(
             {
-                "tap_name": self.name,
-                "version": self.get_implementation_version(),
-                "streams_available": len(self.discover_streams()),
+                "base_url": str(self.flext_config.base_url),
+                "api_version": self.flext_config.api_version,
+                "page_size": self.flext_config.page_size,
             },
         )
-
-    @staticmethod
-    def _schema_for_entity() -> Mapping[str, t.JsonValue]:
-        """Return a default Singer JSON schema for discovered entities."""
-        return {
-            "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
-            "properties": {
-                "id": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL},
-                "name": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL},
-                "created_at": {
-                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL,
-                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
-                },
-                "updated_at": {
-                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL,
-                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
-                },
-            },
-        }
 
 
 class FlextTapOracleWmsPlugin:
@@ -249,25 +249,6 @@ class FlextTapOracleWmsPlugin:
     def version(self) -> str:
         """Return plugin version."""
         return self._version
-
-    def get_info(self) -> Mapping[str, t.ContainerValue]:
-        """Return plugin metadata for discovery and capabilities."""
-        return {
-            "name": self.name,
-            "version": self.version,
-            "description": "Oracle WMS Singer Tap Plugin",
-            "capabilities": ["discover", "sync"],
-        }
-
-    def initialize(self, _context: t.ContainerValue) -> FlextResult[bool]:
-        """Instantiate the tap for subsequent operations."""
-        self._tap = FlextTapOracleWms(config=self._config)
-        return FlextResult[bool].ok(True)
-
-    def shutdown(self) -> FlextResult[bool]:
-        """Release tap resources held by this plugin."""
-        self._tap = None
-        return FlextResult[bool].ok(True)
 
     def execute(
         self,
@@ -307,3 +288,22 @@ class FlextTapOracleWmsPlugin:
         return FlextResult[t.ConfigurationMapping].fail(
             f"Unsupported operation: {operation}",
         )
+
+    def get_info(self) -> Mapping[str, t.ContainerValue]:
+        """Return plugin metadata for discovery and capabilities."""
+        return {
+            "name": self.name,
+            "version": self.version,
+            "description": "Oracle WMS Singer Tap Plugin",
+            "capabilities": ["discover", "sync"],
+        }
+
+    def initialize(self, _context: t.ContainerValue) -> FlextResult[bool]:
+        """Instantiate the tap for subsequent operations."""
+        self._tap = FlextTapOracleWms(config=self._config)
+        return FlextResult[bool].ok(True)
+
+    def shutdown(self) -> FlextResult[bool]:
+        """Release tap resources held by this plugin."""
+        self._tap = None
+        return FlextResult[bool].ok(True)

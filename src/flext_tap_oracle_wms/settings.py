@@ -230,23 +230,6 @@ class FlextTapOracleWmsSettings(FlextSettings):
     )
 
     @classmethod
-    def get_or_create_shared_instance(
-        cls,
-        project_name: str,
-        **overrides: t.ContainerValue,
-    ) -> Self:
-        """Create or return a shared instance for this project."""
-        _ = project_name
-        init_kwargs: dict[str, t.ContainerValue] = overrides
-        return cls.model_validate(init_kwargs)
-
-    @classmethod
-    @override
-    def get_global_instance(cls) -> Self:
-        """Return the global singleton settings instance."""
-        return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")
-
-    @classmethod
     def create_for_development(cls, **overrides: t.ContainerValue) -> Self:
         """Create configuration for development environment."""
         dev_overrides = {
@@ -294,19 +277,22 @@ class FlextTapOracleWmsSettings(FlextSettings):
             **test_overrides,
         )
 
-    @field_validator("include_entities", "exclude_entities")
     @classmethod
-    def validate_entity_lists(
+    @override
+    def get_global_instance(cls) -> Self:
+        """Return the global singleton settings instance."""
+        return cls.get_or_create_shared_instance(project_name="flext-tap-oracle-wms")
+
+    @classmethod
+    def get_or_create_shared_instance(
         cls,
-        v: list[str] | None,
-    ) -> list[str] | None:
-        """Validate entity lists are unique."""
-        if v is not None:
-            unique_entities = list(dict.fromkeys(v))
-            if len(unique_entities) != len(v):
-                msg = "Entity list contains duplicates"
-                raise ValueError(msg)
-        return v
+        project_name: str,
+        **overrides: t.ContainerValue,
+    ) -> Self:
+        """Create or return a shared instance for this project."""
+        _ = project_name
+        init_kwargs: dict[str, t.ContainerValue] = overrides
+        return cls.model_validate(init_kwargs)
 
     @field_validator("start_date", "end_date")
     @classmethod
@@ -319,6 +305,20 @@ class FlextTapOracleWmsSettings(FlextSettings):
             except ValueError as exc:
                 msg = f"Invalid date format: {v}"
                 raise ValueError(msg) from exc
+        return v
+
+    @field_validator("include_entities", "exclude_entities")
+    @classmethod
+    def validate_entity_lists(
+        cls,
+        v: list[str] | None,
+    ) -> list[str] | None:
+        """Validate entity lists are unique."""
+        if v is not None:
+            unique_entities = list(dict.fromkeys(v))
+            if len(unique_entities) != len(v):
+                msg = "Entity list contains duplicates"
+                raise ValueError(msg)
         return v
 
     def validate_business_rules(self) -> FlextResult[bool]:
@@ -345,38 +345,16 @@ class FlextTapOracleWmsSettings(FlextSettings):
 
         return FlextResult[bool].ok(value=True)
 
-    def _validate_required_fields(self) -> FlextResult[bool]:
-        """Validate required fields."""
-        if not self.base_url or not self.username or not self.password:
-            return FlextResult[bool].fail(
-                "base_url, username, and password are required",
-            )
-        return FlextResult[bool].ok(value=True)
+    def validate_domain_rules(self) -> FlextResult[bool]:
+        """Validate domain rules using the canonical business-rules gate."""
+        return self.validate_business_rules()
 
-    def _validate_url_format(self) -> FlextResult[bool]:
-        """Validate URL format."""
-        if self.base_url.scheme not in {"http", "https"}:
-            return FlextResult[bool].fail(
-                "base_url must start with http:// or https://",
-            )
-        return FlextResult[bool].ok(value=True)
-
-    def _validate_page_size(self) -> FlextResult[bool]:
-        """Validate page size limits."""
-        if not (
-            FlextTapOracleWmsConstants.MIN_PAGE_SIZE
-            <= self.page_size
-            <= FlextTapOracleWmsConstants.MAX_PAGE_SIZE
-        ):
-            return FlextResult[bool].fail(
-                f"page_size must be between {FlextTapOracleWmsConstants.MIN_PAGE_SIZE} and {FlextTapOracleWmsConstants.MAX_PAGE_SIZE}",
-            )
-        return FlextResult[bool].ok(value=True)
-
-    def _validate_timeout(self) -> FlextResult[bool]:
-        """Validate timeout."""
-        if self.timeout <= 0:
-            return FlextResult[bool].fail("timeout must be positive")
+    def _validate_date_range(self) -> FlextResult[bool]:
+        if self.start_date and self.end_date:
+            start_value = datetime.fromisoformat(self.start_date)
+            end_value = datetime.fromisoformat(self.end_date)
+            if start_value > end_value:
+                return FlextResult[bool].fail("start_date must be <= end_date")
         return FlextResult[bool].ok(value=True)
 
     def _validate_entity_settings(self) -> FlextResult[bool]:
@@ -389,12 +367,16 @@ class FlextTapOracleWmsSettings(FlextSettings):
                 )
         return FlextResult[bool].ok(value=True)
 
-    def _validate_date_range(self) -> FlextResult[bool]:
-        if self.start_date and self.end_date:
-            start_value = datetime.fromisoformat(self.start_date)
-            end_value = datetime.fromisoformat(self.end_date)
-            if start_value > end_value:
-                return FlextResult[bool].fail("start_date must be <= end_date")
+    def _validate_page_size(self) -> FlextResult[bool]:
+        """Validate page size limits."""
+        if not (
+            FlextTapOracleWmsConstants.MIN_PAGE_SIZE
+            <= self.page_size
+            <= FlextTapOracleWmsConstants.MAX_PAGE_SIZE
+        ):
+            return FlextResult[bool].fail(
+                f"page_size must be between {FlextTapOracleWmsConstants.MIN_PAGE_SIZE} and {FlextTapOracleWmsConstants.MAX_PAGE_SIZE}",
+            )
         return FlextResult[bool].ok(value=True)
 
     def _validate_performance_settings(self) -> FlextResult[bool]:
@@ -410,6 +392,24 @@ class FlextTapOracleWmsSettings(FlextSettings):
             )
         return FlextResult[bool].ok(value=True)
 
-    def validate_domain_rules(self) -> FlextResult[bool]:
-        """Validate domain rules using the canonical business-rules gate."""
-        return self.validate_business_rules()
+    def _validate_required_fields(self) -> FlextResult[bool]:
+        """Validate required fields."""
+        if not self.base_url or not self.username or not self.password:
+            return FlextResult[bool].fail(
+                "base_url, username, and password are required",
+            )
+        return FlextResult[bool].ok(value=True)
+
+    def _validate_timeout(self) -> FlextResult[bool]:
+        """Validate timeout."""
+        if self.timeout <= 0:
+            return FlextResult[bool].fail("timeout must be positive")
+        return FlextResult[bool].ok(value=True)
+
+    def _validate_url_format(self) -> FlextResult[bool]:
+        """Validate URL format."""
+        if self.base_url.scheme not in {"http", "https"}:
+            return FlextResult[bool].fail(
+                "base_url must start with http:// or https://",
+            )
+        return FlextResult[bool].ok(value=True)

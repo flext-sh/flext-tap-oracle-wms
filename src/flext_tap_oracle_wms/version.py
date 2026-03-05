@@ -36,14 +36,14 @@ class FlextTapOracleWmsVersion:
         self.version_info = version_info
 
     @override
-    def __str__(self) -> str:
-        """Return string representation."""
-        return self.version
-
-    @override
     def __repr__(self) -> str:
         """Return repr representation."""
         return f"FlextTapOracleWmsVersion({self.version!r}, {self.version_info!r})"
+
+    @override
+    def __str__(self) -> str:
+        """Return string representation."""
+        return self.version
 
 
 # Create version instance
