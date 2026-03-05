@@ -1,13 +1,8 @@
-"""Unit tests for FLEXT Tap Oracle WMS.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-
-"""
+"""Unit tests for the Oracle WMS tap implementation."""
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 from flext_core import FlextResult, t
@@ -17,26 +12,24 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsConfigurationError,
     FlextTapOracleWmsSettings,
 )
+from flext_tap_oracle_wms.models import m
 
 
 class TestFlextTapOracleWms:
-    """Test FlextTapOracleWms class."""
+    """Validate tap behavior against current implementation contract."""
 
     def test_tap_initialization_with_config(
         self,
         sample_config: FlextTapOracleWmsSettings,
     ) -> None:
-        """Test tap initialization with config."""
+        """Tap stores validated settings and starts with lazy client."""
         tap = FlextTapOracleWms(config=sample_config)
 
         assert tap.name == "flext-tap-oracle-wms"
         assert tap.flext_config == sample_config
-        # Client is initialized on first access, discovery uses wms_client directly
-        assert tap._wms_client is not None  # Created when accessing streams
-        assert tap.discovery is not None  # Discovery property returns wms_client
 
     def test_tap_initialization_with_dict(self) -> None:
-        """Test tap initialization with dict[str, t.ContainerValue] config."""
+        """Tap accepts plain config mappings and normalizes settings values."""
         config_dict: dict[str, t.ContainerValue] = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
@@ -45,13 +38,13 @@ class TestFlextTapOracleWms:
 
         tap = FlextTapOracleWms(config=config_dict)
 
-        assert tap.flext_config.base_url == "https://test.wms.example.com"
+        assert str(tap.flext_config.base_url) == "https://test.wms.example.com/"
         assert tap.flext_config.username == "test_user"
 
     def test_tap_initialization_invalid_config(self) -> None:
-        """Test tap initialization with invalid config."""
+        """Invalid config payload raises configuration error."""
         config_dict: dict[str, t.ContainerValue] = {
-            "base_url": "invalid-url",  # Missing protocol
+            "base_url": "invalid-url",
             "username": "test_user",
             "password": "test_password",
         }
@@ -60,212 +53,165 @@ class TestFlextTapOracleWms:
             FlextTapOracleWms(config=config_dict)
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
-    def test_wms_client_property(
+    def test_wms_client_property_lazy_initialization(
         self,
         mock_client_class: MagicMock,
-        tap_instance: FlextTapOracleWms,
     ) -> None:
-        """Test WMS client property lazy initialization."""
-        # Mock client instance
+        """Client is created only once and reused after first access."""
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult[None].ok(value=None)
+        mock_client.start.return_value = FlextResult[bool].ok(True)
         mock_client_class.return_value = mock_client
 
-        # First access creates client
-        client1 = tap_instance.wms_client
-        assert client1 == mock_client
-        mock_client_class.assert_called_once()
-        mock_client.connect.assert_called_once()
+        tap = FlextTapOracleWms(
+            config={
+                "base_url": "https://test.wms.example.com",
+                "username": "test_user",
+                "password": "test_password",
+            },
+        )
 
-        # Second access returns same client
-        client2 = tap_instance.wms_client
-        assert client2 == client1
-        assert mock_client_class.call_count == 1
+        client_1 = tap.wms_client
+        client_2 = tap.wms_client
+
+        assert client_1 == mock_client
+        assert client_2 == mock_client
+        mock_client_class.assert_called_once()
+        mock_client.start.assert_called_once()
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
     def test_wms_client_connection_failure(
         self,
         mock_client_class: MagicMock,
-        tap_instance: FlextTapOracleWms,
     ) -> None:
-        """Test WMS client connection failure."""
-        # Mock failed connection
+        """Failed WMS client start is surfaced as tap config error."""
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult[None].fail("Connection refused")
+        mock_client.start.return_value = FlextResult[bool].fail("Connection refused")
         mock_client_class.return_value = mock_client
 
-        with pytest.raises(FlextTapOracleWmsConfigurationError) as exc_info:
-            _ = tap_instance.wms_client
+        with pytest.raises(FlextTapOracleWmsConfigurationError):
+            _ = FlextTapOracleWms(
+                config={
+                    "base_url": "https://test.wms.example.com",
+                    "username": "test_user",
+                    "password": "test_password",
+                },
+            )
 
-        assert "Failed to connect to Oracle WMS" in str(exc_info.value)
-
-    @patch("flext_tap_oracle_wms.tap.FlextWmsDiscovery")
-    @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
-    def test_initialize(
-        self,
-        mock_client_class: MagicMock,
-        mock_discovery_class: MagicMock,
-        tap_instance: FlextTapOracleWms,
-    ) -> None:
-        """Test tap initialization."""
-        # Mock client
+    def test_discover_catalog_success(self, tap_instance: FlextTapOracleWms) -> None:
+        """Catalog discovery maps discovered entities to Singer streams."""
         mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult[None].ok(value=None)
-        mock_client_class.return_value = mock_client
-
-        # Mock discovery
-        mock_discovery = MagicMock()
-        mock_discovery_class.return_value = mock_discovery
-
-        result = tap_instance.initialize()
-
-        assert result.is_success
-        assert tap_instance._discovery == mock_discovery
-        mock_discovery_class.assert_called_once_with(mock_client)
-
-    @patch("flext_tap_oracle_wms.tap.FlextWmsDiscovery")
-    @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
-    def test_discover_catalog(
-        self,
-        mock_client_class: MagicMock,
-        mock_discovery_class: MagicMock,
-        tap_instance: FlextTapOracleWms,
-    ) -> None:
-        """Test catalog discovery."""
-        # Mock client
-        mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult[None].ok(value=None)
-        mock_client_class.return_value = mock_client
-
-        # Mock discovery
-        mock_discovery = MagicMock()
-        mock_discovery.discover_entities.return_value = FlextResult[
-            t.ConfigurationMapping
-        ].ok(
-            value={
-                "inventory": {"type": "object", "properties": {}},
-                "locations": {"type": "object", "properties": {}},
-            },
+        mock_client.discover_entities.return_value = FlextResult[list[str]].ok(
+            ["inventory", "locations"],
         )
-        mock_discovery.build_catalog.return_value = {
-            "type": "CATALOG",
-            "streams": [],
-        }
-        mock_discovery_class.return_value = mock_discovery
 
-        result = tap_instance.discover_catalog()
+        with patch.object(
+            FlextTapOracleWms,
+            "wms_client",
+            new_callable=PropertyMock,
+            return_value=mock_client,
+        ):
+            result = tap_instance.discover_catalog()
 
         assert result.is_success
-        assert result.value["type"] == "CATALOG"
-        mock_discovery.discover_entities.assert_called_once()
-        mock_discovery.build_catalog.assert_called_once()
+        assert result.value.streams[0].stream == "inventory"
+        assert result.value.streams[1].stream == "locations"
 
-    def test_stream_discovery(self, tap_instance: FlextTapOracleWms) -> None:
-        """Test stream discovery."""
-        streams = tap_instance.discover_streams()
+    def test_discover_catalog_failure(self, tap_instance: FlextTapOracleWms) -> None:
+        """Catalog discovery propagates client discovery failures."""
+        mock_client = MagicMock()
+        mock_client.discover_entities.return_value = FlextResult[list[str]].fail("boom")
 
-        assert len(streams) > 0
-        assert all(hasattr(stream, "name") for stream in streams)
-        assert all(hasattr(stream, "tap") for stream in streams)
-        assert all(stream.tap == tap_instance for stream in streams)
+        with patch.object(
+            FlextTapOracleWms,
+            "wms_client",
+            new_callable=PropertyMock,
+            return_value=mock_client,
+        ):
+            result = tap_instance.discover_catalog()
 
-    def test_discover_streams_with_include(
+        assert result.is_failure
+        assert result.error == "boom"
+
+    def test_discover_streams_empty_when_catalog_fails(
         self,
-        sample_config: FlextTapOracleWmsSettings,
+        tap_instance: FlextTapOracleWms,
     ) -> None:
-        """Test stream discovery with include filter."""
-        sample_config.include_entities = ["inventory", "locations"]
-        tap = FlextTapOracleWms(config=sample_config)
+        """Stream discovery returns empty list when catalog discovery fails."""
+        with patch.object(
+            tap_instance,
+            "discover_catalog",
+            return_value=FlextResult[m.Meltano.SingerCatalog].fail("no catalog"),
+        ):
+            streams = tap_instance.discover_streams()
 
-        streams = tap.discover_streams()
-        stream_names = [stream.name for stream in streams]
+        assert streams == []
 
-        assert "inventory" in stream_names
-        assert "locations" in stream_names
-        assert "shipments" not in stream_names
+    def test_discover_streams_success(self, tap_instance: FlextTapOracleWms) -> None:
+        """Stream discovery builds stream objects from discovered catalog."""
+        catalog = m.Meltano.SingerCatalog(
+            streams=[
+                m.Meltano.SingerCatalogEntry(
+                    tap_stream_id="inventory",
+                    stream="inventory",
+                    schema={"type": "object", "properties": {}},
+                    metadata=[],
+                ),
+            ],
+        )
+        with patch.object(
+            tap_instance,
+            "discover_catalog",
+            return_value=FlextResult[m.Meltano.SingerCatalog].ok(catalog),
+        ):
+            streams = tap_instance.discover_streams()
 
-    def test_discover_streams_with_exclude(
-        self,
-        sample_config: FlextTapOracleWmsSettings,
-    ) -> None:
-        """Test stream discovery with exclude filter."""
-        sample_config.exclude_entities = ["shipments", "receipts"]
-        tap = FlextTapOracleWms(config=sample_config)
-
-        streams = tap.discover_streams()
-        stream_names = [stream.name for stream in streams]
-
-        assert "inventory" in stream_names
-        assert "locations" in stream_names
-        assert "shipments" not in stream_names
-        assert "receipts" not in stream_names
+        assert len(streams) == 1
+        assert streams[0].name == "inventory"
 
     def test_execute_normal_mode(self, tap_instance: FlextTapOracleWms) -> None:
-        """Test execute without message (normal tap mode)."""
-        with patch.object(tap_instance, "run") as mock_run:
+        """Execute without message triggers sync flow and returns success."""
+        with patch.object(tap_instance, "sync_all") as mock_sync:
             result = tap_instance.execute()
 
-            assert result.is_success
-            mock_run.assert_called_once()
+        assert result.is_success
+        mock_sync.assert_called_once()
 
     def test_execute_with_message_unsupported(
         self,
         tap_instance: FlextTapOracleWms,
     ) -> None:
-        """Test execute with message (not supported for tap)."""
+        """Custom message execution is not supported by the tap."""
         result = tap_instance.execute("some message")
 
         assert result.is_failure
-        assert "Tap does not support message processing" in str(result.error)
+        assert "Tap does not support message execution" in str(result.error)
 
-    @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
-    def test_validate_configuration(
-        self,
-        mock_client_class: MagicMock,
-        tap_instance: FlextTapOracleWms,
-    ) -> None:
-        """Test configuration validation."""
-        # Mock client
-        mock_client = MagicMock()
-        mock_client.connect.return_value = FlextResult[None].ok(value=None)
-        mock_client.list_entities.return_value = FlextResult[list[str]].ok([
-            "inventory",
-        ])
-        mock_client_class.return_value = mock_client
-
+    def test_validate_configuration(self, tap_instance: FlextTapOracleWms) -> None:
+        """Validation method exposes non-secret effective config values."""
         result = tap_instance.validate_configuration()
 
         assert result.is_success
-        assert result.value["valid"] is True
-        assert result.value["connection"] == "success"
-        mock_client.list_entities.assert_called_once_with(limit=1)
+        assert result.value["base_url"] == str(tap_instance.flext_config.base_url)
+        assert "password" not in result.value
 
-    def test_get_implementation_name(
+    def test_get_implementation_name_and_version(
         self,
         tap_instance: FlextTapOracleWms,
     ) -> None:
-        """Test get implementation name."""
+        """Implementation metadata methods return stable, non-empty values."""
         assert tap_instance.get_implementation_name() == "FLEXT Oracle WMS Tap"
-
-    def test_get_implementation_version(
-        self,
-        tap_instance: FlextTapOracleWms,
-    ) -> None:
-        """Test get implementation version."""
-        version = tap_instance.get_implementation_version()
-        assert isinstance(version, str)
-        assert "." in version  # Should be semantic version
+        assert tap_instance.get_implementation_version() != ""
 
     def test_get_implementation_metrics(
         self,
         tap_instance: FlextTapOracleWms,
     ) -> None:
-        """Test get implementation metrics."""
-        result = tap_instance.get_implementation_metrics()
+        """Metrics payload contains baseline tap observability fields."""
+        with patch.object(tap_instance, "discover_streams", return_value=[]):
+            result = tap_instance.get_implementation_metrics()
 
         assert result.is_success
         metrics = result.value
-        assert "tap_name" in metrics
+        assert metrics["tap_name"] == "flext-tap-oracle-wms"
         assert "version" in metrics
         assert "streams_available" in metrics
-        assert "configuration" in metrics

@@ -69,7 +69,11 @@ class FlextTapOracleWms(Tap):
         self._discovery_mode: bool = False
 
         super().__init__(
-            config=settings.model_dump(exclude_unset=True),
+            config=settings.model_dump(
+                mode="json",
+                exclude_unset=True,
+                exclude={"effective_log_level"},
+            ),
             catalog=dict(catalog) if catalog is not None else None,
             state=dict(state) if state is not None else None,
             parse_env_config=parse_env_config,
