@@ -15,7 +15,7 @@ from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
 
 
-class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants):
+class FlextTapOracleWmsConstants(FlextMeltanoConstants):
     """Oracle WMS tap extraction-specific constants following flext-core patterns.
 
     Composes with FlextOracleWmsConstants to avoid duplication and ensure consistency.

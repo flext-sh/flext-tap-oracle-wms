@@ -15,21 +15,7 @@ from typing import ClassVar, override
 from flext_core import FlextResult, t
 from flext_meltano import FlextMeltanoUtilities, m
 from flext_oracle_wms import FlextOracleWmsUtilities
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
-
-
-class _WmsConnectionConfig(BaseModel):
-    """Validated connection payload for Oracle WMS settings."""
-
-    model_config = ConfigDict(extra="allow")
-
-    host: str
-    database: str
-    username: str
-    password: str
-    port: int | None = None
-    database_schema: str | None = Field(default=None, alias="schema")
-
+from pydantic import ConfigDict, TypeAdapter, ValidationError
 
 _STRICT_BOOL_ADAPTER = TypeAdapter(bool, config=ConfigDict(strict=True))
 _STRICT_INT_ADAPTER = TypeAdapter(int, config=ConfigDict(strict=True))
@@ -543,21 +529,21 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             missing_fields = [field for field in required_fields if field not in config]
 
             if missing_fields:
-                return FlextResult[t.ConfigurationMapping].fail(
+                return FlextResult[Mapping[str, t.ContainerValue]].fail(
                     f"Missing required WMS connection fields: {', '.join(missing_fields)}",
                 )
 
             # Validate host format
             host = _as_str(config["host"])
             if host is None or not host.strip():
-                return FlextResult[t.ConfigurationMapping].fail(
+                return FlextResult[Mapping[str, t.ContainerValue]].fail(
                     "Host must be a non-empty string",
                 )
 
             # Validate database format
             database = _as_str(config["database"])
             if database is None or not database.strip():
-                return FlextResult[t.ConfigurationMapping].fail(
+                return FlextResult[Mapping[str, t.ContainerValue]].fail(
                     "Database must be a non-empty string",
                 )
 
@@ -569,7 +555,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                     or port <= 0
                     or port > FlextTapOracleWmsUtilities.MAX_PORT
                 ):
-                    return FlextResult[t.ConfigurationMapping].fail(
+                    return FlextResult[Mapping[str, t.ContainerValue]].fail(
                         "Port must be a valid integer between 1 and 65535",
                     )
 
@@ -577,11 +563,11 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             if "schema" in config:
                 schema_value = _as_str(config["schema"])
                 if schema_value is None or not schema_value.strip():
-                    return FlextResult[t.ConfigurationMapping].fail(
+                    return FlextResult[Mapping[str, t.ContainerValue]].fail(
                         "Schema must be a non-empty string",
                     )
 
-            return FlextResult[t.ConfigurationMapping].ok(config)
+            return FlextResult[Mapping[str, t.ContainerValue]].ok(config)
 
         @staticmethod
         def validate_wms_stream_config(
@@ -597,13 +583,13 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
             """
             if "streams" not in config:
-                return FlextResult[t.ConfigurationMapping].fail(
+                return FlextResult[Mapping[str, t.ContainerValue]].fail(
                     "Configuration must include 'streams' section",
                 )
 
             streams = _as_map(config["streams"])
             if streams is None:
-                return FlextResult[t.ConfigurationMapping].fail(
+                return FlextResult[Mapping[str, t.ContainerValue]].fail(
                     "Streams configuration must be a dictionary",
                 )
 
@@ -611,13 +597,13 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             for stream_name, stream_payload in streams.items():
                 stream_config = _as_map(stream_payload)
                 if stream_config is None:
-                    return FlextResult[t.ConfigurationMapping].fail(
+                    return FlextResult[Mapping[str, t.ContainerValue]].fail(
                         f"Stream '{stream_name}' configuration must be a dictionary",
                     )
 
                 # Check for required stream fields
                 if "selected" not in stream_config:
-                    return FlextResult[t.ConfigurationMapping].fail(
+                    return FlextResult[Mapping[str, t.ContainerValue]].fail(
                         f"Stream '{stream_name}' must have 'selected' field",
                     )
 
@@ -625,11 +611,11 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 if "table_name" in stream_config:
                     table_name = _as_str(stream_config["table_name"])
                     if table_name is None or not table_name.strip():
-                        return FlextResult[t.ConfigurationMapping].fail(
+                        return FlextResult[Mapping[str, t.ContainerValue]].fail(
                             f"Stream '{stream_name}' table_name must be a non-empty string",
                         )
 
-            return FlextResult[t.ConfigurationMapping].ok(config)
+            return FlextResult[Mapping[str, t.ContainerValue]].ok(config)
 
     class ConfigurationProcessing:
         """configuration processing utilities."""
@@ -675,7 +661,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             required_params = ["base_url", "username", "password"]
             for param in required_params:
                 if param not in config:
-                    return FlextResult[t.ConfigurationMapping].fail(
+                    return FlextResult[Mapping[str, t.ContainerValue]].fail(
                         f"Missing required parameter: {param}",
                     )
 
@@ -685,11 +671,11 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 "http://",
                 "https://",
             )):
-                return FlextResult[t.ConfigurationMapping].fail(
+                return FlextResult[Mapping[str, t.ContainerValue]].fail(
                     "Invalid base_url format",
                 )
 
-            return FlextResult[t.ConfigurationMapping].ok(config)
+            return FlextResult[Mapping[str, t.ContainerValue]].ok(config)
 
         @staticmethod
         def validate_wms_configuration_comprehensive(
@@ -728,7 +714,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 if stream_result.is_failure:
                     return stream_result
 
-            return FlextResult[t.ConfigurationMapping].ok(config)
+            return FlextResult[Mapping[str, t.ContainerValue]].ok(config)
 
     class WmsApiProcessing:
         """WMS API processing utilities."""
@@ -751,12 +737,12 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
             """
             if not base_url:
-                return FlextResult[t.ConfigurationMapping].fail(
+                return FlextResult[Mapping[str, t.ContainerValue]].fail(
                     "Base URL cannot be empty",
                 )
 
             if not base_url.startswith(("http://", "https://")):
-                return FlextResult[t.ConfigurationMapping].fail(
+                return FlextResult[Mapping[str, t.ContainerValue]].fail(
                     "Invalid URL format",
                 )
 
@@ -768,7 +754,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 "auth_provided": auth_token is not None,
             }
 
-            return FlextResult[t.ConfigurationMapping].ok(connection_info)
+            return FlextResult[Mapping[str, t.ContainerValue]].ok(connection_info)
 
     class DataProcessing:
         """data processing utilities."""
@@ -819,7 +805,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                     else:
                         validation_info["entities_discovered"] = 0
 
-            return FlextResult[t.ConfigurationMapping].ok(validation_info)
+            return FlextResult[Mapping[str, t.ContainerValue]].ok(validation_info)
 
     class StateManagement:
         """State management utilities for incremental syncs."""

@@ -7,8 +7,8 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, FlextResult, t
-from flext_meltano import FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsSettings
+from singer_sdk import Tap
 
 from .constants import c
 from .exceptions import FlextTapOracleWmsConfigurationError
@@ -68,7 +68,8 @@ class FlextTapOracleWms(Tap):
         self._schema_generator: t.ContainerValue | None = None
         self._discovery_mode: bool = False
 
-        super().__init__(
+        tap_init = getattr(super(), "__init__")
+        tap_init(
             config=settings.model_dump(
                 mode="json",
                 exclude_unset=True,
@@ -114,13 +115,7 @@ class FlextTapOracleWms(Tap):
                 discovery_result.error or "Discovery failed",
             )
 
-        entities: list[str] = []
-        for entity in discovery_result.value:
-            match entity:
-                case str() | int() | float() | bool():
-                    entities.append(str(entity))
-                case _:
-                    continue
+        entities: list[str] = list(discovery_result.value)
         streams = [
             m.Meltano.SingerCatalogEntry(
                 tap_stream_id=entity,
@@ -148,7 +143,7 @@ class FlextTapOracleWms(Tap):
         """Build stream objects from the discovered catalog."""
         catalog_result = self.discover_catalog()
         if catalog_result.is_failure:
-            logger.warning("Catalog discovery failed: %s", catalog_result.error)
+            logger.warning("Catalog discovery failed: %s", catalog_result.error or "")
             return []
 
         streams_raw = catalog_result.value.streams
@@ -174,7 +169,7 @@ class FlextTapOracleWms(Tap):
         self.sync_all()
         return FlextResult[bool].ok(True)
 
-    def validate_configuration(self) -> FlextResult[Mapping[str, t.ContainerValue]]:
+    def validate_configuration(self) -> FlextResult[t.ConfigurationMapping]:
         """Expose non-secret validated configuration fields."""
         return FlextResult[t.ConfigurationMapping].ok(
             {
@@ -205,7 +200,7 @@ class FlextTapOracleWms(Tap):
 
     def get_implementation_metrics(
         self,
-    ) -> FlextResult[Mapping[str, t.ContainerValue]]:
+    ) -> FlextResult[t.ConfigurationMapping]:
         """Return basic runtime metrics for observability."""
         return FlextResult[t.ConfigurationMapping].ok(
             {
@@ -278,7 +273,7 @@ class FlextTapOracleWmsPlugin:
         self,
         operation: str,
         _parameters: Mapping[str, t.ContainerValue] | None = None,
-    ) -> FlextResult[Mapping[str, t.ContainerValue]]:
+    ) -> FlextResult[t.ConfigurationMapping]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
             init_result = self.initialize(None)

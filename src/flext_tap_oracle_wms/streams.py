@@ -8,16 +8,35 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from datetime import datetime
+from pathlib import Path
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, FlextResult, t
 from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient
+from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 
 from flext_tap_oracle_wms.protocols import p
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)
+_MAP_ADAPTER = TypeAdapter(t.ConfigurationMapping, config=ConfigDict(strict=True))
+_LIST_ADAPTER = TypeAdapter(list[t.ContainerValue], config=ConfigDict(strict=True))
+
+
+def _as_map(value: t.ContainerValue) -> Mapping[str, t.ContainerValue] | None:
+    try:
+        return _MAP_ADAPTER.validate_python(value)
+    except ValidationError:
+        return None
+
+
+def _as_list(value: t.ContainerValue) -> list[t.ContainerValue] | None:
+    try:
+        return _LIST_ADAPTER.validate_python(value)
+    except ValidationError:
+        return None
 
 
 class FlextTapOracleWmsStream(Stream):
@@ -75,10 +94,6 @@ class FlextTapOracleWmsStream(Stream):
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWms"
                 raise RuntimeError(msg)
-
-        if self._client is None:
-            msg = "Client not available after initialization - this should not happen"
-            raise RuntimeError(msg)
         return self._client
 
     def get_primary_keys(self) -> list[str]:
@@ -112,7 +127,7 @@ class FlextTapOracleWmsStream(Stream):
                         "Failed to fetch page %s for %s: %s",
                         page,
                         self.name,
-                        page_result.error,
+                        page_result.error or "",
                     )
                     break
                 records, has_more = page_result.value
@@ -141,51 +156,59 @@ class FlextTapOracleWmsStream(Stream):
         context: Mapping[str, t.JsonValue] | None,
     ) -> FlextResult[tuple[list[dict[str, t.JsonValue]], bool]]:
         """Fetch data for a specific page."""
-        # Build operation parameters
-        operation_name = f"get_{self.name}"
         kwargs = self._build_operation_kwargs(page, context)
-        execute_method = (
-            self.client.execute if hasattr(self.client, "execute") else None
+        limit_raw = kwargs.get("limit")
+        limit = int(limit_raw) if isinstance(limit_raw, int) else self._page_size
+        filters: dict[str, t.Scalar] = {}
+        filter_raw = kwargs.get("filter")
+        if isinstance(filter_raw, str) and self.stream_replication_key:
+            filters[self.stream_replication_key] = filter_raw
+
+        result = self.client.get_entity_data(
+            entity_name=self.name,
+            limit=limit,
+            filters=filters or None,
         )
-        if execute_method is None:
+        if result.is_failure:
             return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].fail(
-                "WMS client must implement execute(operation, **kwargs)",
+                f"Failed to get records for {self.name}: {result.error}",
             )
-        result = self._run(
-            execute_method(operation_name, **kwargs),
-        )
-        # Check for failure
-        match result:
-            case FlextResult() as result_data:
-                if result_data.is_failure:
-                    return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].fail(
-                        f"Failed to get records for {self.name}: {result_data.error}",
-                    )
-                data_raw = result_data.value
-            case _:
-                data_raw = result
 
-        # Extract and process response data
-        match data_raw:
-            case str() | int() | float() | bool() | dict() | list() | None:
-                data: t.JsonValue = data_raw
-            case _:
-                data = {}
+        normalized: list[dict[str, t.JsonValue]] = [
+            {
+                str(key): self.normalize_json_value(value)
+                for key, value in record.items()
+            }
+            for record in result.value
+        ]
+
+        has_more = len(normalized) == self._page_size
         return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].ok(
-            self._extract_records_from_response(data),
+            (normalized, has_more),
         )
 
-    @staticmethod
     @staticmethod
     def normalize_json_value(value: t.ContainerValue) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
-        match value:
-            case str() | int() | float() | bool() | None:
-                return value
-            case list() | dict():
-                return value
-            case _:
-                return str(value)
+        if isinstance(value, str | int | float | bool | datetime):
+            return value
+        if value is None:
+            return ""
+        list_value = _as_list(value)
+        if list_value is not None:
+            return [
+                FlextTapOracleWmsStream.normalize_json_value(item)
+                for item in list_value
+            ]
+        map_value = _as_map(value)
+        if map_value is not None:
+            return {
+                key: FlextTapOracleWmsStream.normalize_json_value(item)
+                for key, item in map_value.items()
+            }
+        if isinstance(value, BaseModel | Path):
+            return str(value)
+        return str(value)
 
     def _build_operation_kwargs(
         self,
@@ -206,42 +229,6 @@ class FlextTapOracleWmsStream(Stream):
                 )
                 kwargs["filter"] = kwargs_filter
         return kwargs
-
-    def _extract_records_from_response(
-        self,
-        data: t.JsonValue,
-    ) -> tuple[list[dict[str, t.JsonValue]], bool]:
-        raw_records: list[object] = []
-        has_more = False
-
-        match data:
-            case dict() as data_dict:
-                raw_records_raw = data_dict.get(
-                    "data",
-                    data_dict.get("items", data_dict.get("results", [])),
-                )
-                if isinstance(raw_records_raw, list):
-                    raw_records = list(raw_records_raw)
-                has_more = bool(
-                    data_dict.get("has_more", False)
-                    or data_dict.get("next_page", False),
-                )
-            case list() as data_list:
-                raw_records = list(data_list)
-                has_more = len(data_list) == self._page_size
-
-        coerced_records: list[dict[str, t.JsonValue]] = []
-        for record in raw_records:
-            match record:
-                case dict() as record_dict:
-                    json_record: dict[str, t.JsonValue] = {}
-                    for k, v in record_dict.items():
-                        json_record[str(k)] = self.normalize_json_value(v)
-                    coerced_records.append(json_record)
-                case _:
-                    coerced_records.append({"value": str(record)})
-
-        return coerced_records, has_more
 
     def _process_page_records(
         self,
@@ -273,33 +260,24 @@ class FlextTapOracleWmsStream(Stream):
         context: Mapping[str, t.JsonValue] | None = None,
     ) -> dict[str, t.JsonValue] | None:
         """Post-process a record."""
-        # Apply column mappings if configured
-        if self.config:
-            column_mappings_raw = self.config.get("column_mappings", {})
-            match column_mappings_raw:
-                case dict() as column_mappings:
-                    mappings = column_mappings.get(self.name)
-                    match mappings:
-                        case dict() as mapping_dict:
-                            for old_name, new_name in mapping_dict.items():
-                                match (old_name, new_name):
-                                    case (str() as old_name_str, str() as new_name_str):
-                                        if old_name_str in row:
-                                            row[new_name_str] = row.pop(old_name_str)
-                                    case _:
-                                        continue
-                        case _:
-                            pass
-                case _:
-                    pass
-            # Remove ignored columns
-            ignored_columns: list[t.JsonValue] = self.config.get("ignored_columns", [])
-            for column in ignored_columns:
-                match column:
-                    case str() as column_name:
-                        row.pop(column_name, None)
-                    case _:
-                        continue
+        config_map: Mapping[str, t.ContainerValue] = self.config
+        column_mappings_raw = config_map.get("column_mappings")
+        column_mappings = _as_map(column_mappings_raw) if column_mappings_raw else None
+        if column_mappings is not None:
+            mapping_raw = column_mappings.get(self.name)
+            mapping = _as_map(mapping_raw) if mapping_raw is not None else None
+            if mapping is not None:
+                for old_name, new_name in mapping.items():
+                    new_name_str = str(new_name)
+                    if old_name in row:
+                        row[new_name_str] = row.pop(old_name)
+
+        ignored_columns_raw = config_map.get("ignored_columns")
+        ignored_columns = _as_list(ignored_columns_raw) if ignored_columns_raw else None
+        if ignored_columns is not None:
+            for column_name in ignored_columns:
+                if isinstance(column_name, str):
+                    row.pop(column_name, None)
 
         # Add context information if available
         if context:

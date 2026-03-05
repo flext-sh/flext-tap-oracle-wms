@@ -34,10 +34,10 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
             schema_: FlextTapOracleWmsModels.TapOracleWms.WmsStreamSchema = Field(
                 alias="schema"
             )
-            metadata: list[FlextTapOracleWmsModels.TapOracleWms.WmsStreamMetadata] = (
-                Field(
-                    default_factory=list,
-                )
+            metadata: list[FlextMeltanoModels.Meltano.SingerCatalogMetadata] = Field(
+                default_factory=lambda: list[
+                    FlextMeltanoModels.Meltano.SingerCatalogMetadata
+                ](),
             )
 
 
