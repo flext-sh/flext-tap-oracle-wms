@@ -4,6 +4,8 @@
 Shows how to use the tap with flext-oracle-wms integration.
 """
 
+from __future__ import annotations
+
 import os
 import sys
 
