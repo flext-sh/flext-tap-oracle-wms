@@ -278,7 +278,7 @@ class PydanticV2Auditor:
 def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Audit Pydantic v2 compliance")
-    parser.add_argument(
+    _ = parser.add_argument(
         "--project",
         default=".",
         help="Project path to audit (default: current directory)",
