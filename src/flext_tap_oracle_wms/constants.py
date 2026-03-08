@@ -22,21 +22,12 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
     Note: Does not override Authentication from parent classes to avoid conflicts.
     """
 
-    # Oracle WMS Connection Configuration
-    # DEFAULT_WMS_TIMEOUT: Final[int] = (
-    #     FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
-    # )
-    # Using local Connection class to break cycle
     DEFAULT_WMS_TIMEOUT: Final[int] = 30
     DEFAULT_FETCH_SIZE: Final[int] = (
         FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
     )
-
-    # Singer Tap Configuration - using FlextConstants composition
-    # Note: DEFAULT_BATCH_SIZE inherited from FlextConstants (Final, cannot override)
     MAX_BATCH_SIZE: Final[int] = FlextConstants.Performance.BatchProcessing.MAX_ITEMS
 
-    # WMS Entity Types - Oracle WMS tap-specific
     class TapWmsEntityType(StrEnum):
         """Oracle WMS entity types using StrEnum for type safety.
 
@@ -55,15 +46,11 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
 
         DEFAULT_TIMEOUT: Final[int] = 30
         MAX_RETRIES: Final[int] = 3
-
-        # Required configuration fields
         REQUIRED_CONFIG_FIELDS: Final[frozenset[str]] = frozenset({
             "base_url",
             "username",
             "password",
         })
-
-        # JSON schema type constants
         SCHEMA_TYPE_STRING: Final[str] = "string"
         SCHEMA_TYPE_OBJECT: Final[str] = "object"
         SCHEMA_TYPE_BOOLEAN: Final[str] = "boolean"
@@ -138,17 +125,11 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
         EXPONENTIAL = "exponential"
         FIXED = "fixed"
 
-    # Type-safe literals - PEP 695 syntax for type checking
-    # All Literal types reference StrEnum members - NO string duplication!
     type TapWmsEntityTypeLiteral = Literal[
-        "INVENTORY",
-        "SHIPMENT",
-        "PICKING",
-        "RECEIVING",
+        "INVENTORY", "SHIPMENT", "PICKING", "RECEIVING"
     ]
-    """Oracle WMS entity type literal - references WmsEntityType StrEnum members."""
+    "Oracle WMS entity type literal - references WmsEntityType StrEnum members."
 
 
 c = FlextTapOracleWmsConstants
-
 __all__ = ["FlextTapOracleWmsConstants", "c"]

@@ -46,9 +46,8 @@ class FlextTapOracleWmsStream(Stream):
     This is a generic stream class that adapts to any Oracle WMS entity dynamically.
     """
 
-    # Dynamic attributes - will be set at runtime based on discovery
-    stream_primary_keys: ClassVar[list[str]] = []  # Will be set dynamically
-    stream_replication_key: str | None = None  # Will be set dynamically
+    stream_primary_keys: ClassVar[list[str]] = []
+    stream_replication_key: str | None = None
 
     @override
     def __init__(
@@ -60,17 +59,11 @@ class FlextTapOracleWmsStream(Stream):
     ) -> None:
         """Initialize stream."""
         super().__init__(tap=tap, name=name or self.name, schema=schema)
-
-        # Zero Tolerance FIX: Initialize utilities for ALL stream business logic
         self._utilities = FlextTapOracleWmsUtilities()
-
-        # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
         self._client: FlextOracleWmsClient | None = None
-
-        # Zero Tolerance FIX: Use utilities for stream configuration processing
         page_size_result = (
             self._utilities.ConfigurationProcessing.validate_stream_page_size(
-                int(self.config.get("page_size", 100)),
+                int(self.config.get("page_size", 100))
             )
         )
         self._page_size = 100
@@ -81,11 +74,9 @@ class FlextTapOracleWmsStream(Stream):
     def client(self) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
         if self._client is None:
-            # Access WMS client from tap (FlextTapOracleWms)
             tap_instance = self._tap
             if tap_instance and isinstance(
-                tap_instance,
-                p.TapOracleWms.OracleWms.TapWithWmsClientProtocol,
+                tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientProtocol
             ):
                 wms_tap: p.TapOracleWms.OracleWms.TapWithWmsClientProtocol = (
                     tap_instance
@@ -125,15 +116,13 @@ class FlextTapOracleWmsStream(Stream):
 
     @override
     def get_records(
-        self,
-        context: Mapping[str, t.JsonValue] | None,
+        self, context: Mapping[str, t.JsonValue] | None
     ) -> Iterable[dict[str, t.JsonValue]]:
         """Get records from Oracle WMS."""
         page = 1
         has_more = True
         while has_more:
             try:
-                # Get page data
                 page_result = self._fetch_page_data(page, context)
                 if page_result.is_failure:
                     logger.error(
@@ -144,11 +133,8 @@ class FlextTapOracleWmsStream(Stream):
                     )
                     break
                 records, has_more = page_result.value
-                # Process and yield records
                 yield from self._process_page_records(records, context)
-                # Move to next page
                 page += 1
-                # Break if no records found
                 if not records:
                     break
             except (
@@ -185,31 +171,21 @@ class FlextTapOracleWmsStream(Stream):
                     new_name_str = str(new_name)
                     if old_name in row:
                         row[new_name_str] = row.pop(old_name)
-
         ignored_columns_raw = config_map.get("ignored_columns")
         ignored_columns = _as_list(ignored_columns_raw) if ignored_columns_raw else None
         if ignored_columns is not None:
             for column_name in ignored_columns:
                 if isinstance(column_name, str):
                     row.pop(column_name, None)
-
-        # Add context information if available
         if context:
             row["_context"] = {k: str(v) for k, v in context.items()}
-
         return row
 
     def _build_operation_kwargs(
-        self,
-        page: int,
-        context: Mapping[str, t.JsonValue] | None,
+        self, page: int, context: Mapping[str, t.JsonValue] | None
     ) -> Mapping[str, t.JsonValue]:
         """Build kwargs for the operation call."""
-        kwargs: dict[str, t.JsonValue] = {
-            "page": page,
-            "limit": self._page_size,
-        }
-        # Add incremental replication filter if configured
+        kwargs: dict[str, t.JsonValue] = {"page": page, "limit": self._page_size}
         if self.stream_replication_key:
             starting_timestamp = self.get_starting_timestamp(context)
             if starting_timestamp:
@@ -220,9 +196,7 @@ class FlextTapOracleWmsStream(Stream):
         return kwargs
 
     def _fetch_page_data(
-        self,
-        page: int,
-        context: Mapping[str, t.JsonValue] | None,
+        self, page: int, context: Mapping[str, t.JsonValue] | None
     ) -> FlextResult[tuple[list[dict[str, t.JsonValue]], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
@@ -232,17 +206,13 @@ class FlextTapOracleWmsStream(Stream):
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
-
         result = self.client.get_entity_data(
-            entity_name=self.name,
-            limit=limit,
-            filters=filters or None,
+            entity_name=self.name, limit=limit, filters=filters or None
         )
         if result.is_failure:
             return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].fail(
-                f"Failed to get records for {self.name}: {result.error}",
+                f"Failed to get records for {self.name}: {result.error}"
             )
-
         normalized: list[dict[str, t.JsonValue]] = [
             {
                 str(key): self.normalize_json_value(value)
@@ -250,11 +220,11 @@ class FlextTapOracleWmsStream(Stream):
             }
             for record in result.value
         ]
-
         has_more = len(normalized) == self._page_size
-        return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].ok(
-            (normalized, has_more),
-        )
+        return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].ok((
+            normalized,
+            has_more,
+        ))
 
     def _process_page_records(
         self,
@@ -265,7 +235,7 @@ class FlextTapOracleWmsStream(Stream):
         for record in records:
             record_dict: dict[str, t.JsonValue] = dict(record)
             processed_record = self._utilities.DataProcessing.process_wms_record(
-                record=record_dict,
+                record=record_dict
             )
             match processed_record:
                 case dict() as processed_dict:
@@ -279,11 +249,5 @@ class FlextTapOracleWmsStream(Stream):
                 case _:
                     continue
 
-    def _run(
-        self,
-        value: t.JsonValue,
-    ) -> t.JsonValue:
+    def _run(self, value: t.JsonValue) -> t.JsonValue:
         return value
-
-
-# Stream discovery is now fully dynamic - no predefined stream classes needed

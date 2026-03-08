@@ -12,10 +12,7 @@ import os
 
 import pytest
 
-from flext_tap_oracle_wms import (
-    FlextTapOracleWms,
-    FlextTapOracleWmsSettings,
-)
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
 
 @pytest.fixture
@@ -41,8 +38,7 @@ class TestRealWmsIntegration:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_tap_creation_with_real_config(
-        self,
-        real_config: FlextTapOracleWmsSettings,
+        self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """Test tap can be created with real config."""
         tap = FlextTapOracleWms(config=real_config)
@@ -53,17 +49,11 @@ class TestRealWmsIntegration:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_configuration_validation(
-        self,
-        real_config: FlextTapOracleWmsSettings,
+        self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """Test configuration validation."""
-        # Create tap
         tap = FlextTapOracleWms(config=real_config)
-
-        # Validate config
         result = tap.validate_configuration()
-
-        # Check result
         if result.is_success:
             assert result.data["valid"] is True
         else:
@@ -72,41 +62,26 @@ class TestRealWmsIntegration:
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
-    def test_tap_initialization(
-        self,
-        real_config: FlextTapOracleWmsSettings,
-    ) -> None:
+    def test_tap_initialization(self, real_config: FlextTapOracleWmsSettings) -> None:
         """Test tap initialization."""
         tap = FlextTapOracleWms(config=real_config)
-
-        # Initialize
         result = tap.initialize()
-
         if not result.is_success:
             pytest.skip(f"Tap initialization failed: {result.error}")
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
-    def test_stream_discovery(
-        self,
-        real_config: FlextTapOracleWmsSettings,
-    ) -> None:
+    def test_stream_discovery(self, real_config: FlextTapOracleWmsSettings) -> None:
         """Test stream discovery."""
         tap = FlextTapOracleWms(config=real_config)
-
-        # Initialize first
         init_result = tap.initialize()
         if init_result.is_failure:
             pytest.skip(
-                f"Cannot test discovery, initialization failed: {init_result.error}",
+                f"Cannot test discovery, initialization failed: {init_result.error}"
             )
-
-        # Discover streams
         streams = tap.discover_streams()
-
         assert len(streams) > 0
-
         for stream in streams:
             assert stream.name is not None
             assert hasattr(stream, "schema")
@@ -116,37 +91,26 @@ class TestRealWmsIntegration:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_stream_extraction(
-        self,
-        real_config: FlextTapOracleWmsSettings,
-        stream_name: str,
+        self, real_config: FlextTapOracleWmsSettings, stream_name: str
     ) -> None:
         """Test data extraction from specific streams."""
         tap = FlextTapOracleWms(config=real_config)
-
-        # Initialize
         init_result = tap.initialize()
         if init_result.is_failure:
             pytest.skip(
-                f"Cannot test extraction, initialization failed: {init_result.error}",
+                f"Cannot test extraction, initialization failed: {init_result.error}"
             )
-
-        # Get streams
         streams = tap.discover_streams()
         stream = next((s for s in streams if s.name == stream_name), None)
-
         if stream is None:
             pytest.skip(f"Stream '{stream_name}' not available")
-
-        # Try to extract a few records
         records = []
         try:
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)
-                if i >= 2:  # Just get 3 records for testing
+                if i >= 2:
                     break
-
             assert records is not None, "No records found"
-
         except (
             ValueError,
             TypeError,
@@ -156,7 +120,6 @@ class TestRealWmsIntegration:
             RuntimeError,
             ImportError,
         ) as e:
-            # Check if it's an authentication or connection error
             error_msg = str(e).lower()
             if any(
                 x in error_msg for x in ["auth", "401", "403", "connection", "timeout"]

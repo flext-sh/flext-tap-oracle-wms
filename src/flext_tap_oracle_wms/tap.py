@@ -54,26 +54,22 @@ class FlextTapOracleWms(Tap):
             case Mapping() as config_mapping:
                 try:
                     settings = FlextTapOracleWmsSettings.model_validate(
-                        dict(config_mapping),
+                        dict(config_mapping)
                     )
                 except Exception as exc:
                     msg = f"Invalid configuration: {exc}"
                     raise FlextTapOracleWmsConfigurationError(msg) from exc
             case _:
                 settings = FlextTapOracleWmsSettings.model_validate({})
-
         self._flext_config = settings
         self._wms_client: FlextOracleWmsClient | None = None
         self._discovery: t.ContainerValue | None = None
         self._schema_generator: t.ContainerValue | None = None
         self._discovery_mode: bool = False
-
         tap_init = getattr(super(), "__init__")
         tap_init(
             config=settings.model_dump(
-                mode="json",
-                exclude_unset=True,
-                exclude={"effective_log_level"},
+                mode="json", exclude_unset=True, exclude={"effective_log_level"}
             ),
             catalog=dict(catalog) if catalog is not None else None,
             state=dict(state) if state is not None else None,
@@ -131,9 +127,8 @@ class FlextTapOracleWms(Tap):
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.is_failure:
             return FlextResult[m.Meltano.SingerCatalog].fail(
-                discovery_result.error or "Discovery failed",
+                discovery_result.error or "Discovery failed"
             )
-
         entities: list[str] = list(discovery_result.value)
         streams = [
             m.Meltano.SingerCatalogEntry(
@@ -148,13 +143,13 @@ class FlextTapOracleWms(Tap):
                             "forced-replication-method": "FULL_TABLE",
                             "table-key-properties": ["id"],
                         },
-                    ),
+                    )
                 ],
             )
             for entity in entities
         ]
         return FlextResult[m.Meltano.SingerCatalog].ok(
-            m.Meltano.SingerCatalog(streams=streams),
+            m.Meltano.SingerCatalog(streams=streams)
         )
 
     @override
@@ -164,19 +159,15 @@ class FlextTapOracleWms(Tap):
         if catalog_result.is_failure:
             logger.warning("Catalog discovery failed: %s", catalog_result.error or "")
             return []
-
         streams_raw = catalog_result.value.streams
         if not streams_raw:
             return []
-
         streams: list[FlextTapOracleWmsStream] = []
         for stream_raw in streams_raw:
             stream_name = stream_raw.stream
             stream_schema = stream_raw.schema_definition
             stream = FlextTapOracleWmsStream(
-                tap=self,
-                name=stream_name,
-                schema=stream_schema,
+                tap=self, name=stream_name, schema=stream_schema
             )
             streams.append(stream)
         return streams
@@ -188,17 +179,13 @@ class FlextTapOracleWms(Tap):
         self.sync_all()
         return FlextResult[bool].ok(True)
 
-    def get_implementation_metrics(
-        self,
-    ) -> FlextResult[t.ConfigurationMapping]:
+    def get_implementation_metrics(self) -> FlextResult[t.ConfigurationMapping]:
         """Return basic runtime metrics for observability."""
-        return FlextResult[t.ConfigurationMapping].ok(
-            {
-                "tap_name": self.name,
-                "version": self.get_implementation_version(),
-                "streams_available": len(self.discover_streams()),
-            },
-        )
+        return FlextResult[t.ConfigurationMapping].ok({
+            "tap_name": self.name,
+            "version": self.get_implementation_version(),
+            "streams_available": len(self.discover_streams()),
+        })
 
     def get_implementation_name(self) -> str:
         """Return the human-readable implementation name."""
@@ -221,13 +208,11 @@ class FlextTapOracleWms(Tap):
 
     def validate_configuration(self) -> FlextResult[t.ConfigurationMapping]:
         """Expose non-secret validated configuration fields."""
-        return FlextResult[t.ConfigurationMapping].ok(
-            {
-                "base_url": str(self.flext_config.base_url),
-                "api_version": self.flext_config.api_version,
-                "page_size": self.flext_config.page_size,
-            },
-        )
+        return FlextResult[t.ConfigurationMapping].ok({
+            "base_url": str(self.flext_config.base_url),
+            "api_version": self.flext_config.api_version,
+            "page_size": self.flext_config.page_size,
+        })
 
 
 class FlextTapOracleWmsPlugin:
@@ -251,42 +236,36 @@ class FlextTapOracleWmsPlugin:
         return self._version
 
     def execute(
-        self,
-        operation: str,
-        _parameters: Mapping[str, t.ContainerValue] | None = None,
+        self, operation: str, _parameters: Mapping[str, t.ContainerValue] | None = None
     ) -> FlextResult[t.ConfigurationMapping]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
             init_result = self.initialize(None)
             if init_result.is_failure:
                 return FlextResult[t.ConfigurationMapping].fail(
-                    init_result.error or "Tap initialization failed",
+                    init_result.error or "Tap initialization failed"
                 )
         tap = self._tap
         if tap is None:
-            return FlextResult[t.ConfigurationMapping].fail(
-                "Tap not initialized",
-            )
-
+            return FlextResult[t.ConfigurationMapping].fail("Tap not initialized")
         if operation == "discover":
             catalog_result = tap.discover_catalog()
             if catalog_result.is_failure:
                 return FlextResult[t.ConfigurationMapping].fail(
-                    catalog_result.error or "Discovery failed",
+                    catalog_result.error or "Discovery failed"
                 )
             return FlextResult[t.ConfigurationMapping].ok(
-                catalog_result.value.model_dump(mode="json"),
+                catalog_result.value.model_dump(mode="json")
             )
         if operation == "sync":
             execute_result = tap.execute()
             if execute_result.is_failure:
                 return FlextResult[t.ConfigurationMapping].fail(
-                    execute_result.error or "Sync failed",
+                    execute_result.error or "Sync failed"
                 )
             return FlextResult[t.ConfigurationMapping].ok({"success": True})
-
         return FlextResult[t.ConfigurationMapping].fail(
-            f"Unsupported operation: {operation}",
+            f"Unsupported operation: {operation}"
         )
 
     def get_info(self) -> Mapping[str, t.ContainerValue]:

@@ -22,16 +22,13 @@ _STRICT_INT_ADAPTER = TypeAdapter(int, config=ConfigDict(strict=True))
 _STRICT_FLOAT_ADAPTER = TypeAdapter(float, config=ConfigDict(strict=True))
 _STRICT_STR_ADAPTER = TypeAdapter(str, config=ConfigDict(strict=True))
 _STRICT_MAP_ADAPTER = TypeAdapter(
-    t.ConfigurationMapping,
-    config=ConfigDict(strict=True),
+    t.ConfigurationMapping, config=ConfigDict(strict=True)
 )
 _STRICT_LIST_ADAPTER = TypeAdapter(
-    list[t.ContainerValue],
-    config=ConfigDict(strict=True),
+    list[t.ContainerValue], config=ConfigDict(strict=True)
 )
 _BOOKMARK_VALUE_ADAPTER: TypeAdapter[str | int | float | datetime] = TypeAdapter(
-    str | int | float | datetime,
-    config=ConfigDict(strict=True),
+    str | int | float | datetime, config=ConfigDict(strict=True)
 )
 
 
@@ -83,9 +80,7 @@ def _as_list(value: t.ContainerValue) -> list[t.ContainerValue] | None:
         return None
 
 
-def _as_bookmark_value(
-    value: t.ContainerValue,
-) -> str | int | float | datetime | None:
+def _as_bookmark_value(value: t.ContainerValue) -> str | int | float | datetime | None:
     """Strict bookmark scalar validation via Pydantic adapter."""
     try:
         return _BOOKMARK_VALUE_ADAPTER.validate_python(value)
@@ -101,7 +96,6 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
     Extends uWMS tap-specific operations.
     """
 
-    # Configuration constants
     DEFAULT_BATCH_SIZE: ClassVar[int] = 1000
     DEFAULT_TIMEOUT: ClassVar[int] = 30
     MAX_RETRIES: ClassVar[int] = 3
@@ -159,9 +153,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
             """
             return m.Meltano.SingerSchemaMessage(
-                stream=stream_name,
-                schema=schema,
-                key_properties=key_properties or [],
+                stream=stream_name, schema=schema, key_properties=key_properties or []
             )
 
         @staticmethod
@@ -181,11 +173,9 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
         @staticmethod
         def write_message(
-            message: (
-                m.Meltano.SingerSchemaMessage
-                | m.Meltano.SingerRecordMessage
-                | m.Meltano.SingerStateMessage
-            ),
+            message: m.Meltano.SingerSchemaMessage
+            | m.Meltano.SingerRecordMessage
+            | m.Meltano.SingerStateMessage,
         ) -> None:
             """Write Singer message to stdout.
 
@@ -210,9 +200,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if not timestamp:
                 return FlextResult[str].fail("Timestamp cannot be empty")
-
             try:
-                # Handle Oracle WMS common timestamp formats
                 for fmt in [
                     "%Y-%m-%d %H:%M:%S",
                     "%Y/%m/%d %H:%M:%S",
@@ -221,19 +209,15 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                     "%Y%m%d%H%M%S",
                 ]:
                     try:
-                        # Use timezone-aware parsing where possible
                         dt = datetime.strptime(timestamp, fmt)
-                        # Assume UTC for naive datetime objects
                         if dt.tzinfo is None:
                             dt = dt.replace(tzinfo=UTC)
                         return FlextResult[str].ok(dt.isoformat())
                     except ValueError:
                         continue
-
                 return FlextResult[str].fail(
-                    f"Unsupported timestamp format: {timestamp}",
+                    f"Unsupported timestamp format: {timestamp}"
                 )
-
             except (
                 ValueError,
                 TypeError,
@@ -258,8 +242,6 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if not location:
                 return ""
-
-            # Common WMS location format: FACILITY-ZONE-LOCATION
             match = re.search(r"^([A-Z0-9]+)[-_]", location.upper())
             return match.group(1) if match else ""
 
@@ -276,11 +258,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if not item_code:
                 return {}
-
-            # Common WMS SKU patterns
             sku_info: dict[str, t.ContainerValue] = {"original": item_code}
-
-            # Extract components based on common patterns
             if "-" in item_code:
                 parts = item_code.split("-")
                 sku_info["base_sku"] = parts[0]
@@ -288,12 +266,9 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                     sku_info["variant"] = parts[1]
                 if len(parts) > FlextTapOracleWmsUtilities.MIN_SKU_PARTS:
                     sku_info["size_color"] = "-".join(parts[2:])
-
-            # Extract numeric suffix (often size or version)
-            numeric_match = re.search(r"(\d+)$", item_code)
+            numeric_match = re.search("(\\d+)$", item_code)
             if numeric_match:
                 sku_info["numeric_suffix"] = numeric_match.group(1)
-
             return sku_info
 
         @staticmethod
@@ -309,12 +284,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if not identifier:
                 return ""
-
-            # Remove extra whitespace and normalize case
-            normalized = re.sub(r"\s+", "_", identifier.strip().upper())
-
-            # Remove special characters that might cause issues
-            return re.sub(r"[^\w\-_]", "", normalized)
+            normalized = re.sub("\\s+", "_", identifier.strip().upper())
+            return re.sub("[^\\w\\-_]", "", normalized)
 
         @staticmethod
         def parse_wms_quantity(quantity_str: str) -> FlextResult[float]:
@@ -329,21 +300,17 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if not quantity_str:
                 return FlextResult[float].fail("Quantity string cannot be empty")
-
             try:
-                # Handle common WMS quantity formats
-                cleaned = re.sub(r"[^\d.-]", "", str(quantity_str))
+                cleaned = re.sub("[^\\d.-]", "", str(quantity_str))
                 if not cleaned:
                     return FlextResult[float].fail(
-                        f"No numeric data in quantity: {quantity_str}",
+                        f"No numeric data in quantity: {quantity_str}"
                     )
-
                 quantity = float(cleaned)
                 return FlextResult[float].ok(quantity)
-
             except ValueError as e:
                 return FlextResult[float].fail(
-                    f"Invalid quantity format: {quantity_str} - {e}",
+                    f"Invalid quantity format: {quantity_str} - {e}"
                 )
 
         @staticmethod
@@ -359,14 +326,9 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if not field_name:
                 return ""
-
-            # Convert to lowercase and replace non-alphanumeric with underscores
             sanitized = re.sub(r"[^a-zA-Z0-9]", "_", field_name.lower())
-
-            # Ensure it doesn't start with a number
             if sanitized and sanitized[0].isdigit():
                 sanitized = f"wms_{sanitized}"
-
             return sanitized
 
     class StreamUtilities:
@@ -374,8 +336,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
         @staticmethod
         def calculate_wms_batch_size(
-            record_count: int,
-            target_batches: int = 10,
+            record_count: int, target_batches: int = 10
         ) -> int:
             """Calculate optimal batch size for Oracle WMS processing.
 
@@ -389,17 +350,12 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if record_count <= 0:
                 return FlextTapOracleWmsUtilities.DEFAULT_BATCH_SIZE
-
             calculated_size = max(1, record_count // target_batches)
-            return min(
-                calculated_size,
-                FlextTapOracleWmsUtilities.DEFAULT_BATCH_SIZE,
-            )
+            return min(calculated_size, FlextTapOracleWmsUtilities.DEFAULT_BATCH_SIZE)
 
         @staticmethod
         def create_wms_replication_key_schema(
-            stream_name: str,
-            replication_key: str = "last_update_date",
+            stream_name: str, replication_key: str = "last_update_date"
         ) -> Mapping[str, t.ContainerValue]:
             """Create replication key schema for Oracle WMS streams.
 
@@ -422,8 +378,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
         @staticmethod
         def generate_wms_stream_schema(
-            sample_records: list[dict[str, t.ContainerValue]],
-            _stream_name: str,  # Reserved for future use (e.g., stream-specific schema generation)
+            sample_records: list[dict[str, t.ContainerValue]], _stream_name: str
         ) -> Mapping[str, t.ContainerValue]:
             """Generate JSON schema from Oracle WMS sample records.
 
@@ -440,21 +395,18 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                     "properties": {},
                     "additionalProperties": True,
                 }
-
             properties: dict[str, t.ContainerValue] = {}
-
             for record in sample_records:
                 for key, value in record.items():
                     sanitized_key = FlextTapOracleWmsUtilities.WmsDataProcessing.sanitize_wms_field_name(
-                        key,
+                        key
                     )
                     if sanitized_key not in properties:
                         properties[sanitized_key] = (
                             FlextTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
-                                value,
+                                value
                             )
                         )
-
             return {
                 "type": "object",
                 "properties": properties,
@@ -462,9 +414,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             }
 
         @staticmethod
-        def infer_wms_type(
-            value: t.ContainerValue,
-        ) -> Mapping[str, t.ContainerValue]:
+        def infer_wms_type(value: t.ContainerValue) -> Mapping[str, t.ContainerValue]:
             """Infer JSON schema type from Oracle WMS value.
 
             Args:
@@ -485,28 +435,21 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             list_value = _as_list(value)
             if list_value is not None:
                 if list_value:
-                    # Infer type from first element
                     item_type = (
                         FlextTapOracleWmsUtilities.StreamUtilities.infer_wms_type(
-                            list_value[0],
+                            list_value[0]
                         )
                     )
                     return {"type": "array", "items": item_type}
                 return {"type": "array", "items": {"type": "string"}}
             if _as_map(value) is not None:
                 return {"type": "object", "additionalProperties": True}
-
-            # String type with WMS-specific format detection
             schema: dict[str, t.ContainerValue] = {"type": "string"}
-
             str_value = str(value)
-            # Check for WMS date patterns
-            if re.match(r"\d{4}-\d{2}-\d{2}", str_value):
+            if re.match("\\d{4}-\\d{2}-\\d{2}", str_value):
                 schema["format"] = "date-time"
-            # Check for WMS quantity patterns
-            elif re.match(r"^\d+\.?\d*$", str_value):
-                schema["pattern"] = r"^\d+\.?\d*$"
-
+            elif re.match("^\\d+\\.?\\d*$", str_value):
+                schema["pattern"] = "^\\d+\\.?\\d*$"
             return schema
 
     class ConfigValidation:
@@ -527,27 +470,20 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             required_fields = ["host", "database", "username", "password"]
             missing_fields = [field for field in required_fields if field not in config]
-
             if missing_fields:
                 return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                    f"Missing required WMS connection fields: {', '.join(missing_fields)}",
+                    f"Missing required WMS connection fields: {', '.join(missing_fields)}"
                 )
-
-            # Validate host format
             host = _as_str(config["host"])
             if host is None or not host.strip():
                 return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                    "Host must be a non-empty string",
+                    "Host must be a non-empty string"
                 )
-
-            # Validate database format
             database = _as_str(config["database"])
             if database is None or not database.strip():
                 return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                    "Database must be a non-empty string",
+                    "Database must be a non-empty string"
                 )
-
-            # Validate port if provided
             if "port" in config:
                 port = _as_int(config["port"])
                 if (
@@ -556,17 +492,14 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                     or port > FlextTapOracleWmsUtilities.MAX_PORT
                 ):
                     return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                        "Port must be a valid integer between 1 and 65535",
+                        "Port must be a valid integer between 1 and 65535"
                     )
-
-            # Validate WMS-specific settings
             if "schema" in config:
                 schema_value = _as_str(config["schema"])
                 if schema_value is None or not schema_value.strip():
                     return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                        "Schema must be a non-empty string",
+                        "Schema must be a non-empty string"
                     )
-
             return FlextResult[Mapping[str, t.ContainerValue]].ok(config)
 
         @staticmethod
@@ -584,37 +517,29 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if "streams" not in config:
                 return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                    "Configuration must include 'streams' section",
+                    "Configuration must include 'streams' section"
                 )
-
             streams = _as_map(config["streams"])
             if streams is None:
                 return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                    "Streams configuration must be a dictionary",
+                    "Streams configuration must be a dictionary"
                 )
-
-            # Validate each stream
             for stream_name, stream_payload in streams.items():
                 stream_config = _as_map(stream_payload)
                 if stream_config is None:
                     return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                        f"Stream '{stream_name}' configuration must be a dictionary",
+                        f"Stream '{stream_name}' configuration must be a dictionary"
                     )
-
-                # Check for required stream fields
                 if "selected" not in stream_config:
                     return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                        f"Stream '{stream_name}' must have 'selected' field",
+                        f"Stream '{stream_name}' must have 'selected' field"
                     )
-
-                # Validate WMS-specific stream settings
                 if "table_name" in stream_config:
                     table_name = _as_str(stream_config["table_name"])
                     if table_name is None or not table_name.strip():
                         return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                            f"Stream '{stream_name}' table_name must be a non-empty string",
+                            f"Stream '{stream_name}' table_name must be a non-empty string"
                         )
-
             return FlextResult[Mapping[str, t.ContainerValue]].ok(config)
 
     class ConfigurationProcessing:
@@ -640,9 +565,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             FlextResult[dict[str, t.ContainerValue]]: Validated config or error
 
             """
-            # Delegate to existing ConfigValidation
             return FlextTapOracleWmsUtilities.ConfigValidation.validate_wms_connection_config(
-                config,
+                config
             )
 
         @staticmethod
@@ -658,30 +582,24 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             FlextResult[dict[str, t.ContainerValue]]: Validated config or error
 
             """
-            # Basic validation first
             basic_result = (
                 FlextTapOracleWmsUtilities.ConfigurationProcessing.validate_wms_config(
-                    config,
+                    config
                 )
             )
             if basic_result.is_failure:
                 return basic_result
-
-            # Connection params validation
             params_result = FlextTapOracleWmsUtilities.ConfigurationProcessing.validate_wms_connection_params(
-                config,
+                config
             )
             if params_result.is_failure:
                 return params_result
-
-            # Stream configuration validation if present
             if "streams" in config:
                 stream_result = FlextTapOracleWmsUtilities.ConfigValidation.validate_wms_stream_config(
-                    config,
+                    config
                 )
                 if stream_result.is_failure:
                     return stream_result
-
             return FlextResult[Mapping[str, t.ContainerValue]].ok(config)
 
         @staticmethod
@@ -701,19 +619,13 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             for param in required_params:
                 if param not in config:
                     return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                        f"Missing required parameter: {param}",
+                        f"Missing required parameter: {param}"
                     )
-
-            # Validate URL format
             base_url = _as_str(config["base_url"])
-            if base_url is None or not base_url.startswith((
-                "http://",
-                "https://",
-            )):
+            if base_url is None or not base_url.startswith(("http://", "https://")):
                 return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                    "Invalid base_url format",
+                    "Invalid base_url format"
                 )
-
             return FlextResult[Mapping[str, t.ContainerValue]].ok(config)
 
     class WmsApiProcessing:
@@ -721,9 +633,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
         @staticmethod
         def test_wms_api_connection(
-            base_url: str,
-            auth_token: str | None = None,
-            timeout: int = 30,
+            base_url: str, auth_token: str | None = None, timeout: int = 30
         ) -> FlextResult[Mapping[str, t.ContainerValue]]:
             """Test WMS API connection.
 
@@ -738,22 +648,18 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if not base_url:
                 return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                    "Base URL cannot be empty",
+                    "Base URL cannot be empty"
                 )
-
             if not base_url.startswith(("http://", "https://")):
                 return FlextResult[Mapping[str, t.ContainerValue]].fail(
-                    "Invalid URL format",
+                    "Invalid URL format"
                 )
-
-            # Basic connection validation (would normally make HTTP request)
             connection_info: dict[str, t.ContainerValue] = {
                 "base_url": base_url,
                 "timeout": timeout,
                 "status": "validated",
                 "auth_provided": auth_token is not None,
             }
-
             return FlextResult[Mapping[str, t.ContainerValue]].ok(connection_info)
 
     class DataProcessing:
@@ -784,7 +690,6 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 "discovery_available": discovery_result is not None,
                 "validation_timestamp": datetime.now(UTC).isoformat(),
             }
-
             if discovery_result:
                 discovery_list = _as_list(discovery_result)
                 if discovery_list is not None:
@@ -796,7 +701,6 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                         validation_info["entities_discovered"] = len(entities)
                     else:
                         validation_info["entities_discovered"] = 0
-
             return FlextResult[Mapping[str, t.ContainerValue]].ok(validation_info)
 
         @staticmethod
@@ -804,7 +708,6 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             record: Mapping[str, t.ContainerValue],
         ) -> Mapping[str, t.ContainerValue]:
             """Process WMS record."""
-            # Record processing delegation — transforms WMS records for Singer output
             return record
 
     class StateManagement:
@@ -812,9 +715,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
         @staticmethod
         def create_wms_incremental_state(
-            stream_name: str,
-            last_updated: datetime,
-            records_processed: int = 0,
+            stream_name: str, last_updated: datetime, records_processed: int = 0
         ) -> Mapping[str, t.ContainerValue]:
             """Create incremental state for Oracle WMS stream.
 
@@ -834,15 +735,13 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                         "last_update_date": last_updated.isoformat(),
                         "records_processed": records_processed,
                         "extraction_timestamp": datetime.now(UTC).isoformat(),
-                    },
-                },
+                    }
+                }
             }
 
         @staticmethod
         def get_wms_bookmark(
-            state: Mapping[str, t.ContainerValue],
-            stream_name: str,
-            bookmark_key: str,
+            state: Mapping[str, t.ContainerValue], stream_name: str, bookmark_key: str
         ) -> str | int | float | datetime | None:
             """Get bookmark value for a Oracle WMS stream.
 
@@ -857,8 +756,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             stream_state = (
                 FlextTapOracleWmsUtilities.StateManagement.get_wms_stream_state(
-                    state,
-                    stream_name,
+                    state, stream_name
                 )
             )
             bookmark_value = stream_state.get(bookmark_key)
@@ -868,8 +766,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
         @staticmethod
         def get_wms_stream_state(
-            state: Mapping[str, t.ContainerValue],
-            stream_name: str,
+            state: Mapping[str, t.ContainerValue], stream_name: str
         ) -> Mapping[str, t.ContainerValue]:
             """Get state for a specific Oracle WMS stream.
 
@@ -944,8 +841,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
         @staticmethod
         def calculate_optimal_fetch_size(
-            table_size_estimate: int,
-            memory_limit_mb: int = 100,
+            table_size_estimate: int, memory_limit_mb: int = 100
         ) -> int:
             """Calculate optimal fetch size for Oracle WMS queries.
 
@@ -957,17 +853,11 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             int: Optimal fetch size
 
             """
-            # Estimate memory per record (conservative estimate for WMS data)
-            bytes_per_record = 2048  # 2KB per record estimate
-            max_records_in_memory = (memory_limit_mb * 1024 * 1024) // bytes_per_record
-
-            # Balance between memory usage and query efficiency
+            bytes_per_record = 2048
+            max_records_in_memory = memory_limit_mb * 1024 * 1024 // bytes_per_record
             return min(
                 max_records_in_memory,
-                max(
-                    100,
-                    table_size_estimate // 100,
-                ),  # At least 100, at most 1% of table
+                max(100, table_size_estimate // 100),
                 FlextTapOracleWmsUtilities.DEFAULT_BATCH_SIZE,
             )
 
@@ -990,18 +880,9 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             total_bytes = record_count * avg_record_size_bytes
             total_mb = total_bytes / (1024 * 1024)
-
-            # Network transfer time
-            network_time = (
-                total_mb * 8
-            ) / network_speed_mbps  # Convert MB to Mb, divide by speed
-
-            # Processing overhead (conservative estimate)
-            processing_time = record_count * 0.001  # 1ms per record processing
-
-            # Database query time (depends on indexes and complexity)
-            query_time = max(1.0, record_count * 0.0001)  # Minimum 1 second
-
+            network_time = total_mb * 8 / network_speed_mbps
+            processing_time = record_count * 0.001
+            query_time = max(1.0, record_count * 0.0001)
             return {
                 "network_transfer_seconds": network_time,
                 "processing_seconds": processing_time,
@@ -1013,9 +894,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
         """Utilities for tap operations."""
 
         @staticmethod
-        def run(
-            coro: t.ContainerValue,
-        ) -> t.ContainerValue:
+        def run(coro: t.ContainerValue) -> t.ContainerValue:
             """Execute or passthrough coroutine-like input in sync contexts."""
             return coro
 
@@ -1026,9 +905,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
     @classmethod
     def get_wms_stream_state(
-        cls,
-        state: Mapping[str, t.ContainerValue],
-        stream_name: str,
+        cls, state: Mapping[str, t.ContainerValue], stream_name: str
     ) -> Mapping[str, t.ContainerValue]:
         """Proxy method for StateManagement.get_wms_stream_state()."""
         return cls.StateManagement.get_wms_stream_state(state, stream_name)
@@ -1048,25 +925,16 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
     ) -> Mapping[str, t.ContainerValue]:
         """Proxy method for StateManagement.set_wms_bookmark()."""
         return cls.StateManagement.set_wms_bookmark(
-            state,
-            stream_name,
-            bookmark_key,
-            bookmark_value,
+            state, stream_name, bookmark_key, bookmark_value
         )
 
     @classmethod
     def validate_wms_connection_config(
-        cls,
-        config: Mapping[str, t.ContainerValue],
+        cls, config: Mapping[str, t.ContainerValue]
     ) -> FlextResult[Mapping[str, t.ContainerValue]]:
         """Proxy method for ConfigValidation.validate_wms_connection_config()."""
         return cls.ConfigValidation.validate_wms_connection_config(config)
 
 
-__all__ = [
-    "FlextTapOracleWmsUtilities",
-    "u",
-]
-
-
+__all__ = ["FlextTapOracleWmsUtilities", "u"]
 u = FlextTapOracleWmsUtilities

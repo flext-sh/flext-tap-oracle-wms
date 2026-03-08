@@ -15,22 +15,18 @@ from unittest.mock import MagicMock
 import pytest
 from flext_core import FlextResult, t
 
-from flext_tap_oracle_wms import (
-    FlextTapOracleWms,
-    FlextTapOracleWmsSettings,
-)
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
 
 @pytest.fixture(scope="session")
 def oracle_wms_environment() -> None:
     """Set Oracle WMS environment variables for tests."""
-    # Load from .env if exists
     env_file = Path(__file__).parent.parent / ".env"
     if env_file.exists():
         with env_file.open(encoding="utf-8") as f:
             for file_line in f:
                 line = file_line.strip()
-                if line and not line.startswith("#"):
+                if line and (not line.startswith("#")):
                     key, value = line.split("=", 1)
                     os.environ[key] = value
 
@@ -68,53 +64,32 @@ def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
 def mock_wms_client() -> MagicMock:
     """Mock Oracle WMS client."""
     client = MagicMock()
-
-    # Mock successful connection
     client.connect.return_value = FlextResult[bool].ok(value=True)
-
-    # Mock list entities
-    client.list_entities.return_value = FlextResult[list[str]].ok(
-        [
-            "inventory",
-            "locations",
-            "shipments",
-            "receipts",
-        ],
-    )
-
-    # Mock get records
-    client.get_records.return_value = FlextResult[list[t.ConfigurationMapping]].ok(
-        [
-            {"id": "1", "name": "Test Item 1", "quantity": 100},
-            {"id": "2", "name": "Test Item 2", "quantity": 200},
-        ],
-    )
-
-    # Mock get entity metadata
+    client.list_entities.return_value = FlextResult[list[str]].ok([
+        "inventory",
+        "locations",
+        "shipments",
+        "receipts",
+    ])
+    client.get_records.return_value = FlextResult[list[t.ConfigurationMapping]].ok([
+        {"id": "1", "name": "Test Item 1", "quantity": 100},
+        {"id": "2", "name": "Test Item 2", "quantity": 200},
+    ])
     client.get_entity_metadata.return_value = FlextResult[
         dict[str, str | list[str]]
-    ].ok(
-        {
-            "display_name": "Inventory",
-            "description": "Inventory data",
-            "primary_key": ["inventory_id"],
-            "replication_key": "mod_ts",
-        },
-    )
-
+    ].ok({
+        "display_name": "Inventory",
+        "description": "Inventory data",
+        "primary_key": ["inventory_id"],
+        "replication_key": "mod_ts",
+    })
     return client
 
 
 @pytest.fixture
-def tap_instance(
-    sample_config: FlextTapOracleWmsSettings,
-) -> FlextTapOracleWms:
+def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance with sample config."""
     return FlextTapOracleWms(config=sample_config)
-
-
-# Removed fixtures for authenticator and discovery_instance
-# as these classes were moved to flext-oracle-wms
 
 
 @pytest.fixture
@@ -144,9 +119,9 @@ def sample_catalog() -> dict[str, t.ContainerValue]:
                             "table-key-properties": ["inventory_id"],
                             "replication-key": "mod_ts",
                         },
-                    },
+                    }
                 ],
-            },
+            }
         ],
     }
 
@@ -156,11 +131,8 @@ def sample_state() -> dict[str, t.ContainerValue]:
     """Sample Singer state."""
     return {
         "bookmarks": {
-            "inventory": {
-                "replication_key_value": "2024-01-01T00:00:00Z",
-                "version": 1,
-            },
-        },
+            "inventory": {"replication_key_value": "2024-01-01T00:00:00Z", "version": 1}
+        }
     }
 
 
@@ -170,13 +142,8 @@ def mock_response() -> MagicMock:
     response = MagicMock()
     response.status_code = 200
     response.json.return_value = {
-        "data": [
-            {"id": "1", "name": "Item 1"},
-            {"id": "2", "name": "Item 2"},
-        ],
-        "_links": {
-            "next": "https://test.wms.example.com/api/v10/inventory?page=2",
-        },
+        "data": [{"id": "1", "name": "Item 1"}, {"id": "2", "name": "Item 2"}],
+        "_links": {"next": "https://test.wms.example.com/api/v10/inventory?page=2"},
     }
     response.text = '{"data": []}'
     return response
@@ -191,15 +158,11 @@ def mock_request() -> MagicMock:
     return request
 
 
-# Marker for tests requiring real Oracle WMS
 def pytest_collection_modifyitems(config: object, items: list[pytest.Item]) -> None:
     """Add markers to tests based on their location."""
     for item in items:
-        # Add oracle_wms marker to integration tests
         if hasattr(item, "fspath") and "integration" in str(item.fspath):
             item.add_marker(pytest.mark.oracle_wms)
-
-        # Add slow marker to e2e and performance tests
         if hasattr(item, "fspath") and any(
             x in str(item.fspath) for x in ["e2e", "performance"]
         ):
@@ -216,9 +179,7 @@ def reset_environment() -> Generator[None]:
 
 
 @pytest.fixture
-def real_tap_instance(
-    real_config: FlextTapOracleWmsSettings,
-) -> FlextTapOracleWms:
+def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Real tap instance for integration tests."""
     return FlextTapOracleWms(config=real_config)
 

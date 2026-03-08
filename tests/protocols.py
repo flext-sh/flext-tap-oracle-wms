@@ -33,8 +33,6 @@ class TestsFlextTapOracleWmsProtocols(FlextTestsProtocols, FlextTapOracleWmsProt
             """
 
 
-# Runtime aliases
 p = TestsFlextTapOracleWmsProtocols
 p = TestsFlextTapOracleWmsProtocols
-
 __all__ = ["TestsFlextTapOracleWmsProtocols", "p"]

@@ -51,5 +51,4 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
 
 
 t = FlextTapOracleWmsTypes
-
 __all__ = ["FlextTapOracleWmsTypes", "t"]

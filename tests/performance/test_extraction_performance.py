@@ -13,12 +13,8 @@ import psutil
 import pytest
 from dotenv import load_dotenv
 
-from flext_tap_oracle_wms import (
-    FlextTapOracleWms,
-    FlextTapOracleWmsSettings,
-)
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
-# Load environment variables
 env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(env_path)
 
@@ -31,9 +27,9 @@ def performance_config() -> FlextTapOracleWmsSettings:
         username=os.getenv("ORACLE_WMS_USERNAME"),
         password=os.getenv("ORACLE_WMS_PASSWORD"),
         api_version=os.getenv("ORACLE_WMS_API_VERSION", "v10"),
-        page_size=100,  # Standard page size for benchmarking
+        page_size=100,
         verify_ssl=True,
-        enable_rate_limiting=False,  # Disable for performance testing
+        enable_rate_limiting=False,
     )
 
 
@@ -52,52 +48,34 @@ class TestExtractionPerformance:
     )
     def test_catalog_discovery_performance(self, tap: FlextTapOracleWms) -> None:
         """Benchmark catalog discovery time."""
-        # Initialize tap
         tap.initialize()
-
-        # Measure discovery time
         start_time = time.time()
         result = tap.discover_catalog()
         discovery_time = time.time() - start_time
-
         assert result.is_success
-
-        # Performance assertion
-        assert discovery_time < 10.0  # Should complete within 10 seconds
+        assert discovery_time < 10.0
 
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_pagination_performance(
-        self,
-        tap: FlextTapOracleWms,
-        page_size: int,
+        self, tap: FlextTapOracleWms, page_size: int
     ) -> None:
         """Benchmark different page sizes."""
         tap.initialize()
-
-        # Configure page size
         tap.flext_config.page_size = page_size
-
-        # Get inventory stream
         streams = tap.discover_streams()
         inventory_stream = next((s for s in streams if s.name == "inventory"), None)
-
         if not inventory_stream:
             pytest.skip("Inventory stream not available")
-
         inventory_stream._page_size = page_size
-
-        # Extract records
         start_time = time.time()
         records = []
-
         for i, record in enumerate(inventory_stream.get_records(context=None)):
             records.append(record)
-            if i >= 99:  # Extract 100 records
+            if i >= 99:
                 break
-
         time.time() - start_time
 
     @pytest.mark.skip(
@@ -106,57 +84,39 @@ class TestExtractionPerformance:
     def test_concurrent_streams_extraction(self, tap: FlextTapOracleWms) -> None:
         """Test extracting multiple streams concurrently."""
         tap.initialize()
-        streams = tap.discover_streams()[:3]  # Test first 3 streams
-
+        streams = tap.discover_streams()[:3]
         total_records = 0
         start_time = time.time()
-
         for stream in streams:
             stream_start = time.time()
             records = 0
-
             for i, _record in enumerate(stream.get_records(context=None)):
                 records += 1
-                if i >= 49:  # Extract 50 records per stream
+                if i >= 49:
                     break
-
             time.time() - stream_start
             total_records += records
-
         time.time() - start_time
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
-    def test_memory_usage_during_large_extraction(
-        self,
-        tap: FlextTapOracleWms,
-    ) -> None:
+    def test_memory_usage_during_large_extraction(self, tap: FlextTapOracleWms) -> None:
         """Test memory usage during large extractions."""
         process = psutil.Process()
-
-        # Initial memory
-        initial_memory = process.memory_info().rss / 1024 / 1024  # MB
-
-        # Initialize and extract
+        initial_memory = process.memory_info().rss / 1024 / 1024
         tap.initialize()
         streams = tap.discover_streams()
-
         if streams:
             stream = streams[0]
             records = []
-
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)
-                if i >= 999:  # Extract 1000 records
+                if i >= 999:
                     break
-
-            # Final memory
-            final_memory = process.memory_info().rss / 1024 / 1024  # MB
+            final_memory = process.memory_info().rss / 1024 / 1024
             memory_increase = final_memory - initial_memory
-
-            # Memory should not increase too much
-            assert memory_increase < 100  # Less than 100MB increase
+            assert memory_increase < 100
 
 
 @pytest.mark.performance
@@ -167,19 +127,14 @@ class TestRateLimitingPerformance:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_rate_limiting_impact(
-        self,
-        performance_config: FlextTapOracleWmsSettings,
+        self, performance_config: FlextTapOracleWmsSettings
     ) -> None:
         """Compare performance with and without rate limiting."""
-        # Without rate limiting
         config_no_limit = FlextTapOracleWmsSettings(
-            **performance_config.model_dump(),
-            enable_rate_limiting=False,
+            **performance_config.model_dump(), enable_rate_limiting=False
         )
         tap_no_limit = FlextTapOracleWms(config=config_no_limit)
         tap_no_limit.initialize()
-
-        # With rate limiting
         config_with_limit = FlextTapOracleWmsSettings(
             **performance_config.model_dump(),
             enable_rate_limiting=True,
@@ -187,21 +142,16 @@ class TestRateLimitingPerformance:
         )
         tap_with_limit = FlextTapOracleWms(config=config_with_limit)
         tap_with_limit.initialize()
-
-        # Test both
         for tap, _label in [(tap_no_limit, "No Limit"), (tap_with_limit, "With Limit")]:
             streams = tap.discover_streams()
             if streams:
                 stream = streams[0]
-
                 start_time = time.time()
                 records = []
-
                 for i, record in enumerate(stream.get_records(context=None)):
                     records.append(record)
-                    if i >= 49:  # Extract 50 records
+                    if i >= 49:
                         break
-
                 time.time() - start_time
 
 

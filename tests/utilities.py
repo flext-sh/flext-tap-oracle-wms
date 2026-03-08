@@ -29,10 +29,8 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
     - Generic utilities accessed via Tests namespace
     """
 
-    # Composition: expose FlextTestsUtilities namespaces
     Tests = FlextTestsUtilities.Tests
 
-    # TapOracleWms-specific test utilities namespace
     class TapOracleWms:
         """Tap Oracle WMS test utilities - domain-specific for Oracle WMS tap testing.
 
@@ -71,10 +69,7 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
             **kwargs: t.ContainerValue,
         ) -> dict[str, t.ContainerValue]:
             """Create test Oracle WMS API response."""
-            response: dict[str, t.ContainerValue] = {
-                "items": data,
-                "hasMore": has_more,
-            }
+            response: dict[str, t.ContainerValue] = {"items": data, "hasMore": has_more}
             if next_page_url:
                 response["nextPageUrl"] = next_page_url
             if facility_id:
@@ -100,7 +95,6 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
                     "createdDate": "2023-01-01T00:00:00Z",
                     "modifiedDate": "2023-01-01T00:00:00Z",
                 }
-                # Add custom fields
                 record.update(kwargs)
                 records.append(record)
             return records
@@ -112,10 +106,5 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
             return all(field in config and config[field] for field in required_fields)
 
 
-# Alias for simplified usage
 u = TestsFlextTapOracleWmsUtilities
-
-__all__ = [
-    "TestsFlextTapOracleWmsUtilities",
-    "u",
-]
+__all__ = ["TestsFlextTapOracleWmsUtilities", "u"]

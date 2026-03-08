@@ -13,7 +13,6 @@ from importlib.metadata import metadata
 from typing import override
 
 _metadata = metadata("flext_tap_oracle_wms")
-
 __version__ = _metadata["Version"]
 __version_info__ = tuple(
     int(part) if part.isdigit() else part for part in __version__.split(".")
@@ -26,7 +25,6 @@ __license__ = _metadata["License"]
 __url__ = _metadata["Home-Page"]
 
 
-# Version class for typed version information
 class FlextTapOracleWmsVersion:
     """Typed version information for flext-tap-oracle-wms."""
 
@@ -46,9 +44,7 @@ class FlextTapOracleWmsVersion:
         return self.version
 
 
-# Create version instance
 VERSION = FlextTapOracleWmsVersion(__version__, __version_info__)
-
 __all__ = [
     "VERSION",
     "FlextTapOracleWmsVersion",
