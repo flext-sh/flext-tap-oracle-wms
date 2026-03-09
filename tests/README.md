@@ -180,6 +180,7 @@ def mock_wms_client():
     client.get_available_entities.return_value = ["item", "inventory"]
     return client
 
+
 def test_entity_discovery(mock_wms_client):
     """Test entity discovery with mocked client."""
     discovery = EntityDiscovery(mock_wms_client)
@@ -244,14 +245,16 @@ tests/
 @pytest.fixture
 def mock_flext_wms_client():
     """Standard mock for FlextOracleWmsClient."""
-    with patch('flext_tap_oracle_wms.tap.FlextOracleWmsClient') as mock:
+    with patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient") as mock:
         client_instance = Mock()
         mock.return_value = client_instance
 
         # Configure standard responses
         client_instance.get_available_entities.return_value = ["item", "inventory"]
         client_instance.get_entity_metadata.return_value = Mock()
-        client_instance.get_entity_data.return_value = iter([{"id": "1", "name": "test"}])
+        client_instance.get_entity_data.return_value = iter([
+            {"id": "1", "name": "test"}
+        ])
 
         yield client_instance
 ```
@@ -270,7 +273,7 @@ def valid_tap_config():
         "password": "test_pass",
         "company_code": "TEST",
         "facility_code": "TEST01",
-        "entities": ["item", "inventory"]
+        "entities": ["item", "inventory"],
     }
 ```
 

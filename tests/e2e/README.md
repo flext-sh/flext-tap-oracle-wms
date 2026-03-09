@@ -228,8 +228,11 @@ tests/fixtures/e2e/
 import json
 from pathlib import Path
 
-def run_tap_command(args: t.StringList, input_data: str | None = None, timeout: int = 300):
-    """Execute tap command and capture results using """
+
+def run_tap_command(
+    args: t.StringList, input_data: str | None = None, timeout: int = 300
+):
+    """Execute tap command and capture results using"""
     cmd = ["tap-oracle-wms", *args]
     process = create_subprocess_exec(
         *cmd,
@@ -253,12 +256,14 @@ def run_tap_command(args: t.StringList, input_data: str | None = None, timeout: 
         command=cmd,
     )
 
+
 def test_cli_discovery_execution():
     """Test CLI discovery command execution."""
     with e2e_mock_environment():
         result = run_tap_command([
-            "--config", "tests/fixtures/e2e/basic_e2e.json",
-            "--discover"
+            "--config",
+            "tests/fixtures/e2e/basic_e2e.json",
+            "--discover",
         ])
 
         # Validate command success
@@ -278,7 +283,7 @@ def validate_singer_output(output_text):
     """Validate Singer-compliant output format."""
     messages = []
 
-    for line in output_text.strip().split('\n'):
+    for line in output_text.strip().split("\n"):
         if not line:
             continue
 
@@ -291,6 +296,7 @@ def validate_singer_output(output_text):
     # Validate message sequence
     validate_message_sequence(messages)
     return messages
+
 
 def validate_message_sequence(messages):
     """Validate proper Singer message sequence."""
@@ -305,7 +311,9 @@ def validate_message_sequence(messages):
         if msg.type == "SCHEMA":
             schema_streams.add(msg.stream)
         elif msg.type == "RECORD":
-            assert msg.stream in schema_streams, f"Record for undeclared stream: {msg.stream}"
+            assert msg.stream in schema_streams, (
+                f"Record for undeclared stream: {msg.stream}"
+            )
 ```
 
 ## Performance E2E Testing
@@ -321,8 +329,10 @@ def test_e2e_performance_benchmarks():
         # Execute complete workflow
         discovery = run_tap_command(["--config", "perf_config.json", "--discover"])
         extraction = run_tap_command([
-            "--config", "perf_config.json",
-            "--catalog", "perf_catalog.json"
+            "--config",
+            "perf_config.json",
+            "--catalog",
+            "perf_catalog.json",
         ])
 
         total_time = time.time() - start_time
@@ -364,7 +374,7 @@ def test_e2e_resource_usage():
 
         # Validate resource limits
         assert max_memory < 512  # 512MB max memory
-        assert max_cpu < 80      # 80% max CPU
+        assert max_cpu < 80  # 80% max CPU
 ```
 
 ## Error Scenario Testing
@@ -377,8 +387,10 @@ def test_e2e_network_failures():
     with e2e_mock_environment() as env:
         # Start extraction
         process = start_tap_process([
-            "--config", "config.json",
-            "--catalog", "catalog.json"
+            "--config",
+            "config.json",
+            "--catalog",
+            "catalog.json",
         ])
 
         # Simulate network failure mid-extraction
@@ -406,11 +418,15 @@ def test_e2e_configuration_errors():
         "missing_url.json",
         "invalid_auth.json",
         "wrong_credentials.json",
-        "malformed_json.json"
+        "malformed_json.json",
     ]
 
     for config_file in error_configs:
-        result = run_tap_command(["--config", f"error_configs/{config_file}", "--discover"])
+        result = run_tap_command([
+            "--config",
+            f"error_configs/{config_file}",
+            "--discover",
+        ])
 
         # Validate error handling
         assert result.returncode != 0
@@ -475,16 +491,15 @@ def test_business_user_daily_extraction():
     # Business scenario: Daily inventory extraction
     with e2e_business_environment():
         # 1. Discovery phase
-        discovery = run_tap_command([
-            "--config", "business_config.json",
-            "--discover"
-        ])
+        discovery = run_tap_command(["--config", "business_config.json", "--discover"])
         assert discovery.returncode == 0
 
         # 2. Extraction phase
         extraction = run_tap_command([
-            "--config", "business_config.json",
-            "--catalog", "business_catalog.json"
+            "--config",
+            "business_config.json",
+            "--catalog",
+            "business_catalog.json",
         ])
         assert extraction.returncode == 0
 

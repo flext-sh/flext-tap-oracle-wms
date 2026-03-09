@@ -162,6 +162,7 @@ pytest -k "discovery" tests/unit/
 from unittest.mock import Mock, patch
 import pytest
 
+
 @pytest.fixture
 def mock_wms_client():
     """Standard mock for WMS client dependencies."""
@@ -169,6 +170,7 @@ def mock_wms_client():
     client.get_entities.return_value = ["item", "inventory"]
     client.get_metadata.return_value = {"fields": ["id", "name"]}
     return client
+
 
 def test_component_with_mock(mock_wms_client):
     """Test component behavior with mocked dependencies."""
@@ -191,8 +193,9 @@ def valid_config():
         "username": "test_user",
         "password": "test_pass",
         "company_code": "TEST",
-        "facility_code": "TEST01"
+        "facility_code": "TEST01",
     }
+
 
 def test_config_validation_success(valid_config):
     """Test successful configuration validation."""
@@ -206,7 +209,7 @@ def test_config_validation_success(valid_config):
 ```python
 def test_component_handles_network_error():
     """Test component error handling for network failures."""
-    with patch('requests.get') as mock_get:
+    with patch("requests.get") as mock_get:
         mock_get.side_effect = requests.ConnectionError("Network error")
 
         component = ComponentUnderTest()
@@ -307,7 +310,7 @@ def test_complex_scenario():
 @pytest.fixture
 def mock_flext_wms_client():
     """Mock FlextOracleWmsClient for testing."""
-    with patch('flext_tap_oracle_wms.client.FlextOracleWmsClient') as mock:
+    with patch("flext_tap_oracle_wms.client.FlextOracleWmsClient") as mock:
         client = Mock()
         mock.return_value = client
 
@@ -318,19 +321,20 @@ def mock_flext_wms_client():
 
         yield client
 
+
 @pytest.fixture
 def sample_wms_response():
     """Sample WMS API response for testing."""
     return {
         "items": [
             {"item_id": "ITEM001", "description": "Test Item"},
-            {"item_id": "ITEM002", "description": "Another Item"}
+            {"item_id": "ITEM002", "description": "Another Item"},
         ],
         "pagination": {
             "page": 1,
             "total_pages": 5,
-            "next_url": "https://wms.example.com/api/items?page=2"
-        }
+            "next_url": "https://wms.example.com/api/items?page=2",
+        },
     }
 ```
 
@@ -341,6 +345,7 @@ def assert_flext_result_success(result):
     """Assert FlextResult indicates success."""
     assert result.success, f"Expected success, got error: {result.error_message}"
     assert result.data is not None, "Expected result data"
+
 
 def assert_flext_result_error(result, expected_error_type=None):
     """Assert FlextResult indicates error with optional type check."""
@@ -381,6 +386,7 @@ def assert_flext_result_error(result, expected_error_type=None):
 
 ```python
 import pytest
+
 
 def test_debug_example():
     """Example test with debugging techniques."""

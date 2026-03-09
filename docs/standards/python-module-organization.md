@@ -220,6 +220,7 @@ from flext_tap_oracle_wms.settings import WMSConfig
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.discovery import EntityDiscovery
 
+
 class FlextTapOracleWms(Tap):
     """
     Oracle WMS Singer tap implementation.
@@ -320,6 +321,7 @@ from flext_core import u, TAnyDict
 
 from flext_tap_oracle_wms.schema import SchemaGenerator
 
+
 class WMSPaginator(BaseHATEOASPaginator):
     """Oracle WMS HATEOAS pagination handler."""
 
@@ -327,6 +329,7 @@ class WMSPaginator(BaseHATEOASPaginator):
         """Extract next page URL from HATEOAS links."""
         links = response.json().get("links", {})
         return links.get("next")
+
 
 class FlextTapOracleWmsStream(RESTStream):
     """
@@ -378,10 +381,14 @@ class FlextTapOracleWmsStream(RESTStream):
             for record in super().get_records(context):
                 record_count += 1
                 if record_count % 1000 == 0:
-                    self.logger.info(f"Extracted {record_count} records from {self.name}")
+                    self.logger.info(
+                        f"Extracted {record_count} records from {self.name}"
+                    )
                 yield record
 
-            self.logger.info(f"Completed extraction: {record_count} records from {self.name}")
+            self.logger.info(
+                f"Completed extraction: {record_count} records from {self.name}"
+            )
 
         except Exception as e:
             self.logger.error(f"Extraction failed for {self.name}: {e}", exc_info=True)
@@ -424,6 +431,7 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
+
 class WMSConfig(FlextSettings):
     """
     Oracle WMS tap configuration using FLEXT patterns.
@@ -434,33 +442,36 @@ class WMSConfig(FlextSettings):
 
     # Connection settings
     base_url: str = Field(..., description="Oracle WMS instance URL")
-    auth_method: str = Field(..., regex="^(basic|oauth2)$", description="Authentication method")
+    auth_method: str = Field(
+        ..., regex="^(basic|oauth2)$", description="Authentication method"
+    )
     company_code: str = Field(..., description="WMS company code")
     facility_code: str = Field(..., description="WMS facility code")
 
     # Authentication settings
     username: Optional[str] = Field(None, description="Username for basic auth")
-    password: Optional[str] = Field(None, description="Password for basic auth", repr=False)
+    password: Optional[str] = Field(
+        None, description="Password for basic auth", repr=False
+    )
     oauth_client_id: Optional[str] = Field(None, description="OAuth2 client ID")
-    oauth_client_secret: Optional[str] = Field(None, description="OAuth2 client secret", repr=False)
+    oauth_client_secret: Optional[str] = Field(
+        None, description="OAuth2 client secret", repr=False
+    )
 
     # Extraction settings
     entities: t.StringList = Field(
-        default=["item", "inventory"],
-        description="List of WMS entities to extract"
+        default=["item", "inventory"], description="List of WMS entities to extract"
     )
     page_size: int = Field(
-        default=1000,
-        le=1250,
-        description="Records per page (max 1250)"
+        default=1000, le=1250, description="Records per page (max 1250)"
     )
     start_date: Optional[str] = Field(
-        None,
-        description="Start date for incremental extraction (ISO8601)"
+        None, description="Start date for incremental extraction (ISO8601)"
     )
 
     class Config:
         """Pydantic configuration."""
+
         env_prefix = "TAP_ORACLE_WMS_"
         env_file = ".env"
         case_sensitive = False
@@ -469,8 +480,15 @@ class WMSConfig(FlextSettings):
     def validate_entities(cls, v):
         """Validate entity names against available entities."""
         valid_entities = [
-            "item", "location", "inventory", "order", "shipment",
-            "receipt", "pick", "replenishment", "cycle_count"
+            "item",
+            "location",
+            "inventory",
+            "order",
+            "shipment",
+            "receipt",
+            "pick",
+            "replenishment",
+            "cycle_count",
         ]
         invalid = set(v) - set(valid_entities)
         if invalid:
@@ -526,6 +544,7 @@ from flext_core import t
 from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
+
 class EntityDiscovery:
     """
     Unified entity discovery for Oracle WMS.
@@ -556,6 +575,7 @@ class EntityDiscovery:
         except Exception as e:
             self.logger.error(f"Metadata retrieval failed for {entity}: {e}")
             return FlextResult[bool].fail(f"Metadata error: {e}")
+
 
 # schema.py - Schema Generation (~100 lines)
 """
@@ -590,6 +610,7 @@ from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms.discovery import EntityDiscovery
 
+
 class SchemaGenerator:
     """
     Schema generation for WMS entities.
@@ -620,9 +641,8 @@ class SchemaGenerator:
         return {
             "type": "object",
             "properties": {
-                field.name: self._map_field_type(field)
-                for field in metadata.fields
-            }
+                field.name: self._map_field_type(field) for field in metadata.fields
+            },
         }
 
     def _map_field_type(self, field) -> t.Dict:
@@ -652,6 +672,7 @@ WMS library without reimplementing authentication logic.
 from flext_oracle_wms import FlextOracleWmsClient
 from flext_tap_oracle_wms.settings import WMSConfig
 
+
 class AuthenticationManager:
     """
     Authentication manager using flext-oracle-wms.
@@ -671,6 +692,7 @@ class AuthenticationManager:
             company_code=config.company_code,
             facility_code=config.facility_code,
         )
+
 
 # exceptions.py - Project-Specific Exceptions (~30 lines)
 """
@@ -701,20 +723,28 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
+
 class WMSTapError(FlextExceptions.Error):
     """Base exception for WMS tap errors."""
+
     pass
+
 
 class WMSConfigurationError(WMSTapError):
     """Configuration validation errors."""
+
     pass
+
 
 class WMSDiscoveryError(WMSTapError):
     """Entity discovery errors."""
+
     pass
+
 
 class WMSSchemaError(WMSTapError):
     """Schema generation errors."""
+
     pass
 ```
 
@@ -730,13 +760,13 @@ Following FLEXT ecosystem patterns with Singer tap specificity:
 
 ```python
 # Core modules - descriptive and focused
-tap.py                      # Main tap implementation (FlextTapOracleWms)
-streams.py                  # Stream definitions (FlextTapOracleWmsStream, WMSPaginator)
-config.py                   # Configuration management (WMSConfig)
-discovery.py                # Entity discovery (EntityDiscovery)
-schema.py                   # Schema utilities (SchemaGenerator)
-auth.py                     # Authentication (AuthenticationManager)
-exceptions.py               # Project exceptions (WMSTapError, etc.)
+tap.py  # Main tap implementation (FlextTapOracleWms)
+streams.py  # Stream definitions (FlextTapOracleWmsStream, WMSPaginator)
+config.py  # Configuration management (WMSConfig)
+discovery.py  # Entity discovery (EntityDiscovery)
+schema.py  # Schema utilities (SchemaGenerator)
+auth.py  # Authentication (AuthenticationManager)
+exceptions.py  # Project exceptions (WMSTapError, etc.)
 ```
 
 **Pattern**: Each module name clearly indicates its primary responsibility.
@@ -745,18 +775,18 @@ exceptions.py               # Project exceptions (WMSTapError, etc.)
 
 ```python
 # Main classes follow FLEXT + Singer patterns
-FlextTapOracleWms               # Main tap class (Singer SDK pattern)
-WMSConfig                  # Configuration (FLEXT pattern)
-FlextTapOracleWmsStream                  # Stream implementation (Singer + WMS context)
-WMSPaginator              # Pagination handler (Singer + WMS context)
-EntityDiscovery           # Business logic class (descriptive)
-SchemaGenerator           # Utility class (descriptive)
-AuthenticationManager     # Service class (descriptive)
+FlextTapOracleWms  # Main tap class (Singer SDK pattern)
+WMSConfig  # Configuration (FLEXT pattern)
+FlextTapOracleWmsStream  # Stream implementation (Singer + WMS context)
+WMSPaginator  # Pagination handler (Singer + WMS context)
+EntityDiscovery  # Business logic class (descriptive)
+SchemaGenerator  # Utility class (descriptive)
+AuthenticationManager  # Service class (descriptive)
 
 # Error classes follow FLEXT hierarchy
-WMSTapError               # Base error (FLEXT pattern)
-WMSConfigurationError     # Specific error (descriptive)
-WMSDiscoveryError         # Specific error (descriptive)
+WMSTapError  # Base error (FLEXT pattern)
+WMSConfigurationError  # Specific error (descriptive)
+WMSDiscoveryError  # Specific error (descriptive)
 ```
 
 **Pattern**: Classes use descriptive names with context (WMS) and purpose.
@@ -868,26 +898,27 @@ ______________________________________________________________________
 class FlextTapOracleWms(Tap):
     """Main tap following Singer SDK patterns."""
 
-    name = "tap-oracle-wms"                    # Tap identifier
-    config_jsonschema = WMSConfig.schema()     # Configuration schema
+    name = "tap-oracle-wms"  # Tap identifier
+    config_jsonschema = WMSConfig.schema()  # Configuration schema
 
-    def discover_streams(self) -> List[Stream]: # Required method
+    def discover_streams(self) -> List[Stream]:  # Required method
         """Discover available data streams."""
         pass
 
-    def sync_all(self) -> None:                # Optional override
+    def sync_all(self) -> None:  # Optional override
         """Custom sync logic if needed."""
         pass
+
 
 class FlextTapOracleWmsStream(RESTStream):
     """Stream following Singer RESTStream pattern."""
 
     @property
-    def schema(self) -> t.Dict:        # Required property
+    def schema(self) -> t.Dict:  # Required property
         """JSON schema for stream records."""
         pass
 
-    def get_records(self, context) -> Iterator: # Required method
+    def get_records(self, context) -> Iterator:  # Required method
         """Generate stream records."""
         pass
 ```
@@ -902,6 +933,7 @@ class WMSConfig(FlextSettings):
     class Config:
         env_prefix = "TAP_ORACLE_WMS_"
 
+
 # Error handling using FlextResult
 def discover_entities(self) -> FlextResult[t.StringList]:
     """Business logic with railway-oriented programming."""
@@ -910,6 +942,7 @@ def discover_entities(self) -> FlextResult[t.StringList]:
         return FlextResult[bool].ok(entities)
     except Exception as e:
         return FlextResult[bool].fail(f"Discovery failed: {e}")
+
 
 # Logging using FLEXT patterns
 self.logger = FlextLogger(__name__)
@@ -926,11 +959,13 @@ class FlextTapOracleWms:
         discovery = EntityDiscovery(self.wms_client)
         return discovery.discover_entities()
 
+
 # Domain Layer - contains business logic
 class EntityDiscovery:
     def discover_entities(self):
         # Business logic for entity discovery
         pass
+
 
 # Infrastructure Layer - external concerns
 class AuthenticationManager:
@@ -1066,13 +1101,16 @@ def test_tap_discover_streams():
     """Test main tap stream discovery functionality."""
     pass
 
+
 def test_wms_stream_get_records():
     """Test stream record extraction."""
     pass
 
+
 def test_config_validation():
     """Test configuration validation with FlextSettings."""
     pass
+
 
 def test_entity_discovery():
     """Test entity discovery using FlextResult patterns."""

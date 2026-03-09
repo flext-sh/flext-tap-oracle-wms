@@ -126,7 +126,7 @@ config = {
     "username": "user",
     "password": "pass",
     "company_code": "COMPANY",
-    "facility_code": "FACILITY"
+    "facility_code": "FACILITY",
 }
 
 tap = FlextTapOracleWms(config)

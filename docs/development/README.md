@@ -270,6 +270,7 @@ from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import Field, validator
 
+
 class WMSConfig(FlextSettings):
     """FLEXT-compliant configuration."""
 
@@ -283,6 +284,7 @@ class WMSConfig(FlextSettings):
     def validate_entities(cls, v):
         # Business logic validation
         return v
+
 
 class FlextTapOracleWms:
     """FLEXT-compliant tap implementation."""
@@ -309,10 +311,9 @@ from typing import List, Dict, Optional, Iterator
 
 from flext_core import TAnyDict
 
+
 def extract_records(
-    entity: str,
-    config: TAnyDict,
-    filters: Optional[t.Dict] = None
+    entity: str, config: TAnyDict, filters: Optional[t.Dict] = None
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety
@@ -343,13 +344,18 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
+
 class WMSTapError(FlextExceptions.Error):
     """Base error for WMS tap."""
+
     pass
+
 
 class WMSConfigurationError(WMSTapError):
     """Configuration validation errors."""
+
     pass
+
 
 # Usage with proper error context
 try:
@@ -429,8 +435,14 @@ pre-commit run --all-files
 ```python
 # Add entity to valid entities list
 VALID_ENTITIES = [
-    "item", "location", "inventory", "order",
-    "shipment", "receipt", "pick", "new_entity"  # Add here
+    "item",
+    "location",
+    "inventory",
+    "order",
+    "shipment",
+    "receipt",
+    "pick",
+    "new_entity",  # Add here
 ]
 ```
 
