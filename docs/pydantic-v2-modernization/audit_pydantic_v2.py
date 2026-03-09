@@ -21,10 +21,9 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import ClassVar
-from pydantic import BaseModel, Field
+from typing import ClassVar, override
 
-from flext_core import t
+from pydantic import BaseModel, Field
 
 
 class AuditViolation(BaseModel):
@@ -43,17 +42,28 @@ class AuditResult(BaseModel):
 
     project: str = Field(description="Project name")
     status: str = Field(description="Audit status: PASS, FAIL, WARNING, PENDING, SKIP")
-    critical: list[AuditViolation] = Field(default_factory=list, description="Critical violations")
-    high: list[AuditViolation] = Field(default_factory=list, description="High priority violations")
-    medium: list[AuditViolation] = Field(default_factory=list, description="Medium priority violations")
-    recommendations: list[str] = Field(default_factory=list, description="Audit recommendations")
-    stats: dict[str, str | int | float | bool] = Field(default_factory=dict, description="Audit statistics")
+    critical: list[AuditViolation] = Field(
+        default_factory=list, description="Critical violations"
+    )
+    high: list[AuditViolation] = Field(
+        default_factory=list, description="High priority violations"
+    )
+    medium: list[AuditViolation] = Field(
+        default_factory=list, description="Medium priority violations"
+    )
+    recommendations: list[str] = Field(
+        default_factory=list, description="Audit recommendations"
+    )
+    stats: dict[str, str | int | float | bool] = Field(
+        default_factory=dict, description="Audit statistics"
+    )
 
     @property
     def total_violations(self) -> int:
         """Total number of violations."""
         return len(self.critical) + len(self.high) + len(self.medium)
 
+    @override
     def __str__(self) -> str:
         """Format audit result for output."""
         lines = [
