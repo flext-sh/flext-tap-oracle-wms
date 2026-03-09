@@ -15,39 +15,39 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
+from __future__ import annotations
+
 import argparse
 import re
 import sys
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
+from pydantic import BaseModel, Field
 
 from flext_core import t
 
 
-@dataclass
-class AuditViolation:
+class AuditViolation(BaseModel):
     """Represents a single audit violation."""
 
-    severity: str  # CRITICAL, HIGH, MEDIUM, LOW
-    pattern: str  # What pattern was violated
-    file: str  # File path
-    line: int  # Line number
-    code: str  # Code snippet
-    detail: str  # Detailed explanation
+    severity: str = Field(description="Severity level: CRITICAL, HIGH, MEDIUM, LOW")
+    pattern: str = Field(description="What pattern was violated")
+    file: str = Field(description="File path")
+    line: int = Field(description="Line number")
+    code: str = Field(description="Code snippet")
+    detail: str = Field(description="Detailed explanation")
 
 
-@dataclass
-class AuditResult:
+class AuditResult(BaseModel):
     """Results of auditing a project."""
 
-    project: str
-    status: str  # PASS, FAIL, WARNING
-    critical: list[AuditViolation] = field(default_factory=list)
-    high: list[AuditViolation] = field(default_factory=list)
-    medium: list[AuditViolation] = field(default_factory=list)
-    recommendations: list[str] = field(default_factory=list)
-    stats: dict[str, t.JsonValue] = field(default_factory=dict)
+    project: str = Field(description="Project name")
+    status: str = Field(description="Audit status: PASS, FAIL, WARNING, PENDING, SKIP")
+    critical: list[AuditViolation] = Field(default_factory=list, description="Critical violations")
+    high: list[AuditViolation] = Field(default_factory=list, description="High priority violations")
+    medium: list[AuditViolation] = Field(default_factory=list, description="Medium priority violations")
+    recommendations: list[str] = Field(default_factory=list, description="Audit recommendations")
+    stats: dict[str, str | int | float | bool] = Field(default_factory=dict, description="Audit statistics")
 
     @property
     def total_violations(self) -> int:
