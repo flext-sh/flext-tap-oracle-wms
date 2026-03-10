@@ -19,7 +19,7 @@ class TestFlextTapOracleWmsSettings:
     @pytest.fixture(autouse=True)
     def reset_settings_singleton(self) -> None:
         """Avoid singleton state leakage between tests."""
-        FlextTapOracleWmsSettings.reset_global_instance()
+        FlextTapOracleWmsSettings.reset_for_testing()
 
     def test_minimal_config(self) -> None:
         """Test creating config with minimal fields."""
@@ -144,7 +144,7 @@ class TestFlextTapOracleWmsSettings:
         result = config.validate_business_rules()
         assert result.is_success
         assert result.value is True
-        FlextTapOracleWmsSettings.reset_global_instance()
+        FlextTapOracleWmsSettings.reset_for_testing()
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com", username="user", password="pass"
         )
@@ -153,7 +153,7 @@ class TestFlextTapOracleWmsSettings:
         result = config.validate_business_rules()
         assert result.is_failure
         assert "cannot be both included and excluded" in str(result.error)
-        FlextTapOracleWmsSettings.reset_global_instance()
+        FlextTapOracleWmsSettings.reset_for_testing()
         config = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",

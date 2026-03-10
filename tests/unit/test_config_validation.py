@@ -17,7 +17,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 @pytest.fixture(autouse=True)
 def _reset_settings_singleton() -> None:
     """Reset global settings singleton to avoid cross-test pollution."""
-    FlextTapOracleWmsSettings.reset_global_instance()
+    FlextTapOracleWmsSettings.reset_for_testing()
 
 
 class TestConfigValidation:
