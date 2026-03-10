@@ -266,7 +266,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                     sku_info["variant"] = parts[1]
                 if len(parts) > FlextTapOracleWmsUtilities.MIN_SKU_PARTS:
                     sku_info["size_color"] = "-".join(parts[2:])
-            numeric_match = re.search("(\\d+)$", item_code)
+            numeric_match = re.search(r"(\\d+)$", item_code)
             if numeric_match:
                 sku_info["numeric_suffix"] = numeric_match.group(1)
             return sku_info
@@ -284,8 +284,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             """
             if not identifier:
                 return ""
-            normalized = re.sub("\\s+", "_", identifier.strip().upper())
-            return re.sub("[^\\w\\-_]", "", normalized)
+            normalized = re.sub(r"\\s+", "_", identifier.strip().upper())
+            return re.sub(r"[^\\w\\-_]", "", normalized)
 
         @staticmethod
         def parse_wms_quantity(quantity_str: str) -> FlextResult[float]:
@@ -301,7 +301,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
             if not quantity_str:
                 return FlextResult[float].fail("Quantity string cannot be empty")
             try:
-                cleaned = re.sub("[^\\d.-]", "", str(quantity_str))
+                cleaned = re.sub(r"[^\\d.-]", "", str(quantity_str))
                 if not cleaned:
                     return FlextResult[float].fail(
                         f"No numeric data in quantity: {quantity_str}"
@@ -446,9 +446,9 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 return {"type": "object", "additionalProperties": True}
             schema: dict[str, t.ContainerValue] = {"type": "string"}
             str_value = str(value)
-            if re.match("\\d{4}-\\d{2}-\\d{2}", str_value):
+            if re.match(r"\\d{4}-\\d{2}-\\d{2}", str_value):
                 schema["format"] = "date-time"
-            elif re.match("^\\d+\\.?\\d*$", str_value):
+            elif re.match(r"^\\d+\\.?\\d*$", str_value):
                 schema["pattern"] = "^\\d+\\.?\\d*$"
             return schema
 
