@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
     from flext_tap_oracle_wms.tap import FlextTapOracleWms, FlextTapOracleWmsPlugin
     from flext_tap_oracle_wms.typings import FlextTapOracleWmsTypes
-    from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities, u
+    from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
     from flext_tap_oracle_wms.version import (
         VERSION,
         VERSION as PROJECT_VERSION,
@@ -116,7 +116,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "main": ("flext_tap_oracle_wms.cli", "main"),
     "p": ("flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"),
     "t": ("flext_core", "t"),
-    "u": ("flext_tap_oracle_wms.utilities", "u"),
 }
 
 __all__ = [
@@ -148,7 +147,6 @@ __all__ = [
     "main",
     "p",
     "t",
-    "u",
 ]
 
 

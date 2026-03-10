@@ -58,14 +58,14 @@ class FlextTapOracleWmsStream(Stream):
         Stream.__init__(self, tap=tap, name=name or self.name, schema=schema)
         self._utilities = FlextTapOracleWmsUtilities()
         self._client: FlextOracleWmsClient | None = None
-        page_size_result = (
-            self._utilities.ConfigurationProcessing.validate_stream_page_size(
-                int(self.config.get("page_size", 100))
+        page_size = int(self.config.get("page_size", 100))
+        self._page_size = (
+            page_size
+            if self._utilities.ConfigurationProcessing.validate_stream_page_size(
+                page_size
             )
+            else 100
         )
-        self._page_size = 100
-        if page_size_result.is_success:
-            self._page_size = int(self.config.get("page_size", 100))
 
     @property
     def client(self) -> FlextOracleWmsClient:
