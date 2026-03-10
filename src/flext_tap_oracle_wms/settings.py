@@ -1,11 +1,7 @@
-"""Configuration management for FLEXT Tap Oracle WMS.
-
-Type-safe configuration using FLEXT patterns with Pydantic validation.
-Consolidates configuration management and constants following PEP8 patterns.
+"""Configuration contracts for FLEXT Tap Oracle WMS.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
@@ -14,6 +10,10 @@ from typing import Final
 
 from flext_core import FlextConstants
 from flext_oracle_wms import FlextOracleWmsConstants as _WmsConstants
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
+from pydantic.networks import AnyUrl
+
+from flext_tap_oracle_wms.constants import c
 
 
 class FlextTapOracleWmsConstants(FlextConstants):
@@ -29,3 +29,53 @@ class FlextTapOracleWmsConstants(FlextConstants):
     MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = (
         FlextConstants.Performance.BatchProcessing.DEFAULT_SIZE
     )
+
+
+class FlextTapOracleWmsSettings(BaseModel):
+    """Validated settings consumed by the Oracle WMS tap runtime."""
+
+    model_config = ConfigDict(extra="ignore", validate_assignment=True)
+
+    base_url: AnyUrl = Field(
+        description="Base Oracle WMS API URL.",
+    )
+    username: str = Field(
+        min_length=1,
+        description="Oracle WMS username.",
+    )
+    password: SecretStr = Field(
+        description="Oracle WMS password.",
+    )
+    api_version: str = Field(
+        default=FlextTapOracleWmsConstants.DEFAULT_API_VERSION,
+        min_length=1,
+        description="Oracle WMS API version.",
+    )
+    timeout: int = Field(
+        default=c.TapOracleWms.DEFAULT_TIMEOUT,
+        ge=FlextTapOracleWmsConstants.MIN_TIMEOUT,
+        le=FlextTapOracleWmsConstants.MAX_TIMEOUT,
+        description="Request timeout in seconds.",
+    )
+    max_retries: int = Field(
+        default=c.TapOracleWms.MAX_RETRIES,
+        ge=0,
+        description="Maximum request retries.",
+    )
+    verify_ssl: bool = Field(
+        default=True,
+        description="Enable SSL verification.",
+    )
+    page_size: int = Field(
+        default=FlextTapOracleWmsConstants.DEFAULT_DISCOVERY_SAMPLE_SIZE,
+        ge=1,
+        description="Page size used for extraction requests.",
+    )
+    effective_log_level: str = Field(
+        default="INFO",
+        min_length=1,
+        description="Optional effective log level inherited from runtime.",
+    )
+
+
+__all__ = ["FlextTapOracleWmsConstants", "FlextTapOracleWmsSettings"]

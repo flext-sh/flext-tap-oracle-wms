@@ -13,30 +13,27 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, FlextResult, t
-from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
 from flext_oracle_wms import FlextOracleWmsClient
-from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
+from pydantic import BaseModel
+from singer_sdk.streams import Stream
+from singer_sdk.tap_base import Tap
 
 from flext_tap_oracle_wms.protocols import p
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)
-_MAP_ADAPTER = TypeAdapter(t.ConfigurationMapping, config=ConfigDict(strict=True))
-_LIST_ADAPTER = TypeAdapter(list[t.ContainerValue], config=ConfigDict(strict=True))
 
 
 def _as_map(value: t.ContainerValue) -> Mapping[str, t.ContainerValue] | None:
-    try:
-        return _MAP_ADAPTER.validate_python(value)
-    except ValidationError:
+    if not isinstance(value, Mapping):
         return None
+    return dict(value)
 
 
 def _as_list(value: t.ContainerValue) -> list[t.ContainerValue] | None:
-    try:
-        return _LIST_ADAPTER.validate_python(value)
-    except ValidationError:
-        return None
+    if isinstance(value, list):
+        return list(value)
+    return None
 
 
 class FlextTapOracleWmsStream(Stream):
@@ -58,7 +55,7 @@ class FlextTapOracleWmsStream(Stream):
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        super().__init__(tap=tap, name=name or self.name, schema=schema)
+        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema)
         self._utilities = FlextTapOracleWmsUtilities()
         self._client: FlextOracleWmsClient | None = None
         page_size_result = (
@@ -114,7 +111,6 @@ class FlextTapOracleWmsStream(Stream):
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
 
-    @override
     def get_records(
         self, context: Mapping[str, t.JsonValue] | None
     ) -> Iterable[dict[str, t.JsonValue]]:
@@ -153,7 +149,6 @@ class FlextTapOracleWmsStream(Stream):
         """Get replication key for this stream."""
         return self.stream_replication_key
 
-    @override
     def post_process(
         self,
         row: dict[str, t.JsonValue],

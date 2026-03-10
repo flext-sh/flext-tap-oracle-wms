@@ -21,9 +21,6 @@ _STRICT_BOOL_ADAPTER = TypeAdapter(bool, config=ConfigDict(strict=True))
 _STRICT_INT_ADAPTER = TypeAdapter(int, config=ConfigDict(strict=True))
 _STRICT_FLOAT_ADAPTER = TypeAdapter(float, config=ConfigDict(strict=True))
 _STRICT_STR_ADAPTER = TypeAdapter(str, config=ConfigDict(strict=True))
-_STRICT_MAP_ADAPTER = TypeAdapter(
-    t.ConfigurationMapping, config=ConfigDict(strict=True)
-)
 _STRICT_LIST_ADAPTER = TypeAdapter(
     list[t.ContainerValue], config=ConfigDict(strict=True)
 )
@@ -66,10 +63,12 @@ def _as_str(value: t.ContainerValue) -> str | None:
 
 def _as_map(value: t.ContainerValue) -> Mapping[str, t.ContainerValue] | None:
     """Strict map validation via Pydantic adapter."""
-    try:
-        return _STRICT_MAP_ADAPTER.validate_python(value)
-    except ValidationError:
+    if not isinstance(value, Mapping):
         return None
+    normalized: dict[str, t.ContainerValue] = {}
+    for key, item in value.items():
+        normalized[str(key)] = item
+    return normalized
 
 
 def _as_list(value: t.ContainerValue) -> list[t.ContainerValue] | None:

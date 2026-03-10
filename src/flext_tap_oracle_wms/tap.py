@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import importlib.metadata
 from collections.abc import Mapping, Sequence
-from typing import ClassVar, override
+from typing import ClassVar
 
 from flext_core import FlextLogger, FlextResult, t
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsSettings
-from singer_sdk import Tap
+from singer_sdk.tap_base import Tap
 
 from .constants import c
 from .exceptions import FlextTapOracleWmsConfigurationError
@@ -36,51 +36,20 @@ class FlextTapOracleWms(Tap):
         "required": list(c.TapOracleWms.REQUIRED_CONFIG_FIELDS),
     }
 
-    def __init__(
-        self,
-        config: Mapping[str, t.ContainerValue]
-        | FlextTapOracleWmsSettings
-        | None = None,
-        catalog: Mapping[str, t.ContainerValue] | None = None,
-        state: Mapping[str, t.ContainerValue] | None = None,
-        *,
-        parse_env_config: bool = True,
-        validate_config: bool = True,
-    ) -> None:
-        """Initialize the tap with validated FLEXT settings."""
-        match config:
-            case FlextTapOracleWmsSettings() as settings_model:
-                settings = settings_model
-            case Mapping() as config_mapping:
-                try:
-                    settings = FlextTapOracleWmsSettings.model_validate(
-                        dict(config_mapping)
-                    )
-                except Exception as exc:
-                    msg = f"Invalid configuration: {exc}"
-                    raise FlextTapOracleWmsConfigurationError(msg) from exc
-            case _:
-                settings = FlextTapOracleWmsSettings.model_validate({})
-        self._flext_config = settings
-        self._wms_client: FlextOracleWmsClient | None = None
-        self._discovery: t.ContainerValue | None = None
-        self._schema_generator: t.ContainerValue | None = None
-        self._discovery_mode: bool = False
-        tap_init = getattr(super(), "__init__")
-        tap_init(
-            config=settings.model_dump(
-                mode="json", exclude_unset=True, exclude={"effective_log_level"}
-            ),
-            catalog=dict(catalog) if catalog is not None else None,
-            state=dict(state) if state is not None else None,
-            parse_env_config=parse_env_config,
-            validate_config=validate_config,
-        )
+    _wms_client: FlextOracleWmsClient | None = None
+    _discovery: t.ContainerValue | None = None
+    _schema_generator: t.ContainerValue | None = None
+    _discovery_mode: bool = False
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:
         """Return validated tap settings."""
-        return self._flext_config
+        config_map = dict(self.config)
+        try:
+            return FlextTapOracleWmsSettings.model_validate(config_map)
+        except Exception as exc:
+            msg = f"Invalid configuration: {exc}"
+            raise FlextTapOracleWmsConfigurationError(msg) from exc
 
     @property
     def wms_client(self) -> FlextOracleWmsClient:
@@ -152,7 +121,6 @@ class FlextTapOracleWms(Tap):
             m.Meltano.SingerCatalog(streams=streams)
         )
 
-    @override
     def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
         """Build stream objects from the discovered catalog."""
         catalog_result = self.discover_catalog()
@@ -279,7 +247,7 @@ class FlextTapOracleWmsPlugin:
 
     def initialize(self, _context: t.ContainerValue) -> FlextResult[bool]:
         """Instantiate the tap for subsequent operations."""
-        self._tap = FlextTapOracleWms(config=self._config)
+        self._tap = FlextTapOracleWms(config=dict(self._config))
         return FlextResult[bool].ok(True)
 
     def shutdown(self) -> FlextResult[bool]:
