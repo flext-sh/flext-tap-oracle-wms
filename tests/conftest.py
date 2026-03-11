@@ -13,7 +13,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from flext_core import FlextResult, t
+from flext_core import r, t
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
@@ -64,20 +64,18 @@ def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
 def mock_wms_client() -> MagicMock:
     """Mock Oracle WMS client."""
     client = MagicMock()
-    client.connect.return_value = FlextResult[bool].ok(value=True)
-    client.list_entities.return_value = FlextResult[list[str]].ok([
+    client.connect.return_value = r[bool].ok(value=True)
+    client.list_entities.return_value = r[list[str]].ok([
         "inventory",
         "locations",
         "shipments",
         "receipts",
     ])
-    client.get_records.return_value = FlextResult[list[t.ConfigurationMapping]].ok([
+    client.get_records.return_value = r[list[t.ConfigurationMapping]].ok([
         {"id": "1", "name": "Test Item 1", "quantity": 100},
         {"id": "2", "name": "Test Item 2", "quantity": 200},
     ])
-    client.get_entity_metadata.return_value = FlextResult[
-        dict[str, str | list[str]]
-    ].ok({
+    client.get_entity_metadata.return_value = r[dict[str, str | list[str]]].ok({
         "display_name": "Inventory",
         "description": "Inventory data",
         "primary_key": ["inventory_id"],

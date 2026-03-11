@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, FlextResult, t
+from flext_core import FlextLogger, r, t
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import BaseModel
 from singer_sdk.streams import Stream
@@ -194,7 +194,7 @@ class FlextTapOracleWmsStream(Stream):
 
     def _fetch_page_data(
         self, page: int, context: Mapping[str, t.JsonValue] | None
-    ) -> FlextResult[tuple[list[dict[str, t.JsonValue]], bool]]:
+    ) -> r[tuple[list[dict[str, t.JsonValue]], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
@@ -207,7 +207,7 @@ class FlextTapOracleWmsStream(Stream):
             entity_name=self.name, limit=limit, filters=filters or None
         )
         if result.is_failure:
-            return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].fail(
+            return r[tuple[list[dict[str, t.JsonValue]], bool]].fail(
                 f"Failed to get records for {self.name}: {result.error}"
             )
         normalized: list[dict[str, t.JsonValue]] = [
@@ -218,7 +218,7 @@ class FlextTapOracleWmsStream(Stream):
             for record in result.value
         ]
         has_more = len(normalized) == self._page_size
-        return FlextResult[tuple[list[dict[str, t.JsonValue]], bool]].ok((
+        return r[tuple[list[dict[str, t.JsonValue]], bool]].ok((
             normalized,
             has_more,
         ))

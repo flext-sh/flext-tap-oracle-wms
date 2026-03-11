@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from flext_core import FlextResult
+from flext_core import r
 
 from flext_tap_oracle_wms import FlextTapOracleWms
 
@@ -39,7 +39,7 @@ class TestTapInitialization:
         with patch.object(
             tap,
             "discover_catalog",
-            return_value=FlextResult.fail("discovery unavailable"),
+            return_value=r.fail("discovery unavailable"),
         ):
             streams = tap.discover_streams()
         assert streams == []
@@ -50,8 +50,8 @@ class TestTapInitialization:
     ) -> None:
         """discover_streams builds streams for each discovered entity."""
         mock_client = MagicMock()
-        mock_client.start.return_value = FlextResult.ok(True)
-        mock_client.discover_entities.return_value = FlextResult.ok([
+        mock_client.start.return_value = r.ok(True)
+        mock_client.discover_entities.return_value = r.ok([
             "allocation",
             "order_hdr",
         ])

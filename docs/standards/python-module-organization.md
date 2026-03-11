@@ -57,7 +57,7 @@ FLEXT Tap Oracle WMS follows a **simplified layered module architecture** aligne
 1. **Singer SDK Compliance**: Follows Singer specification and SDK patterns
 1. **FLEXT Integration**: Leverages flext-core foundation and ecosystem libraries
 1. **Single Responsibility**: Each module has one clear purpose
-1. **Railway-Oriented**: FlextResult[T] threading through all operations
+1. **Railway-Oriented**: r[T] threading through all operations
 1. **Simplicity Over Complexity**: Favor maintainable solutions over engineering sophistication
 
 ______________________________________________________________________
@@ -209,7 +209,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -313,7 +313,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -425,7 +425,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -537,7 +537,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -557,24 +557,24 @@ class EntityDiscovery:
         self.wms_client = wms_client
         self.logger = FlextLogger(__name__)
 
-    def discover_entities(self) -> FlextResult[t.StringList]:
+    def discover_entities(self) -> r[t.StringList]:
         """Discover available entities from WMS API."""
         try:
             entities = self.wms_client.get_available_entities()
             self.logger.info(f"Discovered {len(entities)} WMS entities")
-            return FlextResult[bool].ok(entities)
+            return r[bool].ok(entities)
         except Exception as e:
             self.logger.error(f"Entity discovery failed: {e}")
-            return FlextResult[bool].fail(f"Discovery error: {e}")
+            return r[bool].fail(f"Discovery error: {e}")
 
-    def get_entity_metadata(self, entity: str) -> FlextResult[WMSEntityMetadata]:
+    def get_entity_metadata(self, entity: str) -> r[WMSEntityMetadata]:
         """Get metadata for specific entity."""
         try:
             metadata = self.wms_client.get_entity_metadata(entity)
-            return FlextResult[bool].ok(metadata)
+            return r[bool].ok(metadata)
         except Exception as e:
             self.logger.error(f"Metadata retrieval failed for {entity}: {e}")
-            return FlextResult[bool].fail(f"Metadata error: {e}")
+            return r[bool].fail(f"Metadata error: {e}")
 
 
 # schema.py - Schema Generation (~100 lines)
@@ -601,7 +601,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -624,17 +624,17 @@ class SchemaGenerator:
         self.discovery = EntityDiscovery(wms_client)
         self.logger = FlextLogger(__name__)
 
-    def generate_schema(self, entity: str) -> FlextResult[t.Dict]:
+    def generate_schema(self, entity: str) -> r[t.Dict]:
         """Generate Singer schema for WMS entity."""
         metadata_result = self.discovery.get_entity_metadata(entity)
         if not metadata_result.success:
-            return FlextResult[bool].fail(metadata_result.error)
+            return r[bool].fail(metadata_result.error)
 
         try:
             schema = self._convert_metadata_to_schema(metadata_result.data)
-            return FlextResult[bool].ok(schema)
+            return r[bool].ok(schema)
         except Exception as e:
-            return FlextResult[bool].fail(f"Schema generation error: {e}")
+            return r[bool].fail(f"Schema generation error: {e}")
 
     def _convert_metadata_to_schema(self, metadata) -> t.Dict:
         """Convert WMS metadata to Singer JSON schema."""
@@ -717,7 +717,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -796,8 +796,8 @@ WMSDiscoveryError  # Specific error (descriptive)
 ```python
 # Action-oriented naming
 def discover_streams() -> List[Stream]:           # Singer SDK pattern
-def discover_entities() -> FlextResult[t.StringList]: # FLEXT pattern
-def generate_schema(entity: str) -> FlextResult[Dict]: # Business action
+def discover_entities() -> r[t.StringList]: # FLEXT pattern
+def generate_schema(entity: str) -> r[Dict]: # Business action
 def create_authenticated_client(config) -> Client:    # Factory pattern
 
 # Property naming
@@ -856,7 +856,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -884,7 +884,7 @@ from flext_tap_oracle_wms import *
 # tap.py directly importing from flext_oracle_wms internals
 
 # ❌ Don't duplicate FLEXT functionality
-from custom_result import CustomResult  # Use FlextResult instead
+from custom_result import CustomResult  # Use r instead
 ```
 
 ______________________________________________________________________
@@ -934,14 +934,14 @@ class WMSConfig(FlextSettings):
         env_prefix = "TAP_ORACLE_WMS_"
 
 
-# Error handling using FlextResult
-def discover_entities(self) -> FlextResult[t.StringList]:
+# Error handling using r
+def discover_entities(self) -> r[t.StringList]:
     """Business logic with railway-oriented programming."""
     try:
         entities = self.wms_client.get_available_entities()
-        return FlextResult[bool].ok(entities)
+        return r[bool].ok(entities)
     except Exception as e:
-        return FlextResult[bool].fail(f"Discovery failed: {e}")
+        return r[bool].fail(f"Discovery failed: {e}")
 
 
 # Logging using FLEXT patterns
@@ -1032,7 +1032,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -1041,10 +1041,10 @@ from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # REMOVE custom implementations:
 - Custom configuration classes → use FlextSettings
-- Custom error handling → use FlextResult railway pattern
+- Custom error handling → use r railway pattern
 - Custom logging → use FlextLogger()
 - Custom WMS client → use FlextOracleWmsClient
-- Custom result types → use FlextResult[T]
+- Custom result types → use r[T]
 ```
 
 ### **Migration Validation**
@@ -1113,7 +1113,7 @@ def test_config_validation():
 
 
 def test_entity_discovery():
-    """Test entity discovery using FlextResult patterns."""
+    """Test entity discovery using r patterns."""
     pass
 ```
 
@@ -1141,7 +1141,7 @@ make security             # Bandit + pip-audit
 ### **Documentation Standards**
 
 ```python
-def discover_entities(self) -> FlextResult[t.StringList]:
+def discover_entities(self) -> r[t.StringList]:
     """
     Discover available entities from Oracle WMS API.
 
@@ -1150,7 +1150,7 @@ def discover_entities(self) -> FlextResult[t.StringList]:
     for consistent API interaction across the FLEXT ecosystem.
 
     Returns:
-        FlextResult[t.StringList]: Success contains list of entity names,
+        r[t.StringList]: Success contains list of entity names,
         failure contains detailed error message explaining the issue.
 
     Example:
@@ -1187,7 +1187,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -1196,14 +1196,14 @@ from flext_core import u
 class WMSConfig(FlextSettings):          # Configuration
     pass
 
-def process_data() -> FlextResult[Data]:     # Error handling
+def process_data() -> r[Data]:     # Error handling
     pass
 
 logger = FlextLogger(__name__)                # Logging
 
 # ❌ Don't create project-specific alternatives
 class CustomConfig(BaseModel):               # Use FlextSettings
-class CustomResult[T]:                       # Use FlextResult
+class CustomResult[T]:                       # Use r
 custom_logger = logging.getLogger()          # Use FlextLogger()
 ```
 
@@ -1229,7 +1229,7 @@ ______________________________________________________________________
 - [ ] **Appropriate Layer**: Placed in correct architectural layer
 - [ ] **FLEXT Integration**: Uses ecosystem patterns consistently
 - [ ] **Type Annotations**: 100% type coverage with MyPy compliance
-- [ ] **Error Handling**: Uses FlextResult for all error conditions
+- [ ] **Error Handling**: Uses r for all error conditions
 - [ ] **Documentation**: Comprehensive docstrings with examples
 - [ ] **Testing**: 95% coverage with unit and integration tests
 - [ ] **Import Standards**: Follows dependency hierarchy rules

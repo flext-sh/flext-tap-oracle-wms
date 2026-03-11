@@ -5,7 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
-from flext_core import FlextResult, t
+from flext_core import r, t
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
@@ -53,7 +53,7 @@ class TestFlextTapOracleWms:
     ) -> None:
         """Client is created only once and reused after first access."""
         mock_client = MagicMock()
-        mock_client.start.return_value = FlextResult[bool].ok(True)
+        mock_client.start.return_value = r[bool].ok(True)
         mock_client_class.return_value = mock_client
         tap = FlextTapOracleWms(
             config={
@@ -73,7 +73,7 @@ class TestFlextTapOracleWms:
     def test_wms_client_connection_failure(self, mock_client_class: MagicMock) -> None:
         """Failed WMS client start is surfaced as tap config error."""
         mock_client = MagicMock()
-        mock_client.start.return_value = FlextResult[bool].fail("Connection refused")
+        mock_client.start.return_value = r[bool].fail("Connection refused")
         mock_client_class.return_value = mock_client
         with pytest.raises(FlextTapOracleWmsConfigurationError):
             _ = FlextTapOracleWms(
@@ -87,7 +87,7 @@ class TestFlextTapOracleWms:
     def test_discover_catalog_success(self, tap_instance: FlextTapOracleWms) -> None:
         """Catalog discovery maps discovered entities to Singer streams."""
         mock_client = MagicMock()
-        mock_client.discover_entities.return_value = FlextResult[list[str]].ok([
+        mock_client.discover_entities.return_value = r[list[str]].ok([
             "inventory",
             "locations",
         ])
@@ -105,7 +105,7 @@ class TestFlextTapOracleWms:
     def test_discover_catalog_failure(self, tap_instance: FlextTapOracleWms) -> None:
         """Catalog discovery propagates client discovery failures."""
         mock_client = MagicMock()
-        mock_client.discover_entities.return_value = FlextResult[list[str]].fail("boom")
+        mock_client.discover_entities.return_value = r[list[str]].fail("boom")
         with patch.object(
             FlextTapOracleWms,
             "wms_client",
@@ -123,7 +123,7 @@ class TestFlextTapOracleWms:
         with patch.object(
             tap_instance,
             "discover_catalog",
-            return_value=FlextResult[m.Meltano.SingerCatalog].fail("no catalog"),
+            return_value=r[m.Meltano.SingerCatalog].fail("no catalog"),
         ):
             streams = tap_instance.discover_streams()
         assert streams == []
@@ -143,7 +143,7 @@ class TestFlextTapOracleWms:
         with patch.object(
             tap_instance,
             "discover_catalog",
-            return_value=FlextResult[m.Meltano.SingerCatalog].ok(catalog),
+            return_value=r[m.Meltano.SingerCatalog].ok(catalog),
         ):
             streams = tap_instance.discover_streams()
         assert len(streams) == 1

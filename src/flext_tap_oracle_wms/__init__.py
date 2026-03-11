@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_core import FlextLogger, FlextResult, t
+    from flext_core import FlextLogger, r, t
     from flext_meltano import (
         FlextMeltanoBridge,
         FlextMeltanoService,
@@ -56,7 +56,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextMeltanoBridge": ("flext_meltano", "FlextMeltanoBridge"),
     "FlextMeltanoService": ("flext_meltano", "FlextMeltanoService"),
     "FlextMeltanoSettings": ("flext_meltano", "FlextMeltanoSettings"),
-    "FlextResult": ("flext_core", "FlextResult"),
+    "r": ("flext_core", "r"),
     "FlextTapOracleWms": ("flext_tap_oracle_wms.tap", "FlextTapOracleWms"),
     "FlextTapOracleWmsConfigurationError": (
         "flext_tap_oracle_wms.exceptions",
@@ -125,7 +125,6 @@ __all__ = [
     "FlextMeltanoBridge",
     "FlextMeltanoService",
     "FlextMeltanoSettings",
-    "FlextResult",
     "FlextTapOracleWms",
     "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsConnectionError",
@@ -146,6 +145,7 @@ __all__ = [
     "m",
     "main",
     "p",
+    "r",
     "t",
 ]
 

@@ -181,7 +181,7 @@ result = validator.validate_config(config)
 ### **FLEXT Integration**
 
 - Use `flext_core.FlextLogger()` for logging
-- Implement `FlextResult` patterns for error handling
+- Implement `r` patterns for error handling
 - Follow FLEXT configuration patterns
 - Integrate with FLEXT observability standards
 

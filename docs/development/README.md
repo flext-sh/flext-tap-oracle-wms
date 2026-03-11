@@ -262,7 +262,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
@@ -293,14 +293,14 @@ class FlextTapOracleWms:
         self.config = WMSConfig(**config)
         self.logger = FlextLogger(__name__)
 
-    def discover_streams(self) -> FlextResult[List[Stream]]:
-        """Use FlextResult pattern for error handling."""
+    def discover_streams(self) -> r[List[Stream]]:
+        """Use r pattern for error handling."""
         try:
             streams = self._build_streams()
-            return FlextResult.success(streams)
+            return r.success(streams)
         except Exception as e:
             self.logger.error(f"Discovery failed: {e}")
-            return FlextResult.failure(str(e))
+            return r.failure(str(e))
 ```
 
 ### Type Safety Requirements
@@ -338,7 +338,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
