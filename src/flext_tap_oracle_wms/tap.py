@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import importlib.metadata
 from collections.abc import Mapping, Sequence
-from typing import ClassVar
+from typing import ClassVar, override
 
 from flext_core import FlextLogger, FlextResult, t
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsSettings
@@ -57,12 +57,7 @@ class FlextTapOracleWms(Tap):
         if self._wms_client is None:
             wms_settings = FlextOracleWmsSettings(
                 base_url=str(self.flext_config.base_url),
-                username=self.flext_config.username,
-                password=self.flext_config.password.get_secret_value(),
-                api_version=self.flext_config.api_version,
                 timeout=self.flext_config.timeout,
-                retry_attempts=self.flext_config.max_retries,
-                enable_ssl_verification=self.flext_config.verify_ssl,
             )
             client = FlextOracleWmsClient(config=wms_settings)
             start_result = client.start()
@@ -121,6 +116,7 @@ class FlextTapOracleWms(Tap):
             m.Meltano.SingerCatalog(streams=streams)
         )
 
+    @override
     def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
         """Build stream objects from the discovered catalog."""
         catalog_result = self.discover_catalog()

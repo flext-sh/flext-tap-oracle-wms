@@ -111,6 +111,7 @@ class FlextTapOracleWmsStream(Stream):
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
 
+    @override
     def get_records(
         self, context: Mapping[str, t.JsonValue] | None
     ) -> Iterable[dict[str, t.JsonValue]]:
@@ -149,6 +150,7 @@ class FlextTapOracleWmsStream(Stream):
         """Get replication key for this stream."""
         return self.stream_replication_key
 
+    @override
     def post_process(
         self,
         row: dict[str, t.JsonValue],
