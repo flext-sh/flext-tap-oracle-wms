@@ -271,7 +271,7 @@ class PydanticV2Auditor:
         lines: list[str],
     ) -> list[int]:
         """Find all lines matching a pattern."""
-        matches = []
+        matches: list[int] = []
         for idx, line in enumerate(lines):
             if re.search(pattern, line):
                 matches.append(idx)

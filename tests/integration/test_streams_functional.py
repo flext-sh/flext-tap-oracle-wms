@@ -135,8 +135,8 @@ class TestStreamsFunctional:
         """Test automatic replication key detection."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        incremental_streams = []
-        full_table_streams = []
+        incremental_streams: list[tuple[str, str | None]] = []
+        full_table_streams: list[str] = []
         for stream_config in streams[:5]:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
