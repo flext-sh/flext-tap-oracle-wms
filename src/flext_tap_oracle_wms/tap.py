@@ -68,7 +68,7 @@ class FlextTapOracleWms(Tap):
         return self._wms_client
 
     @staticmethod
-    def _schema_for_entity() -> Mapping[str, object
+    def _schema_for_entity() -> Mapping[str, t.Container]:
         """Return a default Singer JSON schema for discovered entities."""
         return {
             "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
@@ -204,27 +204,19 @@ class FlextTapOracleWmsPlugin:
         if self._tap is None:
             init_result = self.initialize(None)
             if init_result.is_failure:
-                return r[object].fail(
-                    init_result.error or "Tap initialization failed"
-                )
+                return r[object].fail(init_result.error or "Tap initialization failed")
         tap = self._tap
         if tap is None:
             return r[object].fail("Tap not initialized")
         if operation == "discover":
             catalog_result = tap.discover_catalog()
             if catalog_result.is_failure:
-                return r[object].fail(
-                    catalog_result.error or "Discovery failed"
-                )
-            return r[object].ok(
-                catalog_result.value.model_dump(mode="json")
-            )
+                return r[object].fail(catalog_result.error or "Discovery failed")
+            return r[object].ok(catalog_result.value.model_dump(mode="json"))
         if operation == "sync":
             execute_result = tap.execute()
             if execute_result.is_failure:
-                return r[object].fail(
-                    execute_result.error or "Sync failed"
-                )
+                return r[object].fail(execute_result.error or "Sync failed")
             return r[object].ok({"success": True})
         return r[object].fail(f"Unsupported operation: {operation}")
 
