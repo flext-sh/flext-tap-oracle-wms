@@ -71,7 +71,7 @@ def mock_wms_client() -> MagicMock:
         "shipments",
         "receipts",
     ])
-    client.get_records.return_value = r[list[t.ConfigurationMapping]].ok([
+    client.get_records.return_value = r[list[object]].ok([
         {"id": "1", "name": "Test Item 1", "quantity": 100},
         {"id": "2", "name": "Test Item 2", "quantity": 200},
     ])

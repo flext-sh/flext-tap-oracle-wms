@@ -37,8 +37,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities):
 
         @staticmethod
         def process_wms_record(
-            record: t.ConfigurationMapping,
-        ) -> t.ConfigurationMapping:
+            record: object,
+        ) -> object:
             """Process WMS record for output.
 
             Args:

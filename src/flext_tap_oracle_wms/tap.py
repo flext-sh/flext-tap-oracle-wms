@@ -68,7 +68,7 @@ class FlextTapOracleWms(Tap):
         return self._wms_client
 
     @staticmethod
-    def _schema_for_entity() -> Mapping[str, t.JsonValue]:
+    def _schema_for_entity() -> Mapping[str, object
         """Return a default Singer JSON schema for discovered entities."""
         return {
             "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
@@ -141,9 +141,9 @@ class FlextTapOracleWms(Tap):
         self.sync_all()
         return r[bool].ok(True)
 
-    def get_implementation_metrics(self) -> r[t.ConfigurationMapping]:
+    def get_implementation_metrics(self) -> r[object]:
         """Return basic runtime metrics for observability."""
-        return r[t.ConfigurationMapping].ok({
+        return r[object].ok({
             "tap_name": self.name,
             "version": self.get_implementation_version(),
             "streams_available": len(self.discover_streams()),
@@ -168,9 +168,9 @@ class FlextTapOracleWms(Tap):
         ):
             return "0.9.0"
 
-    def validate_configuration(self) -> r[t.ConfigurationMapping]:
+    def validate_configuration(self) -> r[object]:
         """Expose non-secret validated configuration fields."""
-        return r[t.ConfigurationMapping].ok({
+        return r[object].ok({
             "base_url": str(self.flext_config.base_url),
             "api_version": self.flext_config.api_version,
             "page_size": self.flext_config.page_size,
@@ -199,34 +199,34 @@ class FlextTapOracleWmsPlugin:
 
     def execute(
         self, operation: str, _parameters: Mapping[str, object] | None = None
-    ) -> r[t.ConfigurationMapping]:
+    ) -> r[object]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
             init_result = self.initialize(None)
             if init_result.is_failure:
-                return r[t.ConfigurationMapping].fail(
+                return r[object].fail(
                     init_result.error or "Tap initialization failed"
                 )
         tap = self._tap
         if tap is None:
-            return r[t.ConfigurationMapping].fail("Tap not initialized")
+            return r[object].fail("Tap not initialized")
         if operation == "discover":
             catalog_result = tap.discover_catalog()
             if catalog_result.is_failure:
-                return r[t.ConfigurationMapping].fail(
+                return r[object].fail(
                     catalog_result.error or "Discovery failed"
                 )
-            return r[t.ConfigurationMapping].ok(
+            return r[object].ok(
                 catalog_result.value.model_dump(mode="json")
             )
         if operation == "sync":
             execute_result = tap.execute()
             if execute_result.is_failure:
-                return r[t.ConfigurationMapping].fail(
+                return r[object].fail(
                     execute_result.error or "Sync failed"
                 )
-            return r[t.ConfigurationMapping].ok({"success": True})
-        return r[t.ConfigurationMapping].fail(f"Unsupported operation: {operation}")
+            return r[object].ok({"success": True})
+        return r[object].fail(f"Unsupported operation: {operation}")
 
     def get_info(self) -> Mapping[str, object]:
         """Return plugin metadata for discovery and capabilities."""

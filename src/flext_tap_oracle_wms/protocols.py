@@ -51,18 +51,18 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
             """Singer Tap Oracle WMS domain protocols for Oracle Warehouse Management System extraction."""
 
             @runtime_checkable
-            class WmsConnectionProtocol(FlextProtocols.Service[t.JsonValue], Protocol):
+            class WmsConnectionProtocol(FlextProtocols.Service[objectotocol):
                 """Protocol for Oracle WMS connection operations."""
 
                 def establish_wms_connection(
                     self, config: m.ConfigMap
-                ) -> FlextProtocols.Result[t.JsonValue]:
+                ) -> FlextProtocols.Result[object
                     """Establish connection to Oracle WMS."""
                     ...
 
             @runtime_checkable
             class InventoryDiscoveryProtocol(
-                FlextProtocols.Service[t.JsonValue], Protocol
+                FlextProtocols.Service[objectotocol
             ):
                 """Protocol for WMS inventory discovery."""
 
@@ -74,7 +74,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
             @runtime_checkable
             class OrderProcessingProtocol(
-                FlextProtocols.Service[t.JsonValue], Protocol
+                FlextProtocols.Service[objectotocol
             ):
                 """Protocol for WMS order processing."""
 
@@ -86,7 +86,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
             @runtime_checkable
             class WarehouseOperationsProtocol(
-                FlextProtocols.Service[t.JsonValue], Protocol
+                FlextProtocols.Service[objectotocol
             ):
                 """Protocol for WMS warehouse operations."""
 
@@ -98,7 +98,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
             @runtime_checkable
             class StreamGenerationProtocol(
-                FlextProtocols.Service[t.JsonValue], Protocol
+                FlextProtocols.Service[objectotocol
             ):
                 """Protocol for Singer stream generation."""
 
@@ -109,7 +109,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
                     ...
 
             @runtime_checkable
-            class PerformanceProtocol(FlextProtocols.Service[t.JsonValue], Protocol):
+            class PerformanceProtocol(FlextProtocols.Service[objectotocol):
                 """Protocol for WMS extraction performance."""
 
                 def optimize_query(self, query: str) -> FlextProtocols.Result[str]:
@@ -117,7 +117,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
                     ...
 
             @runtime_checkable
-            class ValidationProtocol(FlextProtocols.Service[t.JsonValue], Protocol):
+            class ValidationProtocol(FlextProtocols.Service[objectotocol):
                 """Protocol for WMS data validation."""
 
                 def validate_config(
@@ -127,7 +127,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
                     ...
 
             @runtime_checkable
-            class MonitoringProtocol(FlextProtocols.Service[t.JsonValue], Protocol):
+            class MonitoringProtocol(FlextProtocols.Service[objectotocol):
                 """Protocol for WMS extraction monitoring."""
 
                 def track_progress(
