@@ -23,7 +23,7 @@ class FlextTapOracleWms(Tap):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[dict[str, t.ContainerValue]] = {
+    config_jsonschema: ClassVar[dict[str, object]] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
         "properties": {
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
@@ -37,8 +37,8 @@ class FlextTapOracleWms(Tap):
     }
 
     _wms_client: FlextOracleWmsClient | None = None
-    _discovery: t.ContainerValue | None = None
-    _schema_generator: t.ContainerValue | None = None
+    _discovery: object | None = None
+    _schema_generator: object | None = None
     _discovery_mode: bool = False
 
     @property
@@ -180,7 +180,7 @@ class FlextTapOracleWms(Tap):
 class FlextTapOracleWmsPlugin:
     """Plugin wrapper exposing tap operations to the host runtime."""
 
-    def __init__(self, config: Mapping[str, t.ContainerValue]) -> None:
+    def __init__(self, config: Mapping[str, object]) -> None:
         """Initialize plugin state and hold tap configuration."""
         self._config = config
         self._tap: FlextTapOracleWms | None = None
@@ -198,7 +198,7 @@ class FlextTapOracleWmsPlugin:
         return self._version
 
     def execute(
-        self, operation: str, _parameters: Mapping[str, t.ContainerValue] | None = None
+        self, operation: str, _parameters: Mapping[str, object] | None = None
     ) -> r[t.ConfigurationMapping]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
@@ -228,7 +228,7 @@ class FlextTapOracleWmsPlugin:
             return r[t.ConfigurationMapping].ok({"success": True})
         return r[t.ConfigurationMapping].fail(f"Unsupported operation: {operation}")
 
-    def get_info(self) -> Mapping[str, t.ContainerValue]:
+    def get_info(self) -> Mapping[str, object]:
         """Return plugin metadata for discovery and capabilities."""
         return {
             "name": self.name,
@@ -237,7 +237,7 @@ class FlextTapOracleWmsPlugin:
             "capabilities": ["discover", "sync"],
         }
 
-    def initialize(self, _context: t.ContainerValue) -> r[bool]:
+    def initialize(self, _context: object) -> r[bool]:
         """Instantiate the tap for subsequent operations."""
         self._tap = FlextTapOracleWms(config=dict(self._config))
         return r[bool].ok(True)

@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_core import FlextLogger, t
+from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream
 
@@ -23,7 +23,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_real_wms_environment_verification(
-        self, real_wms_config: dict[str, t.ContainerValue]
+        self, real_wms_config: dict[str, object]
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -43,7 +43,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_tap_initialization_real_config(
-        self, real_wms_config: dict[str, t.ContainerValue]
+        self, real_wms_config: dict[str, object]
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(config=real_wms_config)
@@ -312,7 +312,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_error_handling_and_validation(
-        self, real_wms_config: dict[str, t.ContainerValue]
+        self, real_wms_config: dict[str, object]
     ) -> None:
         """Test error handling with invalid configurations."""
         invalid_config = real_wms_config.copy()
@@ -321,7 +321,7 @@ class TestOracleWMSFunctionalComplete:
         try:
             catalog = tap.catalog_dict
             assert isinstance(catalog, dict), (
-                "Catalog should be dict[str, t.ContainerValue] even on errors"
+                "Catalog should be dict[str, object] even on errors"
             )
         except (
             ValueError,
@@ -346,9 +346,7 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
-    def test_configuration_validation(
-        self, real_wms_config: dict[str, t.ContainerValue]
-    ) -> None:
+    def test_configuration_validation(self, real_wms_config: dict[str, object]) -> None:
         """Test configuration validation and type conversion."""
         config = real_wms_config
         assert config is not None, "Config creation failed"

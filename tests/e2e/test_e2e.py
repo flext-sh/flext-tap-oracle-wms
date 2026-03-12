@@ -17,7 +17,7 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 
 import pytest
-from flext_core import FlextLogger, t
+from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
@@ -292,7 +292,7 @@ class TestOracleWMSE2EComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_error_recovery_and_resilience(
-        self, real_wms_config: dict[str, t.ContainerValue]
+        self, real_wms_config: dict[str, object]
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         invalid_config = real_wms_config.copy()

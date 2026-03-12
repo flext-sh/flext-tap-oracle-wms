@@ -24,13 +24,13 @@ from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 logger = FlextLogger(__name__)
 
 
-def _as_map(value: t.ContainerValue) -> Mapping[str, t.ContainerValue] | None:
+def _as_map(value: object) -> Mapping[str, object] | None:
     if not isinstance(value, Mapping):
         return None
     return dict(value)
 
 
-def _as_list(value: t.ContainerValue) -> list[t.ContainerValue] | None:
+def _as_list(value: object) -> list[object] | None:
     if isinstance(value, list):
         return list(value)
     return None
@@ -85,7 +85,7 @@ class FlextTapOracleWmsStream(Stream):
         return self._client
 
     @staticmethod
-    def normalize_json_value(value: t.ContainerValue) -> t.JsonValue:
+    def normalize_json_value(value: object) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
         if isinstance(value, str | int | float | bool | datetime):
             return value
@@ -157,7 +157,7 @@ class FlextTapOracleWmsStream(Stream):
         context: Mapping[str, t.JsonValue] | None = None,
     ) -> dict[str, t.JsonValue] | None:
         """Post-process a record."""
-        config_map: Mapping[str, t.ContainerValue] = self.config
+        config_map: Mapping[str, object] = self.config
         column_mappings_raw = config_map.get("column_mappings")
         column_mappings = _as_map(column_mappings_raw) if column_mappings_raw else None
         if column_mappings is not None:

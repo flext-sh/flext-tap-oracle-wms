@@ -91,7 +91,7 @@ def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 
 
 @pytest.fixture
-def sample_catalog() -> dict[str, t.ContainerValue]:
+def sample_catalog() -> dict[str, object]:
     """Sample Singer catalog."""
     return {
         "type": "CATALOG",
@@ -125,7 +125,7 @@ def sample_catalog() -> dict[str, t.ContainerValue]:
 
 
 @pytest.fixture
-def sample_state() -> dict[str, t.ContainerValue]:
+def sample_state() -> dict[str, object]:
     """Sample Singer state."""
     return {
         "bookmarks": {
@@ -183,7 +183,7 @@ def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleW
 
 
 @pytest.fixture
-def _test_config_extraction() -> dict[str, t.ContainerValue]:
+def _test_config_extraction() -> dict[str, object]:
     """Test configuration for extraction tests."""
     return {
         "base_url": "https://test.wms.example.com",

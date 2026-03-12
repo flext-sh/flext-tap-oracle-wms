@@ -5,7 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
-from flext_core import r, t
+from flext_core import r
 
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
@@ -28,7 +28,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_with_dict(self) -> None:
         """Tap accepts plain config mappings and normalizes settings values."""
-        config_dict: dict[str, t.ContainerValue] = {
+        config_dict: dict[str, object] = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
             "password": "test_password",
@@ -39,7 +39,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_invalid_config(self) -> None:
         """Invalid config payload raises configuration error."""
-        config_dict: dict[str, t.ContainerValue] = {
+        config_dict: dict[str, object] = {
             "base_url": "invalid-url",
             "username": "test_user",
             "password": "test_password",
