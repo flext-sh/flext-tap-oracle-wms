@@ -44,7 +44,7 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
             username: str = "test_user",
             password: str = "test_pass",
             facility_ids: list[str] | None = None,
-            **kwargs: object,
+            **kwargs: t.Scalar,
         ) -> dict[str, object]:
             """Create test Oracle WMS configuration."""
             config: dict[str, object] = {
@@ -64,7 +64,7 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
             has_more: bool = False,
             next_page_url: str | None = None,
             facility_id: str | None = None,
-            **kwargs: object,
+            **kwargs: t.Scalar,
         ) -> dict[str, object]:
             """Create test Oracle WMS API response."""
             response: dict[str, object] = {"items": data, "hasMore": has_more}
@@ -80,7 +80,7 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
             count: int = 5,
             base_id: int = 1000,
             facility_id: str = "FAC001",
-            **kwargs: object,
+            **kwargs: t.Scalar,
         ) -> list[dict[str, object]]:
             """Generate mock Oracle WMS records for testing."""
             records: list[dict[str, object]] = []
