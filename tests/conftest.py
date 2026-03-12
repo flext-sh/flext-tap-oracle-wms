@@ -13,7 +13,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from flext_core import r, t
+from flext_core import r
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
