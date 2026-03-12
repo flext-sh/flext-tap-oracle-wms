@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsUtilities
 
+from flext_tap_oracle_wms import t
+
 
 class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
     """Utilities for flext-tap-oracle-wms tests - uses composition with FlextTestsUtilities.
