@@ -85,7 +85,7 @@ class FlextTapOracleWmsStream(Stream):
         return self._client
 
     @staticmethod
-    def normalize_json_value(value: object) -> t.Container:
+    def normalize_json_value(value: object) -> t.Scalar:
         """Normalize arbitrary values into Singer-compatible JSON values."""
         if isinstance(value, str | int | float | bool | datetime):
             return value
@@ -93,16 +93,16 @@ class FlextTapOracleWmsStream(Stream):
             return ""
         list_value = _as_list(value)
         if list_value is not None:
-            return [
+            return str([
                 FlextTapOracleWmsStream.normalize_json_value(item)
                 for item in list_value
-            ]
+            ])
         map_value = _as_map(value)
         if map_value is not None:
-            return {
+            return str({
                 key: FlextTapOracleWmsStream.normalize_json_value(item)
                 for key, item in map_value.items()
-            }
+            })
         if isinstance(value, BaseModel | Path):
             return str(value)
         return str(value)
@@ -175,7 +175,7 @@ class FlextTapOracleWmsStream(Stream):
                 if isinstance(column_name, str):
                     row.pop(column_name, None)
         if context:
-            row["_context"] = {k: str(v) for k, v in context.items()}
+            row["_context"] = str({k: str(v) for k, v in context.items()})
         return row
 
     def _build_operation_kwargs(

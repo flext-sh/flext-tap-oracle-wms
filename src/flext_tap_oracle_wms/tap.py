@@ -70,21 +70,7 @@ class FlextTapOracleWms(Tap):
     @staticmethod
     def _schema_for_entity() -> Mapping[str, t.Container]:
         """Return a default Singer JSON schema for discovered entities."""
-        return {
-            "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
-            "properties": {
-                "id": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL},
-                "name": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL},
-                "created_at": {
-                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL,
-                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
-                },
-                "updated_at": {
-                    "type": c.TapOracleWms.SCHEMA_TYPE_STRING_OR_NULL,
-                    "format": c.TapOracleWms.SCHEMA_FORMAT_DATETIME,
-                },
-            },
-        }
+        return {"type": c.TapOracleWms.SCHEMA_TYPE_OBJECT}
 
     def discover_catalog(self) -> r[m.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
