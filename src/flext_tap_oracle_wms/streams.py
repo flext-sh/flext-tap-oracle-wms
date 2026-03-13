@@ -73,11 +73,9 @@ class FlextTapOracleWmsStream(Stream):
         if self._client is None:
             tap_instance = self._tap
             if tap_instance and isinstance(
-                tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientProtocol
+                tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClient
             ):
-                wms_tap: p.TapOracleWms.OracleWms.TapWithWmsClientProtocol = (
-                    tap_instance
-                )
+                wms_tap: p.TapOracleWms.OracleWms.TapWithWmsClient = tap_instance
                 self._client = wms_tap.wms_client
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWms"
