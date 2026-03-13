@@ -46,7 +46,7 @@ class FlextTapOracleWms(Tap):
         """Return validated tap settings."""
         config_map = dict(self.config)
         try:
-            return FlextTapOracleWmsSettings.model_validate(config_map)
+            return FlextTapOracleWmsSettings(config_map)
         except Exception as exc:
             msg = f"Invalid configuration: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
