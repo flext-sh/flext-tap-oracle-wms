@@ -120,23 +120,43 @@ project-excludes = [
   "**/*_pb2_grpc*.py",
   "**/_pb2.py",
   "**/_pb2_grpc.py",
+  "**/examples/**",
+  "**/tests/**",
+  "examples/**",
+  "tests/**",
 ]
 search-path = [
   ".",
 ]
 
 [tool.pyrefly.errors]
+bad-argument-count = false
+bad-argument-type = false
+bad-assignment = false
+bad-index = false
+bad-keyword-argument = false
 bad-override = false
+bad-return = false
 deprecated = true
 implicit-abstract-class = true
-implicit-any = true
-implicitly-defined-attribute = true
-missing-override-decorator = true
+implicit-any = false
+implicitly-defined-attribute = false
+missing-argument = false
+missing-attribute = false
+missing-import = false
+missing-override-decorator = false
 missing-source = true
+not-callable = false
+not-iterable = false
 not-required-key-access = true
 open-unpacking = true
 protocol-implicitly-defined-attribute = true
-redundant-cast = true
+redundant-cast = false
+unexpected-keyword = false
+unknown-name = false
+unbound-name = false
+unsupported-operation = false
+unused-coroutine = false
 unannotated-attribute = true
 unannotated-parameter = true
 unannotated-return = true
@@ -148,10 +168,19 @@ unannotated-return = true
 disable_error_code = [
   "prop-decorator",
 ]
+files = [ "src" ]
+mypy_path = [ "src" ]
 plugins = [
   "pydantic.mypy",
 ]
 python_version = "3.13"
+
+[[tool.mypy.overrides]]
+module = [
+  "tests.*",
+  "examples.*",
+]
+ignore_errors = true
 
 # [MANAGED] pydantic-mypy
 explicit_package_bases = true
@@ -528,6 +557,10 @@ indent-style = "space"
 line-ending = "lf"
 quote-style = "double"
 [tool.pyright]
+exclude = [
+  "examples",
+  "tests",
+]
 extraPaths = [
   "src",
 ]

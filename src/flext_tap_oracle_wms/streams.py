@@ -14,7 +14,7 @@ from typing import ClassVar, override
 
 from flext_core import FlextLogger, r, t
 from flext_oracle_wms import FlextOracleWmsClient
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from singer_sdk.streams import Stream
 from singer_sdk.tap_base import Tap
 
@@ -24,16 +24,29 @@ from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 logger = FlextLogger(__name__)
 
 
-def _as_map(value: object) -> Mapping[str, object] | None:
+def _as_map(value: object) -> Mapping[str, t.ContainerValue] | None:
     if not isinstance(value, Mapping):
         return None
-    return dict(value)
+    try:
+        validated_map = TypeAdapter(dict[str, object]).validate_python(value)
+    except ValidationError:
+        return None
+    return {
+        str(key): FlextTapOracleWmsStream.normalize_json_value(item)
+        for key, item in validated_map.items()
+    }
 
 
-def _as_list(value: object) -> list[object] | None:
-    if isinstance(value, list):
-        return list(value)
-    return None
+def _as_list(value: object) -> list[t.ContainerValue] | None:
+    if not isinstance(value, list):
+        return None
+    try:
+        validated_list = TypeAdapter(list[object]).validate_python(value)
+    except ValidationError:
+        return None
+    return [
+        FlextTapOracleWmsStream.normalize_json_value(item) for item in validated_list
+    ]
 
 
 class FlextTapOracleWmsStream(Stream):
@@ -232,17 +245,13 @@ class FlextTapOracleWmsStream(Stream):
             processed_record = self._utilities.DataProcessing.process_wms_record(
                 record=record_dict
             )
-            match processed_record:
-                case dict() as processed_dict:
-                    json_row: dict[str, t.Scalar] = {
-                        str(k): self.normalize_json_value(v)
-                        for k, v in processed_dict.items()
-                    }
-                    final_record = self.post_process(json_row, context)
-                    if final_record is not None:
-                        yield final_record
-                case _:
-                    continue
+            processed_map = _as_map(processed_record)
+            if processed_map is None:
+                continue
+            json_row: dict[str, t.Scalar] = {
+                str(k): self.normalize_json_value(v) for k, v in processed_map.items()
+            }
+            yield self.post_process(json_row, context)
 
     def _run(self, value: object) -> object:
         return value

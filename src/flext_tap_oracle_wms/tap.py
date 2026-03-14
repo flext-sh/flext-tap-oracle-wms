@@ -23,7 +23,7 @@ class FlextTapOracleWms(Tap):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[dict[str, object]] = {
+    config_jsonschema: ClassVar[dict[str, t.ContainerValue]] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
         "properties": {
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
@@ -37,8 +37,8 @@ class FlextTapOracleWms(Tap):
     }
 
     _wms_client: FlextOracleWmsClient | None = None
-    _discovery: object | None = None
-    _schema_generator: object | None = None
+    _discovery: t.ContainerValue | None = None
+    _schema_generator: t.ContainerValue | None = None
     _discovery_mode: bool = False
 
     @property
@@ -55,9 +55,11 @@ class FlextTapOracleWms(Tap):
     def wms_client(self) -> FlextOracleWmsClient:
         """Return a started WMS client instance."""
         if self._wms_client is None:
-            wms_settings = FlextOracleWmsSettings(
-                base_url=str(self.flext_config.base_url),
-                timeout=self.flext_config.timeout,
+            wms_settings = FlextOracleWmsSettings.testing_config().model_copy(
+                update={
+                    "base_url": str(self.flext_config.base_url),
+                    "timeout": self.flext_config.timeout,
+                }
             )
             client = FlextOracleWmsClient(config=wms_settings)
             start_result = client.start()
@@ -84,7 +86,7 @@ class FlextTapOracleWms(Tap):
             m.Meltano.SingerCatalogEntry(
                 tap_stream_id=entity,
                 stream=entity,
-                schema=dict(self._schema_for_entity()),
+                schema_definition=dict(self._schema_for_entity()),
                 metadata=[
                     m.Meltano.SingerCatalogMetadata(
                         breadcrumb=[],
@@ -95,10 +97,19 @@ class FlextTapOracleWms(Tap):
                         },
                     )
                 ],
+                key_properties=["id"],
+                replication_key=None,
+                replication_method="FULL_TABLE",
+                is_view=None,
+                table_name=None,
+                database_name=None,
+                row_count=None,
             )
             for entity in entities
         ]
-        return r[m.Meltano.SingerCatalog].ok(m.Meltano.SingerCatalog(streams=streams))
+        return r[m.Meltano.SingerCatalog].ok(
+            m.Meltano.SingerCatalog(type="CATALOG", streams=streams)
+        )
 
     @override
     def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
@@ -127,9 +138,9 @@ class FlextTapOracleWms(Tap):
         self.sync_all()
         return r[bool].ok(True)
 
-    def get_implementation_metrics(self) -> r[object]:
+    def get_implementation_metrics(self) -> r[t.ContainerValue]:
         """Return basic runtime metrics for observability."""
-        return r[object].ok({
+        return r[t.ContainerValue].ok({
             "tap_name": self.name,
             "version": self.get_implementation_version(),
             "streams_available": len(self.discover_streams()),
@@ -154,9 +165,9 @@ class FlextTapOracleWms(Tap):
         ):
             return "0.9.0"
 
-    def validate_configuration(self) -> r[object]:
+    def validate_configuration(self) -> r[t.ContainerValue]:
         """Expose non-secret validated configuration fields."""
-        return r[object].ok({
+        return r[t.ContainerValue].ok({
             "base_url": str(self.flext_config.base_url),
             "api_version": self.flext_config.api_version,
             "page_size": self.flext_config.page_size,
@@ -166,7 +177,7 @@ class FlextTapOracleWms(Tap):
 class FlextTapOracleWmsPlugin:
     """Plugin wrapper exposing tap operations to the host runtime."""
 
-    def __init__(self, config: Mapping[str, object]) -> None:
+    def __init__(self, config: Mapping[str, t.ContainerValue]) -> None:
         """Initialize plugin state and hold tap configuration."""
         self._config = config
         self._tap: FlextTapOracleWms | None = None
@@ -184,29 +195,33 @@ class FlextTapOracleWmsPlugin:
         return self._version
 
     def execute(
-        self, operation: str, _parameters: Mapping[str, object] | None = None
-    ) -> r[object]:
+        self, operation: str, _parameters: Mapping[str, t.ContainerValue] | None = None
+    ) -> r[t.ContainerValue]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
             init_result = self.initialize(None)
             if init_result.is_failure:
-                return r[object].fail(init_result.error or "Tap initialization failed")
+                return r[t.ContainerValue].fail(
+                    init_result.error or "Tap initialization failed"
+                )
         tap = self._tap
         if tap is None:
-            return r[object].fail("Tap not initialized")
+            return r[t.ContainerValue].fail("Tap not initialized")
         if operation == "discover":
             catalog_result = tap.discover_catalog()
             if catalog_result.is_failure:
-                return r[object].fail(catalog_result.error or "Discovery failed")
-            return r[object].ok(catalog_result.value.model_dump(mode="json"))
+                return r[t.ContainerValue].fail(
+                    catalog_result.error or "Discovery failed"
+                )
+            return r[t.ContainerValue].ok(catalog_result.value.model_dump(mode="json"))
         if operation == "sync":
             execute_result = tap.execute()
             if execute_result.is_failure:
-                return r[object].fail(execute_result.error or "Sync failed")
-            return r[object].ok({"success": True})
-        return r[object].fail(f"Unsupported operation: {operation}")
+                return r[t.ContainerValue].fail(execute_result.error or "Sync failed")
+            return r[t.ContainerValue].ok({"success": True})
+        return r[t.ContainerValue].fail(f"Unsupported operation: {operation}")
 
-    def get_info(self) -> Mapping[str, object]:
+    def get_info(self) -> Mapping[str, t.ContainerValue]:
         """Return plugin metadata for discovery and capabilities."""
         return {
             "name": self.name,
@@ -215,7 +230,7 @@ class FlextTapOracleWmsPlugin:
             "capabilities": ["discover", "sync"],
         }
 
-    def initialize(self, _context: object) -> r[bool]:
+    def initialize(self, _context: t.ContainerValue | None) -> r[bool]:
         """Instantiate the tap for subsequent operations."""
         self._tap = FlextTapOracleWms(config=dict(self._config))
         return r[bool].ok(True)
