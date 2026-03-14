@@ -198,14 +198,14 @@ class MockWMSServer:
             responses.GET,
             "https://mock-wms.test.com/api/entities",
             json={"entities": self.entities},
-            status=200
+            status=200,
         )
 
         responses.add(
             responses.GET,
             "https://mock-wms.test.com/api/items",
             json=self.load_test_data("items.json"),
-            status=200
+            status=200,
         )
 ```
 
@@ -300,13 +300,17 @@ def mock_wms_server():
     """Mock WMS server for integration testing."""
     with responses.RequestsMock() as rsps:
         # Setup standard responses
-        rsps.add(responses.GET,
-                "https://mock-wms.test.com/api/entities",
-                json={"entities": ["item", "inventory"]})
+        rsps.add(
+            responses.GET,
+            "https://mock-wms.test.com/api/entities",
+            json={"entities": ["item", "inventory"]},
+        )
 
-        rsps.add(responses.POST,
-                "https://mock-wms.test.com/auth/token",
-                json={"access_token": "test_token"})
+        rsps.add(
+            responses.POST,
+            "https://mock-wms.test.com/auth/token",
+            json={"access_token": "test_token"},
+        )
 
         yield rsps
 ```
@@ -325,7 +329,7 @@ def integration_config():
         "company_code": "TEST",
         "facility_code": "TEST01",
         "entities": ["item", "inventory"],
-        "page_size": 100
+        "page_size": 100,
     }
 ```
 
@@ -335,9 +339,11 @@ def integration_config():
 def test_data_integration_flow(mock_wms_server, integration_config):
     """Test complete data integration workflow."""
     # Setup mock responses
-    mock_wms_server.add(responses.GET,
-                       "https://mock-wms.test.com/api/items",
-                       json=load_fixture("item_data.json"))
+    mock_wms_server.add(
+        responses.GET,
+        "https://mock-wms.test.com/api/items",
+        json=load_fixture("item_data.json"),
+    )
 
     # Execute integration flow
     tap = FlextTapOracleWms(integration_config)
@@ -386,8 +392,7 @@ def test_concurrent_stream_integration():
 
         # Test concurrent extraction
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = [executor.submit(stream.extract_data)
-                      for stream in streams]
+            futures = [executor.submit(stream.extract_data) for stream in streams]
 
             results = [future.result() for future in futures]
 

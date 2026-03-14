@@ -191,11 +191,13 @@ class WMSEntityConfig:
     replication_method: str
     fields: t.StringList
 
+
 # Application Layer (orchestration)
 class EntityDiscovery:
     def __init__(self, wms_client: WMSClient, config: WMSEntityConfig):
         self._wms_client = wms_client
         self._config = config
+
 
 # Infrastructure Layer (external dependencies)
 class WMSAuthenticator:
@@ -211,6 +213,7 @@ class WMSAuthenticator:
 from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
+
 class FlextTapOracleWms(Tap):
     name = "tap-oracle-wms"
     config_jsonschema = WMSConfigSchema.model_json_schema()
@@ -221,6 +224,7 @@ class FlextTapOracleWms(Tap):
             FlextTapOracleWmsStream(tap=self, name=entity, path=f"/api/{entity}")
             for entity in self.config["entities"]
         ]
+
 
 class FlextTapOracleWmsStream(RESTStream):
     """Standard Singer stream for WMS entities."""
@@ -252,11 +256,12 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
+
 
 class WMSConfig(FlextSettings):
     """Unified WMS tap configuration."""
@@ -349,6 +354,7 @@ class WMSPaginator:
 from functools import lru_cache
 from typing import Dict
 
+
 class WMSCache:
     """Simple LRU cache for WMS responses."""
 
@@ -362,6 +368,7 @@ class WMSCache:
 
 ```python
 from flext_oracle_wms import FlextOracleWmsClient
+
 
 class WMSConnectionManager:
     """Manage WMS connections using flext-oracle-wms."""
@@ -398,26 +405,34 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
+
 class WMSTapError(FlextExceptions.Error):
     """Base exception for WMS tap errors."""
+
     pass
+
 
 class WMSAuthenticationError(WMSTapError):
     """WMS authentication failures."""
+
     pass
+
 
 class WMSEntityNotFoundError(WMSTapError):
     """WMS entity not found or not accessible."""
+
     pass
+
 
 class WMSSchemaError(WMSTapError):
     """WMS schema validation errors."""
+
     pass
 ```
 
@@ -427,8 +442,10 @@ class WMSSchemaError(WMSTapError):
 import time
 from typing import Iterator
 
+
 def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
     """Decorator for retry logic with exponential backoff."""
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             for attempt in range(max_retries):
@@ -437,10 +454,12 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
                 except (WMSAuthenticationError, ConnectionError) as e:
                     if attempt == max_retries - 1:
                         raise
-                    delay = base_delay * (2 ** attempt)
+                    delay = base_delay * (2**attempt)
                     time.sleep(delay)
             return None
+
         return wrapper
+
     return decorator
 ```
 
@@ -471,6 +490,7 @@ import pytest
 from unittest.mock import Mock, patch
 from flext_oracle_wms import FlextOracleWmsClient
 
+
 @pytest.fixture
 def mock_wms_client():
     """Mock WMS client for testing."""
@@ -478,13 +498,16 @@ def mock_wms_client():
     client.get_entities.return_value = ["item", "inventory", "order"]
     client.get_entity_data.return_value = [
         {"id": "1", "name": "Test Item"},
-        {"id": "2", "name": "Another Item"}
+        {"id": "2", "name": "Another Item"},
     ]
     return client
 
+
 def test_stream_extraction(mock_wms_client):
     """Test stream data extraction with mocked client."""
-    with patch('flext_tap_oracle_wms.streams.get_wms_client', return_value=mock_wms_client):
+    with patch(
+        "flext_tap_oracle_wms.streams.get_wms_client", return_value=mock_wms_client
+    ):
         stream = FlextTapOracleWmsStream(tap=mock_tap, name="item")
         records = list(stream.get_records(None))
         assert len(records) == 2
@@ -498,13 +521,14 @@ def test_stream_extraction(mock_wms_client):
 ```python
 from flext_oracle_wms import WMSAuthenticator
 
+
 class TapAuthentication:
     """Delegate authentication to flext-oracle-wms library."""
 
     def __init__(self, config: WMSConfig):
         self.authenticator = WMSAuthenticator(
             auth_method=config.auth_method,
-            credentials=self._extract_credentials(config)
+            credentials=self._extract_credentials(config),
         )
 
     def get_authenticated_client(self):
@@ -516,6 +540,7 @@ class TapAuthentication:
 
 ```python
 from pydantic import SecretStr
+
 
 class SecureWMSConfig(WMSConfig):
     """Secure configuration with secret handling."""
@@ -590,8 +615,8 @@ ______________________________________________________________________
 
 - [flext-core Foundation](https://github.com/organization/flext/tree/main/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
 - [flext-core Service Patterns](https://github.com/organization/flext/tree/main/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
-- [flext-oracle-wms Integration](https://github.com/organization/flext/tree/main/flext-oracle-wms/CLAUDE.md) - Oracle WMS Cloud integration
-- [flext-meltano Pipelines](https://github.com/organization/flext/tree/main/flext-meltano/CLAUDE.md) - Data integration and ELT orchestration
+- [flext-oracle-wms Integration](https://github.com/organization/flext/tree/main/flext-oracle-wms/AGENTS.md) - Oracle WMS Cloud integration
+- [flext-meltano Pipelines](https://github.com/organization/flext/tree/main/flext-meltano/AGENTS.md) - Data integration and ELT orchestration
 
 **External Resources**:
 

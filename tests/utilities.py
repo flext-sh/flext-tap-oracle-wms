@@ -7,20 +7,21 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextTypes as t
 from flext_tests import FlextTestsUtilities
 
+from flext_tap_oracle_wms import t
 
-class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
+
+class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
     """Utilities for flext-tap-oracle-wms tests - uses composition with FlextTestsUtilities.
 
-    Architecture: Uses composition (not inheritance) with FlextTestsUtilities and FlextMeltanoTapOracleWmsUtilities
+    Architecture: Uses composition (not inheritance) with FlextTestsUtilities and FlextTapOracleWmsUtilities
     for flext-tap-oracle-wms-specific utility definitions.
 
     Access patterns:
-    - TestsFlextMeltanoTapOracleWmsUtilities.Tests.* = flext_tests test utilities (via composition)
-    - TestsFlextMeltanoTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
-    - TestsFlextMeltanoTapOracleWmsUtilities.* = FlextTestsUtilities methods (via composition)
+    - TestsFlextTapOracleWmsUtilities.Tests.* = flext_tests test utilities (via composition)
+    - TestsFlextTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
+    - TestsFlextTapOracleWmsUtilities.* = FlextTestsUtilities methods (via composition)
 
     Rules:
     - Use composition, not inheritance (FlextTestsUtilities deprecates subclassing)
@@ -28,10 +29,8 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
     - Generic utilities accessed via Tests namespace
     """
 
-    # Composition: expose FlextTestsUtilities namespaces
     Tests = FlextTestsUtilities.Tests
 
-    # TapOracleWms-specific test utilities namespace
     class TapOracleWms:
         """Tap Oracle WMS test utilities - domain-specific for Oracle WMS tap testing.
 
@@ -47,10 +46,10 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
             username: str = "test_user",
             password: str = "test_pass",
             facility_ids: list[str] | None = None,
-            **kwargs: t.GeneralValueType,
-        ) -> dict[str, t.GeneralValueType]:
+            **kwargs: t.Scalar,
+        ) -> dict[str, object]:
             """Create test Oracle WMS configuration."""
-            config = {
+            config: dict[str, object] = {
                 "base_url": base_url,
                 "username": username,
                 "password": password,
@@ -62,18 +61,15 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
 
         @staticmethod
         def create_test_oracle_wms_api_response(
-            data: list[dict[str, t.GeneralValueType]],
+            data: list[dict[str, object]],
             *,
             has_more: bool = False,
             next_page_url: str | None = None,
             facility_id: str | None = None,
-            **kwargs: t.GeneralValueType,
-        ) -> dict[str, t.GeneralValueType]:
+            **kwargs: t.Scalar,
+        ) -> dict[str, object]:
             """Create test Oracle WMS API response."""
-            response = {
-                "items": data,
-                "hasMore": has_more,
-            }
+            response: dict[str, object] = {"items": data, "hasMore": has_more}
             if next_page_url:
                 response["nextPageUrl"] = next_page_url
             if facility_id:
@@ -86,12 +82,12 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
             count: int = 5,
             base_id: int = 1000,
             facility_id: str = "FAC001",
-            **kwargs: t.GeneralValueType,
-        ) -> list[dict[str, t.GeneralValueType]]:
+            **kwargs: t.Scalar,
+        ) -> list[dict[str, object]]:
             """Generate mock Oracle WMS records for testing."""
-            records = []
+            records: list[dict[str, object]] = []
             for i in range(count):
-                record = {
+                record: dict[str, object] = {
                     "id": base_id + i,
                     "facilityId": facility_id,
                     "itemNumber": f"ITEM{i + 1:04d}",
@@ -99,22 +95,16 @@ class TestsFlextMeltanoTapOracleWmsUtilities(FlextTestsUtilities):
                     "createdDate": "2023-01-01T00:00:00Z",
                     "modifiedDate": "2023-01-01T00:00:00Z",
                 }
-                # Add custom fields
-                record.update(dict(kwargs.items()))
+                record.update(kwargs)
                 records.append(record)
             return records
 
         @staticmethod
-        def validate_oracle_wms_config(config: dict[str, t.GeneralValueType]) -> bool:
+        def validate_oracle_wms_config(config: dict[str, object]) -> bool:
             """Validate Oracle WMS configuration for testing."""
             required_fields = ["base_url", "username"]
             return all(field in config and config[field] for field in required_fields)
 
 
-# Alias for simplified usage
-tu = TestsFlextMeltanoTapOracleWmsUtilities
-
-__all__ = [
-    "TestsFlextMeltanoTapOracleWmsUtilities",
-    "tu",
-]
+u = TestsFlextTapOracleWmsUtilities
+__all__ = ["TestsFlextTapOracleWmsUtilities", "u"]

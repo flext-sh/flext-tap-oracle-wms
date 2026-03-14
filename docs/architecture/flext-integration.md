@@ -72,12 +72,13 @@ graph TB
 
 ```python
 from flext_core import (
-    FlextSettings,          # Configuration base class
-    FlextLogger,          # Standardized logging
+    FlextSettings,  # Configuration base class
+    FlextLogger,  # Standardized logging
     TAnyDict,
-    TEntityId,           # Entity identifier type
-    FlextResult,       # Result handling pattern
+    TEntityId,  # Entity identifier type
+    r,  # Result handling pattern
 )
+
 
 class WMSConfig(FlextSettings):
     """Configuration using flext-core patterns."""
@@ -90,8 +91,10 @@ class WMSConfig(FlextSettings):
 
     class Config:
         """Pydantic configuration."""
+
         env_prefix = "TAP_ORACLE_WMS_"
         case_sensitive = False
+
 
 class FlextTapOracleWms:
     """Main tap implementation using flext-core patterns."""
@@ -100,14 +103,14 @@ class FlextTapOracleWms:
         self.config = WMSConfig(**config)
         self.logger = FlextLogger(__name__)
 
-    def discover_streams(self) -> FlextResult[List[Stream]]:
-        """Return streams using FlextResult pattern."""
+    def discover_streams(self) -> r[List[Stream]]:
+        """Return streams using r pattern."""
         try:
             streams = self._build_streams()
-            return FlextResult.success(streams)
+            return r.success(streams)
         except Exception as e:
             self.logger.error(f"Stream discovery failed: {e}")
-            return FlextResult.failure(f"Discovery error: {e}")
+            return r.failure(f"Discovery error: {e}")
 ```
 
 #### Type System Integration
@@ -116,9 +119,10 @@ class FlextTapOracleWms:
 from flext_core import TAnyDict, TEntityId, TValue
 
 # Use centralized types instead of custom definitions
-OracleWmsRecord = TAnyDict        # WMS record data
-OracleWmsEntityId = TEntityId     # Entity identifiers
-OracleWmsValue = TValue           # Field values
+OracleWmsRecord = TAnyDict  # WMS record data
+OracleWmsEntityId = TEntityId  # Entity identifiers
+OracleWmsValue = TValue  # Field values
+
 
 class FlextTapOracleWmsStream:
     """Stream using flext-core type system."""
@@ -133,7 +137,7 @@ class FlextTapOracleWmsStream:
         return {
             "id": TEntityId(raw_record.get("id")),
             "data": raw_record,
-            "extracted_at": datetime.utcnow().isoformat()
+            "extracted_at": datetime.utcnow().isoformat(),
         }
 ```
 
@@ -155,11 +159,12 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import FlextResult
+from flext_core import r
 from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
+
 
 class FlextTapOracleWmsStream:
     """Stream with standardized logging."""
@@ -178,10 +183,14 @@ class FlextTapOracleWmsStream:
             for record in self.wms_client.get_entity_data(self.name):
                 record_count += 1
                 if record_count % 1000 == 0:
-                    self.logger.info(f"Extracted {record_count} records from {self.name}")
+                    self.logger.info(
+                        f"Extracted {record_count} records from {self.name}"
+                    )
                 yield record
 
-            self.logger.info(f"Completed extraction: {record_count} records from {self.name}")
+            self.logger.info(
+                f"Completed extraction: {record_count} records from {self.name}"
+            )
 
         except Exception as e:
             self.logger.error(f"Extraction failed for {self.name}: {e}", exc_info=True)
@@ -199,6 +208,7 @@ from flext_oracle_wms import (
     FlextOracleWmsAuthenticationError,
     WMSEntityMetadata,
 )
+
 
 class WMSClientManager:
     """Manage WMS client using flext-oracle-wms library."""
@@ -222,21 +232,21 @@ class WMSClientManager:
             )
         return self._client
 
-    def test_connection(self) -> FlextResult[bool]:
+    def test_connection(self) -> r[bool]:
         """Test WMS connection using library client."""
         try:
             result = self.client.test_connection()
             if result:
                 self.logger.info("WMS connection successful")
-                return FlextResult.success(True)
+                return r.success(True)
             else:
-                return FlextResult.failure("WMS connection test failed")
+                return r.failure("WMS connection test failed")
         except FlextOracleWmsAuthenticationError as e:
             self.logger.error(f"WMS authentication failed: {e}")
-            return FlextResult.failure(f"Authentication error: {e}")
+            return r.failure(f"Authentication error: {e}")
         except FlextOracleWmsError as e:
             self.logger.error(f"WMS client error: {e}")
-            return FlextResult.failure(f"WMS error: {e}")
+            return r.failure(f"WMS error: {e}")
 ```
 
 #### Entity Discovery Integration
@@ -245,6 +255,7 @@ class WMSClientManager:
 from flext_oracle_wms import WMSEntityMetadata
 from typing import List, Dict
 
+
 class EntityDiscovery:
     """Entity discovery using flext-oracle-wms."""
 
@@ -252,36 +263,36 @@ class EntityDiscovery:
         self.wms_client = wms_client
         self.logger = FlextLogger(__name__)
 
-    def discover_entities(self) -> FlextResult[t.StringList]:
+    def discover_entities(self) -> r[t.StringList]:
         """Discover available entities using WMS client."""
         try:
             entities = self.wms_client.get_available_entities()
             self.logger.info(f"Discovered {len(entities)} WMS entities")
-            return FlextResult.success(entities)
+            return r.success(entities)
         except Exception as e:
             self.logger.error(f"Entity discovery failed: {e}")
-            return FlextResult.failure(f"Discovery error: {e}")
+            return r.failure(f"Discovery error: {e}")
 
-    def get_entity_metadata(self, entity: str) -> FlextResult[WMSEntityMetadata]:
+    def get_entity_metadata(self, entity: str) -> r[WMSEntityMetadata]:
         """Get entity metadata using library client."""
         try:
             metadata = self.wms_client.get_entity_metadata(entity)
-            return FlextResult.success(metadata)
+            return r.success(metadata)
         except Exception as e:
             self.logger.error(f"Metadata retrieval failed for {entity}: {e}")
-            return FlextResult.failure(f"Metadata error: {e}")
+            return r.failure(f"Metadata error: {e}")
 
-    def generate_schema(self, entity: str) -> FlextResult[t.Dict]:
+    def generate_schema(self, entity: str) -> r[t.Dict]:
         """Generate Singer schema from WMS metadata."""
         metadata_result = self.get_entity_metadata(entity)
         if not metadata_result.success:
-            return FlextResult.failure(metadata_result.error)
+            return r.failure(metadata_result.error)
 
         try:
             schema = self._convert_metadata_to_schema(metadata_result.data)
-            return FlextResult.success(schema)
+            return r.success(schema)
         except Exception as e:
-            return FlextResult.failure(f"Schema generation error: {e}")
+            return r.failure(f"Schema generation error: {e}")
 ```
 
 ### 3. flext-meltano Integration
@@ -290,10 +301,11 @@ class EntityDiscovery:
 
 ```python
 from flext_meltano import (
-    Tap,                    # Base tap class with FLEXT patterns
-    Stream,                 # Base stream class
+    Tap,  # Base tap class with FLEXT patterns
+    Stream,  # Base stream class
     singer_typing as th,
 )
+
 
 class FlextTapOracleWms(Tap):
     """Tap implementation using flext-meltano patterns."""
@@ -318,6 +330,7 @@ class FlextTapOracleWms(Tap):
             for entity in entities_result.data
             if entity in self.config.entities
         ]
+
 
 class FlextTapOracleWmsStream(Stream):
     """WMS stream using flext-meltano base class."""
@@ -354,12 +367,15 @@ class FlextTapOracleWmsStream(Stream):
 from flext_meltano import MeltanoConfig
 from pydantic import Field, validator
 
+
 class WMSMeltanoConfig(MeltanoConfig):
     """Meltano-specific configuration with FLEXT patterns."""
 
     # Connection settings
     base_url: str = Field(..., description="Oracle WMS instance URL")
-    auth_method: str = Field(..., regex="^(basic|oauth2)$", description="Authentication method")
+    auth_method: str = Field(
+        ..., regex="^(basic|oauth2)$", description="Authentication method"
+    )
     company_code: str = Field(..., description="WMS company code")
     facility_code: str = Field(..., description="WMS facility code")
 
@@ -371,25 +387,28 @@ class WMSMeltanoConfig(MeltanoConfig):
 
     # Extraction settings
     entities: t.StringList = Field(
-        default=["item", "inventory"],
-        description="List of WMS entities to extract"
+        default=["item", "inventory"], description="List of WMS entities to extract"
     )
     page_size: int = Field(
-        default=1000,
-        le=1250,
-        description="Records per page (max 1250)"
+        default=1000, le=1250, description="Records per page (max 1250)"
     )
     start_date: Optional[datetime] = Field(
-        None,
-        description="Start date for incremental extraction"
+        None, description="Start date for incremental extraction"
     )
 
     @validator("entities")
     def validate_entities(cls, v):
         """Validate entity names against available entities."""
         valid_entities = [
-            "item", "location", "inventory", "order", "shipment",
-            "receipt", "pick", "replenishment", "cycle_count"
+            "item",
+            "location",
+            "inventory",
+            "order",
+            "shipment",
+            "receipt",
+            "pick",
+            "replenishment",
+            "cycle_count",
         ]
         invalid = set(v) - set(valid_entities)
         if invalid:
@@ -407,6 +426,7 @@ from flext_observability import (
     FlextHealthCheck,
     FlextTracing,
 )
+
 
 class FlextTapOracleWms(Tap):
     """Tap with comprehensive observability."""
@@ -427,27 +447,24 @@ class FlextTapOracleWms(Tap):
 
                 # Record metrics
                 self.metrics.record_counter(
-                    "streams_discovered",
-                    len(streams),
-                    tags={"tap": "oracle-wms"}
+                    "streams_discovered", len(streams), tags={"tap": "oracle-wms"}
                 )
 
                 discovery_time = time.time() - start_time
                 self.metrics.record_histogram(
                     "discovery_duration_seconds",
                     discovery_time,
-                    tags={"tap": "oracle-wms"}
+                    tags={"tap": "oracle-wms"},
                 )
 
                 return streams
 
             except Exception as e:
                 self.metrics.record_counter(
-                    "discovery_errors",
-                    1,
-                    tags={"tap": "oracle-wms", "error": str(e)}
+                    "discovery_errors", 1, tags={"tap": "oracle-wms", "error": str(e)}
                 )
                 raise
+
 
 class FlextTapOracleWmsStream(Stream):
     """Stream with observability integration."""
@@ -468,7 +485,7 @@ class FlextTapOracleWmsStream(Stream):
                         self.tap.metrics.record_gauge(
                             "records_extracted",
                             record_count,
-                            tags={"entity": self.name}
+                            tags={"entity": self.name},
                         )
 
                 # Final metrics
@@ -476,20 +493,16 @@ class FlextTapOracleWmsStream(Stream):
                 self.tap.metrics.record_histogram(
                     "extraction_duration_seconds",
                     extraction_time,
-                    tags={"entity": self.name}
+                    tags={"entity": self.name},
                 )
 
                 self.tap.metrics.record_counter(
-                    "records_total",
-                    record_count,
-                    tags={"entity": self.name}
+                    "records_total", record_count, tags={"entity": self.name}
                 )
 
             except Exception as e:
                 self.tap.metrics.record_counter(
-                    "extraction_errors",
-                    1,
-                    tags={"entity": self.name, "error": str(e)}
+                    "extraction_errors", 1, tags={"entity": self.name, "error": str(e)}
                 )
                 raise
 ```
@@ -498,6 +511,7 @@ class FlextTapOracleWmsStream(Stream):
 
 ```python
 from flext_observability import HealthCheckResult, HealthStatus
+
 
 class WMSHealthCheck:
     """Health check implementation for WMS tap."""
@@ -518,18 +532,16 @@ class WMSHealthCheck:
             result = self.wms_client_manager.test_connection()
             if result.success:
                 return HealthCheckResult(
-                    status=HealthStatus.HEALTHY,
-                    message="WMS connection successful"
+                    status=HealthStatus.HEALTHY, message="WMS connection successful"
                 )
             else:
                 return HealthCheckResult(
                     status=HealthStatus.UNHEALTHY,
-                    message=f"WMS connection failed: {result.error}"
+                    message=f"WMS connection failed: {result.error}",
                 )
         except Exception as e:
             return HealthCheckResult(
-                status=HealthStatus.UNHEALTHY,
-                message=f"WMS connection error: {e}"
+                status=HealthStatus.UNHEALTHY, message=f"WMS connection error: {e}"
             )
 
     def _check_wms_auth(self) -> HealthCheckResult:
@@ -540,17 +552,15 @@ class WMSHealthCheck:
             entities = client.get_available_entities()
             return HealthCheckResult(
                 status=HealthStatus.HEALTHY,
-                message=f"Authentication successful, {len(entities)} entities available"
+                message=f"Authentication successful, {len(entities)} entities available",
             )
         except FlextOracleWmsAuthenticationError as e:
             return HealthCheckResult(
-                status=HealthStatus.UNHEALTHY,
-                message=f"Authentication failed: {e}"
+                status=HealthStatus.UNHEALTHY, message=f"Authentication failed: {e}"
             )
         except Exception as e:
             return HealthCheckResult(
-                status=HealthStatus.DEGRADED,
-                message=f"Authentication check error: {e}"
+                status=HealthStatus.DEGRADED, message=f"Authentication check error: {e}"
             )
 ```
 

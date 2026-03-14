@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from flext_core import e
 
-class FlextTapOracleWmsError(Exception):
+
+class FlextTapOracleWmsError(e.BaseError):
     """Base exception for Oracle WMS tap failures."""
 
 
@@ -15,5 +17,7 @@ class FlextTapOracleWmsValidationError(FlextTapOracleWmsError):
     """Raised when tap configuration or payload validation fails."""
 
 
-class FlextTapOracleWmsSettingsurationError(FlextTapOracleWmsValidationError):
+class FlextTapOracleWmsConfigurationError(FlextTapOracleWmsValidationError):
     """Raised when settings are invalid for runtime execution."""
+
+    "Raised when settings are invalid for runtime execution."

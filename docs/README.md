@@ -48,7 +48,7 @@ This directory contains comprehensive documentation for FLEXT Tap Oracle WMS, in
 ### **Integration Documentation**
 
 - **[FLEXT Ecosystem Integration](../../README.md)** - Main project README with ecosystem positioning
-- **[CLAUDE.md](../CLAUDE.md)** - Development guidance for Claude Code
+- **[AGENTS.md](../AGENTS.md)** - Development guidance for Claude Code
 
 ## Key Documentation
 
@@ -149,7 +149,7 @@ This tap is part of the larger FLEXT enterprise data integration platform:
 
 ### **For Developers**
 
-1. **Start with**: [CLAUDE.md](../CLAUDE.md) for development guidance
+1. **Start with**: [AGENTS.md](../AGENTS.md) for development guidance
 1. **Understand Issues**: [TODO.md](TODO.md) for critical issues and refactoring plan
 1. **Architecture Overview**: [architecture.md](architecture.md) for system design
 1. **Standards**: [standards/](standards/) for development patterns

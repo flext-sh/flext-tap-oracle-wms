@@ -6,24 +6,25 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_core import FlextTypes as t
-from flext_db_oracle.protocols import FlextDbOracleProtocols as p_db_oracle
-from flext_meltano.protocols import FlextMeltanoProtocols as p_meltano
+if TYPE_CHECKING:
+    from flext_oracle_wms import FlextOracleWmsClient
+from flext_core import FlextProtocols, t
+from flext_meltano import FlextMeltanoProtocols, m
+from flext_oracle_wms.protocols import FlextOracleWmsProtocols
 
 
-class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
-    """Singer Tap Oracle WMS protocols extending Oracle and Meltano protocols.
+class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols):
+    """Singer Tap Oracle WMS protocols extending OracleWms and Meltano protocols.
 
-    Extends both FlextDbOracleProtocols and FlextMeltanoProtocols via multiple inheritance
-    to inherit all Oracle protocols, Meltano protocols, and foundation protocols.
+    Extends both FlextOracleWmsProtocols and FlextMeltanoProtocols via multiple inheritance
+    to inherit all Oracle WMS protocols, Meltano protocols, and foundation protocols.
 
     Architecture:
-    - EXTENDS: FlextDbOracleProtocols (inherits .Database.* protocols)
+    - EXTENDS: FlextOracleWmsProtocols (inherits .OracleWms.* protocols)
     - EXTENDS: FlextMeltanoProtocols (inherits .Meltano.* protocols)
-    - ADDS: Tap Oracle WMS-specific protocols in Tap.OracleWms namespace
+    - ADDS: Tap Oracle WMS-specific protocols in TapOracleWms namespace
     - PROVIDES: Root-level alias `p` for convenient access
 
     Usage:
@@ -33,14 +34,14 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
     result: p.Result[str]
     service: p.Service[str]
 
-    # Oracle protocols (inherited)
-    connection: p.Database.ConnectionProtocol
+    # Oracle WMS protocols (inherited)
+    wms: p.OracleWms.*
 
     # Meltano protocols (inherited)
-    tap: p.Meltano.TapProtocol
+    tap: p.Meltano.Tap
 
     # Tap Oracle WMS-specific protocols
-    wms_connection: p.Tap.OracleWms.WmsConnectionProtocol
+    wms_connection: p.TapOracleWms.OracleWms.WmsConnection
     """
 
     class TapOracleWms:
@@ -50,112 +51,89 @@ class FlextTapOracleWmsProtocols(p_meltano, p_db_oracle):
             """Singer Tap Oracle WMS domain protocols for Oracle Warehouse Management System extraction."""
 
             @runtime_checkable
-            class WmsConnectionProtocol(
-                p_db_oracle.Service[t.GeneralValueType], Protocol
-            ):
+            class WmsConnection(FlextProtocols.Service[t.Container], Protocol):
                 """Protocol for Oracle WMS connection operations."""
 
                 def establish_wms_connection(
-                    self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> p_meltano.Result[t.GeneralValueType]:
+                    self, config: m.ConfigMap
+                ) -> FlextProtocols.Result[t.Container]:
                     """Establish connection to Oracle WMS."""
                     ...
 
             @runtime_checkable
-            class InventoryDiscoveryProtocol(
-                p_db_oracle.Service[t.GeneralValueType],
-                Protocol,
-            ):
+            class InventoryDiscovery(FlextProtocols.Service[t.Container], Protocol):
                 """Protocol for WMS inventory discovery."""
 
                 def discover_inventory(
-                    self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> p_meltano.Result[Sequence[Mapping[str, t.GeneralValueType]]]:
+                    self, config: m.ConfigMap
+                ) -> FlextProtocols.Result[list[m.ConfigMap]]:
                     """Discover WMS inventory."""
                     ...
 
             @runtime_checkable
-            class OrderProcessingProtocol(
-                p_db_oracle.Service[t.GeneralValueType],
-                Protocol,
-            ):
+            class OrderProcessing(FlextProtocols.Service[t.Container], Protocol):
                 """Protocol for WMS order processing."""
 
                 def process_orders(
-                    self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> p_meltano.Result[Sequence[Mapping[str, t.GeneralValueType]]]:
+                    self, config: m.ConfigMap
+                ) -> FlextProtocols.Result[list[m.ConfigMap]]:
                     """Process WMS orders."""
                     ...
 
             @runtime_checkable
-            class WarehouseOperationsProtocol(
-                p_db_oracle.Service[t.GeneralValueType],
-                Protocol,
-            ):
+            class WarehouseOperations(FlextProtocols.Service[t.Container], Protocol):
                 """Protocol for WMS warehouse operations."""
 
                 def get_warehouse_operations(
-                    self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> p_meltano.Result[Sequence[Mapping[str, t.GeneralValueType]]]:
+                    self, config: m.ConfigMap
+                ) -> FlextProtocols.Result[list[m.ConfigMap]]:
                     """Get WMS warehouse operations."""
                     ...
 
             @runtime_checkable
-            class StreamGenerationProtocol(
-                p_db_oracle.Service[t.GeneralValueType],
-                Protocol,
-            ):
+            class StreamGeneration(FlextProtocols.Service[t.Container], Protocol):
                 """Protocol for Singer stream generation."""
 
                 def generate_catalog(
-                    self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> p_meltano.Result[Mapping[str, t.GeneralValueType]]:
+                    self, config: m.ConfigMap
+                ) -> FlextProtocols.Result[m.Meltano.SingerCatalog]:
                     """Generate Singer catalog."""
                     ...
 
             @runtime_checkable
-            class PerformanceProtocol(
-                p_db_oracle.Service[t.GeneralValueType], Protocol
-            ):
+            class Performance(FlextProtocols.Service[t.Container], Protocol):
                 """Protocol for WMS extraction performance."""
 
-                def optimize_query(self, query: str) -> p_meltano.Result[str]:
+                def optimize_query(self, query: str) -> FlextProtocols.Result[str]:
                     """Optimize WMS query."""
                     ...
 
             @runtime_checkable
-            class ValidationProtocol(p_db_oracle.Service[t.GeneralValueType], Protocol):
+            class Validation(FlextProtocols.Service[t.Container], Protocol):
                 """Protocol for WMS data validation."""
 
                 def validate_config(
-                    self,
-                    config: Mapping[str, t.GeneralValueType],
-                ) -> p_meltano.Result[bool]:
+                    self, config: m.ConfigMap
+                ) -> FlextProtocols.Result[bool]:
                     """Validate WMS configuration."""
                     ...
 
             @runtime_checkable
-            class MonitoringProtocol(p_db_oracle.Service[t.GeneralValueType], Protocol):
+            class Monitoring(FlextProtocols.Service[t.Container], Protocol):
                 """Protocol for WMS extraction monitoring."""
 
                 def track_progress(
-                    self,
-                    entity: str,
-                    records: int,
-                ) -> p_meltano.Result[bool]:
+                    self, entity: str, records: int
+                ) -> FlextProtocols.Result[bool]:
                     """Track WMS extraction progress."""
                     ...
 
+            @runtime_checkable
+            class TapWithWmsClient(Protocol):
+                """Protocol for tap instances that provide wms_client."""
 
-# Runtime alias for simplified usage
+                wms_client: FlextOracleWmsClient
+
+
 p = FlextTapOracleWmsProtocols
-
-__all__ = [
-    "FlextTapOracleWmsProtocols",
-    "p",
-]
+__all__ = ["FlextTapOracleWmsProtocols", "p"]

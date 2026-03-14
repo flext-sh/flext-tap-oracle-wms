@@ -11,34 +11,29 @@ from enum import StrEnum
 from typing import Final, Literal
 
 from flext_core import FlextConstants
-from flext_oracle_wms.constants import FlextOracleWmsConstants
+from flext_meltano import FlextMeltanoConstants
+from flext_oracle_wms import FlextOracleWmsConstants
 
 
-class FlextTapOracleWmsConstants(FlextConstants):
+class FlextTapOracleWmsConstants(FlextMeltanoConstants):
     """Oracle WMS tap extraction-specific constants following flext-core patterns.
 
     Composes with FlextOracleWmsConstants to avoid duplication and ensure consistency.
+    Note: Does not override Authentication from parent classes to avoid conflicts.
     """
 
-    # Oracle WMS Connection Configuration
-    # DEFAULT_WMS_TIMEOUT: Final[int] = FlextOracleWmsConstants.Connection.DEFAULT_TIMEOUT
-    # Using local Connection class to break cycle
     DEFAULT_WMS_TIMEOUT: Final[int] = 30
     DEFAULT_FETCH_SIZE: Final[int] = (
         FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
     )
-
-    # Singer Tap Configuration - using FlextConstants composition
-    # Note: DEFAULT_BATCH_SIZE inherited from FlextConstants (Final, cannot override)
     MAX_BATCH_SIZE: Final[int] = FlextConstants.Performance.BatchProcessing.MAX_ITEMS
 
-    # WMS Entity Types - Oracle WMS tap-specific
-    class WmsEntityType(StrEnum):
+    class TapWmsEntityType(StrEnum):
         """Oracle WMS entity types using StrEnum for type safety.
 
         DRY Pattern:
-            StrEnum is the single source of truth. Use WmsEntityType.INVENTORY.value
-            or WmsEntityType.INVENTORY directly - no base strings needed.
+            StrEnum is the single source of truth. Use TapWmsEntityType.INVENTORY.value
+            or TapWmsEntityType.INVENTORY directly - no base strings needed.
         """
 
         INVENTORY = "INVENTORY"
@@ -51,6 +46,18 @@ class FlextTapOracleWmsConstants(FlextConstants):
 
         DEFAULT_TIMEOUT: Final[int] = 30
         MAX_RETRIES: Final[int] = 3
+        REQUIRED_CONFIG_FIELDS: Final[frozenset[str]] = frozenset({
+            "base_url",
+            "username",
+            "password",
+        })
+        SCHEMA_TYPE_STRING: Final[str] = "string"
+        SCHEMA_TYPE_OBJECT: Final[str] = "object"
+        SCHEMA_TYPE_BOOLEAN: Final[str] = "boolean"
+        SCHEMA_TYPE_INTEGER: Final[str] = "integer"
+        SCHEMA_TYPE_NULL: Final[str] = "null"
+        SCHEMA_FORMAT_DATETIME: Final[str] = "date-time"
+        SCHEMA_TYPE_STRING_OR_NULL: Final[list[str]] = ["string", "null"]
 
     class TapWmsProcessing:
         """WMS tap processing configuration.
@@ -118,17 +125,11 @@ class FlextTapOracleWmsConstants(FlextConstants):
         EXPONENTIAL = "exponential"
         FIXED = "fixed"
 
-    # Type-safe literals - PEP 695 syntax for type checking
-    # All Literal types reference StrEnum members where available - NO string duplication!
-    type WmsEntityTypeLiteral = Literal[
-        "INVENTORY",
-        "SHIPMENT",
-        "PICKING",
-        "RECEIVING",
+    type TapWmsEntityTypeLiteral = Literal[
+        "INVENTORY", "SHIPMENT", "PICKING", "RECEIVING"
     ]
-    """Oracle WMS entity type literal - references WmsEntityType StrEnum members."""
+    "Oracle WMS entity type literal - references WmsEntityType StrEnum members."
 
 
 c = FlextTapOracleWmsConstants
-
 __all__ = ["FlextTapOracleWmsConstants", "c"]

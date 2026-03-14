@@ -9,20 +9,21 @@ from __future__ import annotations
 
 from typing import Literal
 
-from flext_core import FlextTypes as t
 from flext_tests import FlextTestsTypes
 
+from flext_tap_oracle_wms import t
 
-class TestsFlextMeltanoTapOracleWmsTypes(FlextTestsTypes):
+
+class TestsFlextTapOracleWmsTypes(FlextTestsTypes):
     """Types for flext-tap-oracle-wms tests - uses composition with FlextTestsTypes.
 
-    Architecture: Uses composition (not inheritance) with FlextTestsTypes and FlextMeltanoTapOracleWmsTypes
+    Architecture: Uses composition (not inheritance) with FlextTestsTypes and FlextTapOracleWmsTypes
     for flext-tap-oracle-wms-specific type definitions.
 
     Access patterns:
-    - TestsFlextMeltanoTapOracleWmsTypes.Tests.* = flext_tests test types (via composition)
-    - TestsFlextMeltanoTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
-    - TestsFlextMeltanoTapOracleWmsTypes.* = FlextTestsTypes types (via composition)
+    - TestsFlextTapOracleWmsTypes.Tests.* = flext_tests test types (via composition)
+    - TestsFlextTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
+    - TestsFlextTapOracleWmsTypes.* = FlextTestsTypes types (via composition)
 
     Rules:
     - Use composition, not inheritance (FlextTestsTypes deprecates subclassing)
@@ -30,10 +31,6 @@ class TestsFlextMeltanoTapOracleWmsTypes(FlextTestsTypes):
     - Generic types accessed via Tests namespace
     """
 
-    # Composition: expose FlextTestsTypes
-    # Tests = FlextTestsTypes  # Avoid override issues
-
-    # TapOracleWms-specific test types namespace
     class TapOracleWms:
         """Tap Oracle WMS test types - domain-specific for Oracle WMS tap testing.
 
@@ -43,32 +40,22 @@ class TestsFlextMeltanoTapOracleWmsTypes(FlextTestsTypes):
         - Test scenario types
         """
 
-        # Test configuration literals
         type TestOracleWmsBaseUrl = Literal[
-            "https://test-wms.oraclecloud.com",
-            "https://staging-wms.oraclecloud.com",
+            "https://test-wms.oraclecloud.com", "https://staging-wms.oraclecloud.com"
         ]
-        type TestOracleWmsUsername = Literal["test_user", "REDACTED_LDAP_BIND_PASSWORD_user"]
+        type TestOracleWmsUsername = Literal[
+            "test_user", "REDACTED_LDAP_BIND_PASSWORD_user"
+        ]
         type TestOracleWmsMethod = Literal["GET", "POST", "PUT", "DELETE"]
         type TestFacilityId = Literal["FAC001", "FAC002", "FAC003"]
-
-        # Test data types
-        type MockOracleWmsRecord = dict[str, str | int | float | bool]
+        type MockOracleWmsRecord = dict[str, t.Scalar]
         type MockOracleWmsResponse = dict[
-            str,
-            list[MockOracleWmsRecord] | bool | str | None,
+            str, list[MockOracleWmsRecord] | bool | str | None
         ]
-        type TestOracleWmsScenario = dict[str, t.GeneralValueType]
-
-        # Test result types
+        type TestOracleWmsScenario = dict[str, object]
         type TestOracleWmsValidationResult = dict[str, bool | str | list[str]]
-        type TestOracleWmsApiResult = dict[str, t.GeneralValueType]
+        type TestOracleWmsApiResult = dict[str, object]
 
 
-# Alias for simplified usage
-tt = TestsFlextMeltanoTapOracleWmsTypes
-
-__all__ = [
-    "TestsFlextMeltanoTapOracleWmsTypes",
-    "tt",
-]
+tt = TestsFlextTapOracleWmsTypes
+__all__ = ["TestsFlextTapOracleWmsTypes", "tt"]

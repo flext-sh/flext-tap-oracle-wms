@@ -8,17 +8,32 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from datetime import datetime
+from pathlib import Path
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, t
-
-# Use FLEXT Meltano wrappers instead of direct singer_sdk imports (domain separation)
-from flext_meltano import FlextMeltanoStream as Stream, FlextMeltanoTap as Tap
+from flext_core import FlextLogger, r, t
 from flext_oracle_wms import FlextOracleWmsClient
+from pydantic import BaseModel
+from singer_sdk.streams import Stream
+from singer_sdk.tap_base import Tap
 
+from flext_tap_oracle_wms.protocols import p
 from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 
 logger = FlextLogger(__name__)
+
+
+def _as_map(value: object) -> Mapping[str, object] | None:
+    if not isinstance(value, Mapping):
+        return None
+    return dict(value)
+
+
+def _as_list(value: object) -> list[object] | None:
+    if isinstance(value, list):
+        return list(value)
+    return None
 
 
 class FlextTapOracleWmsStream(Stream):
@@ -28,258 +43,206 @@ class FlextTapOracleWmsStream(Stream):
     This is a generic stream class that adapts to any Oracle WMS entity dynamically.
     """
 
-    # Dynamic attributes - will be set at runtime based on discovery
-    stream_primary_keys: ClassVar[list[str]] = []  # Will be set dynamically
-    stream_replication_key: str | None = None  # Will be set dynamically
+    stream_primary_keys: ClassVar[list[str]] = []
+    stream_replication_key: str | None = None
 
     @override
     def __init__(
         self,
         tap: Tap,
         name: str | None = None,
-        schema: dict[str, t.GeneralValueType] | None = None,
+        schema: dict[str, t.Container] | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        super().__init__(tap=tap, name=name or self.name, schema=schema)
-
-        # Zero Tolerance FIX: Initialize utilities for ALL stream business logic
+        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema)
         self._utilities = FlextTapOracleWmsUtilities()
-
-        # FlextOracleWmsClient - concrete type, dynamic import avoids circular deps
         self._client: FlextOracleWmsClient | None = None
-
-        # Zero Tolerance FIX: Use utilities for stream configuration processing
-        page_size_result = (
-            self._utilities.ConfigurationProcessing.validate_stream_page_size(
-                int(self.config.get("page_size", 100)),
+        page_size = int(self.config.get("page_size", 100))
+        self._page_size = (
+            page_size
+            if self._utilities.ConfigurationProcessing.validate_stream_page_size(
+                page_size
             )
+            else 100
         )
-        self._page_size = 100
-        if page_size_result.is_success:
-            self._page_size = int(self.config.get("page_size", 100))
 
     @property
     def client(self) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
         if self._client is None:
-            # Access WMS client from tap (FlextTapOracleWms)
-            tap_instance = getattr(self, "tap", None) or getattr(self, "_tap", None)
-            if tap_instance and hasattr(tap_instance, "wms_client"):
-                self._client = tap_instance.wms_client
+            tap_instance = self._tap
+            if tap_instance and isinstance(
+                tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClient
+            ):
+                wms_tap: p.TapOracleWms.OracleWms.TapWithWmsClient = tap_instance
+                self._client = wms_tap.wms_client
             else:
                 msg = "WMS client not available - tap must be FlextTapOracleWms"
                 raise RuntimeError(msg)
-
-        if self._client is None:
-            msg = "Client not available after initialization - this should not happen"
-            raise RuntimeError(msg)
         return self._client
+
+    @staticmethod
+    def normalize_json_value(value: object) -> t.Scalar:
+        """Normalize arbitrary values into Singer-compatible JSON values."""
+        if isinstance(value, str | int | float | bool | datetime):
+            return value
+        if value is None:
+            return ""
+        list_value = _as_list(value)
+        if list_value is not None:
+            return str([
+                FlextTapOracleWmsStream.normalize_json_value(item)
+                for item in list_value
+            ])
+        map_value = _as_map(value)
+        if map_value is not None:
+            return str({
+                key: FlextTapOracleWmsStream.normalize_json_value(item)
+                for key, item in map_value.items()
+            })
+        if isinstance(value, BaseModel | Path):
+            return str(value)
+        return str(value)
 
     def get_primary_keys(self) -> list[str]:
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
 
-    def get_replication_key(self) -> str | None:
-        """Get replication key for this stream."""
-        return self.stream_replication_key
-
-    def _run(
-        self,
-        value: t.GeneralValueType,
-    ) -> t.GeneralValueType:
-        return value
-
+    @override
     def get_records(
-        self,
-        context: Mapping[str, t.GeneralValueType] | None,
-    ) -> Iterable[dict[str, t.JsonValue]]:
+        self, context: Mapping[str, t.Scalar] | None
+    ) -> Iterable[dict[str, t.Scalar]]:
         """Get records from Oracle WMS."""
         page = 1
         has_more = True
         while has_more:
             try:
-                # Get page data
                 page_result = self._fetch_page_data(page, context)
-                if page_result is None:
+                if page_result.is_failure:
+                    logger.error(
+                        "Failed to fetch page %s for %s: %s",
+                        page,
+                        self.name,
+                        page_result.error or "",
+                    )
                     break
-                records, has_more = page_result
-                # Process and yield records
+                records, has_more = page_result.value
                 yield from self._process_page_records(records, context)
-                # Move to next page
                 page += 1
-                # Break if no records found
                 if not records:
                     break
-            except Exception:
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                AttributeError,
+                OSError,
+                RuntimeError,
+                ImportError,
+            ):
                 logger.exception("Error getting records for %s", self.name)
                 break
 
-    def _fetch_page_data(
+    def get_replication_key(self) -> str | None:
+        """Get replication key for this stream."""
+        return self.stream_replication_key
+
+    @override
+    def post_process(
         self,
-        page: int,
-        context: Mapping[str, t.GeneralValueType] | None,
-    ) -> tuple[list[dict[str, t.JsonValue]], bool] | None:
-        """Fetch data for a specific page."""
-        # Build operation parameters
-        operation_name = f"get_{self.name}"
-        kwargs = self._build_operation_kwargs(page, context)
-        # Execute operation
-        # Execute operation using dynamic method call
-        execute_method = getattr(self.client, "execute", None)
-        if execute_method:
-            result = self._run(
-                execute_method(operation_name, **kwargs),
-            )
-        else:
-            # Fallback: try direct method call
-            method = getattr(self.client, operation_name, None)
-            if method:
-                result = self._run(method(**kwargs))
-            else:
-                logger.error("Method %s not found on WMS client", operation_name)
-                return None
-        # Check for failure
-        if hasattr(result, "is_failure") and result.is_failure:
-            error_msg = getattr(result, "error", "Unknown error")
-            logger.error("Failed to get records for %s: %s", self.name, error_msg)
-            return None
-        # Extract and process response data
-        data_raw = getattr(result, "value", result)
-        data: t.GeneralValueType = (
-            data_raw
-            if isinstance(data_raw, (str, int, float, bool, dict, list))
-            or data_raw is None
-            else {}
-        )
-        return self._extract_records_from_response(data)
+        row: dict[str, t.Scalar],
+        context: Mapping[str, t.Scalar] | None = None,
+    ) -> dict[str, t.Scalar]:
+        """Post-process a record."""
+        config_map: Mapping[str, object] = self.config
+        column_mappings_raw = config_map.get("column_mappings")
+        column_mappings = _as_map(column_mappings_raw) if column_mappings_raw else None
+        if column_mappings is not None:
+            mapping_raw = column_mappings.get(self.name)
+            mapping = _as_map(mapping_raw) if mapping_raw is not None else None
+            if mapping is not None:
+                for old_name, new_name in mapping.items():
+                    new_name_str = str(new_name)
+                    if old_name in row:
+                        row[new_name_str] = row.pop(old_name)
+        ignored_columns_raw = config_map.get("ignored_columns")
+        ignored_columns = _as_list(ignored_columns_raw) if ignored_columns_raw else None
+        if ignored_columns is not None:
+            for column_name in ignored_columns:
+                if isinstance(column_name, str):
+                    row.pop(column_name, None)
+        if context:
+            row["_context"] = str({k: str(v) for k, v in context.items()})
+        return row
 
     def _build_operation_kwargs(
-        self,
-        page: int,
-        context: Mapping[str, t.GeneralValueType] | None,
-    ) -> dict[str, t.JsonValue]:
+        self, page: int, context: Mapping[str, t.Scalar] | None
+    ) -> Mapping[str, t.Scalar]:
         """Build kwargs for the operation call."""
-        kwargs: dict[str, t.JsonValue] = {
-            "page": page,
-            "limit": self._page_size,
-        }
-        # Add incremental replication filter if configured
+        kwargs: dict[str, t.Scalar] = {"page": page, "limit": self._page_size}
         if self.stream_replication_key:
             starting_timestamp = self.get_starting_timestamp(context)
             if starting_timestamp:
-                kwargs_filter: dict[str, t.GeneralValueType] = {
-                    self.stream_replication_key: {
-                        "$gte": starting_timestamp.isoformat(),
-                    },
-                }
+                kwargs_filter = (
+                    f"{self.stream_replication_key}>={starting_timestamp.isoformat()}"
+                )
                 kwargs["filter"] = kwargs_filter
         return kwargs
 
-    def _extract_records_from_response(
-        self,
-        data: t.GeneralValueType,
-    ) -> tuple[list[dict[str, t.JsonValue]], bool]:
-        """Extract records and pagination info from API response."""
-        match data:
-            case dict() as data_dict:
-                raw_records = data_dict.get(
-                    "data",
-                    data_dict.get("items", data_dict.get("results", [])),
-                )
-                has_more = bool(
-                    data_dict.get("has_more", False)
-                    or data_dict.get("next_page", False),
-                )
-            case list() as data_list:
-                raw_records = data_list
-                has_more = len(data_list) == self._page_size
-            case _:
-                raw_records = []
-                has_more = False
-        # Ensure records is always a list of dict[str, t.GeneralValueType]
-        match raw_records:
-            case list() as records_list:
-                coerced_records: list[dict[str, t.JsonValue]] = []
-                for record in records_list:
-                    match record:
-                        case dict() as record_dict:
-                            # Convert values to JsonValue compatible types
-                            json_record: dict[str, t.JsonValue] = {}
-                            for k, v in record_dict.items():
-                                if isinstance(v, (str, int, float, bool, type(None))):
-                                    json_record[k] = v
-                                elif isinstance(v, (list, dict)):
-                                    # Recursive conversion or cast if needed, but for now simple cast
-                                    # Assuming structure is compatible or will fail at runtime if not
-                                    json_record[k] = v
-                                else:
-                                    json_record[k] = str(v)
-                            coerced_records.append(json_record)
-                        case _:
-                            # Convert non-dict records to dict[str, t.GeneralValueType] format
-                            coerced_records.append({"value": "record"})
-                records = coerced_records
-            case _:
-                records = []
-        return records, has_more
+    def _fetch_page_data(
+        self, page: int, context: Mapping[str, t.Scalar] | None
+    ) -> r[tuple[list[dict[str, t.Scalar]], bool]]:
+        """Fetch data for a specific page."""
+        kwargs = self._build_operation_kwargs(page, context)
+        limit_raw = kwargs.get("limit")
+        limit = int(limit_raw) if isinstance(limit_raw, int) else self._page_size
+        filters: dict[str, t.Scalar] = {}
+        filter_raw = kwargs.get("filter")
+        if isinstance(filter_raw, str) and self.stream_replication_key:
+            filters[self.stream_replication_key] = filter_raw
+        result = self.client.get_entity_data(
+            entity_name=self.name, limit=limit, filters=filters or None
+        )
+        if result.is_failure:
+            return r[tuple[list[dict[str, t.Scalar]], bool]].fail(
+                f"Failed to get records for {self.name}: {result.error}"
+            )
+        normalized: list[dict[str, t.Scalar]] = [
+            {
+                str(key): self.normalize_json_value(value)
+                for key, value in record.items()
+            }
+            for record in result.value
+        ]
+        has_more = len(normalized) == self._page_size
+        return r[tuple[list[dict[str, t.Scalar]], bool]].ok((
+            normalized,
+            has_more,
+        ))
 
     def _process_page_records(
         self,
-        records: list[dict[str, t.JsonValue]],
-        context: Mapping[str, t.GeneralValueType] | None,
-    ) -> Iterable[dict[str, t.JsonValue]]:
+        records: list[dict[str, t.Scalar]],
+        context: Mapping[str, t.Scalar] | None,
+    ) -> Iterable[dict[str, t.Scalar]]:
         """Process and yield records from a page."""
         for record in records:
-            # Ensure record is a dict[str, t.GeneralValueType] for processing
-            if isinstance(record, dict):
-                record_dict: dict[str, t.GeneralValueType] = dict(record)
-                processed_record = self._utilities.DataProcessing.process_wms_record(
-                    record=record_dict
-                )
-                if isinstance(processed_record, dict):
-                    json_row: dict[str, t.JsonValue] = {
-                        str(k): v
-                        for k, v in processed_record.items()
-                        if isinstance(v, (str, int, float, bool, dict, list))
-                        or v is None
+            record_dict: dict[str, t.Scalar] = dict(record)
+            processed_record = self._utilities.DataProcessing.process_wms_record(
+                record=record_dict
+            )
+            match processed_record:
+                case dict() as processed_dict:
+                    json_row: dict[str, t.Scalar] = {
+                        str(k): self.normalize_json_value(v)
+                        for k, v in processed_dict.items()
                     }
                     final_record = self.post_process(json_row, context)
                     if final_record is not None:
                         yield final_record
+                case _:
+                    continue
 
-    def post_process(
-        self,
-        row: dict[str, t.JsonValue],
-        context: Mapping[str, t.GeneralValueType] | None = None,
-    ) -> dict[str, t.JsonValue] | None:
-        """Post-process a record."""
-        # Apply column mappings if configured
-        if self.config:
-            column_mappings_raw = self.config.get("column_mappings", {})
-            if isinstance(column_mappings_raw, dict):
-                mappings = column_mappings_raw.get(self.name)
-                if isinstance(mappings, dict):
-                    for old_name, new_name in mappings.items():
-                        if (
-                            isinstance(old_name, str)
-                            and isinstance(new_name, str)
-                            and old_name in row
-                        ):
-                            row[new_name] = row.pop(old_name)
-            # Remove ignored columns
-            ignored_columns: list[t.GeneralValueType] = self.config.get(
-                "ignored_columns", []
-            )
-            for column in ignored_columns:
-                if isinstance(column, str):
-                    row.pop(column, None)
-
-        # Add context information if available
-        if context:
-            row["_context"] = {k: str(v) for k, v in context.items()}
-
-        return row
-
-
-# Stream discovery is now fully dynamic - no predefined stream classes needed
+    def _run(self, value: object) -> object:
+        return value

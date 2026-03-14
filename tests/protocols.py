@@ -9,17 +9,18 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_tests import FlextTestsProtocols
+
 from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols
-from flext_tests.protocols import FlextTestsProtocols
 
 
 class TestsFlextTapOracleWmsProtocols(FlextTestsProtocols, FlextTapOracleWmsProtocols):
     """Test protocols combining FlextTestsProtocols and FlextTapOracleWmsProtocols.
 
     Provides access to:
-    - tp.Tests.Docker.* (from FlextTestsProtocols)
-    - tp.Tests.Factory.* (from FlextTestsProtocols)
-    - tp.TapOracleWms.* (from FlextTapOracleWmsProtocols)
+    - p.Tests.Docker.* (from FlextTestsProtocols)
+    - p.Tests.Factory.* (from FlextTestsProtocols)
+    - p.TapOracleWms.* (from FlextTapOracleWmsProtocols)
     """
 
     class TapOracleWms(FlextTapOracleWmsProtocols.TapOracleWms):
@@ -32,8 +33,6 @@ class TestsFlextTapOracleWmsProtocols(FlextTestsProtocols, FlextTapOracleWmsProt
             """
 
 
-# Runtime aliases
 p = TestsFlextTapOracleWmsProtocols
-tp = TestsFlextTapOracleWmsProtocols
-
-__all__ = ["TestsFlextTapOracleWmsProtocols", "p", "tp"]
+p = TestsFlextTapOracleWmsProtocols
+__all__ = ["TestsFlextTapOracleWmsProtocols", "p"]

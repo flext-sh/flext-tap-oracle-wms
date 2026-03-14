@@ -10,9 +10,9 @@ SPDX-License-Identifier: MIT.
 from __future__ import annotations
 
 from importlib.metadata import metadata
+from typing import override
 
 _metadata = metadata("flext_tap_oracle_wms")
-
 __version__ = _metadata["Version"]
 __version_info__ = tuple(
     int(part) if part.isdigit() else part for part in __version__.split(".")
@@ -25,7 +25,6 @@ __license__ = _metadata["License"]
 __url__ = _metadata["Home-Page"]
 
 
-# Version class for typed version information
 class FlextTapOracleWmsVersion:
     """Typed version information for flext-tap-oracle-wms."""
 
@@ -34,18 +33,18 @@ class FlextTapOracleWmsVersion:
         self.version = version
         self.version_info = version_info
 
-    def __str__(self) -> str:
-        """Return string representation."""
-        return self.version
-
+    @override
     def __repr__(self) -> str:
         """Return repr representation."""
         return f"FlextTapOracleWmsVersion({self.version!r}, {self.version_info!r})"
 
+    @override
+    def __str__(self) -> str:
+        """Return string representation."""
+        return self.version
 
-# Create version instance
+
 VERSION = FlextTapOracleWmsVersion(__version__, __version_info__)
-
 __all__ = [
     "VERSION",
     "FlextTapOracleWmsVersion",

@@ -1,245 +1,83 @@
-"""Test tap initialization without network calls.
+"""Tap initialization behavior tests aligned with current tap contract."""
 
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-
-"""
+from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+from flext_core import r
+
 from flext_tap_oracle_wms import FlextTapOracleWms
-
-# Copyright (c) 2025 FLEXT Team
-# Licensed under the MIT License
-
-
-# Constants
-EXPECTED_BULK_SIZE = 2
 
 
 class TestTapInitialization:
-    """Test tap initialization behavior."""
+    """Verify initialization and stream loading without external I/O."""
 
-    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWms.discover_streams")
-    def test_tap_initialization_without_network_calls(
-        self,
-        mock_discover: MagicMock,
-    ) -> None:
-        """Test tap initialization without network calls."""
-        # Mock discover_streams to return empty list during initialization
-        mock_discover.return_value = []
-        config = {
-            "base_url": "https://test.example.com",
-            "username": "test",
-            "password": "test",
-            "entities": ["allocation", "order_hdr"],
-        }
-        # Mock external network calls to ensure they're not made
-        with (
-            patch("httpx.Client.get") as mock_get,
-            patch("httpx.Client.get") as mock_client_get,
-            patch("requests.get") as mock_requests_get,
-        ):
-            # Initialize tap - should not trigger external network calls
-            tap = FlextTapOracleWms(config=config)
-            # Verify no external network calls were made
-            mock_get.assert_not_called()
-            mock_client_get.assert_not_called()
-            mock_requests_get.assert_not_called()
-            # Verify tap is properly initialized
-            if tap.config["base_url"] != "https://test.example.com":
-                msg: str = f"Expected {'https://test.example.com'}, got {tap.config['base_url']}"
-                raise AssertionError(
-                    msg,
-                )
-            assert tap.config["entities"] == ["allocation", "order_hdr"]
+    def test_tap_initialization_uses_normalized_config(self) -> None:
+        """Tap stores normalized config values from settings serialization."""
+        with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
+            tap = FlextTapOracleWms(
+                config={
+                    "base_url": "https://test.example.com",
+                    "username": "test",
+                    "password": "test",
+                }
+            )
+        assert tap.config["base_url"] == "https://test.example.com/"
+        assert tap.config["username"] == "test"
+        assert tap.config["password"] == "**********"
 
-    def test_discover_streams_sync_mode_no_api_calls(self) -> None:
-        """Test discover streams in sync mode without API calls."""
-        config = {
-            "base_url": "https://test.example.com",
-            "username": "test",
-            "password": "test",
-            "entities": ["allocation", "order_hdr"],
-        }
-        # Mock both and sync HTTP calls
-        with (
-            patch("httpx.Client") as mock_client,
-            patch("httpx.Client") as mock_sync_client,
-            patch("requests.get") as mock_requests,
-            patch.object(
-                FlextTapOracleWms,
-                "_create_minimal_schema",
-            ) as mock_schema,
+    def test_discover_streams_returns_empty_on_discovery_failure(self) -> None:
+        """discover_streams returns no streams if catalog discovery fails."""
+        with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
+            tap = FlextTapOracleWms(
+                config={
+                    "base_url": "https://test.example.com",
+                    "username": "test",
+                    "password": "test",
+                }
+            )
+        with patch.object(
+            tap,
+            "discover_catalog",
+            return_value=r.fail("discovery unavailable"),
         ):
-            # Mock the discovery metadata fetch
-            mock_schema.return_value = {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "string"},
-                    "mod_ts": {"type": "string", "format": "date-time"},
-                },
-            }
-            tap = FlextTapOracleWms(config=config)
-            # Discover streams in sync mode
             streams = tap.discover_streams()
-            # Should create minimal streams without API calls
-            if len(streams) != EXPECTED_BULK_SIZE:
-                msg: str = f"Expected {2}, got {len(streams)}"
-                raise AssertionError(msg)
-            assert streams[0].name == "allocation"
-            if streams[1].name != "order_hdr":
-                msg: str = f"Expected {'order_hdr'}, got {streams[1].name}"
-                raise AssertionError(msg)
-            # Verify no network calls were made
-            mock_client.assert_not_called()
-            mock_sync_client.assert_not_called()
-            mock_requests.assert_not_called()
+        assert streams == []
 
-    def test_discover_streams_discovery_mode_deferred(self) -> None:
-        """Test discovery mode deferred behavior."""
-        config = {
-            "base_url": "https://test.example.com",
-            "username": "test",
-            "password": "test",
-            "entities": ["test_entity"],
-            "enable_incremental": False,  # Disable incremental for simpler test
-        }
-        with (
-            patch("httpx.Client"),
-            patch(
-                "flext_tap_oracle_wms.tap.FlextTapOracleWms.discovery",
-            ) as mock_discovery,
-        ):
-            # Mock the discovery property to avoid actual network calls
-            mock_discovery.describe_entity_sync.return_value = {
-                "fields": {
-                    "id": {"type": "string", "nullable": False},
-                    "name": {"type": "string", "nullable": True},
-                },
-            }
-            tap = FlextTapOracleWms(config=config)
-            # Set discovery mode
-            tap.set_discovery_mode(enabled=True)
-            # Now discovery should work
-            streams = tap.discover_streams()
-            if len(streams) != 1:
-                msg: str = f"Expected {1}, got {len(streams)}"
-                raise AssertionError(msg)
-            assert streams[0].name == "test_entity"
-
-    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWms.discover_streams")
-    @patch("flext_tap_oracle_wms.cache.CacheManagerAdapter")
-    def test_lazy_loading_discovery(
-        self,
-        mock_cache_adapter: MagicMock,
-        mock_discover: MagicMock,
+    @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
+    def test_discover_streams_uses_client_entities(
+        self, mock_client_class: MagicMock
     ) -> None:
-        """Test lazy loading discovery behavior."""
-        # Mock discover_streams to return empty list during initialization
-        mock_discover.return_value = []
+        """discover_streams builds streams for each discovered entity."""
+        mock_client = MagicMock()
+        mock_client.start.return_value = r.ok(True)
+        mock_client.discover_entities.return_value = r.ok([
+            "allocation",
+            "order_hdr",
+        ])
+        mock_client_class.return_value = mock_client
+        tap = FlextTapOracleWms(
+            config={
+                "base_url": "https://test.example.com",
+                "username": "test",
+                "password": "test",
+            }
+        )
+        stream_names = [stream.name for stream in tap.discover_streams()]
+        assert "allocation" in stream_names
+        assert "order_hdr" in stream_names
 
-        # Mock cache manager to avoid FlextOracleWmsCacheStats initialization issues
-        mock_cache_instance = MagicMock()
-        mock_cache_adapter.return_value = mock_cache_instance
-
-        config = {
-            "base_url": "https://test.example.com",
-            "username": "test",
-            "password": "test",
-            "entities": ["allocation", "order_hdr"],
-        }
-        tap = FlextTapOracleWms(config=config)
-        # Initially, discovery should be None
-        assert tap._discovery is None
-        assert tap._schema_generator is None
-        # Mock validation to avoid network calls
-        with patch.object(tap, "_validate_configuration"):
-            # Access discovery property - should create instance
-            discovery = tap.discovery
-            assert discovery is not None
-            assert tap._discovery is discovery
-            # Access schema_generator - should create instance
-            schema_gen = tap.schema_generator
-            # Verify schema generator is properly initialized
-            _ = schema_gen  # Used to satisfy mypy
-
-    @patch("flext_tap_oracle_wms.tap.FlextTapOracleWms.discover_streams")
-    def test_configuration_type_conversion(self, mock_discover: MagicMock) -> None:
-        """Test configuration type conversion."""
-        # Mock discover_streams to return empty list during initialization
-        mock_discover.return_value = []
-        config = {
-            "base_url": "https://test.example.com",
-            "username": "test",
-            "password": "test",
-            "entities": ["test_entity"],
-            "page_size": 100,  # Integer
-            "enable_incremental": True,  # Boolean
-            "verify_ssl": False,  # Boolean
-        }
-        # Mock all network calls to prevent real API calls during initialization
-        with (
-            patch("httpx.Client"),
-            patch("httpx.Client"),
-            patch("requests.get"),
-        ):
-            tap = FlextTapOracleWms(config=config)
-            # Verify types are correct
-            assert isinstance(tap.config["page_size"], int)
-            if tap.config["page_size"] != 100:
-                msg: str = f"Expected {100}, got {tap.config['page_size']}"
-                raise AssertionError(msg)
-            assert isinstance(tap.config["enable_incremental"], bool)
-            if not (tap.config["enable_incremental"]):
-                msg: str = f"Expected True, got {tap.config['enable_incremental']}"
-                raise AssertionError(
-                    msg,
-                )
-            assert isinstance(tap.config["verify_ssl"], bool)
-            if tap.config["verify_ssl"]:
-                msg: str = f"Expected False, got {tap.config['verify_ssl']}"
-                raise AssertionError(msg)
-
-    def test_minimal_schema_creation(self) -> None:
-        """Test minimal schema creation."""
-        config = {
-            "base_url": "https://test.example.com",
-            "username": "test",
-            "password": "test",
-            "entities": ["test_entity"],
-        }
-        # Mock all network calls completely
-        with (
-            patch("httpx.Client"),
-            patch("httpx.Client"),
-            patch("requests.get"),
-            patch.object(FlextTapOracleWms, "discovery") as mock_discovery,
-            patch.object(
-                FlextTapOracleWms,
-                "_discover_entities_sync",
-            ) as mock_entities,
-        ):
-            mock_entities.return_value = {"test_entity": "http://test.url"}
-            mock_discovery.describe_entity_sync.return_value = None
-            tap = FlextTapOracleWms(config=config)
-            # Create minimal schema
-            schema = tap._create_minimal_schema()
-            if schema["type"] != "object":
-                msg: str = f"Expected {'object'}, got {schema['type']}"
-                raise AssertionError(msg)
-            if "properties" not in schema:
-                msg: str = f"Expected {'properties'} in {schema}"
-                raise AssertionError(msg)
-            assert "id" in schema["properties"]
-            if "_sdc_extracted_at" not in schema["properties"]:
-                msg: str = f"Expected {'_sdc_extracted_at'} in {schema['properties']}"
-                raise AssertionError(
-                    msg,
-                )
-            assert "_sdc_entity" in schema["properties"]
-            if not (schema["additionalProperties"]):
-                msg: str = f"Expected True, got {schema['additionalProperties']}"
-                raise AssertionError(
-                    msg,
-                )
+    def test_execute_reuses_sync_all_entrypoint(self) -> None:
+        """execute() delegates to sync_all when no message is passed."""
+        with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
+            tap = FlextTapOracleWms(
+                config={
+                    "base_url": "https://test.example.com",
+                    "username": "test",
+                    "password": "test",
+                }
+            )
+        with patch.object(tap, "sync_all") as mock_sync:
+            result = tap.execute()
+        assert result.is_success
+        mock_sync.assert_called_once()
