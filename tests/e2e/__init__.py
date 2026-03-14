@@ -19,7 +19,6 @@ if TYPE_CHECKING:
 
     from tests.e2e.test_e2e import TestOracleWMSE2EComplete, logger
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestOracleWMSE2EComplete": ("tests.e2e.test_e2e", "TestOracleWMSE2EComplete"),
     "logger": ("tests.e2e.test_e2e", "logger"),

@@ -54,22 +54,57 @@ if TYPE_CHECKING:
     )
     from flext_tap_oracle_wms.version import VERSION, FlextTapOracleWmsVersion
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextTapOracleWms": ("flext_tap_oracle_wms.tap", "FlextTapOracleWms"),
-    "FlextTapOracleWmsConfigurationError": ("flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsConfigurationError"),
-    "FlextTapOracleWmsConnectionError": ("flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsConnectionError"),
-    "FlextTapOracleWmsConstants": ("flext_tap_oracle_wms.settings", "FlextTapOracleWmsConstants"),
-    "FlextTapOracleWmsError": ("flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsError"),
-    "FlextTapOracleWmsModels": ("flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"),
+    "FlextTapOracleWmsConfigurationError": (
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsConfigurationError",
+    ),
+    "FlextTapOracleWmsConnectionError": (
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsConnectionError",
+    ),
+    "FlextTapOracleWmsConstants": (
+        "flext_tap_oracle_wms.settings",
+        "FlextTapOracleWmsConstants",
+    ),
+    "FlextTapOracleWmsError": (
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsError",
+    ),
+    "FlextTapOracleWmsModels": (
+        "flext_tap_oracle_wms.models",
+        "FlextTapOracleWmsModels",
+    ),
     "FlextTapOracleWmsPlugin": ("flext_tap_oracle_wms.tap", "FlextTapOracleWmsPlugin"),
-    "FlextTapOracleWmsProtocols": ("flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"),
-    "FlextTapOracleWmsSettings": ("flext_tap_oracle_wms.settings", "FlextTapOracleWmsSettings"),
-    "FlextTapOracleWmsStream": ("flext_tap_oracle_wms.streams", "FlextTapOracleWmsStream"),
-    "FlextTapOracleWmsTypes": ("flext_tap_oracle_wms.typings", "FlextTapOracleWmsTypes"),
-    "FlextTapOracleWmsUtilities": ("flext_tap_oracle_wms.utilities", "FlextTapOracleWmsUtilities"),
-    "FlextTapOracleWmsValidationError": ("flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsValidationError"),
-    "FlextTapOracleWmsVersion": ("flext_tap_oracle_wms.version", "FlextTapOracleWmsVersion"),
+    "FlextTapOracleWmsProtocols": (
+        "flext_tap_oracle_wms.protocols",
+        "FlextTapOracleWmsProtocols",
+    ),
+    "FlextTapOracleWmsSettings": (
+        "flext_tap_oracle_wms.settings",
+        "FlextTapOracleWmsSettings",
+    ),
+    "FlextTapOracleWmsStream": (
+        "flext_tap_oracle_wms.streams",
+        "FlextTapOracleWmsStream",
+    ),
+    "FlextTapOracleWmsTypes": (
+        "flext_tap_oracle_wms.typings",
+        "FlextTapOracleWmsTypes",
+    ),
+    "FlextTapOracleWmsUtilities": (
+        "flext_tap_oracle_wms.utilities",
+        "FlextTapOracleWmsUtilities",
+    ),
+    "FlextTapOracleWmsValidationError": (
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsValidationError",
+    ),
+    "FlextTapOracleWmsVersion": (
+        "flext_tap_oracle_wms.version",
+        "FlextTapOracleWmsVersion",
+    ),
     "VERSION": ("flext_tap_oracle_wms.version", "VERSION"),
     "__all__": ("flext_tap_oracle_wms.__version__", "__all__"),
     "__author__": ("flext_tap_oracle_wms.__version__", "__author__"),

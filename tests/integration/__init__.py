@@ -33,16 +33,33 @@ if TYPE_CHECKING:
         tap,
     )
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "TestFilteringAndSelection": ("tests.integration.test_wms_connection", "TestFilteringAndSelection"),
+    "TestFilteringAndSelection": (
+        "tests.integration.test_wms_connection",
+        "TestFilteringAndSelection",
+    ),
     "TestIntegration": ("tests.integration.test_wms_connection", "TestIntegration"),
-    "TestOracleWMSFunctionalComplete": ("tests.integration.test_functional", "TestOracleWMSFunctionalComplete"),
-    "TestRealConnection": ("tests.integration.test_wms_connection", "TestRealConnection"),
-    "TestRealDataExtraction": ("tests.integration.test_wms_connection", "TestRealDataExtraction"),
+    "TestOracleWMSFunctionalComplete": (
+        "tests.integration.test_functional",
+        "TestOracleWMSFunctionalComplete",
+    ),
+    "TestRealConnection": (
+        "tests.integration.test_wms_connection",
+        "TestRealConnection",
+    ),
+    "TestRealDataExtraction": (
+        "tests.integration.test_wms_connection",
+        "TestRealDataExtraction",
+    ),
     "TestRealWmsIntegration": ("tests.integration.test_wms", "TestRealWmsIntegration"),
-    "TestStreamsFunctional": ("tests.integration.test_streams_functional", "TestStreamsFunctional"),
-    "TestWMSPaginatorUnit": ("tests.integration.test_streams_functional", "TestWMSPaginatorUnit"),
+    "TestStreamsFunctional": (
+        "tests.integration.test_streams_functional",
+        "TestStreamsFunctional",
+    ),
+    "TestWMSPaginatorUnit": (
+        "tests.integration.test_streams_functional",
+        "TestWMSPaginatorUnit",
+    ),
     "env_path": ("tests.integration.test_wms_connection", "env_path"),
     "logger": ("tests.integration.test_streams_functional", "logger"),
     "real_config": ("tests.integration.test_wms_connection", "real_config"),
