@@ -139,27 +139,27 @@ bad-override = false
 bad-return = false
 deprecated = true
 implicit-abstract-class = true
-implicit-any = false
-implicitly-defined-attribute = false
+implicit-any = true
+implicitly-defined-attribute = true
 missing-argument = false
 missing-attribute = false
 missing-import = false
-missing-override-decorator = false
+missing-override-decorator = true
 missing-source = true
 not-callable = false
 not-iterable = false
 not-required-key-access = true
 open-unpacking = true
 protocol-implicitly-defined-attribute = true
-redundant-cast = false
-unexpected-keyword = false
-unknown-name = false
-unbound-name = false
-unsupported-operation = false
-unused-coroutine = false
+redundant-cast = true
 unannotated-attribute = true
 unannotated-parameter = true
 unannotated-return = true
+unbound-name = false
+unexpected-keyword = false
+unknown-name = false
+unsupported-operation = false
+unused-coroutine = false
 
 [tool.poetry]
 
@@ -168,19 +168,22 @@ unannotated-return = true
 disable_error_code = [
   "prop-decorator",
 ]
+explicit_package_bases = true
 files = [ "src" ]
+ignore_missing_imports = true
 mypy_path = [ "src" ]
+namespace_packages = true
 plugins = [
   "pydantic.mypy",
 ]
 python_version = "3.13"
 
 [[tool.mypy.overrides]]
-module = [
-  "tests.*",
-  "examples.*",
-]
 ignore_errors = true
+module = [
+  "examples.*",
+  "tests.*",
+]
 
 # [MANAGED] pydantic-mypy
 explicit_package_bases = true
