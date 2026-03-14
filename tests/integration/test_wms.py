@@ -11,6 +11,12 @@ SPDX-License-Identifier: MIT
 import os
 
 import pytest
+from optype.numpy import Scalar
+from optype.numpy._scalar import Scalar
+from pandas._typing import Scalar
+from pandas.core.tools.datetimes import Scalar
+from pyarrow import Scalar
+from pyarrow.__lib_pxi.scalar import Scalar
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
@@ -104,7 +110,7 @@ class TestRealWmsIntegration:
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
             pytest.skip(f"Stream '{stream_name}' not available")
-        records = []
+        records: list[dict[str, Scalar]] = []
         try:
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)

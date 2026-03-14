@@ -12,6 +12,12 @@ from pathlib import Path
 import psutil
 import pytest
 from dotenv import load_dotenv
+from optype.numpy import Scalar
+from optype.numpy._scalar import Scalar
+from pandas._typing import Scalar
+from pandas.core.tools.datetimes import Scalar
+from pyarrow import Scalar
+from pyarrow.__lib_pxi.scalar import Scalar
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
@@ -71,7 +77,7 @@ class TestExtractionPerformance:
             pytest.skip("Inventory stream not available")
         inventory_stream._page_size = page_size
         start_time = time.time()
-        records = []
+        records: list[dict[str, Scalar]] = []
         for i, record in enumerate(inventory_stream.get_records(context=None)):
             records.append(record)
             if i >= 99:
@@ -109,7 +115,7 @@ class TestExtractionPerformance:
         streams = tap.discover_streams()
         if streams:
             stream = streams[0]
-            records = []
+            records: list[dict[str, Scalar]] = []
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)
                 if i >= 999:
@@ -147,7 +153,7 @@ class TestRateLimitingPerformance:
             if streams:
                 stream = streams[0]
                 start_time = time.time()
-                records = []
+                records: list[dict[str, Scalar]] = []
                 for i, record in enumerate(stream.get_records(context=None)):
                     records.append(record)
                     if i >= 49:

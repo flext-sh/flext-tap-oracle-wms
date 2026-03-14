@@ -12,6 +12,12 @@ from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
+from optype.numpy import Scalar
+from optype.numpy._scalar import Scalar
+from pandas._typing import Scalar
+from pandas.core.tools.datetimes import Scalar
+from pyarrow import Scalar
+from pyarrow.__lib_pxi.scalar import Scalar
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
@@ -124,7 +130,7 @@ class TestRealDataExtraction:
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
             pytest.skip(f"Stream {stream_name} not available")
-        records = []
+        records: list[dict[str, Scalar]] = []
         record_count = 0
         max_records = 5
         try:
@@ -157,7 +163,7 @@ class TestRealDataExtraction:
         if not inventory_stream:
             pytest.skip("Inventory stream not available")
         inventory_stream._page_size = 2
-        records = []
+        records: list[dict[str, Scalar]] = []
         pages = 0
         for i, record in enumerate(inventory_stream.get_records(context=None)):
             records.append(record)
