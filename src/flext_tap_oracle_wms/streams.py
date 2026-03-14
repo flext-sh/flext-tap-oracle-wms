@@ -24,7 +24,7 @@ from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
 logger = FlextLogger(__name__)
 
 
-def _as_map(value: object) -> Mapping[str, t.ContainerValue] | None:
+def _as_map(value) -> Mapping[str, t.ContainerValue] | None:
     if not isinstance(value, Mapping):
         return None
     try:
@@ -37,11 +37,11 @@ def _as_map(value: object) -> Mapping[str, t.ContainerValue] | None:
     }
 
 
-def _as_list(value: object) -> list[t.ContainerValue] | None:
+def _as_list(value) -> list[t.ContainerValue] | None:
     if not isinstance(value, list):
         return None
     try:
-        validated_list = TypeAdapter(list[object]).validate_python(value)
+        validated_list = TypeAdapter(list).validate_python(value)
     except ValidationError:
         return None
     return [
@@ -96,7 +96,7 @@ class FlextTapOracleWmsStream(Stream):
         return self._client
 
     @staticmethod
-    def normalize_json_value(value: object) -> t.Scalar:
+    def normalize_json_value(value) -> t.Scalar:
         """Normalize arbitrary values into Singer-compatible JSON values."""
         if isinstance(value, str | int | float | bool | datetime):
             return value
@@ -253,5 +253,5 @@ class FlextTapOracleWmsStream(Stream):
             }
             yield self.post_process(json_row, context)
 
-    def _run(self, value: object) -> object:
+    def _run(self, value):
         return value

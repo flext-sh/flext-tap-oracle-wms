@@ -71,7 +71,7 @@ def mock_wms_client() -> MagicMock:
         "shipments",
         "receipts",
     ])
-    client.get_records.return_value = r[list[object]].ok([
+    client.get_records.return_value = r[list].ok([
         {"id": "1", "name": "Test Item 1", "quantity": 100},
         {"id": "2", "name": "Test Item 2", "quantity": 200},
     ])
@@ -156,7 +156,7 @@ def mock_request() -> MagicMock:
     return request
 
 
-def pytest_collection_modifyitems(config: object, items: list[pytest.Item]) -> None:
+def pytest_collection_modifyitems(config, items: list[pytest.Item]) -> None:
     """Add markers to tests based on their location."""
     for item in items:
         if hasattr(item, "fspath") and "integration" in str(item.fspath):
