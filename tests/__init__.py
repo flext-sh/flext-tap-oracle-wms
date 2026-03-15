@@ -1,15 +1,7 @@
 # AUTO-GENERATED FILE — DO NOT EDIT MANUALLY.
 # Regenerate with: make codegen
 #
-"""init module.
-
-This module is part of the FLEXT ecosystem. Docstrings follow PEP 257 and Google style.
-
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-
-"""
+"""Tests package."""
 
 from __future__ import annotations
 
@@ -20,6 +12,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
+    from tests import e2e, integration, performance, unit
     from tests.conftest import (
         mock_request,
         mock_response,
@@ -137,7 +130,9 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "TestsFlextTapOracleWmsUtilities",
     ),
     "c": ("tests.constants", "TestsFlextTapOracleWmsConstants"),
+    "e2e": ("tests.e2e", ""),
     "env_path": ("tests.integration.test_wms_connection", "env_path"),
+    "integration": ("tests.integration", ""),
     "logger": ("tests.e2e.test_e2e", "logger"),
     "m": ("tests.models", "m"),
     "mock_request": ("tests.conftest", "mock_request"),
@@ -145,6 +140,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "mock_wms_client": ("tests.conftest", "mock_wms_client"),
     "oracle_wms_environment": ("tests.conftest", "oracle_wms_environment"),
     "p": ("tests.protocols", "p"),
+    "performance": ("tests.performance", ""),
     "performance_config": (
         "tests.performance.test_extraction_performance",
         "performance_config",
@@ -165,6 +161,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "tm": ("tests.models", "tm"),
     "tt": ("tests.typings", "tt"),
     "u": ("tests.utilities", "u"),
+    "unit": ("tests.unit", ""),
 }
 
 __all__ = [
@@ -190,7 +187,9 @@ __all__ = [
     "TestsFlextTapOracleWmsTypes",
     "TestsFlextTapOracleWmsUtilities",
     "c",
+    "e2e",
     "env_path",
+    "integration",
     "logger",
     "m",
     "mock_request",
@@ -198,6 +197,7 @@ __all__ = [
     "mock_wms_client",
     "oracle_wms_environment",
     "p",
+    "performance",
     "performance_config",
     "pytest_collection_modifyitems",
     "real_config",
@@ -212,6 +212,7 @@ __all__ = [
     "tm",
     "tt",
     "u",
+    "unit",
 ]
 
 
