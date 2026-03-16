@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
+
+from flext_tap_oracle_wms import c
 
 
 class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
@@ -14,40 +14,12 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     class Project:
         """Project-level aliases and constrained literals."""
 
-        type ProjectType = Literal[
-            "library",
-            "application",
-            "service",
-            "singer-tap",
-            "wms-extractor",
-            "warehouse-extractor",
-            "singer-tap-oracle-wms",
-            "tap-oracle-wms",
-            "wms-connector",
-            "warehouse-connector",
-            "singer-protocol",
-            "wms-integration",
-            "oracle-wms",
-            "warehouse-management",
-            "singer-stream",
-            "etl-tap",
-            "data-pipeline",
-            "wms-tap",
-            "singer-integration",
-        ]
-        type ReplicationMethodLiteral = Literal["FULL_TABLE", "INCREMENTAL"]
-        type AuthenticationMethodLiteral = Literal["basic", "oauth2"]
-        type StreamInclusionLiteral = Literal["available", "automatic", "unsupported"]
-        type ErrorTypeLiteral = Literal[
-            "AUTHENTICATION",
-            "AUTHORIZATION",
-            "RATE_LIMIT",
-            "TIMEOUT",
-            "SERVER_ERROR",
-            "NETWORK",
-            "VALIDATION",
-        ]
-        type BackoffStrategyLiteral = Literal["linear", "exponential", "fixed"]
+        type ProjectType = c.ProjectType
+        type ReplicationMethodLiteral = c.ReplicationMethodLiteral
+        type AuthenticationMethodLiteral = c.AuthenticationMethodLiteral
+        type StreamInclusionLiteral = c.StreamInclusionLiteral
+        type ErrorTypeLiteral = c.ErrorTypeLiteral
+        type BackoffStrategyLiteral = c.BackoffStrategyLiteral
 
 
 t = FlextTapOracleWmsTypes

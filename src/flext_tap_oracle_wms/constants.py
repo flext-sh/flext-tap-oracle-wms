@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from enum import StrEnum
+from enum import StrEnum, unique
 from typing import Final, Literal
 
 from flext_core import FlextConstants
@@ -28,6 +28,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
     )
     MAX_BATCH_SIZE: Final[int] = FlextConstants.Performance.BatchProcessing.MAX_ITEMS
 
+    @unique
     class TapWmsEntityType(StrEnum):
         """Oracle WMS entity types using StrEnum for type safety.
 
@@ -88,18 +89,21 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
             FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
         )
 
+    @unique
     class ReplicationMethod(StrEnum):
         """Replication method types using StrEnum for type safety."""
 
         FULL_TABLE = "FULL_TABLE"
         INCREMENTAL = "INCREMENTAL"
 
+    @unique
     class AuthenticationMethod(StrEnum):
         """Authentication method types using StrEnum for type safety."""
 
         BASIC = "basic"
         OAUTH2 = "oauth2"
 
+    @unique
     class StreamInclusion(StrEnum):
         """Stream inclusion status types using StrEnum for type safety."""
 
@@ -107,6 +111,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
         AUTOMATIC = "automatic"
         UNSUPPORTED = "unsupported"
 
+    @unique
     class ErrorType(StrEnum):
         """Error type constants using StrEnum for type safety."""
 
@@ -118,6 +123,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
         NETWORK = "NETWORK"
         VALIDATION = "VALIDATION"
 
+    @unique
     class BackoffStrategy(StrEnum):
         """Backoff strategy types using StrEnum for type safety."""
 
@@ -129,6 +135,83 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
         "INVENTORY", "SHIPMENT", "PICKING", "RECEIVING"
     ]
     "Oracle WMS entity type literal - references WmsEntityType StrEnum members."
+
+    @unique
+    class ProjectType(StrEnum):
+        LIBRARY = "library"
+        APPLICATION = "application"
+        SERVICE = "service"
+        SINGER_TAP = "singer-tap"
+        WMS_EXTRACTOR = "wms-extractor"
+        WAREHOUSE_EXTRACTOR = "warehouse-extractor"
+        SINGER_TAP_ORACLE_WMS = "singer-tap-oracle-wms"
+        TAP_ORACLE_WMS = "tap-oracle-wms"
+        WMS_CONNECTOR = "wms-connector"
+        WAREHOUSE_CONNECTOR = "warehouse-connector"
+        SINGER_PROTOCOL = "singer-protocol"
+        WMS_INTEGRATION = "wms-integration"
+        ORACLE_WMS = "oracle-wms"
+        WAREHOUSE_MANAGEMENT = "warehouse-management"
+        SINGER_STREAM = "singer-stream"
+        ETL_TAP = "etl-tap"
+        DATA_PIPELINE = "data-pipeline"
+        WMS_TAP = "wms-tap"
+        SINGER_INTEGRATION = "singer-integration"
+
+    @unique
+    class ReplicationMethodLiteral(StrEnum):
+        FULL_TABLE = "FULL_TABLE"
+        INCREMENTAL = "INCREMENTAL"
+
+    @unique
+    class AuthenticationMethodLiteral(StrEnum):
+        BASIC = "basic"
+        OAUTH2 = "oauth2"
+
+    @unique
+    class StreamInclusionLiteral(StrEnum):
+        AVAILABLE = "available"
+        AUTOMATIC = "automatic"
+        UNSUPPORTED = "unsupported"
+
+    @unique
+    class ErrorTypeLiteral(StrEnum):
+        AUTHENTICATION = "AUTHENTICATION"
+        AUTHORIZATION = "AUTHORIZATION"
+        RATE_LIMIT = "RATE_LIMIT"
+        TIMEOUT = "TIMEOUT"
+        SERVER_ERROR = "SERVER_ERROR"
+        NETWORK = "NETWORK"
+        VALIDATION = "VALIDATION"
+
+    @unique
+    class BackoffStrategyLiteral(StrEnum):
+        LINEAR = "linear"
+        EXPONENTIAL = "exponential"
+        FIXED = "fixed"
+
+    @unique
+    class TestOracleWmsBaseUrl(StrEnum):
+        HTTPS_TEST_WMS_ORACLECLOUD_COM = "https://test-wms.oraclecloud.com"
+        HTTPS_STAGING_WMS_ORACLECLOUD_COM = "https://staging-wms.oraclecloud.com"
+
+    @unique
+    class TestOracleWmsUsername(StrEnum):
+        TEST_USER = "test_user"
+        REDACTED_LDAP_BIND_PASSWORD_USER = "REDACTED_LDAP_BIND_PASSWORD_user"
+
+    @unique
+    class TestOracleWmsMethod(StrEnum):
+        GET = "GET"
+        POST = "POST"
+        PUT = "PUT"
+        DELETE = "DELETE"
+
+    @unique
+    class TestFacilityId(StrEnum):
+        FAC001 = "FAC001"
+        FAC002 = "FAC002"
+        FAC003 = "FAC003"
 
 
 c = FlextTapOracleWmsConstants

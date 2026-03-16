@@ -7,11 +7,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Literal
-
 from flext_tests import FlextTestsTypes
 
-from flext_tap_oracle_wms import t
+from flext_tap_oracle_wms import c, t
 
 
 class TestsFlextTapOracleWmsTypes(FlextTestsTypes):
@@ -40,14 +38,10 @@ class TestsFlextTapOracleWmsTypes(FlextTestsTypes):
         - Test scenario types
         """
 
-        type TestOracleWmsBaseUrl = Literal[
-            "https://test-wms.oraclecloud.com", "https://staging-wms.oraclecloud.com"
-        ]
-        type TestOracleWmsUsername = Literal[
-            "test_user", "REDACTED_LDAP_BIND_PASSWORD_user"
-        ]
-        type TestOracleWmsMethod = Literal["GET", "POST", "PUT", "DELETE"]
-        type TestFacilityId = Literal["FAC001", "FAC002", "FAC003"]
+        type TestOracleWmsBaseUrl = c.TestOracleWmsBaseUrl
+        type TestOracleWmsUsername = c.TestOracleWmsUsername
+        type TestOracleWmsMethod = c.TestOracleWmsMethod
+        type TestFacilityId = c.TestFacilityId
         type MockOracleWmsRecord = dict[str, t.Scalar]
         type MockOracleWmsResponse = dict[
             str, list[MockOracleWmsRecord] | bool | str | None
