@@ -240,8 +240,8 @@ class TestOracleWMSFunctionalComplete:
         """Test automatic replication key detection."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog["streams"]
-        streams_with_replication = []
-        streams_full_table = []
+        streams_with_replication: list[tuple[str, str]] = []
+        streams_full_table: list[str] = []
         for stream in streams:
             metadata = stream.get("metadata", [])
             table_metadata = None
@@ -400,7 +400,7 @@ class TestOracleWMSFunctionalComplete:
             "replication_configured": False,
             "pagination_configured": False,
             "singer_compliant": False,
-            "errors": [],
+            "errors": list[str](),
         }
         try:
             assert real_tap_instance is not None

@@ -224,7 +224,7 @@ class TestOracleWMSE2EComplete:
             if len(properties) > 0:
                 quality_report["schemas_valid"] += 1
             metadata = stream_config.get("metadata", [])
-            primary_keys = []
+            primary_keys: list[str] = []
             for meta in metadata:
                 if meta.get("breadcrumb") and len(meta["breadcrumb"]) == 1:
                     field_meta = meta.get("metadata", {})
@@ -382,7 +382,7 @@ class TestOracleWMSE2EComplete:
         streams_count = len(catalog.get("streams", []))
         assert discovery_time < 300, f"Discovery too slow: {discovery_time:.2f}s"
         assert streams_count > 0, "No streams discovered"
-        properties_per_stream = []
+        properties_per_stream: list[int] = []
         for stream in catalog["streams"]:
             prop_count = len(stream["schema"].get("properties", {}))
             properties_per_stream.append(prop_count)
@@ -419,7 +419,7 @@ class TestOracleWMSE2EComplete:
             "schemas_valid": 0,
             "singer_compliant": False,
             "performance_acceptable": False,
-            "errors": [],
+            "errors": list[str](),
         }
         try:
             start_time = time.time()

@@ -89,7 +89,7 @@ class TestStreamsFunctional:
         authenticator = stream.authenticator
         assert authenticator is not None
         request = Mock()
-        request.headers = {}
+        request.headers = dict[str, str]()
         authenticated_request = authenticator(request)
         assert "Authorization" in authenticated_request.headers
         auth_header = authenticated_request.headers["Authorization"]
@@ -161,7 +161,7 @@ class TestStreamsFunctional:
         """Test timestamp field detection for replication keys."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        timestamp_streams = []
+        timestamp_streams: list[tuple[str, str]] = []
         for stream_config in streams[:3]:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
