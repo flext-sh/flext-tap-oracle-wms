@@ -253,5 +253,5 @@ class FlextTapOracleWmsStream(Stream):
             }
             yield self.post_process(json_row, context)
 
-    def _run(self, value):
+    def _run(self, value: t.Scalar) -> t.Scalar:
         return value

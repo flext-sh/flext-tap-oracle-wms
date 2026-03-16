@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import t
 from flext_meltano import FlextMeltanoUtilities
 
 
@@ -36,8 +37,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities):
 
         @staticmethod
         def process_wms_record(
-            record,
-        ):
+            record: dict[str, t.ContainerValue],
+        ) -> dict[str, t.ContainerValue]:
             """Process WMS record for output.
 
             Args:

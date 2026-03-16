@@ -11,12 +11,7 @@ SPDX-License-Identifier: MIT
 import os
 
 import pytest
-from optype.numpy import Scalar
-from optype.numpy._scalar import Scalar
 from pandas._typing import Scalar
-from pandas.core.tools.datetimes import Scalar
-from pyarrow import Scalar
-from pyarrow.__lib_pxi.scalar import Scalar
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
