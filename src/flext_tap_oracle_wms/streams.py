@@ -17,8 +17,7 @@ from pydantic import BaseModel, TypeAdapter, ValidationError
 from singer_sdk.streams import Stream
 from singer_sdk.tap_base import Tap
 
-from flext_tap_oracle_wms import p
-from flext_tap_oracle_wms import u
+from flext_tap_oracle_wms import p, u
 
 logger = FlextLogger(__name__)
 
@@ -97,7 +96,7 @@ class FlextTapOracleWmsStream(Stream):
     @staticmethod
     def normalize_json_value(value: object | str) -> t.Scalar:
         """Normalize arbitrary values into Singer-compatible JSON values."""
-        if isinstance(value, t.Scalar):
+        if isinstance(value, t.SCALAR_TYPES):
             return value
         if value is None:
             return ""
