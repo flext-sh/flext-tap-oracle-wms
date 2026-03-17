@@ -17,11 +17,11 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
-    from tests.unit.test_cli import TestCLI
-    from tests.unit.test_config import TestFlextTapOracleWmsSettings
-    from tests.unit.test_config_validation import TestConfigValidation
-    from tests.unit.test_tap import TestFlextTapOracleWms
-    from tests.unit.test_tap_initialization import TestTapInitialization
+    from .test_cli import TestCLI
+    from .test_config import TestFlextTapOracleWmsSettings
+    from .test_config_validation import TestConfigValidation
+    from .test_tap import TestFlextTapOracleWms
+    from .test_tap_initialization import TestTapInitialization
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestCLI": ("tests.unit.test_cli", "TestCLI"),

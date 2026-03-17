@@ -12,8 +12,13 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
-    from tests import e2e, integration, performance, unit
-    from tests.conftest import (
+    from . import (
+        e2e as e2e,
+        integration as integration,
+        performance as performance,
+        unit as unit,
+    )
+    from .conftest import (
         mock_request,
         mock_response,
         mock_wms_client,
@@ -27,18 +32,18 @@ if TYPE_CHECKING:
         sample_state,
         tap_instance,
     )
-    from tests.constants import (
+    from .constants import (
         TestsFlextTapOracleWmsConstants,
         TestsFlextTapOracleWmsConstants as c,
     )
-    from tests.e2e.test_e2e import TestOracleWMSE2EComplete, logger
-    from tests.integration.test_functional import TestOracleWMSFunctionalComplete
-    from tests.integration.test_streams_functional import (
+    from .e2e.test_e2e import TestOracleWMSE2EComplete, logger
+    from .integration.test_functional import TestOracleWMSFunctionalComplete
+    from .integration.test_streams_functional import (
         TestStreamsFunctional,
         TestWMSPaginatorUnit,
     )
-    from tests.integration.test_wms import TestRealWmsIntegration
-    from tests.integration.test_wms_connection import (
+    from .integration.test_wms import TestRealWmsIntegration
+    from .integration.test_wms_connection import (
         TestFilteringAndSelection,
         TestIntegration,
         TestRealConnection,
@@ -46,24 +51,24 @@ if TYPE_CHECKING:
         env_path,
         tap,
     )
-    from tests.models import TestsFlextTapOracleWmsModels, m, tm
-    from tests.performance.test_extraction_performance import (
+    from .models import TestsFlextTapOracleWmsModels, m, tm
+    from .performance.test_extraction_performance import (
         TestExtractionPerformance,
         TestRateLimitingPerformance,
         performance_config,
     )
-    from tests.protocols import TestsFlextTapOracleWmsProtocols, p
-    from tests.typings import (
+    from .protocols import TestsFlextTapOracleWmsProtocols, p
+    from .typings import (
         TestsFlextTapOracleWmsTypes,
         TestsFlextTapOracleWmsTypes as t,
         tt,
     )
-    from tests.unit.test_cli import TestCLI
-    from tests.unit.test_config import TestFlextTapOracleWmsSettings
-    from tests.unit.test_config_validation import TestConfigValidation
-    from tests.unit.test_tap import TestFlextTapOracleWms
-    from tests.unit.test_tap_initialization import TestTapInitialization
-    from tests.utilities import TestsFlextTapOracleWmsUtilities, u
+    from .unit.test_cli import TestCLI
+    from .unit.test_config import TestFlextTapOracleWmsSettings
+    from .unit.test_config_validation import TestConfigValidation
+    from .unit.test_tap import TestFlextTapOracleWms
+    from .unit.test_tap_initialization import TestTapInitialization
+    from .utilities import TestsFlextTapOracleWmsUtilities, u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestCLI": ("tests.unit.test_cli", "TestCLI"),
