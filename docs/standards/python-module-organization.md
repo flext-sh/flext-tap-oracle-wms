@@ -146,14 +146,11 @@ following Singer SDK patterns and FLEXT ecosystem standards.
 
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from flext_tap_oracle_wms.settings import WMSConfig
-from flext_tap_oracle_wms.version import VERSION
-
-__version__ = VERSION.version
+from flext_tap_oracle_wms.__version__ import __version__
 
 __all__: t.StringList = [
     "FlextTapOracleWms",
     "WMSConfig",
-    "VERSION",
     "__version__",
 ]
 

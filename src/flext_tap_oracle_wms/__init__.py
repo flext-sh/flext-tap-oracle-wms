@@ -52,7 +52,6 @@ if TYPE_CHECKING:
         FlextTapOracleWmsUtilities,
         FlextTapOracleWmsUtilities as u,
     )
-    from flext_tap_oracle_wms.version import VERSION, FlextTapOracleWmsVersion
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextTapOracleWms": ("flext_tap_oracle_wms.tap", "FlextTapOracleWms"),
@@ -101,11 +100,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "flext_tap_oracle_wms.exceptions",
         "FlextTapOracleWmsValidationError",
     ),
-    "FlextTapOracleWmsVersion": (
-        "flext_tap_oracle_wms.version",
-        "FlextTapOracleWmsVersion",
-    ),
-    "VERSION": ("flext_tap_oracle_wms.version", "VERSION"),
     "__all__": ("flext_tap_oracle_wms.__version__", "__all__"),
     "__author__": ("flext_tap_oracle_wms.__version__", "__author__"),
     "__author_email__": ("flext_tap_oracle_wms.__version__", "__author_email__"),
@@ -125,7 +119,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
 }
 
 __all__ = [
-    "VERSION",
     "FlextTapOracleWms",
     "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsConnectionError",
@@ -139,7 +132,6 @@ __all__ = [
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
     "FlextTapOracleWmsValidationError",
-    "FlextTapOracleWmsVersion",
     "__all__",
     "__author__",
     "__author_email__",
