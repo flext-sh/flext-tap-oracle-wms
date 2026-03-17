@@ -138,6 +138,8 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
 
     @unique
     class ProjectType(StrEnum):
+        """Project type literals for tap package metadata."""
+
         LIBRARY = "library"
         APPLICATION = "application"
         SERVICE = "service"
@@ -160,22 +162,30 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
 
     @unique
     class ReplicationMethodLiteral(StrEnum):
+        """Replication strategy literals for extraction mode."""
+
         FULL_TABLE = "FULL_TABLE"
         INCREMENTAL = "INCREMENTAL"
 
     @unique
     class AuthenticationMethodLiteral(StrEnum):
+        """Authentication method literals for endpoint access."""
+
         BASIC = "basic"
         OAUTH2 = "oauth2"
 
     @unique
     class StreamInclusionLiteral(StrEnum):
+        """Singer stream inclusion policy literals."""
+
         AVAILABLE = "available"
         AUTOMATIC = "automatic"
         UNSUPPORTED = "unsupported"
 
     @unique
     class ErrorTypeLiteral(StrEnum):
+        """Error category literals for tap failures."""
+
         AUTHENTICATION = "AUTHENTICATION"
         AUTHORIZATION = "AUTHORIZATION"
         RATE_LIMIT = "RATE_LIMIT"
@@ -186,22 +196,30 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
 
     @unique
     class BackoffStrategyLiteral(StrEnum):
+        """Retry backoff strategy literals."""
+
         LINEAR = "linear"
         EXPONENTIAL = "exponential"
         FIXED = "fixed"
 
     @unique
     class TestOracleWmsBaseUrl(StrEnum):
+        """Test Oracle WMS base URL literals."""
+
         HTTPS_TEST_WMS_ORACLECLOUD_COM = "https://test-wms.oraclecloud.com"
         HTTPS_STAGING_WMS_ORACLECLOUD_COM = "https://staging-wms.oraclecloud.com"
 
     @unique
     class TestOracleWmsUsername(StrEnum):
+        """Test Oracle WMS username literals."""
+
         TEST_USER = "test_user"
         REDACTED_LDAP_BIND_PASSWORD_USER = "REDACTED_LDAP_BIND_PASSWORD_user"
 
     @unique
     class TestOracleWmsMethod(StrEnum):
+        """Test HTTP method literals for Oracle WMS calls."""
+
         GET = "GET"
         POST = "POST"
         PUT = "PUT"
@@ -209,6 +227,8 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
 
     @unique
     class TestFacilityId(StrEnum):
+        """Test facility identifier literals."""
+
         FAC001 = "FAC001"
         FAC002 = "FAC002"
         FAC003 = "FAC003"

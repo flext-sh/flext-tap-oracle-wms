@@ -23,6 +23,7 @@ import sys
 from pathlib import Path
 from typing import ClassVar, override
 
+from flext_core import t
 from pydantic import BaseModel, Field
 
 
