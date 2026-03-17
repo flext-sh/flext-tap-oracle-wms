@@ -8,7 +8,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from datetime import datetime
 from pathlib import Path
 from typing import ClassVar, override
 
@@ -18,8 +17,8 @@ from pydantic import BaseModel, TypeAdapter, ValidationError
 from singer_sdk.streams import Stream
 from singer_sdk.tap_base import Tap
 
-from flext_tap_oracle_wms.protocols import p
-from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
+from flext_tap_oracle_wms import p
+from flext_tap_oracle_wms import u
 
 logger = FlextLogger(__name__)
 
@@ -69,7 +68,7 @@ class FlextTapOracleWmsStream(Stream):
     ) -> None:
         """Initialize stream."""
         Stream.__init__(self, tap=tap, name=name or self.name, schema=schema)
-        self._utilities = FlextTapOracleWmsUtilities()
+        self._utilities = u()
         self._client: FlextOracleWmsClient | None = None
         page_size = int(self.config.get("page_size", 100))
         self._page_size = (
@@ -98,7 +97,7 @@ class FlextTapOracleWmsStream(Stream):
     @staticmethod
     def normalize_json_value(value: object | str) -> t.Scalar:
         """Normalize arbitrary values into Singer-compatible JSON values."""
-        if isinstance(value, str | int | float | bool | datetime):
+        if isinstance(value, t.Scalar):
             return value
         if value is None:
             return ""

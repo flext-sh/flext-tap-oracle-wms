@@ -54,7 +54,7 @@ class AuditResult(BaseModel):
     recommendations: list[str] = Field(
         default_factory=list, description="Audit recommendations"
     )
-    stats: dict[str, str | int | float | bool] = Field(
+    stats: dict[str, t.Primitives] = Field(
         default_factory=dict, description="Audit statistics"
     )
 
