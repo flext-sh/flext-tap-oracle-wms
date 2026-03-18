@@ -1,4 +1,4 @@
-"""Utilities for flext-tap-oracle-wms tests - uses composition with FlextTestsUtilities.
+"""Utilities for flext-tap-oracle-wms tests - uses composition with u.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -12,24 +12,24 @@ from flext_tests import u
 from flext_tap_oracle_wms import t
 
 
-class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities):
-    """Utilities for flext-tap-oracle-wms tests - uses composition with FlextTestsUtilities.
+class TestsFlextTapOracleWmsUtilities(u):
+    """Utilities for flext-tap-oracle-wms tests - uses composition with u.
 
-    Architecture: Uses composition (not inheritance) with FlextTestsUtilities and FlextTapOracleWmsUtilities
+    Architecture: Uses composition (not inheritance) with u and FlextTapOracleWmsUtilities
     for flext-tap-oracle-wms-specific utility definitions.
 
     Access patterns:
     - TestsFlextTapOracleWmsUtilities.Tests.* = flext_tests test utilities (via composition)
     - TestsFlextTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
-    - TestsFlextTapOracleWmsUtilities.* = FlextTestsUtilities methods (via composition)
+    - TestsFlextTapOracleWmsUtilities.* = u methods (via composition)
 
     Rules:
-    - Use composition, not inheritance (FlextTestsUtilities deprecates subclassing)
+    - Use composition, not inheritance (u deprecates subclassing)
     - flext-tap-oracle-wms-specific utilities go in TapOracleWms namespace
     - Generic utilities accessed via Tests namespace
     """
 
-    Tests = FlextTestsUtilities.Tests
+    Tests = u.Tests
 
     class TapOracleWms:
         """Tap Oracle WMS test utilities - domain-specific for Oracle WMS tap testing.

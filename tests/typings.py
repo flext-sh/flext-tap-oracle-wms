@@ -1,4 +1,4 @@
-"""Types for flext-tap-oracle-wms tests - uses composition with FlextTestsTypes.
+"""Types for flext-tap-oracle-wms tests - uses composition with t.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -12,19 +12,19 @@ from flext_tests import t
 from flext_tap_oracle_wms import c, t
 
 
-class TestsFlextTapOracleWmsTypes(FlextTestsTypes):
-    """Types for flext-tap-oracle-wms tests - uses composition with FlextTestsTypes.
+class TestsFlextTapOracleWmsTypes(t):
+    """Types for flext-tap-oracle-wms tests - uses composition with t.
 
-    Architecture: Uses composition (not inheritance) with FlextTestsTypes and FlextTapOracleWmsTypes
+    Architecture: Uses composition (not inheritance) with t and FlextTapOracleWmsTypes
     for flext-tap-oracle-wms-specific type definitions.
 
     Access patterns:
     - TestsFlextTapOracleWmsTypes.Tests.* = flext_tests test types (via composition)
     - TestsFlextTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
-    - TestsFlextTapOracleWmsTypes.* = FlextTestsTypes types (via composition)
+    - TestsFlextTapOracleWmsTypes.* = t types (via composition)
 
     Rules:
-    - Use composition, not inheritance (FlextTestsTypes deprecates subclassing)
+    - Use composition, not inheritance (t deprecates subclassing)
     - flext-tap-oracle-wms-specific types go in TapOracleWms namespace
     - Generic types accessed via Tests namespace
     """
