@@ -112,18 +112,6 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
         UNSUPPORTED = "unsupported"
 
     @unique
-    class ErrorType(StrEnum):
-        """Error type constants using StrEnum for type safety."""
-
-        AUTHENTICATION = "AUTHENTICATION"
-        AUTHORIZATION = "AUTHORIZATION"
-        RATE_LIMIT = "RATE_LIMIT"
-        TIMEOUT = "TIMEOUT"
-        SERVER_ERROR = "SERVER_ERROR"
-        NETWORK = "NETWORK"
-        VALIDATION = "VALIDATION"
-
-    @unique
     class BackoffStrategy(StrEnum):
         """Backoff strategy types using StrEnum for type safety."""
 
