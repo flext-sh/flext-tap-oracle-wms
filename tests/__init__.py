@@ -32,10 +32,7 @@ if TYPE_CHECKING:
         sample_state,
         tap_instance,
     )
-    from .constants import (
-        TestsFlextTapOracleWmsConstants,
-        TestsFlextTapOracleWmsConstants as c,
-    )
+    from .constants import TestsFlextTapOracleWmsConstants, c
     from .e2e.test_e2e import TestOracleWMSE2EComplete, logger
     from .integration.test_functional import TestOracleWMSFunctionalComplete
     from .integration.test_streams_functional import (
@@ -134,7 +131,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "tests.utilities",
         "TestsFlextTapOracleWmsUtilities",
     ),
-    "c": ("tests.constants", "TestsFlextTapOracleWmsConstants"),
+    "c": ("tests.constants", "c"),
     "e2e": ("tests.e2e", ""),
     "env_path": ("tests.integration.test_wms_connection", "env_path"),
     "integration": ("tests.integration", ""),
