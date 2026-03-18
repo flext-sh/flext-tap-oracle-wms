@@ -7,8 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import t
-
 from flext_tap_oracle_wms import c, t
 
 
