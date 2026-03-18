@@ -48,10 +48,7 @@ if TYPE_CHECKING:
         logger,
     )
     from flext_tap_oracle_wms.typings import FlextTapOracleWmsTypes, t
-    from flext_tap_oracle_wms.utilities import (
-        FlextTapOracleWmsUtilities,
-        FlextTapOracleWmsUtilities as u,
-    )
+    from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities, u
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextTapOracleWms": ("flext_tap_oracle_wms.tap", "FlextTapOracleWms"),
@@ -115,7 +112,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "main": ("flext_tap_oracle_wms.cli", "main"),
     "p": ("flext_tap_oracle_wms.protocols", "p"),
     "t": ("flext_tap_oracle_wms.typings", "t"),
-    "u": ("flext_tap_oracle_wms.utilities", "FlextTapOracleWmsUtilities"),
+    "u": ("flext_tap_oracle_wms.utilities", "u"),
 }
 
 __all__ = [
