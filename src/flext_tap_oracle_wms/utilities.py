@@ -49,3 +49,12 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities):
 
             """
             return record
+
+
+u = FlextTapOracleWmsUtilities
+"""Facade assignment for module-level utility access."""
+
+__all__ = [
+    "FlextTapOracleWmsUtilities",
+    "u",
+]
