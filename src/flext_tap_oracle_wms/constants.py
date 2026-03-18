@@ -11,11 +11,6 @@ from enum import StrEnum, unique
 from typing import Final, Literal
 
 from flext_core import FlextConstants
-from flext_core.constants import (
-    PROJECT_KIND_APPLICATION,
-    PROJECT_KIND_LIBRARY,
-    PROJECT_KIND_SERVICE,
-)
 from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
 
@@ -137,7 +132,10 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
         FIXED = "fixed"
 
     type TapWmsEntityTypeLiteral = Literal[
-        "INVENTORY", "SHIPMENT", "PICKING", "RECEIVING"
+        "INVENTORY",
+        "SHIPMENT",
+        "PICKING",
+        "RECEIVING",
     ]
     "Oracle WMS entity type literal - references WmsEntityType StrEnum members."
 
@@ -145,9 +143,6 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
     class ProjectType(StrEnum):
         """Project type literals for tap package metadata."""
 
-        LIBRARY = PROJECT_KIND_LIBRARY
-        APPLICATION = PROJECT_KIND_APPLICATION
-        SERVICE = PROJECT_KIND_SERVICE
         SINGER_TAP = "singer-tap"
         WMS_EXTRACTOR = "wms-extractor"
         WAREHOUSE_EXTRACTOR = "warehouse-extractor"

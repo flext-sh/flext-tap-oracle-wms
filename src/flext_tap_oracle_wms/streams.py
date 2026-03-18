@@ -73,7 +73,7 @@ class FlextTapOracleWmsStream(Stream):
         self._page_size = (
             page_size
             if self._utilities.ConfigurationProcessing.validate_stream_page_size(
-                page_size
+                page_size,
             )
             else 100
         )
@@ -84,7 +84,8 @@ class FlextTapOracleWmsStream(Stream):
         if self._client is None:
             tap_instance = self._tap
             if tap_instance and isinstance(
-                tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClient
+                tap_instance,
+                p.TapOracleWms.OracleWms.TapWithWmsClient,
             ):
                 wms_tap: p.TapOracleWms.OracleWms.TapWithWmsClient = tap_instance
                 self._client = wms_tap.wms_client
@@ -122,7 +123,8 @@ class FlextTapOracleWmsStream(Stream):
 
     @override
     def get_records(
-        self, context: Mapping[str, t.Scalar] | None
+        self,
+        context: Mapping[str, t.Scalar] | None,
     ) -> Iterable[dict[str, t.Scalar]]:
         """Get records from Oracle WMS."""
         page = 1
@@ -188,7 +190,9 @@ class FlextTapOracleWmsStream(Stream):
         return row
 
     def _build_operation_kwargs(
-        self, page: int, context: Mapping[str, t.Scalar] | None
+        self,
+        page: int,
+        context: Mapping[str, t.Scalar] | None,
     ) -> Mapping[str, t.Scalar]:
         """Build kwargs for the operation call."""
         kwargs: dict[str, t.Scalar] = {"page": page, "limit": self._page_size}
@@ -202,7 +206,9 @@ class FlextTapOracleWmsStream(Stream):
         return kwargs
 
     def _fetch_page_data(
-        self, page: int, context: Mapping[str, t.Scalar] | None
+        self,
+        page: int,
+        context: Mapping[str, t.Scalar] | None,
     ) -> r[tuple[list[dict[str, t.Scalar]], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
@@ -213,11 +219,13 @@ class FlextTapOracleWmsStream(Stream):
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
         result = self.client.get_entity_data(
-            entity_name=self.name, limit=limit, filters=filters or None
+            entity_name=self.name,
+            limit=limit,
+            filters=filters or None,
         )
         if result.is_failure:
             return r[tuple[list[dict[str, t.Scalar]], bool]].fail(
-                f"Failed to get records for {self.name}: {result.error}"
+                f"Failed to get records for {self.name}: {result.error}",
             )
         normalized: list[dict[str, t.Scalar]] = [
             {
@@ -241,7 +249,7 @@ class FlextTapOracleWmsStream(Stream):
         for record in records:
             record_dict: dict[str, t.Scalar] = dict(record)
             processed_record = self._utilities.DataProcessing.process_wms_record(
-                record=record_dict
+                record=record_dict,
             )
             processed_map = _as_map(processed_record)
             if processed_map is None:

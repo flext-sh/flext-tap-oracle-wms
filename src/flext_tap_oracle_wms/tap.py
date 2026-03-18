@@ -59,7 +59,7 @@ class FlextTapOracleWms(Tap):
                 update={
                     "base_url": str(self.flext_config.base_url),
                     "timeout": self.flext_config.timeout,
-                }
+                },
             )
             client = FlextOracleWmsClient(config=wms_settings)
             start_result = client.start()
@@ -79,7 +79,7 @@ class FlextTapOracleWms(Tap):
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.is_failure:
             return r[m.Meltano.SingerCatalog].fail(
-                discovery_result.error or "Discovery failed"
+                discovery_result.error or "Discovery failed",
             )
         entities: list[str] = list(discovery_result.value)
         streams = [
@@ -95,7 +95,7 @@ class FlextTapOracleWms(Tap):
                             "forced-replication-method": "FULL_TABLE",
                             "table-key-properties": ["id"],
                         },
-                    )
+                    ),
                 ],
                 key_properties=["id"],
                 replication_key=None,
@@ -108,7 +108,7 @@ class FlextTapOracleWms(Tap):
             for entity in entities
         ]
         return r[m.Meltano.SingerCatalog].ok(
-            m.Meltano.SingerCatalog(type="CATALOG", streams=streams)
+            m.Meltano.SingerCatalog(type="CATALOG", streams=streams),
         )
 
     @override
@@ -126,7 +126,9 @@ class FlextTapOracleWms(Tap):
             stream_name = stream_raw.stream
             stream_schema = stream_raw.schema_definition
             stream = FlextTapOracleWmsStream(
-                tap=self, name=stream_name, schema=stream_schema
+                tap=self,
+                name=stream_name,
+                schema=stream_schema,
             )
             streams.append(stream)
         return streams
@@ -195,14 +197,16 @@ class FlextTapOracleWmsPlugin:
         return self._version
 
     def execute(
-        self, operation: str, _parameters: Mapping[str, t.ContainerValue] | None = None
+        self,
+        operation: str,
+        _parameters: Mapping[str, t.ContainerValue] | None = None,
     ) -> r[t.ContainerValue]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
             init_result = self.initialize(None)
             if init_result.is_failure:
                 return r[t.ContainerValue].fail(
-                    init_result.error or "Tap initialization failed"
+                    init_result.error or "Tap initialization failed",
                 )
         tap = self._tap
         if tap is None:
@@ -211,7 +215,7 @@ class FlextTapOracleWmsPlugin:
             catalog_result = tap.discover_catalog()
             if catalog_result.is_failure:
                 return r[t.ContainerValue].fail(
-                    catalog_result.error or "Discovery failed"
+                    catalog_result.error or "Discovery failed",
                 )
             return r[t.ContainerValue].ok(catalog_result.value.model_dump(mode="json"))
         if operation == "sync":
