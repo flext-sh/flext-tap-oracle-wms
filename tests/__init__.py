@@ -55,11 +55,7 @@ if TYPE_CHECKING:
         performance_config,
     )
     from .protocols import TestsFlextTapOracleWmsProtocols, p
-    from .typings import (
-        TestsFlextTapOracleWmsTypes,
-        TestsFlextTapOracleWmsTypes as t,
-        tt,
-    )
+    from .typings import TestsFlextTapOracleWmsTypes, tt
     from .unit.test_cli import TestCLI
     from .unit.test_config import TestFlextTapOracleWmsSettings
     from .unit.test_config_validation import TestConfigValidation
@@ -157,7 +153,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "sample_catalog": ("tests.conftest", "sample_catalog"),
     "sample_config": ("tests.conftest", "sample_config"),
     "sample_state": ("tests.conftest", "sample_state"),
-    "t": ("tests.typings", "TestsFlextTapOracleWmsTypes"),
     "tap": ("tests.integration.test_wms_connection", "tap"),
     "tap_instance": ("tests.conftest", "tap_instance"),
     "tm": ("tests.models", "tm"),
@@ -208,7 +203,6 @@ __all__ = [
     "sample_catalog",
     "sample_config",
     "sample_state",
-    "t",
     "tap",
     "tap_instance",
     "tm",
