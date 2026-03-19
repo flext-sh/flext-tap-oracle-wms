@@ -29,7 +29,7 @@ if TYPE_CHECKING:
         __version_info__,
     )
     from flext_tap_oracle_wms.cli import main
-    from flext_tap_oracle_wms.constants import c
+    from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants, c
     from flext_tap_oracle_wms.exceptions import (
         FlextTapOracleWmsConfigurationError,
         FlextTapOracleWmsConnectionError,
@@ -38,10 +38,7 @@ if TYPE_CHECKING:
     )
     from flext_tap_oracle_wms.models import FlextTapOracleWmsModels, m
     from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols, p
-    from flext_tap_oracle_wms.settings import (
-        FlextTapOracleWmsConstants,
-        FlextTapOracleWmsSettings,
-    )
+    from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
     from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
     from flext_tap_oracle_wms.tap import (
         FlextTapOracleWms,
@@ -62,7 +59,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "FlextTapOracleWmsConnectionError",
     ),
     "FlextTapOracleWmsConstants": (
-        "flext_tap_oracle_wms.settings",
+        "flext_tap_oracle_wms.constants",
         "FlextTapOracleWmsConstants",
     ),
     "FlextTapOracleWmsError": (
