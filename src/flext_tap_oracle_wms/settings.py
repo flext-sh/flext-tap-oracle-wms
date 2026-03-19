@@ -13,7 +13,7 @@ from flext_oracle_wms import FlextOracleWmsConstants as _WmsConstants
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from pydantic.networks import AnyUrl
 
-from flext_tap_oracle_wms.constants import c
+from flext_tap_oracle_wms import c
 
 
 class FlextTapOracleWmsConstants(FlextConstants):

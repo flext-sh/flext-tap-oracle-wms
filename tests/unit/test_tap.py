@@ -11,8 +11,8 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsConfigurationError,
     FlextTapOracleWmsSettings,
+    m,
 )
-from flext_tap_oracle_wms.models import m
 
 
 class TestFlextTapOracleWms:
