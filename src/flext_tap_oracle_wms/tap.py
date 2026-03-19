@@ -6,9 +6,11 @@ import importlib.metadata
 from collections.abc import Mapping, Sequence
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, r, t
+from flext_core import FlextLogger, r
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsSettings
 from singer_sdk.tap_base import Tap
+
+from flext_tap_oracle_wms import t
 
 from .constants import c
 from .exceptions import FlextTapOracleWmsConfigurationError

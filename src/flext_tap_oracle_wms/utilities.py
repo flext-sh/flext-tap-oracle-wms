@@ -6,8 +6,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import t
 from flext_meltano import FlextMeltanoUtilities
+
+from flext_tap_oracle_wms import t
 
 
 class FlextTapOracleWmsUtilities(FlextMeltanoUtilities):
