@@ -12,6 +12,8 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
 
+
+if TYPE_CHECKING:
     from . import (
         e2e as e2e,
         integration as integration,
@@ -232,7 +234,7 @@ __all__ = [
 ]
 
 
-_LAZY_CACHE: dict[str, object] = {}
+_LAZY_CACHE: dict[str, FlextTypes.ModuleExport] = {}
 
 
 def __getattr__(name: str) -> FlextTypes.ModuleExport:

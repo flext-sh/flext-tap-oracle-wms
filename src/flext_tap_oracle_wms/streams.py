@@ -27,7 +27,7 @@ def _as_map(value: object) -> Mapping[str, t.ContainerValue] | None:
     if not isinstance(value, Mapping):
         return None
     try:
-        validated_map = TypeAdapter(dict[str, object]).validate_python(value)
+        validated_map = TypeAdapter(dict[str, t.ContainerValue]).validate_python(value)
     except ValidationError:
         return None
     return {
@@ -40,7 +40,7 @@ def _as_list(value: object) -> list[t.ContainerValue] | None:
     if not isinstance(value, list):
         return None
     try:
-        validated_list = TypeAdapter(list).validate_python(value)
+        validated_list = TypeAdapter(list[t.ContainerValue]).validate_python(value)
     except ValidationError:
         return None
     return [
