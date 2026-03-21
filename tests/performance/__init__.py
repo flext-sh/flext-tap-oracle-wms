@@ -26,10 +26,19 @@ if TYPE_CHECKING:
     )
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "TestExtractionPerformance": ("tests.performance.test_extraction_performance", "TestExtractionPerformance"),
-    "TestRateLimitingPerformance": ("tests.performance.test_extraction_performance", "TestRateLimitingPerformance"),
+    "TestExtractionPerformance": (
+        "tests.performance.test_extraction_performance",
+        "TestExtractionPerformance",
+    ),
+    "TestRateLimitingPerformance": (
+        "tests.performance.test_extraction_performance",
+        "TestRateLimitingPerformance",
+    ),
     "env_path": ("tests.performance.test_extraction_performance", "env_path"),
-    "performance_config": ("tests.performance.test_extraction_performance", "performance_config"),
+    "performance_config": (
+        "tests.performance.test_extraction_performance",
+        "performance_config",
+    ),
     "tap": ("tests.performance.test_extraction_performance", "tap"),
 }
 

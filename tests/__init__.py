@@ -83,26 +83,68 @@ if TYPE_CHECKING:
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestCLI": ("tests.unit.test_cli", "TestCLI"),
-    "TestConfigValidation": ("tests.unit.test_config_validation", "TestConfigValidation"),
-    "TestExtractionPerformance": ("tests.performance.test_extraction_performance", "TestExtractionPerformance"),
-    "TestFilteringAndSelection": ("tests.integration.test_wms_connection", "TestFilteringAndSelection"),
+    "TestConfigValidation": (
+        "tests.unit.test_config_validation",
+        "TestConfigValidation",
+    ),
+    "TestExtractionPerformance": (
+        "tests.performance.test_extraction_performance",
+        "TestExtractionPerformance",
+    ),
+    "TestFilteringAndSelection": (
+        "tests.integration.test_wms_connection",
+        "TestFilteringAndSelection",
+    ),
     "TestFlextTapOracleWms": ("tests.unit.test_tap", "TestFlextTapOracleWms"),
-    "TestFlextTapOracleWmsSettings": ("tests.unit.test_config", "TestFlextTapOracleWmsSettings"),
+    "TestFlextTapOracleWmsSettings": (
+        "tests.unit.test_config",
+        "TestFlextTapOracleWmsSettings",
+    ),
     "TestIntegration": ("tests.integration.test_wms_connection", "TestIntegration"),
     "TestOracleWMSE2EComplete": ("tests.e2e.test_e2e", "TestOracleWMSE2EComplete"),
-    "TestOracleWMSFunctionalComplete": ("tests.integration.test_functional", "TestOracleWMSFunctionalComplete"),
-    "TestRateLimitingPerformance": ("tests.performance.test_extraction_performance", "TestRateLimitingPerformance"),
-    "TestRealConnection": ("tests.integration.test_wms_connection", "TestRealConnection"),
-    "TestRealDataExtraction": ("tests.integration.test_wms_connection", "TestRealDataExtraction"),
+    "TestOracleWMSFunctionalComplete": (
+        "tests.integration.test_functional",
+        "TestOracleWMSFunctionalComplete",
+    ),
+    "TestRateLimitingPerformance": (
+        "tests.performance.test_extraction_performance",
+        "TestRateLimitingPerformance",
+    ),
+    "TestRealConnection": (
+        "tests.integration.test_wms_connection",
+        "TestRealConnection",
+    ),
+    "TestRealDataExtraction": (
+        "tests.integration.test_wms_connection",
+        "TestRealDataExtraction",
+    ),
     "TestRealWmsIntegration": ("tests.integration.test_wms", "TestRealWmsIntegration"),
-    "TestStreamsFunctional": ("tests.integration.test_streams_functional", "TestStreamsFunctional"),
-    "TestTapInitialization": ("tests.unit.test_tap_initialization", "TestTapInitialization"),
-    "TestWMSPaginatorUnit": ("tests.integration.test_streams_functional", "TestWMSPaginatorUnit"),
-    "TestsFlextTapOracleWmsConstants": ("tests.constants", "TestsFlextTapOracleWmsConstants"),
+    "TestStreamsFunctional": (
+        "tests.integration.test_streams_functional",
+        "TestStreamsFunctional",
+    ),
+    "TestTapInitialization": (
+        "tests.unit.test_tap_initialization",
+        "TestTapInitialization",
+    ),
+    "TestWMSPaginatorUnit": (
+        "tests.integration.test_streams_functional",
+        "TestWMSPaginatorUnit",
+    ),
+    "TestsFlextTapOracleWmsConstants": (
+        "tests.constants",
+        "TestsFlextTapOracleWmsConstants",
+    ),
     "TestsFlextTapOracleWmsModels": ("tests.models", "TestsFlextTapOracleWmsModels"),
-    "TestsFlextTapOracleWmsProtocols": ("tests.protocols", "TestsFlextTapOracleWmsProtocols"),
+    "TestsFlextTapOracleWmsProtocols": (
+        "tests.protocols",
+        "TestsFlextTapOracleWmsProtocols",
+    ),
     "TestsFlextTapOracleWmsTypes": ("tests.typings", "TestsFlextTapOracleWmsTypes"),
-    "TestsFlextTapOracleWmsUtilities": ("tests.utilities", "TestsFlextTapOracleWmsUtilities"),
+    "TestsFlextTapOracleWmsUtilities": (
+        "tests.utilities",
+        "TestsFlextTapOracleWmsUtilities",
+    ),
     "c": ("tests.constants", "TestsFlextTapOracleWmsConstants"),
     "e2e": ("tests.e2e", ""),
     "env_path": ("tests.performance.test_extraction_performance", "env_path"),
@@ -115,8 +157,14 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "oracle_wms_environment": ("tests.conftest", "oracle_wms_environment"),
     "p": ("tests.protocols", "TestsFlextTapOracleWmsProtocols"),
     "performance": ("tests.performance", ""),
-    "performance_config": ("tests.performance.test_extraction_performance", "performance_config"),
-    "pytest_collection_modifyitems": ("tests.conftest", "pytest_collection_modifyitems"),
+    "performance_config": (
+        "tests.performance.test_extraction_performance",
+        "performance_config",
+    ),
+    "pytest_collection_modifyitems": (
+        "tests.conftest",
+        "pytest_collection_modifyitems",
+    ),
     "real_config": ("tests.integration.test_wms_connection", "real_config"),
     "real_tap_instance": ("tests.conftest", "real_tap_instance"),
     "reset_environment": ("tests.conftest", "reset_environment"),
