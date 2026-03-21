@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
+from flext_core.constants import c
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
-
-from flext_tap_oracle_wms import c
 
 
 class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):

@@ -9,11 +9,10 @@ from __future__ import annotations
 from typing import Annotated, Final
 
 from flext_core import FlextConstants
+from flext_core.constants import c
 from flext_oracle_wms import FlextOracleWmsConstants as _WmsConstants
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from pydantic.networks import AnyUrl
-
-from flext_tap_oracle_wms import c
 
 
 class FlextTapOracleWmsConstants(FlextConstants):

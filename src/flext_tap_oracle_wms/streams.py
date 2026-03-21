@@ -12,12 +12,13 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, r
+from flext_core.protocols import FlextProtocols as p
+from flext_core.typings import t
+from flext_core.utilities import u
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from singer_sdk.streams import Stream
 from singer_sdk.tap_base import Tap
-
-from flext_tap_oracle_wms import p, t, u
 
 logger = FlextLogger(__name__)
 
