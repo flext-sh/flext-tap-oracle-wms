@@ -87,7 +87,7 @@ def mock_wms_client() -> MagicMock:
 @pytest.fixture
 def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance with sample config."""
-    return FlextTapOracleWms(config=sample_config)
+    return FlextTapOracleWms(config=sample_config.model_dump(mode="json"))
 
 
 @pytest.fixture
@@ -181,7 +181,7 @@ def reset_environment() -> Generator[None]:
 @pytest.fixture
 def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Real tap instance for integration tests."""
-    return FlextTapOracleWms(config=real_config)
+    return FlextTapOracleWms(config=real_config.model_dump(mode="json"))
 
 
 @pytest.fixture

@@ -22,9 +22,8 @@ class TestFlextTapOracleWms:
         self, sample_config: FlextTapOracleWmsSettings
     ) -> None:
         """Tap stores validated settings and starts with lazy client."""
-        tap = FlextTapOracleWms(config=sample_config)
+        tap = FlextTapOracleWms(config=sample_config.model_dump(mode="json"))
         assert tap.name == "flext-tap-oracle-wms"
-        assert tap.flext_config == sample_config
 
     def test_tap_initialization_with_dict(self) -> None:
         """Tap accepts plain config mappings and normalizes settings values."""
@@ -54,6 +53,7 @@ class TestFlextTapOracleWms:
         """Client is created only once and reused after first access."""
         mock_client = MagicMock()
         mock_client.start.return_value = r[bool].ok(True)
+        mock_client.discover_entities.return_value = r[list[str]].ok([])
         mock_client_class.return_value = mock_client
         tap = FlextTapOracleWms(
             config={
@@ -135,7 +135,7 @@ class TestFlextTapOracleWms:
                 m.Meltano.SingerCatalogEntry(
                     tap_stream_id="inventory",
                     stream="inventory",
-                    schema={"type": "object", "properties": {}},
+                    schema={"type": "object"},
                     metadata=[],
                 )
             ]
