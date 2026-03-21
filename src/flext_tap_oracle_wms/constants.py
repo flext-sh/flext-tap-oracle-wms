@@ -221,6 +221,25 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
         FAC002 = "FAC002"
         FAC003 = "FAC003"
 
+    class Settings:
+        """Configuration constants for tap settings."""
+
+        DEFAULT_API_VERSION: Final[str] = "V1"
+        MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = 5
+        TAP_DEFAULT_MAX_RETRIES: Final[int] = 3
+        TAP_DEFAULT_RETRY_DELAY: Final[float] = 1.0
+        TAP_MIN_TIMEOUT: Final[int] = 1
+        TAP_MAX_TIMEOUT: Final[int] = 300
+        TAP_DEFAULT_TIMEOUT: Final[int] = 30
+        TAP_DEFAULT_PAGE_SIZE: Final[int] = 10
+        DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = 100
+        MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = FlextConstants.DEFAULT_SIZE
+        DEFAULT_MAX_PARALLEL_STREAMS: Final[int] = 5
+        DEFAULT_FLATTENING_DEPTH: Final[int] = 10
+        ISO_DATE_PATTERN: Final[str] = (
+            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
+        )
+
 
 c = FlextTapOracleWmsConstants
 __all__ = ["FlextTapOracleWmsConstants", "c"]

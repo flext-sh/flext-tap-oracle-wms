@@ -7,32 +7,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
-from typing import Annotated, Final
+from typing import Annotated
 
-from flext_core import FlextConstants, r
-from flext_oracle_wms import FlextOracleWmsConstants as _WmsConstants
+from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 from pydantic.networks import AnyUrl
 
-
-class FlextTapOracleWmsConstants(FlextConstants):
-    """Constants for Oracle WMS tap configuration - consuming from flext-oracle-wms API."""
-
-    DEFAULT_API_VERSION: Final[str] = _WmsConstants.WmsApiVersion.V1
-    MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = 5
-    TAP_DEFAULT_MAX_RETRIES: Final[int] = 3
-    TAP_DEFAULT_RETRY_DELAY: Final[float] = 1.0
-    TAP_MIN_TIMEOUT: Final[int] = 1
-    TAP_MAX_TIMEOUT: Final[int] = 300
-    TAP_DEFAULT_TIMEOUT: Final[int] = 30
-    TAP_DEFAULT_PAGE_SIZE: Final[int] = 10
-    DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = 100
-    MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = FlextConstants.DEFAULT_SIZE
-    DEFAULT_MAX_PARALLEL_STREAMS: Final[int] = 5
-    DEFAULT_FLATTENING_DEPTH: Final[int] = 10
-    ISO_DATE_PATTERN: Final[str] = (
-        r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
-    )
+from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants as c
 
 
 class FlextTapOracleWmsSettings(BaseModel):
@@ -55,7 +36,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     api_version: Annotated[
         str,
         Field(
-            default=FlextTapOracleWmsConstants.DEFAULT_API_VERSION,
+            default=c.Settings.DEFAULT_API_VERSION,
             min_length=1,
             description="Oracle WMS API version.",
         ),
@@ -63,16 +44,16 @@ class FlextTapOracleWmsSettings(BaseModel):
     timeout: Annotated[
         int,
         Field(
-            default=FlextTapOracleWmsConstants.TAP_DEFAULT_TIMEOUT,
-            ge=FlextTapOracleWmsConstants.TAP_MIN_TIMEOUT,
-            le=FlextTapOracleWmsConstants.TAP_MAX_TIMEOUT,
+            default=c.Settings.TAP_DEFAULT_TIMEOUT,
+            ge=c.Settings.TAP_MIN_TIMEOUT,
+            le=c.Settings.TAP_MAX_TIMEOUT,
             description="Request timeout in seconds.",
         ),
     ]
     max_retries: Annotated[
         int,
         Field(
-            default=FlextTapOracleWmsConstants.TAP_DEFAULT_MAX_RETRIES,
+            default=c.Settings.TAP_DEFAULT_MAX_RETRIES,
             ge=0,
             description="Maximum request retries.",
         ),
@@ -80,7 +61,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     retry_delay: Annotated[
         float,
         Field(
-            default=FlextTapOracleWmsConstants.TAP_DEFAULT_RETRY_DELAY,
+            default=c.Settings.TAP_DEFAULT_RETRY_DELAY,
             ge=0.0,
             description="Retry delay in seconds.",
         ),
@@ -96,7 +77,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     page_size: Annotated[
         int,
         Field(
-            default=FlextTapOracleWmsConstants.TAP_DEFAULT_PAGE_SIZE,
+            default=c.Settings.TAP_DEFAULT_PAGE_SIZE,
             ge=1,
             description="Page size used for extraction requests.",
         ),
@@ -104,7 +85,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     discovery_sample_size: Annotated[
         int,
         Field(
-            default=FlextTapOracleWmsConstants.DEFAULT_DISCOVERY_SAMPLE_SIZE,
+            default=c.Settings.DEFAULT_DISCOVERY_SAMPLE_SIZE,
             ge=1,
             description="Sample size for schema discovery.",
         ),
@@ -148,7 +129,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     max_parallel_streams: Annotated[
         int,
         Field(
-            default=FlextTapOracleWmsConstants.DEFAULT_MAX_PARALLEL_STREAMS,
+            default=c.Settings.DEFAULT_MAX_PARALLEL_STREAMS,
             ge=1,
             description="Maximum parallel streams.",
         ),
@@ -168,7 +149,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     max_flattening_depth: Annotated[
         int,
         Field(
-            default=FlextTapOracleWmsConstants.DEFAULT_FLATTENING_DEPTH,
+            default=c.Settings.DEFAULT_FLATTENING_DEPTH,
             ge=1,
             description="Maximum schema flattening depth.",
         ),
@@ -209,9 +190,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     @field_validator("start_date", "end_date")
     @classmethod
     def _check_iso_date(cls, v: str | None) -> str | None:
-        if v is not None and not re.match(
-            FlextTapOracleWmsConstants.ISO_DATE_PATTERN, v
-        ):
+        if v is not None and not re.match(c.Settings.ISO_DATE_PATTERN, v):
             msg = f"Invalid date format: {v}. Expected ISO 8601 format."
             raise ValueError(msg)
         return v
@@ -236,4 +215,4 @@ class FlextTapOracleWmsSettings(BaseModel):
         return r[bool].ok(True)
 
 
-__all__ = ["FlextTapOracleWmsConstants", "FlextTapOracleWmsSettings"]
+__all__ = ["FlextTapOracleWmsSettings"]
