@@ -25,9 +25,7 @@ class FlextTapOracleWmsConstants(FlextConstants):
     MIN_TIMEOUT: Final[int] = 1
     MAX_TIMEOUT: Final[int] = 300
     DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = 100
-    MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = (
-        FlextConstants.Performance.BatchProcessing.DEFAULT_SIZE
-    )
+    MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = FlextConstants.DEFAULT_SIZE
 
 
 class FlextTapOracleWmsSettings(BaseModel):
