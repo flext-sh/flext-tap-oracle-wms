@@ -12,13 +12,14 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, r
-from flext_core.protocols import FlextProtocols as p
 from flext_core.typings import t
-from flext_core.utilities import u
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from singer_sdk.streams import Stream
 from singer_sdk.tap_base import Tap
+
+from flext_tap_oracle_wms.protocols import p
+from flext_tap_oracle_wms.utilities import u
 
 logger = FlextLogger(__name__)
 
@@ -68,12 +69,11 @@ class FlextTapOracleWmsStream(Stream):
     ) -> None:
         """Initialize stream."""
         Stream.__init__(self, tap=tap, name=name or self.name, schema=schema)
-        self._utilities = u()
         self._client: FlextOracleWmsClient | None = None
         page_size = int(self.config.get("page_size", 100))
         self._page_size = (
             page_size
-            if self._utilities.ConfigurationProcessing.validate_stream_page_size(
+            if u.ConfigurationProcessing.validate_stream_page_size(
                 page_size,
             )
             else 100
@@ -82,18 +82,18 @@ class FlextTapOracleWmsStream(Stream):
     @property
     def client(self) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
-        if self._client is None:
-            tap_instance = self._tap
-            if tap_instance and isinstance(
-                tap_instance,
-                p.TapOracleWms.OracleWms.TapWithWmsClient,
-            ):
-                wms_tap: p.TapOracleWms.OracleWms.TapWithWmsClient = tap_instance
-                self._client = wms_tap.wms_client
-            else:
-                msg = "WMS client not available - tap must be FlextTapOracleWms"
-                raise RuntimeError(msg)
-        return self._client
+        if self._client is not None:
+            return self._client
+        tap_instance = self._tap
+        if not isinstance(
+            tap_instance,
+            p.TapOracleWms.OracleWms.TapWithWmsClient,
+        ):
+            msg = "WMS client not available - tap must be FlextTapOracleWms"
+            raise TypeError(msg)
+        client: FlextOracleWmsClient = tap_instance.wms_client
+        self._client = client
+        return client
 
     @staticmethod
     def normalize_json_value(value: object | str) -> t.Scalar:
@@ -248,9 +248,11 @@ class FlextTapOracleWmsStream(Stream):
     ) -> Iterable[dict[str, t.Scalar]]:
         """Process and yield records from a page."""
         for record in records:
-            record_dict: dict[str, t.Scalar] = dict(record)
-            processed_record = self._utilities.DataProcessing.process_wms_record(
-                record=record_dict,
+            record_dict: dict[str, t.ContainerValue] = dict(record)
+            processed_record: dict[str, t.ContainerValue] = (
+                u.DataProcessing.process_wms_record(
+                    record=record_dict,
+                )
             )
             processed_map = _as_map(processed_record)
             if processed_map is None:

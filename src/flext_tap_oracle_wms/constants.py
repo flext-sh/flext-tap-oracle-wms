@@ -26,7 +26,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
     DEFAULT_FETCH_SIZE: Final[int] = (
         FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
     )
-    MAX_BATCH_SIZE: Final[int] = FlextConstants.MAX_ITEMS
+    TAP_MAX_BATCH_SIZE: Final[int] = FlextConstants.MAX_ITEMS
 
     @unique
     class TapWmsEntityType(StrEnum):

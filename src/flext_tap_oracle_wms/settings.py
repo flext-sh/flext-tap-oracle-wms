@@ -9,7 +9,6 @@ from __future__ import annotations
 from typing import Annotated, Final
 
 from flext_core import FlextConstants
-from flext_core.constants import c
 from flext_oracle_wms import FlextOracleWmsConstants as _WmsConstants
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from pydantic.networks import AnyUrl
@@ -18,12 +17,12 @@ from pydantic.networks import AnyUrl
 class FlextTapOracleWmsConstants(FlextConstants):
     """Constants for Oracle WMS tap configuration - consuming from flext-oracle-wms API."""
 
-    DEFAULT_API_VERSION: Final[str] = str(_WmsConstants.API_CONFIG["version_default"])
+    DEFAULT_API_VERSION: Final[str] = _WmsConstants.WmsApiVersion.V1
     MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = 5
-    DEFAULT_MAX_RETRIES: Final[int] = 3
-    DEFAULT_RETRY_DELAY: Final[float] = 1.0
-    MIN_TIMEOUT: Final[int] = 1
-    MAX_TIMEOUT: Final[int] = 300
+    TAP_DEFAULT_MAX_RETRIES: Final[int] = 3
+    TAP_DEFAULT_RETRY_DELAY: Final[float] = 1.0
+    TAP_MIN_TIMEOUT: Final[int] = 1
+    TAP_MAX_TIMEOUT: Final[int] = 300
     DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = 100
     MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = FlextConstants.DEFAULT_SIZE
 
@@ -63,16 +62,16 @@ class FlextTapOracleWmsSettings(BaseModel):
     timeout: Annotated[
         int,
         Field(
-            default=c.TapOracleWms.DEFAULT_TIMEOUT,
-            ge=FlextTapOracleWmsConstants.MIN_TIMEOUT,
-            le=FlextTapOracleWmsConstants.MAX_TIMEOUT,
+            default=FlextTapOracleWmsConstants.TAP_MIN_TIMEOUT,
+            ge=FlextTapOracleWmsConstants.TAP_MIN_TIMEOUT,
+            le=FlextTapOracleWmsConstants.TAP_MAX_TIMEOUT,
             description="Request timeout in seconds.",
         ),
     ]
     max_retries: Annotated[
         int,
         Field(
-            default=c.TapOracleWms.MAX_RETRIES,
+            default=FlextTapOracleWmsConstants.TAP_DEFAULT_MAX_RETRIES,
             ge=0,
             description="Maximum request retries.",
         ),

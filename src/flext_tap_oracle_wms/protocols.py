@@ -8,43 +8,25 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_core.models import m
 from flext_core.typings import t
+from flext_meltano.models import FlextMeltanoModels
 
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsClient
 from flext_core import FlextProtocols
-from flext_meltano import FlextMeltanoProtocols
 from flext_oracle_wms.protocols import FlextOracleWmsProtocols
 
 
-class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols):
-    """Singer Tap Oracle WMS protocols extending OracleWms and Meltano protocols.
+class FlextTapOracleWmsProtocols(FlextOracleWmsProtocols):
+    """Singer Tap Oracle WMS protocols extending OracleWms protocols.
 
-    Extends both FlextOracleWmsProtocols and FlextMeltanoProtocols via multiple inheritance
-    to inherit all Oracle WMS protocols, Meltano protocols, and foundation protocols.
+    Extends FlextOracleWmsProtocols via inheritance
+    to inherit all Oracle WMS protocols and foundation protocols.
 
     Architecture:
     - EXTENDS: FlextOracleWmsProtocols (inherits .OracleWms.* protocols)
-    - EXTENDS: FlextMeltanoProtocols (inherits .Meltano.* protocols)
     - ADDS: Tap Oracle WMS-specific protocols in TapOracleWms namespace
-    - PROVIDES: Root-level alias `p` for convenient access
-
-    Usage:
-    from flext_tap_oracle_wms.protocols import p
-
-    # Foundation protocols (inherited)
-    result: p.Result[str]
-    service: p.Service[str]
-
-    # Oracle WMS protocols (inherited)
-    wms: p.OracleWms.*
-
-    # Meltano protocols (inherited)
-    tap: p.Meltano.Tap
-
-    # Tap Oracle WMS-specific protocols
-    wms_connection: p.TapOracleWms.OracleWms.WmsConnection
+    - PROVIDES: Root-level alias ``p`` for convenient access
     """
 
     class TapOracleWms:
@@ -104,7 +86,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
                 def generate_catalog(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[m.Meltano.SingerCatalog]:
+                ) -> FlextProtocols.Result[FlextMeltanoModels.Meltano.SingerCatalog]:
                     """Generate Singer catalog."""
                     ...
 

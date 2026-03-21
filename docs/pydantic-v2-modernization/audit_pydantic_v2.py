@@ -44,13 +44,16 @@ class AuditResult(BaseModel):
     project: str = Field(description="Project name")
     status: str = Field(description="Audit status: PASS, FAIL, WARNING, PENDING, SKIP")
     critical: list[AuditViolation] = Field(
-        default_factory=list, description="Critical violations"
+        default_factory=lambda: list[AuditViolation](),
+        description="Critical violations",
     )
     high: list[AuditViolation] = Field(
-        default_factory=list, description="High priority violations"
+        default_factory=lambda: list[AuditViolation](),
+        description="High priority violations",
     )
     medium: list[AuditViolation] = Field(
-        default_factory=list, description="Medium priority violations"
+        default_factory=lambda: list[AuditViolation](),
+        description="Medium priority violations",
     )
     recommendations: list[str] = Field(
         default_factory=list, description="Audit recommendations"
