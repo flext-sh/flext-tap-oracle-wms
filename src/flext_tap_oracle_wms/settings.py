@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
-from typing import Annotated
+from typing import Annotated, ClassVar
 
 from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
@@ -19,7 +19,9 @@ from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants as c
 class FlextTapOracleWmsSettings(BaseModel):
     """Validated settings consumed by the Oracle WMS tap runtime."""
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(extra="ignore", validate_assignment=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        extra="ignore", validate_assignment=True
+    )
 
     base_url: Annotated[
         AnyUrl,
