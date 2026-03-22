@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
+from flext_core.typings import t
 from flext_meltano import FlextMeltanoModels
 from flext_oracle_wms import FlextOracleWmsModels
 from pydantic import BaseModel, Field
@@ -19,13 +20,13 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
             """Singer stream schema shape."""
 
             type: Annotated[str, Field(default="object")]
-            properties: Annotated[dict[str, object], Field(default_factory=dict)]
+            properties: Annotated[dict[str, t.NormalizedValue], Field(default_factory=dict)]
 
         class WmsStreamMetadata(BaseModel):
             """Singer stream metadata entry."""
 
             breadcrumb: Annotated[list[str], Field(default_factory=list)]
-            metadata: Annotated[dict[str, object], Field(default_factory=dict)]
+            metadata: Annotated[dict[str, t.NormalizedValue], Field(default_factory=dict)]
 
         class WmsStreamDefinition(BaseModel):
             """Singer stream definition payload."""

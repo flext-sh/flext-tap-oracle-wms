@@ -1,4 +1,4 @@
-"""Utilities for flext-tap-oracle-wms tests - uses composition with u.
+"""Utilities for flext-tap-oracle-wms tests - uses composition with FlextTestsUtilities.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -7,29 +7,30 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import u
+from flext_tests import FlextTestsUtilities
 
-from flext_tap_oracle_wms import t
+from flext_tap_oracle_wms import (
+    FlextTapOracleWmsTypes as _t,
+    FlextTapOracleWmsUtilities,
+)
 
 
-class TestsFlextTapOracleWmsUtilities(u):
-    """Utilities for flext-tap-oracle-wms tests - uses composition with u.
+class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtilities):
+    """Utilities for flext-tap-oracle-wms tests - uses composition with FlextTestsUtilities.
 
-    Architecture: Uses composition (not inheritance) with u and FlextTapOracleWmsUtilities
+    Architecture: Uses composition (not inheritance) with FlextTestsUtilities and FlextTapOracleWmsUtilities
     for flext-tap-oracle-wms-specific utility definitions.
 
     Access patterns:
-    - TestsFlextTapOracleWmsUtilities.Tests.* = flext_tests test utilities (via composition)
-    - TestsFlextTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
-    - TestsFlextTapOracleWmsUtilities.* = u methods (via composition)
+    - FlextTapOracleWmsTestUtilities.Tests.* = flext_tests test utilities (via composition)
+    - FlextTapOracleWmsTestUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
+    - FlextTapOracleWmsTestUtilities.* = FlextTestsUtilities methods (via composition)
 
     Rules:
-    - Use composition, not inheritance (u deprecates subclassing)
+    - Use composition, not inheritance (FlextTestsUtilities deprecates subclassing)
     - flext-tap-oracle-wms-specific utilities go in TapOracleWms namespace
     - Generic utilities accessed via Tests namespace
     """
-
-    Tests = u.Tests
 
     class TapOracleWms:
         """Tap Oracle WMS test utilities - domain-specific for Oracle WMS tap testing.
@@ -46,7 +47,7 @@ class TestsFlextTapOracleWmsUtilities(u):
             username: str = "test_user",
             password: str = "test_pass",
             facility_ids: list[str] | None = None,
-            **kwargs: t.Scalar,
+            **kwargs: _t.Scalar,
         ) -> dict[str, object]:
             """Create test Oracle WMS configuration."""
             config: dict[str, object] = {
@@ -66,7 +67,7 @@ class TestsFlextTapOracleWmsUtilities(u):
             has_more: bool = False,
             next_page_url: str | None = None,
             facility_id: str | None = None,
-            **kwargs: t.Scalar,
+            **kwargs: _t.Scalar,
         ) -> dict[str, object]:
             """Create test Oracle WMS API response."""
             response: dict[str, object] = {"items": data, "hasMore": has_more}
@@ -82,7 +83,7 @@ class TestsFlextTapOracleWmsUtilities(u):
             count: int = 5,
             base_id: int = 1000,
             facility_id: str = "FAC001",
-            **kwargs: t.Scalar,
+            **kwargs: _t.Scalar,
         ) -> list[dict[str, object]]:
             """Generate mock Oracle WMS records for testing."""
             records: list[dict[str, object]] = []
@@ -106,5 +107,5 @@ class TestsFlextTapOracleWmsUtilities(u):
             return all(field in config and config[field] for field in required_fields)
 
 
-u = TestsFlextTapOracleWmsUtilities
-__all__ = ["TestsFlextTapOracleWmsUtilities", "u"]
+u = FlextTapOracleWmsTestUtilities
+__all__ = ["FlextTapOracleWmsTestUtilities", "u"]

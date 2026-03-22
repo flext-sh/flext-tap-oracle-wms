@@ -1,6 +1,6 @@
-"""Module skeleton for TestsFlextTapOracleWmsConstants.
+"""Module skeleton for FlextTapOracleWmsTestConstants.
 
-Test constants for flexttaporaclewms.
+Test constants for flext-tap-oracle-wms.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -8,12 +8,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import c
+from flext_tests import FlextTestsConstants
 
 
-class TestsFlextTapOracleWmsConstants(c):
-    """Test constants for flexttaporaclewms."""
+class FlextTapOracleWmsTestConstants(FlextTestsConstants):
+    """Test constants for flext-tap-oracle-wms."""
 
 
-c = TestsFlextTapOracleWmsConstants
-__all__ = ["TestsFlextTapOracleWmsConstants", "c"]
+c = FlextTapOracleWmsTestConstants
+__all__ = ["FlextTapOracleWmsTestConstants", "c"]

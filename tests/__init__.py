@@ -11,6 +11,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
     from flext_core.typings import FlextTypes
+    from flext_tests import d, e, h, r, s, x
 
     from . import (
         e2e as e2e,
@@ -32,8 +33,8 @@ if TYPE_CHECKING:
         tap_instance,
     )
     from .constants import (
-        TestsFlextTapOracleWmsConstants,
-        TestsFlextTapOracleWmsConstants as c,
+        FlextTapOracleWmsTestConstants,
+        FlextTapOracleWmsTestConstants as c,
     )
     from .e2e.test_e2e import TestOracleWMSE2EComplete
     from .integration.test_functional import TestOracleWMSFunctionalComplete
@@ -50,11 +51,7 @@ if TYPE_CHECKING:
         TestRealDataExtraction,
         real_config,
     )
-    from .models import (
-        TestsFlextTapOracleWmsModels,
-        TestsFlextTapOracleWmsModels as m,
-        tm,
-    )
+    from .models import FlextTapOracleWmsTestModels, FlextTapOracleWmsTestModels as m
     from .performance.test_extraction_performance import (
         TestExtractionPerformance,
         TestRateLimitingPerformance,
@@ -63,25 +60,35 @@ if TYPE_CHECKING:
         tap,
     )
     from .protocols import (
-        TestsFlextTapOracleWmsProtocols,
-        TestsFlextTapOracleWmsProtocols as p,
+        FlextTapOracleWmsTestProtocols,
+        FlextTapOracleWmsTestProtocols as p,
     )
-    from .typings import (
-        TestsFlextTapOracleWmsTypes,
-        TestsFlextTapOracleWmsTypes as t,
-        tt,
-    )
+    from .typings import FlextTapOracleWmsTestTypes, FlextTapOracleWmsTestTypes as t
     from .unit.test_cli import TestCLI
     from .unit.test_config import TestFlextTapOracleWmsSettings
     from .unit.test_config_validation import TestConfigValidation
     from .unit.test_tap import TestFlextTapOracleWms
     from .unit.test_tap_initialization import TestTapInitialization
     from .utilities import (
-        TestsFlextTapOracleWmsUtilities,
-        TestsFlextTapOracleWmsUtilities as u,
+        FlextTapOracleWmsTestUtilities,
+        FlextTapOracleWmsTestUtilities as u,
     )
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
+    "FlextTapOracleWmsTestConstants": (
+        "tests.constants",
+        "FlextTapOracleWmsTestConstants",
+    ),
+    "FlextTapOracleWmsTestModels": ("tests.models", "FlextTapOracleWmsTestModels"),
+    "FlextTapOracleWmsTestProtocols": (
+        "tests.protocols",
+        "FlextTapOracleWmsTestProtocols",
+    ),
+    "FlextTapOracleWmsTestTypes": ("tests.typings", "FlextTapOracleWmsTestTypes"),
+    "FlextTapOracleWmsTestUtilities": (
+        "tests.utilities",
+        "FlextTapOracleWmsTestUtilities",
+    ),
     "TestCLI": ("tests.unit.test_cli", "TestCLI"),
     "TestConfigValidation": (
         "tests.unit.test_config_validation",
@@ -131,31 +138,20 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "tests.integration.test_streams_functional",
         "TestWMSPaginatorUnit",
     ),
-    "TestsFlextTapOracleWmsConstants": (
-        "tests.constants",
-        "TestsFlextTapOracleWmsConstants",
-    ),
-    "TestsFlextTapOracleWmsModels": ("tests.models", "TestsFlextTapOracleWmsModels"),
-    "TestsFlextTapOracleWmsProtocols": (
-        "tests.protocols",
-        "TestsFlextTapOracleWmsProtocols",
-    ),
-    "TestsFlextTapOracleWmsTypes": ("tests.typings", "TestsFlextTapOracleWmsTypes"),
-    "TestsFlextTapOracleWmsUtilities": (
-        "tests.utilities",
-        "TestsFlextTapOracleWmsUtilities",
-    ),
-    "c": ("tests.constants", "TestsFlextTapOracleWmsConstants"),
+    "c": ("tests.constants", "FlextTapOracleWmsTestConstants"),
+    "d": ("flext_tests", "d"),
+    "e": ("flext_tests", "e"),
     "e2e": ("tests.e2e", ""),
     "env_path": ("tests.performance.test_extraction_performance", "env_path"),
+    "h": ("flext_tests", "h"),
     "integration": ("tests.integration", ""),
     "logger": ("tests.integration.test_streams_functional", "logger"),
-    "m": ("tests.models", "TestsFlextTapOracleWmsModels"),
+    "m": ("tests.models", "FlextTapOracleWmsTestModels"),
     "mock_request": ("tests.conftest", "mock_request"),
     "mock_response": ("tests.conftest", "mock_response"),
     "mock_wms_client": ("tests.conftest", "mock_wms_client"),
     "oracle_wms_environment": ("tests.conftest", "oracle_wms_environment"),
-    "p": ("tests.protocols", "TestsFlextTapOracleWmsProtocols"),
+    "p": ("tests.protocols", "FlextTapOracleWmsTestProtocols"),
     "performance": ("tests.performance", ""),
     "performance_config": (
         "tests.performance.test_extraction_performance",
@@ -165,22 +161,28 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
         "tests.conftest",
         "pytest_collection_modifyitems",
     ),
+    "r": ("flext_tests", "r"),
     "real_config": ("tests.integration.test_wms_connection", "real_config"),
     "real_tap_instance": ("tests.conftest", "real_tap_instance"),
     "reset_environment": ("tests.conftest", "reset_environment"),
+    "s": ("flext_tests", "s"),
     "sample_catalog": ("tests.conftest", "sample_catalog"),
     "sample_config": ("tests.conftest", "sample_config"),
     "sample_state": ("tests.conftest", "sample_state"),
-    "t": ("tests.typings", "TestsFlextTapOracleWmsTypes"),
+    "t": ("tests.typings", "FlextTapOracleWmsTestTypes"),
     "tap": ("tests.performance.test_extraction_performance", "tap"),
     "tap_instance": ("tests.conftest", "tap_instance"),
-    "tm": ("tests.models", "tm"),
-    "tt": ("tests.typings", "tt"),
-    "u": ("tests.utilities", "TestsFlextTapOracleWmsUtilities"),
+    "u": ("tests.utilities", "FlextTapOracleWmsTestUtilities"),
     "unit": ("tests.unit", ""),
+    "x": ("flext_tests", "x"),
 }
 
 __all__ = [
+    "FlextTapOracleWmsTestConstants",
+    "FlextTapOracleWmsTestModels",
+    "FlextTapOracleWmsTestProtocols",
+    "FlextTapOracleWmsTestTypes",
+    "FlextTapOracleWmsTestUtilities",
     "TestCLI",
     "TestConfigValidation",
     "TestExtractionPerformance",
@@ -197,14 +199,12 @@ __all__ = [
     "TestStreamsFunctional",
     "TestTapInitialization",
     "TestWMSPaginatorUnit",
-    "TestsFlextTapOracleWmsConstants",
-    "TestsFlextTapOracleWmsModels",
-    "TestsFlextTapOracleWmsProtocols",
-    "TestsFlextTapOracleWmsTypes",
-    "TestsFlextTapOracleWmsUtilities",
     "c",
+    "d",
+    "e",
     "e2e",
     "env_path",
+    "h",
     "integration",
     "logger",
     "m",
@@ -216,19 +216,20 @@ __all__ = [
     "performance",
     "performance_config",
     "pytest_collection_modifyitems",
+    "r",
     "real_config",
     "real_tap_instance",
     "reset_environment",
+    "s",
     "sample_catalog",
     "sample_config",
     "sample_state",
     "t",
     "tap",
     "tap_instance",
-    "tm",
-    "tt",
     "u",
     "unit",
+    "x",
 ]
 
 

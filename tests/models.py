@@ -1,6 +1,6 @@
 """Test models for flext-tap-oracle-wms tests.
 
-Provides TestsFlextTapOracleWmsModels, extending m with
+Provides FlextTapOracleWmsTestModels, extending FlextTestsModels with
 flext-tap-oracle-wms-specific models using COMPOSITION INHERITANCE.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -9,31 +9,33 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import m
+from flext_tests import FlextTestsModels
 
 from flext_tap_oracle_wms.models import FlextTapOracleWmsModels
 
 
-class TestsFlextTapOracleWmsModels(m, FlextTapOracleWmsModels):
+class FlextTapOracleWmsTestModels(FlextTestsModels, FlextTapOracleWmsModels):
     """Models for flext-tap-oracle-wms tests using COMPOSITION INHERITANCE.
 
     MANDATORY: Inherits from BOTH:
-    1. m - for test infrastructure (.Tests.*)
+    1. FlextTestsModels - for test infrastructure (.Tests.*)
     2. FlextTapOracleWmsModels - for domain models
 
     Access patterns:
-    - tm.Tests.* (generic test models from m)
-    - tm.* (Tap Oracle WMS domain models)
-    - m.* (production models via alternative alias)
+    - FlextTapOracleWmsTestModels.Tests.* (generic test models from FlextTestsModels)
+    - FlextTapOracleWmsTestModels.TapOracleWms.* (Tap Oracle WMS domain models)
     """
 
+    class TapOracleWms(FlextTapOracleWmsModels.TapOracleWms):
+        """TapOracleWms domain models extending project models."""
 
-# Short aliases per FLEXT convention
-tm = TestsFlextTapOracleWmsModels
-m = TestsFlextTapOracleWmsModels
+        class Tests:
+            """Internal tests declarations."""
+
+
+m = FlextTapOracleWmsTestModels
 
 __all__ = [
-    "TestsFlextTapOracleWmsModels",
+    "FlextTapOracleWmsTestModels",
     "m",
-    "tm",
 ]
