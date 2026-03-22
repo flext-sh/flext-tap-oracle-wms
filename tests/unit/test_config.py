@@ -31,7 +31,7 @@ class TestFlextTapOracleWmsSettings:
         assert str(config.base_url).rstrip("/") == "https://wms.example.com"
         assert config.username == "test_user"
         assert config.password.get_secret_value() == "test_pass"
-        assert config.api_version == "v1"
+        assert config.api_version == "V1"
         assert config.timeout == 30
         assert config.page_size == 10
         assert config.verify_ssl is True

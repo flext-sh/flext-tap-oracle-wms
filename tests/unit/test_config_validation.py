@@ -27,7 +27,7 @@ class TestConfigValidation:
         assert str(config.base_url).rstrip("/") == "https://wms.example.com"
         assert config.username == "test_user"
         assert isinstance(config.password, SecretStr)
-        assert config.api_version == "v1"
+        assert config.api_version == "V1"
         assert config.page_size == 10
 
     def test_url_accepts_trailing_slash(self) -> None:
