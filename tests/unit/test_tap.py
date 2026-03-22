@@ -13,6 +13,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     m,
 )
+from tests import t
 
 
 class TestFlextTapOracleWms:
@@ -27,7 +28,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_with_dict(self) -> None:
         """Tap accepts plain config mappings and normalizes settings values."""
-        config_dict: dict[str, object] = {
+        config_dict: dict[str, t.NormalizedValue] = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
             "password": "test_password",
@@ -38,7 +39,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_invalid_config(self) -> None:
         """Invalid config payload raises configuration error."""
-        config_dict: dict[str, object] = {
+        config_dict: dict[str, t.NormalizedValue] = {
             "base_url": "invalid-url",
             "username": "test_user",
             "password": "test_password",
@@ -91,7 +92,7 @@ class TestFlextTapOracleWms:
             "inventory",
             "locations",
         ])
-        with patch.object(
+        with patch.t.NormalizedValue(
             FlextTapOracleWms,
             "wms_client",
             new_callable=PropertyMock,
@@ -106,7 +107,7 @@ class TestFlextTapOracleWms:
         """Catalog discovery propagates client discovery failures."""
         mock_client = MagicMock()
         mock_client.discover_entities.return_value = r[list[str]].fail("boom")
-        with patch.object(
+        with patch.t.NormalizedValue(
             FlextTapOracleWms,
             "wms_client",
             new_callable=PropertyMock,
@@ -120,7 +121,7 @@ class TestFlextTapOracleWms:
         self, tap_instance: FlextTapOracleWms
     ) -> None:
         """Stream discovery returns empty list when catalog discovery fails."""
-        with patch.object(
+        with patch.t.NormalizedValue(
             tap_instance,
             "discover_catalog",
             return_value=r[m.Meltano.SingerCatalog].fail("no catalog"),
@@ -135,12 +136,12 @@ class TestFlextTapOracleWms:
                 m.Meltano.SingerCatalogEntry(
                     tap_stream_id="inventory",
                     stream="inventory",
-                    schema={"type": "object"},
+                    schema={"type": "t.NormalizedValue"},
                     metadata=[],
                 )
             ]
         )
-        with patch.object(
+        with patch.t.NormalizedValue(
             tap_instance,
             "discover_catalog",
             return_value=r[m.Meltano.SingerCatalog].ok(catalog),
@@ -151,7 +152,7 @@ class TestFlextTapOracleWms:
 
     def test_execute_normal_mode(self, tap_instance: FlextTapOracleWms) -> None:
         """Execute without message triggers sync flow and returns success."""
-        with patch.object(tap_instance, "sync_all") as mock_sync:
+        with patch.t.NormalizedValue(tap_instance, "sync_all") as mock_sync:
             result = tap_instance.execute()
         assert result.is_success
         mock_sync.assert_called_once()
@@ -180,7 +181,7 @@ class TestFlextTapOracleWms:
 
     def test_get_implementation_metrics(self, tap_instance: FlextTapOracleWms) -> None:
         """Metrics payload contains baseline tap observability fields."""
-        with patch.object(tap_instance, "discover_streams", return_value=[]):
+        with patch.t.NormalizedValue(tap_instance, "discover_streams", return_value=[]):
             result = tap_instance.get_implementation_metrics()
         assert result.is_success
         metrics = result.value

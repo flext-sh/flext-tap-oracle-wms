@@ -19,7 +19,7 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
         class WmsStreamSchema(BaseModel):
             """Singer stream schema shape."""
 
-            type: Annotated[str, Field(default="object")]
+            type: Annotated[str, Field(default="t.NormalizedValue")]
             properties: Annotated[
                 dict[str, t.NormalizedValue], Field(default_factory=dict)
             ]

@@ -19,7 +19,7 @@ from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants as c
 class FlextTapOracleWmsSettings(BaseModel):
     """Validated settings consumed by the Oracle WMS tap runtime."""
 
-    model_config = ConfigDict(extra="ignore", validate_assignment=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(extra="ignore", validate_assignment=True)
 
     base_url: Annotated[
         AnyUrl,

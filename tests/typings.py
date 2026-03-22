@@ -49,9 +49,9 @@ class FlextTapOracleWmsTestTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
         type MockOracleWmsResponse = dict[
             str, list[MockOracleWmsRecord] | bool | str | None
         ]
-        type TestOracleWmsScenario = dict[str, object]
+        type TestOracleWmsScenario = dict[str, t.NormalizedValue]
         type TestOracleWmsValidationResult = dict[str, bool | str | list[str]]
-        type TestOracleWmsApiResult = dict[str, object]
+        type TestOracleWmsApiResult = dict[str, t.NormalizedValue]
 
 
 t = FlextTapOracleWmsTestTypes

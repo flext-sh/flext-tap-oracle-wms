@@ -11,6 +11,7 @@ import pytest
 from flext_core import FlextLogger
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream
+from tests import t
 
 logger = FlextLogger(__name__)
 
@@ -23,7 +24,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_real_wms_environment_verification(
-        self, real_wms_config: dict[str, object]
+        self, real_wms_config: dict[str, t.NormalizedValue]
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -43,7 +44,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_tap_initialization_real_config(
-        self, real_wms_config: dict[str, object]
+        self, real_wms_config: dict[str, t.NormalizedValue]
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(config=real_wms_config)
@@ -130,7 +131,7 @@ class TestOracleWMSFunctionalComplete:
             assert "type" in schema, (
                 f"Schema missing type for {stream['tap_stream_id']}"
             )
-            assert schema["type"] == "object", (
+            assert schema["type"] == "t.NormalizedValue", (
                 f"Invalid schema type for {stream['tap_stream_id']}"
             )
             assert "properties" in schema, (
@@ -146,7 +147,7 @@ class TestOracleWMSFunctionalComplete:
                     "number",
                     "boolean",
                     "array",
-                    "object",
+                    "t.NormalizedValue",
                     ["string", "null"],
                     ["integer", "null"],
                     ["number", "null"],
@@ -312,7 +313,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_error_handling_and_validation(
-        self, real_wms_config: dict[str, object]
+        self, real_wms_config: dict[str, t.NormalizedValue]
     ) -> None:
         """Test error handling with invalid configurations."""
         invalid_config = real_wms_config.copy()
@@ -321,7 +322,7 @@ class TestOracleWMSFunctionalComplete:
         try:
             catalog = tap.catalog_dict
             assert isinstance(catalog, dict), (
-                "Catalog should be dict[str, object] even on errors"
+                "Catalog should be dict[str, t.NormalizedValue] even on errors"
             )
         except (
             ValueError,
@@ -346,7 +347,9 @@ class TestOracleWMSFunctionalComplete:
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
-    def test_configuration_validation(self, real_wms_config: dict[str, object]) -> None:
+    def test_configuration_validation(
+        self, real_wms_config: dict[str, t.NormalizedValue]
+    ) -> None:
         """Test configuration validation and type conversion."""
         config = real_wms_config
         assert config is not None, "Config creation failed"
@@ -376,7 +379,9 @@ class TestOracleWMSFunctionalComplete:
             assert "metadata" in stream, "Stream missing metadata"
             schema = stream["schema"]
             assert "type" in schema, "Schema missing type"
-            assert schema["type"] == "object", "Schema type must be object"
+            assert schema["type"] == "t.NormalizedValue", (
+                "Schema type must be t.NormalizedValue"
+            )
             assert "properties" in schema, "Schema missing properties"
             metadata = stream["metadata"]
             assert isinstance(metadata, list), "Metadata must be list"

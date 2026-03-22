@@ -24,6 +24,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStream,
 )
+from tests import t
 
 logger = FlextLogger(__name__)
 
@@ -52,7 +53,7 @@ class TestOracleWMSE2EComplete:
             assert "schema" in stream, "Stream missing schema"
             assert "metadata" in stream, "Stream missing metadata"
             schema = stream["schema"]
-            assert schema["type"] == "object", "Invalid schema type"
+            assert schema["type"] == "t.NormalizedValue", "Invalid schema type"
             assert "properties" in schema, "Schema missing properties"
             assert len(schema["properties"]) > 0, "Empty schema properties"
             metadata = stream["metadata"]
@@ -292,7 +293,7 @@ class TestOracleWMSE2EComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_error_recovery_and_resilience(
-        self, real_wms_config: dict[str, object]
+        self, real_wms_config: dict[str, t.NormalizedValue]
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         invalid_config = real_wms_config.copy()
@@ -341,7 +342,9 @@ class TestOracleWMSE2EComplete:
             )
             assert stream["tap_stream_id"], "tap_stream_id cannot be empty"
             schema = stream["schema"]
-            assert schema["type"] == "object", "Schema type must be object"
+            assert schema["type"] == "t.NormalizedValue", (
+                "Schema type must be t.NormalizedValue"
+            )
             assert isinstance(schema["properties"], dict), "Properties must be dict"
             metadata = stream["metadata"]
             assert isinstance(metadata, list), "Metadata must be list"

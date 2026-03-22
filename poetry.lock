@@ -1142,7 +1142,7 @@ typing-extensions = ">=4.4,<5"
 [[package]]
 name = "deepdiff"
 version = "8.6.2"
-description = "Deep Difference and Search of any Python object/data. Recreate objects by adding adding deltas to each other."
+description = "Deep Difference and Search of any Python t.NormalizedValue/data. Recreate objects by adding adding deltas to each other."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
@@ -2088,7 +2088,7 @@ files = [
 
 [package.dependencies]
 cached-property = ">=1.5,<2.0"
-lazy-object-proxy = ">=1.6,<2.0"
+lazy-t.NormalizedValue-proxy = ">=1.6,<2.0"
 parameters-validation = ">=1.2,<2.0"
 pycollect = ">=0.2,<1.0"
 typing-inspect = ">=0.7,<1.0"
@@ -2234,9 +2234,9 @@ files = [
 referencing = ">=0.31.0"
 
 [[package]]
-name = "lazy-object-proxy"
+name = "lazy-t.NormalizedValue-proxy"
 version = "1.12.0"
-description = "A fast and thorough lazy object proxy."
+description = "A fast and thorough lazy t.NormalizedValue proxy."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
@@ -6209,7 +6209,7 @@ files = [
 [[package]]
 name = "tzlocal"
 version = "5.3.1"
-description = "tzinfo object for the local timezone"
+description = "tzinfo t.NormalizedValue for the local timezone"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
@@ -6509,7 +6509,7 @@ dev = ["pytest", "setuptools"]
 [[package]]
 name = "zipp"
 version = "3.23.0"
-description = "Backport of pathlib-compatible object wrapper for zip files"
+description = "Backport of pathlib-compatible t.NormalizedValue wrapper for zip files"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]

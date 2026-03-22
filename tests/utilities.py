@@ -13,6 +13,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsTypes as _t,
     FlextTapOracleWmsUtilities,
 )
+from tests import t
 
 
 class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtilities):
@@ -48,9 +49,9 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             password: str = "test_pass",
             facility_ids: list[str] | None = None,
             **kwargs: _t.Scalar,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.NormalizedValue]:
             """Create test Oracle WMS configuration."""
-            config: dict[str, object] = {
+            config: dict[str, t.NormalizedValue] = {
                 "base_url": base_url,
                 "username": username,
                 "password": password,
@@ -62,15 +63,18 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
 
         @staticmethod
         def create_test_oracle_wms_api_response(
-            data: list[dict[str, object]],
+            data: list[dict[str, t.NormalizedValue]],
             *,
             has_more: bool = False,
             next_page_url: str | None = None,
             facility_id: str | None = None,
             **kwargs: _t.Scalar,
-        ) -> dict[str, object]:
+        ) -> dict[str, t.NormalizedValue]:
             """Create test Oracle WMS API response."""
-            response: dict[str, object] = {"items": data, "hasMore": has_more}
+            response: dict[str, t.NormalizedValue] = {
+                "items": data,
+                "hasMore": has_more,
+            }
             if next_page_url:
                 response["nextPageUrl"] = next_page_url
             if facility_id:
@@ -84,11 +88,11 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             base_id: int = 1000,
             facility_id: str = "FAC001",
             **kwargs: _t.Scalar,
-        ) -> list[dict[str, object]]:
+        ) -> list[dict[str, t.NormalizedValue]]:
             """Generate mock Oracle WMS records for testing."""
-            records: list[dict[str, object]] = []
+            records: list[dict[str, t.NormalizedValue]] = []
             for i in range(count):
-                record: dict[str, object] = {
+                record: dict[str, t.NormalizedValue] = {
                     "id": base_id + i,
                     "facilityId": facility_id,
                     "itemNumber": f"ITEM{i + 1:04d}",
@@ -101,7 +105,7 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             return records
 
         @staticmethod
-        def validate_oracle_wms_config(config: dict[str, object]) -> bool:
+        def validate_oracle_wms_config(config: dict[str, t.NormalizedValue]) -> bool:
             """Validate Oracle WMS configuration for testing."""
             required_fields = ["base_url", "username"]
             return all(field in config and config[field] for field in required_fields)

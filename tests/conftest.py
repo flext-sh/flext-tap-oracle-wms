@@ -16,6 +16,7 @@ import pytest
 from flext_core import r
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import t
 
 
 @pytest.fixture(scope="session")
@@ -91,7 +92,7 @@ def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 
 
 @pytest.fixture
-def sample_catalog() -> dict[str, object]:
+def sample_catalog() -> dict[str, t.NormalizedValue]:
     """Sample Singer catalog."""
     return {
         "type": "CATALOG",
@@ -100,7 +101,7 @@ def sample_catalog() -> dict[str, object]:
                 "tap_stream_id": "inventory",
                 "stream": "inventory",
                 "schema": {
-                    "type": "object",
+                    "type": "t.NormalizedValue",
                     "properties": {
                         "inventory_id": {"type": "string"},
                         "item_id": {"type": "string"},
@@ -125,7 +126,7 @@ def sample_catalog() -> dict[str, object]:
 
 
 @pytest.fixture
-def sample_state() -> dict[str, object]:
+def sample_state() -> dict[str, t.NormalizedValue]:
     """Sample Singer state."""
     return {
         "bookmarks": {
@@ -185,7 +186,7 @@ def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleW
 
 
 @pytest.fixture
-def _test_config_extraction() -> dict[str, object]:
+def _test_config_extraction() -> dict[str, t.NormalizedValue]:
     """Test configuration for extraction tests."""
     return {
         "base_url": "https://test.wms.example.com",
