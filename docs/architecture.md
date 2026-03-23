@@ -1,7 +1,6 @@
 # Architecture Documentation
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Current Architecture Issues](#current-architecture-issues)
   - [Critical Problems Identified](#critical-problems-identified)
@@ -38,7 +37,6 @@
   - [Target Metrics](#target-metrics)
   - [Quality Gates](#quality-gates)
 - [Related Documentation](#related-documentation)
-
 <!-- TOC END -->
 
 ## Overview

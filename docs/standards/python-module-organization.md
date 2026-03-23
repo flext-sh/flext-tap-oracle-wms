@@ -1,7 +1,6 @@
 # Python Module Organization & Semantic Patterns
 
 <!-- TOC START -->
-
 - [🏗️ **Module Architecture Overview**](#module-architecture-overview)
   - [**Core Design Principles**](#core-design-principles)
 - [📁 **Target Module Structure & Responsibilities**](#target-module-structure-responsibilities)
@@ -41,7 +40,6 @@
 - [📋 **Module Creation Checklist**](#module-creation-checklist)
   - [**New Module Standards**](#new-module-standards)
   - [**Refactoring Validation**](#refactoring-validation)
-
 <!-- TOC END -->
 
 **FLEXT Tap Oracle WMS - Singer Tap Module Architecture & Best Practices**

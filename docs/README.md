@@ -1,16 +1,15 @@
 # FLEXT Tap Oracle WMS Documentation
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Documentation Structure](#documentation-structure)
   - [**Project Analysis and Planning**](#project-analysis-and-planning)
   - [**Development Standards**](#development-standards)
   - [**Integration Documentation**](#integration-documentation)
 - [Key Documentation](#key-documentation)
-  - \[**[TODO.md](TODO.md) - Critical Issues Analysis**\](#todomdtodomd-critical-issues-analysis)
-  - \[**[architecture.md](architecture.md) - Architectural Documentation**\](#architecturemdarchitecturemd-architectural-documentation)
-  - \[**[standards/Python-module-organization.md](standards/python-module-organization.md)**\](#standardspython-module-organizationmdstandardspython-module-organizationmd)
+  - [**[TODO.md](TODO.md) - Critical Issues Analysis**](#todomdtodomd-critical-issues-analysis)
+  - [**[architecture.md](architecture.md) - Architectural Documentation**](#architecturemdarchitecturemd-architectural-documentation)
+  - [**[standards/Python-module-organization.md](standards/python-module-organization.md)**](#standardspython-module-organizationmdstandardspython-module-organizationmd)
 - [Documentation Standards](#documentation-standards)
   - [**Documentation Principles**](#documentation-principles)
   - [**Language and Style**](#language-and-style)
@@ -27,7 +26,6 @@
 - [Contributing to Documentation](#contributing-to-documentation)
   - [**Documentation Updates**](#documentation-updates)
   - [**Documentation Review Checklist**](#documentation-review-checklist)
-
 <!-- TOC END -->
 
 ## Overview

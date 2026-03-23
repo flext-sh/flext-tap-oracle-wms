@@ -1,7 +1,6 @@
 # FLEXT-TAP-ORACLE-WMS - Desvios e Falhas de Projeto
 
 <!-- TOC START -->
-
 - [🚨 PROBLEMAS CRÍTICOS - AÇÃO IMEDIATA NECESSÁRIA](#problemas-crticos-ao-imediata-necessria)
   - [1. **SUPER-ENGENHARIA ARQUITETURAL MASSIVA**](#1-super-engenharia-arquitetural-massiva)
   - [2. **CRISE DE TESTES DESABILITADOS**](#2-crise-de-testes-desabilitados)
@@ -28,7 +27,6 @@
 - [⚡ ALTERNATIVA: REESCRITA COMPLETA](#alternativa-reescrita-completa)
   - [Justificativa para Reescrita](#justificativa-para-reescrita)
 - [🚨 RECOMENDAÇÃO FINAL](#recomendao-final)
-
 <!-- TOC END -->
 
 **Data de Análise**: 2025-08-04\

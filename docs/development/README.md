@@ -1,7 +1,6 @@
 # Development Documentation
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Development Documentation Structure](#development-documentation-structure)
   - [Testing Documentation](#testing-documentation)
@@ -38,7 +37,6 @@
   - [Pull Request Process](#pull-request-process)
 - [Migration Considerations](#migration-considerations)
   - [Current → Target Architecture](#current-target-architecture)
-
 <!-- TOC END -->
 
 ## Overview

@@ -1,7 +1,6 @@
 # FLEXT Ecosystem Integration
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [FLEXT Ecosystem Architecture](#flext-ecosystem-architecture)
 - [Integration Patterns](#integration-patterns)
@@ -18,7 +17,6 @@
   - [Current Integration Issues](#current-integration-issues)
   - [Migration Strategy](#migration-strategy)
   - [Validation Steps](#validation-steps)
-
 <!-- TOC END -->
 
 ## Overview

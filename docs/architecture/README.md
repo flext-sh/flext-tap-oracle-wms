@@ -1,7 +1,6 @@
 # Architecture Documentation
 
 <!-- TOC START -->
-
 - [Overview](#overview)
 - [Documentation Structure](#documentation-structure)
   - [Architecture Analysis](#architecture-analysis)
@@ -31,7 +30,6 @@
   - [Project Documentation](#project-documentation)
   - [FLEXT Ecosystem](#flext-ecosystem)
   - [External References](#external-references)
-
 <!-- TOC END -->
 
 ## Overview
