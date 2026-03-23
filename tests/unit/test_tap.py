@@ -92,7 +92,7 @@ class TestFlextTapOracleWms:
             "inventory",
             "locations",
         ])
-        with patch.t.NormalizedValue(
+        with patch.object(
             FlextTapOracleWms,
             "wms_client",
             new_callable=PropertyMock,
@@ -107,7 +107,7 @@ class TestFlextTapOracleWms:
         """Catalog discovery propagates client discovery failures."""
         mock_client = MagicMock()
         mock_client.discover_entities.return_value = r[list[str]].fail("boom")
-        with patch.t.NormalizedValue(
+        with patch.object(
             FlextTapOracleWms,
             "wms_client",
             new_callable=PropertyMock,
@@ -121,7 +121,7 @@ class TestFlextTapOracleWms:
         self, tap_instance: FlextTapOracleWms
     ) -> None:
         """Stream discovery returns empty list when catalog discovery fails."""
-        with patch.t.NormalizedValue(
+        with patch.object(
             tap_instance,
             "discover_catalog",
             return_value=r[m.Meltano.SingerCatalog].fail("no catalog"),
@@ -136,12 +136,12 @@ class TestFlextTapOracleWms:
                 m.Meltano.SingerCatalogEntry(
                     tap_stream_id="inventory",
                     stream="inventory",
-                    schema={"type": "t.NormalizedValue"},
+                    schema={"type": "object"},
                     metadata=[],
                 )
             ]
         )
-        with patch.t.NormalizedValue(
+        with patch.object(
             tap_instance,
             "discover_catalog",
             return_value=r[m.Meltano.SingerCatalog].ok(catalog),
@@ -152,7 +152,7 @@ class TestFlextTapOracleWms:
 
     def test_execute_normal_mode(self, tap_instance: FlextTapOracleWms) -> None:
         """Execute without message triggers sync flow and returns success."""
-        with patch.t.NormalizedValue(tap_instance, "sync_all") as mock_sync:
+        with patch.object(tap_instance, "sync_all") as mock_sync:
             result = tap_instance.execute()
         assert result.is_success
         mock_sync.assert_called_once()
@@ -181,7 +181,7 @@ class TestFlextTapOracleWms:
 
     def test_get_implementation_metrics(self, tap_instance: FlextTapOracleWms) -> None:
         """Metrics payload contains baseline tap observability fields."""
-        with patch.t.NormalizedValue(tap_instance, "discover_streams", return_value=[]):
+        with patch.object(tap_instance, "discover_streams", return_value=[]):
             result = tap_instance.get_implementation_metrics()
         assert result.is_success
         metrics = result.value
