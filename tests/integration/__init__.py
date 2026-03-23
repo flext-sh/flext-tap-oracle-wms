@@ -16,14 +16,14 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from .test_functional import TestOracleWMSFunctionalComplete
-    from .test_streams_functional import (
+    from tests.integration.test_functional import TestOracleWMSFunctionalComplete
+    from tests.integration.test_streams_functional import (
         TestStreamsFunctional,
         TestWMSPaginatorUnit,
         logger,
     )
-    from .test_wms import TestRealWmsIntegration
-    from .test_wms_connection import (
+    from tests.integration.test_wms import TestRealWmsIntegration
+    from tests.integration.test_wms_connection import (
         TestFilteringAndSelection,
         TestIntegration,
         TestRealConnection,

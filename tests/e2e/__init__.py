@@ -17,7 +17,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from .test_e2e import TestOracleWMSE2EComplete, logger
+    from tests.e2e.test_e2e import TestOracleWMSE2EComplete, logger
 
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestOracleWMSE2EComplete": ("tests.e2e.test_e2e", "TestOracleWMSE2EComplete"),
