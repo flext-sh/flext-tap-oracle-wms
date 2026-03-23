@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
@@ -27,7 +27,9 @@ def _as_map(value: t.NormalizedValue) -> Mapping[str, t.ContainerValue] | None:
     if not isinstance(value, Mapping):
         return None
     try:
-        validated_map = TypeAdapter(dict[str, t.ContainerValue]).validate_python(value)
+        validated_map = TypeAdapter(Mapping[str, t.ContainerValue]).validate_python(
+            value
+        )
     except ValidationError:
         return None
     return {
@@ -36,11 +38,11 @@ def _as_map(value: t.NormalizedValue) -> Mapping[str, t.ContainerValue] | None:
     }
 
 
-def _as_list(value: t.NormalizedValue) -> list[t.ContainerValue] | None:
+def _as_list(value: t.NormalizedValue) -> Sequence[t.ContainerValue] | None:
     if not isinstance(value, list):
         return None
     try:
-        validated_list = TypeAdapter(list[t.ContainerValue]).validate_python(value)
+        validated_list = TypeAdapter(Sequence[t.ContainerValue]).validate_python(value)
     except ValidationError:
         return None
     return [
@@ -55,7 +57,7 @@ class FlextTapOracleWmsStream(Stream):
     This is a generic stream class that adapts to any Oracle WMS entity dynamically.
     """
 
-    stream_primary_keys: ClassVar[list[str]] = []
+    stream_primary_keys: ClassVar[Sequence[str]] = []
     stream_replication_key: str | None = None
 
     @override
@@ -63,7 +65,7 @@ class FlextTapOracleWmsStream(Stream):
         self,
         tap: Tap,
         name: str | None = None,
-        schema: dict[str, t.Container] | None = None,
+        schema: Mapping[str, t.Container] | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
@@ -117,7 +119,7 @@ class FlextTapOracleWmsStream(Stream):
             return str(value)
         return str(value)
 
-    def get_primary_keys(self) -> list[str]:
+    def get_primary_keys(self) -> Sequence[str]:
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
 
@@ -125,7 +127,7 @@ class FlextTapOracleWmsStream(Stream):
     def get_records(
         self,
         context: Mapping[str, t.Scalar] | None,
-    ) -> Iterable[dict[str, t.Scalar]]:
+    ) -> Iterable[Mapping[str, t.Scalar]]:
         """Get records from Oracle WMS."""
         page = 1
         has_more = True
@@ -164,9 +166,9 @@ class FlextTapOracleWmsStream(Stream):
     @override
     def post_process(
         self,
-        row: dict[str, t.Scalar],
+        row: Mapping[str, t.Scalar],
         context: Mapping[str, t.Scalar] | None = None,
-    ) -> dict[str, t.Scalar]:
+    ) -> Mapping[str, t.Scalar]:
         """Post-process a record."""
         config_map: Mapping[str, t.NormalizedValue] = self.config
         column_mappings_raw = config_map.get("column_mappings")
@@ -195,7 +197,7 @@ class FlextTapOracleWmsStream(Stream):
         context: Mapping[str, t.Scalar] | None,
     ) -> Mapping[str, t.Scalar]:
         """Build kwargs for the operation call."""
-        kwargs: dict[str, t.Scalar] = {"page": page, "limit": self._page_size}
+        kwargs: Mapping[str, t.Scalar] = {"page": page, "limit": self._page_size}
         if self.stream_replication_key:
             starting_timestamp = self.get_starting_timestamp(context)
             if starting_timestamp:
@@ -209,12 +211,12 @@ class FlextTapOracleWmsStream(Stream):
         self,
         page: int,
         context: Mapping[str, t.Scalar] | None,
-    ) -> r[tuple[list[dict[str, t.Scalar]], bool]]:
+    ) -> r[tuple[Sequence[Mapping[str, t.Scalar]], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
         limit = int(limit_raw) if isinstance(limit_raw, int) else self._page_size
-        filters: dict[str, t.Scalar] = {}
+        filters: Mapping[str, t.Scalar] = {}
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
@@ -224,10 +226,10 @@ class FlextTapOracleWmsStream(Stream):
             filters=filters or None,
         )
         if result.is_failure:
-            return r[tuple[list[dict[str, t.Scalar]], bool]].fail(
+            return r[tuple[Sequence[Mapping[str, t.Scalar]], bool]].fail(
                 f"Failed to get records for {self.name}: {result.error}",
             )
-        normalized: list[dict[str, t.Scalar]] = [
+        normalized: Sequence[Mapping[str, t.Scalar]] = [
             {
                 str(key): self.normalize_json_value(value)
                 for key, value in record.items()
@@ -235,20 +237,20 @@ class FlextTapOracleWmsStream(Stream):
             for record in result.value
         ]
         has_more = len(normalized) == self._page_size
-        return r[tuple[list[dict[str, t.Scalar]], bool]].ok((
+        return r[tuple[Sequence[Mapping[str, t.Scalar]], bool]].ok((
             normalized,
             has_more,
         ))
 
     def _process_page_records(
         self,
-        records: list[dict[str, t.Scalar]],
+        records: Sequence[Mapping[str, t.Scalar]],
         context: Mapping[str, t.Scalar] | None,
-    ) -> Iterable[dict[str, t.Scalar]]:
+    ) -> Iterable[Mapping[str, t.Scalar]]:
         """Process and yield records from a page."""
         for record in records:
-            record_dict: dict[str, t.ContainerValue] = dict(record)
-            processed_record: dict[str, t.ContainerValue] = (
+            record_dict: Mapping[str, t.ContainerValue] = dict(record)
+            processed_record: Mapping[str, t.ContainerValue] = (
                 u.DataProcessing.process_wms_record(
                     record=record_dict,
                 )
@@ -256,7 +258,7 @@ class FlextTapOracleWmsStream(Stream):
             processed_map = _as_map(processed_record)
             if processed_map is None:
                 continue
-            json_row: dict[str, t.Scalar] = {
+            json_row: Mapping[str, t.Scalar] = {
                 str(k): self.normalize_json_value(v) for k, v in processed_map.items()
             }
             yield self.post_process(json_row, context)

@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from unittest.mock import Mock
 
 import pytest
@@ -89,7 +90,7 @@ class TestStreamsFunctional:
         authenticator = stream.authenticator
         assert authenticator is not None
         request = Mock()
-        request.headers = dict[str, str]()
+        request.headers = Mapping[str, str]()
         authenticated_request = authenticator(request)
         assert "Authorization" in authenticated_request.headers
         auth_header = authenticated_request.headers["Authorization"]
@@ -135,8 +136,8 @@ class TestStreamsFunctional:
         """Test automatic replication key detection."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        incremental_streams: list[tuple[str, str | None]] = []
-        full_table_streams: list[str] = []
+        incremental_streams: Sequence[tuple[str, str | None]] = []
+        full_table_streams: Sequence[str] = []
         for stream_config in streams[:5]:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
@@ -161,7 +162,7 @@ class TestStreamsFunctional:
         """Test timestamp field detection for replication keys."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        timestamp_streams: list[tuple[str, str]] = []
+        timestamp_streams: Sequence[tuple[str, str]] = []
         for stream_config in streams[:3]:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,

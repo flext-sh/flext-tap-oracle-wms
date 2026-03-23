@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import Generator
+from collections.abc import Generator, Mapping, Sequence
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -66,17 +66,17 @@ def mock_wms_client() -> MagicMock:
     """Mock Oracle WMS client."""
     client = MagicMock()
     client.connect.return_value = r[bool].ok(value=True)
-    client.list_entities.return_value = r[list[str]].ok([
+    client.list_entities.return_value = r[Sequence[str]].ok([
         "inventory",
         "locations",
         "shipments",
         "receipts",
     ])
-    client.get_records.return_value = r[list[dict[str, str | int]]].ok([
+    client.get_records.return_value = r[Sequence[Mapping[str, str | int]]].ok([
         {"id": "1", "name": "Test Item 1", "quantity": 100},
         {"id": "2", "name": "Test Item 2", "quantity": 200},
     ])
-    client.get_entity_metadata.return_value = r[dict[str, str | list[str]]].ok({
+    client.get_entity_metadata.return_value = r[Mapping[str, str | Sequence[str]]].ok({
         "display_name": "Inventory",
         "description": "Inventory data",
         "primary_key": ["inventory_id"],
@@ -92,7 +92,7 @@ def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 
 
 @pytest.fixture
-def sample_catalog() -> dict[str, t.NormalizedValue]:
+def sample_catalog() -> Mapping[str, t.NormalizedValue]:
     """Sample Singer catalog."""
     return {
         "type": "CATALOG",
@@ -126,7 +126,7 @@ def sample_catalog() -> dict[str, t.NormalizedValue]:
 
 
 @pytest.fixture
-def sample_state() -> dict[str, t.NormalizedValue]:
+def sample_state() -> Mapping[str, t.NormalizedValue]:
     """Sample Singer state."""
     return {
         "bookmarks": {
@@ -153,12 +153,12 @@ def mock_request() -> MagicMock:
     """Mock HTTP request."""
     request = MagicMock()
     request.auth = None
-    request.headers = dict[str, str]()
+    request.headers = Mapping[str, str]()
     return request
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config, items: list[pytest.Item]
+    config: pytest.Config, items: Sequence[pytest.Item]
 ) -> None:
     """Add markers to tests based on their location."""
     for item in items:
@@ -186,7 +186,7 @@ def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleW
 
 
 @pytest.fixture
-def _test_config_extraction() -> dict[str, t.NormalizedValue]:
+def _test_config_extraction() -> Mapping[str, t.NormalizedValue]:
     """Test configuration for extraction tests."""
     return {
         "base_url": "https://test.wms.example.com",

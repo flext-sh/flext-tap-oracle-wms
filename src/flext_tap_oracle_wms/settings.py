@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping, Sequence
 from typing import Annotated, ClassVar
 
 from flext_core import r
@@ -101,11 +102,11 @@ class FlextTapOracleWmsSettings(BaseModel):
         ),
     ]
     include_entities: Annotated[
-        list[str],
+        Sequence[str],
         Field(default_factory=list, description="Entities to include."),
     ]
     exclude_entities: Annotated[
-        list[str],
+        Sequence[str],
         Field(default_factory=list, description="Entities to exclude."),
     ]
     start_date: Annotated[
@@ -117,11 +118,11 @@ class FlextTapOracleWmsSettings(BaseModel):
         Field(default=None, description="End date for incremental extraction."),
     ]
     column_mappings: Annotated[
-        dict[str, dict[str, str]],
+        Mapping[str, Mapping[str, str]],
         Field(default_factory=dict, description="Column rename mappings per stream."),
     ]
     ignored_columns: Annotated[
-        list[str],
+        Sequence[str],
         Field(default_factory=list, description="Columns to ignore during extraction."),
     ]
     enable_parallel_extraction: Annotated[
@@ -161,7 +162,7 @@ class FlextTapOracleWmsSettings(BaseModel):
         Field(default=None, description="Custom User-Agent header."),
     ]
     additional_headers: Annotated[
-        dict[str, str],
+        Mapping[str, str],
         Field(default_factory=dict, description="Additional HTTP headers."),
     ]
     log_level: Annotated[
@@ -183,7 +184,7 @@ class FlextTapOracleWmsSettings(BaseModel):
 
     @field_validator("include_entities", "exclude_entities")
     @classmethod
-    def _check_no_duplicates(cls, v: list[str]) -> list[str]:
+    def _check_no_duplicates(cls, v: Sequence[str]) -> Sequence[str]:
         if len(v) != len(set(v)):
             msg = "Entity list contains duplicates"
             raise ValueError(msg)

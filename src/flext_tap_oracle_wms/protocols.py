@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_core import t
@@ -53,7 +54,7 @@ class FlextTapOracleWmsProtocols(FlextOracleWmsProtocols):
                 def discover_inventory(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[list[t.ConfigMap]]:
+                ) -> FlextProtocols.Result[Sequence[t.ConfigMap]]:
                     """Discover WMS inventory."""
                     ...
 
@@ -64,7 +65,7 @@ class FlextTapOracleWmsProtocols(FlextOracleWmsProtocols):
                 def process_orders(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[list[t.ConfigMap]]:
+                ) -> FlextProtocols.Result[Sequence[t.ConfigMap]]:
                     """Process WMS orders."""
                     ...
 
@@ -75,7 +76,7 @@ class FlextTapOracleWmsProtocols(FlextOracleWmsProtocols):
                 def get_warehouse_operations(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[list[t.ConfigMap]]:
+                ) -> FlextProtocols.Result[Sequence[t.ConfigMap]]:
                     """Get WMS warehouse operations."""
                     ...
 

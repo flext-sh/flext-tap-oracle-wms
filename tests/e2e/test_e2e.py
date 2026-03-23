@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 
@@ -225,7 +226,7 @@ class TestOracleWMSE2EComplete:
             if len(properties) > 0:
                 quality_report["schemas_valid"] += 1
             metadata = stream_config.get("metadata", [])
-            primary_keys: list[str] = []
+            primary_keys: Sequence[str] = []
             for meta in metadata:
                 if meta.get("breadcrumb") and len(meta["breadcrumb"]) == 1:
                     field_meta = meta.get("metadata", {})
@@ -271,7 +272,7 @@ class TestOracleWMSE2EComplete:
     def test_pagination_end_to_end(self) -> None:
         """E2E: Test pagination handling through multiple pages."""
         paginator = None
-        pages_tested: list[str] = []
+        pages_tested: Sequence[str] = []
         response1 = Mock()
         response1.json.return_value = {
             "results": [{"id": 1}, {"id": 2}],
@@ -293,7 +294,7 @@ class TestOracleWMSE2EComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_error_recovery_and_resilience(
-        self, real_wms_config: dict[str, t.NormalizedValue]
+        self, real_wms_config: Mapping[str, t.NormalizedValue]
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         invalid_config = real_wms_config.copy()
@@ -385,7 +386,7 @@ class TestOracleWMSE2EComplete:
         streams_count = len(catalog.get("streams", []))
         assert discovery_time < 300, f"Discovery too slow: {discovery_time:.2f}s"
         assert streams_count > 0, "No streams discovered"
-        properties_per_stream: list[int] = []
+        properties_per_stream: Sequence[int] = []
         for stream in catalog["streams"]:
             prop_count = len(stream["schema"].get("properties", {}))
             properties_per_stream.append(prop_count)
@@ -422,7 +423,7 @@ class TestOracleWMSE2EComplete:
             "schemas_valid": 0,
             "singer_compliant": False,
             "performance_acceptable": False,
-            "errors": list[str](),
+            "errors": Sequence[str](),
         }
         try:
             start_time = time.time()

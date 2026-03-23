@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from typing import Annotated
 
 from flext_core import t
@@ -21,15 +22,15 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
 
             type: Annotated[str, Field(default="t.NormalizedValue")]
             properties: Annotated[
-                dict[str, t.NormalizedValue], Field(default_factory=dict)
+                Mapping[str, t.NormalizedValue], Field(default_factory=dict)
             ]
 
         class WmsStreamMetadata(BaseModel):
             """Singer stream metadata entry."""
 
-            breadcrumb: Annotated[list[str], Field(default_factory=list)]
+            breadcrumb: Annotated[Sequence[str], Field(default_factory=list)]
             metadata: Annotated[
-                dict[str, t.NormalizedValue], Field(default_factory=dict)
+                Mapping[str, t.NormalizedValue], Field(default_factory=dict)
             ]
 
         class WmsStreamDefinition(BaseModel):
@@ -42,9 +43,9 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
                 Field(alias="schema"),
             ]
             metadata: Annotated[
-                list[FlextMeltanoModels.Meltano.SingerCatalogMetadata],
+                Sequence[FlextMeltanoModels.Meltano.SingerCatalogMetadata],
                 Field(
-                    default_factory=lambda: list[
+                    default_factory=lambda: Sequence[
                         FlextMeltanoModels.Meltano.SingerCatalogMetadata
                     ](),
                 ),

@@ -23,7 +23,7 @@ class FlextTapOracleWms(Tap):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[dict[str, t.ContainerValue]] = {
+    config_jsonschema: ClassVar[Mapping[str, t.ContainerValue]] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
         "properties": {
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
@@ -81,7 +81,7 @@ class FlextTapOracleWms(Tap):
             return r[m.Meltano.SingerCatalog].fail(
                 discovery_result.error or "Discovery failed",
             )
-        entities: list[str] = list(discovery_result.value)
+        entities: Sequence[str] = list(discovery_result.value)
         streams = [
             m.Meltano.SingerCatalogEntry.model_validate({
                 "tap_stream_id": entity,
@@ -121,7 +121,7 @@ class FlextTapOracleWms(Tap):
         streams_raw = catalog_result.value.streams
         if not streams_raw:
             return []
-        streams: list[FlextTapOracleWmsStream] = []
+        streams: Sequence[FlextTapOracleWmsStream] = []
         for stream_raw in streams_raw:
             stream_name = stream_raw.stream
             stream_schema = stream_raw.schema_definition

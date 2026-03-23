@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
@@ -43,22 +44,22 @@ class AuditResult(BaseModel):
 
     project: str = Field(description="Project name")
     status: str = Field(description="Audit status: PASS, FAIL, WARNING, PENDING, SKIP")
-    critical: list[AuditViolation] = Field(
-        default_factory=lambda: list[AuditViolation](),
+    critical: Sequence[AuditViolation] = Field(
+        default_factory=lambda: Sequence[AuditViolation](),
         description="Critical violations",
     )
-    high: list[AuditViolation] = Field(
-        default_factory=lambda: list[AuditViolation](),
+    high: Sequence[AuditViolation] = Field(
+        default_factory=lambda: Sequence[AuditViolation](),
         description="High priority violations",
     )
-    medium: list[AuditViolation] = Field(
-        default_factory=lambda: list[AuditViolation](),
+    medium: Sequence[AuditViolation] = Field(
+        default_factory=lambda: Sequence[AuditViolation](),
         description="Medium priority violations",
     )
-    recommendations: list[str] = Field(
+    recommendations: Sequence[str] = Field(
         default_factory=list, description="Audit recommendations"
     )
-    stats: dict[str, t.Primitives] = Field(
+    stats: Mapping[str, t.Primitives] = Field(
         default_factory=dict, description="Audit statistics"
     )
 
@@ -127,7 +128,7 @@ class PydanticV2Auditor:
     """Audits project for Pydantic v2 compliance."""
 
     # CRITICAL: Pydantic v1 patterns (MUST NOT EXIST)
-    CRITICAL_PATTERNS: ClassVar[dict[str, str]] = {
+    CRITICAL_PATTERNS: ClassVar[Mapping[str, str]] = {
         r"class\s+\w+.*:\s*\n\s*class\s+Config": "Pydantic v1 `class Config` pattern",
         r"\.dict\(": "Pydantic v1 `.dict()` method (use `model_dump()`)",
         # NOTE: .json() pattern excluded due to HTTP library false positives (requests.json(), httpx.json())
@@ -139,7 +140,7 @@ class PydanticV2Auditor:
     }
 
     # HIGH: Missing Pydantic v2 patterns (SHOULD EXIST)
-    HIGH_PATTERNS: ClassVar[dict[str, str]] = {
+    HIGH_PATTERNS: ClassVar[Mapping[str, str]] = {
         r"model_dump\(": "Uses `model_dump()` for serialization",
         r"model_validate\(": "Uses `model_validate()` for parsing",
         r"@field_validator": "Uses `@field_validator` decorator",
@@ -152,7 +153,7 @@ class PydanticV2Auditor:
     # validate_file_path, validate_directory_path, validate_timeout_seconds, validate_retry_count,
     # validate_log_level, validate_string_not_none, validate_string_not_empty, validate_string,
     # validate_host, validate_pipeline were consolidated into Pydantic v2 native types)
-    REMOVED_VALIDATORS: ClassVar[dict[str, str]] = {}
+    REMOVED_VALIDATORS: ClassVar[Mapping[str, str]] = {}
 
     def __init__(self, project_path: str | None = None) -> None:
         """Initialize auditor."""
@@ -272,16 +273,16 @@ class PydanticV2Auditor:
     def _find_pattern(
         self,
         pattern: str,
-        lines: list[str],
-    ) -> list[int]:
+        lines: Sequence[str],
+    ) -> Sequence[int]:
         """Find all lines matching a pattern."""
-        matches: list[int] = []
+        matches: Sequence[int] = []
         for idx, line in enumerate(lines):
             if re.search(pattern, line):
                 matches.append(idx)
         return matches
 
-    def _add_statistics(self, py_files: list[Path]) -> None:
+    def _add_statistics(self, py_files: Sequence[Path]) -> None:
         """Add audit statistics."""
         self.result.stats["Total Python files"] = len(py_files)
         self.result.stats["Total violations"] = self.result.total_violations

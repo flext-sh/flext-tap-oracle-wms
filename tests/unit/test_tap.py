@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
@@ -28,7 +29,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_with_dict(self) -> None:
         """Tap accepts plain config mappings and normalizes settings values."""
-        config_dict: dict[str, t.NormalizedValue] = {
+        config_dict: Mapping[str, t.NormalizedValue] = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
             "password": "test_password",
@@ -39,7 +40,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_invalid_config(self) -> None:
         """Invalid config payload raises configuration error."""
-        config_dict: dict[str, t.NormalizedValue] = {
+        config_dict: Mapping[str, t.NormalizedValue] = {
             "base_url": "invalid-url",
             "username": "test_user",
             "password": "test_password",
@@ -54,7 +55,7 @@ class TestFlextTapOracleWms:
         """Client is created only once and reused after first access."""
         mock_client = MagicMock()
         mock_client.start.return_value = r[bool].ok(True)
-        mock_client.discover_entities.return_value = r[list[str]].ok([])
+        mock_client.discover_entities.return_value = r[Sequence[str]].ok([])
         mock_client_class.return_value = mock_client
         tap = FlextTapOracleWms(
             config={
@@ -88,7 +89,7 @@ class TestFlextTapOracleWms:
     def test_discover_catalog_success(self, tap_instance: FlextTapOracleWms) -> None:
         """Catalog discovery maps discovered entities to Singer streams."""
         mock_client = MagicMock()
-        mock_client.discover_entities.return_value = r[list[str]].ok([
+        mock_client.discover_entities.return_value = r[Sequence[str]].ok([
             "inventory",
             "locations",
         ])
@@ -106,7 +107,7 @@ class TestFlextTapOracleWms:
     def test_discover_catalog_failure(self, tap_instance: FlextTapOracleWms) -> None:
         """Catalog discovery propagates client discovery failures."""
         mock_client = MagicMock()
-        mock_client.discover_entities.return_value = r[list[str]].fail("boom")
+        mock_client.discover_entities.return_value = r[Sequence[str]].fail("boom")
         with patch.object(
             FlextTapOracleWms,
             "wms_client",
