@@ -11,8 +11,7 @@ from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, r
-from flext_core.typings import t
+from flext_core import FlextLogger, r, t
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from singer_sdk.streams import Stream

@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_core.typings import t
-from flext_meltano.models import FlextMeltanoModels
+from flext_core import t
+from flext_meltano import FlextMeltanoModels
 
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsClient
