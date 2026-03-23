@@ -14,9 +14,7 @@ class TestTapInitialization:
 
     def test_tap_initialization_uses_normalized_config(self) -> None:
         """Tap stores normalized config values from settings serialization."""
-        with patch.object(
-            FlextTapOracleWms, "discover_streams", return_value=[]
-        ):
+        with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
                 config={
                     "base_url": "https://test.example.com",
@@ -29,9 +27,7 @@ class TestTapInitialization:
 
     def test_discover_streams_returns_empty_on_discovery_failure(self) -> None:
         """discover_streams returns no streams if catalog discovery fails."""
-        with patch.object(
-            FlextTapOracleWms, "discover_streams", return_value=[]
-        ):
+        with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
                 config={
                     "base_url": "https://test.example.com",
@@ -72,9 +68,7 @@ class TestTapInitialization:
 
     def test_execute_reuses_sync_all_entrypoint(self) -> None:
         """execute() delegates to sync_all when no message is passed."""
-        with patch.object(
-            FlextTapOracleWms, "discover_streams", return_value=[]
-        ):
+        with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
                 config={
                     "base_url": "https://test.example.com",
