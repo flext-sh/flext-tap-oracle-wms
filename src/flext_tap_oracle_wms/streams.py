@@ -20,13 +20,19 @@ from singer_sdk.tap_base import Tap
 from flext_tap_oracle_wms import p, t, u
 
 logger = FlextLogger(__name__)
+_CONTAINER_VALUE_MAP_ADAPTER: TypeAdapter[t.ContainerValueMapping] = TypeAdapter(
+    t.ContainerValueMapping,
+)
+_CONTAINER_VALUE_LIST_ADAPTER: TypeAdapter[t.ContainerValueList] = TypeAdapter(
+    t.ContainerValueList,
+)
 
 
 def _as_map(value: t.NormalizedValue) -> Mapping[str, t.ContainerValue] | None:
     if not isinstance(value, Mapping):
         return None
     try:
-        validated_map = TypeAdapter(t.ContainerValueMapping).validate_python(value)
+        validated_map = _CONTAINER_VALUE_MAP_ADAPTER.validate_python(value)
     except ValidationError:
         return None
     return {
@@ -39,7 +45,7 @@ def _as_list(value: t.NormalizedValue) -> Sequence[t.ContainerValue] | None:
     if not isinstance(value, list):
         return None
     try:
-        validated_list = TypeAdapter(t.ContainerValueList).validate_python(value)
+        validated_list = _CONTAINER_VALUE_LIST_ADAPTER.validate_python(value)
     except ValidationError:
         return None
     return [
