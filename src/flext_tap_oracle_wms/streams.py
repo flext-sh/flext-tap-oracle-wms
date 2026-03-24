@@ -54,7 +54,7 @@ class FlextTapOracleWmsStream(Stream):
     This is a generic stream class that adapts to any Oracle WMS entity dynamically.
     """
 
-    stream_primary_keys: ClassVar[t.StrSequence] = []
+    stream_primary_keys: ClassVar[Sequence[str]] = []
     stream_replication_key: str | None = None
 
     @override
@@ -116,7 +116,7 @@ class FlextTapOracleWmsStream(Stream):
             return str(value)
         return str(value)
 
-    def get_primary_keys(self) -> t.StrSequence:
+    def get_primary_keys(self) -> Sequence[str]:
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
 

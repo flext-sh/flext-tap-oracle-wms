@@ -27,7 +27,7 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
         class WmsStreamMetadata(BaseModel):
             """Singer stream metadata entry."""
 
-            breadcrumb: Annotated[t.StrSequence, Field(default_factory=list)]
+            breadcrumb: Annotated[Sequence[str], Field(default_factory=list)]
             metadata: Annotated[t.ContainerMapping, Field(default_factory=dict)]
 
         class WmsStreamDefinition(BaseModel):

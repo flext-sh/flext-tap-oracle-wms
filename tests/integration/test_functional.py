@@ -244,7 +244,7 @@ class TestOracleWMSFunctionalComplete:
         catalog = real_tap_instance.catalog_dict
         streams = catalog["streams"]
         streams_with_replication: Sequence[tuple[str, str]] = []
-        streams_full_table: t.StrSequence = []
+        streams_full_table: Sequence[str] = []
         for stream in streams:
             metadata = stream.get("metadata", [])
             table_metadata = None
@@ -407,7 +407,7 @@ class TestOracleWMSFunctionalComplete:
             "replication_configured": False,
             "pagination_configured": False,
             "singer_compliant": False,
-            "errors": t.StrSequence(),
+            "errors": Sequence[str](),
         }
         try:
             assert real_tap_instance is not None

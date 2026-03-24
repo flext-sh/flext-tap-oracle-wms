@@ -66,7 +66,7 @@ def mock_wms_client() -> MagicMock:
     """Mock Oracle WMS client."""
     client = MagicMock()
     client.connect.return_value = r[bool].ok(value=True)
-    client.list_entities.return_value = r[t.StrSequence].ok([
+    client.list_entities.return_value = r[Sequence[str]].ok([
         "inventory",
         "locations",
         "shipments",
@@ -76,7 +76,7 @@ def mock_wms_client() -> MagicMock:
         {"id": "1", "name": "Test Item 1", "quantity": 100},
         {"id": "2", "name": "Test Item 2", "quantity": 200},
     ])
-    client.get_entity_metadata.return_value = r[Mapping[str, str | t.StrSequence]].ok({
+    client.get_entity_metadata.return_value = r[Mapping[str, str | Sequence[str]]].ok({
         "display_name": "Inventory",
         "description": "Inventory data",
         "primary_key": ["inventory_id"],
@@ -153,7 +153,7 @@ def mock_request() -> MagicMock:
     """Mock HTTP request."""
     request = MagicMock()
     request.auth = None
-    request.headers = t.StrMapping()
+    request.headers = Mapping[str, str]()
     return request
 
 

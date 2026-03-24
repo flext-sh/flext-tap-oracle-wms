@@ -118,7 +118,7 @@ class FlextTapOracleWmsSettings(BaseModel):
         Field(default=None, description="End date for incremental extraction."),
     ]
     column_mappings: Annotated[
-        Mapping[str, t.StrMapping],
+        Mapping[str, Mapping[str, str]],
         Field(default_factory=dict, description="Column rename mappings per stream."),
     ]
     ignored_columns: Annotated[
@@ -162,7 +162,7 @@ class FlextTapOracleWmsSettings(BaseModel):
         Field(default=None, description="Custom User-Agent header."),
     ]
     additional_headers: Annotated[
-        t.StrMapping,
+        Mapping[str, str],
         Field(default_factory=dict, description="Additional HTTP headers."),
     ]
     log_level: Annotated[
