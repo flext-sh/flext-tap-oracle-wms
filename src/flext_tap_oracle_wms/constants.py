@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from enum import StrEnum, unique
-from typing import Final, Literal
+from typing import Final
 
 from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
@@ -127,14 +127,6 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         LINEAR = "linear"
         EXPONENTIAL = "exponential"
         FIXED = "fixed"
-
-    type TapWmsEntityTypeLiteral = Literal[
-        "INVENTORY",
-        "SHIPMENT",
-        "PICKING",
-        "RECEIVING",
-    ]
-    "Oracle WMS entity type literal - references WmsEntityType StrEnum members."
 
     @unique
     class TapProjectType(StrEnum):
