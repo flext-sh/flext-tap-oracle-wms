@@ -293,7 +293,7 @@ class TestStreamsFunctional:
                     {"id": 2, "code": "ITEM002", "mod_ts": "2024-01-01T11:00:00Z"},
                 ],
                 "next_page": "/api/entity/item?page=2",
-            })
+            }),
         )
         assert len(raw1) == 2
         r0 = raw1[0]
@@ -304,7 +304,7 @@ class TestStreamsFunctional:
             stream._extract_records_from_response([
                 {"id": 3, "code": "ITEM003"},
                 {"id": 4, "code": "ITEM004"},
-            ])
+            ]),
         )
         assert len(raw2) == 2
         r2 = raw2[0]
@@ -382,7 +382,7 @@ class TestWMSPaginatorUnit:
             stream._extract_records_from_response({
                 "results": [{"id": 1, "name": "first"}],
                 "next_page": "/api/entity/item?page=2",
-            })
+            }),
         )
         assert len(raw1) == 1
         r0 = raw1[0]

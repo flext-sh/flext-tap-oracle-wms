@@ -258,7 +258,7 @@ class TestOracleWMSE2EComplete:
             if table_metadata:
                 tm_meta_raw = table_metadata.get("metadata")
                 if isinstance(tm_meta_raw, Mapping) and tm_meta_raw.get(
-                    "replication-key"
+                    "replication-key",
                 ):
                     quality_report["replication_keys_defined"] += 1
             nullable_documented = 0

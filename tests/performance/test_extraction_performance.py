@@ -148,7 +148,7 @@ class TestRateLimitingPerformance:
             max_requests_per_minute=60,
         )
         tap_with_limit = FlextTapOracleWms(
-            config=config_with_limit.model_dump(mode="json")
+            config=config_with_limit.model_dump(mode="json"),
         )
         tap_with_limit.initialize()
         for tap, _label in [(tap_no_limit, "No Limit"), (tap_with_limit, "With Limit")]:
