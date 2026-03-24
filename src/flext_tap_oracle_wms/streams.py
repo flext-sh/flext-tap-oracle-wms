@@ -72,7 +72,8 @@ class FlextTapOracleWmsStream(Stream):
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema)
+        schema_dict: dict[str, t.Container] | None = dict(schema) if schema is not None else None
+        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema_dict)
         self._client: FlextOracleWmsClient | None = None
         page_size = int(self.config.get("page_size", 100))
         self._page_size = (
@@ -129,8 +130,8 @@ class FlextTapOracleWmsStream(Stream):
     @override
     def get_records(
         self,
-        context: t.ConfigurationMapping | None,
-    ) -> Iterable[t.ConfigurationMapping]:
+        context: Mapping[str, t.Scalar] | None,
+    ) -> Iterable[dict[str, t.Scalar]]:
         """Get records from Oracle WMS."""
         page = 1
         has_more = True
@@ -169,9 +170,9 @@ class FlextTapOracleWmsStream(Stream):
     @override
     def post_process(
         self,
-        row: t.ConfigurationMapping,
-        context: t.ConfigurationMapping | None = None,
-    ) -> t.ConfigurationMapping:
+        row: dict[str, t.Scalar],
+        context: Mapping[str, t.Scalar] | None = None,
+    ) -> dict[str, t.Scalar]:
         """Post-process a record."""
         config_map: t.ContainerMapping = self.config
         column_mappings_raw = config_map.get("column_mappings")
@@ -197,10 +198,10 @@ class FlextTapOracleWmsStream(Stream):
     def _build_operation_kwargs(
         self,
         page: int,
-        context: t.ConfigurationMapping | None,
-    ) -> t.ConfigurationMapping:
+        context: Mapping[str, t.Scalar] | None,
+    ) -> dict[str, t.Scalar]:
         """Build kwargs for the operation call."""
-        kwargs: t.ConfigurationMapping = {"page": page, "limit": self._page_size}
+        kwargs: dict[str, t.Scalar] = {"page": page, "limit": self._page_size}
         if self.stream_replication_key:
             starting_timestamp = self.get_starting_timestamp(context)
             if starting_timestamp:
@@ -213,13 +214,13 @@ class FlextTapOracleWmsStream(Stream):
     def _fetch_page_data(
         self,
         page: int,
-        context: t.ConfigurationMapping | None,
-    ) -> r[tuple[Sequence[t.ConfigurationMapping], bool]]:
+        context: Mapping[str, t.Scalar] | None,
+    ) -> r[tuple[Sequence[dict[str, t.Scalar]], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
         limit = int(limit_raw) if isinstance(limit_raw, int) else self._page_size
-        filters: t.ConfigurationMapping = {}
+        filters: dict[str, t.Scalar] = {}
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
