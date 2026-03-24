@@ -27,6 +27,7 @@ if TYPE_CHECKING:
         sample_config,
         sample_state,
         tap_instance,
+        test_config_extraction,
     )
     from tests.constants import (
         FlextTapOracleWmsTestConstants,
@@ -174,6 +175,7 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "t": ("tests.typings", "FlextTapOracleWmsTestTypes"),
     "tap": ("tests.performance.test_extraction_performance", "tap"),
     "tap_instance": ("tests.conftest", "tap_instance"),
+    "test_config_extraction": ("tests.conftest", "test_config_extraction"),
     "u": ("tests.utilities", "FlextTapOracleWmsTestUtilities"),
     "unit": ("tests.unit", ""),
     "x": ("flext_tests", "x"),
@@ -229,6 +231,7 @@ __all__ = [
     "t",
     "tap",
     "tap_instance",
+    "test_config_extraction",
     "u",
     "unit",
     "x",
