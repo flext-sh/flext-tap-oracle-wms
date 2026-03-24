@@ -23,6 +23,12 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
     Note: Does not override Authentication from parent classes to avoid conflicts.
     """
 
+    class Authentication(
+        FlextMeltanoConstants.Authentication,
+        FlextOracleWmsConstants.Authentication,
+    ):
+        """Merged authentication constants from both parent hierarchies."""
+
     DEFAULT_WMS_TIMEOUT: Final[int] = FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
     DEFAULT_FETCH_SIZE: Final[int] = (
         FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
@@ -131,7 +137,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
     "Oracle WMS entity type literal - references WmsEntityType StrEnum members."
 
     @unique
-    class ProjectType(StrEnum):
+    class TapProjectType(StrEnum):
         """Project type literals for tap package metadata."""
 
         SINGER_TAP = "singer-tap"

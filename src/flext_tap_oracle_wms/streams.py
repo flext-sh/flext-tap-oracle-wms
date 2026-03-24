@@ -201,21 +201,23 @@ class FlextTapOracleWmsStream(Stream):
         context: Mapping[str, t.Scalar] | None,
     ) -> dict[str, t.Scalar]:
         """Build kwargs for the operation call."""
-        kwargs: dict[str, t.Scalar] = {"page": page, "limit": self._page_size}
+        result_kwargs: dict[str, t.Scalar] = {}
+        result_kwargs["page"] = page
+        result_kwargs["limit"] = self._page_size
         if self.stream_replication_key:
             starting_timestamp = self.get_starting_timestamp(context)
             if starting_timestamp:
                 kwargs_filter = (
                     f"{self.stream_replication_key}>={starting_timestamp.isoformat()}"
                 )
-                kwargs["filter"] = kwargs_filter
-        return kwargs
+                result_kwargs["filter"] = kwargs_filter
+        return result_kwargs
 
     def _fetch_page_data(
         self,
         page: int,
         context: Mapping[str, t.Scalar] | None,
-    ) -> r[tuple[Sequence[dict[str, t.Scalar]], bool]]:
+    ) -> r[tuple[Sequence[t.ScalarMapping], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
@@ -233,7 +235,7 @@ class FlextTapOracleWmsStream(Stream):
             return r[tuple[Sequence[t.ScalarMapping], bool]].fail(
                 f"Failed to get records for {self.name}: {result.error}",
             )
-        normalized: Sequence[t.ConfigurationMapping] = [
+        normalized: Sequence[t.ScalarMapping] = [
             {
                 str(key): self.normalize_json_value(value)
                 for key, value in record.items()
@@ -248,9 +250,9 @@ class FlextTapOracleWmsStream(Stream):
 
     def _process_page_records(
         self,
-        records: Sequence[t.ConfigurationMapping],
-        context: t.ConfigurationMapping | None,
-    ) -> Iterable[t.ConfigurationMapping]:
+        records: Sequence[t.ScalarMapping],
+        context: Mapping[str, t.Scalar] | None,
+    ) -> Iterable[dict[str, t.Scalar]]:
         """Process and yield records from a page."""
         for record in records:
             record_dict: Mapping[str, t.ContainerValue] = dict(record)
@@ -262,7 +264,7 @@ class FlextTapOracleWmsStream(Stream):
             processed_map = _as_map(processed_record)
             if processed_map is None:
                 continue
-            json_row: t.ConfigurationMapping = {
+            json_row: dict[str, t.Scalar] = {
                 str(k): self.normalize_json_value(v) for k, v in processed_map.items()
             }
             yield self.post_process(json_row, context)

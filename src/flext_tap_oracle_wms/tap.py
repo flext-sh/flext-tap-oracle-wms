@@ -25,7 +25,7 @@ class FlextTapOracleWms(Tap):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[Mapping[str, t.ContainerValue]] = {
+    config_jsonschema: ClassVar[dict[str, t.NormalizedValue]] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
         "properties": {
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},

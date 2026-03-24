@@ -16,7 +16,7 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     class Project:
         """Project-level aliases and constrained literals."""
 
-        type ProjectType = FlextTapOracleWmsConstants.ProjectType
+        type ProjectType = FlextTapOracleWmsConstants.TapProjectType
         type ReplicationMethodLiteral = (
             FlextTapOracleWmsConstants.ReplicationMethodLiteral
         )

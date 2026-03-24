@@ -42,9 +42,7 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
             metadata: Annotated[
                 Sequence[FlextMeltanoModels.Meltano.SingerCatalogMetadata],
                 Field(
-                    default_factory=lambda: Sequence[
-                        FlextMeltanoModels.Meltano.SingerCatalogMetadata
-                    ](),
+                    default_factory=list,
                 ),
             ]
 
