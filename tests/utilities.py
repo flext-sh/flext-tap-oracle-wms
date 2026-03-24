@@ -49,7 +49,7 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             base_url: str = "https://test-wms.oraclecloud.com",
             username: str = "test_user",
             password: str = "test_pass",
-            facility_ids: Sequence[str] | None = None,
+            facility_ids: t.StrSequence | None = None,
             **kwargs: _t.Scalar,
         ) -> t.ContainerMapping:
             """Create test Oracle WMS configuration."""

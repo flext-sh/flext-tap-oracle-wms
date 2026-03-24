@@ -10,14 +10,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
-from pandas._typing import Scalar
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings, t
 
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(env_path)
@@ -128,7 +127,7 @@ class TestRealDataExtraction:
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
             pytest.skip(f"Stream {stream_name} not available")
-        records: Sequence[Mapping[str, Scalar]] = []
+        records: Sequence[t.ScalarMapping] = []
         record_count = 0
         max_records = 5
         try:
@@ -161,7 +160,7 @@ class TestRealDataExtraction:
         if not inventory_stream:
             pytest.skip("Inventory stream not available")
         inventory_stream._page_size = 2
-        records: Sequence[Mapping[str, Scalar]] = []
+        records: Sequence[t.ScalarMapping] = []
         pages = 0
         for i, record in enumerate(inventory_stream.get_records(context=None)):
             records.append(record)

@@ -56,7 +56,7 @@ class AuditResult(BaseModel):
         default_factory=lambda: Sequence[AuditViolation](),
         description="Medium priority violations",
     )
-    recommendations: Sequence[str] = Field(
+    recommendations: t.StrSequence = Field(
         default_factory=list, description="Audit recommendations"
     )
     stats: Mapping[str, t.Primitives] = Field(
@@ -128,7 +128,7 @@ class PydanticV2Auditor:
     """Audits project for Pydantic v2 compliance."""
 
     # CRITICAL: Pydantic v1 patterns (MUST NOT EXIST)
-    CRITICAL_PATTERNS: ClassVar[Mapping[str, str]] = {
+    CRITICAL_PATTERNS: ClassVar[t.StrMapping] = {
         r"class\s+\w+.*:\s*\n\s*class\s+Config": "Pydantic v1 `class Config` pattern",
         r"\.dict\(": "Pydantic v1 `.dict()` method (use `model_dump()`)",
         # NOTE: .json() pattern excluded due to HTTP library false positives (requests.json(), httpx.json())
@@ -140,7 +140,7 @@ class PydanticV2Auditor:
     }
 
     # HIGH: Missing Pydantic v2 patterns (SHOULD EXIST)
-    HIGH_PATTERNS: ClassVar[Mapping[str, str]] = {
+    HIGH_PATTERNS: ClassVar[t.StrMapping] = {
         r"model_dump\(": "Uses `model_dump()` for serialization",
         r"model_validate\(": "Uses `model_validate()` for parsing",
         r"@field_validator": "Uses `@field_validator` decorator",
@@ -153,7 +153,7 @@ class PydanticV2Auditor:
     # validate_file_path, validate_directory_path, validate_timeout_seconds, validate_retry_count,
     # validate_log_level, validate_string_not_none, validate_string_not_empty, validate_string,
     # validate_host, validate_pipeline were consolidated into Pydantic v2 native types)
-    REMOVED_VALIDATORS: ClassVar[Mapping[str, str]] = {}
+    REMOVED_VALIDATORS: ClassVar[t.StrMapping] = {}
 
     def __init__(self, project_path: str | None = None) -> None:
         """Initialize auditor."""
@@ -273,7 +273,7 @@ class PydanticV2Auditor:
     def _find_pattern(
         self,
         pattern: str,
-        lines: Sequence[str],
+        lines: t.StrSequence,
     ) -> Sequence[int]:
         """Find all lines matching a pattern."""
         matches: Sequence[int] = []

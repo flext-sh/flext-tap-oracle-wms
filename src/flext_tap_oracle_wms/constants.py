@@ -7,12 +7,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from enum import StrEnum, unique
 from typing import Final, Literal
 
 from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
+
+from flext_tap_oracle_wms import t
 
 
 class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants):
@@ -58,7 +59,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         SCHEMA_TYPE_INTEGER: Final[str] = "integer"
         SCHEMA_TYPE_NULL: Final[str] = "null"
         SCHEMA_FORMAT_DATETIME: Final[str] = "date-time"
-        SCHEMA_TYPE_STRING_OR_NULL: Final[Sequence[str]] = ["string", "null"]
+        SCHEMA_TYPE_STRING_OR_NULL: Final[t.StrSequence] = ["string", "null"]
 
     class TapWmsProcessing:
         """WMS tap processing configuration.

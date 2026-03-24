@@ -9,13 +9,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from unittest.mock import Mock
 
 import pytest
 from flext_core import FlextLogger
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream, t
 
 logger = FlextLogger(__name__)
 
@@ -90,7 +90,7 @@ class TestStreamsFunctional:
         authenticator = stream.authenticator
         assert authenticator is not None
         request = Mock()
-        request.headers = Mapping[str, str]()
+        request.headers = t.StrMapping()
         authenticated_request = authenticator(request)
         assert "Authorization" in authenticated_request.headers
         auth_header = authenticated_request.headers["Authorization"]
@@ -137,7 +137,7 @@ class TestStreamsFunctional:
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
         incremental_streams: Sequence[tuple[str, str | None]] = []
-        full_table_streams: Sequence[str] = []
+        full_table_streams: t.StrSequence = []
         for stream_config in streams[:5]:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,

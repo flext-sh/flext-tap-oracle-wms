@@ -52,7 +52,7 @@ class FlextTapOracleWmsTestTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
             str, Sequence[MockOracleWmsRecord] | bool | str | None
         ]
         type TestOracleWmsScenario = t.ContainerMapping
-        type TestOracleWmsValidationResult = Mapping[str, bool | str | Sequence[str]]
+        type TestOracleWmsValidationResult = Mapping[str, bool | str | t.StrSequence]
         type TestOracleWmsApiResult = t.ContainerMapping
 
 

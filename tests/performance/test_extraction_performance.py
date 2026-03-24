@@ -9,15 +9,14 @@ from __future__ import annotations
 
 import os
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from pathlib import Path
 
 import psutil
 import pytest
 from dotenv import load_dotenv
-from pandas._typing import Scalar
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings, t
 
 env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(env_path)
@@ -75,7 +74,7 @@ class TestExtractionPerformance:
             pytest.skip("Inventory stream not available")
         inventory_stream._page_size = page_size
         start_time = time.time()
-        records: Sequence[Mapping[str, Scalar]] = []
+        records: Sequence[t.ScalarMapping] = []
         for i, record in enumerate(inventory_stream.get_records(context=None)):
             records.append(record)
             if i >= 99:
@@ -113,7 +112,7 @@ class TestExtractionPerformance:
         streams = tap.discover_streams()
         if streams:
             stream = streams[0]
-            records: Sequence[Mapping[str, Scalar]] = []
+            records: Sequence[t.ScalarMapping] = []
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)
                 if i >= 999:
@@ -151,7 +150,7 @@ class TestRateLimitingPerformance:
             if streams:
                 stream = streams[0]
                 start_time = time.time()
-                records: Sequence[Mapping[str, Scalar]] = []
+                records: Sequence[t.ScalarMapping] = []
                 for i, record in enumerate(stream.get_records(context=None)):
                     records.append(record)
                     if i >= 49:

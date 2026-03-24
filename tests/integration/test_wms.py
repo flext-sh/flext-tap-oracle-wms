@@ -11,12 +11,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 
 import pytest
-from pandas._typing import Scalar
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings, t
 
 
 @pytest.fixture
@@ -108,7 +107,7 @@ class TestRealWmsIntegration:
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
             pytest.skip(f"Stream '{stream_name}' not available")
-        records: Sequence[Mapping[str, Scalar]] = []
+        records: Sequence[t.ScalarMapping] = []
         try:
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)

@@ -83,7 +83,7 @@ class FlextTapOracleWms(Tap):
             return r[m.Meltano.SingerCatalog].fail(
                 discovery_result.error or "Discovery failed",
             )
-        entities: Sequence[str] = list(discovery_result.value)
+        entities: t.StrSequence = list(discovery_result.value)
         streams = [
             m.Meltano.SingerCatalogEntry.model_validate({
                 "tap_stream_id": entity,
