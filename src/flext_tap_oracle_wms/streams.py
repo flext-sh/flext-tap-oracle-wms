@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping, MutableMapping, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
@@ -65,7 +65,7 @@ class FlextTapOracleWmsStream(Stream):
     url_base: str = ""
     # Singer SDK attributes exposed for type narrowing in tests/consumers
     tap: Tap
-    http_headers: dict[str, str]
+    http_headers: MutableMapping[str, str]
     authenticator: None = None
 
     @override
@@ -180,7 +180,7 @@ class FlextTapOracleWmsStream(Stream):
         next_page_token: t.Scalar | None,
     ) -> Mapping[str, t.Scalar]:
         """Return URL params for REST-style pagination (stub for API compatibility)."""
-        params: dict[str, t.Scalar] = {"page_size": self._page_size}
+        params: MutableMapping[str, t.Scalar] = {"page_size": self._page_size}
         if next_page_token is not None:
             params["page"] = next_page_token
         return params
@@ -236,9 +236,9 @@ class FlextTapOracleWmsStream(Stream):
         self,
         page: int,
         context: Mapping[str, t.Scalar] | None,
-    ) -> dict[str, t.Scalar]:
+    ) -> MutableMapping[str, t.Scalar]:
         """Build kwargs for the operation call."""
-        result_kwargs: dict[str, t.Scalar] = {}
+        result_kwargs: MutableMapping[str, t.Scalar] = {}
         result_kwargs["page"] = page
         result_kwargs["limit"] = self._page_size
         if self.stream_replication_key:
@@ -259,7 +259,7 @@ class FlextTapOracleWmsStream(Stream):
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
         limit = int(limit_raw) if isinstance(limit_raw, int) else self._page_size
-        filters: dict[str, t.Scalar] = {}
+        filters: MutableMapping[str, t.Scalar] = {}
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
