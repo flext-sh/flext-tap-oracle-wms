@@ -20,9 +20,9 @@ if TYPE_CHECKING:
 
     from tests.e2e.test_e2e import TestOracleWMSE2EComplete, logger
 
-_LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "TestOracleWMSE2EComplete": ("tests.e2e.test_e2e", "TestOracleWMSE2EComplete"),
-    "logger": ("tests.e2e.test_e2e", "logger"),
+_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "TestOracleWMSE2EComplete": ["tests.e2e.test_e2e", "TestOracleWMSE2EComplete"],
+    "logger": ["tests.e2e.test_e2e", "logger"],
 }
 
 __all__ = [

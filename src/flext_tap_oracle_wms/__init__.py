@@ -64,75 +64,75 @@ if TYPE_CHECKING:
         FlextTapOracleWmsUtilities as u,
     )
 
-_LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "FlextTapOracleWms": ("flext_tap_oracle_wms.tap", "FlextTapOracleWms"),
-    "FlextTapOracleWmsConfigurationError": (
+_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "FlextTapOracleWms": ["flext_tap_oracle_wms.tap", "FlextTapOracleWms"],
+    "FlextTapOracleWmsConfigurationError": [
         "flext_tap_oracle_wms.exceptions",
         "FlextTapOracleWmsConfigurationError",
-    ),
-    "FlextTapOracleWmsConnectionError": (
+    ],
+    "FlextTapOracleWmsConnectionError": [
         "flext_tap_oracle_wms.exceptions",
         "FlextTapOracleWmsConnectionError",
-    ),
-    "FlextTapOracleWmsConstants": (
+    ],
+    "FlextTapOracleWmsConstants": [
         "flext_tap_oracle_wms.constants",
         "FlextTapOracleWmsConstants",
-    ),
-    "FlextTapOracleWmsError": (
+    ],
+    "FlextTapOracleWmsError": [
         "flext_tap_oracle_wms.exceptions",
         "FlextTapOracleWmsError",
-    ),
-    "FlextTapOracleWmsModels": (
+    ],
+    "FlextTapOracleWmsModels": [
         "flext_tap_oracle_wms.models",
         "FlextTapOracleWmsModels",
-    ),
-    "FlextTapOracleWmsPlugin": ("flext_tap_oracle_wms.tap", "FlextTapOracleWmsPlugin"),
-    "FlextTapOracleWmsProtocols": (
+    ],
+    "FlextTapOracleWmsPlugin": ["flext_tap_oracle_wms.tap", "FlextTapOracleWmsPlugin"],
+    "FlextTapOracleWmsProtocols": [
         "flext_tap_oracle_wms.protocols",
         "FlextTapOracleWmsProtocols",
-    ),
-    "FlextTapOracleWmsSettings": (
+    ],
+    "FlextTapOracleWmsSettings": [
         "flext_tap_oracle_wms.settings",
         "FlextTapOracleWmsSettings",
-    ),
-    "FlextTapOracleWmsStream": (
+    ],
+    "FlextTapOracleWmsStream": [
         "flext_tap_oracle_wms.streams",
         "FlextTapOracleWmsStream",
-    ),
-    "FlextTapOracleWmsTypes": (
+    ],
+    "FlextTapOracleWmsTypes": [
         "flext_tap_oracle_wms.typings",
         "FlextTapOracleWmsTypes",
-    ),
-    "FlextTapOracleWmsUtilities": (
+    ],
+    "FlextTapOracleWmsUtilities": [
         "flext_tap_oracle_wms.utilities",
         "FlextTapOracleWmsUtilities",
-    ),
-    "FlextTapOracleWmsValidationError": (
+    ],
+    "FlextTapOracleWmsValidationError": [
         "flext_tap_oracle_wms.exceptions",
         "FlextTapOracleWmsValidationError",
-    ),
-    "__all__": ("flext_tap_oracle_wms.__version__", "__all__"),
-    "__author__": ("flext_tap_oracle_wms.__version__", "__author__"),
-    "__author_email__": ("flext_tap_oracle_wms.__version__", "__author_email__"),
-    "__description__": ("flext_tap_oracle_wms.__version__", "__description__"),
-    "__license__": ("flext_tap_oracle_wms.__version__", "__license__"),
-    "__title__": ("flext_tap_oracle_wms.__version__", "__title__"),
-    "__url__": ("flext_tap_oracle_wms.__version__", "__url__"),
-    "__version__": ("flext_tap_oracle_wms.__version__", "__version__"),
-    "__version_info__": ("flext_tap_oracle_wms.__version__", "__version_info__"),
-    "c": ("flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"),
-    "d": ("flext_meltano", "d"),
-    "e": ("flext_meltano", "e"),
-    "h": ("flext_meltano", "h"),
-    "logger": ("flext_tap_oracle_wms.tap", "logger"),
-    "m": ("flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"),
-    "main": ("flext_tap_oracle_wms.cli", "main"),
-    "p": ("flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"),
-    "r": ("flext_meltano", "r"),
-    "s": ("flext_meltano", "s"),
-    "t": ("flext_tap_oracle_wms.typings", "FlextTapOracleWmsTypes"),
-    "u": ("flext_tap_oracle_wms.utilities", "FlextTapOracleWmsUtilities"),
-    "x": ("flext_meltano", "x"),
+    ],
+    "__all__": ["flext_tap_oracle_wms.__version__", "__all__"],
+    "__author__": ["flext_tap_oracle_wms.__version__", "__author__"],
+    "__author_email__": ["flext_tap_oracle_wms.__version__", "__author_email__"],
+    "__description__": ["flext_tap_oracle_wms.__version__", "__description__"],
+    "__license__": ["flext_tap_oracle_wms.__version__", "__license__"],
+    "__title__": ["flext_tap_oracle_wms.__version__", "__title__"],
+    "__url__": ["flext_tap_oracle_wms.__version__", "__url__"],
+    "__version__": ["flext_tap_oracle_wms.__version__", "__version__"],
+    "__version_info__": ["flext_tap_oracle_wms.__version__", "__version_info__"],
+    "c": ["flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"],
+    "d": ["flext_meltano", "d"],
+    "e": ["flext_meltano", "e"],
+    "h": ["flext_meltano", "h"],
+    "logger": ["flext_tap_oracle_wms.tap", "logger"],
+    "m": ["flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"],
+    "main": ["flext_tap_oracle_wms.cli", "main"],
+    "p": ["flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"],
+    "r": ["flext_meltano", "r"],
+    "s": ["flext_meltano", "s"],
+    "t": ["flext_tap_oracle_wms.typings", "FlextTapOracleWmsTypes"],
+    "u": ["flext_tap_oracle_wms.utilities", "FlextTapOracleWmsUtilities"],
+    "x": ["flext_meltano", "x"],
 }
 
 __all__ = [

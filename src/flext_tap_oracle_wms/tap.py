@@ -98,7 +98,7 @@ class FlextTapOracleWms(Tap):
             return _SingerCatalog(streams=[])
         raw_streams = raw.get("streams", [])
         if not isinstance(raw_streams, Sequence):
-            raw_streams = []
+            raw_streams: list[Mapping[str, t.ContainerValue]] = []
         streams: list[_SingerStreamEntry] = [
             _SingerStreamEntry(
                 tap_stream_id=str(s.get("tap_stream_id", "")),

@@ -27,9 +27,9 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "flext-core",
-  "flext-meltano",
-  "flext-oracle-wms",
+  "flext-core @ file:../flext-core",
+  "flext-meltano @ file:../flext-meltano",
+  "flext-oracle-wms @ file:../flext-oracle-wms",
   "pydantic-core>=2.41.4",
   "pydantic-settings>=2.10.1",
   "pydantic>=2.12.3",

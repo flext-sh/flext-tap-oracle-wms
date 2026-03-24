@@ -24,21 +24,21 @@ if TYPE_CHECKING:
     from tests.unit.test_tap import TestFlextTapOracleWms
     from tests.unit.test_tap_initialization import TestTapInitialization
 
-_LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
-    "TestCLI": ("tests.unit.test_cli", "TestCLI"),
-    "TestConfigValidation": (
+_LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
+    "TestCLI": ["tests.unit.test_cli", "TestCLI"],
+    "TestConfigValidation": [
         "tests.unit.test_config_validation",
         "TestConfigValidation",
-    ),
-    "TestFlextTapOracleWms": ("tests.unit.test_tap", "TestFlextTapOracleWms"),
-    "TestFlextTapOracleWmsSettings": (
+    ],
+    "TestFlextTapOracleWms": ["tests.unit.test_tap", "TestFlextTapOracleWms"],
+    "TestFlextTapOracleWmsSettings": [
         "tests.unit.test_config",
         "TestFlextTapOracleWmsSettings",
-    ),
-    "TestTapInitialization": (
+    ],
+    "TestTapInitialization": [
         "tests.unit.test_tap_initialization",
         "TestTapInitialization",
-    ),
+    ],
 }
 
 __all__ = [
