@@ -40,7 +40,7 @@ def _as_list(value: t.NormalizedValue) -> Sequence[t.ContainerValue] | None:
     if not isinstance(value, list):
         return None
     try:
-        validated_list = TypeAdapter(Sequence[t.ContainerValue]).validate_python(value)
+        validated_list = TypeAdapter(t.ContainerValueList).validate_python(value)
     except ValidationError:
         return None
     return [

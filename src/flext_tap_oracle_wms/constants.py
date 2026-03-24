@@ -54,7 +54,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants):
             "password",
         })
         SCHEMA_TYPE_STRING: Final[str] = "string"
-        SCHEMA_TYPE_OBJECT: Final[str] = "t.NormalizedValue"
+        SCHEMA_TYPE_OBJECT: Final[str] = "object"
         SCHEMA_TYPE_BOOLEAN: Final[str] = "boolean"
         SCHEMA_TYPE_INTEGER: Final[str] = "integer"
         SCHEMA_TYPE_NULL: Final[str] = "null"
