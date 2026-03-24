@@ -85,7 +85,7 @@ class TestRealWmsIntegration:
                 f"Cannot test discovery, initialization failed: {init_result.error}"
             )
         streams = tap.discover_streams()
-        assert len(streams) > 0
+        assert streams
         for stream in streams:
             assert stream.name is not None
             assert hasattr(stream, "schema")

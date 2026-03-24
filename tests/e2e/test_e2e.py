@@ -48,7 +48,7 @@ class TestOracleWMSE2EComplete:
         assert "version" in catalog, "Catalog missing version"
         assert "streams" in catalog, "Catalog missing streams"
         streams = catalog["streams"]
-        assert len(streams) > 0, "No streams discovered"
+        assert streams, "No streams discovered"
         for stream in streams:
             assert "tap_stream_id" in stream, "Stream missing tap_stream_id"
             assert "schema" in stream, "Stream missing schema"
@@ -56,7 +56,7 @@ class TestOracleWMSE2EComplete:
             schema = stream["schema"]
             assert schema["type"] == "t.NormalizedValue", "Invalid schema type"
             assert "properties" in schema, "Schema missing properties"
-            assert len(schema["properties"]) > 0, "Empty schema properties"
+            assert schema["properties"], "Empty schema properties"
             metadata = stream["metadata"]
             assert isinstance(metadata, list), "Metadata must be list"
             table_metadata = next(
@@ -83,7 +83,7 @@ class TestOracleWMSE2EComplete:
         tap_instance = FlextTapOracleWms(config=real_config)
         catalog = tap_instance.catalog_dict
         catalog_json = json.dumps(catalog, indent=2)
-        assert len(catalog_json) > 0, "Catalog serialization failed"
+        assert catalog_json, "Catalog serialization failed"
         deserialized = json.loads(catalog_json)
         assert deserialized == catalog, "Catalog serialization/deserialization mismatch"
         modified_catalog = catalog.copy()
@@ -158,7 +158,7 @@ class TestOracleWMSE2EComplete:
         context = {"replication_key_value": yesterday.isoformat()}
         params = stream.get_url_params(context=context, next_page_token=None)
         filter_params = {k: v for k, v in params.items() if "__gte" in k or "__gt" in k}
-        assert len(filter_params) > 0, (
+        assert filter_params, (
             f"No timestamp filters in incremental stream: {list(params.keys())}"
         )
         logger.info("✅ Incremental extraction workflow validated for %s", stream.name)
@@ -223,7 +223,7 @@ class TestOracleWMSE2EComplete:
             quality_report["streams_tested"] += 1
             schema = stream_config["schema"]
             properties = schema.get("properties", {})
-            if len(properties) > 0:
+            if properties:
                 quality_report["schemas_valid"] += 1
             metadata = stream_config.get("metadata", [])
             primary_keys: Sequence[str] = []
@@ -445,7 +445,7 @@ class TestOracleWMSE2EComplete:
                     elif replication_method == "FULL_TABLE":
                         summary["full_table_streams"] += 1
                 schema = stream.get("schema", {})
-                if schema.get("properties") and len(schema["properties"]) > 0:
+                if schema.get("properties") and schema["properties"]:
                     summary["schemas_valid"] += 1
             summary["singer_compliant"] = all([
                 catalog.get("version") in {1, "1"},
@@ -484,6 +484,6 @@ class TestOracleWMSE2EComplete:
         assert summary["streams_discovered"] > 0, "No streams discovered"
         assert summary["schemas_valid"] > 0, "No valid schemas"
         assert summary["singer_compliant"], "Not Singer compliant"
-        assert len(summary["errors"]) == 0, f"Errors found: {summary['errors']}"
+        assert not summary["errors"], f"Errors found: {summary['errors']}"
         logger.info("🎉 ALL E2E INTEGRATION TESTS PASSED!")
         time.sleep(0.1)

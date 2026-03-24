@@ -69,7 +69,7 @@ class TestOracleWMSFunctionalComplete:
             assert "streams" in catalog, "No streams in catalog"
             assert isinstance(catalog["streams"], list), "Streams is not a list"
             streams = catalog["streams"]
-            assert len(streams) > 0, "No streams discovered"
+            assert streams, "No streams discovered"
             entity_names = [stream["tap_stream_id"] for stream in streams]
             logger.info(
                 "✅ Discovered %d entities: %s", len(entity_names), entity_names
@@ -98,7 +98,7 @@ class TestOracleWMSFunctionalComplete:
                     f"Stream {stream['tap_stream_id']} schema missing properties"
                 )
                 properties = stream["schema"]["properties"]
-                assert len(properties) > 0, (
+                assert properties, (
                     f"Stream {stream['tap_stream_id']} has empty properties"
                 )
                 logger.info(
@@ -276,7 +276,7 @@ class TestOracleWMSFunctionalComplete:
             len(streams_full_table),
             streams_full_table,
         )
-        assert len(streams_with_replication) > 0 or len(streams_full_table) > 0, (
+        assert streams_with_replication or streams_full_table, (
             "No replication methods detected"
         )
 
@@ -421,7 +421,7 @@ class TestOracleWMSFunctionalComplete:
             metadata_streams = [
                 s for s in catalog.get("streams", []) if s.get("metadata")
             ]
-            summary["replication_configured"] = len(metadata_streams) > 0
+            summary["replication_configured"] = metadata_streams
             summary["singer_compliant"] = all([
                 "version" in catalog,
                 "streams" in catalog,
@@ -463,5 +463,5 @@ class TestOracleWMSFunctionalComplete:
         assert summary["entities_discovered"] > 0, "No entities discovered"
         assert summary["schemas_generated"] > 0, "No schemas generated"
         assert summary["singer_compliant"], "Not Singer compliant"
-        assert len(summary["errors"]) == 0, f"Errors found: {summary['errors']}"
+        assert not summary["errors"], f"Errors found: {summary['errors']}"
         logger.info("🎉 ALL FUNCTIONALITY TESTS PASSED!")

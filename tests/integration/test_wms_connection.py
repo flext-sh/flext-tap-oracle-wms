@@ -83,7 +83,7 @@ class TestRealConnection:
         catalog_streams = getattr(catalog, "streams", None) or catalog.get(
             "streams", []
         )
-        assert len(catalog_streams) > 0
+        assert catalog_streams
         for stream in catalog_streams:
             stream.get("schema", {}).get("properties", {})
 
@@ -93,7 +93,7 @@ class TestRealConnection:
     def test_stream_discovery(self, tap: FlextTapOracleWms) -> None:
         """Test stream discovery."""
         streams = tap.discover_streams()
-        assert len(streams) > 0
+        assert streams
         for _stream in streams:
             pass
 
@@ -108,7 +108,7 @@ class TestRealConnection:
             assert stream.schema is not None
             if "properties" in stream.schema:
                 properties = stream.schema["properties"]
-                assert len(properties) > 0
+                assert properties
 
 
 class TestRealDataExtraction:
@@ -207,7 +207,7 @@ class TestFilteringAndSelection:
         stream_names = {s.name for s in streams}
         assert "orders" not in stream_names
         assert "shipments" not in stream_names
-        assert len(stream_names) > 0
+        assert stream_names
 
 
 class TestIntegration:

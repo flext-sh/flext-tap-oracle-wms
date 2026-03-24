@@ -32,7 +32,7 @@ class TestStreamsFunctional:
         """Test stream creation with real Oracle WMS data."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        assert len(streams) > 0, "No streams discovered"
+        assert streams, "No streams discovered"
         stream_config = streams[0]
         stream_id = stream_config["tap_stream_id"]
         stream = FlextTapOracleWmsStream(
@@ -243,7 +243,7 @@ class TestStreamsFunctional:
             context=context, next_page_token=None
         )
         filter_keys = [key for key in params if "__gte" in key or "__gt" in key]
-        assert len(filter_keys) > 0, (
+        assert filter_keys, (
             f"No timestamp filters found in params: {list(params.keys())}"
         )
         for filter_key in filter_keys:
@@ -268,7 +268,7 @@ class TestStreamsFunctional:
         """Test response parsing with mock Oracle WMS responses."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        assert len(streams) > 0
+        assert streams
         stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=streams[0]["tap_stream_id"],
@@ -293,7 +293,7 @@ class TestStreamsFunctional:
         assert records[0]["id"] == 3
         assert has_more in {True, False}
         records, has_more = stream._extract_records_from_response({})
-        assert len(records) == 0
+        assert not records
         assert has_more is False
         logger.info("✅ Response parsing working for all formats")
 
@@ -341,7 +341,7 @@ class TestWMSPaginatorUnit:
     def _build_stream(real_tap_instance: FlextTapOracleWms) -> FlextTapOracleWmsStream:
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        assert len(streams) > 0, "No streams discovered"
+        assert streams, "No streams discovered"
         stream_config = streams[0]
         return FlextTapOracleWmsStream(
             tap=real_tap_instance,
