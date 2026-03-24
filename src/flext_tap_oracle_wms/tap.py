@@ -6,17 +6,17 @@ import importlib.metadata
 from collections.abc import Mapping, Sequence
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, r, t
+from flext_core import FlextLogger, r
 from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsSettings,
     FlextTapOracleWmsConfigurationError,
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStream,
-    c,
-    m,
 )
 from singer_sdk.tap_base import Tap
+
+from flext_tap_oracle_wms import c, m, t
 
 logger = FlextLogger(__name__)
 
@@ -72,7 +72,7 @@ class FlextTapOracleWms(Tap):
         return self._wms_client
 
     @staticmethod
-    def _schema_for_entity() -> Mapping[str, t.Container]:
+    def _schema_for_entity() -> t.FlatContainerMapping:
         """Return a default Singer JSON schema for discovered entities."""
         return {"type": c.TapOracleWms.SCHEMA_TYPE_OBJECT}
 
@@ -83,7 +83,7 @@ class FlextTapOracleWms(Tap):
             return r[m.Meltano.SingerCatalog].fail(
                 discovery_result.error or "Discovery failed",
             )
-        entities: Sequence[str] = list(discovery_result.value)
+        entities: t.StrSequence = list(discovery_result.value)
         streams = [
             m.Meltano.SingerCatalogEntry.model_validate({
                 "tap_stream_id": entity,

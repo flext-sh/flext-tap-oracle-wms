@@ -14,7 +14,7 @@ from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 from pydantic.networks import AnyUrl
 
-from flext_tap_oracle_wms.constants import c
+from flext_tap_oracle_wms import c
 
 
 class FlextTapOracleWmsSettings(BaseModel):
@@ -118,7 +118,7 @@ class FlextTapOracleWmsSettings(BaseModel):
         Field(default=None, description="End date for incremental extraction."),
     ]
     column_mappings: Annotated[
-        Mapping[str, Mapping[str, str]],
+        Mapping[str, t.StrMapping],
         Field(default_factory=dict, description="Column rename mappings per stream."),
     ]
     ignored_columns: Annotated[
@@ -162,7 +162,7 @@ class FlextTapOracleWmsSettings(BaseModel):
         Field(default=None, description="Custom User-Agent header."),
     ]
     additional_headers: Annotated[
-        Mapping[str, str],
+        t.StrMapping,
         Field(default_factory=dict, description="Additional HTTP headers."),
     ]
     log_level: Annotated[

@@ -15,7 +15,8 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_core import FlextTypes, d, e, h, r, s, x
+    from flext_core import FlextTypes
+    from flext_meltano import d, e, h, r, s, x
 
     from flext_tap_oracle_wms.__version__ import (
         __all__,
@@ -120,18 +121,18 @@ _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "__version__": ("flext_tap_oracle_wms.__version__", "__version__"),
     "__version_info__": ("flext_tap_oracle_wms.__version__", "__version_info__"),
     "c": ("flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"),
-    "d": ("flext_core", "d"),
-    "e": ("flext_core", "e"),
-    "h": ("flext_core", "h"),
+    "d": ("flext_meltano", "d"),
+    "e": ("flext_meltano", "e"),
+    "h": ("flext_meltano", "h"),
     "logger": ("flext_tap_oracle_wms.tap", "logger"),
     "m": ("flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"),
     "main": ("flext_tap_oracle_wms.cli", "main"),
     "p": ("flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"),
-    "r": ("flext_core", "r"),
-    "s": ("flext_core", "s"),
+    "r": ("flext_meltano", "r"),
+    "s": ("flext_meltano", "s"),
     "t": ("flext_tap_oracle_wms.typings", "FlextTapOracleWmsTypes"),
     "u": ("flext_tap_oracle_wms.utilities", "FlextTapOracleWmsUtilities"),
-    "x": ("flext_core", "x"),
+    "x": ("flext_meltano", "x"),
 }
 
 __all__ = [

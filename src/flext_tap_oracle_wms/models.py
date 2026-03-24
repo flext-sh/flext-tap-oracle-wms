@@ -5,10 +5,11 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Annotated
 
-from flext_core import t
 from flext_meltano import FlextMeltanoModels
 from flext_oracle_wms import FlextOracleWmsModels
 from pydantic import BaseModel, Field
+
+from flext_tap_oracle_wms import t
 
 
 class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
@@ -26,7 +27,7 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
         class WmsStreamMetadata(BaseModel):
             """Singer stream metadata entry."""
 
-            breadcrumb: Annotated[Sequence[str], Field(default_factory=list)]
+            breadcrumb: Annotated[t.StrSequence, Field(default_factory=list)]
             metadata: Annotated[t.ContainerMapping, Field(default_factory=dict)]
 
         class WmsStreamDefinition(BaseModel):

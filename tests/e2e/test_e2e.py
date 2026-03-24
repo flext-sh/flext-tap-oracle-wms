@@ -226,7 +226,7 @@ class TestOracleWMSE2EComplete:
             if properties:
                 quality_report["schemas_valid"] += 1
             metadata = stream_config.get("metadata", [])
-            primary_keys: Sequence[str] = []
+            primary_keys: t.StrSequence = []
             for meta in metadata:
                 if meta.get("breadcrumb") and len(meta["breadcrumb"]) == 1:
                     field_meta = meta.get("metadata", {})
@@ -272,7 +272,7 @@ class TestOracleWMSE2EComplete:
     def test_pagination_end_to_end(self) -> None:
         """E2E: Test pagination handling through multiple pages."""
         paginator = None
-        pages_tested: Sequence[str] = []
+        pages_tested: t.StrSequence = []
         response1 = Mock()
         response1.json.return_value = {
             "results": [{"id": 1}, {"id": 2}],
@@ -423,7 +423,7 @@ class TestOracleWMSE2EComplete:
             "schemas_valid": 0,
             "singer_compliant": False,
             "performance_acceptable": False,
-            "errors": Sequence[str](),
+            "errors": t.StrSequence(),
         }
         try:
             start_time = time.time()
