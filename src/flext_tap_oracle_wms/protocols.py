@@ -9,14 +9,13 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextProtocols
-from flext_meltano import FlextMeltanoModels
+from flext_meltano import FlextMeltanoModels, m
 from flext_oracle_wms import FlextOracleWmsClient, FlextOracleWmsProtocols
 
 from flext_tap_oracle_wms import t
 
 
-class FlextTapOracleWmsProtocols(FlextOracleWmsProtocols):
+class FlextTapOracleWmsProtocols(FlextMeltanoModels, FlextOracleWmsProtocols):
     """Singer Tap Oracle WMS protocols extending OracleWms protocols.
 
     Extends FlextOracleWmsProtocols via inheritance
@@ -35,88 +34,98 @@ class FlextTapOracleWmsProtocols(FlextOracleWmsProtocols):
             """Singer Tap Oracle WMS domain protocols for Oracle Warehouse Management System extraction."""
 
             @runtime_checkable
-            class WmsConnection(FlextProtocols.Service[t.Container], Protocol):
+            class WmsConnection(FlextOracleWmsProtocols.Service[t.Container], Protocol):
                 """Protocol for Oracle WMS connection operations."""
 
                 def establish_wms_connection(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[t.Container]:
+                ) -> FlextOracleWmsProtocols.Result[t.Container]:
                     """Establish connection to Oracle WMS."""
                     ...
 
             @runtime_checkable
-            class InventoryDiscovery(FlextProtocols.Service[t.Container], Protocol):
+            class InventoryDiscovery(
+                FlextOracleWmsProtocols.Service[t.Container], Protocol
+            ):
                 """Protocol for WMS inventory discovery."""
 
                 def discover_inventory(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[Sequence[t.ConfigMap]]:
+                ) -> FlextOracleWmsProtocols.Result[Sequence[t.ConfigMap]]:
                     """Discover WMS inventory."""
                     ...
 
             @runtime_checkable
-            class OrderProcessing(FlextProtocols.Service[t.Container], Protocol):
+            class OrderProcessing(
+                FlextOracleWmsProtocols.Service[t.Container], Protocol
+            ):
                 """Protocol for WMS order processing."""
 
                 def process_orders(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[Sequence[t.ConfigMap]]:
+                ) -> FlextOracleWmsProtocols.Result[Sequence[t.ConfigMap]]:
                     """Process WMS orders."""
                     ...
 
             @runtime_checkable
-            class WarehouseOperations(FlextProtocols.Service[t.Container], Protocol):
+            class WarehouseOperations(
+                FlextOracleWmsProtocols.Service[t.Container], Protocol
+            ):
                 """Protocol for WMS warehouse operations."""
 
                 def get_warehouse_operations(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[Sequence[t.ConfigMap]]:
+                ) -> FlextOracleWmsProtocols.Result[Sequence[t.ConfigMap]]:
                     """Get WMS warehouse operations."""
                     ...
 
             @runtime_checkable
-            class StreamGeneration(FlextProtocols.Service[t.Container], Protocol):
+            class StreamGeneration(
+                FlextOracleWmsProtocols.Service[t.Container], Protocol
+            ):
                 """Protocol for Singer stream generation."""
 
                 def generate_catalog(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[FlextMeltanoModels.Meltano.SingerCatalog]:
+                ) -> FlextOracleWmsProtocols.Result[m.Meltano.SingerCatalog]:
                     """Generate Singer catalog."""
                     ...
 
             @runtime_checkable
-            class Performance(FlextProtocols.Service[t.Container], Protocol):
+            class Performance(FlextOracleWmsProtocols.Service[t.Container], Protocol):
                 """Protocol for WMS extraction performance."""
 
-                def optimize_query(self, query: str) -> FlextProtocols.Result[str]:
+                def optimize_query(
+                    self, query: str
+                ) -> FlextOracleWmsProtocols.Result[str]:
                     """Optimize WMS query."""
                     ...
 
             @runtime_checkable
-            class Validation(FlextProtocols.Service[t.Container], Protocol):
+            class Validation(FlextOracleWmsProtocols.Service[t.Container], Protocol):
                 """Protocol for WMS data validation."""
 
                 def validate_config(
                     self,
                     config: t.ConfigMap,
-                ) -> FlextProtocols.Result[bool]:
+                ) -> FlextOracleWmsProtocols.Result[bool]:
                     """Validate WMS configuration."""
                     ...
 
             @runtime_checkable
-            class Monitoring(FlextProtocols.Service[t.Container], Protocol):
+            class Monitoring(FlextOracleWmsProtocols.Service[t.Container], Protocol):
                 """Protocol for WMS extraction monitoring."""
 
                 def track_progress(
                     self,
                     entity: str,
                     records: int,
-                ) -> FlextProtocols.Result[bool]:
+                ) -> FlextOracleWmsProtocols.Result[bool]:
                     """Track WMS extraction progress."""
                     ...
 
