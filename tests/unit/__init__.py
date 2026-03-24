@@ -26,10 +26,19 @@ if TYPE_CHECKING:
 
 _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "TestCLI": ("tests.unit.test_cli", "TestCLI"),
-    "TestConfigValidation": ("tests.unit.test_config_validation", "TestConfigValidation"),
+    "TestConfigValidation": (
+        "tests.unit.test_config_validation",
+        "TestConfigValidation",
+    ),
     "TestFlextTapOracleWms": ("tests.unit.test_tap", "TestFlextTapOracleWms"),
-    "TestFlextTapOracleWmsSettings": ("tests.unit.test_config", "TestFlextTapOracleWmsSettings"),
-    "TestTapInitialization": ("tests.unit.test_tap_initialization", "TestTapInitialization"),
+    "TestFlextTapOracleWmsSettings": (
+        "tests.unit.test_config",
+        "TestFlextTapOracleWmsSettings",
+    ),
+    "TestTapInitialization": (
+        "tests.unit.test_tap_initialization",
+        "TestTapInitialization",
+    ),
 }
 
 __all__ = [
