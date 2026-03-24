@@ -149,7 +149,6 @@ module = [
 ]
 namespace_packages = true
 
-
 # [MANAGED] pydantic-mypy
 [tool.pydantic-mypy]
 init_forbid_extra = true
