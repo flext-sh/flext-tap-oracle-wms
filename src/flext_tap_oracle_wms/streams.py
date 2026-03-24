@@ -62,20 +62,25 @@ class FlextTapOracleWmsStream(Stream):
 
     stream_primary_keys: ClassVar[t.StrSequence] = []
     stream_replication_key: str | None = None
+    url_base: str = ""
+    # Singer SDK attributes exposed for type narrowing in tests/consumers
+    tap: Tap
+    http_headers: dict[str, str]
+    authenticator: None = None
 
     @override
     def __init__(
         self,
         tap: Tap,
         name: str | None = None,
-        schema: t.FlatContainerMapping | None = None,
+        schema: Mapping[str, t.ContainerValue] | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        schema_dict: dict[str, t.Container] | None = (
+        schema_dict: dict[str, t.ContainerValue] | None = (
             dict(schema) if schema is not None else None
         )
-        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema_dict)
+        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema_dict)  # type: ignore[arg-type]
         self._client: FlextOracleWmsClient | None = None
         page_size = int(self.config.get("page_size", 100))
         self._page_size = (
@@ -168,6 +173,36 @@ class FlextTapOracleWmsStream(Stream):
     def get_replication_key(self) -> str | None:
         """Get replication key for this stream."""
         return self.stream_replication_key
+
+    def get_url_params(
+        self,
+        context: Mapping[str, t.Scalar] | None,
+        next_page_token: t.Scalar | None,
+    ) -> Mapping[str, t.Scalar]:
+        """Return URL params for REST-style pagination (stub for API compatibility)."""
+        params: dict[str, t.Scalar] = {"page_size": self._page_size}
+        if next_page_token is not None:
+            params["page"] = next_page_token
+        return params
+
+    def parse_response(
+        self,
+        response: t.ContainerValue,
+    ) -> Iterable[Mapping[str, t.ContainerValue]]:
+        """Parse response data (stub for API compatibility)."""
+        if isinstance(response, Mapping):
+            data = response.get("data", [])
+            if isinstance(data, Sequence):
+                for item in data:
+                    if isinstance(item, Mapping):
+                        yield {str(k): v for k, v in item.items()}
+
+    def _extract_records_from_response(
+        self,
+        response: t.ContainerValue,
+    ) -> Iterable[Mapping[str, t.ContainerValue]]:
+        """Extract records from a raw response (stub for API compatibility)."""
+        yield from self.parse_response(response)
 
     @override
     def post_process(

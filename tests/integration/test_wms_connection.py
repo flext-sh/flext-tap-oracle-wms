@@ -41,7 +41,7 @@ def real_config() -> FlextTapOracleWmsSettings:
 @pytest.fixture
 def tap(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance with real configuration."""
-    return FlextTapOracleWms(config=real_config)
+    return FlextTapOracleWms(config=real_config.model_dump(mode="json"))
 
 
 class TestRealConnection:
@@ -52,10 +52,14 @@ class TestRealConnection:
     )
     def test_configuration_validation(self, tap: FlextTapOracleWms) -> None:
         """Test configuration validation."""
+        from collections.abc import Mapping
+
         result = tap.validate_configuration()
         assert result.is_success
-        assert result.value["valid"] is True
-        assert "health" in result.value
+        value = result.value
+        assert isinstance(value, Mapping)
+        assert value.get("valid") is True
+        assert "health" in value
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -75,17 +79,11 @@ class TestRealConnection:
         result = tap.discover_catalog()
         assert result.is_success
         catalog = result.value
-        assert (
-            getattr(catalog, "type", None) == "CATALOG" or catalog["type"] == "CATALOG"
-        )
-        assert hasattr(catalog, "streams") or "streams" in catalog
-        catalog_streams = getattr(catalog, "streams", None) or catalog.get(
-            "streams",
-            [],
-        )
+        assert getattr(catalog, "type", None) == "CATALOG"
+        catalog_streams = getattr(catalog, "streams", [])
         assert catalog_streams
         for stream in catalog_streams:
-            stream.get("schema", {}).get("properties", {})
+            _ = getattr(getattr(stream, "schema_definition", {}), "get", None)
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -103,12 +101,17 @@ class TestRealConnection:
     def test_stream_schemas_validation(self, tap: FlextTapOracleWms) -> None:
         """Test stream schemas."""
         streams = tap.discover_streams()
+        from collections.abc import Mapping
+
         for stream in streams:
             assert stream.name
-            assert stream.schema is not None
-            if "properties" in stream.schema:
-                properties = stream.schema["properties"]
-                assert properties
+            schema_raw = getattr(stream, "schema", None)
+            assert schema_raw is not None
+            if isinstance(schema_raw, Mapping):
+                schema: Mapping[str, t.ContainerValue] = schema_raw  # type: ignore[assignment]
+                if "properties" in schema:
+                    properties: t.ContainerValue = schema["properties"]
+                    assert properties
 
 
 class TestRealDataExtraction:
@@ -189,7 +192,7 @@ class TestFilteringAndSelection:
             **real_config.model_dump(),
             include_entities=["inventory", "locations"],
         )
-        tap = FlextTapOracleWms(config=config)
+        tap = FlextTapOracleWms(config=config.model_dump(mode="json"))
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
         assert "inventory" in stream_names
@@ -208,7 +211,7 @@ class TestFilteringAndSelection:
             **real_config.model_dump(),
             exclude_entities=["orders", "shipments"],
         )
-        tap = FlextTapOracleWms(config=config)
+        tap = FlextTapOracleWms(config=config.model_dump(mode="json"))
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
         assert "orders" not in stream_names

@@ -190,7 +190,7 @@ def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleW
 
 
 @pytest.fixture
-def _test_config_extraction() -> t.ContainerMapping:
+def test_config_extraction() -> t.ContainerMapping:
     """Test configuration for extraction tests."""
     return {
         "base_url": "https://test.wms.example.com",

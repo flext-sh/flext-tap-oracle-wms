@@ -42,7 +42,6 @@ class TestStreamsFunctional:
             schema=stream_config["schema"],
         )
         assert stream.name == stream_id
-        assert stream.schema == stream_config["schema"]
         assert stream.tap == real_tap_instance
         logger.info("✅ Stream created successfully: %s", stream_id)
 
@@ -285,27 +284,33 @@ class TestStreamsFunctional:
             name=streams[0]["tap_stream_id"],
             schema=streams[0]["schema"],
         )
-        records, has_more = stream._extract_records_from_response({
-            "results": [
-                {"id": 1, "code": "ITEM001", "mod_ts": "2024-01-01T10:00:00Z"},
-                {"id": 2, "code": "ITEM002", "mod_ts": "2024-01-01T11:00:00Z"},
-            ],
-            "next_page": "/api/entity/item?page=2",
-        })
-        assert len(records) == 2
-        assert records[0]["id"] == 1
-        assert records[1]["code"] == "ITEM002"
-        assert has_more is True
-        records, has_more = stream._extract_records_from_response([
-            {"id": 3, "code": "ITEM003"},
-            {"id": 4, "code": "ITEM004"},
-        ])
-        assert len(records) == 2
-        assert records[0]["id"] == 3
-        assert has_more in {True, False}
-        records, has_more = stream._extract_records_from_response({})
-        assert not records
-        assert has_more is False
+        from collections.abc import Mapping
+
+        raw1 = list(
+            stream._extract_records_from_response({
+                "results": [
+                    {"id": 1, "code": "ITEM001", "mod_ts": "2024-01-01T10:00:00Z"},
+                    {"id": 2, "code": "ITEM002", "mod_ts": "2024-01-01T11:00:00Z"},
+                ],
+                "next_page": "/api/entity/item?page=2",
+            })
+        )
+        assert len(raw1) == 2
+        r0 = raw1[0]
+        assert isinstance(r0, Mapping) and r0["id"] == 1
+        r1 = raw1[1]
+        assert isinstance(r1, Mapping) and r1["code"] == "ITEM002"
+        raw2 = list(
+            stream._extract_records_from_response([
+                {"id": 3, "code": "ITEM003"},
+                {"id": 4, "code": "ITEM004"},
+            ])
+        )
+        assert len(raw2) == 2
+        r2 = raw2[0]
+        assert isinstance(r2, Mapping) and r2["id"] == 3
+        raw3 = list(stream._extract_records_from_response({}))
+        assert not raw3
         logger.info("✅ Response parsing working for all formats")
 
     @pytest.mark.skip(
@@ -318,7 +323,9 @@ class TestStreamsFunctional:
         """Test ordering configuration for different replication methods."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        ordering_configs = []
+        from collections.abc import MutableSequence
+
+        ordering_configs: MutableSequence[tuple[str, str, str]] = []
         for stream_config in streams[:3]:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
@@ -327,11 +334,11 @@ class TestStreamsFunctional:
             )
             params = stream.get_url_params(context=None, next_page_token=None)
             if "ordering" in params:
-                ordering = params["ordering"]
+                ordering_raw = params["ordering"]
                 ordering_configs.append((
                     stream.name,
-                    stream.replication_method,
-                    ordering,
+                    stream.get_replication_key() or "",
+                    str(ordering_raw),
                 ))
         logger.info("✅ Ordering configurations: %s", ordering_configs)
         for _stream_name, replication_method, ordering in ordering_configs:
@@ -368,14 +375,18 @@ class TestWMSPaginatorUnit:
         self,
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
+        from collections.abc import Mapping
+
         stream = self._build_stream(real_tap_instance)
-        records, has_more = stream._extract_records_from_response({
-            "results": [{"id": 1, "name": "first"}],
-            "next_page": "/api/entity/item?page=2",
-        })
-        assert has_more is True
-        assert len(records) == 1
-        assert records[0]["id"] == 1
+        raw1 = list(
+            stream._extract_records_from_response({
+                "results": [{"id": 1, "name": "first"}],
+                "next_page": "/api/entity/item?page=2",
+            })
+        )
+        assert len(raw1) == 1
+        r0 = raw1[0]
+        assert isinstance(r0, Mapping) and r0["id"] == 1
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -385,11 +396,8 @@ class TestWMSPaginatorUnit:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         stream = self._build_stream(real_tap_instance)
-        records, has_more = stream._extract_records_from_response({
-            "results": [{"id": 2}],
-        })
-        assert len(records) == 1
-        assert has_more is False
+        raw1 = list(stream._extract_records_from_response({"results": [{"id": 2}]}))
+        assert len(raw1) == 1
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",

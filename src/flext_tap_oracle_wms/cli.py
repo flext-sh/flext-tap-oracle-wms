@@ -20,6 +20,8 @@ from __future__ import annotations
 
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
+__all__ = ["FlextTapOracleWms", "main"]
+
 
 def main() -> None:
     """Execute Oracle WMS tap using Singer SDK CLI.

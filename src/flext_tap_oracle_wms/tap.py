@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import importlib.metadata
 from collections.abc import Mapping, MutableSequence, Sequence
-from typing import ClassVar, override
+from typing import ClassVar, TypedDict, override
 
 from flext_core import FlextLogger, r
 from flext_oracle_wms import (
@@ -19,6 +19,28 @@ from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 
 logger = FlextLogger(__name__)
+
+
+class _SingerMetadataEntry(TypedDict):
+    """Singer catalog metadata entry."""
+
+    breadcrumb: list[str]
+    metadata: dict[str, t.ContainerValue]
+
+
+class _SingerStreamEntry(TypedDict):
+    """Singer catalog stream entry."""
+
+    tap_stream_id: str
+    stream: str
+    schema: dict[str, t.ContainerValue]
+    metadata: list[_SingerMetadataEntry]
+
+
+class _SingerCatalog(TypedDict):
+    """Singer catalog structure."""
+
+    streams: list[_SingerStreamEntry]
 
 
 class FlextTapOracleWms(Tap):
@@ -42,6 +64,52 @@ class FlextTapOracleWms(Tap):
     _discovery: t.ContainerValue | None = None
     _schema_generator: t.ContainerValue | None = None
     _discovery_mode: bool = False
+
+    @override
+    def __init__(
+        self,
+        config: t.ContainerMapping
+        | Mapping[str, t.ContainerValue]
+        | FlextTapOracleWmsSettings
+        | None = None,
+        catalog: t.ContainerMapping | None = None,
+        state: t.ContainerMapping | None = None,
+        parse_env_config: bool = False,
+        validate_config: bool = True,
+    ) -> None:
+        """Initialize tap, accepting settings object or raw dict."""
+        if isinstance(config, FlextTapOracleWmsSettings):
+            raw_config: Mapping[str, t.ContainerValue] = config.model_dump(mode="json")
+        else:
+            raw_config = config or {}
+        super().__init__(  # type: ignore[call-arg]
+            config=raw_config,
+            catalog=catalog,
+            state=state,
+            parse_env_config=parse_env_config,
+            validate_config=validate_config,
+        )
+
+    @property
+    def catalog_dict(self) -> _SingerCatalog:
+        """Return typed Singer catalog."""
+        raw = super().catalog_dict  # type: ignore[misc]
+        if not isinstance(raw, Mapping):
+            return _SingerCatalog(streams=[])
+        raw_streams = raw.get("streams", [])
+        if not isinstance(raw_streams, Sequence):
+            raw_streams = []
+        streams: list[_SingerStreamEntry] = [
+            _SingerStreamEntry(  # type: ignore[misc]
+                tap_stream_id=str(s.get("tap_stream_id", "")),
+                stream=str(s.get("stream", "")),
+                schema=dict(s.get("schema", {})),  # type: ignore[arg-type]
+                metadata=list(s.get("metadata", [])),  # type: ignore[arg-type]
+            )
+            for s in raw_streams
+            if isinstance(s, Mapping)
+        ]
+        return _SingerCatalog(streams=streams)
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:
@@ -176,6 +244,14 @@ class FlextTapOracleWms(Tap):
             "api_version": self.flext_config.api_version,
             "page_size": self.flext_config.page_size,
         })
+
+    def initialize(self) -> r[bool]:
+        """Initialize the tap and validate connectivity."""
+        try:
+            _ = self.flext_config
+            return r[bool].ok(True)
+        except Exception as exc:
+            return r[bool].fail(str(exc))
 
 
 class FlextTapOracleWmsPlugin:

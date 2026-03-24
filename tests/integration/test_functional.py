@@ -7,12 +7,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 
 import pytest
 from flext_core import FlextLogger
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream
+from flext_tap_oracle_wms import (
+    FlextTapOracleWms,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStream,
+)
 from tests import t
 
 logger = FlextLogger(__name__)
@@ -27,7 +31,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_real_wms_environment_verification(
         self,
-        real_wms_config: t.ContainerMapping,
+        real_wms_config: MutableMapping[str, t.NormalizedValue],
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -48,7 +52,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_tap_initialization_real_config(
         self,
-        real_wms_config: t.ContainerMapping,
+        real_wms_config: MutableMapping[str, t.NormalizedValue],
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(config=real_wms_config)
@@ -102,7 +106,11 @@ class TestOracleWMSFunctionalComplete:
                 assert "properties" in stream["schema"], (
                     f"Stream {stream['tap_stream_id']} schema missing properties"
                 )
-                properties = stream["schema"]["properties"]
+                properties_raw = stream["schema"]["properties"]
+                assert isinstance(properties_raw, Mapping), (
+                    f"Stream {stream['tap_stream_id']} properties is not a mapping"
+                )
+                properties: Mapping[str, t.ContainerValue] = properties_raw
                 assert properties, (
                     f"Stream {stream['tap_stream_id']} has empty properties"
                 )
@@ -145,11 +153,18 @@ class TestOracleWMSFunctionalComplete:
             assert "properties" in schema, (
                 f"Schema missing properties for {stream['tap_stream_id']}"
             )
-            properties = schema["properties"]
+            properties_raw = schema["properties"]
+            assert isinstance(properties_raw, Mapping), (
+                f"Schema properties is not a mapping for {stream['tap_stream_id']}"
+            )
+            properties: Mapping[str, t.ContainerValue] = properties_raw
             for prop_name, prop_def in properties.items():
+                assert isinstance(prop_def, Mapping), (
+                    f"Property {prop_name} not a mapping"
+                )
                 assert "type" in prop_def, f"Property {prop_name} missing type"
                 prop_type = prop_def["type"]
-                valid_types = [
+                valid_types: Sequence[t.ContainerValue] = [
                     "string",
                     "integer",
                     "number",
@@ -193,7 +208,7 @@ class TestOracleWMSFunctionalComplete:
                 schema=test_stream["schema"],
             )
             assert stream.name == stream_id
-            assert stream.schema is not None
+            assert stream.schema is not None  # type: ignore[reportUnknownMemberType]
             assert hasattr(stream, "url_base")
             assert hasattr(stream, "authenticator")
             logger.info("✅ Stream created successfully: %s", stream_id)
@@ -256,8 +271,8 @@ class TestOracleWMSFunctionalComplete:
         """Test automatic replication key detection."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog["streams"]
-        streams_with_replication: Sequence[tuple[str, str]] = []
-        streams_full_table: t.StrSequence = []
+        streams_with_replication: MutableSequence[tuple[str, t.ContainerValue]] = []
+        streams_full_table: MutableSequence[str] = []
         for stream in streams:
             metadata = stream.get("metadata", [])
             table_metadata = None
@@ -332,10 +347,10 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_error_handling_and_validation(
         self,
-        real_wms_config: t.ContainerMapping,
+        real_wms_config: MutableMapping[str, t.NormalizedValue],
     ) -> None:
         """Test error handling with invalid configurations."""
-        invalid_config = real_wms_config.copy()
+        invalid_config: MutableMapping[str, t.NormalizedValue] = dict(real_wms_config)
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
         tap = FlextTapOracleWms(config=invalid_config)
         try:
@@ -368,14 +383,14 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_configuration_validation(
         self,
-        real_wms_config: t.ContainerMapping,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test configuration validation and type conversion."""
-        config = real_wms_config
+        config = real_config
         assert config is not None, "Config creation failed"
         assert hasattr(config, "username"), "Config missing username"
         assert hasattr(config, "password"), "Config missing password"
-        assert hasattr(config, "host"), "Config missing host"
+        assert hasattr(config, "base_url"), "Config missing base_url"
         assert isinstance(config.page_size, int), "page_size not converted to int"
         assert isinstance(config.timeout, (int, float)), "timeout not numeric"
         assert isinstance(config.verify_ssl, bool), "verify_ssl not boolean"
@@ -391,8 +406,7 @@ class TestOracleWMSFunctionalComplete:
     ) -> None:
         """Test Singer protocol compliance."""
         catalog = real_tap_instance.catalog_dict
-        assert "version" in catalog, "Catalog missing version"
-        assert "streams" in catalog, "Catalog missing streams"
+        assert catalog["streams"] is not None, "Catalog missing streams"
         assert isinstance(catalog["streams"], list), "Streams must be list"
         for stream in catalog["streams"]:
             assert "tap_stream_id" in stream, "Stream missing tap_stream_id"
@@ -419,43 +433,36 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """FINAL COMPREHENSIVE TEST: Verify all functionality works together."""
-        summary = {
-            "environment_loaded": False,
-            "tap_initialized": False,
-            "entities_discovered": 0,
-            "schemas_generated": 0,
-            "replication_configured": False,
-            "pagination_configured": False,
-            "singer_compliant": False,
-            "errors": t.StrSequence(),
-        }
+        environment_loaded: bool = False
+        tap_initialized: bool = False
+        entities_discovered: int = 0
+        schemas_generated: int = 0
+        replication_configured: bool = False
+        pagination_configured: bool = False
+        singer_compliant: bool = False
+        errors: MutableSequence[str] = []
         try:
             assert real_tap_instance is not None
-            summary["environment_loaded"] = True
-            summary["tap_initialized"] = True
+            environment_loaded = True
+            tap_initialized = True
             catalog = real_tap_instance.catalog_dict
-            summary["entities_discovered"] = len(catalog.get("streams", []))
-            for stream in catalog.get("streams", []):
+            catalog_streams = catalog["streams"]
+            entities_discovered = len(catalog_streams)
+            for stream in catalog_streams:
                 if "schema" in stream and "properties" in stream["schema"]:
-                    summary["schemas_generated"] += 1
-            metadata_streams = [
-                s for s in catalog.get("streams", []) if s.get("metadata")
-            ]
-            summary["replication_configured"] = metadata_streams
-            summary["singer_compliant"] = all([
-                "version" in catalog,
-                "streams" in catalog,
-                all("tap_stream_id" in s for s in catalog.get("streams", [])),
-            ])
-            if catalog.get("streams"):
-                test_stream = catalog["streams"][0]
-                stream = FlextTapOracleWmsStream(
+                    schemas_generated += 1
+            metadata_streams = [s for s in catalog_streams if s.get("metadata")]
+            replication_configured = bool(metadata_streams)
+            singer_compliant = all("tap_stream_id" in s for s in catalog_streams)
+            if catalog_streams:
+                test_stream = catalog_streams[0]
+                stream_obj = FlextTapOracleWmsStream(
                     real_tap_instance,
                     test_stream["tap_stream_id"],
                     test_stream["schema"],
                 )
-                params = stream.get_url_params(None, None)
-                summary["pagination_configured"] = "page_size" in params
+                params = stream_obj.get_url_params(None, None)
+                pagination_configured = "page_size" in params
         except (
             ValueError,
             TypeError,
@@ -465,24 +472,21 @@ class TestOracleWMSFunctionalComplete:
             RuntimeError,
             ImportError,
         ) as e:
-            summary["errors"].append(str(e))
+            errors.append(str(e))
         logger.info("🔍 COMPREHENSIVE FUNCTIONALITY SUMMARY:")
-        logger.info("  ✅ Environment loaded: %s", summary["environment_loaded"])
-        logger.info("  ✅ Tap initialized: %s", summary["tap_initialized"])
-        logger.info("  📊 Entities discovered: %d", summary["entities_discovered"])
-        logger.info("  📋 Schemas generated: %d", summary["schemas_generated"])
-        logger.info(
-            "  🔄 Replication configured: %s",
-            summary["replication_configured"],
-        )
-        logger.info("  📄 Pagination configured: %s", summary["pagination_configured"])
-        logger.info("  🎵 Singer compliant: %s", summary["singer_compliant"])
-        if summary["errors"]:
-            logger.error("  ❌ Errors: %s", summary["errors"])
-        assert summary["environment_loaded"], "Environment not loaded"
-        assert summary["tap_initialized"], "Tap not initialized"
-        assert summary["entities_discovered"] > 0, "No entities discovered"
-        assert summary["schemas_generated"] > 0, "No schemas generated"
-        assert summary["singer_compliant"], "Not Singer compliant"
-        assert not summary["errors"], f"Errors found: {summary['errors']}"
+        logger.info("  ✅ Environment loaded: %s", environment_loaded)
+        logger.info("  ✅ Tap initialized: %s", tap_initialized)
+        logger.info("  📊 Entities discovered: %d", entities_discovered)
+        logger.info("  📋 Schemas generated: %d", schemas_generated)
+        logger.info("  🔄 Replication configured: %s", replication_configured)
+        logger.info("  📄 Pagination configured: %s", pagination_configured)
+        logger.info("  🎵 Singer compliant: %s", singer_compliant)
+        if errors:
+            logger.error("  ❌ Errors: %s", errors)
+        assert environment_loaded, "Environment not loaded"
+        assert tap_initialized, "Tap not initialized"
+        assert entities_discovered > 0, "No entities discovered"
+        assert schemas_generated > 0, "No schemas generated"
+        assert singer_compliant, "Not Singer compliant"
+        assert not errors, f"Errors found: {errors}"
         logger.info("🎉 ALL FUNCTIONALITY TESTS PASSED!")

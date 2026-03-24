@@ -171,10 +171,14 @@ class TestFlextTapOracleWms:
 
     def test_validate_configuration(self, tap_instance: FlextTapOracleWms) -> None:
         """Validation method exposes non-secret effective config values."""
+        from collections.abc import Mapping
+
         result = tap_instance.validate_configuration()
         assert result.is_success
-        assert result.value["base_url"] == str(tap_instance.flext_config.base_url)
-        assert "password" not in result.value
+        value = result.value
+        assert isinstance(value, Mapping)
+        assert value["base_url"] == str(tap_instance.flext_config.base_url)
+        assert "password" not in value
 
     def test_get_implementation_name_and_version(
         self,
@@ -186,10 +190,13 @@ class TestFlextTapOracleWms:
 
     def test_get_implementation_metrics(self, tap_instance: FlextTapOracleWms) -> None:
         """Metrics payload contains baseline tap observability fields."""
+        from collections.abc import Mapping
+
         with patch.object(tap_instance, "discover_streams", return_value=[]):
             result = tap_instance.get_implementation_metrics()
         assert result.is_success
         metrics = result.value
+        assert isinstance(metrics, Mapping)
         assert metrics["tap_name"] == "flext-tap-oracle-wms"
         assert "version" in metrics
         assert "streams_available" in metrics

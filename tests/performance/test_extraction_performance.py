@@ -39,7 +39,7 @@ def performance_config() -> FlextTapOracleWmsSettings:
 @pytest.fixture
 def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance for performance testing."""
-    return FlextTapOracleWms(config=performance_config)
+    return FlextTapOracleWms(config=performance_config.model_dump(mode="json"))
 
 
 @pytest.mark.performance
@@ -81,7 +81,7 @@ class TestExtractionPerformance:
             records.append(record)
             if i >= 99:
                 break
-        time.time() - start_time
+        _ = time.time() - start_time
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -99,9 +99,9 @@ class TestExtractionPerformance:
                 records += 1
                 if i >= 49:
                     break
-            time.time() - stream_start
+            _ = time.time() - stream_start
             total_records += records
-        time.time() - start_time
+        _ = time.time() - start_time
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -140,14 +140,16 @@ class TestRateLimitingPerformance:
             **performance_config.model_dump(),
             enable_rate_limiting=False,
         )
-        tap_no_limit = FlextTapOracleWms(config=config_no_limit)
+        tap_no_limit = FlextTapOracleWms(config=config_no_limit.model_dump(mode="json"))
         tap_no_limit.initialize()
         config_with_limit = FlextTapOracleWmsSettings(
             **performance_config.model_dump(),
             enable_rate_limiting=True,
             max_requests_per_minute=60,
         )
-        tap_with_limit = FlextTapOracleWms(config=config_with_limit)
+        tap_with_limit = FlextTapOracleWms(
+            config=config_with_limit.model_dump(mode="json")
+        )
         tap_with_limit.initialize()
         for tap, _label in [(tap_no_limit, "No Limit"), (tap_with_limit, "With Limit")]:
             streams = tap.discover_streams()
@@ -159,7 +161,7 @@ class TestRateLimitingPerformance:
                     records.append(record)
                     if i >= 49:
                         break
-                time.time() - start_time
+                _ = time.time() - start_time
 
 
 if __name__ == "__main__":
