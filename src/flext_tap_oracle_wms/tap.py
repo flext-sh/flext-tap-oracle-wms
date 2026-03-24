@@ -3,20 +3,20 @@
 from __future__ import annotations
 
 import importlib.metadata
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, MutableSequence, Sequence
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, r
 from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsSettings,
-    FlextTapOracleWmsConfigurationError,
-    FlextTapOracleWmsSettings,
-    FlextTapOracleWmsStream,
 )
 from singer_sdk.tap_base import Tap
 
 from flext_tap_oracle_wms import c, m, t
+from flext_tap_oracle_wms.exceptions import FlextTapOracleWmsConfigurationError
+from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 
 logger = FlextLogger(__name__)
 
@@ -123,7 +123,7 @@ class FlextTapOracleWms(Tap):
         streams_raw = catalog_result.value.streams
         if not streams_raw:
             return []
-        streams: Sequence[FlextTapOracleWmsStream] = []
+        streams: MutableSequence[FlextTapOracleWmsStream] = []
         for stream_raw in streams_raw:
             stream_name = stream_raw.stream
             stream_schema = stream_raw.schema_definition
