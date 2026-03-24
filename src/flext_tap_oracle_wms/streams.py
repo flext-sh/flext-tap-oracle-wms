@@ -80,7 +80,7 @@ class FlextTapOracleWmsStream(Stream):
         schema_dict: dict[str, t.ContainerValue] | None = (
             dict(schema) if schema is not None else None
         )
-        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema_dict)  # type: ignore[arg-type]
+        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema_dict)
         self._client: FlextOracleWmsClient | None = None
         page_size = int(self.config.get("page_size", 100))
         self._page_size = (

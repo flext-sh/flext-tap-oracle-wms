@@ -82,7 +82,7 @@ class FlextTapOracleWms(Tap):
             raw_config: Mapping[str, t.ContainerValue] = config.model_dump(mode="json")
         else:
             raw_config = config or {}
-        super().__init__(  # type: ignore[call-arg]
+        super().__init__(
             config=raw_config,
             catalog=catalog,
             state=state,
@@ -93,18 +93,18 @@ class FlextTapOracleWms(Tap):
     @property
     def catalog_dict(self) -> _SingerCatalog:
         """Return typed Singer catalog."""
-        raw = super().catalog_dict  # type: ignore[misc]
+        raw = super().catalog_dict
         if not isinstance(raw, Mapping):
             return _SingerCatalog(streams=[])
         raw_streams = raw.get("streams", [])
         if not isinstance(raw_streams, Sequence):
             raw_streams = []
         streams: list[_SingerStreamEntry] = [
-            _SingerStreamEntry(  # type: ignore[misc]
+            _SingerStreamEntry(
                 tap_stream_id=str(s.get("tap_stream_id", "")),
                 stream=str(s.get("stream", "")),
-                schema=dict(s.get("schema", {})),  # type: ignore[arg-type]
-                metadata=list(s.get("metadata", [])),  # type: ignore[arg-type]
+                schema=dict(s.get("schema", {})),
+                metadata=list(s.get("metadata", [])),
             )
             for s in raw_streams
             if isinstance(s, Mapping)

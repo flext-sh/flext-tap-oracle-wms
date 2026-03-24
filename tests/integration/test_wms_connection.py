@@ -108,7 +108,7 @@ class TestRealConnection:
             schema_raw = getattr(stream, "schema", None)
             assert schema_raw is not None
             if isinstance(schema_raw, Mapping):
-                schema: Mapping[str, t.ContainerValue] = schema_raw  # type: ignore[assignment]
+                schema: Mapping[str, t.ContainerValue] = schema_raw
                 if "properties" in schema:
                     properties: t.ContainerValue = schema["properties"]
                     assert properties

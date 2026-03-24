@@ -66,7 +66,7 @@ class TestOracleWMSE2EComplete:
             assert table_metadata is not None, "Missing table metadata"
             meta_raw = table_metadata.get("metadata")
             assert isinstance(meta_raw, Mapping)
-            meta: Mapping[str, t.ContainerValue] = meta_raw  # type: ignore[assignment]
+            meta: Mapping[str, t.ContainerValue] = meta_raw
             assert "replication-method" in meta, "Missing replication method"
             assert meta["replication-method"] in {"INCREMENTAL", "FULL_TABLE"}, (
                 "Invalid replication method"
@@ -244,7 +244,7 @@ class TestOracleWMSE2EComplete:
                 if isinstance(breadcrumb_raw, list) and len(breadcrumb_raw) == 1:
                     field_meta_raw = meta.get("metadata")
                     if isinstance(field_meta_raw, Mapping):
-                        field_meta: Mapping[str, t.ContainerValue] = field_meta_raw  # type: ignore[assignment]
+                        field_meta: Mapping[str, t.ContainerValue] = field_meta_raw
                         if field_meta.get("inclusion") == "automatic":
                             first = breadcrumb_raw[0]
                             if isinstance(first, str):
@@ -263,7 +263,7 @@ class TestOracleWMSE2EComplete:
                     quality_report["replication_keys_defined"] += 1
             nullable_documented = 0
             if isinstance(properties_raw, Mapping):
-                properties: Mapping[str, t.ContainerValue] = properties_raw  # type: ignore[assignment]
+                properties: Mapping[str, t.ContainerValue] = properties_raw
                 for prop_def in properties.values():
                     if isinstance(prop_def, Mapping):
                         type_raw = prop_def.get("type")

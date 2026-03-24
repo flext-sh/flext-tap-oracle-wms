@@ -208,7 +208,7 @@ class TestOracleWMSFunctionalComplete:
                 schema=test_stream["schema"],
             )
             assert stream.name == stream_id
-            assert stream.schema is not None  # type: ignore[reportUnknownMemberType]
+            assert stream.schema is not None
             assert hasattr(stream, "url_base")
             assert hasattr(stream, "authenticator")
             logger.info("✅ Stream created successfully: %s", stream_id)
