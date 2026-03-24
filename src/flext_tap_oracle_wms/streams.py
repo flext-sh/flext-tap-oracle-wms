@@ -11,14 +11,13 @@ from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, r, t
+from flext_core import FlextLogger, r
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from singer_sdk.streams import Stream
 from singer_sdk.tap_base import Tap
 
-from flext_tap_oracle_wms.protocols import p
-from flext_tap_oracle_wms.utilities import u
+from flext_tap_oracle_wms import p, t, u
 
 logger = FlextLogger(__name__)
 
@@ -224,7 +223,7 @@ class FlextTapOracleWmsStream(Stream):
             filters=filters or None,
         )
         if result.is_failure:
-            return r[tuple[Sequence[Mapping[str, t.Scalar]], bool]].fail(
+            return r[tuple[Sequence[t.ScalarMapping], bool]].fail(
                 f"Failed to get records for {self.name}: {result.error}",
             )
         normalized: Sequence[Mapping[str, t.Scalar]] = [
@@ -235,7 +234,7 @@ class FlextTapOracleWmsStream(Stream):
             for record in result.value
         ]
         has_more = len(normalized) == self._page_size
-        return r[tuple[Sequence[Mapping[str, t.Scalar]], bool]].ok((
+        return r[tuple[Sequence[t.ScalarMapping], bool]].ok((
             normalized,
             has_more,
         ))
