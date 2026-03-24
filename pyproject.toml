@@ -156,29 +156,32 @@ warn_required_dynamic_aliases = true
 
 # [MANAGED] pyrefly
 [tool.pyrefly]
+disable-project-excludes-heuristics = true
 ignore-errors-in-generated-code = true
 project-excludes = [
   "**/*_pb2*.py",
   "**/*_pb2_grpc*.py",
   "**/.venv/**",
-  "**/_pb2.py",
-  "**/_pb2_grpc.py",
-  "**/examples/**",
-  "**/tests/**",
+  "**/__pycache__",
+  "**/node_modules",
   "**/typings/**",
   "**/vendor/**",
-  "../typings/**",
+  "**/venv/**",
   ".venv/**",
-  "examples/**",
-  "tests/**",
   "typings/**",
   "vendor/**",
+]
+project-includes = [
+  "examples/**/*.py*",
+  "src/**/*.py*",
+  "tests/**/*.py*",
 ]
 python-version = "3.13"
 search-path = [
   ".",
   "src",
 ]
+use-ignore-files = false
 
 [tool.pyrefly.errors]
 bad-argument-count = false
