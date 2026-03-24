@@ -27,9 +27,7 @@ def _as_map(value: t.NormalizedValue) -> Mapping[str, t.ContainerValue] | None:
     if not isinstance(value, Mapping):
         return None
     try:
-        validated_map = TypeAdapter(Mapping[str, t.ContainerValue]).validate_python(
-            value
-        )
+        validated_map = TypeAdapter(t.ContainerValueMapping).validate_python(value)
     except ValidationError:
         return None
     return {
