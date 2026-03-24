@@ -36,10 +36,11 @@ class TestOracleWMSE2EComplete:
 
     @pytest.mark.usefixtures("_mock_oracle_wms")
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_complete_discovery_to_catalog(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test complete discovery process generating valid Singer catalog."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -60,7 +61,8 @@ class TestOracleWMSE2EComplete:
             metadata = stream["metadata"]
             assert isinstance(metadata, list), "Metadata must be list"
             table_metadata = next(
-                (m for m in metadata if m.get("breadcrumb") == []), None
+                (m for m in metadata if m.get("breadcrumb") == []),
+                None,
             )
             assert table_metadata is not None, "Missing table metadata"
             meta = table_metadata["metadata"]
@@ -69,15 +71,17 @@ class TestOracleWMSE2EComplete:
                 "Invalid replication method"
             )
         logger.info(
-            "✅ Complete discovery validation passed for %d streams", len(streams)
+            "✅ Complete discovery validation passed for %d streams",
+            len(streams),
         )
 
     @pytest.mark.usefixtures("_mock_oracle_wms")
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_catalog_serialization_and_selection(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test catalog serialization and stream selection."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -96,10 +100,11 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Catalog serialization and selection working")
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_single_stream_extraction_sample(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test single stream data extraction with real data."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -111,7 +116,9 @@ class TestOracleWMSE2EComplete:
         stream_id = test_stream["tap_stream_id"]
         logger.info("Testing extraction from: %s", stream_id)
         stream = FlextTapOracleWmsStream(
-            tap=tap_instance, name=stream_id, schema=test_stream["schema"]
+            tap=tap_instance,
+            name=stream_id,
+            schema=test_stream["schema"],
         )
         assert stream.name == stream_id
         assert stream.url_base is not None
@@ -123,10 +130,11 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Single stream extraction setup successful")
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_incremental_extraction_workflow(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test incremental extraction workflow."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -164,10 +172,11 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Incremental extraction workflow validated for %s", stream.name)
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_full_table_extraction_workflow(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test full table extraction workflow."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -203,10 +212,11 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Full table extraction workflow validated for %s", stream.name)
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_data_quality_validation(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test data quality and schema validation."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -235,10 +245,11 @@ class TestOracleWMSE2EComplete:
             if primary_keys:
                 quality_report["primary_keys_defined"] += 1
             table_metadata = next(
-                (m for m in metadata if m.get("breadcrumb") == []), None
+                (m for m in metadata if m.get("breadcrumb") == []),
+                None,
             )
             if table_metadata and table_metadata.get("metadata", {}).get(
-                "replication-key"
+                "replication-key",
             ):
                 quality_report["replication_keys_defined"] += 1
             nullable_documented = 0
@@ -254,10 +265,12 @@ class TestOracleWMSE2EComplete:
         logger.info("  Streams tested: %d", quality_report["streams_tested"])
         logger.info("  Valid schemas: %d", quality_report["schemas_valid"])
         logger.info(
-            "  Primary keys defined: %d", quality_report["primary_keys_defined"]
+            "  Primary keys defined: %d",
+            quality_report["primary_keys_defined"],
         )
         logger.info(
-            "  Replication keys defined: %d", quality_report["replication_keys_defined"]
+            "  Replication keys defined: %d",
+            quality_report["replication_keys_defined"],
         )
         logger.info(
             "  Nullable fields documented: %d",
@@ -267,7 +280,7 @@ class TestOracleWMSE2EComplete:
         assert quality_report["schemas_valid"] > 0, "No valid schemas found"
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_pagination_end_to_end(self) -> None:
         """E2E: Test pagination handling through multiple pages."""
@@ -291,10 +304,11 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Pagination flow tested: %s", pages_tested)
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_error_recovery_and_resilience(
-        self, real_wms_config: t.ContainerMapping
+        self,
+        real_wms_config: t.ContainerMapping,
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         invalid_config = real_wms_config.copy()
@@ -327,10 +341,11 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Error recovery tested")
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_complete_singer_protocol_compliance(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test complete Singer protocol compliance."""
         tap_instance = FlextTapOracleWms(config=real_config)
@@ -373,10 +388,11 @@ class TestOracleWMSE2EComplete:
         logger.info("✅ Complete Singer protocol compliance verified")
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_performance_and_scalability_indicators(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test performance indicators and scalability."""
         start_time = time.time()
@@ -409,10 +425,11 @@ class TestOracleWMSE2EComplete:
         assert streams_count / discovery_time > 0.1, "Discovery rate too slow"
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_final_e2e_integration_summary(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """FINAL E2E: Comprehensive integration summary."""
         summary = {
@@ -434,11 +451,12 @@ class TestOracleWMSE2EComplete:
             for stream in catalog.get("streams", []):
                 metadata = stream.get("metadata", [])
                 table_meta = next(
-                    (m for m in metadata if m.get("breadcrumb") == []), None
+                    (m for m in metadata if m.get("breadcrumb") == []),
+                    None,
                 )
                 if table_meta:
                     replication_method = table_meta.get("metadata", {}).get(
-                        "replication-method"
+                        "replication-method",
                     )
                     if replication_method == "INCREMENTAL":
                         summary["incremental_streams"] += 1
@@ -476,7 +494,8 @@ class TestOracleWMSE2EComplete:
         logger.info("  📝 Valid schemas: %d", summary["schemas_valid"])
         logger.info("  🎵 Singer compliant: %s", summary["singer_compliant"])
         logger.info(
-            "  ⚡ Performance acceptable: %s", summary["performance_acceptable"]
+            "  ⚡ Performance acceptable: %s",
+            summary["performance_acceptable"],
         )
         if summary["errors"]:
             logger.error("  ❌ Errors: %s", summary["errors"])

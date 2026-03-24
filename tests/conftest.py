@@ -118,9 +118,9 @@ def sample_catalog() -> t.ContainerMapping:
                             "table-key-properties": ["inventory_id"],
                             "replication-key": "mod_ts",
                         },
-                    }
+                    },
                 ],
-            }
+            },
         ],
     }
 
@@ -130,8 +130,11 @@ def sample_state() -> t.ContainerMapping:
     """Sample Singer state."""
     return {
         "bookmarks": {
-            "inventory": {"replication_key_value": "2024-01-01T00:00:00Z", "version": 1}
-        }
+            "inventory": {
+                "replication_key_value": "2024-01-01T00:00:00Z",
+                "version": 1,
+            },
+        },
     }
 
 
@@ -158,7 +161,8 @@ def mock_request() -> MagicMock:
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config, items: Sequence[pytest.Item]
+    config: pytest.Config,
+    items: Sequence[pytest.Item],
 ) -> None:
     """Add markers to tests based on their location."""
     for item in items:

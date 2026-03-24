@@ -82,19 +82,25 @@ class TestFlextTapOracleWmsSettings:
     def test_base_url_validation(self) -> None:
         """Test base URL validation."""
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com/", username="user", password="pass"
+            base_url="https://wms.example.com/",
+            username="user",
+            password="pass",
         )
         assert str(config.base_url).rstrip("/") == "https://wms.example.com"
         with pytest.raises(ValidationError) as exc_info:
             FlextTapOracleWmsSettings(
-                base_url="wms.example.com", username="user", password="pass"
+                base_url="wms.example.com",
+                username="user",
+                password="pass",
             )
         assert "Input should be a valid URL" in str(exc_info.value)
 
     def test_entity_list_validation(self) -> None:
         """Test entity list validation."""
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com", username="user", password="pass"
+            base_url="https://wms.example.com",
+            username="user",
+            password="pass",
         )
         with pytest.raises(ValidationError) as exc_info:
             config.include_entities = ["inventory", "orders", "inventory"]
@@ -139,14 +145,18 @@ class TestFlextTapOracleWmsSettings:
     def test_validate_business_rules(self) -> None:
         """Test Oracle WMS specific business-rule validation."""
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com", username="user", password="pass"
+            base_url="https://wms.example.com",
+            username="user",
+            password="pass",
         )
         result = config.validate_business_rules()
         assert result.is_success
         assert result.value is True
         FlextTapOracleWmsSettings.reset_for_testing()
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com", username="user", password="pass"
+            base_url="https://wms.example.com",
+            username="user",
+            password="pass",
         )
         config.include_entities = ["inventory", "orders"]
         config.exclude_entities = ["orders", "shipments"]
@@ -206,7 +216,9 @@ class TestFlextTapOracleWmsSettings:
     def test_config_mutability_with_assignment_validation(self) -> None:
         """Test that config is mutable but still validated on assignment."""
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com", username="user", password="pass"
+            base_url="https://wms.example.com",
+            username="user",
+            password="pass",
         )
         config.base_url = AnyUrl("https://new.example.com")
         assert str(config.base_url) == "https://new.example.com/"

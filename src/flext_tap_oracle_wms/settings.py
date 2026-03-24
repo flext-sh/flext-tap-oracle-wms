@@ -21,7 +21,8 @@ class FlextTapOracleWmsSettings(BaseModel):
     """Validated settings consumed by the Oracle WMS tap runtime."""
 
     model_config: ClassVar[ConfigDict] = ConfigDict(
-        extra="ignore", validate_assignment=True
+        extra="ignore",
+        validate_assignment=True,
     )
 
     base_url: Annotated[

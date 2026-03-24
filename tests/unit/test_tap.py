@@ -20,7 +20,8 @@ class TestFlextTapOracleWms:
     """Validate tap behavior against current implementation contract."""
 
     def test_tap_initialization_with_config(
-        self, sample_config: FlextTapOracleWmsSettings
+        self,
+        sample_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Tap stores validated settings and starts with lazy client."""
         tap = FlextTapOracleWms(config=sample_config.model_dump(mode="json"))
@@ -49,7 +50,8 @@ class TestFlextTapOracleWms:
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
     def test_wms_client_property_lazy_initialization(
-        self, mock_client_class: MagicMock
+        self,
+        mock_client_class: MagicMock,
     ) -> None:
         """Client is created only once and reused after first access."""
         mock_client = MagicMock()
@@ -61,7 +63,7 @@ class TestFlextTapOracleWms:
                 "base_url": "https://test.wms.example.com",
                 "username": "test_user",
                 "password": "test_password",
-            }
+            },
         )
         client_1 = tap.wms_client
         client_2 = tap.wms_client
@@ -82,7 +84,7 @@ class TestFlextTapOracleWms:
                     "base_url": "https://test.wms.example.com",
                     "username": "test_user",
                     "password": "test_password",
-                }
+                },
             )
 
     def test_discover_catalog_success(self, tap_instance: FlextTapOracleWms) -> None:
@@ -118,7 +120,8 @@ class TestFlextTapOracleWms:
         assert result.error == "boom"
 
     def test_discover_streams_empty_when_catalog_fails(
-        self, tap_instance: FlextTapOracleWms
+        self,
+        tap_instance: FlextTapOracleWms,
     ) -> None:
         """Stream discovery returns empty list when catalog discovery fails."""
         with patch.object(
@@ -138,8 +141,8 @@ class TestFlextTapOracleWms:
                     stream="inventory",
                     schema={"type": "object"},
                     metadata=[],
-                )
-            ]
+                ),
+            ],
         )
         with patch.object(
             tap_instance,
@@ -158,7 +161,8 @@ class TestFlextTapOracleWms:
         mock_sync.assert_called_once()
 
     def test_execute_with_message_unsupported(
-        self, tap_instance: FlextTapOracleWms
+        self,
+        tap_instance: FlextTapOracleWms,
     ) -> None:
         """Custom message execution is not supported by the tap."""
         result = tap_instance.execute("some message")
@@ -173,7 +177,8 @@ class TestFlextTapOracleWms:
         assert "password" not in result.value
 
     def test_get_implementation_name_and_version(
-        self, tap_instance: FlextTapOracleWms
+        self,
+        tap_instance: FlextTapOracleWms,
     ) -> None:
         """Implementation metadata methods return stable, non-empty values."""
         assert tap_instance.get_implementation_name() == "FLEXT Oracle WMS Tap"

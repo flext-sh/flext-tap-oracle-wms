@@ -20,7 +20,7 @@ class TestTapInitialization:
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
-                }
+                },
             )
         assert "test.example.com" in str(tap.config["base_url"])
         assert tap.config["username"] == "test"
@@ -33,7 +33,7 @@ class TestTapInitialization:
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
-                }
+                },
             )
         with patch.object(
             tap,
@@ -45,7 +45,8 @@ class TestTapInitialization:
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
     def test_discover_streams_uses_client_entities(
-        self, mock_client_class: MagicMock
+        self,
+        mock_client_class: MagicMock,
     ) -> None:
         """discover_streams builds streams for each discovered entity."""
         mock_client = MagicMock()
@@ -60,7 +61,7 @@ class TestTapInitialization:
                 "base_url": "https://test.example.com",
                 "username": "test",
                 "password": "test",
-            }
+            },
         )
         stream_names = [stream.name for stream in tap.discover_streams()]
         assert "allocation" in stream_names
@@ -74,7 +75,7 @@ class TestTapInitialization:
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
-                }
+                },
             )
         with patch.object(tap, "sync_all") as mock_sync:
             result = tap.execute()

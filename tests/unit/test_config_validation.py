@@ -33,7 +33,9 @@ class TestConfigValidation:
     def test_url_accepts_trailing_slash(self) -> None:
         """Test URL with trailing slash is accepted."""
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com/", username="user", password="pass"
+            base_url="https://wms.example.com/",
+            username="user",
+            password="pass",
         )
         assert "wms.example.com" in str(config.base_url)
 
@@ -74,7 +76,9 @@ class TestConfigValidation:
     def test_model_serialization(self) -> None:
         """Test configuration model serialization."""
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com", username="user", password="pass"
+            base_url="https://wms.example.com",
+            username="user",
+            password="pass",
         )
         data = config.model_dump()
         assert isinstance(data, dict)
@@ -84,7 +88,9 @@ class TestConfigValidation:
     def test_domain_rules_valid(self) -> None:
         """Test domain-specific validation rules pass for valid config."""
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com", username="user", password="pass"
+            base_url="https://wms.example.com",
+            username="user",
+            password="pass",
         )
         result = config.validate_domain_rules()
         assert result.is_success
@@ -92,7 +98,9 @@ class TestConfigValidation:
     def test_business_rules_valid(self) -> None:
         """Test business rules validation passes for valid config."""
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com", username="user", password="pass"
+            base_url="https://wms.example.com",
+            username="user",
+            password="pass",
         )
         result = config.validate_business_rules()
         assert result.is_success
@@ -152,7 +160,9 @@ class TestConfigValidation:
     def test_password_is_secret(self) -> None:
         """Test password field is SecretStr type."""
         config = FlextTapOracleWmsSettings(
-            base_url="https://wms.example.com", username="user", password="super_secret"
+            base_url="https://wms.example.com",
+            username="user",
+            password="super_secret",
         )
         assert isinstance(config.password, SecretStr)
         assert config.password.get_secret_value() == "super_secret"

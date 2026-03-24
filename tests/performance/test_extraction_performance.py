@@ -47,7 +47,7 @@ class TestExtractionPerformance:
     """Test data extraction performance."""
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_catalog_discovery_performance(self, tap: FlextTapOracleWms) -> None:
         """Benchmark catalog discovery time."""
@@ -60,10 +60,12 @@ class TestExtractionPerformance:
 
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_pagination_performance(
-        self, tap: FlextTapOracleWms, page_size: int
+        self,
+        tap: FlextTapOracleWms,
+        page_size: int,
     ) -> None:
         """Benchmark different page sizes."""
         tap.initialize()
@@ -82,7 +84,7 @@ class TestExtractionPerformance:
         time.time() - start_time
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_concurrent_streams_extraction(self, tap: FlextTapOracleWms) -> None:
         """Test extracting multiple streams concurrently."""
@@ -102,7 +104,7 @@ class TestExtractionPerformance:
         time.time() - start_time
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_memory_usage_during_large_extraction(self, tap: FlextTapOracleWms) -> None:
         """Test memory usage during large extractions."""
@@ -127,14 +129,16 @@ class TestRateLimitingPerformance:
     """Test rate limiting impact on performance."""
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_rate_limiting_impact(
-        self, performance_config: FlextTapOracleWmsSettings
+        self,
+        performance_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Compare performance with and without rate limiting."""
         config_no_limit = FlextTapOracleWmsSettings(
-            **performance_config.model_dump(), enable_rate_limiting=False
+            **performance_config.model_dump(),
+            enable_rate_limiting=False,
         )
         tap_no_limit = FlextTapOracleWms(config=config_no_limit)
         tap_no_limit.initialize()

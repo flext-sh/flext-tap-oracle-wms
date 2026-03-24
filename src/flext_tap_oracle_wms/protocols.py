@@ -46,7 +46,8 @@ class FlextTapOracleWmsProtocols(FlextMeltanoModels, FlextOracleWmsProtocols):
 
             @runtime_checkable
             class InventoryDiscovery(
-                FlextOracleWmsProtocols.Service[t.Container], Protocol
+                FlextOracleWmsProtocols.Service[t.Container],
+                Protocol,
             ):
                 """Protocol for WMS inventory discovery."""
 
@@ -59,7 +60,8 @@ class FlextTapOracleWmsProtocols(FlextMeltanoModels, FlextOracleWmsProtocols):
 
             @runtime_checkable
             class OrderProcessing(
-                FlextOracleWmsProtocols.Service[t.Container], Protocol
+                FlextOracleWmsProtocols.Service[t.Container],
+                Protocol,
             ):
                 """Protocol for WMS order processing."""
 
@@ -72,7 +74,8 @@ class FlextTapOracleWmsProtocols(FlextMeltanoModels, FlextOracleWmsProtocols):
 
             @runtime_checkable
             class WarehouseOperations(
-                FlextOracleWmsProtocols.Service[t.Container], Protocol
+                FlextOracleWmsProtocols.Service[t.Container],
+                Protocol,
             ):
                 """Protocol for WMS warehouse operations."""
 
@@ -85,7 +88,8 @@ class FlextTapOracleWmsProtocols(FlextMeltanoModels, FlextOracleWmsProtocols):
 
             @runtime_checkable
             class StreamGeneration(
-                FlextOracleWmsProtocols.Service[t.Container], Protocol
+                FlextOracleWmsProtocols.Service[t.Container],
+                Protocol,
             ):
                 """Protocol for Singer stream generation."""
 
@@ -101,7 +105,8 @@ class FlextTapOracleWmsProtocols(FlextMeltanoModels, FlextOracleWmsProtocols):
                 """Protocol for WMS extraction performance."""
 
                 def optimize_query(
-                    self, query: str
+                    self,
+                    query: str,
                 ) -> FlextOracleWmsProtocols.Result[str]:
                     """Optimize WMS query."""
                     ...

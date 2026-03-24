@@ -23,10 +23,11 @@ class TestOracleWMSFunctionalComplete:
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_real_wms_environment_verification(
-        self, real_wms_config: t.ContainerMapping
+        self,
+        real_wms_config: t.ContainerMapping,
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -43,10 +44,11 @@ class TestOracleWMSFunctionalComplete:
         logger.info("✅ Real Oracle WMS environment verified: %s", base_url)
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_tap_initialization_real_config(
-        self, real_wms_config: t.ContainerMapping
+        self,
+        real_wms_config: t.ContainerMapping,
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(config=real_wms_config)
@@ -57,10 +59,11 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.discovery
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_automatic_entity_discovery(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """CRITICAL: Test automatic entity discovery with REAL Oracle WMS."""
         try:
@@ -72,7 +75,9 @@ class TestOracleWMSFunctionalComplete:
             assert streams, "No streams discovered"
             entity_names = [stream["tap_stream_id"] for stream in streams]
             logger.info(
-                "✅ Discovered %d entities: %s", len(entity_names), entity_names
+                "✅ Discovered %d entities: %s",
+                len(entity_names),
+                entity_names,
             )
             essential_entities = ["allocation"]
             for entity in essential_entities:
@@ -120,10 +125,11 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.singer
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_valid_singer_schema_generation(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test schema generation produces valid Singer schemas."""
         catalog = real_tap_instance.catalog_dict
@@ -166,10 +172,11 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_real_data_extraction_sample(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test REAL data extraction with small sample."""
         catalog = real_tap_instance.catalog_dict
@@ -181,7 +188,9 @@ class TestOracleWMSFunctionalComplete:
         logger.info("Testing extraction from stream: %s", stream_id)
         try:
             stream = FlextTapOracleWmsStream(
-                tap=real_tap_instance, name=stream_id, schema=test_stream["schema"]
+                tap=real_tap_instance,
+                name=stream_id,
+                schema=test_stream["schema"],
             )
             assert stream.name == stream_id
             assert stream.schema is not None
@@ -207,10 +216,11 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.singer
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_pagination_functionality(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test pagination parameters are correctly configured."""
         catalog = real_tap_instance.catalog_dict
@@ -220,7 +230,9 @@ class TestOracleWMSFunctionalComplete:
         test_stream = streams[0]
         stream_id = test_stream["tap_stream_id"]
         stream = FlextTapOracleWmsStream(
-            tap=real_tap_instance, name=stream_id, schema=test_stream["schema"]
+            tap=real_tap_instance,
+            name=stream_id,
+            schema=test_stream["schema"],
         )
         url_params = stream.get_url_params(context=None, next_page_token=None)
         assert "page_size" in url_params, "Missing page_size parameter"
@@ -235,10 +247,11 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_replication_key_detection(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test automatic replication key detection."""
         catalog = real_tap_instance.catalog_dict
@@ -254,10 +267,10 @@ class TestOracleWMSFunctionalComplete:
                     break
             if table_metadata:
                 replication_method = table_metadata.get("metadata", {}).get(
-                    "replication-method"
+                    "replication-method",
                 )
                 replication_key = table_metadata.get("metadata", {}).get(
-                    "replication-key"
+                    "replication-key",
                 )
                 if replication_method == "INCREMENTAL" and replication_key:
                     streams_with_replication.append((
@@ -282,10 +295,11 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_filtering_and_ordering_parameters(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test filtering and ordering parameters."""
         catalog = real_tap_instance.catalog_dict
@@ -295,7 +309,9 @@ class TestOracleWMSFunctionalComplete:
         test_stream = streams[0]
         stream_id = test_stream["tap_stream_id"]
         stream = FlextTapOracleWmsStream(
-            tap=real_tap_instance, name=stream_id, schema=test_stream["schema"]
+            tap=real_tap_instance,
+            name=stream_id,
+            schema=test_stream["schema"],
         )
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
         url_params = stream.get_url_params(context=context, next_page_token=None)
@@ -312,10 +328,11 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_error_handling_and_validation(
-        self, real_wms_config: t.ContainerMapping
+        self,
+        real_wms_config: t.ContainerMapping,
     ) -> None:
         """Test error handling with invalid configurations."""
         invalid_config = real_wms_config.copy()
@@ -347,10 +364,11 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_configuration_validation(
-        self, real_wms_config: t.ContainerMapping
+        self,
+        real_wms_config: t.ContainerMapping,
     ) -> None:
         """Test configuration validation and type conversion."""
         config = real_wms_config
@@ -365,10 +383,11 @@ class TestOracleWMSFunctionalComplete:
 
     @pytest.mark.singer
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_singer_protocol_compliance(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test Singer protocol compliance."""
         catalog = real_tap_instance.catalog_dict
@@ -393,10 +412,11 @@ class TestOracleWMSFunctionalComplete:
         logger.info("✅ Singer protocol compliance verified")
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
+        reason="Integration test - requires live WMS or comprehensive mocking",
     )
     def test_comprehensive_functionality_summary(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """FINAL COMPREHENSIVE TEST: Verify all functionality works together."""
         summary = {
@@ -452,7 +472,8 @@ class TestOracleWMSFunctionalComplete:
         logger.info("  📊 Entities discovered: %d", summary["entities_discovered"])
         logger.info("  📋 Schemas generated: %d", summary["schemas_generated"])
         logger.info(
-            "  🔄 Replication configured: %s", summary["replication_configured"]
+            "  🔄 Replication configured: %s",
+            summary["replication_configured"],
         )
         logger.info("  📄 Pagination configured: %s", summary["pagination_configured"])
         logger.info("  🎵 Singer compliant: %s", summary["singer_compliant"])
