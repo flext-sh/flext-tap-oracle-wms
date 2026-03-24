@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 
 import pytest
 from flext_core import FlextLogger
@@ -26,7 +26,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_real_wms_environment_verification(
-        self, real_wms_config: Mapping[str, t.NormalizedValue]
+        self, real_wms_config: t.ContainerMapping
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -46,7 +46,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_tap_initialization_real_config(
-        self, real_wms_config: Mapping[str, t.NormalizedValue]
+        self, real_wms_config: t.ContainerMapping
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(config=real_wms_config)
@@ -315,7 +315,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_error_handling_and_validation(
-        self, real_wms_config: Mapping[str, t.NormalizedValue]
+        self, real_wms_config: t.ContainerMapping
     ) -> None:
         """Test error handling with invalid configurations."""
         invalid_config = real_wms_config.copy()
@@ -324,7 +324,7 @@ class TestOracleWMSFunctionalComplete:
         try:
             catalog = tap.catalog_dict
             assert isinstance(catalog, dict), (
-                "Catalog should be Mapping[str, t.NormalizedValue] even on errors"
+                "Catalog should be t.ContainerMapping even on errors"
             )
         except (
             ValueError,
@@ -350,7 +350,7 @@ class TestOracleWMSFunctionalComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_configuration_validation(
-        self, real_wms_config: Mapping[str, t.NormalizedValue]
+        self, real_wms_config: t.ContainerMapping
     ) -> None:
         """Test configuration validation and type conversion."""
         config = real_wms_config

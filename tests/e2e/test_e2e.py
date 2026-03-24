@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock
 
@@ -294,7 +294,7 @@ class TestOracleWMSE2EComplete:
         reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_error_recovery_and_resilience(
-        self, real_wms_config: Mapping[str, t.NormalizedValue]
+        self, real_wms_config: t.ContainerMapping
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         invalid_config = real_wms_config.copy()

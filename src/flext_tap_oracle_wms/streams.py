@@ -170,7 +170,7 @@ class FlextTapOracleWmsStream(Stream):
         context: Mapping[str, t.Scalar] | None = None,
     ) -> Mapping[str, t.Scalar]:
         """Post-process a record."""
-        config_map: Mapping[str, t.NormalizedValue] = self.config
+        config_map: t.ContainerMapping = self.config
         column_mappings_raw = config_map.get("column_mappings")
         column_mappings = _as_map(column_mappings_raw) if column_mappings_raw else None
         if column_mappings is not None:

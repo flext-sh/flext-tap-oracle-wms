@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
@@ -29,7 +29,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_with_dict(self) -> None:
         """Tap accepts plain config mappings and normalizes settings values."""
-        config_dict: Mapping[str, t.NormalizedValue] = {
+        config_dict: t.ContainerMapping = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
             "password": "test_password",
@@ -40,7 +40,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_invalid_config(self) -> None:
         """Invalid config payload raises configuration error."""
-        config_dict: Mapping[str, t.NormalizedValue] = {
+        config_dict: t.ContainerMapping = {
             "base_url": "invalid-url",
             "username": "test_user",
             "password": "test_password",
