@@ -16,16 +16,20 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     class Project:
         """Project-level aliases and constrained literals."""
 
-        type ProjectType = FlextTapOracleWmsConstants.TapProjectType
+        type ProjectType = FlextTapOracleWmsConstants.TapOracleWms.TapProjectType
         type ReplicationMethodLiteral = (
-            FlextTapOracleWmsConstants.ReplicationMethodLiteral
+            FlextTapOracleWmsConstants.TapOracleWms.ReplicationMethodLiteral
         )
         type AuthenticationMethodLiteral = (
-            FlextTapOracleWmsConstants.AuthenticationMethodLiteral
+            FlextTapOracleWmsConstants.TapOracleWms.AuthenticationMethodLiteral
         )
-        type StreamInclusionLiteral = FlextTapOracleWmsConstants.StreamInclusionLiteral
-        type ErrorTypeLiteral = FlextTapOracleWmsConstants.ErrorTypeLiteral
-        type BackoffStrategyLiteral = FlextTapOracleWmsConstants.BackoffStrategyLiteral
+        type StreamInclusionLiteral = (
+            FlextTapOracleWmsConstants.TapOracleWms.StreamInclusionLiteral
+        )
+        type ErrorTypeLiteral = FlextTapOracleWmsConstants.TapOracleWms.ErrorTypeLiteral
+        type BackoffStrategyLiteral = (
+            FlextTapOracleWmsConstants.TapOracleWms.BackoffStrategyLiteral
+        )
 
 
 t = FlextTapOracleWmsTypes

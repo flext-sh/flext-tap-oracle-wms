@@ -20,39 +20,42 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
     Inherits from FlextMeltanoUtilities to avoid duplication.
     """
 
-    class ConfigurationProcessing:
-        """Configuration processing utilities for Oracle WMS."""
+    class TapOracleWms:
+        """Oracle WMS tap utilities namespace."""
 
-        @staticmethod
-        def validate_stream_page_size(page_size: int) -> bool:
-            """Validate stream page size.
+        class ConfigurationProcessing:
+            """Configuration processing utilities for Oracle WMS."""
 
-            Args:
-                page_size: Page size to validate.
+            @staticmethod
+            def validate_stream_page_size(page_size: int) -> bool:
+                """Validate stream page size.
 
-            Returns:
-                True if valid, False otherwise.
+                Args:
+                    page_size: Page size to validate.
 
-            """
-            return page_size > 0
+                Returns:
+                    True if valid, False otherwise.
 
-    class DataProcessing:
-        """Data processing utilities for Oracle WMS records."""
+                """
+                return page_size > 0
 
-        @staticmethod
-        def process_wms_record(
-            record: Mapping[str, t.ContainerValue],
-        ) -> Mapping[str, t.ContainerValue]:
-            """Process WMS record for output.
+        class DataProcessing:
+            """Data processing utilities for Oracle WMS records."""
 
-            Args:
-                record: Raw WMS record.
+            @staticmethod
+            def process_wms_record(
+                record: Mapping[str, t.ContainerValue],
+            ) -> Mapping[str, t.ContainerValue]:
+                """Process WMS record for output.
 
-            Returns:
-                Processed record.
+                Args:
+                    record: Raw WMS record.
 
-            """
-            return record
+                Returns:
+                    Processed record.
+
+                """
+                return record
 
 
 u = FlextTapOracleWmsUtilities

@@ -40,7 +40,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     api_version: Annotated[
         str,
         Field(
-            default=c.Settings.DEFAULT_API_VERSION,
+            default=c.TapOracleWms.Settings.DEFAULT_API_VERSION,
             min_length=1,
             description="Oracle WMS API version.",
         ),
@@ -48,16 +48,16 @@ class FlextTapOracleWmsSettings(BaseModel):
     timeout: Annotated[
         int,
         Field(
-            default=c.Settings.TAP_DEFAULT_TIMEOUT,
-            ge=c.Settings.TAP_MIN_TIMEOUT,
-            le=c.Settings.TAP_MAX_TIMEOUT,
+            default=c.TapOracleWms.Settings.TAP_DEFAULT_TIMEOUT,
+            ge=c.TapOracleWms.Settings.TAP_MIN_TIMEOUT,
+            le=c.TapOracleWms.Settings.TAP_MAX_TIMEOUT,
             description="Request timeout in seconds.",
         ),
     ]
     max_retries: Annotated[
         int,
         Field(
-            default=c.Settings.TAP_DEFAULT_MAX_RETRIES,
+            default=c.TapOracleWms.Settings.TAP_DEFAULT_MAX_RETRIES,
             ge=0,
             description="Maximum request retries.",
         ),
@@ -65,7 +65,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     retry_delay: Annotated[
         float,
         Field(
-            default=c.Settings.TAP_DEFAULT_RETRY_DELAY,
+            default=c.TapOracleWms.Settings.TAP_DEFAULT_RETRY_DELAY,
             ge=0.0,
             description="Retry delay in seconds.",
         ),
@@ -81,7 +81,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     page_size: Annotated[
         int,
         Field(
-            default=c.Settings.TAP_DEFAULT_PAGE_SIZE,
+            default=c.TapOracleWms.Settings.TAP_DEFAULT_PAGE_SIZE,
             ge=1,
             description="Page size used for extraction requests.",
         ),
@@ -89,7 +89,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     discovery_sample_size: Annotated[
         int,
         Field(
-            default=c.Settings.DEFAULT_DISCOVERY_SAMPLE_SIZE,
+            default=c.TapOracleWms.Settings.DEFAULT_DISCOVERY_SAMPLE_SIZE,
             ge=1,
             description="Sample size for schema discovery.",
         ),
@@ -133,7 +133,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     max_parallel_streams: Annotated[
         int,
         Field(
-            default=c.Settings.DEFAULT_MAX_PARALLEL_STREAMS,
+            default=c.TapOracleWms.Settings.DEFAULT_MAX_PARALLEL_STREAMS,
             ge=1,
             description="Maximum parallel streams.",
         ),
@@ -153,7 +153,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     max_flattening_depth: Annotated[
         int,
         Field(
-            default=c.Settings.DEFAULT_FLATTENING_DEPTH,
+            default=c.TapOracleWms.Settings.DEFAULT_FLATTENING_DEPTH,
             ge=1,
             description="Maximum schema flattening depth.",
         ),
@@ -194,7 +194,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     @field_validator("start_date", "end_date")
     @classmethod
     def _check_iso_date(cls, v: str | None) -> str | None:
-        if v is not None and not re.match(c.Settings.ISO_DATE_PATTERN, v):
+        if v is not None and not re.match(c.TapOracleWms.Settings.ISO_DATE_PATTERN, v):
             msg = f"Invalid date format: {v}. Expected ISO 8601 format."
             raise ValueError(msg)
         return v

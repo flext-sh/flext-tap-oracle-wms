@@ -85,7 +85,7 @@ class FlextTapOracleWmsStream(Stream):
         page_size = int(self.config.get("page_size", 100))
         self._page_size = (
             page_size
-            if u.ConfigurationProcessing.validate_stream_page_size(
+            if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(
                 page_size,
             )
             else 100
@@ -294,7 +294,7 @@ class FlextTapOracleWmsStream(Stream):
         for record in records:
             record_dict: Mapping[str, t.ContainerValue] = dict(record)
             processed_record: Mapping[str, t.ContainerValue] = (
-                u.DataProcessing.process_wms_record(
+                u.TapOracleWms.DataProcessing.process_wms_record(
                     record=record_dict,
                 )
             )

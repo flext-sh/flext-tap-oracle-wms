@@ -24,33 +24,15 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
     Note: Does not override Authentication from parent classes to avoid conflicts.
     """
 
-    class Authentication(
-        FlextMeltanoConstants.Authentication,
-        FlextOracleWmsConstants.Authentication,
-    ):
-        """Merged authentication constants from both parent hierarchies."""
-
     DEFAULT_WMS_TIMEOUT: Final[int] = FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
     DEFAULT_FETCH_SIZE: Final[int] = (
         FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
     )
     TAP_MAX_BATCH_SIZE: Final[int] = FlextMeltanoConstants.MAX_ITEMS
 
-    @unique
-    class TapWmsEntityType(StrEnum):
-        """Oracle WMS entity types using StrEnum for type safety.
-
-        DRY Pattern:
-            StrEnum is the single source of truth. Use TapWmsEntityType.INVENTORY.value
-            or TapWmsEntityType.INVENTORY directly - no base strings needed.
-        """
-
-        INVENTORY = "INVENTORY"
-        SHIPMENT = "SHIPMENT"
-        PICKING = "PICKING"
-        RECEIVING = "RECEIVING"
-
     class TapOracleWms:
+        """Oracle WMS connection configuration."""
+
         """Oracle WMS connection configuration."""
 
         DEFAULT_TIMEOUT: Final[int] = FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
@@ -68,179 +50,201 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         SCHEMA_FORMAT_DATETIME: Final[str] = "date-time"
         SCHEMA_TYPE_STRING_OR_NULL: Final[t.StrSequence] = ["string", "null"]
 
-    class TapWmsProcessing:
-        """WMS tap processing configuration.
+        @unique
+        class TapWmsEntityType(StrEnum):
+            """Oracle WMS entity types using StrEnum for type safety.
 
-        Note: Does not override parent Processing class to avoid inheritance conflicts.
-        """
+            DRY Pattern:
+                StrEnum is the single source of truth. Use TapWmsEntityType.INVENTORY.value
+                or TapWmsEntityType.INVENTORY directly - no base strings needed.
+            """
 
-        DEFAULT_PAGE_SIZE: Final[int] = (
-            FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
-        )
-        MAX_RECORDS_PER_BATCH: Final[int] = (
-            FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
-        )
-        DEFAULT_API_TIMEOUT: Final[int] = FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
-        ORACLE_WMS_PAGE_SIZE_LIMIT: Final[int] = 1250
-        USERNAME_TRUNCATION_LENGTH: Final[int] = 3
-        HIGH_ALLOCATION_THRESHOLD: Final[float] = 0.8
-        MEDIUM_ALLOCATION_THRESHOLD: Final[float] = 0.5
+            INVENTORY = "INVENTORY"
+            SHIPMENT = "SHIPMENT"
+            PICKING = "PICKING"
+            RECEIVING = "RECEIVING"
 
-    class Extraction:
-        """WMS-specific extraction configuration."""
+        class Authentication(
+            FlextMeltanoConstants.Authentication,
+            FlextOracleWmsConstants.Authentication,
+        ):
+            """Merged authentication constants from both parent hierarchies."""
 
-        DEFAULT_ENTITY_LIMIT: Final[int] = (
-            FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
-        )
-        DEFAULT_DISCOVERY_TIMEOUT: Final[int] = (
-            FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
-        )
-        MAX_ENTITY_BATCH_SIZE: Final[int] = (
-            FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
-        )
+        class TapWmsProcessing:
+            """WMS tap processing configuration.
 
-    @unique
-    class ReplicationMethod(StrEnum):
-        """Replication method types using StrEnum for type safety."""
+            Note: Does not override parent Processing class to avoid inheritance conflicts.
+            """
 
-        FULL_TABLE = "FULL_TABLE"
-        INCREMENTAL = "INCREMENTAL"
+            DEFAULT_PAGE_SIZE: Final[int] = (
+                FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
+            )
+            MAX_RECORDS_PER_BATCH: Final[int] = (
+                FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
+            )
+            DEFAULT_API_TIMEOUT: Final[int] = (
+                FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
+            )
+            ORACLE_WMS_PAGE_SIZE_LIMIT: Final[int] = 1250
+            USERNAME_TRUNCATION_LENGTH: Final[int] = 3
+            HIGH_ALLOCATION_THRESHOLD: Final[float] = 0.8
+            MEDIUM_ALLOCATION_THRESHOLD: Final[float] = 0.5
 
-    @unique
-    class AuthenticationMethod(StrEnum):
-        """Authentication method types using StrEnum for type safety."""
+        class Extraction:
+            """WMS-specific extraction configuration."""
 
-        BASIC = "basic"
-        OAUTH2 = "oauth2"
+            DEFAULT_ENTITY_LIMIT: Final[int] = (
+                FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
+            )
+            DEFAULT_DISCOVERY_TIMEOUT: Final[int] = (
+                FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
+            )
+            MAX_ENTITY_BATCH_SIZE: Final[int] = (
+                FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
+            )
 
-    @unique
-    class StreamInclusion(StrEnum):
-        """Stream inclusion status types using StrEnum for type safety."""
+        @unique
+        class ReplicationMethod(StrEnum):
+            """Replication method types using StrEnum for type safety."""
 
-        AVAILABLE = "available"
-        AUTOMATIC = "automatic"
-        UNSUPPORTED = "unsupported"
+            FULL_TABLE = "FULL_TABLE"
+            INCREMENTAL = "INCREMENTAL"
 
-    @unique
-    class BackoffStrategy(StrEnum):
-        """Backoff strategy types using StrEnum for type safety."""
+        @unique
+        class AuthenticationMethod(StrEnum):
+            """Authentication method types using StrEnum for type safety."""
 
-        LINEAR = "linear"
-        EXPONENTIAL = "exponential"
-        FIXED = "fixed"
+            BASIC = "basic"
+            OAUTH2 = "oauth2"
 
-    @unique
-    class TapProjectType(StrEnum):
-        """Project type literals for tap package metadata."""
+        @unique
+        class StreamInclusion(StrEnum):
+            """Stream inclusion status types using StrEnum for type safety."""
 
-        SINGER_TAP = "singer-tap"
-        WMS_EXTRACTOR = "wms-extractor"
-        WAREHOUSE_EXTRACTOR = "warehouse-extractor"
-        SINGER_TAP_ORACLE_WMS = "singer-tap-oracle-wms"
-        TAP_ORACLE_WMS = "tap-oracle-wms"
-        WMS_CONNECTOR = "wms-connector"
-        WAREHOUSE_CONNECTOR = "warehouse-connector"
-        SINGER_PROTOCOL = "singer-protocol"
-        WMS_INTEGRATION = "wms-integration"
-        ORACLE_WMS = "oracle-wms"
-        WAREHOUSE_MANAGEMENT = "warehouse-management"
-        SINGER_STREAM = "singer-stream"
-        ETL_TAP = "etl-tap"
-        DATA_PIPELINE = "data-pipeline"
-        WMS_TAP = "wms-tap"
-        SINGER_INTEGRATION = "singer-integration"
+            AVAILABLE = "available"
+            AUTOMATIC = "automatic"
+            UNSUPPORTED = "unsupported"
 
-    @unique
-    class ReplicationMethodLiteral(StrEnum):
-        """Replication strategy literals for extraction mode."""
+        @unique
+        class BackoffStrategy(StrEnum):
+            """Backoff strategy types using StrEnum for type safety."""
 
-        FULL_TABLE = "FULL_TABLE"
-        INCREMENTAL = "INCREMENTAL"
+            LINEAR = "linear"
+            EXPONENTIAL = "exponential"
+            FIXED = "fixed"
 
-    @unique
-    class AuthenticationMethodLiteral(StrEnum):
-        """Authentication method literals for endpoint access."""
+        @unique
+        class TapProjectType(StrEnum):
+            """Project type literals for tap package metadata."""
 
-        BASIC = "basic"
-        OAUTH2 = "oauth2"
+            SINGER_TAP = "singer-tap"
+            WMS_EXTRACTOR = "wms-extractor"
+            WAREHOUSE_EXTRACTOR = "warehouse-extractor"
+            SINGER_TAP_ORACLE_WMS = "singer-tap-oracle-wms"
+            TAP_ORACLE_WMS = "tap-oracle-wms"
+            WMS_CONNECTOR = "wms-connector"
+            WAREHOUSE_CONNECTOR = "warehouse-connector"
+            SINGER_PROTOCOL = "singer-protocol"
+            WMS_INTEGRATION = "wms-integration"
+            ORACLE_WMS = "oracle-wms"
+            WAREHOUSE_MANAGEMENT = "warehouse-management"
+            SINGER_STREAM = "singer-stream"
+            ETL_TAP = "etl-tap"
+            DATA_PIPELINE = "data-pipeline"
+            WMS_TAP = "wms-tap"
+            SINGER_INTEGRATION = "singer-integration"
 
-    @unique
-    class StreamInclusionLiteral(StrEnum):
-        """Singer stream inclusion policy literals."""
+        @unique
+        class ReplicationMethodLiteral(StrEnum):
+            """Replication strategy literals for extraction mode."""
 
-        AVAILABLE = "available"
-        AUTOMATIC = "automatic"
-        UNSUPPORTED = "unsupported"
+            FULL_TABLE = "FULL_TABLE"
+            INCREMENTAL = "INCREMENTAL"
 
-    @unique
-    class ErrorTypeLiteral(StrEnum):
-        """Error category literals for tap failures."""
+        @unique
+        class AuthenticationMethodLiteral(StrEnum):
+            """Authentication method literals for endpoint access."""
 
-        AUTHENTICATION = "AUTHENTICATION"
-        AUTHORIZATION = "AUTHORIZATION"
-        RATE_LIMIT = "RATE_LIMIT"
-        TIMEOUT = "TIMEOUT"
-        SERVER_ERROR = "SERVER_ERROR"
-        NETWORK = "NETWORK"
-        VALIDATION = "VALIDATION"
+            BASIC = "basic"
+            OAUTH2 = "oauth2"
 
-    @unique
-    class BackoffStrategyLiteral(StrEnum):
-        """Retry backoff strategy literals."""
+        @unique
+        class StreamInclusionLiteral(StrEnum):
+            """Singer stream inclusion policy literals."""
 
-        LINEAR = "linear"
-        EXPONENTIAL = "exponential"
-        FIXED = "fixed"
+            AVAILABLE = "available"
+            AUTOMATIC = "automatic"
+            UNSUPPORTED = "unsupported"
 
-    @unique
-    class TestOracleWmsBaseUrl(StrEnum):
-        """Test Oracle WMS base URL literals."""
+        @unique
+        class ErrorTypeLiteral(StrEnum):
+            """Error category literals for tap failures."""
 
-        HTTPS_TEST_WMS_ORACLECLOUD_COM = "https://test-wms.oraclecloud.com"
-        HTTPS_STAGING_WMS_ORACLECLOUD_COM = "https://staging-wms.oraclecloud.com"
+            AUTHENTICATION = "AUTHENTICATION"
+            AUTHORIZATION = "AUTHORIZATION"
+            RATE_LIMIT = "RATE_LIMIT"
+            TIMEOUT = "TIMEOUT"
+            SERVER_ERROR = "SERVER_ERROR"
+            NETWORK = "NETWORK"
+            VALIDATION = "VALIDATION"
 
-    @unique
-    class TestOracleWmsUsername(StrEnum):
-        """Test Oracle WMS username literals."""
+        @unique
+        class BackoffStrategyLiteral(StrEnum):
+            """Retry backoff strategy literals."""
 
-        TEST_USER = "test_user"
-        REDACTED_LDAP_BIND_PASSWORD_USER = "REDACTED_LDAP_BIND_PASSWORD_user"
+            LINEAR = "linear"
+            EXPONENTIAL = "exponential"
+            FIXED = "fixed"
 
-    @unique
-    class TestOracleWmsMethod(StrEnum):
-        """Test HTTP method literals for Oracle WMS calls."""
+        @unique
+        class TestOracleWmsBaseUrl(StrEnum):
+            """Test Oracle WMS base URL literals."""
 
-        GET = "GET"
-        POST = "POST"
-        PUT = "PUT"
-        DELETE = "DELETE"
+            HTTPS_TEST_WMS_ORACLECLOUD_COM = "https://test-wms.oraclecloud.com"
+            HTTPS_STAGING_WMS_ORACLECLOUD_COM = "https://staging-wms.oraclecloud.com"
 
-    @unique
-    class TestFacilityId(StrEnum):
-        """Test facility identifier literals."""
+        @unique
+        class TestOracleWmsUsername(StrEnum):
+            """Test Oracle WMS username literals."""
 
-        FAC001 = "FAC001"
-        FAC002 = "FAC002"
-        FAC003 = "FAC003"
+            TEST_USER = "test_user"
+            REDACTED_LDAP_BIND_PASSWORD_USER = "REDACTED_LDAP_BIND_PASSWORD_user"
 
-    class Settings:
-        """Configuration constants for tap settings."""
+        @unique
+        class TestOracleWmsMethod(StrEnum):
+            """Test HTTP method literals for Oracle WMS calls."""
 
-        DEFAULT_API_VERSION: Final[str] = "V1"
-        MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = 5
-        TAP_DEFAULT_MAX_RETRIES: Final[int] = 3
-        TAP_DEFAULT_RETRY_DELAY: Final[float] = 1.0
-        TAP_MIN_TIMEOUT: Final[int] = 1
-        TAP_MAX_TIMEOUT: Final[int] = 300
-        TAP_DEFAULT_TIMEOUT: Final[int] = 30
-        TAP_DEFAULT_PAGE_SIZE: Final[int] = 10
-        DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = 100
-        MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = FlextMeltanoConstants.DEFAULT_SIZE
-        DEFAULT_MAX_PARALLEL_STREAMS: Final[int] = 5
-        DEFAULT_FLATTENING_DEPTH: Final[int] = 10
-        ISO_DATE_PATTERN: Final[str] = (
-            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
-        )
+            GET = "GET"
+            POST = "POST"
+            PUT = "PUT"
+            DELETE = "DELETE"
+
+        @unique
+        class TestFacilityId(StrEnum):
+            """Test facility identifier literals."""
+
+            FAC001 = "FAC001"
+            FAC002 = "FAC002"
+            FAC003 = "FAC003"
+
+        class Settings:
+            """Configuration constants for tap settings."""
+
+            DEFAULT_API_VERSION: Final[str] = "V1"
+            MAX_PARALLEL_STREAMS_WITHOUT_RATE_LIMIT: Final[int] = 5
+            TAP_DEFAULT_MAX_RETRIES: Final[int] = 3
+            TAP_DEFAULT_RETRY_DELAY: Final[float] = 1.0
+            TAP_MIN_TIMEOUT: Final[int] = 1
+            TAP_MAX_TIMEOUT: Final[int] = 300
+            TAP_DEFAULT_TIMEOUT: Final[int] = 30
+            TAP_DEFAULT_PAGE_SIZE: Final[int] = 10
+            DEFAULT_DISCOVERY_SAMPLE_SIZE: Final[int] = 100
+            MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = FlextMeltanoConstants.DEFAULT_SIZE
+            DEFAULT_MAX_PARALLEL_STREAMS: Final[int] = 5
+            DEFAULT_FLATTENING_DEPTH: Final[int] = 10
+            ISO_DATE_PATTERN: Final[str] = (
+                r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
+            )
 
 
 c = FlextTapOracleWmsConstants
