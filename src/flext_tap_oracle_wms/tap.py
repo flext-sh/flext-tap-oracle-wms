@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.metadata
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import ClassVar, TypedDict, override
 
 from flext_core import FlextLogger, r
@@ -35,12 +36,6 @@ class _SingerStreamEntry(TypedDict):
     stream: str
     schema: dict[str, t.ContainerValue]
     metadata: list[_SingerMetadataEntry]
-
-
-class _SingerCatalog(TypedDict):
-    """Singer catalog structure."""
-
-    streams: list[_SingerStreamEntry]
 
 
 class FlextTapOracleWms(Tap):
@@ -79,11 +74,11 @@ class FlextTapOracleWms(Tap):
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
         if isinstance(config, FlextTapOracleWmsSettings):
-            raw_config: dict[str, t.ContainerValue] = dict(
-                config.model_dump(mode="json")
+            raw_config: dict[str, t.ContainerValue] = dict(  # type: ignore[misc]
+                config.model_dump(mode="json").items()
             )
         else:
-            raw_config = dict(config) if config else {}
+            raw_config = dict(config) if config else {}  # type: ignore[arg-type]
         super().__init__(
             config=raw_config,  # type: ignore[arg-type]
             catalog=catalog,  # type: ignore[arg-type]
@@ -108,13 +103,23 @@ class FlextTapOracleWms(Tap):
             _SingerStreamEntry(
                 tap_stream_id=str(s.get("tap_stream_id", "")),
                 stream=str(s.get("stream", "")),
-                schema=dict(s.get("schema", {})),
-                metadata=list(s.get("metadata", [])),
+                schema=(
+                    s_schema
+                    if isinstance(s_schema := s.get("schema", {}), dict)
+                    else {}
+                ),
+                metadata=(
+                    [e for e in s_meta if isinstance(e, dict)]  # type: ignore[misc]
+                    if isinstance(s_meta := s.get("metadata", []), (list, Sequence))
+                    and not isinstance(s_meta, (str, bytes))
+                    else []
+                ),
             )
             for s in raw_streams
             if isinstance(s, Mapping)
         ]
-        return {"streams": streams}
+        result: dict[str, t.NormalizedValue] = {"streams": streams}  # type: ignore[dict-item]
+        return result
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:
@@ -200,7 +205,11 @@ class FlextTapOracleWms(Tap):
             FlextTapOracleWmsStream(
                 tap=self,
                 name=stream_raw.stream,
-                schema=stream_raw.schema_definition,
+                schema={
+                    k: v
+                    for k, v in stream_raw.schema_definition.items()
+                    if not isinstance(v, Path)
+                },
             )
             for stream_raw in streams_raw
         ]
