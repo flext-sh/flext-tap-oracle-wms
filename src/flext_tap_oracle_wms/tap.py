@@ -88,8 +88,7 @@ class FlextTapOracleWms(Tap):
             raw_config = dict(config.model_dump(mode="json").items())
         else:
             raw_config = dict(config) if config else {}
-        init_fn: t.InitCallable = getattr(super(), "__init__")
-        init_fn(
+        super().__init__(
             config=raw_config,
             catalog=catalog,
             state=state,
@@ -99,8 +98,7 @@ class FlextTapOracleWms(Tap):
 
     def get_typed_catalog(self) -> SingerCatalogDict:
         """Return typed Singer catalog as dict."""
-        parent_catalog: dict[str, t.ContainerValue] = getattr(super(), "catalog_dict")
-        raw: dict[str, t.ContainerValue] = _to_str_dict(parent_catalog)
+        raw: dict[str, t.ContainerValue] = _to_str_dict(super().catalog_dict)
         raw_streams = raw.get("streams")
         raw_streams_seq: Sequence[t.ContainerValue] = (
             raw_streams
