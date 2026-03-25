@@ -40,68 +40,61 @@ class FlextTapOracleWmsSettings(BaseModel):
     api_version: Annotated[
         str,
         Field(
-            default=c.TapOracleWms.Settings.DEFAULT_API_VERSION,
             min_length=1,
             description="Oracle WMS API version.",
         ),
-    ]
+    ] = c.TapOracleWms.Settings.DEFAULT_API_VERSION
     timeout: Annotated[
         int,
         Field(
-            default=c.TapOracleWms.Settings.TAP_DEFAULT_TIMEOUT,
             ge=c.TapOracleWms.Settings.TAP_MIN_TIMEOUT,
             le=c.TapOracleWms.Settings.TAP_MAX_TIMEOUT,
             description="Request timeout in seconds.",
         ),
-    ]
+    ] = c.TapOracleWms.Settings.TAP_DEFAULT_TIMEOUT
     max_retries: Annotated[
         int,
         Field(
-            default=c.TapOracleWms.Settings.TAP_DEFAULT_MAX_RETRIES,
             ge=0,
             description="Maximum request retries.",
         ),
-    ]
+    ] = c.TapOracleWms.Settings.TAP_DEFAULT_MAX_RETRIES
     retry_delay: Annotated[
         float,
         Field(
-            default=c.TapOracleWms.Settings.TAP_DEFAULT_RETRY_DELAY,
             ge=0.0,
             description="Retry delay in seconds.",
         ),
-    ]
+    ] = c.TapOracleWms.Settings.TAP_DEFAULT_RETRY_DELAY
     verify_ssl: Annotated[
         bool,
-        Field(default=True, description="Enable SSL verification."),
-    ]
+        Field(description="Enable SSL verification."),
+    ] = True
     ssl_cert_path: Annotated[
         str | None,
-        Field(default=None, description="Path to SSL certificate."),
-    ]
+        Field(description="Path to SSL certificate."),
+    ] = None
     page_size: Annotated[
         int,
         Field(
-            default=c.TapOracleWms.Settings.TAP_DEFAULT_PAGE_SIZE,
             ge=1,
             description="Page size used for extraction requests.",
         ),
-    ]
+    ] = c.TapOracleWms.Settings.TAP_DEFAULT_PAGE_SIZE
     discovery_sample_size: Annotated[
         int,
         Field(
-            default=c.TapOracleWms.Settings.DEFAULT_DISCOVERY_SAMPLE_SIZE,
             ge=1,
             description="Sample size for schema discovery.",
         ),
-    ]
+    ] = c.TapOracleWms.Settings.DEFAULT_DISCOVERY_SAMPLE_SIZE
     effective_log_level: Annotated[
         str,
         Field(
-            default="INFO",
             min_length=1,
             description="Optional effective log level inherited from runtime.",
         ),
-    ]
+    ] = "INFO"
     include_entities: Annotated[
         t.StrSequence,
         Field(description="Entities to include."),
@@ -112,12 +105,12 @@ class FlextTapOracleWmsSettings(BaseModel):
     ] = Field(default_factory=list)
     start_date: Annotated[
         str | None,
-        Field(default=None, description="Start date for incremental extraction."),
-    ]
+        Field(description="Start date for incremental extraction."),
+    ] = None
     end_date: Annotated[
         str | None,
-        Field(default=None, description="End date for incremental extraction."),
-    ]
+        Field(description="End date for incremental extraction."),
+    ] = None
     column_mappings: Annotated[
         Mapping[str, t.StrMapping],
         Field(description="Column rename mappings per stream."),
@@ -128,60 +121,58 @@ class FlextTapOracleWmsSettings(BaseModel):
     ] = Field(default_factory=list)
     enable_parallel_extraction: Annotated[
         bool,
-        Field(default=False, description="Enable parallel stream extraction."),
-    ]
+        Field(description="Enable parallel stream extraction."),
+    ] = False
     max_parallel_streams: Annotated[
         int,
         Field(
-            default=c.TapOracleWms.Settings.DEFAULT_MAX_PARALLEL_STREAMS,
             ge=1,
             description="Maximum parallel streams.",
         ),
-    ]
+    ] = c.TapOracleWms.Settings.DEFAULT_MAX_PARALLEL_STREAMS
     enable_rate_limiting: Annotated[
         bool,
-        Field(default=True, description="Enable API rate limiting."),
-    ]
+        Field(description="Enable API rate limiting."),
+    ] = True
     max_requests_per_minute: Annotated[
         int,
-        Field(default=60, ge=1, description="Maximum API requests per minute."),
-    ]
+        Field(ge=1, description="Maximum API requests per minute."),
+    ] = 60
     enable_schema_flattening: Annotated[
         bool,
-        Field(default=True, description="Enable schema flattening."),
-    ]
+        Field(description="Enable schema flattening."),
+    ] = True
     max_flattening_depth: Annotated[
         int,
         Field(
-            default=c.TapOracleWms.Settings.DEFAULT_FLATTENING_DEPTH,
             ge=1,
             description="Maximum schema flattening depth.",
         ),
-    ]
+    ] = c.TapOracleWms.Settings.DEFAULT_FLATTENING_DEPTH
     user_agent: Annotated[
         str | None,
-        Field(default=None, description="Custom User-Agent header."),
-    ]
+        Field(description="Custom User-Agent header."),
+    ] = None
     additional_headers: Annotated[
         t.StrMapping,
         Field(description="Additional HTTP headers."),
     ] = Field(default_factory=dict)
     log_level: Annotated[
         str,
-        Field(default="INFO", min_length=1, description="Log level."),
-    ]
+        Field(min_length=1, description="Log level."),
+    ] = "INFO"
     enable_request_logging: Annotated[
         bool,
-        Field(default=False, description="Enable HTTP request logging."),
-    ]
+        Field(description="Enable HTTP request logging."),
+    ] = False
     validate_config: Annotated[
         bool,
-        Field(default=True, description="Enable configuration validation."),
-    ]
+        Field(description="Enable configuration validation."),
+    ] = True
     validate_schemas: Annotated[
         bool,
-        Field(default=True, description="Enable schema validation."),
-    ]
+        Field(description="Enable schema validation."),
+    ] = True
 
     @field_validator("include_entities", "exclude_entities")
     @classmethod
