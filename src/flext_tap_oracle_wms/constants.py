@@ -8,12 +8,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from enum import StrEnum, unique
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
 
-from flext_tap_oracle_wms import t
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms import t
 
 
 class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants):
