@@ -80,28 +80,30 @@ class FlextTapOracleWms(Tap):
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
         if isinstance(config, FlextTapOracleWmsSettings):
-            raw_config: dict[str, t.ContainerValue] = dict(  # type: ignore[misc]
+            raw_config: dict[str, t.ContainerValue] = dict(
                 config.model_dump(mode="json").items()
             )
         else:
-            raw_config = dict(config) if config else {}  # type: ignore[arg-type]
-        super().__init__(
-            config=raw_config,  # type: ignore[arg-type]
-            catalog=catalog,  # type: ignore[arg-type]
-            state=state,  # type: ignore[arg-type]
+            raw_config = dict(config) if config else {}
+        tap_init: t.ContainerValue = Tap.__init__
+        tap_init(
+            self,
+            config=raw_config,
+            catalog=catalog,
+            state=state,
             parse_env_config=parse_env_config,
             validate_config=validate_config,
         )
 
     @property
-    def catalog_dict(self) -> SingerCatalogDict:  # type: ignore[override]
+    def catalog_dict(self) -> SingerCatalogDict:
         """Return typed Singer catalog as dict."""
-        raw = super().catalog_dict
-        if not isinstance(raw, Mapping):
-            return SingerCatalogDict(streams=[])
-        raw_streams_raw = raw.get("streams", [])
-        raw_streams: Sequence[Mapping[str, t.ContainerValue]] = (
-            raw_streams_raw if isinstance(raw_streams_raw, Sequence) else []
+        raw_untyped: Mapping[str, t.ContainerValue] = dict(super().catalog_dict)
+        raw_streams_raw: Sequence[t.ContainerValue] = (
+            raw_untyped.get("streams")
+            if isinstance(raw_untyped.get("streams"), Sequence)
+            and not isinstance(raw_untyped.get("streams"), (str, bytes))
+            else []
         )
         streams: list[SingerStreamEntry] = [
             SingerStreamEntry(
@@ -113,13 +115,13 @@ class FlextTapOracleWms(Tap):
                     else {}
                 ),
                 metadata=(
-                    [e for e in s_meta if isinstance(e, dict)]  # type: ignore[misc]
-                    if isinstance(s_meta := s.get("metadata", []), (list, Sequence))
+                    [e for e in s_meta if isinstance(e, dict)]
+                    if isinstance(s_meta := s.get("metadata", []), list)
                     and not isinstance(s_meta, (str, bytes))
                     else []
                 ),
             )
-            for s in raw_streams
+            for s in raw_streams_raw
             if isinstance(s, Mapping)
         ]
         return SingerCatalogDict(streams=streams)

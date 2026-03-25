@@ -140,8 +140,15 @@ class TestFlextTapOracleWms:
                 m.Meltano.SingerCatalogEntry(
                     tap_stream_id="inventory",
                     stream="inventory",
-                    schema={"type": "object"},
+                    schema_definition={"type": "object"},
                     metadata=[],
+                    key_properties=["id"],
+                    replication_key=None,
+                    replication_method="FULL_TABLE",
+                    is_view=None,
+                    table_name=None,
+                    database_name=None,
+                    row_count=None,
                 ),
             ],
         )

@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from pydantic import AnyUrl, ValidationError
+from pydantic import AnyUrl, SecretStr, ValidationError
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 
@@ -30,7 +30,9 @@ class TestFlextTapOracleWmsSettings:
         )
         assert str(config.base_url).rstrip("/") == "https://wms.example.com"
         assert config.username == "test_user"
-        assert config.password.get_secret_value() == "test_pass"
+        password = config.password
+        assert isinstance(password, SecretStr)
+        assert password.get_secret_value() == "test_pass"
         assert config.api_version == "V1"
         assert config.timeout == 30
         assert config.page_size == 10

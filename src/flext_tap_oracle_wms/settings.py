@@ -26,7 +26,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     )
 
     base_url: Annotated[
-        AnyUrl,
+        str | AnyUrl,
         Field(description="Base Oracle WMS API URL."),
     ]
     username: Annotated[
@@ -34,7 +34,7 @@ class FlextTapOracleWmsSettings(BaseModel):
         Field(min_length=1, description="Oracle WMS username."),
     ]
     password: Annotated[
-        SecretStr,
+        str | SecretStr,
         Field(description="Oracle WMS password."),
     ]
     api_version: Annotated[

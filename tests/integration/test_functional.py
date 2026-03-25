@@ -249,7 +249,7 @@ class TestOracleWMSFunctionalComplete:
             name=stream_id,
             schema=test_stream["schema"],
         )
-        url_params = stream.get_url_params(context=None, next_page_token=None)
+        url_params = stream.get_url_params(_context=None, next_page_token=None)
         assert "page_size" in url_params, "Missing page_size parameter"
         assert isinstance(url_params["page_size"], int), "page_size must be integer"
         assert url_params["page_size"] > 0, "page_size must be positive"
@@ -329,7 +329,7 @@ class TestOracleWMSFunctionalComplete:
             schema=test_stream["schema"],
         )
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
-        url_params = stream.get_url_params(context=context, next_page_token=None)
+        url_params = stream.get_url_params(_context=context, next_page_token=None)
         timestamp_filters = [
             key for key in url_params if "__gte" in key or "__lt" in key
         ]

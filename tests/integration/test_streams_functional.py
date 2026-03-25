@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableSequence, Sequence
+from collections.abc import Mapping, MutableSequence
 from unittest.mock import Mock
 
 import pytest
@@ -64,7 +64,7 @@ class TestStreamsFunctional:
         assert url_base.startswith("https://"), f"URL must be HTTPS: {url_base}"
         assert "invalid.wms.ocs.oraclecloud.com" in url_base
         assert "company_unknow" in url_base
-        url_params = stream.get_url_params(context=None, next_page_token=None)
+        url_params = stream.get_url_params(_context=None, next_page_token=None)
         assert isinstance(url_params, dict)
         assert "page_size" in url_params
         assert isinstance(url_params["page_size"], int)
@@ -141,8 +141,8 @@ class TestStreamsFunctional:
         """Test automatic replication key detection."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        incremental_streams: Sequence[tuple[str, str | None]] = []
-        full_table_streams: t.StrSequence = []
+        incremental_streams: list[tuple[str, str | None]] = []
+        full_table_streams: list[str] = []
         for stream_config in streams[:5]:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
@@ -168,7 +168,7 @@ class TestStreamsFunctional:
         """Test timestamp field detection for replication keys."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        timestamp_streams: Sequence[tuple[str, str]] = []
+        timestamp_streams: list[tuple[str, str]] = []
         for stream_config in streams[:3]:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
@@ -207,7 +207,7 @@ class TestStreamsFunctional:
             name=test_stream["tap_stream_id"],
             schema=test_stream["schema"],
         )
-        params = stream.get_url_params(context=None, next_page_token=None)
+        params = stream.get_url_params(_context=None, next_page_token=None)
         assert "page_size" in params
         page_size = params["page_size"]
         assert isinstance(page_size, int)
@@ -220,7 +220,7 @@ class TestStreamsFunctional:
         logger.info("✅ Pagination: page_size=%s", page_size)
         mock_token = Mock()
         mock_token.query = "page=2&cursor=abc123"
-        token_params = stream.get_url_params(context=None, next_page_token=mock_token)
+        token_params = stream.get_url_params(_context=None, next_page_token=mock_token)
         assert isinstance(token_params, dict)
         logger.info("✅ Pagination token handling working")
 
@@ -248,7 +248,7 @@ class TestStreamsFunctional:
             pytest.skip("No incremental streams found")
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
         params = incremental_stream.get_url_params(
-            context=context,
+            _context=context,
             next_page_token=None,
         )
         filter_keys = [key for key in params if "__gte" in key or "__gt" in key]
@@ -328,7 +328,7 @@ class TestStreamsFunctional:
                 name=stream_config["tap_stream_id"],
                 schema=stream_config["schema"],
             )
-            params = stream.get_url_params(context=None, next_page_token=None)
+            params = stream.get_url_params(_context=None, next_page_token=None)
             if "ordering" in params:
                 ordering_raw = params["ordering"]
                 ordering_configs.append((

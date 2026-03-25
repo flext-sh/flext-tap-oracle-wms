@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import os
 import time
-from collections.abc import Sequence
 from pathlib import Path
 
 import psutil
@@ -26,9 +25,9 @@ load_dotenv(env_path)
 def performance_config() -> FlextTapOracleWmsSettings:
     """Create configuration for performance testing."""
     return FlextTapOracleWmsSettings(
-        base_url=os.getenv("ORACLE_WMS_BASE_URL"),
-        username=os.getenv("ORACLE_WMS_USERNAME"),
-        password=os.getenv("ORACLE_WMS_PASSWORD"),
+        base_url=os.getenv("ORACLE_WMS_BASE_URL", "https://localhost"),
+        username=os.getenv("ORACLE_WMS_USERNAME", "user"),
+        password=os.getenv("ORACLE_WMS_PASSWORD", "pass"),
         api_version=os.getenv("ORACLE_WMS_API_VERSION", "v10"),
         page_size=100,
         verify_ssl=True,
@@ -76,7 +75,7 @@ class TestExtractionPerformance:
             pytest.skip("Inventory stream not available")
         inventory_stream._page_size = page_size
         start_time = time.time()
-        records: Sequence[t.ScalarMapping] = []
+        records: list[t.ScalarMapping] = []
         for i, record in enumerate(inventory_stream.get_records(context=None)):
             records.append(record)
             if i >= 99:
@@ -114,7 +113,7 @@ class TestExtractionPerformance:
         streams = tap.discover_streams()
         if streams:
             stream = streams[0]
-            records: Sequence[t.ScalarMapping] = []
+            records: list[t.ScalarMapping] = []
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)
                 if i >= 999:
@@ -156,7 +155,7 @@ class TestRateLimitingPerformance:
             if streams:
                 stream = streams[0]
                 start_time = time.time()
-                records: Sequence[t.ScalarMapping] = []
+                records: list[t.ScalarMapping] = []
                 for i, record in enumerate(stream.get_records(context=None)):
                     records.append(record)
                     if i >= 49:
