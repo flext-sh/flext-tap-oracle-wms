@@ -22,13 +22,13 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
             """Singer stream schema shape."""
 
             type: Annotated[str, Field(default="object")]
-            properties: Annotated[t.ContainerMapping, Field(default_factory=dict)]
+            properties: t.ContainerMapping = Field(default_factory=dict)
 
         class WmsStreamMetadata(BaseModel):
             """Singer stream metadata entry."""
 
-            breadcrumb: Annotated[t.StrSequence, Field(default_factory=list)]
-            metadata: Annotated[t.ContainerMapping, Field(default_factory=dict)]
+            breadcrumb: t.StrSequence = Field(default_factory=list)
+            metadata: t.ContainerMapping = Field(default_factory=dict)
 
         class WmsStreamDefinition(BaseModel):
             """Singer stream definition payload."""
@@ -39,12 +39,9 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
                 FlextTapOracleWmsModels.TapOracleWms.WmsStreamSchema,
                 Field(alias="schema"),
             ]
-            metadata: Annotated[
-                Sequence[FlextMeltanoModels.Meltano.SingerCatalogMetadata],
-                Field(
-                    default_factory=list,
-                ),
-            ]
+            metadata: Sequence[FlextMeltanoModels.Meltano.SingerCatalogMetadata] = (
+                Field(default_factory=list)
+            )
 
 
 m = FlextTapOracleWmsModels

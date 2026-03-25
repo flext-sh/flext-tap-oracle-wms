@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import importlib.metadata
-from collections.abc import Mapping, MutableSequence, Sequence
+from collections.abc import Mapping, Sequence
 from typing import ClassVar, TypedDict, override
 
 from flext_core import FlextLogger, r
@@ -191,16 +191,14 @@ class FlextTapOracleWms(Tap):
         streams_raw = catalog_result.value.streams
         if not streams_raw:
             return []
-        streams: MutableSequence[FlextTapOracleWmsStream] = []
-        for stream_raw in streams_raw:
-            stream_name = stream_raw.stream
-            stream_schema = stream_raw.schema_definition
-            stream = FlextTapOracleWmsStream(
+        streams: Sequence[FlextTapOracleWmsStream] = [
+            FlextTapOracleWmsStream(
                 tap=self,
-                name=stream_name,
-                schema=stream_schema,
+                name=stream_raw.stream,
+                schema=stream_raw.schema_definition,
             )
-            streams.append(stream)
+            for stream_raw in streams_raw
+        ]
         return streams
 
     def execute(self, message: str | None = None) -> r[bool]:

@@ -104,12 +104,12 @@ class FlextTapOracleWmsSettings(BaseModel):
     ]
     include_entities: Annotated[
         t.StrSequence,
-        Field(default_factory=list, description="Entities to include."),
-    ]
+        Field(description="Entities to include."),
+    ] = Field(default_factory=list)
     exclude_entities: Annotated[
         t.StrSequence,
-        Field(default_factory=list, description="Entities to exclude."),
-    ]
+        Field(description="Entities to exclude."),
+    ] = Field(default_factory=list)
     start_date: Annotated[
         str | None,
         Field(default=None, description="Start date for incremental extraction."),
@@ -120,12 +120,12 @@ class FlextTapOracleWmsSettings(BaseModel):
     ]
     column_mappings: Annotated[
         Mapping[str, t.StrMapping],
-        Field(default_factory=dict, description="Column rename mappings per stream."),
-    ]
+        Field(description="Column rename mappings per stream."),
+    ] = Field(default_factory=dict)
     ignored_columns: Annotated[
         t.StrSequence,
-        Field(default_factory=list, description="Columns to ignore during extraction."),
-    ]
+        Field(description="Columns to ignore during extraction."),
+    ] = Field(default_factory=list)
     enable_parallel_extraction: Annotated[
         bool,
         Field(default=False, description="Enable parallel stream extraction."),
@@ -164,8 +164,8 @@ class FlextTapOracleWmsSettings(BaseModel):
     ]
     additional_headers: Annotated[
         t.StrMapping,
-        Field(default_factory=dict, description="Additional HTTP headers."),
-    ]
+        Field(description="Additional HTTP headers."),
+    ] = Field(default_factory=dict)
     log_level: Annotated[
         str,
         Field(default="INFO", min_length=1, description="Log level."),
