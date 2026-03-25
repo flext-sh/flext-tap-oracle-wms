@@ -117,7 +117,7 @@ class FlextTapOracleWms(Tap):
         config_map = dict(self.config)
         try:
             return FlextTapOracleWmsSettings.model_validate(config_map)
-        except Exception as exc:
+        except (ValueError, TypeError, KeyError) as exc:
             msg = f"Invalid configuration: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
 
@@ -248,7 +248,7 @@ class FlextTapOracleWms(Tap):
         try:
             _ = self.flext_config
             return r[bool].ok(True)
-        except Exception as exc:
+        except (ValueError, TypeError, KeyError, FlextTapOracleWmsConfigurationError) as exc:
             return r[bool].fail(str(exc))
 
 
