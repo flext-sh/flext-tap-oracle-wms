@@ -22,20 +22,26 @@ from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 logger = FlextLogger(__name__)
 
 
-class _SingerMetadataEntry(TypedDict):
+class SingerMetadataEntry(TypedDict):
     """Singer catalog metadata entry."""
 
     breadcrumb: list[str]
     metadata: dict[str, t.ContainerValue]
 
 
-class _SingerStreamEntry(TypedDict):
+class SingerStreamEntry(TypedDict):
     """Singer catalog stream entry."""
 
     tap_stream_id: str
     stream: str
     schema: dict[str, t.ContainerValue]
-    metadata: list[_SingerMetadataEntry]
+    metadata: list[SingerMetadataEntry]
+
+
+class SingerCatalogDict(TypedDict):
+    """Singer catalog dict with typed streams."""
+
+    streams: list[SingerStreamEntry]
 
 
 class FlextTapOracleWms(Tap):
@@ -88,17 +94,17 @@ class FlextTapOracleWms(Tap):
         )
 
     @property
-    def catalog_dict(self) -> dict[str, t.NormalizedValue]:  # type: ignore[override]
+    def catalog_dict(self) -> SingerCatalogDict:  # type: ignore[override]
         """Return typed Singer catalog as dict."""
         raw = super().catalog_dict
         if not isinstance(raw, Mapping):
-            return {"streams": []}
+            return SingerCatalogDict(streams=[])
         raw_streams_raw = raw.get("streams", [])
         raw_streams: Sequence[Mapping[str, t.ContainerValue]] = (
             raw_streams_raw if isinstance(raw_streams_raw, Sequence) else []
         )
-        streams: list[_SingerStreamEntry] = [
-            _SingerStreamEntry(
+        streams: list[SingerStreamEntry] = [
+            SingerStreamEntry(
                 tap_stream_id=str(s.get("tap_stream_id", "")),
                 stream=str(s.get("stream", "")),
                 schema=(
@@ -116,8 +122,7 @@ class FlextTapOracleWms(Tap):
             for s in raw_streams
             if isinstance(s, Mapping)
         ]
-        result: dict[str, t.NormalizedValue] = {"streams": streams}  # type: ignore[dict-item]
-        return result
+        return SingerCatalogDict(streams=streams)
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:

@@ -43,10 +43,10 @@ class FlextTapOracleWmsTestTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
         - Test scenario types
         """
 
-        type TestOracleWmsBaseUrl = _c.TestOracleWmsBaseUrl
-        type TestOracleWmsUsername = _c.TestOracleWmsUsername
-        type TestOracleWmsMethod = _c.TestOracleWmsMethod
-        type TestFacilityId = _c.TestFacilityId
+        type TestOracleWmsBaseUrl = _c.TapOracleWms.TestOracleWmsBaseUrl
+        type TestOracleWmsUsername = _c.TapOracleWms.TestOracleWmsUsername
+        type TestOracleWmsMethod = _c.TapOracleWms.TestOracleWmsMethod
+        type TestFacilityId = _c.TapOracleWms.TestFacilityId
         type MockOracleWmsRecord = Mapping[str, FlextTapOracleWmsTypes.Scalar]
         type MockOracleWmsResponse = Mapping[
             str,
