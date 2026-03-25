@@ -53,6 +53,9 @@ if TYPE_CHECKING:
     from flext_tap_oracle_wms.tap import (
         FlextTapOracleWms,
         FlextTapOracleWmsPlugin,
+        SingerCatalogDict,
+        SingerMetadataEntry,
+        SingerStreamEntry,
         logger,
     )
     from flext_tap_oracle_wms.typings import (
@@ -111,6 +114,9 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "flext_tap_oracle_wms.exceptions",
         "FlextTapOracleWmsValidationError",
     ],
+    "SingerCatalogDict": ["flext_tap_oracle_wms.tap", "SingerCatalogDict"],
+    "SingerMetadataEntry": ["flext_tap_oracle_wms.tap", "SingerMetadataEntry"],
+    "SingerStreamEntry": ["flext_tap_oracle_wms.tap", "SingerStreamEntry"],
     "__all__": ["flext_tap_oracle_wms.__version__", "__all__"],
     "__author__": ["flext_tap_oracle_wms.__version__", "__author__"],
     "__author_email__": ["flext_tap_oracle_wms.__version__", "__author_email__"],
@@ -149,6 +155,9 @@ __all__ = [
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
     "FlextTapOracleWmsValidationError",
+    "SingerCatalogDict",
+    "SingerMetadataEntry",
+    "SingerStreamEntry",
     "__all__",
     "__author__",
     "__author_email__",

@@ -40,7 +40,11 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
                 Field(alias="schema"),
             ]
             metadata: Sequence[FlextMeltanoModels.Meltano.SingerCatalogMetadata] = (
-                Field(default_factory=lambda: list[FlextMeltanoModels.Meltano.SingerCatalogMetadata]())
+                Field(
+                    default_factory=lambda: list[
+                        FlextMeltanoModels.Meltano.SingerCatalogMetadata
+                    ]()
+                )
             )
 
 

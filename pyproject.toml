@@ -173,25 +173,14 @@ project-includes = [
 python-version = "3.13"
 search-path = [
   ".",
-  "../flext-core/examples",
-  "../flext-core/src",
-  "../flext-meltano/docs",
-  "../flext-meltano/examples",
-  "../flext-meltano/src",
-  "../flext-oracle-wms/docs",
-  "../flext-oracle-wms/examples",
-  "../flext-oracle-wms/src",
   "../flext-tests",
   "../flext-tests/src",
-  "../git+https://github.com/flext-sh/dbt-adapters.git@flext/relax-deps#subdirectory=dbt-adapters/src",
-  "../git+https://github.com/flext-sh/dbt-common.git@flext/relax-deps/src",
-  "../git+https://github.com/flext-sh/dbt-core.git@flext/relax-deps#subdirectory=core/src",
-  "../git+https://github.com/flext-sh/meltano.git@flext/relax-deps/src",
   "src",
 ]
 use-ignore-files = false
 
 [tool.pyrefly.errors]
+
 bad-override = false
 deprecated = true
 implicit-abstract-class = true
@@ -199,6 +188,7 @@ implicit-any = true
 implicitly-defined-attribute = true
 missing-override-decorator = true
 missing-source = true
+non-convergent-recursion = false
 not-required-key-access = true
 open-unpacking = true
 protocol-implicitly-defined-attribute = true
@@ -324,7 +314,6 @@ preview = true
 respect-gitignore = true
 show-fixes = true
 src = [
-  "docs",
   "examples",
   "src",
   "tests",

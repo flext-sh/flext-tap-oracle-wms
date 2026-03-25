@@ -22,7 +22,9 @@ from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 logger = FlextLogger(__name__)
 
 
-def _safe_str_mapping(raw: Mapping[str, t.ContainerValue]) -> Mapping[str, t.ContainerValue]:
+def _safe_str_mapping(
+    raw: Mapping[str, t.ContainerValue],
+) -> Mapping[str, t.ContainerValue]:
     """Return a Mapping with str keys from an untyped mapping source."""
     return {str(k): v for k, v in raw.items()}
 
@@ -104,7 +106,9 @@ class FlextTapOracleWms(Tap):
 
     def get_typedcatalog_typed(self) -> SingerCatalogDict:
         """Return typed Singer catalog as dict."""
-        catalog_typed: dict[str, t.ContainerValue] = getattr(super(), "catalog_dict", {})
+        catalog_typed: dict[str, t.ContainerValue] = getattr(
+            super(), "catalog_dict", {}
+        )
         raw: dict[str, t.ContainerValue] = catalog_typed
         raw_streams = raw.get("streams")
         raw_streams_seq: Sequence[t.ContainerValue] = (
