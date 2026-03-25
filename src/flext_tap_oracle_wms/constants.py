@@ -65,7 +65,6 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
             RECEIVING = "RECEIVING"
 
         class Authentication(
-            FlextMeltanoConstants.Authentication,
             FlextOracleWmsConstants.Authentication,
         ):
             """Merged authentication constants from both parent hierarchies."""

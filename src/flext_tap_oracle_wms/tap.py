@@ -79,27 +79,32 @@ class FlextTapOracleWms(Tap):
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
         if isinstance(config, FlextTapOracleWmsSettings):
-            raw_config: Mapping[str, t.ContainerValue] = config.model_dump(mode="json")
+            raw_config: dict[str, t.ContainerValue] = dict(
+                config.model_dump(mode="json")
+            )
         else:
-            raw_config = config or {}
+            raw_config = dict(config) if config else {}
         super().__init__(
-            config=raw_config,
-            catalog=catalog,
-            state=state,
+            config=raw_config,  # type: ignore[arg-type]
+            catalog=catalog,  # type: ignore[arg-type]
+            state=state,  # type: ignore[arg-type]
             parse_env_config=parse_env_config,
             validate_config=validate_config,
         )
 
     @property
-    def catalog_dict(self) -> _SingerCatalog:
-        """Return typed Singer catalog."""
+    def catalog_dict(self) -> dict[str, t.NormalizedValue]:  # type: ignore[override]
+        """Return typed Singer catalog as dict."""
         raw = super().catalog_dict
         if not isinstance(raw, Mapping):
-            return _SingerCatalog(streams=[])
-        raw_streams = raw.get("streams", [])
-        if not isinstance(raw_streams, Sequence):
-            raw_streams: Sequence[Mapping[str, t.ContainerValue]] = []
-        streams: Sequence[_SingerStreamEntry] = [
+            return {"streams": []}
+        raw_streams_raw = raw.get("streams", [])
+        raw_streams: Sequence[Mapping[str, t.ContainerValue]] = (
+            raw_streams_raw
+            if isinstance(raw_streams_raw, Sequence)
+            else []
+        )
+        streams: list[_SingerStreamEntry] = [
             _SingerStreamEntry(
                 tap_stream_id=str(s.get("tap_stream_id", "")),
                 stream=str(s.get("stream", "")),
@@ -109,7 +114,7 @@ class FlextTapOracleWms(Tap):
             for s in raw_streams
             if isinstance(s, Mapping)
         ]
-        return _SingerCatalog(streams=streams)
+        return {"streams": streams}
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:
