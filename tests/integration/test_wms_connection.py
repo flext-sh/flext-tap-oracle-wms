@@ -74,7 +74,7 @@ class TestRealConnection:
         """Test catalog discovery."""
         init_result = getattr(tap, "initialize")()
         assert init_result.is_success
-        result = tap.discover_catalog()
+        result = tap.discovercatalog_typed()
         assert result.is_success
         catalog = result.value
         assert getattr(catalog, "type", None) == "CATALOG"
@@ -227,7 +227,7 @@ class TestIntegration:
         assert init_result.is_success
         assert tap._wms_client is not None
         assert getattr(tap, "_is_started") is True
-        result = tap.discover_catalog()
+        result = tap.discovercatalog_typed()
         assert result.is_success
 
     @pytest.mark.skip(

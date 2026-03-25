@@ -15,7 +15,7 @@ from unittest.mock import Mock
 import pytest
 from flext_core import FlextLogger
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream, t
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream
 
 logger = FlextLogger(__name__)
 
@@ -93,7 +93,7 @@ class TestStreamsFunctional:
         authenticator = stream.authenticator
         assert authenticator is not None
         request = Mock()
-        request.headers = t.StrMapping()
+        request.headers = dict[str, str]()
         authenticated_request = authenticator(request)
         assert "Authorization" in authenticated_request.headers
         auth_header = authenticated_request.headers["Authorization"]

@@ -35,7 +35,7 @@ def main() -> int:
     validation_result = tap.validate_configuration()
     if not validation_result.is_success:
         return 1
-    catalog_result = tap.discover_catalog()
+    catalog_result = tap.discovercatalog_typed()
     if catalog_result.is_success:
         catalog = catalog_result.value
         if (

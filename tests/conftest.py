@@ -156,7 +156,7 @@ def mock_request() -> MagicMock:
     """Mock HTTP request."""
     request = MagicMock()
     request.auth = None
-    request.headers = {}
+    request.headers = dict[str, str]()
     return request
 
 

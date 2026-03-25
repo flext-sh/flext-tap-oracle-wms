@@ -52,7 +52,7 @@ class TestExtractionPerformance:
         """Benchmark catalog discovery time."""
         tap.initialize()
         start_time = time.time()
-        result = tap.discover_catalog()
+        result = tap.discovercatalog_typed()
         discovery_time = time.time() - start_time
         assert result.is_success
         assert discovery_time < 10.0

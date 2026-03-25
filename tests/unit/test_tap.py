@@ -101,7 +101,7 @@ class TestFlextTapOracleWms:
             new_callable=PropertyMock,
             return_value=mock_client,
         ):
-            result = tap_instance.discover_catalog()
+            result = tap_instance.discovercatalog_typed()
         assert result.is_success
         assert result.value.streams[0].stream == "inventory"
         assert result.value.streams[1].stream == "locations"
@@ -116,7 +116,7 @@ class TestFlextTapOracleWms:
             new_callable=PropertyMock,
             return_value=mock_client,
         ):
-            result = tap_instance.discover_catalog()
+            result = tap_instance.discovercatalog_typed()
         assert result.is_failure
         assert result.error == "boom"
 
@@ -127,7 +127,7 @@ class TestFlextTapOracleWms:
         """Stream discovery returns empty list when catalog discovery fails."""
         with patch.object(
             tap_instance,
-            "discover_catalog",
+            "discovercatalog_typed",
             return_value=r[m.Meltano.SingerCatalog].fail("no catalog"),
         ):
             streams = tap_instance.discover_streams()
@@ -140,7 +140,7 @@ class TestFlextTapOracleWms:
                 m.Meltano.SingerCatalogEntry(
                     tap_stream_id="inventory",
                     stream="inventory",
-                    schema_definition={"type": "object"},
+                    schema={"type": "object"},
                     metadata=[],
                     key_properties=["id"],
                     replication_key=None,
@@ -154,7 +154,7 @@ class TestFlextTapOracleWms:
         )
         with patch.object(
             tap_instance,
-            "discover_catalog",
+            "discovercatalog_typed",
             return_value=r[m.Meltano.SingerCatalog].ok(catalog),
         ):
             streams = tap_instance.discover_streams()
