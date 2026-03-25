@@ -10,11 +10,11 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
+
 if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
 
-    from tests import e2e, integration, performance, unit
     from tests.conftest import (
         mock_request,
         mock_response,
@@ -33,7 +33,9 @@ if TYPE_CHECKING:
         FlextTapOracleWmsTestConstants,
         FlextTapOracleWmsTestConstants as c,
     )
+    import tests.e2e as e2e
     from tests.e2e.test_e2e import TestOracleWMSE2EComplete
+    import tests.integration as integration
     from tests.integration.test_functional import TestOracleWMSFunctionalComplete
     from tests.integration.test_streams_functional import (
         TestStreamsFunctional,
@@ -52,6 +54,7 @@ if TYPE_CHECKING:
         FlextTapOracleWmsTestModels,
         FlextTapOracleWmsTestModels as m,
     )
+    import tests.performance as performance
     from tests.performance.test_extraction_performance import (
         TestExtractionPerformance,
         TestRateLimitingPerformance,
@@ -67,6 +70,7 @@ if TYPE_CHECKING:
         FlextTapOracleWmsTestTypes,
         FlextTapOracleWmsTestTypes as t,
     )
+    import tests.unit as unit
     from tests.unit.test_cli import TestCLI
     from tests.unit.test_config import TestFlextTapOracleWmsSettings
     from tests.unit.test_config_validation import TestConfigValidation
@@ -78,69 +82,27 @@ if TYPE_CHECKING:
     )
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextTapOracleWmsTestConstants": [
-        "tests.constants",
-        "FlextTapOracleWmsTestConstants",
-    ],
+    "FlextTapOracleWmsTestConstants": ["tests.constants", "FlextTapOracleWmsTestConstants"],
     "FlextTapOracleWmsTestModels": ["tests.models", "FlextTapOracleWmsTestModels"],
-    "FlextTapOracleWmsTestProtocols": [
-        "tests.protocols",
-        "FlextTapOracleWmsTestProtocols",
-    ],
+    "FlextTapOracleWmsTestProtocols": ["tests.protocols", "FlextTapOracleWmsTestProtocols"],
     "FlextTapOracleWmsTestTypes": ["tests.typings", "FlextTapOracleWmsTestTypes"],
-    "FlextTapOracleWmsTestUtilities": [
-        "tests.utilities",
-        "FlextTapOracleWmsTestUtilities",
-    ],
+    "FlextTapOracleWmsTestUtilities": ["tests.utilities", "FlextTapOracleWmsTestUtilities"],
     "TestCLI": ["tests.unit.test_cli", "TestCLI"],
-    "TestConfigValidation": [
-        "tests.unit.test_config_validation",
-        "TestConfigValidation",
-    ],
-    "TestExtractionPerformance": [
-        "tests.performance.test_extraction_performance",
-        "TestExtractionPerformance",
-    ],
-    "TestFilteringAndSelection": [
-        "tests.integration.test_wms_connection",
-        "TestFilteringAndSelection",
-    ],
+    "TestConfigValidation": ["tests.unit.test_config_validation", "TestConfigValidation"],
+    "TestExtractionPerformance": ["tests.performance.test_extraction_performance", "TestExtractionPerformance"],
+    "TestFilteringAndSelection": ["tests.integration.test_wms_connection", "TestFilteringAndSelection"],
     "TestFlextTapOracleWms": ["tests.unit.test_tap", "TestFlextTapOracleWms"],
-    "TestFlextTapOracleWmsSettings": [
-        "tests.unit.test_config",
-        "TestFlextTapOracleWmsSettings",
-    ],
+    "TestFlextTapOracleWmsSettings": ["tests.unit.test_config", "TestFlextTapOracleWmsSettings"],
     "TestIntegration": ["tests.integration.test_wms_connection", "TestIntegration"],
     "TestOracleWMSE2EComplete": ["tests.e2e.test_e2e", "TestOracleWMSE2EComplete"],
-    "TestOracleWMSFunctionalComplete": [
-        "tests.integration.test_functional",
-        "TestOracleWMSFunctionalComplete",
-    ],
-    "TestRateLimitingPerformance": [
-        "tests.performance.test_extraction_performance",
-        "TestRateLimitingPerformance",
-    ],
-    "TestRealConnection": [
-        "tests.integration.test_wms_connection",
-        "TestRealConnection",
-    ],
-    "TestRealDataExtraction": [
-        "tests.integration.test_wms_connection",
-        "TestRealDataExtraction",
-    ],
+    "TestOracleWMSFunctionalComplete": ["tests.integration.test_functional", "TestOracleWMSFunctionalComplete"],
+    "TestRateLimitingPerformance": ["tests.performance.test_extraction_performance", "TestRateLimitingPerformance"],
+    "TestRealConnection": ["tests.integration.test_wms_connection", "TestRealConnection"],
+    "TestRealDataExtraction": ["tests.integration.test_wms_connection", "TestRealDataExtraction"],
     "TestRealWmsIntegration": ["tests.integration.test_wms", "TestRealWmsIntegration"],
-    "TestStreamsFunctional": [
-        "tests.integration.test_streams_functional",
-        "TestStreamsFunctional",
-    ],
-    "TestTapInitialization": [
-        "tests.unit.test_tap_initialization",
-        "TestTapInitialization",
-    ],
-    "TestWMSPaginatorUnit": [
-        "tests.integration.test_streams_functional",
-        "TestWMSPaginatorUnit",
-    ],
+    "TestStreamsFunctional": ["tests.integration.test_streams_functional", "TestStreamsFunctional"],
+    "TestTapInitialization": ["tests.unit.test_tap_initialization", "TestTapInitialization"],
+    "TestWMSPaginatorUnit": ["tests.integration.test_streams_functional", "TestWMSPaginatorUnit"],
     "c": ["tests.constants", "FlextTapOracleWmsTestConstants"],
     "d": ["flext_tests", "d"],
     "e": ["flext_tests", "e"],
@@ -156,14 +118,8 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "oracle_wms_environment": ["tests.conftest", "oracle_wms_environment"],
     "p": ["tests.protocols", "FlextTapOracleWmsTestProtocols"],
     "performance": ["tests.performance", ""],
-    "performance_config": [
-        "tests.performance.test_extraction_performance",
-        "performance_config",
-    ],
-    "pytest_collection_modifyitems": [
-        "tests.conftest",
-        "pytest_collection_modifyitems",
-    ],
+    "performance_config": ["tests.performance.test_extraction_performance", "performance_config"],
+    "pytest_collection_modifyitems": ["tests.conftest", "pytest_collection_modifyitems"],
     "r": ["flext_tests", "r"],
     "real_config": ["tests.integration.test_wms_connection", "real_config"],
     "real_tap_instance": ["tests.conftest", "real_tap_instance"],
@@ -255,7 +211,6 @@ def __getattr__(name: str) -> FlextTypes.ModuleExport:
 
     Raises:
         AttributeError: If attribute not registered.
-
     """
     if name in _LAZY_CACHE:
         return _LAZY_CACHE[name]
@@ -270,7 +225,6 @@ def __dir__() -> Sequence[str]:
 
     Returns:
         List of public names from module exports.
-
     """
     return sorted(__all__)
 

@@ -74,7 +74,11 @@ from flext_core import (
     FlextLogger,  # Standardized logging
     TAnyDict,
     TEntityId,  # Entity identifier type
+<<<<<<< Updated upstream
     r,  # Result handling pattern
+=======
+    FlextResult,  # Result handling pattern
+>>>>>>> Stashed changes
 )
 
 

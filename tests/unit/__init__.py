@@ -15,9 +15,9 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
+
 if TYPE_CHECKING:
     from flext_core import FlextTypes
-
     from tests.unit.test_cli import TestCLI
     from tests.unit.test_config import TestFlextTapOracleWmsSettings
     from tests.unit.test_config_validation import TestConfigValidation
@@ -26,19 +26,10 @@ if TYPE_CHECKING:
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "TestCLI": ["tests.unit.test_cli", "TestCLI"],
-    "TestConfigValidation": [
-        "tests.unit.test_config_validation",
-        "TestConfigValidation",
-    ],
+    "TestConfigValidation": ["tests.unit.test_config_validation", "TestConfigValidation"],
     "TestFlextTapOracleWms": ["tests.unit.test_tap", "TestFlextTapOracleWms"],
-    "TestFlextTapOracleWmsSettings": [
-        "tests.unit.test_config",
-        "TestFlextTapOracleWmsSettings",
-    ],
-    "TestTapInitialization": [
-        "tests.unit.test_tap_initialization",
-        "TestTapInitialization",
-    ],
+    "TestFlextTapOracleWmsSettings": ["tests.unit.test_config", "TestFlextTapOracleWmsSettings"],
+    "TestTapInitialization": ["tests.unit.test_tap_initialization", "TestTapInitialization"],
 }
 
 __all__ = [
@@ -67,7 +58,6 @@ def __getattr__(name: str) -> FlextTypes.ModuleExport:
 
     Raises:
         AttributeError: If attribute not registered.
-
     """
     if name in _LAZY_CACHE:
         return _LAZY_CACHE[name]
@@ -82,7 +72,6 @@ def __dir__() -> Sequence[str]:
 
     Returns:
         List of public names from module exports.
-
     """
     return sorted(__all__)
 
