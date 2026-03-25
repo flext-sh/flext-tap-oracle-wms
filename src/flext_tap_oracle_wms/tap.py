@@ -22,6 +22,11 @@ from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 logger = FlextLogger(__name__)
 
 
+def _to_str_dict(raw: dict[str, t.ContainerValue]) -> dict[str, t.ContainerValue]:
+    """Identity helper — used to assert dict type from untyped sources."""
+    return raw
+
+
 class SingerMetadataEntry(TypedDict):
     """Singer catalog metadata entry."""
 
@@ -83,7 +88,8 @@ class FlextTapOracleWms(Tap):
             raw_config = dict(config.model_dump(mode="json").items())
         else:
             raw_config = dict(config) if config else {}
-        super().__init__(
+        init_fn: t.InitCallable = getattr(super(), "__init__")
+        init_fn(
             config=raw_config,
             catalog=catalog,
             state=state,
@@ -93,40 +99,50 @@ class FlextTapOracleWms(Tap):
 
     def get_typed_catalog(self) -> SingerCatalogDict:
         """Return typed Singer catalog as dict."""
-        raw_untyped: dict[str, t.ContainerValue] = {
-            str(k): v for k, v in super().catalog_dict.items()
-        }
-        raw_streams = raw_untyped.get("streams")
-        raw_streams_raw: Sequence[t.ContainerValue] = (
+        parent_catalog: dict[str, t.ContainerValue] = getattr(super(), "catalog_dict")
+        raw: dict[str, t.ContainerValue] = _to_str_dict(parent_catalog)
+        raw_streams = raw.get("streams")
+        raw_streams_seq: Sequence[t.ContainerValue] = (
             raw_streams
             if isinstance(raw_streams, Sequence)
             and not isinstance(raw_streams, (str, bytes))
             else []
         )
-        streams: list[SingerStreamEntry] = [
-            SingerStreamEntry(
-                tap_stream_id=str(s.get("tap_stream_id", "")),
-                stream=str(s.get("stream", "")),
-                schema=(
-                    s_schema
-                    if isinstance(s_schema := s.get("schema", {}), dict)
-                    else {}
-                ),
-                metadata=[
-                    SingerMetadataEntry(
-                        breadcrumb=list(e.get("breadcrumb", [])) if isinstance(e.get("breadcrumb"), list) else [],
-                        metadata=dict(e.get("metadata", {})) if isinstance(e.get("metadata"), dict) else {},
-                    )
-                    for e in s_meta
-                    if isinstance(e, dict)
-                ]
-                if isinstance(s_meta := s.get("metadata", []), list)
-                and not isinstance(s_meta, (str, bytes))
-                else [],
+        streams: list[SingerStreamEntry] = []
+        for s in raw_streams_seq:
+            if not isinstance(s, Mapping):
+                continue
+            s_dict: Mapping[str, t.ContainerValue] = _safe_str_mapping(s)
+            breadcrumb_raw = s_dict.get("metadata", [])
+            metadata_entries: list[SingerMetadataEntry] = []
+            if isinstance(breadcrumb_raw, list) and not isinstance(
+                breadcrumb_raw, (str, bytes)
+            ):
+                for e in breadcrumb_raw:
+                    if isinstance(e, dict):
+                        bc = e.get("breadcrumb", [])
+                        md = e.get("metadata", {})
+                        metadata_entries.append(
+                            SingerMetadataEntry(
+                                breadcrumb=[str(x) for x in bc]
+                                if isinstance(bc, list)
+                                else [],
+                                metadata=_safe_str_dict(md)
+                                if isinstance(md, dict)
+                                else {},
+                            )
+                        )
+            schema_raw = s_dict.get("schema", {})
+            streams.append(
+                SingerStreamEntry(
+                    tap_stream_id=str(s_dict.get("tap_stream_id", "")),
+                    stream=str(s_dict.get("stream", "")),
+                    schema=_safe_str_dict(schema_raw)
+                    if isinstance(schema_raw, dict)
+                    else {},
+                    metadata=metadata_entries,
+                )
             )
-            for s in raw_streams_raw
-            if isinstance(s, Mapping)
-        ]
         return SingerCatalogDict(streams=streams)
 
     @property
