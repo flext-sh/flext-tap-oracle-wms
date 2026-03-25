@@ -73,21 +73,17 @@ class FlextTapOracleWms(Tap):
         | Mapping[str, t.ContainerValue]
         | FlextTapOracleWmsSettings
         | None = None,
-        catalog: t.ContainerMapping | None = None,
-        state: t.ContainerMapping | None = None,
+        catalog: dict[str, str] | None = None,
+        state: dict[str, str] | None = None,
         parse_env_config: bool = False,
         validate_config: bool = True,
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
         if isinstance(config, FlextTapOracleWmsSettings):
-            raw_config: dict[str, t.ContainerValue] = dict(
-                config.model_dump(mode="json").items()
-            )
+            raw_config = dict(config.model_dump(mode="json").items())
         else:
             raw_config = dict(config) if config else {}
-        tap_init: t.ContainerValue = Tap.__init__
-        tap_init(
-            self,
+        super().__init__(
             config=raw_config,
             catalog=catalog,
             state=state,
@@ -95,14 +91,16 @@ class FlextTapOracleWms(Tap):
             validate_config=validate_config,
         )
 
-    @property
-    def catalog_dict(self) -> SingerCatalogDict:
+    def get_typed_catalog(self) -> SingerCatalogDict:
         """Return typed Singer catalog as dict."""
-        raw_untyped: Mapping[str, t.ContainerValue] = dict(super().catalog_dict)
+        raw_untyped: dict[str, t.ContainerValue] = {
+            str(k): v for k, v in super().catalog_dict.items()
+        }
+        raw_streams = raw_untyped.get("streams")
         raw_streams_raw: Sequence[t.ContainerValue] = (
-            raw_untyped.get("streams")
-            if isinstance(raw_untyped.get("streams"), Sequence)
-            and not isinstance(raw_untyped.get("streams"), (str, bytes))
+            raw_streams
+            if isinstance(raw_streams, Sequence)
+            and not isinstance(raw_streams, (str, bytes))
             else []
         )
         streams: list[SingerStreamEntry] = [
@@ -114,12 +112,17 @@ class FlextTapOracleWms(Tap):
                     if isinstance(s_schema := s.get("schema", {}), dict)
                     else {}
                 ),
-                metadata=(
-                    [e for e in s_meta if isinstance(e, dict)]
-                    if isinstance(s_meta := s.get("metadata", []), list)
-                    and not isinstance(s_meta, (str, bytes))
-                    else []
-                ),
+                metadata=[
+                    SingerMetadataEntry(
+                        breadcrumb=list(e.get("breadcrumb", [])) if isinstance(e.get("breadcrumb"), list) else [],
+                        metadata=dict(e.get("metadata", {})) if isinstance(e.get("metadata"), dict) else {},
+                    )
+                    for e in s_meta
+                    if isinstance(e, dict)
+                ]
+                if isinstance(s_meta := s.get("metadata", []), list)
+                and not isinstance(s_meta, (str, bytes))
+                else [],
             )
             for s in raw_streams_raw
             if isinstance(s, Mapping)
