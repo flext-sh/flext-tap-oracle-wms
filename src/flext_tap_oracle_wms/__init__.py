@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
-
 if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_meltano import d, e, h, r, s, x
@@ -70,18 +69,51 @@ if TYPE_CHECKING:
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextTapOracleWms": ["flext_tap_oracle_wms.tap", "FlextTapOracleWms"],
-    "FlextTapOracleWmsConfigurationError": ["flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsConfigurationError"],
-    "FlextTapOracleWmsConnectionError": ["flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsConnectionError"],
-    "FlextTapOracleWmsConstants": ["flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"],
-    "FlextTapOracleWmsError": ["flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsError"],
-    "FlextTapOracleWmsModels": ["flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"],
+    "FlextTapOracleWmsConfigurationError": [
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsConfigurationError",
+    ],
+    "FlextTapOracleWmsConnectionError": [
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsConnectionError",
+    ],
+    "FlextTapOracleWmsConstants": [
+        "flext_tap_oracle_wms.constants",
+        "FlextTapOracleWmsConstants",
+    ],
+    "FlextTapOracleWmsError": [
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsError",
+    ],
+    "FlextTapOracleWmsModels": [
+        "flext_tap_oracle_wms.models",
+        "FlextTapOracleWmsModels",
+    ],
     "FlextTapOracleWmsPlugin": ["flext_tap_oracle_wms.tap", "FlextTapOracleWmsPlugin"],
-    "FlextTapOracleWmsProtocols": ["flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"],
-    "FlextTapOracleWmsSettings": ["flext_tap_oracle_wms.settings", "FlextTapOracleWmsSettings"],
-    "FlextTapOracleWmsStream": ["flext_tap_oracle_wms.streams", "FlextTapOracleWmsStream"],
-    "FlextTapOracleWmsTypes": ["flext_tap_oracle_wms.typings", "FlextTapOracleWmsTypes"],
-    "FlextTapOracleWmsUtilities": ["flext_tap_oracle_wms.utilities", "FlextTapOracleWmsUtilities"],
-    "FlextTapOracleWmsValidationError": ["flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsValidationError"],
+    "FlextTapOracleWmsProtocols": [
+        "flext_tap_oracle_wms.protocols",
+        "FlextTapOracleWmsProtocols",
+    ],
+    "FlextTapOracleWmsSettings": [
+        "flext_tap_oracle_wms.settings",
+        "FlextTapOracleWmsSettings",
+    ],
+    "FlextTapOracleWmsStream": [
+        "flext_tap_oracle_wms.streams",
+        "FlextTapOracleWmsStream",
+    ],
+    "FlextTapOracleWmsTypes": [
+        "flext_tap_oracle_wms.typings",
+        "FlextTapOracleWmsTypes",
+    ],
+    "FlextTapOracleWmsUtilities": [
+        "flext_tap_oracle_wms.utilities",
+        "FlextTapOracleWmsUtilities",
+    ],
+    "FlextTapOracleWmsValidationError": [
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsValidationError",
+    ],
     "SingerCatalogDict": ["flext_tap_oracle_wms.tap", "SingerCatalogDict"],
     "SingerMetadataEntry": ["flext_tap_oracle_wms.tap", "SingerMetadataEntry"],
     "SingerStreamEntry": ["flext_tap_oracle_wms.tap", "SingerStreamEntry"],
@@ -168,6 +200,7 @@ def __getattr__(name: str) -> FlextTypes.ModuleExport:
 
     Raises:
         AttributeError: If attribute not registered.
+
     """
     if name in _LAZY_CACHE:
         return _LAZY_CACHE[name]
@@ -182,6 +215,7 @@ def __dir__() -> Sequence[str]:
 
     Returns:
         List of public names from module exports.
+
     """
     return sorted(__all__)
 

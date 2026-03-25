@@ -572,7 +572,6 @@ class EntityDiscovery:
             return r[bool].fail(f"Metadata error: {e}")
 
 
-
 # schema.py - Schema Generation (~100 lines)
 """
 Schema generation utilities for Oracle WMS entities.
@@ -930,20 +929,14 @@ class WMSConfig(FlextSettings):
         env_prefix = "TAP_ORACLE_WMS_"
 
 
-<<<<<<< Updated upstream
 # Error handling using r
 def discover_entities(self) -> r[t.StringList]:
-=======
-# Error handling using FlextResult
-def discover_entities(self) -> FlextResult[t.StringList]:
->>>>>>> Stashed changes
     """Business logic with railway-oriented programming."""
     try:
         entities = self.wms_client.get_available_entities()
         return r[bool].ok(entities)
     except Exception as e:
         return r[bool].fail(f"Discovery failed: {e}")
-
 
 
 # Logging using FLEXT patterns

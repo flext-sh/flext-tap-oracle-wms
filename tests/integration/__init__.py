@@ -14,9 +14,9 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
-
 if TYPE_CHECKING:
     from flext_core import FlextTypes
+
     from tests.integration.test_functional import TestOracleWMSFunctionalComplete
     from tests.integration.test_streams_functional import (
         TestStreamsFunctional,
@@ -35,14 +35,32 @@ if TYPE_CHECKING:
     )
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "TestFilteringAndSelection": ["tests.integration.test_wms_connection", "TestFilteringAndSelection"],
+    "TestFilteringAndSelection": [
+        "tests.integration.test_wms_connection",
+        "TestFilteringAndSelection",
+    ],
     "TestIntegration": ["tests.integration.test_wms_connection", "TestIntegration"],
-    "TestOracleWMSFunctionalComplete": ["tests.integration.test_functional", "TestOracleWMSFunctionalComplete"],
-    "TestRealConnection": ["tests.integration.test_wms_connection", "TestRealConnection"],
-    "TestRealDataExtraction": ["tests.integration.test_wms_connection", "TestRealDataExtraction"],
+    "TestOracleWMSFunctionalComplete": [
+        "tests.integration.test_functional",
+        "TestOracleWMSFunctionalComplete",
+    ],
+    "TestRealConnection": [
+        "tests.integration.test_wms_connection",
+        "TestRealConnection",
+    ],
+    "TestRealDataExtraction": [
+        "tests.integration.test_wms_connection",
+        "TestRealDataExtraction",
+    ],
     "TestRealWmsIntegration": ["tests.integration.test_wms", "TestRealWmsIntegration"],
-    "TestStreamsFunctional": ["tests.integration.test_streams_functional", "TestStreamsFunctional"],
-    "TestWMSPaginatorUnit": ["tests.integration.test_streams_functional", "TestWMSPaginatorUnit"],
+    "TestStreamsFunctional": [
+        "tests.integration.test_streams_functional",
+        "TestStreamsFunctional",
+    ],
+    "TestWMSPaginatorUnit": [
+        "tests.integration.test_streams_functional",
+        "TestWMSPaginatorUnit",
+    ],
     "env_path": ["tests.integration.test_wms_connection", "env_path"],
     "logger": ["tests.integration.test_streams_functional", "logger"],
     "real_config": ["tests.integration.test_wms_connection", "real_config"],
@@ -82,6 +100,7 @@ def __getattr__(name: str) -> FlextTypes.ModuleExport:
 
     Raises:
         AttributeError: If attribute not registered.
+
     """
     if name in _LAZY_CACHE:
         return _LAZY_CACHE[name]
@@ -96,6 +115,7 @@ def __dir__() -> Sequence[str]:
 
     Returns:
         List of public names from module exports.
+
     """
     return sorted(__all__)
 
