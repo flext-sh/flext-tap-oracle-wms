@@ -95,9 +95,7 @@ class FlextTapOracleWms(Tap):
             return {"streams": []}
         raw_streams_raw = raw.get("streams", [])
         raw_streams: Sequence[Mapping[str, t.ContainerValue]] = (
-            raw_streams_raw
-            if isinstance(raw_streams_raw, Sequence)
-            else []
+            raw_streams_raw if isinstance(raw_streams_raw, Sequence) else []
         )
         streams: list[_SingerStreamEntry] = [
             _SingerStreamEntry(
