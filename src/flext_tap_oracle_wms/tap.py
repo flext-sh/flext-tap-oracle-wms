@@ -22,9 +22,14 @@ from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 logger = FlextLogger(__name__)
 
 
-def _to_str_dict(raw: dict[str, t.ContainerValue]) -> dict[str, t.ContainerValue]:
-    """Identity helper — used to assert dict type from untyped sources."""
-    return raw
+def _safe_str_mapping(raw: Mapping[str, t.ContainerValue]) -> Mapping[str, t.ContainerValue]:
+    """Return a Mapping with str keys from an untyped mapping source."""
+    return {str(k): v for k, v in raw.items()}
+
+
+def _safe_str_dict(raw: dict[str, t.ContainerValue]) -> dict[str, t.ContainerValue]:
+    """Return a dict with str keys from an untyped dict source."""
+    return {str(k): v for k, v in raw.items()}
 
 
 class SingerMetadataEntry(TypedDict):
@@ -87,8 +92,9 @@ class FlextTapOracleWms(Tap):
         if isinstance(config, FlextTapOracleWmsSettings):
             raw_config = dict(config.model_dump(mode="json").items())
         else:
-            raw_config = dict(config) if config else {}
-        super().__init__(
+            raw_config: Mapping[str, t.NormalizedValue] = dict(config) if config else {}
+        parent_init = getattr(super(), "__init__")
+        parent_init(
             config=raw_config,
             catalog=catalog,
             state=state,
@@ -96,9 +102,10 @@ class FlextTapOracleWms(Tap):
             validate_config=validate_config,
         )
 
-    def get_typed_catalog(self) -> SingerCatalogDict:
+    def get_typedcatalog_typed(self) -> SingerCatalogDict:
         """Return typed Singer catalog as dict."""
-        raw: dict[str, t.ContainerValue] = _to_str_dict(super().catalog_dict)
+        catalog_typed: dict[str, t.ContainerValue] = getattr(super(), "catalog_dict", {})
+        raw: dict[str, t.ContainerValue] = catalog_typed
         raw_streams = raw.get("streams")
         raw_streams_seq: Sequence[t.ContainerValue] = (
             raw_streams
@@ -111,15 +118,15 @@ class FlextTapOracleWms(Tap):
             if not isinstance(s, Mapping):
                 continue
             s_dict: Mapping[str, t.ContainerValue] = _safe_str_mapping(s)
-            breadcrumb_raw = s_dict.get("metadata", [])
+            breadcrumb_raw: t.ContainerValue = s_dict.get("metadata", [])
             metadata_entries: list[SingerMetadataEntry] = []
             if isinstance(breadcrumb_raw, list) and not isinstance(
                 breadcrumb_raw, (str, bytes)
             ):
-                for e in breadcrumb_raw:
-                    if isinstance(e, dict):
-                        bc = e.get("breadcrumb", [])
-                        md = e.get("metadata", {})
+                for entry in breadcrumb_raw:
+                    if isinstance(entry, dict):
+                        bc: t.ContainerValue = entry.get("breadcrumb", [])
+                        md: t.ContainerValue = entry.get("metadata", {})
                         metadata_entries.append(
                             SingerMetadataEntry(
                                 breadcrumb=[str(x) for x in bc]
@@ -130,7 +137,7 @@ class FlextTapOracleWms(Tap):
                                 else {},
                             )
                         )
-            schema_raw = s_dict.get("schema", {})
+            schema_raw: t.ContainerValue = s_dict.get("schema", {})
             streams.append(
                 SingerStreamEntry(
                     tap_stream_id=str(s_dict.get("tap_stream_id", "")),
@@ -176,7 +183,7 @@ class FlextTapOracleWms(Tap):
         """Return a default Singer JSON schema for discovered entities."""
         return {"type": c.TapOracleWms.SCHEMA_TYPE_OBJECT}
 
-    def discover_catalog(self) -> r[m.Meltano.SingerCatalog]:
+    def discovercatalog_typed(self) -> r[m.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.is_failure:
@@ -216,7 +223,7 @@ class FlextTapOracleWms(Tap):
     @override
     def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
         """Build stream objects from the discovered catalog."""
-        catalog_result = self.discover_catalog()
+        catalog_result = self.discovercatalog_typed()
         if catalog_result.is_failure:
             logger.warning("Catalog discovery failed: %s", catalog_result.error or "")
             return []
@@ -329,7 +336,7 @@ class FlextTapOracleWmsPlugin:
         if tap is None:
             return r[t.ContainerValue].fail("Tap not initialized")
         if operation == "discover":
-            catalog_result = tap.discover_catalog()
+            catalog_result = tap.discovercatalog_typed()
             if catalog_result.is_failure:
                 return r[t.ContainerValue].fail(
                     catalog_result.error or "Discovery failed",
