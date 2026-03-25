@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 import pytest
@@ -52,8 +52,6 @@ class TestRealConnection:
     )
     def test_configuration_validation(self, tap: FlextTapOracleWms) -> None:
         """Test configuration validation."""
-        from collections.abc import Mapping
-
         result = tap.validate_configuration()
         assert result.is_success
         value = result.value
@@ -101,8 +99,6 @@ class TestRealConnection:
     def test_stream_schemas_validation(self, tap: FlextTapOracleWms) -> None:
         """Test stream schemas."""
         streams = tap.discover_streams()
-        from collections.abc import Mapping
-
         for stream in streams:
             assert stream.name
             schema_raw = getattr(stream, "schema", None)

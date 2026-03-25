@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 import pytest
 
@@ -60,8 +60,6 @@ class TestRealWmsIntegration:
         tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
         result = tap.validate_configuration()
         if result.is_success:
-            from collections.abc import Mapping
-
             value = result.value
             assert isinstance(value, Mapping) and value.get("valid") is True
         else:

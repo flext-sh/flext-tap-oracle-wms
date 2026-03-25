@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Mapping, MutableMapping
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -42,8 +43,6 @@ class TestOracleWMSE2EComplete:
     ) -> None:
         """E2E: Test complete discovery process generating valid Singer catalog."""
         tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-        from collections.abc import Mapping
-
         catalog = tap_instance.catalog_dict
         assert catalog is not None, "Discovery returned None catalog"
         streams = catalog["streams"]
@@ -231,8 +230,6 @@ class TestOracleWMSE2EComplete:
         }
         for stream_config in streams[:3]:
             quality_report["streams_tested"] += 1
-            from collections.abc import Mapping
-
             schema = stream_config["schema"]
             properties_raw = schema.get("properties")
             if properties_raw:
@@ -305,8 +302,6 @@ class TestOracleWMSE2EComplete:
         real_wms_config: t.ContainerMapping,
     ) -> None:
         """E2E: Test error recovery and system resilience."""
-        from collections.abc import MutableMapping
-
         invalid_config: MutableMapping[str, t.NormalizedValue] = dict(real_wms_config)
         invalid_config["password"] = "invalid_password"
         tap = FlextTapOracleWms(config=invalid_config)
@@ -397,8 +392,6 @@ class TestOracleWMSE2EComplete:
         streams_count = len(catalog.get("streams", []))
         assert discovery_time < 300, f"Discovery too slow: {discovery_time:.2f}s"
         assert streams_count > 0, "No streams discovered"
-        from collections.abc import Mapping
-
         properties_per_stream: list[int] = []
         for stream in catalog["streams"]:
             props_raw = stream["schema"].get("properties")
@@ -430,8 +423,6 @@ class TestOracleWMSE2EComplete:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """FINAL E2E: Comprehensive integration summary."""
-        from collections.abc import Mapping
-
         discovery_successful: bool = False
         streams_discovered: int = 0
         incremental_streams: int = 0

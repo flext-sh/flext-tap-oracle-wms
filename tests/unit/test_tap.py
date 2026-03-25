@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
@@ -171,8 +172,6 @@ class TestFlextTapOracleWms:
 
     def test_validate_configuration(self, tap_instance: FlextTapOracleWms) -> None:
         """Validation method exposes non-secret effective config values."""
-        from collections.abc import Mapping
-
         result = tap_instance.validate_configuration()
         assert result.is_success
         value = result.value
@@ -190,8 +189,6 @@ class TestFlextTapOracleWms:
 
     def test_get_implementation_metrics(self, tap_instance: FlextTapOracleWms) -> None:
         """Metrics payload contains baseline tap observability fields."""
-        from collections.abc import Mapping
-
         with patch.object(tap_instance, "discover_streams", return_value=[]):
             result = tap_instance.get_implementation_metrics()
         assert result.is_success

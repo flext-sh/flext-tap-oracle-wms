@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, MutableSequence, Sequence
 from unittest.mock import Mock
 
 import pytest
@@ -284,8 +284,6 @@ class TestStreamsFunctional:
             name=streams[0]["tap_stream_id"],
             schema=streams[0]["schema"],
         )
-        from collections.abc import Mapping
-
         raw1 = list(
             stream._extract_records_from_response({
                 "results": [
@@ -323,8 +321,6 @@ class TestStreamsFunctional:
         """Test ordering configuration for different replication methods."""
         catalog = real_tap_instance.catalog_dict
         streams = catalog.get("streams", [])
-        from collections.abc import MutableSequence
-
         ordering_configs: MutableSequence[tuple[str, str, str]] = []
         for stream_config in streams[:3]:
             stream = FlextTapOracleWmsStream(
@@ -375,8 +371,6 @@ class TestWMSPaginatorUnit:
         self,
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
-        from collections.abc import Mapping
-
         stream = self._build_stream(real_tap_instance)
         raw1 = list(
             stream._extract_records_from_response({

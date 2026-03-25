@@ -176,7 +176,7 @@ class FlextTapOracleWmsStream(Stream):
 
     def get_url_params(
         self,
-        context: Mapping[str, t.Scalar] | None,
+        _context: Mapping[str, t.Scalar] | None,
         next_page_token: t.Scalar | None,
     ) -> Mapping[str, t.Scalar]:
         """Return URL params for REST-style pagination (stub for API compatibility)."""
