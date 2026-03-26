@@ -50,8 +50,8 @@ class TestTapInitialization:
     ) -> None:
         """discover_streams builds streams for each discovered entity."""
         mock_client = MagicMock()
-        mock_client.start.return_value = r.ok(True)
-        mock_client.discover_entities.return_value = r.ok([
+        mock_client.start.return_value = r[bool].ok(True)
+        mock_client.discover_entities.return_value = r[list[str]].ok([
             "allocation",
             "order_hdr",
         ])

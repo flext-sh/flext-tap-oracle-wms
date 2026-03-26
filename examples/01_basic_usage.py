@@ -36,23 +36,11 @@ def main() -> int:
     if not validation_result.is_success:
         return 1
     catalog_result = tap.discovercatalog_typed()
-    if catalog_result.is_success:
-        catalog = catalog_result.value
-        if (
-            catalog is not None
-            and isinstance(catalog, dict)
-            and ("streams" in catalog)
-            and isinstance(catalog["streams"], list)
-        ):
-            for stream in catalog["streams"]:
-                if (
-                    isinstance(stream, dict)
-                    and "schema" in stream
-                    and ("properties" in stream["schema"])
-                ):
-                    pass
-    else:
+    if not catalog_result.is_success:
         return 1
+    catalog = catalog_result.value
+    for stream_entry in catalog.streams:
+        _ = stream_entry.schema_definition
     streams = tap.discover_streams()
     for _stream in streams:
         pass

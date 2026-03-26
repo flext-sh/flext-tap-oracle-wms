@@ -101,13 +101,10 @@ class TestRealConnection:
         streams = tap.discover_streams()
         for stream in streams:
             assert stream.name
-            schema_raw = getattr(stream, "schema", None)
-            assert schema_raw is not None
-            if isinstance(schema_raw, Mapping):
-                schema: Mapping[str, t.ContainerValue] = schema_raw
-                if "properties" in schema:
-                    properties: t.ContainerValue = schema["properties"]
-                    assert properties
+            stream_schema: Mapping[str, t.ContainerValue] = stream.schema
+            if "properties" in stream_schema:
+                properties: t.ContainerValue = stream_schema["properties"]
+                assert properties
 
 
 class TestRealDataExtraction:

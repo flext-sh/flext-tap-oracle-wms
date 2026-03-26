@@ -71,7 +71,7 @@ class TestOracleWMSFunctionalComplete:
     ) -> None:
         """CRITICAL: Test automatic entity discovery with REAL Oracle WMS."""
         try:
-            catalog = real_tap_instance.catalog_dict
+            catalog = real_tap_instance.catalog_dict_typed
             assert catalog is not None, "Catalog is None"
             assert "streams" in catalog, "No streams in catalog"
             assert isinstance(catalog["streams"], list), "Streams is not a list"
@@ -140,7 +140,7 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test schema generation produces valid Singer schemas."""
-        catalog = real_tap_instance.catalog_dict
+        catalog = real_tap_instance.catalog_dict_typed
         streams = catalog["streams"]
         for stream in streams[:3]:
             schema = stream["schema"]
@@ -194,7 +194,7 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test REAL data extraction with small sample."""
-        catalog = real_tap_instance.catalog_dict
+        catalog = real_tap_instance.catalog_dict_typed
         streams = catalog["streams"]
         if not streams:
             pytest.skip("No streams available for extraction test")
@@ -238,7 +238,7 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test pagination parameters are correctly configured."""
-        catalog = real_tap_instance.catalog_dict
+        catalog = real_tap_instance.catalog_dict_typed
         streams = catalog["streams"]
         if not streams:
             pytest.skip("No streams available for pagination test")
@@ -269,7 +269,7 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test automatic replication key detection."""
-        catalog = real_tap_instance.catalog_dict
+        catalog = real_tap_instance.catalog_dict_typed
         streams = catalog["streams"]
         streams_with_replication: MutableSequence[tuple[str, t.ContainerValue]] = []
         streams_full_table: MutableSequence[str] = []
@@ -317,7 +317,7 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test filtering and ordering parameters."""
-        catalog = real_tap_instance.catalog_dict
+        catalog = real_tap_instance.catalog_dict_typed
         streams = catalog["streams"]
         if not streams:
             pytest.skip("No streams available for filtering test")
@@ -354,7 +354,7 @@ class TestOracleWMSFunctionalComplete:
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
         tap = FlextTapOracleWms(config=invalid_config)
         try:
-            catalog = tap.catalog_dict
+            catalog = tap.catalog_dict_typed
             assert isinstance(catalog, dict), (
                 "Catalog should be t.ContainerMapping even on errors"
             )
@@ -405,7 +405,7 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test Singer protocol compliance."""
-        catalog = real_tap_instance.catalog_dict
+        catalog = real_tap_instance.catalog_dict_typed
         assert catalog["streams"] is not None, "Catalog missing streams"
         assert isinstance(catalog["streams"], list), "Streams must be list"
         for stream in catalog["streams"]:
@@ -445,7 +445,7 @@ class TestOracleWMSFunctionalComplete:
             assert real_tap_instance is not None
             environment_loaded = True
             tap_initialized = True
-            catalog = real_tap_instance.catalog_dict
+            catalog = real_tap_instance.catalog_dict_typed
             catalog_streams = catalog["streams"]
             entities_discovered = len(catalog_streams)
             for stream in catalog_streams:

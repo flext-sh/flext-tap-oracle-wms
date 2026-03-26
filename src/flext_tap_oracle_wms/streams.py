@@ -92,6 +92,13 @@ class FlextTapOracleWmsStream(Stream):
         )
 
     @property
+    @override
+    def schema(self) -> dict[str, t.ContainerValue]:
+        """Return typed stream schema (overrides Singer SDK's bare dict)."""
+        raw: dict[str, t.ContainerValue] = Stream.schema.__get__(self)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+        return raw
+
+    @property
     def client(self) -> FlextOracleWmsClient:
         """Get WMS client from tap."""
         if self._client is not None:
