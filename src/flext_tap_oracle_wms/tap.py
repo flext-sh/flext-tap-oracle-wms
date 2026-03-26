@@ -91,10 +91,11 @@ class FlextTapOracleWms(Tap):
         validate_config: bool = True,
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
+        raw_config: Mapping[str, t.NormalizedValue]
         if isinstance(config, FlextTapOracleWmsSettings):
             raw_config = dict(config.model_dump(mode="json").items())
         else:
-            raw_config: Mapping[str, t.NormalizedValue] = dict(config) if config else {}
+            raw_config = dict(config) if config else {}
         parent_init = getattr(super(), "__init__")
         parent_init(
             config=raw_config,
@@ -104,12 +105,15 @@ class FlextTapOracleWms(Tap):
             validate_config=validate_config,
         )
 
-    def get_typedcatalog_typed(self) -> SingerCatalogDict:
-        """Return typed Singer catalog as dict."""
-        catalog_typed: dict[str, t.ContainerValue] = getattr(
-            super(), "catalog_dict", {}
-        )
-        raw: dict[str, t.ContainerValue] = catalog_typed
+    @property
+    def catalog_dict_typed(self) -> SingerCatalogDict:
+        """Return catalog_dict with proper typing for pyright."""
+        raw: dict[str, t.ContainerValue] = getattr(super(), "catalog_dict", {})
+        return self._to_typed_catalog(raw)
+
+    @staticmethod
+    def _to_typed_catalog(raw: dict[str, t.ContainerValue]) -> SingerCatalogDict:
+        """Convert raw catalog dict into a typed SingerCatalogDict."""
         raw_streams = raw.get("streams")
         raw_streams_seq: Sequence[t.ContainerValue] = (
             raw_streams
