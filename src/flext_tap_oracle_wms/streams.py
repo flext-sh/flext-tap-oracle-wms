@@ -95,7 +95,7 @@ class FlextTapOracleWmsStream(Stream):
     @override
     def schema(self) -> dict[str, t.ContainerValue]:
         """Return typed stream schema (overrides Singer SDK's bare dict)."""
-        raw: dict[str, t.ContainerValue] = Stream.schema.__get__(self)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+        raw: dict[str, t.ContainerValue] = Stream.schema.__get__(self)
         return raw
 
     @property

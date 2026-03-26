@@ -35,7 +35,7 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
     - Generic utilities accessed via Tests namespace
     """
 
-    class TapOracleWms(FlextTapOracleWmsUtilities.TapOracleWms):  # pyright: ignore[reportIncompatibleVariableOverride]
+    class TapOracleWms(FlextTapOracleWmsUtilities.TapOracleWms):
         """Tap Oracle WMS test utilities - domain-specific for Oracle WMS tap testing.
 
         Contains test utilities specific to Oracle WMS tap functionality including:
