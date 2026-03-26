@@ -69,18 +69,51 @@ if TYPE_CHECKING:
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextTapOracleWms": ["flext_tap_oracle_wms.tap", "FlextTapOracleWms"],
-    "FlextTapOracleWmsConfigurationError": ["flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsConfigurationError"],
-    "FlextTapOracleWmsConnectionError": ["flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsConnectionError"],
-    "FlextTapOracleWmsConstants": ["flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"],
-    "FlextTapOracleWmsError": ["flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsError"],
-    "FlextTapOracleWmsModels": ["flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"],
+    "FlextTapOracleWmsConfigurationError": [
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsConfigurationError",
+    ],
+    "FlextTapOracleWmsConnectionError": [
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsConnectionError",
+    ],
+    "FlextTapOracleWmsConstants": [
+        "flext_tap_oracle_wms.constants",
+        "FlextTapOracleWmsConstants",
+    ],
+    "FlextTapOracleWmsError": [
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsError",
+    ],
+    "FlextTapOracleWmsModels": [
+        "flext_tap_oracle_wms.models",
+        "FlextTapOracleWmsModels",
+    ],
     "FlextTapOracleWmsPlugin": ["flext_tap_oracle_wms.tap", "FlextTapOracleWmsPlugin"],
-    "FlextTapOracleWmsProtocols": ["flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"],
-    "FlextTapOracleWmsSettings": ["flext_tap_oracle_wms.settings", "FlextTapOracleWmsSettings"],
-    "FlextTapOracleWmsStream": ["flext_tap_oracle_wms.streams", "FlextTapOracleWmsStream"],
-    "FlextTapOracleWmsTypes": ["flext_tap_oracle_wms.typings", "FlextTapOracleWmsTypes"],
-    "FlextTapOracleWmsUtilities": ["flext_tap_oracle_wms.utilities", "FlextTapOracleWmsUtilities"],
-    "FlextTapOracleWmsValidationError": ["flext_tap_oracle_wms.exceptions", "FlextTapOracleWmsValidationError"],
+    "FlextTapOracleWmsProtocols": [
+        "flext_tap_oracle_wms.protocols",
+        "FlextTapOracleWmsProtocols",
+    ],
+    "FlextTapOracleWmsSettings": [
+        "flext_tap_oracle_wms.settings",
+        "FlextTapOracleWmsSettings",
+    ],
+    "FlextTapOracleWmsStream": [
+        "flext_tap_oracle_wms.streams",
+        "FlextTapOracleWmsStream",
+    ],
+    "FlextTapOracleWmsTypes": [
+        "flext_tap_oracle_wms.typings",
+        "FlextTapOracleWmsTypes",
+    ],
+    "FlextTapOracleWmsUtilities": [
+        "flext_tap_oracle_wms.utilities",
+        "FlextTapOracleWmsUtilities",
+    ],
+    "FlextTapOracleWmsValidationError": [
+        "flext_tap_oracle_wms.exceptions",
+        "FlextTapOracleWmsValidationError",
+    ],
     "SingerCatalogDict": ["flext_tap_oracle_wms.tap", "SingerCatalogDict"],
     "SingerMetadataEntry": ["flext_tap_oracle_wms.tap", "SingerMetadataEntry"],
     "SingerStreamEntry": ["flext_tap_oracle_wms.tap", "SingerStreamEntry"],
