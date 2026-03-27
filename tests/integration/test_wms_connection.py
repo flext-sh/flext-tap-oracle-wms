@@ -101,9 +101,9 @@ class TestRealConnection:
         streams = tap.discover_streams()
         for stream in streams:
             assert stream.name
-            stream_schema: Mapping[str, t.ContainerValue] = stream.schema
+            stream_schema = stream.schema
             if "properties" in stream_schema:
-                properties: t.ContainerValue = stream_schema["properties"]
+                properties = stream_schema["properties"]
                 assert properties
 
 

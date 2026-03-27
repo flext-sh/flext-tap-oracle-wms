@@ -81,6 +81,7 @@ class FlextTapOracleWmsStream(Stream):
             dict(schema) if schema is not None else None
         )
         Stream.__init__(self, tap=tap, name=name or self.name, schema=schema_dict)
+        self._typed_schema: dict[str, t.ContainerValue] | None = schema_dict
         self._client: FlextOracleWmsClient | None = None
         page_size = int(self.config.get("page_size", 100))
         self._page_size = (
@@ -94,9 +95,11 @@ class FlextTapOracleWmsStream(Stream):
     @property
     @override
     def schema(self) -> dict[str, t.ContainerValue]:
-        """Return typed stream schema (overrides Singer SDK's bare dict)."""
-        raw: dict[str, t.ContainerValue] = Stream.schema.__get__(self)
-        return raw
+        """Get schema with proper type narrowing over Singer SDK's bare ``dict``."""
+        if self._typed_schema is None:
+            msg = f"The schema for stream '{self.name}' was not provided"
+            raise ValueError(msg)
+        return self._typed_schema
 
     @property
     def client(self) -> FlextOracleWmsClient:
