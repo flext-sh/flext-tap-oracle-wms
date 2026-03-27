@@ -135,8 +135,6 @@ class TestRealDataExtraction:
                 record_count += 1
                 if record_count >= max_records:
                     break
-            if records:
-                pass
         except (
             ValueError,
             TypeError,
