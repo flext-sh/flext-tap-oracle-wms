@@ -29,7 +29,7 @@ if TYPE_CHECKING:
         __version__,
         __version_info__,
     )
-    from flext_tap_oracle_wms.cli import main
+    from flext_tap_oracle_wms.cli import FlextTapOracleWms, main
     from flext_tap_oracle_wms.constants import (
         FlextTapOracleWmsConstants,
         FlextTapOracleWmsConstants as c,
@@ -49,12 +49,8 @@ if TYPE_CHECKING:
         FlextTapOracleWmsProtocols as p,
     )
     from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
-    from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
-    from flext_tap_oracle_wms.tap import (
-        FlextTapOracleWms,
-        FlextTapOracleWmsPlugin,
-        logger,
-    )
+    from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream, logger
+    from flext_tap_oracle_wms.tap import FlextTapOracleWmsPlugin
     from flext_tap_oracle_wms.typings import (
         FlextTapOracleWmsTypes,
         FlextTapOracleWmsTypes as t,
@@ -65,7 +61,7 @@ if TYPE_CHECKING:
     )
 
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
-    "FlextTapOracleWms": ["flext_tap_oracle_wms.tap", "FlextTapOracleWms"],
+    "FlextTapOracleWms": ["flext_tap_oracle_wms.cli", "FlextTapOracleWms"],
     "FlextTapOracleWmsConfigurationError": [
         "flext_tap_oracle_wms.errors",
         "FlextTapOracleWmsConfigurationError",
@@ -121,7 +117,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "d": ["flext_meltano", "d"],
     "e": ["flext_meltano", "e"],
     "h": ["flext_meltano", "h"],
-    "logger": ["flext_tap_oracle_wms.tap", "logger"],
+    "logger": ["flext_tap_oracle_wms.streams", "logger"],
     "m": ["flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"],
     "main": ["flext_tap_oracle_wms.cli", "main"],
     "p": ["flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"],
