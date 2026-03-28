@@ -78,10 +78,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "flext_tap_oracle_wms.constants",
         "FlextTapOracleWmsConstants",
     ],
-    "FlextTapOracleWmsError": [
-        "flext_tap_oracle_wms.errors",
-        "FlextTapOracleWmsError",
-    ],
+    "FlextTapOracleWmsError": ["flext_tap_oracle_wms.errors", "FlextTapOracleWmsError"],
     "FlextTapOracleWmsModels": [
         "flext_tap_oracle_wms.models",
         "FlextTapOracleWmsModels",

@@ -16,7 +16,9 @@ from flext_tap_oracle_wms.constants import (
 class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     """Namespace for Oracle WMS tap type aliases."""
 
-    type ScalarNormalizer = Callable[[FlextMeltanoTypes.NormalizedValue], FlextMeltanoTypes.Scalar]
+    type ScalarNormalizer = Callable[
+        [FlextMeltanoTypes.NormalizedValue], FlextMeltanoTypes.Scalar
+    ]
     type ContainerValueMapAdapter = TypeAdapter[FlextMeltanoTypes.ContainerValueMapping]
     type ContainerValueListAdapter = TypeAdapter[FlextMeltanoTypes.ContainerValueList]
 

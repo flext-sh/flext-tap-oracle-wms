@@ -86,10 +86,14 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         except ValidationError as exc:
             msg = f"Invalid catalog_dict format: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
-        return self._to_typed_catalog(u.TapOracleWms.MappingConversion.safe_str_dict(validated_catalog))
+        return self._to_typed_catalog(
+            u.TapOracleWms.MappingConversion.safe_str_dict(validated_catalog)
+        )
 
     @staticmethod
-    def _to_typed_catalog(raw: dict[str, t.ContainerValue]) -> m.TapOracleWms.SingerCatalogDict:
+    def _to_typed_catalog(
+        raw: dict[str, t.ContainerValue],
+    ) -> m.TapOracleWms.SingerCatalogDict:
         """Convert raw catalog dict into a typed m.TapOracleWms.SingerCatalogDict."""
         raw_streams = raw.get("streams")
         raw_streams_seq: Sequence[t.ContainerValue] = (
@@ -102,7 +106,9 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         for s in raw_streams_seq:
             if not isinstance(s, Mapping):
                 continue
-            s_dict: Mapping[str, t.ContainerValue] = u.TapOracleWms.MappingConversion.safe_str_mapping(s)
+            s_dict: Mapping[str, t.ContainerValue] = (
+                u.TapOracleWms.MappingConversion.safe_str_mapping(s)
+            )
             breadcrumb_raw: t.ContainerValue = s_dict.get("metadata", [])
             metadata_entries: list[m.TapOracleWms.SingerMetadataEntry] = []
             if isinstance(breadcrumb_raw, list) and not isinstance(
@@ -117,7 +123,9 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
                                 breadcrumb=[str(x) for x in bc]
                                 if isinstance(bc, list)
                                 else [],
-                                metadata=u.TapOracleWms.MappingConversion.safe_str_dict(md)
+                                metadata=u.TapOracleWms.MappingConversion.safe_str_dict(
+                                    md
+                                )
                                 if isinstance(md, dict)
                                 else {},
                             )
