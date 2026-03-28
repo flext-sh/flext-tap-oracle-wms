@@ -17,7 +17,7 @@ from flext_meltano.singer.sdk import (
     FlextMeltanoSingerTapBase,
 )
 from flext_oracle_wms import FlextOracleWmsClient
-from pydantic import BaseModel, TypeAdapter, ValidationError
+from pydantic import BaseModel, TypeAdapter
 
 from flext_tap_oracle_wms import FlextTapOracleWmsError, p, t, u
 
@@ -28,33 +28,6 @@ _CONTAINER_VALUE_MAP_ADAPTER: TypeAdapter[t.ContainerValueMapping] = TypeAdapter
 _CONTAINER_VALUE_LIST_ADAPTER: TypeAdapter[t.ContainerValueList] = TypeAdapter(
     t.ContainerValueList,
 )
-
-
-def _as_map(value: t.NormalizedValue) -> Mapping[str, t.ContainerValue] | None:
-    if not isinstance(value, Mapping):
-        return None
-    try:
-        validated_map = _CONTAINER_VALUE_MAP_ADAPTER.validate_python(value)
-    except ValidationError as exc:
-        msg = f"Validation failed for mapping: {exc}"
-        raise FlextTapOracleWmsError(msg) from exc
-    return {
-        str(key): FlextTapOracleWmsStream.normalize_json_value(item)
-        for key, item in validated_map.items()
-    }
-
-
-def _as_list(value: t.NormalizedValue) -> Sequence[t.ContainerValue] | None:
-    if not isinstance(value, list):
-        return None
-    try:
-        validated_seq = _CONTAINER_VALUE_LIST_ADAPTER.validate_python(value)
-    except ValidationError as exc:
-        msg = f"Validation failed for list: {exc}"
-        raise FlextTapOracleWmsError(msg) from exc
-    return [
-        FlextTapOracleWmsStream.normalize_json_value(item) for item in validated_seq
-    ]
 
 
 class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
@@ -133,18 +106,23 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
             return value
         if value is None:
             return ""
-        list_value = _as_list(value)
+        conv = u.TapOracleWms.MappingConversion
+        list_value = conv.as_list(
+            value,
+            normalizer=FlextTapOracleWmsStream.normalize_json_value,
+            list_adapter=_CONTAINER_VALUE_LIST_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
         if list_value is not None:
-            return str([
-                FlextTapOracleWmsStream.normalize_json_value(item)
-                for item in list_value
-            ])
-        map_value = _as_map(value)
+            return str(list(list_value))
+        map_value = conv.as_map(
+            value,
+            normalizer=FlextTapOracleWmsStream.normalize_json_value,
+            map_adapter=_CONTAINER_VALUE_MAP_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
         if map_value is not None:
-            return str({
-                key: FlextTapOracleWmsStream.normalize_json_value(item)
-                for key, item in map_value.items()
-            })
+            return str(dict(map_value))
         if isinstance(value, BaseModel | Path):
             return str(value)
         return str(value)
@@ -201,19 +179,44 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         context: Mapping[str, t.Scalar] | None = None,
     ) -> dict[str, t.Scalar]:
         """Post-process a record."""
+        conv = u.TapOracleWms.MappingConversion
         config_map: t.ContainerMapping = self.config
         column_mappings_raw = config_map.get("column_mappings")
-        column_mappings = _as_map(column_mappings_raw) if column_mappings_raw else None
+        column_mappings = (
+            conv.as_map(
+                column_mappings_raw,
+                map_adapter=_CONTAINER_VALUE_MAP_ADAPTER,
+                error_cls=FlextTapOracleWmsError,
+            )
+            if column_mappings_raw
+            else None
+        )
         if column_mappings is not None:
             mapping_raw = column_mappings.get(self.name)
-            mapping = _as_map(mapping_raw) if mapping_raw is not None else None
+            mapping = (
+                conv.as_map(
+                    mapping_raw,
+                    map_adapter=_CONTAINER_VALUE_MAP_ADAPTER,
+                    error_cls=FlextTapOracleWmsError,
+                )
+                if mapping_raw is not None
+                else None
+            )
             if mapping is not None:
                 for old_name, new_name in mapping.items():
                     new_name_str = str(new_name)
                     if old_name in row:
                         row[new_name_str] = row.pop(old_name)
         ignored_columns_raw = config_map.get("ignored_columns")
-        ignored_columns = _as_list(ignored_columns_raw) if ignored_columns_raw else None
+        ignored_columns = (
+            conv.as_list(
+                ignored_columns_raw,
+                list_adapter=_CONTAINER_VALUE_LIST_ADAPTER,
+                error_cls=FlextTapOracleWmsError,
+            )
+            if ignored_columns_raw
+            else None
+        )
         if ignored_columns is not None:
             for column_name in ignored_columns:
                 if isinstance(column_name, str):
@@ -281,6 +284,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         context: Mapping[str, t.Scalar] | None,
     ) -> Iterable[dict[str, t.Scalar]]:
         """Process and yield records from a page."""
+        conv = u.TapOracleWms.MappingConversion
         for record in records:
             record_dict: Mapping[str, t.ContainerValue] = dict(record)
             processed_record: Mapping[str, t.ContainerValue] = (
@@ -288,7 +292,12 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
                     record=record_dict,
                 )
             )
-            processed_map = _as_map(processed_record)
+            processed_map = conv.as_map(
+                processed_record,
+                normalizer=self.normalize_json_value,
+                map_adapter=_CONTAINER_VALUE_MAP_ADAPTER,
+                error_cls=FlextTapOracleWmsError,
+            )
             if processed_map is None:
                 continue
             json_row: dict[str, t.Scalar] = {

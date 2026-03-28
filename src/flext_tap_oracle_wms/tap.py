@@ -5,7 +5,7 @@ from __future__ import annotations
 import importlib.metadata
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
-from typing import ClassVar, TypedDict, override
+from typing import ClassVar, override
 
 from flext_core import FlextLogger, r
 from flext_meltano.singer.sdk import FlextMeltanoSingerTapBase
@@ -15,8 +15,8 @@ from flext_oracle_wms import (
 )
 from pydantic import SecretStr, TypeAdapter, ValidationError
 
-from flext_tap_oracle_wms import c, m, t
-from flext_tap_oracle_wms.exceptions import FlextTapOracleWmsConfigurationError
+from flext_tap_oracle_wms import c, m, t, u
+from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
 from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 
@@ -24,42 +24,6 @@ logger = FlextLogger(__name__)
 _CONTAINER_VALUE_MAP_ADAPTER: TypeAdapter[t.ContainerValueMapping] = TypeAdapter(
     t.ContainerValueMapping,
 )
-
-
-def _safe_str_mapping(
-    raw: Mapping[str, t.ContainerValue],
-) -> Mapping[str, t.ContainerValue]:
-    """Return a Mapping with str keys from an untyped mapping source."""
-    return {str(k): v for k, v in raw.items()}
-
-
-def _safe_str_dict(
-    raw: Mapping[str, t.ContainerValue],
-) -> dict[str, t.ContainerValue]:
-    """Return a dict with str keys from an untyped dict source."""
-    return {str(k): v for k, v in raw.items()}
-
-
-class SingerMetadataEntry(TypedDict):
-    """Singer catalog metadata entry."""
-
-    breadcrumb: list[str]
-    metadata: dict[str, t.ContainerValue]
-
-
-class SingerStreamEntry(TypedDict):
-    """Singer catalog stream entry."""
-
-    tap_stream_id: str
-    stream: str
-    schema: dict[str, t.ContainerValue]
-    metadata: list[SingerMetadataEntry]
-
-
-class SingerCatalogDict(TypedDict):
-    """Singer catalog dict with typed streams."""
-
-    streams: list[SingerStreamEntry]
 
 
 class FlextTapOracleWms(FlextMeltanoSingerTapBase):
@@ -112,7 +76,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         )
 
     @property
-    def catalog_dict_typed(self) -> SingerCatalogDict:
+    def catalog_dict_typed(self) -> m.TapOracleWms.SingerCatalogDict:
         """Return catalog_dict with proper typing for pyright."""
         raw_catalog_dict: object = getattr(super(), "catalog_dict", {})
         try:
@@ -122,11 +86,11 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         except ValidationError as exc:
             msg = f"Invalid catalog_dict format: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
-        return self._to_typed_catalog(_safe_str_dict(validated_catalog))
+        return self._to_typed_catalog(u.TapOracleWms.MappingConversion.safe_str_dict(validated_catalog))
 
     @staticmethod
-    def _to_typed_catalog(raw: dict[str, t.ContainerValue]) -> SingerCatalogDict:
-        """Convert raw catalog dict into a typed SingerCatalogDict."""
+    def _to_typed_catalog(raw: dict[str, t.ContainerValue]) -> m.TapOracleWms.SingerCatalogDict:
+        """Convert raw catalog dict into a typed m.TapOracleWms.SingerCatalogDict."""
         raw_streams = raw.get("streams")
         raw_streams_seq: Sequence[t.ContainerValue] = (
             raw_streams
@@ -134,13 +98,13 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
             and not isinstance(raw_streams, (str, bytes))
             else []
         )
-        streams: list[SingerStreamEntry] = []
+        streams: list[m.TapOracleWms.SingerStreamEntry] = []
         for s in raw_streams_seq:
             if not isinstance(s, Mapping):
                 continue
-            s_dict: Mapping[str, t.ContainerValue] = _safe_str_mapping(s)
+            s_dict: Mapping[str, t.ContainerValue] = u.TapOracleWms.MappingConversion.safe_str_mapping(s)
             breadcrumb_raw: t.ContainerValue = s_dict.get("metadata", [])
-            metadata_entries: list[SingerMetadataEntry] = []
+            metadata_entries: list[m.TapOracleWms.SingerMetadataEntry] = []
             if isinstance(breadcrumb_raw, list) and not isinstance(
                 breadcrumb_raw, (str, bytes)
             ):
@@ -149,27 +113,27 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
                         bc: t.ContainerValue = entry.get("breadcrumb", [])
                         md: t.ContainerValue = entry.get("metadata", {})
                         metadata_entries.append(
-                            SingerMetadataEntry(
+                            m.TapOracleWms.SingerMetadataEntry(
                                 breadcrumb=[str(x) for x in bc]
                                 if isinstance(bc, list)
                                 else [],
-                                metadata=_safe_str_dict(md)
+                                metadata=u.TapOracleWms.MappingConversion.safe_str_dict(md)
                                 if isinstance(md, dict)
                                 else {},
                             )
                         )
             schema_raw: t.ContainerValue = s_dict.get("schema", {})
             streams.append(
-                SingerStreamEntry(
+                m.TapOracleWms.SingerStreamEntry(
                     tap_stream_id=str(s_dict.get("tap_stream_id", "")),
                     stream=str(s_dict.get("stream", "")),
-                    schema=_safe_str_dict(schema_raw)
+                    schema=u.TapOracleWms.MappingConversion.safe_str_dict(schema_raw)
                     if isinstance(schema_raw, dict)
                     else {},
                     metadata=metadata_entries,
                 )
             )
-        return SingerCatalogDict(streams=streams)
+        return m.TapOracleWms.SingerCatalogDict(streams=streams)
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:

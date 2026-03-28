@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Annotated
+from typing import Annotated, TypedDict
 
 from flext_meltano import FlextMeltanoModels
 from flext_oracle_wms import FlextOracleWmsModels
@@ -17,6 +17,25 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
 
     class TapOracleWms:
         """TapOracleWms domain namespace."""
+
+        class SingerMetadataEntry(TypedDict):
+            """Singer catalog metadata entry."""
+
+            breadcrumb: list[str]
+            metadata: dict[str, t.ContainerValue]
+
+        class SingerStreamEntry(TypedDict):
+            """Singer catalog stream entry."""
+
+            tap_stream_id: str
+            stream: str
+            schema: dict[str, t.ContainerValue]
+            metadata: list[FlextTapOracleWmsModels.TapOracleWms.SingerMetadataEntry]
+
+        class SingerCatalogDict(TypedDict):
+            """Singer catalog dict with typed streams."""
+
+            streams: list[FlextTapOracleWmsModels.TapOracleWms.SingerStreamEntry]
 
         class WmsStreamSchema(BaseModel):
             """Singer stream schema shape."""

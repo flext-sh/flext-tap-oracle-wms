@@ -6,10 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from flext_meltano import FlextMeltanoUtilities
 from flext_oracle_wms import FlextOracleWmsUtilities
+from pydantic import ValidationError
 
 from flext_tap_oracle_wms import t
 
@@ -56,6 +57,124 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
                 """
                 return record
+
+        class MappingConversion:
+            """Mapping and sequence conversion utilities for Singer protocol."""
+
+            @staticmethod
+            def safe_str_mapping(
+                raw: Mapping[str, t.ContainerValue],
+            ) -> Mapping[str, t.ContainerValue]:
+                """Return a Mapping with str keys from an untyped mapping source.
+
+                Args:
+                    raw: Raw mapping to convert.
+
+                Returns:
+                    Mapping with string keys.
+
+                """
+                return {str(k): v for k, v in raw.items()}
+
+            @staticmethod
+            def safe_str_dict(
+                raw: Mapping[str, t.ContainerValue],
+            ) -> dict[str, t.ContainerValue]:
+                """Return a dict with str keys from an untyped dict source.
+
+                Args:
+                    raw: Raw mapping to convert.
+
+                Returns:
+                    Dict with string keys.
+
+                """
+                return {str(k): v for k, v in raw.items()}
+
+            @staticmethod
+            def as_map(
+                value: t.NormalizedValue,
+                *,
+                normalizer: t.ScalarNormalizer | None = None,
+                map_adapter: t.ContainerValueMapAdapter | None = None,
+                error_cls: type[Exception] | None = None,
+            ) -> Mapping[str, t.ContainerValue] | None:
+                """Convert a NormalizedValue into a Mapping if possible.
+
+                Args:
+                    value: Value to convert.
+                    normalizer: Callable that normalizes JSON values.
+                    map_adapter: TypeAdapter for validating mappings.
+                    error_cls: Exception class to raise on validation failure.
+
+                Returns:
+                    Mapping with string keys, or None if not a mapping.
+
+                """
+                if not isinstance(value, Mapping):
+                    return None
+                if map_adapter is not None:
+                    try:
+                        validated_map = map_adapter.validate_python(value)
+                    except ValidationError as exc:
+                        if error_cls is not None:
+                            msg = f"Validation failed for mapping: {exc}"
+                            raise error_cls(msg) from exc
+                        return None
+                    if normalizer is not None:
+                        return {
+                            str(key): normalizer(item)
+                            for key, item in validated_map.items()
+                        }
+                    return {str(key): item for key, item in validated_map.items()}
+                if normalizer is not None:
+                    return {
+                        str(key): normalizer(item) for key, item in value.items()
+                    }
+                coerced: dict[str, t.ContainerValue] = {
+                    str(key): str(item) for key, item in value.items()
+                }
+                return coerced
+
+            @staticmethod
+            def as_list(
+                value: t.NormalizedValue,
+                *,
+                normalizer: t.ScalarNormalizer | None = None,
+                list_adapter: t.ContainerValueListAdapter | None = None,
+                error_cls: type[Exception] | None = None,
+            ) -> Sequence[t.ContainerValue] | None:
+                """Convert a NormalizedValue into a Sequence if possible.
+
+                Args:
+                    value: Value to convert.
+                    normalizer: Callable that normalizes JSON values.
+                    list_adapter: TypeAdapter for validating lists.
+                    error_cls: Exception class to raise on validation failure.
+
+                Returns:
+                    Sequence of container values, or None if not a list.
+
+                """
+                if not isinstance(value, list):
+                    return None
+                if list_adapter is not None:
+                    try:
+                        validated_seq = list_adapter.validate_python(value)
+                    except ValidationError as exc:
+                        if error_cls is not None:
+                            msg = f"Validation failed for list: {exc}"
+                            raise error_cls(msg) from exc
+                        return None
+                    if normalizer is not None:
+                        return [normalizer(item) for item in validated_seq]
+                    return list(validated_seq)
+                if normalizer is not None:
+                    return [normalizer(item) for item in value]
+                coerced_list: list[t.ContainerValue] = [
+                    str(item) for item in value
+                ]
+                return coerced_list
 
 
 u = FlextTapOracleWmsUtilities

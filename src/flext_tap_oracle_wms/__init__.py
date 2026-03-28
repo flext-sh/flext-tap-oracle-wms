@@ -34,7 +34,7 @@ if TYPE_CHECKING:
         FlextTapOracleWmsConstants,
         FlextTapOracleWmsConstants as c,
     )
-    from flext_tap_oracle_wms.exceptions import (
+    from flext_tap_oracle_wms.errors import (
         FlextTapOracleWmsConfigurationError,
         FlextTapOracleWmsConnectionError,
         FlextTapOracleWmsError,
@@ -53,9 +53,6 @@ if TYPE_CHECKING:
     from flext_tap_oracle_wms.tap import (
         FlextTapOracleWms,
         FlextTapOracleWmsPlugin,
-        SingerCatalogDict,
-        SingerMetadataEntry,
-        SingerStreamEntry,
         logger,
     )
     from flext_tap_oracle_wms.typings import (
@@ -70,11 +67,11 @@ if TYPE_CHECKING:
 _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "FlextTapOracleWms": ["flext_tap_oracle_wms.tap", "FlextTapOracleWms"],
     "FlextTapOracleWmsConfigurationError": [
-        "flext_tap_oracle_wms.exceptions",
+        "flext_tap_oracle_wms.errors",
         "FlextTapOracleWmsConfigurationError",
     ],
     "FlextTapOracleWmsConnectionError": [
-        "flext_tap_oracle_wms.exceptions",
+        "flext_tap_oracle_wms.errors",
         "FlextTapOracleWmsConnectionError",
     ],
     "FlextTapOracleWmsConstants": [
@@ -82,7 +79,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "FlextTapOracleWmsConstants",
     ],
     "FlextTapOracleWmsError": [
-        "flext_tap_oracle_wms.exceptions",
+        "flext_tap_oracle_wms.errors",
         "FlextTapOracleWmsError",
     ],
     "FlextTapOracleWmsModels": [
@@ -111,12 +108,9 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "FlextTapOracleWmsUtilities",
     ],
     "FlextTapOracleWmsValidationError": [
-        "flext_tap_oracle_wms.exceptions",
+        "flext_tap_oracle_wms.errors",
         "FlextTapOracleWmsValidationError",
     ],
-    "SingerCatalogDict": ["flext_tap_oracle_wms.tap", "SingerCatalogDict"],
-    "SingerMetadataEntry": ["flext_tap_oracle_wms.tap", "SingerMetadataEntry"],
-    "SingerStreamEntry": ["flext_tap_oracle_wms.tap", "SingerStreamEntry"],
     "__all__": ["flext_tap_oracle_wms.__version__", "__all__"],
     "__author__": ["flext_tap_oracle_wms.__version__", "__author__"],
     "__author_email__": ["flext_tap_oracle_wms.__version__", "__author_email__"],
@@ -155,9 +149,6 @@ __all__ = [
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
     "FlextTapOracleWmsValidationError",
-    "SingerCatalogDict",
-    "SingerMetadataEntry",
-    "SingerStreamEntry",
     "__all__",
     "__author__",
     "__author_email__",

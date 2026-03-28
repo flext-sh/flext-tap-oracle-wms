@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
+from pydantic import TypeAdapter
 
 from flext_tap_oracle_wms.constants import (
     FlextTapOracleWmsConstants,
@@ -12,6 +15,10 @@ from flext_tap_oracle_wms.constants import (
 
 class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     """Namespace for Oracle WMS tap type aliases."""
+
+    type ScalarNormalizer = Callable[[FlextMeltanoTypes.NormalizedValue], FlextMeltanoTypes.Scalar]
+    type ContainerValueMapAdapter = TypeAdapter[FlextMeltanoTypes.ContainerValueMapping]
+    type ContainerValueListAdapter = TypeAdapter[FlextMeltanoTypes.ContainerValueList]
 
     class Project:
         """Project-level aliases and constrained literals."""
