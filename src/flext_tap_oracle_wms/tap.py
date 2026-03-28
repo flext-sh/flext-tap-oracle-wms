@@ -3,16 +3,17 @@
 from __future__ import annotations
 
 import importlib.metadata
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import ClassVar, TypedDict, override
 
 from flext_core import FlextLogger, r
+from flext_meltano.singer.sdk import FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsSettings,
 )
-from singer_sdk.tap_base import Tap
+from pydantic import SecretStr, TypeAdapter, ValidationError
 
 from flext_tap_oracle_wms import c, m, t
 from flext_tap_oracle_wms.exceptions import FlextTapOracleWmsConfigurationError
@@ -20,6 +21,9 @@ from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 
 logger = FlextLogger(__name__)
+_CONTAINER_VALUE_MAP_ADAPTER: TypeAdapter[t.ContainerValueMapping] = TypeAdapter(
+    t.ContainerValueMapping,
+)
 
 
 def _safe_str_mapping(
@@ -29,7 +33,9 @@ def _safe_str_mapping(
     return {str(k): v for k, v in raw.items()}
 
 
-def _safe_str_dict(raw: dict[str, t.ContainerValue]) -> dict[str, t.ContainerValue]:
+def _safe_str_dict(
+    raw: Mapping[str, t.ContainerValue],
+) -> dict[str, t.ContainerValue]:
     """Return a dict with str keys from an untyped dict source."""
     return {str(k): v for k, v in raw.items()}
 
@@ -56,7 +62,7 @@ class SingerCatalogDict(TypedDict):
     streams: list[SingerStreamEntry]
 
 
-class FlextTapOracleWms(Tap):
+class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
@@ -96,7 +102,7 @@ class FlextTapOracleWms(Tap):
             raw_config = dict(config.model_dump(mode="json").items())
         else:
             raw_config = dict(config) if config else {}
-        parent_init = getattr(super(), "__init__")
+        parent_init: Callable[..., None] = getattr(super(), "__init__")
         parent_init(
             config=raw_config,
             catalog=catalog,
@@ -108,8 +114,15 @@ class FlextTapOracleWms(Tap):
     @property
     def catalog_dict_typed(self) -> SingerCatalogDict:
         """Return catalog_dict with proper typing for pyright."""
-        raw: dict[str, t.ContainerValue] = getattr(super(), "catalog_dict", {})
-        return self._to_typed_catalog(raw)
+        raw_catalog_dict: object = getattr(super(), "catalog_dict", {})
+        try:
+            validated_catalog = _CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+                raw_catalog_dict,
+            )
+        except ValidationError as exc:
+            msg = f"Invalid catalog_dict format: {exc}"
+            raise FlextTapOracleWmsConfigurationError(msg) from exc
+        return self._to_typed_catalog(_safe_str_dict(validated_catalog))
 
     @staticmethod
     def _to_typed_catalog(raw: dict[str, t.ContainerValue]) -> SingerCatalogDict:
@@ -172,12 +185,18 @@ class FlextTapOracleWms(Tap):
     def wms_client(self) -> FlextOracleWmsClient:
         """Return a started WMS client instance."""
         if self._wms_client is None:
-            wms_settings = FlextOracleWmsSettings.testing_config().model_copy(
-                update={
-                    "base_url": str(self.flext_config.base_url),
-                    "timeout": self.flext_config.timeout,
-                },
-            )
+            password = self.flext_config.password
+            wms_settings = FlextOracleWmsSettings.model_validate({
+                "base_url": str(self.flext_config.base_url),
+                "username": str(self.flext_config.username),
+                "password": (
+                    password.get_secret_value()
+                    if isinstance(password, SecretStr)
+                    else str(password)
+                ),
+                "timeout": float(self.flext_config.timeout),
+                "retry_attempts": self.flext_config.max_retries,
+            })
             client = FlextOracleWmsClient(config=wms_settings)
             start_result = client.start()
             if start_result.is_failure:
@@ -233,8 +252,8 @@ class FlextTapOracleWms(Tap):
         """Build stream objects from the discovered catalog."""
         catalog_result = self.discovercatalog_typed()
         if catalog_result.is_failure:
-            logger.warning("Catalog discovery failed: %s", catalog_result.error or "")
-            return []
+            msg = f"Catalog discovery failed: {catalog_result.error or 'unknown error'}"
+            raise FlextTapOracleWmsConfigurationError(msg)
         streams_raw = catalog_result.value.streams
         if not streams_raw:
             return []
@@ -272,19 +291,8 @@ class FlextTapOracleWms(Tap):
         return "FLEXT Oracle WMS Tap"
 
     def get_implementation_version(self) -> str:
-        """Return installed package version or project fallback."""
-        try:
-            return importlib.metadata.version("flext-tap-oracle-wms")
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ):
-            return "0.9.0"
+        """Return installed package version."""
+        return importlib.metadata.version("flext-tap-oracle-wms")
 
     def validate_configuration(self) -> r[t.ContainerValue]:
         """Expose non-secret validated configuration fields."""

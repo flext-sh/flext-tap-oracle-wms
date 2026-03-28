@@ -35,11 +35,7 @@ if TYPE_CHECKING:
     )
     from tests.e2e.test_e2e import TestOracleWMSE2EComplete
     from tests.integration.test_functional import TestOracleWMSFunctionalComplete
-    from tests.integration.test_streams_functional import (
-        TestStreamsFunctional,
-        TestWMSPaginatorUnit,
-        logger,
-    )
+    from tests.integration.test_streams_functional import TestStreamsFunctional, logger
     from tests.integration.test_wms import TestRealWmsIntegration
     from tests.integration.test_wms_connection import (
         TestFilteringAndSelection,
@@ -137,10 +133,6 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "tests.unit.test_tap_initialization",
         "TestTapInitialization",
     ],
-    "TestWMSPaginatorUnit": [
-        "tests.integration.test_streams_functional",
-        "TestWMSPaginatorUnit",
-    ],
     "c": ["tests.constants", "FlextTapOracleWmsTestConstants"],
     "d": ["flext_tests", "d"],
     "e": ["flext_tests", "e"],
@@ -202,7 +194,6 @@ __all__ = [
     "TestRealWmsIntegration",
     "TestStreamsFunctional",
     "TestTapInitialization",
-    "TestWMSPaginatorUnit",
     "c",
     "d",
     "e",

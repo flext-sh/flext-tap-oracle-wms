@@ -12,12 +12,14 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, r
+from flext_meltano.singer.sdk import (
+    FlextMeltanoSingerStreamBase,
+    FlextMeltanoSingerTapBase,
+)
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import BaseModel, TypeAdapter, ValidationError
-from singer_sdk.streams import Stream
-from singer_sdk.tap_base import Tap
 
-from flext_tap_oracle_wms import p, t, u
+from flext_tap_oracle_wms import FlextTapOracleWmsError, p, t, u
 
 logger = FlextLogger(__name__)
 _CONTAINER_VALUE_MAP_ADAPTER: TypeAdapter[t.ContainerValueMapping] = TypeAdapter(
@@ -33,8 +35,9 @@ def _as_map(value: t.NormalizedValue) -> Mapping[str, t.ContainerValue] | None:
         return None
     try:
         validated_map = _CONTAINER_VALUE_MAP_ADAPTER.validate_python(value)
-    except ValidationError:
-        return None
+    except ValidationError as exc:
+        msg = f"Validation failed for mapping: {exc}"
+        raise FlextTapOracleWmsError(msg) from exc
     return {
         str(key): FlextTapOracleWmsStream.normalize_json_value(item)
         for key, item in validated_map.items()
@@ -45,15 +48,16 @@ def _as_list(value: t.NormalizedValue) -> Sequence[t.ContainerValue] | None:
     if not isinstance(value, list):
         return None
     try:
-        validated_list = _CONTAINER_VALUE_LIST_ADAPTER.validate_python(value)
-    except ValidationError:
-        return None
+        validated_seq = _CONTAINER_VALUE_LIST_ADAPTER.validate_python(value)
+    except ValidationError as exc:
+        msg = f"Validation failed for list: {exc}"
+        raise FlextTapOracleWmsError(msg) from exc
     return [
-        FlextTapOracleWmsStream.normalize_json_value(item) for item in validated_list
+        FlextTapOracleWmsStream.normalize_json_value(item) for item in validated_seq
     ]
 
 
-class FlextTapOracleWmsStream(Stream):
+class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
     """Dynamic stream for Oracle WMS entities.
 
     Uses flext-oracle-wms client for all data operations.
@@ -64,14 +68,14 @@ class FlextTapOracleWmsStream(Stream):
     stream_replication_key: str | None = None
     url_base: str = ""
     # Singer SDK attributes exposed for type narrowing in tests/consumers
-    tap: Tap
+    tap: FlextMeltanoSingerTapBase
     http_headers: MutableMapping[str, str]
     authenticator: None = None
 
     @override
     def __init__(
         self,
-        tap: Tap,
+        tap: FlextMeltanoSingerTapBase,
         name: str | None = None,
         schema: Mapping[str, t.ContainerValue] | None = None,
         _path: str | None = None,
@@ -80,7 +84,12 @@ class FlextTapOracleWmsStream(Stream):
         schema_dict: dict[str, t.ContainerValue] | None = (
             dict(schema) if schema is not None else None
         )
-        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema_dict)
+        FlextMeltanoSingerStreamBase.__init__(
+            self,
+            tap=tap,
+            name=name or self.name,
+            schema=schema_dict,
+        )
         self._typed_schema: dict[str, t.ContainerValue] | None = schema_dict
         self._client: FlextOracleWmsClient | None = None
         page_size = int(self.config.get("page_size", 100))
@@ -176,43 +185,14 @@ class FlextTapOracleWmsStream(Stream):
                 OSError,
                 RuntimeError,
                 ImportError,
-            ):
-                logger.exception("Error getting records for %s", self.name)
-                break
+            ) as exc:
+                msg = f"Error getting records for {self.name}: {exc}"
+                logger.exception(msg)
+                raise FlextTapOracleWmsError(msg) from exc
 
     def get_replication_key(self) -> str | None:
         """Get replication key for this stream."""
         return self.stream_replication_key
-
-    def get_url_params(
-        self,
-        _context: Mapping[str, t.Scalar] | None,
-        next_page_token: t.Scalar | None,
-    ) -> Mapping[str, t.Scalar]:
-        """Return URL params for REST-style pagination (stub for API compatibility)."""
-        params: MutableMapping[str, t.Scalar] = {"page_size": self._page_size}
-        if next_page_token is not None:
-            params["page"] = next_page_token
-        return params
-
-    def parse_response(
-        self,
-        response: t.ContainerValue,
-    ) -> Iterable[Mapping[str, t.ContainerValue]]:
-        """Parse response data (stub for API compatibility)."""
-        if isinstance(response, Mapping):
-            data = response.get("data", [])
-            if isinstance(data, Sequence):
-                for item in data:
-                    if isinstance(item, Mapping):
-                        yield {str(k): v for k, v in item.items()}
-
-    def _extract_records_from_response(
-        self,
-        response: t.ContainerValue,
-    ) -> Iterable[Mapping[str, t.ContainerValue]]:
-        """Extract records from a raw response (stub for API compatibility)."""
-        yield from self.parse_response(response)
 
     @override
     def post_process(

@@ -122,11 +122,9 @@ class TestOracleWMSE2EComplete:
         )
         assert stream.name == stream_id
         assert stream.url_base is not None
-        assert callable(stream.get_url_params)
-        assert callable(stream.parse_response)
-        params = stream.get_url_params(_context=None, next_page_token=None)
+        params = stream._build_operation_kwargs(page=1, context=None)
         assert isinstance(params, dict)
-        assert "page_size" in params
+        assert "limit" in params
         logger.info("✅ Single stream extraction setup successful")
 
     @pytest.mark.skip(
@@ -164,11 +162,11 @@ class TestOracleWMSE2EComplete:
         assert stream.replication_key is not None
         yesterday = datetime.now(UTC) - timedelta(days=1)
         context = {"replication_key_value": yesterday.isoformat()}
-        params = stream.get_url_params(_context=context, next_page_token=None)
-        filter_params = {k: v for k, v in params.items() if "__gte" in k or "__gt" in k}
-        assert filter_params, (
-            f"No timestamp filters in incremental stream: {list(params.keys())}"
-        )
+        params = stream._build_operation_kwargs(page=1, context=context)
+        kwargs_filter = params.get("filter")
+        assert kwargs_filter is not None and (
+            ">=" in str(kwargs_filter) or ">" in str(kwargs_filter)
+        ), f"No timestamp filters in incremental stream: {list(params.keys())}"
         logger.info("✅ Incremental extraction workflow validated for %s", stream.name)
 
     @pytest.mark.skip(
@@ -202,7 +200,7 @@ class TestOracleWMSE2EComplete:
             name=full_table_stream_config["tap_stream_id"],
             schema=full_table_stream_config["schema"],
         )
-        params = stream.get_url_params(_context=None, next_page_token=None)
+        params = stream._build_operation_kwargs(page=1, context=None)
         if "ordering" in params:
             ordering = str(params["ordering"])
             assert ordering.startswith("-") or "desc" in ordering.lower(), (

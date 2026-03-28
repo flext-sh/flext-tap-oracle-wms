@@ -249,15 +249,11 @@ class TestOracleWMSFunctionalComplete:
             name=stream_id,
             schema=test_stream["schema"],
         )
-        url_params = stream.get_url_params(_context=None, next_page_token=None)
-        assert "page_size" in url_params, "Missing page_size parameter"
-        assert isinstance(url_params["page_size"], int), "page_size must be integer"
-        assert url_params["page_size"] > 0, "page_size must be positive"
-        assert url_params["page_size"] <= 1250, "page_size exceeds Oracle WMS limit"
-        if "page_mode" in url_params:
-            assert url_params["page_mode"] in {"sequenced", "offset"}, (
-                f"Invalid page_mode: {url_params['page_mode']}"
-            )
+        url_params = stream._build_operation_kwargs(page=1, context=None)
+        assert "limit" in url_params, "Missing limit parameter"
+        assert isinstance(url_params["limit"], int), "limit must be integer"
+        assert url_params["limit"] > 0, "limit must be positive"
+        assert url_params["limit"] <= 1250, "limit exceeds Oracle WMS max"
         logger.info("✅ Pagination configured: page_size=%s", url_params["page_size"])
 
     @pytest.mark.functional
@@ -329,12 +325,10 @@ class TestOracleWMSFunctionalComplete:
             schema=test_stream["schema"],
         )
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
-        url_params = stream.get_url_params(_context=context, next_page_token=None)
-        timestamp_filters = [
-            key for key in url_params if "__gte" in key or "__lt" in key
-        ]
-        if timestamp_filters:
-            logger.info("✅ Timestamp filters applied: %s", timestamp_filters)
+        url_params = stream._build_operation_kwargs(page=1, context=context)
+        kwargs_filter = url_params.get("filter")
+        if kwargs_filter and (">=" in str(kwargs_filter) or "<" in str(kwargs_filter)):
+            logger.info("✅ Timestamp filters applied: %s", kwargs_filter)
         if "ordering" in url_params:
             ordering = url_params["ordering"]
             assert isinstance(ordering, str), "Ordering must be string"
@@ -461,8 +455,8 @@ class TestOracleWMSFunctionalComplete:
                     test_stream["tap_stream_id"],
                     test_stream["schema"],
                 )
-                params = stream_obj.get_url_params(None, None)
-                pagination_configured = "page_size" in params
+                params = stream_obj._build_operation_kwargs(page=1, context=None)
+                pagination_configured = "limit" in params
         except (
             ValueError,
             TypeError,

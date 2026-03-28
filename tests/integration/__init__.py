@@ -18,11 +18,7 @@ if TYPE_CHECKING:
     from flext_core import FlextTypes
 
     from tests.integration.test_functional import TestOracleWMSFunctionalComplete
-    from tests.integration.test_streams_functional import (
-        TestStreamsFunctional,
-        TestWMSPaginatorUnit,
-        logger,
-    )
+    from tests.integration.test_streams_functional import TestStreamsFunctional, logger
     from tests.integration.test_wms import TestRealWmsIntegration
     from tests.integration.test_wms_connection import (
         TestFilteringAndSelection,
@@ -57,10 +53,6 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "tests.integration.test_streams_functional",
         "TestStreamsFunctional",
     ],
-    "TestWMSPaginatorUnit": [
-        "tests.integration.test_streams_functional",
-        "TestWMSPaginatorUnit",
-    ],
     "env_path": ["tests.integration.test_wms_connection", "env_path"],
     "logger": ["tests.integration.test_streams_functional", "logger"],
     "real_config": ["tests.integration.test_wms_connection", "real_config"],
@@ -75,7 +67,6 @@ __all__ = [
     "TestRealDataExtraction",
     "TestRealWmsIntegration",
     "TestStreamsFunctional",
-    "TestWMSPaginatorUnit",
     "env_path",
     "logger",
     "real_config",

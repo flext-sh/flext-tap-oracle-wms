@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableSequence
 from unittest.mock import Mock
 
 import pytest
@@ -64,11 +63,11 @@ class TestStreamsFunctional:
         assert url_base.startswith("https://"), f"URL must be HTTPS: {url_base}"
         assert "invalid.wms.ocs.oraclecloud.com" in url_base
         assert "company_unknow" in url_base
-        url_params = stream.get_url_params(_context=None, next_page_token=None)
+        url_params = stream._build_operation_kwargs(page=1, context=None)
         assert isinstance(url_params, dict)
-        assert "page_size" in url_params
-        assert isinstance(url_params["page_size"], int)
-        assert url_params["page_size"] > 0
+        assert "limit" in url_params
+        assert isinstance(url_params["limit"], int)
+        assert url_params["limit"] > 0
         logger.info("✅ URL generation working: %s", url_base)
         logger.info("✅ Parameters: %s", list(url_params.keys()))
 
@@ -207,20 +206,18 @@ class TestStreamsFunctional:
             name=test_stream["tap_stream_id"],
             schema=test_stream["schema"],
         )
-        params = stream.get_url_params(_context=None, next_page_token=None)
-        assert "page_size" in params
-        page_size = params["page_size"]
+        params = stream._build_operation_kwargs(page=1, context=None)
+        assert "limit" in params
+        page_size = params["limit"]
         assert isinstance(page_size, int)
-        assert 1 <= page_size <= 1250, f"Invalid page_size: {page_size}"
+        assert 1 <= page_size <= 1250, f"Invalid limit: {page_size}"
         if "page_mode" in params:
             page_mode = params["page_mode"]
             assert page_mode in {"sequenced", "offset"}, (
                 f"Invalid page_mode: {page_mode}"
             )
-        logger.info("✅ Pagination: page_size=%s", page_size)
-        mock_token = Mock()
-        mock_token.query = "page=2&cursor=abc123"
-        token_params = stream.get_url_params(_context=None, next_page_token=mock_token)
+        logger.info("✅ Pagination: limit=%s", page_size)
+        token_params = stream._build_operation_kwargs(page=2, context=None)
         assert isinstance(token_params, dict)
         logger.info("✅ Pagination token handling working")
 
@@ -247,16 +244,12 @@ class TestStreamsFunctional:
         if not incremental_stream:
             pytest.skip("No incremental streams found")
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
-        params = incremental_stream.get_url_params(
-            _context=context,
-            next_page_token=None,
-        )
-        filter_keys = [key for key in params if "__gte" in key or "__gt" in key]
-        assert filter_keys, (
-            f"No timestamp filters found in params: {list(params.keys())}"
-        )
-        for filter_key in filter_keys:
-            filter_value = params[filter_key]
+        params = incremental_stream._build_operation_kwargs(page=1, context=context)
+        kwargs_filter = params.get("filter")
+        assert kwargs_filter and (
+            ">=" in str(kwargs_filter) or ">" in str(kwargs_filter)
+        ), f"No timestamp filters found in params: {list(params.keys())}"
+        for filter_value in [str(kwargs_filter)]:
             assert isinstance(filter_value, str), (
                 f"Filter value must be string: {filter_value}"
             )
@@ -266,158 +259,4 @@ class TestStreamsFunctional:
             assert "Z" in filter_value or "+" in filter_value, (
                 f"Invalid timestamp format - missing timezone: {filter_value}"
             )
-        logger.info("✅ Incremental filtering: %s", filter_keys)
-
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
-    def test_response_parsing_structure(
-        self,
-        real_tap_instance: FlextTapOracleWms,
-    ) -> None:
-        """Test response parsing with mock Oracle WMS responses."""
-        catalog = real_tap_instance.catalog_dict_typed
-        streams = catalog.get("streams", [])
-        assert streams
-        stream = FlextTapOracleWmsStream(
-            tap=real_tap_instance,
-            name=streams[0]["tap_stream_id"],
-            schema=streams[0]["schema"],
-        )
-        raw1 = list(
-            stream._extract_records_from_response({
-                "results": [
-                    {"id": 1, "code": "ITEM001", "mod_ts": "2024-01-01T10:00:00Z"},
-                    {"id": 2, "code": "ITEM002", "mod_ts": "2024-01-01T11:00:00Z"},
-                ],
-                "next_page": "/api/entity/item?page=2",
-            }),
-        )
-        assert len(raw1) == 2
-        r0 = raw1[0]
-        assert isinstance(r0, Mapping) and r0["id"] == 1
-        r1 = raw1[1]
-        assert isinstance(r1, Mapping) and r1["code"] == "ITEM002"
-        raw2 = list(
-            stream._extract_records_from_response([
-                {"id": 3, "code": "ITEM003"},
-                {"id": 4, "code": "ITEM004"},
-            ]),
-        )
-        assert len(raw2) == 2
-        r2 = raw2[0]
-        assert isinstance(r2, Mapping) and r2["id"] == 3
-        raw3 = list(stream._extract_records_from_response({}))
-        assert not raw3
-        logger.info("✅ Response parsing working for all formats")
-
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
-    def test_stream_ordering_configuration(
-        self,
-        real_tap_instance: FlextTapOracleWms,
-    ) -> None:
-        """Test ordering configuration for different replication methods."""
-        catalog = real_tap_instance.catalog_dict_typed
-        streams = catalog.get("streams", [])
-        ordering_configs: MutableSequence[tuple[str, str, str]] = []
-        for stream_config in streams[:3]:
-            stream = FlextTapOracleWmsStream(
-                tap=real_tap_instance,
-                name=stream_config["tap_stream_id"],
-                schema=stream_config["schema"],
-            )
-            params = stream.get_url_params(_context=None, next_page_token=None)
-            if "ordering" in params:
-                ordering_raw = params["ordering"]
-                ordering_configs.append((
-                    stream.name,
-                    stream.get_replication_key() or "",
-                    str(ordering_raw),
-                ))
-        logger.info("✅ Ordering configurations: %s", ordering_configs)
-        for _stream_name, replication_method, ordering in ordering_configs:
-            if replication_method == "FULL_TABLE":
-                assert ordering.startswith("-"), (
-                    f"Full table should use descending order: {ordering}"
-                )
-            elif replication_method == "INCREMENTAL":
-                assert not ordering.startswith("-") or "ts" in ordering, (
-                    f"Incremental should use ascending timestamp: {ordering}"
-                )
-
-
-@pytest.mark.unit
-class TestWMSPaginatorUnit:
-    """Unit tests for WMS stream paginator extraction logic."""
-
-    @staticmethod
-    def _build_stream(real_tap_instance: FlextTapOracleWms) -> FlextTapOracleWmsStream:
-        catalog = real_tap_instance.catalog_dict_typed
-        streams = catalog.get("streams", [])
-        assert streams, "No streams discovered"
-        stream_config = streams[0]
-        return FlextTapOracleWmsStream(
-            tap=real_tap_instance,
-            name=stream_config["tap_stream_id"],
-            schema=stream_config["schema"],
-        )
-
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
-    def test_extract_records_marks_has_more_with_next_page(
-        self,
-        real_tap_instance: FlextTapOracleWms,
-    ) -> None:
-        stream = self._build_stream(real_tap_instance)
-        raw1 = list(
-            stream._extract_records_from_response({
-                "results": [{"id": 1, "name": "first"}],
-                "next_page": "/api/entity/item?page=2",
-            }),
-        )
-        assert len(raw1) == 1
-        r0 = raw1[0]
-        assert isinstance(r0, Mapping) and r0["id"] == 1
-
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
-    def test_extract_records_marks_final_page_without_next_page(
-        self,
-        real_tap_instance: FlextTapOracleWms,
-    ) -> None:
-        stream = self._build_stream(real_tap_instance)
-        raw1 = list(stream._extract_records_from_response({"results": [{"id": 2}]}))
-        assert len(raw1) == 1
-
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
-    def test_extract_records_handles_invalid_payload_without_crash(
-        self,
-        real_tap_instance: FlextTapOracleWms,
-    ) -> None:
-        stream = self._build_stream(real_tap_instance)
-        records, has_more = stream._extract_records_from_response("invalid-payload")
-        assert records == []
-        assert has_more is False
-
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
-    def test_extract_records_list_payload_uses_page_size_for_has_more(
-        self,
-        real_tap_instance: FlextTapOracleWms,
-    ) -> None:
-        stream = self._build_stream(real_tap_instance)
-        full_page = [{"id": idx} for idx in range(stream._page_size)]
-        partial_page = [{"id": 1}, {"id": 2}]
-        _records_full, has_more_full = stream._extract_records_from_response(full_page)
-        _records_partial, has_more_partial = stream._extract_records_from_response(
-            partial_page,
-        )
-        assert has_more_full is True
-        assert has_more_partial is False
+        logger.info("✅ Incremental filtering: %s", [str(kwargs_filter)])
