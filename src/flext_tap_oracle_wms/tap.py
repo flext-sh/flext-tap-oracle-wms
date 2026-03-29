@@ -8,17 +8,22 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, r
-from flext_meltano.singer.sdk import FlextMeltanoSingerTapBase
+from flext_meltano import FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsSettings,
 )
 from pydantic import SecretStr, TypeAdapter, ValidationError
 
-from flext_tap_oracle_wms import c, m, t, u
-from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
-from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
+from flext_tap_oracle_wms import (
+    FlextTapOracleWmsConfigurationError,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStream,
+    c,
+    m,
+    t,
+    u,
+)
 
 logger = FlextLogger(__name__)
 _CONTAINER_VALUE_MAP_ADAPTER: TypeAdapter[t.ContainerValueMapping] = TypeAdapter(
