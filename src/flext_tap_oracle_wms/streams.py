@@ -12,10 +12,7 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from flext_core import FlextLogger, r
-from flext_meltano.singer.sdk import (
-    FlextMeltanoSingerStreamBase,
-    FlextMeltanoSingerTapBase,
-)
+from flext_meltano import m
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import BaseModel, TypeAdapter
 
@@ -30,7 +27,7 @@ _CONTAINER_VALUE_LIST_ADAPTER: TypeAdapter[t.ContainerValueList] = TypeAdapter(
 )
 
 
-class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
+class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     """Dynamic stream for Oracle WMS entities.
 
     Uses flext-oracle-wms client for all data operations.
@@ -41,14 +38,14 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
     stream_replication_key: str | None = None
     url_base: str = ""
     # Singer SDK attributes exposed for type narrowing in tests/consumers
-    tap: FlextMeltanoSingerTapBase
+    tap: m.Meltano.SingerTapBase
     http_headers: MutableMapping[str, str]
     authenticator: None = None
 
     @override
     def __init__(
         self,
-        tap: FlextMeltanoSingerTapBase,
+        tap: m.Meltano.SingerTapBase,
         name: str | None = None,
         schema: Mapping[str, t.ContainerValue] | None = None,
         _path: str | None = None,
@@ -57,7 +54,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         schema_dict: dict[str, t.ContainerValue] | None = (
             dict(schema) if schema is not None else None
         )
-        FlextMeltanoSingerStreamBase.__init__(
+        m.Meltano.SingerStreamBase.__init__(
             self,
             tap=tap,
             name=name or self.name,

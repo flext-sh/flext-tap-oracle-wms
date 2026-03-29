@@ -154,7 +154,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         config_map = dict(self.config)
         try:
             return FlextTapOracleWmsSettings.model_validate(config_map)
-        except (ValueError, TypeError, KeyError) as exc:
+        except c.Meltano.Singer.SAFE_EXCEPTIONS as exc:
             msg = f"Invalid configuration: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
 
