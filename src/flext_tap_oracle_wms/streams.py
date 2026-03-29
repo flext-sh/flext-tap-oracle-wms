@@ -19,7 +19,7 @@ from flext_meltano.singer.sdk import (
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import BaseModel, TypeAdapter
 
-from flext_tap_oracle_wms import FlextTapOracleWmsError, p, t, u
+from flext_tap_oracle_wms import FlextTapOracleWmsError, c, p, t, u
 
 logger = FlextLogger(__name__)
 _CONTAINER_VALUE_MAP_ADAPTER: TypeAdapter[t.ContainerValueMapping] = TypeAdapter(
@@ -155,15 +155,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
                 page += 1
                 if not records:
                     break
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                AttributeError,
-                OSError,
-                RuntimeError,
-                ImportError,
-            ) as exc:
+            except c.Meltano.Singer.SAFE_EXCEPTIONS as exc:
                 msg = f"Error getting records for {self.name}: {exc}"
                 logger.exception(msg)
                 raise FlextTapOracleWmsError(msg) from exc
