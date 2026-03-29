@@ -8,9 +8,7 @@ from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
 from pydantic import TypeAdapter
 
-from flext_tap_oracle_wms.constants import (
-    FlextTapOracleWmsConstants,
-)
+from flext_tap_oracle_wms import c
 
 
 class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
@@ -25,20 +23,12 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     class Project:
         """Project-level aliases and constrained literals."""
 
-        type ProjectType = FlextTapOracleWmsConstants.TapOracleWms.TapProjectType
-        type ReplicationMethodLiteral = (
-            FlextTapOracleWmsConstants.TapOracleWms.ReplicationMethodLiteral
-        )
-        type AuthenticationMethodLiteral = (
-            FlextTapOracleWmsConstants.TapOracleWms.AuthenticationMethodLiteral
-        )
-        type StreamInclusionLiteral = (
-            FlextTapOracleWmsConstants.TapOracleWms.StreamInclusionLiteral
-        )
-        type ErrorTypeLiteral = FlextTapOracleWmsConstants.TapOracleWms.ErrorTypeLiteral
-        type BackoffStrategyLiteral = (
-            FlextTapOracleWmsConstants.TapOracleWms.BackoffStrategyLiteral
-        )
+        type ProjectType = c.TapOracleWms.TapProjectType
+        type ReplicationMethodLiteral = c.TapOracleWms.ReplicationMethodLiteral
+        type AuthenticationMethodLiteral = c.TapOracleWms.AuthenticationMethodLiteral
+        type StreamInclusionLiteral = c.TapOracleWms.StreamInclusionLiteral
+        type ErrorTypeLiteral = c.TapOracleWms.ErrorTypeLiteral
+        type BackoffStrategyLiteral = c.TapOracleWms.BackoffStrategyLiteral
 
 
 t = FlextTapOracleWmsTypes

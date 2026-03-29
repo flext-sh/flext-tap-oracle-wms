@@ -83,7 +83,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     @property
     def catalog_dict_typed(self) -> m.TapOracleWms.SingerCatalogDict:
         """Return catalog_dict with proper typing for pyright."""
-        raw_catalog_dict: object = getattr(super(), "catalog_dict", {})
+        raw_catalog_dict: t.ContainerValueMapping = getattr(super(), "catalog_dict", {})
         try:
             validated_catalog = _CONTAINER_VALUE_MAP_ADAPTER.validate_python(
                 raw_catalog_dict,
