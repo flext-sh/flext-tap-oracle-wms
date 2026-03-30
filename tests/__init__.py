@@ -13,74 +13,49 @@ from flext_core.lazy import install_lazy_exports
 if TYPE_CHECKING:
     from flext_tests import *
 
-    from tests import (
-        conftest,
-        constants,
-        e2e,
-        integration,
-        models,
-        performance,
-        protocols,
-        typings,
-        unit,
-        utilities,
-    )
+    from tests import conftest, constants, models, protocols, typings, utilities
     from tests.conftest import *
     from tests.constants import *
-    from tests.e2e import test_e2e
-    from tests.e2e.test_e2e import *
-    from tests.integration import (
-        test_functional,
-        test_streams_functional,
-        test_wms,
-        test_wms_connection,
-    )
-    from tests.integration.test_functional import *
-    from tests.integration.test_streams_functional import *
-    from tests.integration.test_wms import *
-    from tests.integration.test_wms_connection import *
+    from tests.e2e import *
+    from tests.integration import *
     from tests.models import *
-    from tests.performance import test_extraction_performance
-    from tests.performance.test_extraction_performance import *
+    from tests.performance import *
     from tests.protocols import *
     from tests.typings import *
-    from tests.unit import (
-        test_cli,
-        test_config,
-        test_config_validation,
-        test_tap,
-        test_tap_initialization,
-    )
-    from tests.unit.test_cli import *
-    from tests.unit.test_config import *
-    from tests.unit.test_config_validation import *
-    from tests.unit.test_tap import *
-    from tests.unit.test_tap_initialization import *
+    from tests.unit import *
     from tests.utilities import *
 
-from tests.e2e import _LAZY_IMPORTS as _E2E_LAZY
-from tests.integration import _LAZY_IMPORTS as _INTEGRATION_LAZY
-from tests.performance import _LAZY_IMPORTS as _PERFORMANCE_LAZY
-from tests.unit import _LAZY_IMPORTS as _UNIT_LAZY
-
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
-    **_E2E_LAZY,
-    **_INTEGRATION_LAZY,
-    **_PERFORMANCE_LAZY,
-    **_UNIT_LAZY,
     "FlextTapOracleWmsTestConstants": "tests.constants",
     "FlextTapOracleWmsTestModels": "tests.models",
     "FlextTapOracleWmsTestProtocols": "tests.protocols",
     "FlextTapOracleWmsTestTypes": "tests.typings",
     "FlextTapOracleWmsTestUtilities": "tests.utilities",
+    "TestCLI": "tests.unit.test_cli",
+    "TestConfigValidation": "tests.unit.test_config_validation",
+    "TestExtractionPerformance": "tests.performance.test_extraction_performance",
+    "TestFilteringAndSelection": "tests.integration.test_wms_connection",
+    "TestFlextTapOracleWms": "tests.unit.test_tap",
+    "TestFlextTapOracleWmsSettings": "tests.unit.test_config",
+    "TestIntegration": "tests.integration.test_wms_connection",
+    "TestOracleWMSE2EComplete": "tests.e2e.test_e2e",
+    "TestOracleWMSFunctionalComplete": "tests.integration.test_functional",
+    "TestRateLimitingPerformance": "tests.performance.test_extraction_performance",
+    "TestRealConnection": "tests.integration.test_wms_connection",
+    "TestRealDataExtraction": "tests.integration.test_wms_connection",
+    "TestRealWmsIntegration": "tests.integration.test_wms",
+    "TestStreamsFunctional": "tests.integration.test_streams_functional",
+    "TestTapInitialization": "tests.unit.test_tap_initialization",
     "c": ["tests.constants", "FlextTapOracleWmsTestConstants"],
     "conftest": "tests.conftest",
     "constants": "tests.constants",
     "d": "flext_tests",
     "e": "flext_tests",
     "e2e": "tests.e2e",
+    "env_path": "tests.performance.test_extraction_performance",
     "h": "flext_tests",
     "integration": "tests.integration",
+    "logger": "tests.integration.test_streams_functional",
     "m": ["tests.models", "FlextTapOracleWmsTestModels"],
     "mock_request": "tests.conftest",
     "mock_response": "tests.conftest",
@@ -89,9 +64,11 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "oracle_wms_environment": "tests.conftest",
     "p": ["tests.protocols", "FlextTapOracleWmsTestProtocols"],
     "performance": "tests.performance",
+    "performance_config": "tests.performance.test_extraction_performance",
     "protocols": "tests.protocols",
     "pytest_collection_modifyitems": "tests.conftest",
     "r": "flext_tests",
+    "real_config": "tests.integration.test_wms_connection",
     "real_tap_instance": "tests.conftest",
     "reset_environment": "tests.conftest",
     "s": "flext_tests",
@@ -99,8 +76,20 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "sample_config": "tests.conftest",
     "sample_state": "tests.conftest",
     "t": ["tests.typings", "FlextTapOracleWmsTestTypes"],
+    "tap": "tests.performance.test_extraction_performance",
     "tap_instance": "tests.conftest",
+    "test_cli": "tests.unit.test_cli",
+    "test_config": "tests.unit.test_config",
     "test_config_extraction": "tests.conftest",
+    "test_config_validation": "tests.unit.test_config_validation",
+    "test_e2e": "tests.e2e.test_e2e",
+    "test_extraction_performance": "tests.performance.test_extraction_performance",
+    "test_functional": "tests.integration.test_functional",
+    "test_streams_functional": "tests.integration.test_streams_functional",
+    "test_tap": "tests.unit.test_tap",
+    "test_tap_initialization": "tests.unit.test_tap_initialization",
+    "test_wms": "tests.integration.test_wms",
+    "test_wms_connection": "tests.integration.test_wms_connection",
     "typings": "tests.typings",
     "u": ["tests.utilities", "FlextTapOracleWmsTestUtilities"],
     "unit": "tests.unit",
