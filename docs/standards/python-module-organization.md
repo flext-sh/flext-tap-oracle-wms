@@ -142,9 +142,9 @@ This module provides the main entry points for the Oracle WMS tap,
 following Singer SDK patterns and FLEXT ecosystem standards.
 """
 
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from flext_tap_oracle_wms.settings import WMSConfig
-from flext_tap_oracle_wms.__version__ import __version__
+from flext_tap_oracle_wms import FlextTapOracleWms
+from flext_tap_oracle_wms import WMSConfig
+from flext_tap_oracle_wms import __version__
 
 __all__: t.StringList = [
     "FlextTapOracleWms",
@@ -211,9 +211,9 @@ from flext_core import t
 from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
 
-from flext_tap_oracle_wms.settings import WMSConfig
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
-from flext_tap_oracle_wms.discovery import EntityDiscovery
+from flext_tap_oracle_wms import WMSConfig
+from flext_tap_oracle_wms import FlextTapOracleWmsStream
+from flext_tap_oracle_wms import EntityDiscovery
 
 
 class FlextTapOracleWms(Tap):
@@ -314,7 +314,7 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u, TAnyDict
 
-from flext_tap_oracle_wms.schema import SchemaGenerator
+from flext_tap_oracle_wms import SchemaGenerator
 
 
 class WMSPaginator(BaseHATEOASPaginator):
@@ -603,7 +603,7 @@ from flext_core import t
 from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
 
-from flext_tap_oracle_wms.discovery import EntityDiscovery
+from flext_tap_oracle_wms import EntityDiscovery
 
 
 class SchemaGenerator:
@@ -665,7 +665,7 @@ WMS library without reimplementing authentication logic.
 """
 
 from flext_oracle_wms import FlextOracleWmsClient
-from flext_tap_oracle_wms.settings import WMSConfig
+from flext_tap_oracle_wms import WMSConfig
 
 
 class AuthenticationManager:
@@ -859,9 +859,9 @@ from flext_core import u, TAnyDict
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # Project imports (relative)
-from flext_tap_oracle_wms.settings import WMSConfig
-from flext_tap_oracle_wms.discovery import EntityDiscovery
-from flext_tap_oracle_wms.schema import SchemaGenerator
+from flext_tap_oracle_wms import WMSConfig
+from flext_tap_oracle_wms import EntityDiscovery
+from flext_tap_oracle_wms import SchemaGenerator
 ```
 
 **Pattern**: External → FLEXT ecosystem → Project modules.

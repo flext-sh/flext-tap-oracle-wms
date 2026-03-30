@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from flext_meltano import d, e, h, r, s, x
 
     from flext_tap_oracle_wms.__version__ import (
-        __all__,
         __author__,
         __author_email__,
         __description__,
@@ -108,7 +107,6 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "flext_tap_oracle_wms.errors",
         "FlextTapOracleWmsValidationError",
     ],
-    "__all__": ["flext_tap_oracle_wms.__version__", "__all__"],
     "__author__": ["flext_tap_oracle_wms.__version__", "__author__"],
     "__author_email__": ["flext_tap_oracle_wms.__version__", "__author_email__"],
     "__description__": ["flext_tap_oracle_wms.__version__", "__description__"],
@@ -146,7 +144,6 @@ __all__ = [
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
     "FlextTapOracleWmsValidationError",
-    "__all__",
     "__author__",
     "__author_email__",
     "__description__",

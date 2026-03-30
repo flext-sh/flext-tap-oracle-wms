@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsModels
 
-from flext_tap_oracle_wms.models import FlextTapOracleWmsModels
+from flext_tap_oracle_wms import FlextTapOracleWmsModels
 
 
 class FlextTapOracleWmsTestModels(FlextTestsModels, FlextTapOracleWmsModels):

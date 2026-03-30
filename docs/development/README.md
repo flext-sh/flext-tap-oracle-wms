@@ -476,7 +476,7 @@ TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap --config confi
 ```bash
 # Validate schema generation
 python -c "
-from flext_tap_oracle_wms.discovery import EntityDiscovery
+from flext_tap_oracle_wms import EntityDiscovery
 discovery = EntityDiscovery()
 schema = discovery.get_entity_schema('item')
 print(schema)
