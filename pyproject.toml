@@ -675,6 +675,8 @@ split-on-trailing-comma = true
 "**/__init__.py" = [
   "ANN401",
   "D107",
+  "F401",
+  "F403",
   "F822",
   "N999",
   "PLC2701",
