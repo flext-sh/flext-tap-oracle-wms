@@ -18,6 +18,13 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.unit import (
+        test_cli,
+        test_config,
+        test_config_validation,
+        test_tap,
+        test_tap_initialization,
+    )
     from tests.unit.test_cli import TestCLI
     from tests.unit.test_config import TestFlextTapOracleWmsSettings
     from tests.unit.test_config_validation import TestConfigValidation
@@ -39,6 +46,11 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "tests.unit.test_tap_initialization",
         "TestTapInitialization",
     ],
+    "test_cli": ["tests.unit.test_cli", ""],
+    "test_config": ["tests.unit.test_config", ""],
+    "test_config_validation": ["tests.unit.test_config_validation", ""],
+    "test_tap": ["tests.unit.test_tap", ""],
+    "test_tap_initialization": ["tests.unit.test_tap_initialization", ""],
 }
 
 __all__ = [
@@ -47,6 +59,11 @@ __all__ = [
     "TestFlextTapOracleWms",
     "TestFlextTapOracleWmsSettings",
     "TestTapInitialization",
+    "test_cli",
+    "test_config",
+    "test_config_validation",
+    "test_tap",
+    "test_tap_initialization",
 ]
 
 

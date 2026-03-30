@@ -17,6 +17,12 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.integration import (
+        test_functional,
+        test_streams_functional,
+        test_wms,
+        test_wms_connection,
+    )
     from tests.integration.test_functional import TestOracleWMSFunctionalComplete
     from tests.integration.test_streams_functional import TestStreamsFunctional, logger
     from tests.integration.test_wms import TestRealWmsIntegration
@@ -57,6 +63,10 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "logger": ["tests.integration.test_streams_functional", "logger"],
     "real_config": ["tests.integration.test_wms_connection", "real_config"],
     "tap": ["tests.integration.test_wms_connection", "tap"],
+    "test_functional": ["tests.integration.test_functional", ""],
+    "test_streams_functional": ["tests.integration.test_streams_functional", ""],
+    "test_wms": ["tests.integration.test_wms", ""],
+    "test_wms_connection": ["tests.integration.test_wms_connection", ""],
 }
 
 __all__ = [
@@ -71,6 +81,10 @@ __all__ = [
     "logger",
     "real_config",
     "tap",
+    "test_functional",
+    "test_streams_functional",
+    "test_wms",
+    "test_wms_connection",
 ]
 
 

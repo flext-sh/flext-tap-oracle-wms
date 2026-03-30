@@ -18,6 +18,7 @@ from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 if TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.performance import test_extraction_performance
     from tests.performance.test_extraction_performance import (
         TestExtractionPerformance,
         TestRateLimitingPerformance,
@@ -41,6 +42,10 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "performance_config",
     ],
     "tap": ["tests.performance.test_extraction_performance", "tap"],
+    "test_extraction_performance": [
+        "tests.performance.test_extraction_performance",
+        "",
+    ],
 }
 
 __all__ = [
@@ -49,6 +54,7 @@ __all__ = [
     "env_path",
     "performance_config",
     "tap",
+    "test_extraction_performance",
 ]
 
 

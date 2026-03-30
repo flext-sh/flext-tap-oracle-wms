@@ -14,7 +14,18 @@ if TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
 
-    from tests import e2e, integration, performance, unit
+    from tests import (
+        conftest,
+        constants,
+        e2e,
+        integration,
+        models,
+        performance,
+        protocols,
+        typings,
+        unit,
+        utilities,
+    )
     from tests.conftest import (
         mock_request,
         mock_response,
@@ -33,7 +44,14 @@ if TYPE_CHECKING:
         FlextTapOracleWmsTestConstants,
         FlextTapOracleWmsTestConstants as c,
     )
+    from tests.e2e import test_e2e
     from tests.e2e.test_e2e import TestOracleWMSE2EComplete
+    from tests.integration import (
+        test_functional,
+        test_streams_functional,
+        test_wms,
+        test_wms_connection,
+    )
     from tests.integration.test_functional import TestOracleWMSFunctionalComplete
     from tests.integration.test_streams_functional import TestStreamsFunctional, logger
     from tests.integration.test_wms import TestRealWmsIntegration
@@ -48,6 +66,7 @@ if TYPE_CHECKING:
         FlextTapOracleWmsTestModels,
         FlextTapOracleWmsTestModels as m,
     )
+    from tests.performance import test_extraction_performance
     from tests.performance.test_extraction_performance import (
         TestExtractionPerformance,
         TestRateLimitingPerformance,
@@ -62,6 +81,13 @@ if TYPE_CHECKING:
     from tests.typings import (
         FlextTapOracleWmsTestTypes,
         FlextTapOracleWmsTestTypes as t,
+    )
+    from tests.unit import (
+        test_cli,
+        test_config,
+        test_config_validation,
+        test_tap,
+        test_tap_initialization,
     )
     from tests.unit.test_cli import TestCLI
     from tests.unit.test_config import TestFlextTapOracleWmsSettings
@@ -134,6 +160,8 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "TestTapInitialization",
     ],
     "c": ["tests.constants", "FlextTapOracleWmsTestConstants"],
+    "conftest": ["tests.conftest", ""],
+    "constants": ["tests.constants", ""],
     "d": ["flext_tests", "d"],
     "e": ["flext_tests", "e"],
     "e2e": ["tests.e2e", ""],
@@ -145,6 +173,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "mock_request": ["tests.conftest", "mock_request"],
     "mock_response": ["tests.conftest", "mock_response"],
     "mock_wms_client": ["tests.conftest", "mock_wms_client"],
+    "models": ["tests.models", ""],
     "oracle_wms_environment": ["tests.conftest", "oracle_wms_environment"],
     "p": ["tests.protocols", "FlextTapOracleWmsTestProtocols"],
     "performance": ["tests.performance", ""],
@@ -152,6 +181,7 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
         "tests.performance.test_extraction_performance",
         "performance_config",
     ],
+    "protocols": ["tests.protocols", ""],
     "pytest_collection_modifyitems": [
         "tests.conftest",
         "pytest_collection_modifyitems",
@@ -167,9 +197,25 @@ _LAZY_IMPORTS: Mapping[str, Sequence[str]] = {
     "t": ["tests.typings", "FlextTapOracleWmsTestTypes"],
     "tap": ["tests.performance.test_extraction_performance", "tap"],
     "tap_instance": ["tests.conftest", "tap_instance"],
+    "test_cli": ["tests.unit.test_cli", ""],
+    "test_config": ["tests.unit.test_config", ""],
     "test_config_extraction": ["tests.conftest", "test_config_extraction"],
+    "test_config_validation": ["tests.unit.test_config_validation", ""],
+    "test_e2e": ["tests.e2e.test_e2e", ""],
+    "test_extraction_performance": [
+        "tests.performance.test_extraction_performance",
+        "",
+    ],
+    "test_functional": ["tests.integration.test_functional", ""],
+    "test_streams_functional": ["tests.integration.test_streams_functional", ""],
+    "test_tap": ["tests.unit.test_tap", ""],
+    "test_tap_initialization": ["tests.unit.test_tap_initialization", ""],
+    "test_wms": ["tests.integration.test_wms", ""],
+    "test_wms_connection": ["tests.integration.test_wms_connection", ""],
+    "typings": ["tests.typings", ""],
     "u": ["tests.utilities", "FlextTapOracleWmsTestUtilities"],
     "unit": ["tests.unit", ""],
+    "utilities": ["tests.utilities", ""],
     "x": ["flext_tests", "x"],
 }
 
@@ -195,6 +241,8 @@ __all__ = [
     "TestStreamsFunctional",
     "TestTapInitialization",
     "c",
+    "conftest",
+    "constants",
     "d",
     "e",
     "e2e",
@@ -206,10 +254,12 @@ __all__ = [
     "mock_request",
     "mock_response",
     "mock_wms_client",
+    "models",
     "oracle_wms_environment",
     "p",
     "performance",
     "performance_config",
+    "protocols",
     "pytest_collection_modifyitems",
     "r",
     "real_config",
@@ -222,9 +272,22 @@ __all__ = [
     "t",
     "tap",
     "tap_instance",
+    "test_cli",
+    "test_config",
     "test_config_extraction",
+    "test_config_validation",
+    "test_e2e",
+    "test_extraction_performance",
+    "test_functional",
+    "test_streams_functional",
+    "test_tap",
+    "test_tap_initialization",
+    "test_wms",
+    "test_wms_connection",
+    "typings",
     "u",
     "unit",
+    "utilities",
     "x",
 ]
 
