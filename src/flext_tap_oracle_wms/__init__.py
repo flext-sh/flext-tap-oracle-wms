@@ -10,11 +10,13 @@ SPDX-License-Identifier: MIT.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING as _TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
-if TYPE_CHECKING:
+if _TYPE_CHECKING:
+    from flext_meltano import d, e, h, r, s, x
+
     from flext_tap_oracle_wms.__version__ import *
     from flext_tap_oracle_wms.cli import *
     from flext_tap_oracle_wms.constants import *
