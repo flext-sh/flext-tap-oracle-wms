@@ -29,16 +29,52 @@ if _TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_meltano import d, e, h, r, s, x
 
-    from flext_tap_oracle_wms.cli import *
-    from flext_tap_oracle_wms.constants import *
-    from flext_tap_oracle_wms.errors import *
-    from flext_tap_oracle_wms.models import *
-    from flext_tap_oracle_wms.protocols import *
-    from flext_tap_oracle_wms.settings import *
-    from flext_tap_oracle_wms.streams import *
-    from flext_tap_oracle_wms.tap import *
-    from flext_tap_oracle_wms.typings import *
-    from flext_tap_oracle_wms.utilities import *
+    from flext_tap_oracle_wms import (
+        cli,
+        constants,
+        errors,
+        models,
+        protocols,
+        settings,
+        streams,
+        tap,
+        typings,
+        utilities,
+    )
+    from flext_tap_oracle_wms.cli import main
+    from flext_tap_oracle_wms.constants import (
+        FlextTapOracleWmsConstants,
+        FlextTapOracleWmsConstants as c,
+    )
+    from flext_tap_oracle_wms.errors import (
+        FlextTapOracleWmsConfigurationError,
+        FlextTapOracleWmsConnectionError,
+        FlextTapOracleWmsError,
+        FlextTapOracleWmsValidationError,
+    )
+    from flext_tap_oracle_wms.models import (
+        FlextTapOracleWmsModels,
+        FlextTapOracleWmsModels as m,
+    )
+    from flext_tap_oracle_wms.protocols import (
+        FlextTapOracleWmsProtocols,
+        FlextTapOracleWmsProtocols as p,
+    )
+    from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+    from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
+    from flext_tap_oracle_wms.tap import (
+        FlextTapOracleWms,
+        FlextTapOracleWmsPlugin,
+        logger,
+    )
+    from flext_tap_oracle_wms.typings import (
+        FlextTapOracleWmsTypes,
+        FlextTapOracleWmsTypes as t,
+    )
+    from flext_tap_oracle_wms.utilities import (
+        FlextTapOracleWmsUtilities,
+        FlextTapOracleWmsUtilities as u,
+    )
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextTapOracleWms": "flext_tap_oracle_wms.tap",

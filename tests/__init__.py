@@ -14,16 +14,88 @@ if _TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_tests import d, e, h, r, s, x
 
-    from tests.conftest import *
-    from tests.constants import *
-    from tests.e2e import *
-    from tests.integration import *
-    from tests.models import *
-    from tests.performance import *
-    from tests.protocols import *
-    from tests.typings import *
-    from tests.unit import *
-    from tests.utilities import *
+    from tests import (
+        conftest,
+        constants,
+        e2e,
+        integration,
+        models,
+        performance,
+        protocols,
+        typings,
+        unit,
+        utilities,
+    )
+    from tests.conftest import (
+        mock_request,
+        mock_response,
+        mock_wms_client,
+        oracle_wms_environment,
+        pytest_collection_modifyitems,
+        real_tap_instance,
+        reset_environment,
+        sample_catalog,
+        sample_config,
+        sample_state,
+        tap_instance,
+        test_config_extraction,
+    )
+    from tests.constants import (
+        FlextTapOracleWmsTestConstants,
+        FlextTapOracleWmsTestConstants as c,
+    )
+    from tests.e2e import TestOracleWMSE2EComplete, test_e2e
+    from tests.integration import (
+        TestFilteringAndSelection,
+        TestIntegration,
+        TestOracleWMSFunctionalComplete,
+        TestRealConnection,
+        TestRealDataExtraction,
+        TestRealWmsIntegration,
+        TestStreamsFunctional,
+        logger,
+        real_config,
+        test_functional,
+        test_streams_functional,
+        test_wms,
+        test_wms_connection,
+    )
+    from tests.models import (
+        FlextTapOracleWmsTestModels,
+        FlextTapOracleWmsTestModels as m,
+    )
+    from tests.performance import (
+        TestExtractionPerformance,
+        TestRateLimitingPerformance,
+        env_path,
+        performance_config,
+        tap,
+        test_extraction_performance,
+    )
+    from tests.protocols import (
+        FlextTapOracleWmsTestProtocols,
+        FlextTapOracleWmsTestProtocols as p,
+    )
+    from tests.typings import (
+        FlextTapOracleWmsTestTypes,
+        FlextTapOracleWmsTestTypes as t,
+    )
+    from tests.unit import (
+        TestCLI,
+        TestConfigValidation,
+        TestFlextTapOracleWms,
+        TestFlextTapOracleWmsSettings,
+        TestTapInitialization,
+        test_cli,
+        test_config,
+        test_config_validation,
+        test_tap,
+        test_tap_initialization,
+    )
+    from tests.utilities import (
+        FlextTapOracleWmsTestUtilities,
+        FlextTapOracleWmsTestUtilities as u,
+    )
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = merge_lazy_imports(
     (

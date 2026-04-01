@@ -17,6 +17,12 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.integration import (
+        test_functional,
+        test_streams_functional,
+        test_wms,
+        test_wms_connection,
+    )
     from tests.integration.test_functional import TestOracleWMSFunctionalComplete
     from tests.integration.test_streams_functional import TestStreamsFunctional, logger
     from tests.integration.test_wms import TestRealWmsIntegration

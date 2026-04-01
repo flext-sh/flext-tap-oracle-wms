@@ -18,6 +18,13 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
+    from tests.unit import (
+        test_cli,
+        test_config,
+        test_config_validation,
+        test_tap,
+        test_tap_initialization,
+    )
     from tests.unit.test_cli import TestCLI
     from tests.unit.test_config import TestFlextTapOracleWmsSettings
     from tests.unit.test_config_validation import TestConfigValidation
