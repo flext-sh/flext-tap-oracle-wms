@@ -18,7 +18,13 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from tests.performance.test_extraction_performance import *
+    from tests.performance.test_extraction_performance import (
+        TestExtractionPerformance,
+        TestRateLimitingPerformance,
+        env_path,
+        performance_config,
+        tap,
+    )
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "TestExtractionPerformance": "tests.performance.test_extraction_performance",

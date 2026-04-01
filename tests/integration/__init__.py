@@ -17,10 +17,18 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from tests.integration.test_functional import *
-    from tests.integration.test_streams_functional import *
-    from tests.integration.test_wms import *
-    from tests.integration.test_wms_connection import *
+    from tests.integration.test_functional import TestOracleWMSFunctionalComplete
+    from tests.integration.test_streams_functional import TestStreamsFunctional, logger
+    from tests.integration.test_wms import TestRealWmsIntegration
+    from tests.integration.test_wms_connection import (
+        TestFilteringAndSelection,
+        TestIntegration,
+        TestRealConnection,
+        TestRealDataExtraction,
+        env_path,
+        real_config,
+        tap,
+    )
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "TestFilteringAndSelection": "tests.integration.test_wms_connection",

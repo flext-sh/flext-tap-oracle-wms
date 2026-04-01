@@ -18,11 +18,11 @@ from flext_core.lazy import install_lazy_exports
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
 
-    from tests.unit.test_cli import *
-    from tests.unit.test_config import *
-    from tests.unit.test_config_validation import *
-    from tests.unit.test_tap import *
-    from tests.unit.test_tap_initialization import *
+    from tests.unit.test_cli import TestCLI
+    from tests.unit.test_config import TestFlextTapOracleWmsSettings
+    from tests.unit.test_config_validation import TestConfigValidation
+    from tests.unit.test_tap import TestFlextTapOracleWms
+    from tests.unit.test_tap_initialization import TestTapInitialization
 
 _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "TestCLI": "tests.unit.test_cli",
