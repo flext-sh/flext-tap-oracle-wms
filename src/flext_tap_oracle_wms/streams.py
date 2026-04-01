@@ -240,7 +240,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
-        limit = int(limit_raw) if isinstance(limit_raw, int) else self._page_size
+        limit = u.to_int(limit_raw, default=self._page_size)
         filters: MutableMapping[str, t.Scalar] = {}
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:

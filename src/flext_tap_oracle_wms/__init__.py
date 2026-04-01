@@ -14,10 +14,21 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
+from flext_tap_oracle_wms.__version__ import (
+    __author__,
+    __author_email__,
+    __description__,
+    __license__,
+    __title__,
+    __url__,
+    __version__,
+    __version_info__,
+)
+
 if _TYPE_CHECKING:
+    from flext_core import FlextTypes
     from flext_meltano import d, e, h, r, s, x
 
-    from flext_tap_oracle_wms.__version__ import *
     from flext_tap_oracle_wms.cli import *
     from flext_tap_oracle_wms.constants import *
     from flext_tap_oracle_wms.errors import *
@@ -43,14 +54,6 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextTapOracleWmsTypes": "flext_tap_oracle_wms.typings",
     "FlextTapOracleWmsUtilities": "flext_tap_oracle_wms.utilities",
     "FlextTapOracleWmsValidationError": "flext_tap_oracle_wms.errors",
-    "__author__": "flext_tap_oracle_wms.__version__",
-    "__author_email__": "flext_tap_oracle_wms.__version__",
-    "__description__": "flext_tap_oracle_wms.__version__",
-    "__license__": "flext_tap_oracle_wms.__version__",
-    "__title__": "flext_tap_oracle_wms.__version__",
-    "__url__": "flext_tap_oracle_wms.__version__",
-    "__version__": "flext_tap_oracle_wms.__version__",
-    "__version_info__": "flext_tap_oracle_wms.__version__",
     "c": ("flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"),
     "cli": "flext_tap_oracle_wms.cli",
     "constants": "flext_tap_oracle_wms.constants",
@@ -77,4 +80,18 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
 }
 
 
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
+install_lazy_exports(
+    __name__,
+    globals(),
+    _LAZY_IMPORTS,
+    [
+        "__author__",
+        "__author_email__",
+        "__description__",
+        "__license__",
+        "__title__",
+        "__url__",
+        "__version__",
+        "__version_info__",
+    ],
+)
