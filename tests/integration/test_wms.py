@@ -15,7 +15,8 @@ from collections.abc import Mapping
 
 import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings, t
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import t
 
 
 @pytest.fixture

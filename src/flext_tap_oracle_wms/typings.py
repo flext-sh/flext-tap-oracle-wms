@@ -1,4 +1,12 @@
-"""Type aliases for the Oracle WMS tap package."""
+"""FLEXT Tap Oracle WMS Types — MRO composition of parent type namespaces.
+
+All Singer protocol types are in ``FlextMeltanoTypes.Meltano.*``.
+All Oracle WMS domain types are in ``FlextOracleWmsTypes.OracleWms.*``.
+This facade composes both via MRO — access as ``t.Meltano.*`` and ``t.OracleWms.*``.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
@@ -8,27 +16,15 @@ from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
 from pydantic import TypeAdapter
 
-from flext_tap_oracle_wms import c
-
 
 class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
-    """Namespace for Oracle WMS tap type aliases."""
+    """MRO facade composing Meltano + Oracle WMS type namespaces."""
 
     type ScalarNormalizer = Callable[
         [FlextMeltanoTypes.NormalizedValue], FlextMeltanoTypes.Scalar
     ]
     type ContainerValueMapAdapter = TypeAdapter[FlextMeltanoTypes.ContainerValueMapping]
     type ContainerValueListAdapter = TypeAdapter[FlextMeltanoTypes.ContainerValueList]
-
-    class Project:
-        """Project-level aliases and constrained literals."""
-
-        type ProjectType = c.TapOracleWms.TapProjectType
-        type ReplicationMethodLiteral = c.TapOracleWms.ReplicationMethodLiteral
-        type AuthenticationMethodLiteral = c.TapOracleWms.AuthenticationMethodLiteral
-        type StreamInclusionLiteral = c.TapOracleWms.StreamInclusionLiteral
-        type ErrorTypeLiteral = c.TapOracleWms.ErrorTypeLiteral
-        type BackoffStrategyLiteral = c.TapOracleWms.BackoffStrategyLiteral
 
 
 t = FlextTapOracleWmsTypes

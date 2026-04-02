@@ -1,0 +1,34 @@
+"""FLEXT service orchestrator for tap-oracle-wms.
+
+Thin facade — all infrastructure from ``FlextMeltanoTapServiceBase`` via MRO.
+Only domain-specific tap creation defined here.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+from __future__ import annotations
+
+from typing import override
+
+from flext_meltano import FlextMeltanoSingerTapBase, FlextMeltanoTapServiceBase
+
+from flext_tap_oracle_wms import t
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
+
+
+class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
+    """Orchestrator for tap-oracle-wms. All behavior from base via MRO."""
+
+    tap_name: t.NonEmptyStr = "tap-oracle-wms"
+
+    @override
+    def create_tap_instance(
+        self,
+        config: t.ContainerMapping | None = None,
+    ) -> FlextMeltanoSingerTapBase:
+        """Create the FlextTapOracleWms singer_sdk.Tap instance."""
+        return FlextTapOracleWms(config=config)
+
+
+__all__ = ["FlextTapOracleWmsService"]

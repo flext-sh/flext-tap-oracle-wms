@@ -30,6 +30,7 @@ if _TYPE_CHECKING:
     from flext_meltano import d, e, h, r, s, x
 
     from flext_tap_oracle_wms import (
+        api,
         cli,
         constants,
         errors,
@@ -41,6 +42,7 @@ if _TYPE_CHECKING:
         typings,
         utilities,
     )
+    from flext_tap_oracle_wms.api import FlextTapOracleWmsService
     from flext_tap_oracle_wms.cli import main
     from flext_tap_oracle_wms.constants import (
         FlextTapOracleWmsConstants,
@@ -85,11 +87,13 @@ _LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
     "FlextTapOracleWmsModels": "flext_tap_oracle_wms.models",
     "FlextTapOracleWmsPlugin": "flext_tap_oracle_wms.tap",
     "FlextTapOracleWmsProtocols": "flext_tap_oracle_wms.protocols",
+    "FlextTapOracleWmsService": "flext_tap_oracle_wms.api",
     "FlextTapOracleWmsSettings": "flext_tap_oracle_wms.settings",
     "FlextTapOracleWmsStream": "flext_tap_oracle_wms.streams",
     "FlextTapOracleWmsTypes": "flext_tap_oracle_wms.typings",
     "FlextTapOracleWmsUtilities": "flext_tap_oracle_wms.utilities",
     "FlextTapOracleWmsValidationError": "flext_tap_oracle_wms.errors",
+    "api": "flext_tap_oracle_wms.api",
     "c": ("flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"),
     "cli": "flext_tap_oracle_wms.cli",
     "constants": "flext_tap_oracle_wms.constants",
