@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, MutableMapping, Sequence
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
@@ -33,7 +33,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     url_base: str = ""
     # Singer SDK attributes exposed for type narrowing in tests/consumers
     tap: m.Meltano.SingerTapBase
-    http_headers: MutableMapping[str, str]
+    http_headers: t.MutableStrMapping
     authenticator: None = None
 
     @override
@@ -41,7 +41,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self,
         tap: m.Meltano.SingerTapBase,
         name: str | None = None,
-        schema: Mapping[str, t.ContainerValue] | None = None,
+        schema: t.ContainerValueMapping | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
@@ -125,7 +125,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @override
     def get_records(
         self,
-        context: Mapping[str, t.Scalar] | None,
+        context: t.ScalarMapping | None,
     ) -> Iterable[dict[str, t.Scalar]]:
         """Get records from Oracle WMS."""
         page = 1
@@ -159,7 +159,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     def post_process(
         self,
         row: dict[str, t.Scalar],
-        context: Mapping[str, t.Scalar] | None = None,
+        context: t.ScalarMapping | None = None,
     ) -> dict[str, t.Scalar]:
         """Post-process a record."""
         conv = u.TapOracleWms.MappingConversion
@@ -211,10 +211,10 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     def _build_operation_kwargs(
         self,
         page: int,
-        context: Mapping[str, t.Scalar] | None,
-    ) -> MutableMapping[str, t.Scalar]:
+        context: t.ScalarMapping | None,
+    ) -> t.MutableScalarMapping:
         """Build kwargs for the operation call."""
-        result_kwargs: MutableMapping[str, t.Scalar] = {}
+        result_kwargs: t.MutableScalarMapping = {}
         result_kwargs["page"] = page
         result_kwargs["limit"] = self._page_size
         if self.stream_replication_key:
@@ -229,13 +229,13 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     def _fetch_page_data(
         self,
         page: int,
-        context: Mapping[str, t.Scalar] | None,
+        context: t.ScalarMapping | None,
     ) -> r[tuple[Sequence[t.ScalarMapping], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
         limit = u.to_int(limit_raw, default=self._page_size)
-        filters: MutableMapping[str, t.Scalar] = {}
+        filters: t.MutableScalarMapping = {}
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
@@ -264,13 +264,13 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     def _process_page_records(
         self,
         records: Sequence[t.ScalarMapping],
-        context: Mapping[str, t.Scalar] | None,
+        context: t.ScalarMapping | None,
     ) -> Iterable[dict[str, t.Scalar]]:
         """Process and yield records from a page."""
         conv = u.TapOracleWms.MappingConversion
         for record in records:
-            record_dict: Mapping[str, t.ContainerValue] = dict(record)
-            processed_record: Mapping[str, t.ContainerValue] = (
+            record_dict: t.ContainerValueMapping = dict(record)
+            processed_record: t.ContainerValueMapping = (
                 u.TapOracleWms.DataProcessing.process_wms_record(
                     record=record_dict,
                 )

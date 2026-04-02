@@ -54,7 +54,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     def __init__(
         self,
         config: t.ContainerMapping
-        | Mapping[str, t.ContainerValue]
+        | t.ContainerValueMapping
         | FlextTapOracleWmsSettings
         | None = None,
         catalog: dict[str, str] | None = None,
@@ -63,7 +63,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         validate_config: bool = True,
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
-        raw_config: Mapping[str, t.NormalizedValue]
+        raw_config: t.ContainerMapping
         if isinstance(config, FlextTapOracleWmsSettings):
             raw_config = dict(config.model_dump(mode="json").items())
         else:
@@ -108,7 +108,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         for s in raw_streams_seq:
             if not isinstance(s, Mapping):
                 continue
-            s_dict: Mapping[str, t.ContainerValue] = (
+            s_dict: t.ContainerValueMapping = (
                 u.TapOracleWms.MappingConversion.safe_str_mapping(s)
             )
             breadcrumb_raw: t.ContainerValue = s_dict.get("metadata", [])
@@ -293,7 +293,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
 class FlextTapOracleWmsPlugin:
     """Plugin wrapper exposing tap operations to the host runtime."""
 
-    def __init__(self, config: Mapping[str, t.ContainerValue]) -> None:
+    def __init__(self, config: t.ContainerValueMapping) -> None:
         """Initialize plugin state and hold tap configuration."""
         self._config = config
         self._tap: FlextTapOracleWms | None = None
@@ -313,7 +313,7 @@ class FlextTapOracleWmsPlugin:
     def execute(
         self,
         operation: str,
-        _parameters: Mapping[str, t.ContainerValue] | None = None,
+        _parameters: t.ContainerValueMapping | None = None,
     ) -> r[t.ContainerValue]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
@@ -339,7 +339,7 @@ class FlextTapOracleWmsPlugin:
             return r[t.ContainerValue].ok({"success": True})
         return r[t.ContainerValue].fail(f"Unsupported operation: {operation}")
 
-    def get_info(self) -> Mapping[str, t.ContainerValue]:
+    def get_info(self) -> t.ContainerValueMapping:
         """Return plugin metadata for discovery and capabilities."""
         return {
             "name": self.name,

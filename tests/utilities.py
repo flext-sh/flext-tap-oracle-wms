@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping, MutableSequence, Sequence
+from collections.abc import MutableSequence, Sequence
 
 from flext_tests import FlextTestsUtilities
 
@@ -51,9 +51,9 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             password: str = "test_pass",
             facility_ids: t.StrSequence | None = None,
             **kwargs: _t.Scalar,
-        ) -> MutableMapping[str, t.NormalizedValue]:
+        ) -> t.MutableContainerMapping:
             """Create test Oracle WMS configuration."""
-            config: MutableMapping[str, t.NormalizedValue] = {
+            config: t.MutableContainerMapping = {
                 "base_url": base_url,
                 "username": username,
                 "password": password,
@@ -71,9 +71,9 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             next_page_url: str | None = None,
             facility_id: str | None = None,
             **kwargs: _t.Scalar,
-        ) -> MutableMapping[str, t.NormalizedValue]:
+        ) -> t.MutableContainerMapping:
             """Create test Oracle WMS API response."""
-            response: MutableMapping[str, t.NormalizedValue] = {
+            response: t.MutableContainerMapping = {
                 "items": data,
                 "hasMore": has_more,
             }
@@ -90,11 +90,11 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             base_id: int = 1000,
             facility_id: str = "FAC001",
             **kwargs: _t.Scalar,
-        ) -> MutableSequence[MutableMapping[str, t.NormalizedValue]]:
+        ) -> MutableSequence[t.MutableContainerMapping]:
             """Generate mock Oracle WMS records for testing."""
-            records: MutableSequence[MutableMapping[str, t.NormalizedValue]] = []
+            records: MutableSequence[t.MutableContainerMapping] = []
             for i in range(count):
-                record: MutableMapping[str, t.NormalizedValue] = {
+                record: t.MutableContainerMapping = {
                     "id": base_id + i,
                     "facilityId": facility_id,
                     "itemNumber": f"ITEM{i + 1:04d}",
@@ -108,7 +108,7 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
 
         @staticmethod
         def validate_oracle_wms_config(
-            config: MutableMapping[str, t.NormalizedValue],
+            config: t.MutableContainerMapping,
         ) -> bool:
             """Validate Oracle WMS configuration for testing."""
             required_fields = ["base_url", "username"]

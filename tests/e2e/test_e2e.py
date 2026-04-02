@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import time
-from collections.abc import Mapping, MutableMapping
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -65,7 +65,7 @@ class TestOracleWMSE2EComplete:
             assert table_metadata is not None, "Missing table metadata"
             meta_raw = table_metadata.get("metadata")
             assert isinstance(meta_raw, Mapping)
-            meta: Mapping[str, t.ContainerValue] = meta_raw
+            meta: t.ContainerValueMapping = meta_raw
             assert "replication-method" in meta, "Missing replication method"
             assert meta["replication-method"] in {"INCREMENTAL", "FULL_TABLE"}, (
                 "Invalid replication method"
@@ -252,7 +252,7 @@ class TestOracleWMSE2EComplete:
                     quality_report["replication_keys_defined"] += 1
             nullable_documented = 0
             if isinstance(properties_raw, Mapping):
-                properties: Mapping[str, t.ContainerValue] = properties_raw
+                properties: t.ContainerValueMapping = properties_raw
                 for prop_def in properties.values():
                     if isinstance(prop_def, Mapping):
                         type_raw = prop_def.get("type")
@@ -294,7 +294,7 @@ class TestOracleWMSE2EComplete:
         real_wms_config: t.ContainerMapping,
     ) -> None:
         """E2E: Test error recovery and system resilience."""
-        invalid_config: MutableMapping[str, t.NormalizedValue] = dict(real_wms_config)
+        invalid_config: t.MutableContainerMapping = dict(real_wms_config)
         invalid_config["password"] = "invalid_password"
         tap = FlextTapOracleWms(config=invalid_config)
         try:

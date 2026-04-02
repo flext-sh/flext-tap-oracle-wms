@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
+from collections.abc import Mapping, MutableSequence, Sequence
 
 import pytest
 
@@ -31,7 +31,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_real_wms_environment_verification(
         self,
-        real_wms_config: MutableMapping[str, t.NormalizedValue],
+        real_wms_config: t.MutableContainerMapping,
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -52,7 +52,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_tap_initialization_real_config(
         self,
-        real_wms_config: MutableMapping[str, t.NormalizedValue],
+        real_wms_config: t.MutableContainerMapping,
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(config=real_wms_config)
@@ -110,7 +110,7 @@ class TestOracleWMSFunctionalComplete:
                 assert isinstance(properties_raw, Mapping), (
                     f"Stream {stream['tap_stream_id']} properties is not a mapping"
                 )
-                properties: Mapping[str, t.ContainerValue] = properties_raw
+                properties: t.ContainerValueMapping = properties_raw
                 assert properties, (
                     f"Stream {stream['tap_stream_id']} has empty properties"
                 )
@@ -157,7 +157,7 @@ class TestOracleWMSFunctionalComplete:
             assert isinstance(properties_raw, Mapping), (
                 f"Schema properties is not a mapping for {stream['tap_stream_id']}"
             )
-            properties: Mapping[str, t.ContainerValue] = properties_raw
+            properties: t.ContainerValueMapping = properties_raw
             for prop_name, prop_def in properties.items():
                 assert isinstance(prop_def, Mapping), (
                     f"Property {prop_name} not a mapping"
@@ -341,10 +341,10 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_error_handling_and_validation(
         self,
-        real_wms_config: MutableMapping[str, t.NormalizedValue],
+        real_wms_config: t.MutableContainerMapping,
     ) -> None:
         """Test error handling with invalid configurations."""
-        invalid_config: MutableMapping[str, t.NormalizedValue] = dict(real_wms_config)
+        invalid_config: t.MutableContainerMapping = dict(real_wms_config)
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
         tap = FlextTapOracleWms(config=invalid_config)
         try:

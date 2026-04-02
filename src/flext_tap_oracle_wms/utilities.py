@@ -45,8 +45,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
             @staticmethod
             def process_wms_record(
-                record: Mapping[str, t.ContainerValue],
-            ) -> Mapping[str, t.ContainerValue]:
+                record: t.ContainerValueMapping,
+            ) -> t.ContainerValueMapping:
                 """Process WMS record for output.
 
                 Args:
@@ -63,8 +63,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
             @staticmethod
             def safe_str_mapping(
-                raw: Mapping[str, t.ContainerValue],
-            ) -> Mapping[str, t.ContainerValue]:
+                raw: t.ContainerValueMapping,
+            ) -> t.ContainerValueMapping:
                 """Return a Mapping with str keys from an untyped mapping source.
 
                 Args:
@@ -78,7 +78,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 
             @staticmethod
             def safe_str_dict(
-                raw: Mapping[str, t.ContainerValue],
+                raw: t.ContainerValueMapping,
             ) -> dict[str, t.ContainerValue]:
                 """Return a dict with str keys from an untyped dict source.
 
@@ -98,7 +98,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 normalizer: t.ScalarNormalizer | None = None,
                 map_adapter: t.ContainerValueMapAdapter | None = None,
                 error_cls: type[Exception] | None = None,
-            ) -> Mapping[str, t.ContainerValue] | None:
+            ) -> t.ContainerValueMapping | None:
                 """Convert a NormalizedValue into a Mapping if possible.
 
                 Args:
