@@ -12,9 +12,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_meltano import FlextMeltanoSingerTapBase, FlextMeltanoTapServiceBase
-
-from flext_tap_oracle_wms import t
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tap_oracle_wms import FlextTapOracleWms, t
 
 
 class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):

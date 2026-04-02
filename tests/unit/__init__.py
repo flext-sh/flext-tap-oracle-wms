@@ -17,7 +17,6 @@ from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
-
     from tests.unit import (
         test_cli,
         test_config,
@@ -31,7 +30,7 @@ if _TYPE_CHECKING:
     from tests.unit.test_tap import TestFlextTapOracleWms
     from tests.unit.test_tap_initialization import TestTapInitialization
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "TestCLI": "tests.unit.test_cli",
     "TestConfigValidation": "tests.unit.test_config_validation",
     "TestFlextTapOracleWms": "tests.unit.test_tap",

@@ -7,14 +7,14 @@ from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
+from pydantic import SecretStr, ValidationError
+
 from flext_core import FlextLogger, r
 from flext_meltano import FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsSettings,
 )
-from pydantic import SecretStr, TypeAdapter, ValidationError
-
 from flext_tap_oracle_wms import (
     FlextTapOracleWmsConfigurationError,
     FlextTapOracleWmsSettings,
@@ -26,9 +26,6 @@ from flext_tap_oracle_wms import (
 )
 
 logger = FlextLogger(__name__)
-_CONTAINER_VALUE_MAP_ADAPTER: TypeAdapter[t.ContainerValueMapping] = TypeAdapter(
-    t.ContainerValueMapping,
-)
 
 
 class FlextTapOracleWms(FlextMeltanoSingerTapBase):
@@ -85,7 +82,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         """Return catalog_dict with proper typing for pyright."""
         raw_catalog_dict: t.ContainerValueMapping = getattr(super(), "catalog_dict", {})
         try:
-            validated_catalog = _CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+            validated_catalog = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
                 raw_catalog_dict,
             )
         except ValidationError as exc:

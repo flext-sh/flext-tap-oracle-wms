@@ -8,10 +8,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
-from flext_meltano import FlextMeltanoUtilities
-from flext_oracle_wms import FlextOracleWmsUtilities
 from pydantic import ValidationError
 
+from flext_meltano import FlextMeltanoUtilities
+from flext_oracle_wms import FlextOracleWmsUtilities
 from flext_tap_oracle_wms import t
 
 
@@ -128,7 +128,9 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                         }
                     return {str(key): item for key, item in validated_map.items()}
                 if normalizer is not None:
-                    return {str(key): normalizer(item) for key, item in value.items()}
+                    return {
+                        str(key): normalizer(str(item)) for key, item in value.items()
+                    }
                 coerced: dict[str, t.ContainerValue] = {
                     str(key): str(item) for key, item in value.items()
                 }
@@ -168,7 +170,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                         return [normalizer(item) for item in validated_seq]
                     return list(validated_seq)
                 if normalizer is not None:
-                    return [normalizer(item) for item in value]
+                    return [normalizer(str(item)) for item in value]
                 coerced_list: list[t.ContainerValue] = [str(item) for item in value]
                 return coerced_list
 

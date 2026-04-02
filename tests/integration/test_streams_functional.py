@@ -12,8 +12,8 @@ from __future__ import annotations
 from unittest.mock import Mock
 
 import pytest
-from flext_core import FlextLogger
 
+from flext_core import FlextLogger
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream
 
 logger = FlextLogger(__name__)

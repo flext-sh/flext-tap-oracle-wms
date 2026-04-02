@@ -13,7 +13,6 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING as _TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
-
 from flext_tap_oracle_wms.__version__ import (
     __author__,
     __author_email__,
@@ -28,7 +27,6 @@ from flext_tap_oracle_wms.__version__ import (
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
     from flext_meltano import d, e, h, r, s, x
-
     from flext_tap_oracle_wms import (
         api,
         cli,
@@ -78,7 +76,7 @@ if _TYPE_CHECKING:
         FlextTapOracleWmsUtilities as u,
     )
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "FlextTapOracleWms": "flext_tap_oracle_wms.tap",
     "FlextTapOracleWmsConfigurationError": "flext_tap_oracle_wms.errors",
     "FlextTapOracleWmsConnectionError": "flext_tap_oracle_wms.errors",

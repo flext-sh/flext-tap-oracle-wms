@@ -10,8 +10,8 @@ from __future__ import annotations
 from collections.abc import Mapping, MutableMapping, MutableSequence, Sequence
 
 import pytest
-from flext_core import FlextLogger
 
+from flext_core import FlextLogger
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,

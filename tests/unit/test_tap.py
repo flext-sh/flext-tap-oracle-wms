@@ -6,8 +6,8 @@ from collections.abc import Mapping
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
-from flext_core import r
 
+from flext_core import r
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsConfigurationError,

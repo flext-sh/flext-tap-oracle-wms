@@ -5,10 +5,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Annotated, TypedDict
 
-from flext_meltano import FlextMeltanoModels
-from flext_oracle_wms import FlextOracleWmsModels
 from pydantic import BaseModel, Field
 
+from flext_meltano import FlextMeltanoModels
+from flext_oracle_wms import FlextOracleWmsModels
 from flext_tap_oracle_wms import t
 
 
@@ -18,14 +18,21 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
     class TapOracleWms:
         """TapOracleWms domain namespace."""
 
+        # --- Singer SDK dict contracts ---
+        # These TypedDicts remain intentionally: the Singer SDK protocol
+        # exchanges raw dicts (catalog_dict, metadata entries) and
+        # consumers (tests, SDK internals) access them with dict syntax
+        # (catalog["streams"], stream["tap_stream_id"]).
+        # Converting to Pydantic would break the SDK contract boundary.
+
         class SingerMetadataEntry(TypedDict):
-            """Singer catalog metadata entry."""
+            """Singer catalog metadata entry (Singer SDK dict contract)."""
 
             breadcrumb: list[str]
             metadata: dict[str, t.ContainerValue]
 
         class SingerStreamEntry(TypedDict):
-            """Singer catalog stream entry."""
+            """Singer catalog stream entry (Singer SDK dict contract)."""
 
             tap_stream_id: str
             stream: str
@@ -33,9 +40,11 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
             metadata: list[FlextTapOracleWmsModels.TapOracleWms.SingerMetadataEntry]
 
         class SingerCatalogDict(TypedDict):
-            """Singer catalog dict with typed streams."""
+            """Singer catalog dict with typed streams (Singer SDK dict contract)."""
 
             streams: list[FlextTapOracleWmsModels.TapOracleWms.SingerStreamEntry]
+
+        # --- Internal Pydantic models ---
 
         class WmsStreamSchema(BaseModel):
             """Singer stream schema shape."""

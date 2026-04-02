@@ -8,13 +8,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import Generator, Mapping, Sequence
+from collections.abc import Generator, Sequence
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from flext_core import r
 
+from flext_core import r
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 from tests import t
 
@@ -72,11 +72,11 @@ def mock_wms_client() -> MagicMock:
         "shipments",
         "receipts",
     ])
-    client.get_records.return_value = r[Sequence[Mapping[str, str | int]]].ok([
+    client.get_records.return_value = r[Sequence[t.HeaderMapping]].ok([
         {"id": "1", "name": "Test Item 1", "quantity": 100},
         {"id": "2", "name": "Test Item 2", "quantity": 200},
     ])
-    client.get_entity_metadata.return_value = r[Mapping[str, str | t.StrSequence]].ok({
+    client.get_entity_metadata.return_value = r[t.AttributeMapping].ok({
         "display_name": "Inventory",
         "description": "Inventory data",
         "primary_key": ["inventory_id"],

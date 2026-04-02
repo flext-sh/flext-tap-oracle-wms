@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 from flext_core import r
-
 from flext_tap_oracle_wms import FlextTapOracleWms
 
 

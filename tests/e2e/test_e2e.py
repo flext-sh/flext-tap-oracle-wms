@@ -17,8 +17,8 @@ from collections.abc import Mapping, MutableMapping
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from flext_core import FlextLogger
 
+from flext_core import FlextLogger
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,

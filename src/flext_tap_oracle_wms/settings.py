@@ -10,10 +10,10 @@ import re
 from collections.abc import Mapping
 from typing import Annotated, ClassVar
 
-from flext_core import r
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 from pydantic.networks import AnyUrl
 
+from flext_core import r
 from flext_tap_oracle_wms import c, t
 
 

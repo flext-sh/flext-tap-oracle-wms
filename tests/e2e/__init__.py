@@ -17,11 +17,10 @@ from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
-
     from tests.e2e import test_e2e
     from tests.e2e.test_e2e import TestOracleWMSE2EComplete, logger
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "TestOracleWMSE2EComplete": "tests.e2e.test_e2e",
     "logger": "tests.e2e.test_e2e",
     "test_e2e": "tests.e2e.test_e2e",

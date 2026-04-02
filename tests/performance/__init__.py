@@ -17,7 +17,6 @@ from flext_core.lazy import install_lazy_exports
 
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
-
     from tests.performance import test_extraction_performance
     from tests.performance.test_extraction_performance import (
         TestExtractionPerformance,
@@ -27,7 +26,7 @@ if _TYPE_CHECKING:
         tap,
     )
 
-_LAZY_IMPORTS: Mapping[str, str | Sequence[str]] = {
+_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "TestExtractionPerformance": "tests.performance.test_extraction_performance",
     "TestRateLimitingPerformance": "tests.performance.test_extraction_performance",
     "env_path": "tests.performance.test_extraction_performance",

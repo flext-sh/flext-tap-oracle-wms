@@ -11,9 +11,8 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_core.typings import FlextTypes
-
     from examples import configs
+    from flext_core.typings import FlextTypes
 
 _LAZY_IMPORTS: Mapping[str, tuple[str, str]] = {
     "configs": ("examples.configs", ""),
