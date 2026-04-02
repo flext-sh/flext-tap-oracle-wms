@@ -11,10 +11,7 @@ from collections.abc import Mapping, Sequence
 
 from flext_tests import FlextTestsTypes
 
-from flext_tap_oracle_wms import (
-    FlextTapOracleWmsConstants as _c,
-    FlextTapOracleWmsTypes,
-)
+from flext_tap_oracle_wms import FlextTapOracleWmsTypes
 
 
 class FlextTapOracleWmsTestTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
@@ -43,10 +40,6 @@ class FlextTapOracleWmsTestTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
         - Test scenario types
         """
 
-        type TestOracleWmsBaseUrl = _c.TapOracleWms.TestOracleWmsBaseUrl
-        type TestOracleWmsUsername = _c.TapOracleWms.TestOracleWmsUsername
-        type TestOracleWmsMethod = _c.TapOracleWms.TestOracleWmsMethod
-        type TestFacilityId = _c.TapOracleWms.TestFacilityId
         type MockOracleWmsRecord = Mapping[str, FlextTapOracleWmsTypes.Scalar]
         type MockOracleWmsResponse = Mapping[
             str,

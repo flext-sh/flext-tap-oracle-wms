@@ -31,9 +31,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
     TAP_MAX_BATCH_SIZE: Final[int] = FlextMeltanoConstants.MAX_ITEMS
 
     class TapOracleWms:
-        """Oracle WMS connection configuration."""
-
-        """Oracle WMS connection configuration."""
+        """Oracle WMS tap-specific constants."""
 
         DEFAULT_TIMEOUT: Final[int] = FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
         MAX_RETRIES: Final[int] = FlextMeltanoConstants.DEFAULT_MAX_RETRY_ATTEMPTS
@@ -101,130 +99,6 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
             MAX_ENTITY_BATCH_SIZE: Final[int] = (
                 FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
             )
-
-        @unique
-        class ReplicationMethod(StrEnum):
-            """Replication method types using StrEnum for type safety."""
-
-            FULL_TABLE = "FULL_TABLE"
-            INCREMENTAL = "INCREMENTAL"
-
-        @unique
-        class AuthenticationMethod(StrEnum):
-            """Authentication method types using StrEnum for type safety."""
-
-            BASIC = "basic"
-            OAUTH2 = "oauth2"
-
-        @unique
-        class StreamInclusion(StrEnum):
-            """Stream inclusion status types using StrEnum for type safety."""
-
-            AVAILABLE = "available"
-            AUTOMATIC = "automatic"
-            UNSUPPORTED = "unsupported"
-
-        @unique
-        class BackoffStrategy(StrEnum):
-            """Backoff strategy types using StrEnum for type safety."""
-
-            LINEAR = "linear"
-            EXPONENTIAL = "exponential"
-            FIXED = "fixed"
-
-        @unique
-        class TapProjectType(StrEnum):
-            """Project type literals for tap package metadata."""
-
-            SINGER_TAP = "singer-tap"
-            WMS_EXTRACTOR = "wms-extractor"
-            WAREHOUSE_EXTRACTOR = "warehouse-extractor"
-            SINGER_TAP_ORACLE_WMS = "singer-tap-oracle-wms"
-            TAP_ORACLE_WMS = "tap-oracle-wms"
-            WMS_CONNECTOR = "wms-connector"
-            WAREHOUSE_CONNECTOR = "warehouse-connector"
-            SINGER_PROTOCOL = "singer-protocol"
-            WMS_INTEGRATION = "wms-integration"
-            ORACLE_WMS = "oracle-wms"
-            WAREHOUSE_MANAGEMENT = "warehouse-management"
-            SINGER_STREAM = "singer-stream"
-            ETL_TAP = "etl-tap"
-            DATA_PIPELINE = "data-pipeline"
-            WMS_TAP = "wms-tap"
-            SINGER_INTEGRATION = "singer-integration"
-
-        @unique
-        class ReplicationMethodLiteral(StrEnum):
-            """Replication strategy literals for extraction mode."""
-
-            FULL_TABLE = "FULL_TABLE"
-            INCREMENTAL = "INCREMENTAL"
-
-        @unique
-        class AuthenticationMethodLiteral(StrEnum):
-            """Authentication method literals for endpoint access."""
-
-            BASIC = "basic"
-            OAUTH2 = "oauth2"
-
-        @unique
-        class StreamInclusionLiteral(StrEnum):
-            """Singer stream inclusion policy literals."""
-
-            AVAILABLE = "available"
-            AUTOMATIC = "automatic"
-            UNSUPPORTED = "unsupported"
-
-        @unique
-        class ErrorTypeLiteral(StrEnum):
-            """Error category literals for tap failures."""
-
-            AUTHENTICATION = "AUTHENTICATION"
-            AUTHORIZATION = "AUTHORIZATION"
-            RATE_LIMIT = "RATE_LIMIT"
-            TIMEOUT = "TIMEOUT"
-            SERVER_ERROR = "SERVER_ERROR"
-            NETWORK = "NETWORK"
-            VALIDATION = "VALIDATION"
-
-        @unique
-        class BackoffStrategyLiteral(StrEnum):
-            """Retry backoff strategy literals."""
-
-            LINEAR = "linear"
-            EXPONENTIAL = "exponential"
-            FIXED = "fixed"
-
-        @unique
-        class TestOracleWmsBaseUrl(StrEnum):
-            """Test Oracle WMS base URL literals."""
-
-            HTTPS_TEST_WMS_ORACLECLOUD_COM = "https://test-wms.oraclecloud.com"
-            HTTPS_STAGING_WMS_ORACLECLOUD_COM = "https://staging-wms.oraclecloud.com"
-
-        @unique
-        class TestOracleWmsUsername(StrEnum):
-            """Test Oracle WMS username literals."""
-
-            TEST_USER = "test_user"
-            REDACTED_LDAP_BIND_PASSWORD_USER = "REDACTED_LDAP_BIND_PASSWORD_user"
-
-        @unique
-        class TestOracleWmsMethod(StrEnum):
-            """Test HTTP method literals for Oracle WMS calls."""
-
-            GET = "GET"
-            POST = "POST"
-            PUT = "PUT"
-            DELETE = "DELETE"
-
-        @unique
-        class TestFacilityId(StrEnum):
-            """Test facility identifier literals."""
-
-            FAC001 = "FAC001"
-            FAC002 = "FAC002"
-            FAC003 = "FAC003"
 
         class Settings:
             """Configuration constants for tap settings."""
