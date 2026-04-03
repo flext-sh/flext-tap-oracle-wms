@@ -5,38 +5,67 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING as _TYPE_CHECKING
+import typing as _t
 
+from flext_core.constants import FlextConstants as c
+from flext_core.decorators import FlextDecorators as d
+from flext_core.exceptions import FlextExceptions as e
+from flext_core.handlers import FlextHandlers as h
 from flext_core.lazy import install_lazy_exports
+from flext_core.mixins import FlextMixins as x
+from flext_core.models import FlextModels as m
+from flext_core.protocols import FlextProtocols as p
+from flext_core.result import FlextResult as r
+from flext_core.service import FlextService as s
+from flext_core.typings import FlextTypes as t
+from flext_core.utilities import FlextUtilities as u
+from tests.unit.test_cli import TestCLI
+from tests.unit.test_config import TestFlextTapOracleWmsSettings
+from tests.unit.test_config_validation import TestConfigValidation
+from tests.unit.test_tap import TestFlextTapOracleWms
+from tests.unit.test_tap_initialization import TestTapInitialization
 
-if _TYPE_CHECKING:
-    from flext_core import FlextTypes
-    from flext_core.constants import FlextConstants as c
-    from flext_core.decorators import FlextDecorators as d
-    from flext_core.exceptions import FlextExceptions as e
-    from flext_core.handlers import FlextHandlers as h
-    from flext_core.mixins import FlextMixins as x
-    from flext_core.models import FlextModels as m
-    from flext_core.protocols import FlextProtocols as p
-    from flext_core.result import FlextResult as r
-    from flext_core.service import FlextService as s
-    from flext_core.typings import FlextTypes as t
-    from flext_core.utilities import FlextUtilities as u
-    from tests.unit import (
+if _t.TYPE_CHECKING:
+    import tests.unit.test_cli as _tests_unit_test_cli
+
+    test_cli = _tests_unit_test_cli
+    import tests.unit.test_config as _tests_unit_test_config
+
+    test_config = _tests_unit_test_config
+    import tests.unit.test_config_validation as _tests_unit_test_config_validation
+
+    test_config_validation = _tests_unit_test_config_validation
+    import tests.unit.test_tap as _tests_unit_test_tap
+
+    test_tap = _tests_unit_test_tap
+    import tests.unit.test_tap_initialization as _tests_unit_test_tap_initialization
+
+    test_tap_initialization = _tests_unit_test_tap_initialization
+
+    _ = (
+        TestCLI,
+        TestConfigValidation,
+        TestFlextTapOracleWms,
+        TestFlextTapOracleWmsSettings,
+        TestTapInitialization,
+        c,
+        d,
+        e,
+        h,
+        m,
+        p,
+        r,
+        s,
+        t,
         test_cli,
         test_config,
         test_config_validation,
         test_tap,
         test_tap_initialization,
+        u,
+        x,
     )
-    from tests.unit.test_cli import TestCLI
-    from tests.unit.test_config import TestFlextTapOracleWmsSettings
-    from tests.unit.test_config_validation import TestConfigValidation
-    from tests.unit.test_tap import TestFlextTapOracleWms
-    from tests.unit.test_tap_initialization import TestTapInitialization
-
-_LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
+_LAZY_IMPORTS = {
     "TestCLI": "tests.unit.test_cli",
     "TestConfigValidation": "tests.unit.test_config_validation",
     "TestFlextTapOracleWms": "tests.unit.test_tap",
@@ -59,6 +88,30 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }
+
+__all__ = [
+    "TestCLI",
+    "TestConfigValidation",
+    "TestFlextTapOracleWms",
+    "TestFlextTapOracleWmsSettings",
+    "TestTapInitialization",
+    "c",
+    "d",
+    "e",
+    "h",
+    "m",
+    "p",
+    "r",
+    "s",
+    "t",
+    "test_cli",
+    "test_config",
+    "test_config_validation",
+    "test_tap",
+    "test_tap_initialization",
+    "u",
+    "x",
+]
 
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
