@@ -18,7 +18,7 @@ if _TYPE_CHECKING:
     from flext_core.mixins import FlextMixins as x
     from flext_core.result import FlextResult as r
     from flext_core.service import FlextService as s
-    from flext_tap_oracle_wms import (
+    from tests import (
         conftest,
         constants,
         e2e,
@@ -26,26 +26,16 @@ if _TYPE_CHECKING:
         models,
         performance,
         protocols,
-        test_cli,
-        test_config,
-        test_config_validation,
-        test_e2e,
-        test_extraction_performance,
-        test_functional,
-        test_streams_functional,
-        test_tap,
-        test_tap_initialization,
-        test_wms,
-        test_wms_connection,
         typings,
         unit,
         utilities,
     )
-    from flext_tap_oracle_wms.conftest import (
+    from tests.conftest import (
         mock_request,
         mock_response,
         mock_wms_client,
         oracle_wms_environment,
+        pytest_collection_modifyitems,
         real_tap_instance,
         reset_environment,
         sample_catalog,
@@ -54,104 +44,108 @@ if _TYPE_CHECKING:
         tap_instance,
         test_config_extraction,
     )
-    from flext_tap_oracle_wms.constants import (
+    from tests.constants import (
         FlextTapOracleWmsTestConstants,
         FlextTapOracleWmsTestConstants as c,
     )
-    from flext_tap_oracle_wms.e2e import TestOracleWMSE2EComplete
-    from flext_tap_oracle_wms.integration import (
+    from tests.e2e import TestOracleWMSE2EComplete, test_e2e
+    from tests.integration import (
+        TestFilteringAndSelection,
+        TestIntegration,
         TestOracleWMSFunctionalComplete,
+        TestRealConnection,
+        TestRealDataExtraction,
         TestRealWmsIntegration,
         TestStreamsFunctional,
         logger,
         real_config,
+        test_functional,
+        test_streams_functional,
+        test_wms,
+        test_wms_connection,
     )
-    from flext_tap_oracle_wms.models import (
+    from tests.models import (
         FlextTapOracleWmsTestModels,
         FlextTapOracleWmsTestModels as m,
     )
-    from flext_tap_oracle_wms.performance import (
+    from tests.performance import (
         TestExtractionPerformance,
         TestRateLimitingPerformance,
         env_path,
         performance_config,
         tap,
+        test_extraction_performance,
     )
-    from flext_tap_oracle_wms.protocols import (
+    from tests.protocols import (
         FlextTapOracleWmsTestProtocols,
         FlextTapOracleWmsTestProtocols as p,
     )
-    from flext_tap_oracle_wms.typings import (
+    from tests.typings import (
         FlextTapOracleWmsTestTypes,
         FlextTapOracleWmsTestTypes as t,
     )
-    from flext_tap_oracle_wms.unit import (
+    from tests.unit import (
         TestCLI,
         TestConfigValidation,
         TestFlextTapOracleWms,
         TestFlextTapOracleWmsSettings,
         TestTapInitialization,
+        test_cli,
+        test_config,
+        test_config_validation,
+        test_tap,
+        test_tap_initialization,
     )
-    from flext_tap_oracle_wms.utilities import (
+    from tests.utilities import (
         FlextTapOracleWmsTestUtilities,
         FlextTapOracleWmsTestUtilities as u,
     )
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = merge_lazy_imports(
     (
-        "flext_tap_oracle_wms.e2e",
-        "flext_tap_oracle_wms.integration",
-        "flext_tap_oracle_wms.performance",
-        "flext_tap_oracle_wms.unit",
+        "tests.e2e",
+        "tests.integration",
+        "tests.performance",
+        "tests.unit",
     ),
     {
-        "FlextTapOracleWmsTestConstants": "flext_tap_oracle_wms.constants",
-        "FlextTapOracleWmsTestModels": "flext_tap_oracle_wms.models",
-        "FlextTapOracleWmsTestProtocols": "flext_tap_oracle_wms.protocols",
-        "FlextTapOracleWmsTestTypes": "flext_tap_oracle_wms.typings",
-        "FlextTapOracleWmsTestUtilities": "flext_tap_oracle_wms.utilities",
-        "c": ("flext_tap_oracle_wms.constants", "FlextTapOracleWmsTestConstants"),
-        "conftest": "flext_tap_oracle_wms.conftest",
-        "constants": "flext_tap_oracle_wms.constants",
+        "FlextTapOracleWmsTestConstants": "tests.constants",
+        "FlextTapOracleWmsTestModels": "tests.models",
+        "FlextTapOracleWmsTestProtocols": "tests.protocols",
+        "FlextTapOracleWmsTestTypes": "tests.typings",
+        "FlextTapOracleWmsTestUtilities": "tests.utilities",
+        "c": ("tests.constants", "FlextTapOracleWmsTestConstants"),
+        "conftest": "tests.conftest",
+        "constants": "tests.constants",
         "d": ("flext_core.decorators", "FlextDecorators"),
         "e": ("flext_core.exceptions", "FlextExceptions"),
-        "e2e": "flext_tap_oracle_wms.e2e",
+        "e2e": "tests.e2e",
         "h": ("flext_core.handlers", "FlextHandlers"),
-        "integration": "flext_tap_oracle_wms.integration",
-        "m": ("flext_tap_oracle_wms.models", "FlextTapOracleWmsTestModels"),
-        "mock_request": "flext_tap_oracle_wms.conftest",
-        "mock_response": "flext_tap_oracle_wms.conftest",
-        "mock_wms_client": "flext_tap_oracle_wms.conftest",
-        "models": "flext_tap_oracle_wms.models",
-        "oracle_wms_environment": "flext_tap_oracle_wms.conftest",
-        "p": ("flext_tap_oracle_wms.protocols", "FlextTapOracleWmsTestProtocols"),
-        "performance": "flext_tap_oracle_wms.performance",
-        "protocols": "flext_tap_oracle_wms.protocols",
+        "integration": "tests.integration",
+        "m": ("tests.models", "FlextTapOracleWmsTestModels"),
+        "mock_request": "tests.conftest",
+        "mock_response": "tests.conftest",
+        "mock_wms_client": "tests.conftest",
+        "models": "tests.models",
+        "oracle_wms_environment": "tests.conftest",
+        "p": ("tests.protocols", "FlextTapOracleWmsTestProtocols"),
+        "performance": "tests.performance",
+        "protocols": "tests.protocols",
+        "pytest_collection_modifyitems": "tests.conftest",
         "r": ("flext_core.result", "FlextResult"),
-        "real_tap_instance": "flext_tap_oracle_wms.conftest",
-        "reset_environment": "flext_tap_oracle_wms.conftest",
+        "real_tap_instance": "tests.conftest",
+        "reset_environment": "tests.conftest",
         "s": ("flext_core.service", "FlextService"),
-        "sample_catalog": "flext_tap_oracle_wms.conftest",
-        "sample_config": "flext_tap_oracle_wms.conftest",
-        "sample_state": "flext_tap_oracle_wms.conftest",
-        "t": ("flext_tap_oracle_wms.typings", "FlextTapOracleWmsTestTypes"),
-        "tap_instance": "flext_tap_oracle_wms.conftest",
-        "test_cli": "flext_tap_oracle_wms.test_cli",
-        "test_config": "flext_tap_oracle_wms.test_config",
-        "test_config_extraction": "flext_tap_oracle_wms.conftest",
-        "test_config_validation": "flext_tap_oracle_wms.test_config_validation",
-        "test_e2e": "flext_tap_oracle_wms.test_e2e",
-        "test_extraction_performance": "flext_tap_oracle_wms.test_extraction_performance",
-        "test_functional": "flext_tap_oracle_wms.test_functional",
-        "test_streams_functional": "flext_tap_oracle_wms.test_streams_functional",
-        "test_tap": "flext_tap_oracle_wms.test_tap",
-        "test_tap_initialization": "flext_tap_oracle_wms.test_tap_initialization",
-        "test_wms": "flext_tap_oracle_wms.test_wms",
-        "test_wms_connection": "flext_tap_oracle_wms.test_wms_connection",
-        "typings": "flext_tap_oracle_wms.typings",
-        "u": ("flext_tap_oracle_wms.utilities", "FlextTapOracleWmsTestUtilities"),
-        "unit": "flext_tap_oracle_wms.unit",
-        "utilities": "flext_tap_oracle_wms.utilities",
+        "sample_catalog": "tests.conftest",
+        "sample_config": "tests.conftest",
+        "sample_state": "tests.conftest",
+        "t": ("tests.typings", "FlextTapOracleWmsTestTypes"),
+        "tap_instance": "tests.conftest",
+        "test_config_extraction": "tests.conftest",
+        "typings": "tests.typings",
+        "u": ("tests.utilities", "FlextTapOracleWmsTestUtilities"),
+        "unit": "tests.unit",
+        "utilities": "tests.utilities",
         "x": ("flext_core.mixins", "FlextMixins"),
     },
 )

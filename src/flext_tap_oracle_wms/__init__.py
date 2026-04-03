@@ -9,17 +9,7 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING as _TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
-from flext_tap_oracle_wms.__version__ import (
-    __all__,
-    __author__,
-    __author_email__,
-    __description__,
-    __license__,
-    __title__,
-    __url__,
-    __version__,
-    __version_info__,
-)
+from flext_tap_oracle_wms.__version__ import *
 
 if _TYPE_CHECKING:
     from flext_core import FlextTypes
@@ -42,13 +32,28 @@ if _TYPE_CHECKING:
         typings,
         utilities,
     )
+    from flext_tap_oracle_wms.__version__ import (
+        __author__,
+        __author_email__,
+        __description__,
+        __license__,
+        __title__,
+        __url__,
+        __version__,
+        __version_info__,
+    )
     from flext_tap_oracle_wms.api import FlextTapOracleWmsService
     from flext_tap_oracle_wms.cli import main
     from flext_tap_oracle_wms.constants import (
         FlextTapOracleWmsConstants,
         FlextTapOracleWmsConstants as c,
     )
-    from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
+    from flext_tap_oracle_wms.errors import (
+        FlextTapOracleWmsConfigurationError,
+        FlextTapOracleWmsConnectionError,
+        FlextTapOracleWmsError,
+        FlextTapOracleWmsValidationError,
+    )
     from flext_tap_oracle_wms.models import (
         FlextTapOracleWmsModels,
         FlextTapOracleWmsModels as m,
@@ -59,7 +64,11 @@ if _TYPE_CHECKING:
     )
     from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
     from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
-    from flext_tap_oracle_wms.tap import FlextTapOracleWms, logger
+    from flext_tap_oracle_wms.tap import (
+        FlextTapOracleWms,
+        FlextTapOracleWmsPlugin,
+        logger,
+    )
     from flext_tap_oracle_wms.typings import (
         FlextTapOracleWmsTypes,
         FlextTapOracleWmsTypes as t,
@@ -71,15 +80,27 @@ if _TYPE_CHECKING:
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "FlextTapOracleWms": "flext_tap_oracle_wms.tap",
+    "FlextTapOracleWmsConfigurationError": "flext_tap_oracle_wms.errors",
+    "FlextTapOracleWmsConnectionError": "flext_tap_oracle_wms.errors",
     "FlextTapOracleWmsConstants": "flext_tap_oracle_wms.constants",
     "FlextTapOracleWmsError": "flext_tap_oracle_wms.errors",
     "FlextTapOracleWmsModels": "flext_tap_oracle_wms.models",
+    "FlextTapOracleWmsPlugin": "flext_tap_oracle_wms.tap",
     "FlextTapOracleWmsProtocols": "flext_tap_oracle_wms.protocols",
     "FlextTapOracleWmsService": "flext_tap_oracle_wms.api",
     "FlextTapOracleWmsSettings": "flext_tap_oracle_wms.settings",
     "FlextTapOracleWmsStream": "flext_tap_oracle_wms.streams",
     "FlextTapOracleWmsTypes": "flext_tap_oracle_wms.typings",
     "FlextTapOracleWmsUtilities": "flext_tap_oracle_wms.utilities",
+    "FlextTapOracleWmsValidationError": "flext_tap_oracle_wms.errors",
+    "__author__": "flext_tap_oracle_wms.__version__",
+    "__author_email__": "flext_tap_oracle_wms.__version__",
+    "__description__": "flext_tap_oracle_wms.__version__",
+    "__license__": "flext_tap_oracle_wms.__version__",
+    "__title__": "flext_tap_oracle_wms.__version__",
+    "__url__": "flext_tap_oracle_wms.__version__",
+    "__version__": "flext_tap_oracle_wms.__version__",
+    "__version_info__": "flext_tap_oracle_wms.__version__",
     "api": "flext_tap_oracle_wms.api",
     "c": ("flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"),
     "cli": "flext_tap_oracle_wms.cli",
@@ -107,19 +128,4 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
 }
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    [
-        "__all__",
-        "__author__",
-        "__author_email__",
-        "__description__",
-        "__license__",
-        "__title__",
-        "__url__",
-        "__version__",
-        "__version_info__",
-    ],
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)

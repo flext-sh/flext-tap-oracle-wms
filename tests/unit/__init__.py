@@ -23,25 +23,25 @@ if _TYPE_CHECKING:
     from flext_core.service import FlextService as s
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
-    from flext_tap_oracle_wms import (
+    from tests.unit import (
         test_cli,
         test_config,
         test_config_validation,
         test_tap,
         test_tap_initialization,
     )
-    from flext_tap_oracle_wms.test_cli import TestCLI
-    from flext_tap_oracle_wms.test_config import TestFlextTapOracleWmsSettings
-    from flext_tap_oracle_wms.test_config_validation import TestConfigValidation
-    from flext_tap_oracle_wms.test_tap import TestFlextTapOracleWms
-    from flext_tap_oracle_wms.test_tap_initialization import TestTapInitialization
+    from tests.unit.test_cli import TestCLI
+    from tests.unit.test_config import TestFlextTapOracleWmsSettings
+    from tests.unit.test_config_validation import TestConfigValidation
+    from tests.unit.test_tap import TestFlextTapOracleWms
+    from tests.unit.test_tap_initialization import TestTapInitialization
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
-    "TestCLI": "flext_tap_oracle_wms.test_cli",
-    "TestConfigValidation": "flext_tap_oracle_wms.test_config_validation",
-    "TestFlextTapOracleWms": "flext_tap_oracle_wms.test_tap",
-    "TestFlextTapOracleWmsSettings": "flext_tap_oracle_wms.test_config",
-    "TestTapInitialization": "flext_tap_oracle_wms.test_tap_initialization",
+    "TestCLI": "tests.unit.test_cli",
+    "TestConfigValidation": "tests.unit.test_config_validation",
+    "TestFlextTapOracleWms": "tests.unit.test_tap",
+    "TestFlextTapOracleWmsSettings": "tests.unit.test_config",
+    "TestTapInitialization": "tests.unit.test_tap_initialization",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
@@ -51,11 +51,11 @@ _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
-    "test_cli": "flext_tap_oracle_wms.test_cli",
-    "test_config": "flext_tap_oracle_wms.test_config",
-    "test_config_validation": "flext_tap_oracle_wms.test_config_validation",
-    "test_tap": "flext_tap_oracle_wms.test_tap",
-    "test_tap_initialization": "flext_tap_oracle_wms.test_tap_initialization",
+    "test_cli": "tests.unit.test_cli",
+    "test_config": "tests.unit.test_config",
+    "test_config_validation": "tests.unit.test_config_validation",
+    "test_tap": "tests.unit.test_tap",
+    "test_tap_initialization": "tests.unit.test_tap_initialization",
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }

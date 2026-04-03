@@ -23,8 +23,8 @@ if _TYPE_CHECKING:
     from flext_core.service import FlextService as s
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
-    from flext_tap_oracle_wms import test_extraction_performance
-    from flext_tap_oracle_wms.test_extraction_performance import (
+    from tests.performance import test_extraction_performance
+    from tests.performance.test_extraction_performance import (
         TestExtractionPerformance,
         TestRateLimitingPerformance,
         env_path,
@@ -33,21 +33,21 @@ if _TYPE_CHECKING:
     )
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
-    "TestExtractionPerformance": "flext_tap_oracle_wms.test_extraction_performance",
-    "TestRateLimitingPerformance": "flext_tap_oracle_wms.test_extraction_performance",
+    "TestExtractionPerformance": "tests.performance.test_extraction_performance",
+    "TestRateLimitingPerformance": "tests.performance.test_extraction_performance",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
-    "env_path": "flext_tap_oracle_wms.test_extraction_performance",
+    "env_path": "tests.performance.test_extraction_performance",
     "h": ("flext_core.handlers", "FlextHandlers"),
     "m": ("flext_core.models", "FlextModels"),
     "p": ("flext_core.protocols", "FlextProtocols"),
-    "performance_config": "flext_tap_oracle_wms.test_extraction_performance",
+    "performance_config": "tests.performance.test_extraction_performance",
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
-    "tap": "flext_tap_oracle_wms.test_extraction_performance",
-    "test_extraction_performance": "flext_tap_oracle_wms.test_extraction_performance",
+    "tap": "tests.performance.test_extraction_performance",
+    "test_extraction_performance": "tests.performance.test_extraction_performance",
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }

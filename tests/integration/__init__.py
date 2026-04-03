@@ -23,41 +23,50 @@ if _TYPE_CHECKING:
     from flext_core.service import FlextService as s
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
-    from flext_tap_oracle_wms import (
+    from tests.integration import (
         test_functional,
         test_streams_functional,
         test_wms,
         test_wms_connection,
     )
-    from flext_tap_oracle_wms.test_functional import TestOracleWMSFunctionalComplete
-    from flext_tap_oracle_wms.test_streams_functional import (
-        TestStreamsFunctional,
-        logger,
+    from tests.integration.test_functional import TestOracleWMSFunctionalComplete
+    from tests.integration.test_streams_functional import TestStreamsFunctional, logger
+    from tests.integration.test_wms import TestRealWmsIntegration
+    from tests.integration.test_wms_connection import (
+        TestFilteringAndSelection,
+        TestIntegration,
+        TestRealConnection,
+        TestRealDataExtraction,
+        env_path,
+        real_config,
+        tap,
     )
-    from flext_tap_oracle_wms.test_wms import TestRealWmsIntegration
-    from flext_tap_oracle_wms.test_wms_connection import env_path, real_config, tap
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
-    "TestOracleWMSFunctionalComplete": "flext_tap_oracle_wms.test_functional",
-    "TestRealWmsIntegration": "flext_tap_oracle_wms.test_wms",
-    "TestStreamsFunctional": "flext_tap_oracle_wms.test_streams_functional",
+    "TestFilteringAndSelection": "tests.integration.test_wms_connection",
+    "TestIntegration": "tests.integration.test_wms_connection",
+    "TestOracleWMSFunctionalComplete": "tests.integration.test_functional",
+    "TestRealConnection": "tests.integration.test_wms_connection",
+    "TestRealDataExtraction": "tests.integration.test_wms_connection",
+    "TestRealWmsIntegration": "tests.integration.test_wms",
+    "TestStreamsFunctional": "tests.integration.test_streams_functional",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
-    "env_path": "flext_tap_oracle_wms.test_wms_connection",
+    "env_path": "tests.integration.test_wms_connection",
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "logger": "flext_tap_oracle_wms.test_streams_functional",
+    "logger": "tests.integration.test_streams_functional",
     "m": ("flext_core.models", "FlextModels"),
     "p": ("flext_core.protocols", "FlextProtocols"),
     "r": ("flext_core.result", "FlextResult"),
-    "real_config": "flext_tap_oracle_wms.test_wms_connection",
+    "real_config": "tests.integration.test_wms_connection",
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
-    "tap": "flext_tap_oracle_wms.test_wms_connection",
-    "test_functional": "flext_tap_oracle_wms.test_functional",
-    "test_streams_functional": "flext_tap_oracle_wms.test_streams_functional",
-    "test_wms": "flext_tap_oracle_wms.test_wms",
-    "test_wms_connection": "flext_tap_oracle_wms.test_wms_connection",
+    "tap": "tests.integration.test_wms_connection",
+    "test_functional": "tests.integration.test_functional",
+    "test_streams_functional": "tests.integration.test_streams_functional",
+    "test_wms": "tests.integration.test_wms",
+    "test_wms_connection": "tests.integration.test_wms_connection",
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }

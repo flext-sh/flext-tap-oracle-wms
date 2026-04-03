@@ -23,22 +23,22 @@ if _TYPE_CHECKING:
     from flext_core.service import FlextService as s
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
-    from flext_tap_oracle_wms import test_e2e
-    from flext_tap_oracle_wms.test_e2e import TestOracleWMSE2EComplete, logger
+    from tests.e2e import test_e2e
+    from tests.e2e.test_e2e import TestOracleWMSE2EComplete, logger
 
 _LAZY_IMPORTS: FlextTypes.LazyImportIndex = {
-    "TestOracleWMSE2EComplete": "flext_tap_oracle_wms.test_e2e",
+    "TestOracleWMSE2EComplete": "tests.e2e.test_e2e",
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "logger": "flext_tap_oracle_wms.test_e2e",
+    "logger": "tests.e2e.test_e2e",
     "m": ("flext_core.models", "FlextModels"),
     "p": ("flext_core.protocols", "FlextProtocols"),
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
-    "test_e2e": "flext_tap_oracle_wms.test_e2e",
+    "test_e2e": "tests.e2e.test_e2e",
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }
