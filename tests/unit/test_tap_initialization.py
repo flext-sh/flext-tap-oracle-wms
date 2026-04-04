@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from flext_core import r
-from flext_tap_oracle_wms import FlextTapOracleWms
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsConfigurationError
 
 
 class TestTapInitialization:
@@ -36,7 +36,6 @@ class TestTapInitialization:
                     "password": "test",
                 },
             )
-        from flext_tap_oracle_wms import FlextTapOracleWmsConfigurationError
 
         with patch.object(
             tap,

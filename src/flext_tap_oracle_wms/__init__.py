@@ -12,16 +12,6 @@ from flext_tap_oracle_wms.__version__ import *
 
 if _t.TYPE_CHECKING:
     import flext_tap_oracle_wms.api as _flext_tap_oracle_wms_api
-    from flext_tap_oracle_wms.__version__ import (
-        __author__,
-        __author_email__,
-        __description__,
-        __license__,
-        __title__,
-        __url__,
-        __version__,
-        __version_info__,
-    )
 
     api = _flext_tap_oracle_wms_api
     import flext_tap_oracle_wms.cli as _flext_tap_oracle_wms_cli

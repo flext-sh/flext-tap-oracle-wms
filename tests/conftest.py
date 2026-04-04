@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 from collections.abc import Generator, Sequence
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch as _patch
 
 import pytest
 
@@ -88,8 +88,6 @@ def mock_wms_client() -> MagicMock:
 @pytest.fixture
 def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance with sample config (mocked discovery)."""
-    from unittest.mock import patch as _patch
-
     with _patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
         return FlextTapOracleWms(config=sample_config.model_dump(mode="json"))
 
