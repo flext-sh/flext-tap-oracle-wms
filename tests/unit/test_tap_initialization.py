@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from flext_core import r
 from flext_tap_oracle_wms import FlextTapOracleWms
 
@@ -34,13 +36,15 @@ class TestTapInitialization:
                     "password": "test",
                 },
             )
+        from flext_tap_oracle_wms import FlextTapOracleWmsConfigurationError
+
         with patch.object(
             tap,
-            "discover_catalog",
+            "discovercatalog_typed",
             return_value=r.fail("discovery unavailable"),
         ):
-            streams = tap.discover_streams()
-        assert streams == []
+            with pytest.raises(FlextTapOracleWmsConfigurationError):
+                tap.discover_streams()
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
     def test_discover_streams_uses_client_entities(

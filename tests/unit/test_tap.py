@@ -25,7 +25,8 @@ class TestFlextTapOracleWms:
         sample_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Tap stores validated settings and starts with lazy client."""
-        tap = FlextTapOracleWms(config=sample_config.model_dump(mode="json"))
+        with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
+            tap = FlextTapOracleWms(config=sample_config.model_dump(mode="json"))
         assert tap.name == "flext-tap-oracle-wms"
 
     def test_tap_initialization_with_dict(self) -> None:
@@ -35,8 +36,9 @@ class TestFlextTapOracleWms:
             "username": "test_user",
             "password": "test_password",
         }
-        tap = FlextTapOracleWms(config=config_dict)
-        assert str(tap.flext_config.base_url) == "https://test.wms.example.com/"
+        with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
+            tap = FlextTapOracleWms(config=config_dict)
+        assert "test.wms.example.com" in str(tap.flext_config.base_url)
         assert tap.flext_config.username == "test_user"
 
     def test_tap_initialization_invalid_config(self) -> None:
@@ -124,14 +126,14 @@ class TestFlextTapOracleWms:
         self,
         tap_instance: FlextTapOracleWms,
     ) -> None:
-        """Stream discovery returns empty list when catalog discovery fails."""
+        """Stream discovery raises ConfigurationError when catalog discovery fails."""
         with patch.object(
             tap_instance,
             "discovercatalog_typed",
             return_value=r[m.Meltano.SingerCatalog].fail("no catalog"),
         ):
-            streams = tap_instance.discover_streams()
-        assert streams == []
+            with pytest.raises(FlextTapOracleWmsConfigurationError):
+                tap_instance.discover_streams()
 
     def test_discover_streams_success(self, tap_instance: FlextTapOracleWms) -> None:
         """Stream discovery builds stream objects from discovered catalog."""

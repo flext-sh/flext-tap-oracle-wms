@@ -87,8 +87,11 @@ def mock_wms_client() -> MagicMock:
 
 @pytest.fixture
 def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
-    """Create tap instance with sample config."""
-    return FlextTapOracleWms(config=sample_config.model_dump(mode="json"))
+    """Create tap instance with sample config (mocked discovery)."""
+    from unittest.mock import patch as _patch
+
+    with _patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
+        return FlextTapOracleWms(config=sample_config.model_dump(mode="json"))
 
 
 @pytest.fixture
@@ -101,7 +104,7 @@ def sample_catalog() -> t.ContainerMapping:
                 "tap_stream_id": "inventory",
                 "stream": "inventory",
                 "schema": {
-                    "type": "t.NormalizedValue",
+                    "type": "object",
                     "properties": {
                         "inventory_id": {"type": "string"},
                         "item_id": {"type": "string"},
