@@ -17,7 +17,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStream,
 )
-from tests import t
+from tests import m, t
 
 logger = FlextLogger(__name__)
 
@@ -25,6 +25,22 @@ logger = FlextLogger(__name__)
 @pytest.mark.functional
 class TestOracleWMSFunctionalComplete:
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
+
+    @staticmethod
+    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
+        """Return the typed discovered catalog used by runtime code."""
+        result = tap.discovercatalog_typed()
+        assert result.is_success, result.error
+        return result.value
+
+    @staticmethod
+    def _schema(
+        stream: m.Meltano.SingerCatalogEntry,
+    ) -> t.ContainerValueMapping:
+        """Normalize model schema payload to the runtime stream contract."""
+        return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+            stream.schema_definition,
+        )
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -71,13 +87,11 @@ class TestOracleWMSFunctionalComplete:
     ) -> None:
         """CRITICAL: Test automatic entity discovery with REAL Oracle WMS."""
         try:
-            catalog = real_tap_instance.catalog_dict_typed
+            catalog = self._catalog(real_tap_instance)
             assert catalog is not None, "Catalog is None"
-            assert "streams" in catalog, "No streams in catalog"
-            assert isinstance(catalog["streams"], list), "Streams is not a list"
-            streams = catalog["streams"]
+            streams = catalog.streams
             assert streams, "No streams discovered"
-            entity_names = [stream["tap_stream_id"] for stream in streams]
+            entity_names = [stream.tap_stream_id for stream in streams]
             logger.info(
                 "✅ Discovered %d entities: %s",
                 len(entity_names),
@@ -100,23 +114,15 @@ class TestOracleWMSFunctionalComplete:
                 f"Not enough core WMS entities found. Got: {entity_names}"
             )
             for stream in streams:
-                assert "schema" in stream, (
-                    f"Stream {stream['tap_stream_id']} missing schema"
-                )
-                assert "properties" in stream["schema"], (
-                    f"Stream {stream['tap_stream_id']} schema missing properties"
-                )
-                properties_raw = stream["schema"]["properties"]
+                properties_raw = stream.schema_definition.get("properties")
                 assert isinstance(properties_raw, Mapping), (
-                    f"Stream {stream['tap_stream_id']} properties is not a mapping"
+                    f"Stream {stream.tap_stream_id} properties is not a mapping"
                 )
                 properties: t.ContainerValueMapping = properties_raw
-                assert properties, (
-                    f"Stream {stream['tap_stream_id']} has empty properties"
-                )
+                assert properties, f"Stream {stream.tap_stream_id} has empty properties"
                 logger.info(
                     "✅ Stream %s has %d properties",
-                    stream["tap_stream_id"],
+                    stream.tap_stream_id,
                     len(properties),
                 )
         except (
@@ -140,22 +146,20 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test schema generation produces valid Singer schemas."""
-        catalog = real_tap_instance.catalog_dict_typed
-        streams = catalog["streams"]
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
         for stream in streams[:3]:
-            schema = stream["schema"]
-            assert "type" in schema, (
-                f"Schema missing type for {stream['tap_stream_id']}"
-            )
+            schema = stream.schema_definition
+            assert "type" in schema, f"Schema missing type for {stream.tap_stream_id}"
             assert schema["type"] == "t.NormalizedValue", (
-                f"Invalid schema type for {stream['tap_stream_id']}"
+                f"Invalid schema type for {stream.tap_stream_id}"
             )
             assert "properties" in schema, (
-                f"Schema missing properties for {stream['tap_stream_id']}"
+                f"Schema missing properties for {stream.tap_stream_id}"
             )
             properties_raw = schema["properties"]
             assert isinstance(properties_raw, Mapping), (
-                f"Schema properties is not a mapping for {stream['tap_stream_id']}"
+                f"Schema properties is not a mapping for {stream.tap_stream_id}"
             )
             properties: t.ContainerValueMapping = properties_raw
             for prop_name, prop_def in properties.items():
@@ -181,7 +185,7 @@ class TestOracleWMSFunctionalComplete:
                 ), f"Invalid Singer type for {prop_name}: {prop_type}"
             logger.info(
                 "✅ Valid Singer schema for %s with %d properties",
-                stream["tap_stream_id"],
+                stream.tap_stream_id,
                 len(properties),
             )
 
@@ -194,18 +198,18 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test REAL data extraction with small sample."""
-        catalog = real_tap_instance.catalog_dict_typed
-        streams = catalog["streams"]
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
         if not streams:
             pytest.skip("No streams available for extraction test")
         test_stream = streams[0]
-        stream_id = test_stream["tap_stream_id"]
+        stream_id = test_stream.tap_stream_id
         logger.info("Testing extraction from stream: %s", stream_id)
         try:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
                 name=stream_id,
-                schema=test_stream["schema"],
+                schema=self._schema(test_stream),
             )
             assert stream.name == stream_id
             assert stream.schema is not None
@@ -238,16 +242,16 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test pagination parameters are correctly configured."""
-        catalog = real_tap_instance.catalog_dict_typed
-        streams = catalog["streams"]
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
         if not streams:
             pytest.skip("No streams available for pagination test")
         test_stream = streams[0]
-        stream_id = test_stream["tap_stream_id"]
+        stream_id = test_stream.tap_stream_id
         stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=stream_id,
-            schema=test_stream["schema"],
+            schema=self._schema(test_stream),
         )
         url_params = stream._build_operation_kwargs(page=1, context=None)
         assert "limit" in url_params, "Missing limit parameter"
@@ -265,31 +269,29 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test automatic replication key detection."""
-        catalog = real_tap_instance.catalog_dict_typed
-        streams = catalog["streams"]
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
         streams_with_replication: MutableSequence[tuple[str, t.ContainerValue]] = []
         streams_full_table: MutableSequence[str] = []
         for stream in streams:
-            metadata = stream.get("metadata", [])
             table_metadata = None
-            for meta in metadata:
-                if meta.get("breadcrumb") == []:
+            for meta in stream.metadata:
+                if meta.breadcrumb == []:
                     table_metadata = meta
                     break
             if table_metadata:
-                replication_method = table_metadata.get("metadata", {}).get(
-                    "replication-method",
-                )
-                replication_key = table_metadata.get("metadata", {}).get(
-                    "replication-key",
-                )
-                if replication_method == "INCREMENTAL" and replication_key:
+                replication_method = table_metadata.metadata.get("replication-method")
+                replication_key = table_metadata.metadata.get("replication-key")
+                if replication_method == "INCREMENTAL" and isinstance(
+                    replication_key,
+                    str,
+                ):
                     streams_with_replication.append((
-                        stream["tap_stream_id"],
+                        stream.tap_stream_id,
                         replication_key,
                     ))
                 elif replication_method == "FULL_TABLE":
-                    streams_full_table.append(stream["tap_stream_id"])
+                    streams_full_table.append(stream.tap_stream_id)
         logger.info(
             "✅ Incremental streams (%d): %s",
             len(streams_with_replication),
@@ -313,16 +315,16 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test filtering and ordering parameters."""
-        catalog = real_tap_instance.catalog_dict_typed
-        streams = catalog["streams"]
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
         if not streams:
             pytest.skip("No streams available for filtering test")
         test_stream = streams[0]
-        stream_id = test_stream["tap_stream_id"]
+        stream_id = test_stream.tap_stream_id
         stream = FlextTapOracleWmsStream(
             tap=real_tap_instance,
             name=stream_id,
-            schema=test_stream["schema"],
+            schema=self._schema(test_stream),
         )
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
         url_params = stream._build_operation_kwargs(page=1, context=context)
@@ -348,10 +350,8 @@ class TestOracleWMSFunctionalComplete:
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
         tap = FlextTapOracleWms(config=invalid_config)
         try:
-            catalog = tap.catalog_dict_typed
-            assert isinstance(catalog, dict), (
-                "Catalog should be t.ContainerMapping even on errors"
-            )
+            catalog = self._catalog(tap)
+            assert catalog.streams is not None, "Catalog should expose typed streams"
         except (
             ValueError,
             TypeError,
@@ -399,24 +399,18 @@ class TestOracleWMSFunctionalComplete:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test Singer protocol compliance."""
-        catalog = real_tap_instance.catalog_dict_typed
-        assert catalog["streams"] is not None, "Catalog missing streams"
-        assert isinstance(catalog["streams"], list), "Streams must be list"
-        for stream in catalog["streams"]:
-            assert "tap_stream_id" in stream, "Stream missing tap_stream_id"
-            assert "schema" in stream, "Stream missing schema"
-            assert "metadata" in stream, "Stream missing metadata"
-            schema = stream["schema"]
+        catalog = self._catalog(real_tap_instance)
+        assert catalog.streams is not None, "Catalog missing streams"
+        for stream in catalog.streams:
+            schema = stream.schema_definition
             assert "type" in schema, "Schema missing type"
             assert schema["type"] == "t.NormalizedValue", (
                 "Schema type must be t.NormalizedValue"
             )
             assert "properties" in schema, "Schema missing properties"
-            metadata = stream["metadata"]
-            assert isinstance(metadata, list), "Metadata must be list"
-            for meta in metadata:
-                assert "breadcrumb" in meta, "Metadata missing breadcrumb"
-                assert "metadata" in meta, "Metadata missing metadata field"
+            for meta in stream.metadata:
+                assert meta.breadcrumb is not None, "Metadata missing breadcrumb"
+                assert meta.metadata is not None, "Metadata missing metadata field"
         logger.info("✅ Singer protocol compliance verified")
 
     @pytest.mark.skip(
@@ -439,21 +433,21 @@ class TestOracleWMSFunctionalComplete:
             assert real_tap_instance is not None
             environment_loaded = True
             tap_initialized = True
-            catalog = real_tap_instance.catalog_dict_typed
-            catalog_streams = catalog["streams"]
+            catalog = self._catalog(real_tap_instance)
+            catalog_streams = catalog.streams
             entities_discovered = len(catalog_streams)
             for stream in catalog_streams:
-                if "schema" in stream and "properties" in stream["schema"]:
+                if stream.schema_definition.get("properties"):
                     schemas_generated += 1
-            metadata_streams = [s for s in catalog_streams if s.get("metadata")]
+            metadata_streams = [stream for stream in catalog_streams if stream.metadata]
             replication_configured = bool(metadata_streams)
-            singer_compliant = all("tap_stream_id" in s for s in catalog_streams)
+            singer_compliant = all(stream.tap_stream_id for stream in catalog_streams)
             if catalog_streams:
                 test_stream = catalog_streams[0]
                 stream_obj = FlextTapOracleWmsStream(
                     real_tap_instance,
-                    test_stream["tap_stream_id"],
-                    test_stream["schema"],
+                    test_stream.tap_stream_id,
+                    self._schema(test_stream),
                 )
                 params = stream_obj._build_operation_kwargs(page=1, context=None)
                 pagination_configured = "limit" in params

@@ -37,35 +37,25 @@ if _t.TYPE_CHECKING:
     )
 
     e2e = _tests_e2e
-    import tests.e2e.test_e2e as _tests_e2e_test_e2e
-
-    test_e2e = _tests_e2e_test_e2e
     import tests.integration as _tests_integration
-    from tests.e2e.test_e2e import TestOracleWMSE2EComplete
+    from tests.e2e import TestOracleWMSE2EComplete, test_e2e
 
     integration = _tests_integration
-    import tests.integration.test_functional as _tests_integration_test_functional
-
-    test_functional = _tests_integration_test_functional
-    import tests.integration.test_streams_functional as _tests_integration_test_streams_functional
-    from tests.integration.test_functional import TestOracleWMSFunctionalComplete
-
-    test_streams_functional = _tests_integration_test_streams_functional
-    import tests.integration.test_wms as _tests_integration_test_wms
-    from tests.integration.test_streams_functional import TestStreamsFunctional, logger
-
-    test_wms = _tests_integration_test_wms
-    import tests.integration.test_wms_connection as _tests_integration_test_wms_connection
-    from tests.integration.test_wms import TestRealWmsIntegration
-
-    test_wms_connection = _tests_integration_test_wms_connection
     import tests.models as _tests_models
-    from tests.integration.test_wms_connection import (
+    from tests.integration import (
         TestFilteringAndSelection,
         TestIntegration,
+        TestOracleWMSFunctionalComplete,
         TestRealConnection,
         TestRealDataExtraction,
+        TestRealWmsIntegration,
+        TestStreamsFunctional,
+        logger,
         real_config,
+        test_functional,
+        test_streams_functional,
+        test_wms,
+        test_wms_connection,
     )
 
     models = _tests_models
@@ -76,16 +66,14 @@ if _t.TYPE_CHECKING:
     )
 
     performance = _tests_performance
-    import tests.performance.test_extraction_performance as _tests_performance_test_extraction_performance
-
-    test_extraction_performance = _tests_performance_test_extraction_performance
     import tests.protocols as _tests_protocols
-    from tests.performance.test_extraction_performance import (
+    from tests.performance import (
         TestExtractionPerformance,
         TestRateLimitingPerformance,
         env_path,
         performance_config,
         tap,
+        test_extraction_performance,
     )
 
     protocols = _tests_protocols
@@ -103,27 +91,19 @@ if _t.TYPE_CHECKING:
     )
 
     unit = _tests_unit
-    import tests.unit.test_cli as _tests_unit_test_cli
-
-    test_cli = _tests_unit_test_cli
-    import tests.unit.test_config as _tests_unit_test_config
-    from tests.unit.test_cli import TestCLI
-
-    test_config = _tests_unit_test_config
-    import tests.unit.test_config_validation as _tests_unit_test_config_validation
-    from tests.unit.test_config import TestFlextTapOracleWmsSettings
-
-    test_config_validation = _tests_unit_test_config_validation
-    import tests.unit.test_tap as _tests_unit_test_tap
-    from tests.unit.test_config_validation import TestConfigValidation
-
-    test_tap = _tests_unit_test_tap
-    import tests.unit.test_tap_initialization as _tests_unit_test_tap_initialization
-    from tests.unit.test_tap import TestFlextTapOracleWms
-
-    test_tap_initialization = _tests_unit_test_tap_initialization
     import tests.utilities as _tests_utilities
-    from tests.unit.test_tap_initialization import TestTapInitialization
+    from tests.unit import (
+        TestCLI,
+        TestConfigValidation,
+        TestFlextTapOracleWms,
+        TestFlextTapOracleWmsSettings,
+        TestTapInitialization,
+        test_cli,
+        test_config,
+        test_config_validation,
+        test_tap,
+        test_tap_initialization,
+    )
 
     utilities = _tests_utilities
     from flext_core.decorators import FlextDecorators as d

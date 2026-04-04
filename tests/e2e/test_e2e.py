@@ -24,7 +24,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStream,
 )
-from tests import t
+from tests import m, t
 
 logger = FlextLogger(__name__)
 
@@ -32,6 +32,22 @@ logger = FlextLogger(__name__)
 @pytest.mark.e2e
 class TestOracleWMSE2EComplete:
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
+
+    @staticmethod
+    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
+        """Return the typed discovered catalog used by runtime code."""
+        result = tap.discovercatalog_typed()
+        assert result.is_success, result.error
+        return result.value
+
+    @staticmethod
+    def _schema(
+        stream: m.Meltano.SingerCatalogEntry,
+    ) -> t.ContainerValueMapping:
+        """Normalize model schema payload to the runtime stream contract."""
+        return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+            stream.schema_definition,
+        )
 
     @pytest.mark.usefixtures("_mock_oracle_wms")
     @pytest.mark.skip(
@@ -43,29 +59,23 @@ class TestOracleWMSE2EComplete:
     ) -> None:
         """E2E: Test complete discovery process generating valid Singer catalog."""
         tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-        catalog = tap_instance.catalog_dict_typed
+        catalog = self._catalog(tap_instance)
         assert catalog is not None, "Discovery returned None catalog"
-        streams = catalog["streams"]
+        streams = catalog.streams
         assert streams, "No streams discovered"
         for stream in streams:
-            assert "tap_stream_id" in stream, "Stream missing tap_stream_id"
-            assert "schema" in stream, "Stream missing schema"
-            assert "metadata" in stream, "Stream missing metadata"
-            schema = stream["schema"]
+            schema = stream.schema_definition
             assert schema.get("type") == "t.NormalizedValue", "Invalid schema type"
             assert "properties" in schema, "Schema missing properties"
             props = schema.get("properties")
             assert props, "Empty schema properties"
-            metadata = stream["metadata"]
-            assert isinstance(metadata, list), "Metadata must be list"
+            metadata = stream.metadata
             table_metadata = next(
-                (entry for entry in metadata if entry.get("breadcrumb") == []),
+                (entry for entry in metadata if entry.breadcrumb == []),
                 None,
             )
             assert table_metadata is not None, "Missing table metadata"
-            meta_raw = table_metadata.get("metadata")
-            assert isinstance(meta_raw, Mapping)
-            meta: t.ContainerValueMapping = meta_raw
+            meta = table_metadata.metadata
             assert "replication-method" in meta, "Missing replication method"
             assert meta["replication-method"] in {"INCREMENTAL", "FULL_TABLE"}, (
                 "Invalid replication method"
@@ -85,18 +95,17 @@ class TestOracleWMSE2EComplete:
     ) -> None:
         """E2E: Test catalog serialization and stream selection."""
         tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-        catalog = tap_instance.catalog_dict_typed
-        catalog_json = json.dumps(catalog, indent=2)
+        catalog = self._catalog(tap_instance)
+        catalog_payload = catalog.model_dump(mode="json")
+        catalog_json = json.dumps(catalog_payload, indent=2)
         assert catalog_json, "Catalog serialization failed"
         deserialized = json.loads(catalog_json)
-        assert deserialized == catalog, "Catalog serialization/deserialization mismatch"
-        modified_catalog = catalog.copy()
-        if modified_catalog["streams"]:
-            stream = modified_catalog["streams"][0]
-            for meta in stream["metadata"]:
-                if meta.get("breadcrumb") == []:
-                    meta["metadata"]["selected"] = True
-                    break
+        assert deserialized == catalog_payload, (
+            "Catalog serialization/deserialization mismatch"
+        )
+        if catalog.streams:
+            stream = catalog.streams[0]
+            assert any(meta.breadcrumb == [] for meta in stream.metadata)
         logger.info("✅ Catalog serialization and selection working")
 
     @pytest.mark.skip(
@@ -108,17 +117,17 @@ class TestOracleWMSE2EComplete:
     ) -> None:
         """E2E: Test single stream data extraction with real data."""
         tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-        catalog = tap_instance.catalog_dict_typed
-        streams = catalog.get("streams", [])
+        catalog = self._catalog(tap_instance)
+        streams = catalog.streams
         if not streams:
             pytest.skip("No streams available for extraction")
         test_stream = streams[0]
-        stream_id = test_stream["tap_stream_id"]
+        stream_id = test_stream.tap_stream_id
         logger.info("Testing extraction from: %s", stream_id)
         stream = FlextTapOracleWmsStream(
             tap=tap_instance,
             name=stream_id,
-            schema=test_stream["schema"],
+            schema=self._schema(test_stream),
         )
         assert stream.name == stream_id
         assert stream.url_base is not None
@@ -136,16 +145,13 @@ class TestOracleWMSE2EComplete:
     ) -> None:
         """E2E: Test incremental extraction workflow."""
         tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-        catalog = tap_instance.catalog_dict_typed
-        streams = catalog.get("streams", [])
-        incremental_stream_config = None
+        catalog = self._catalog(tap_instance)
+        streams = catalog.streams
+        incremental_stream_config: m.Meltano.SingerCatalogEntry | None = None
         for stream_config in streams:
-            metadata = stream_config.get("metadata", [])
-            for meta in metadata:
-                if (
-                    meta.get("breadcrumb") == []
-                    and meta.get("metadata", {}).get("replication-method")
-                    == "INCREMENTAL"
+            for meta in stream_config.metadata:
+                if meta.breadcrumb == [] and (
+                    meta.metadata.get("replication-method") == "INCREMENTAL"
                 ):
                     incremental_stream_config = stream_config
                     break
@@ -155,8 +161,8 @@ class TestOracleWMSE2EComplete:
             pytest.skip("No incremental streams found")
         stream = FlextTapOracleWmsStream(
             tap=tap_instance,
-            name=incremental_stream_config["tap_stream_id"],
-            schema=incremental_stream_config["schema"],
+            name=incremental_stream_config.tap_stream_id,
+            schema=self._schema(incremental_stream_config),
         )
         assert stream.replication_method == "INCREMENTAL"
         assert stream.replication_key is not None
@@ -178,16 +184,13 @@ class TestOracleWMSE2EComplete:
     ) -> None:
         """E2E: Test full table extraction workflow."""
         tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-        catalog = tap_instance.catalog_dict_typed
-        streams = catalog.get("streams", [])
-        full_table_stream_config = None
+        catalog = self._catalog(tap_instance)
+        streams = catalog.streams
+        full_table_stream_config: m.Meltano.SingerCatalogEntry | None = None
         for stream_config in streams:
-            metadata = stream_config.get("metadata", [])
-            for meta in metadata:
-                if (
-                    meta.get("breadcrumb") == []
-                    and meta.get("metadata", {}).get("replication-method")
-                    == "FULL_TABLE"
+            for meta in stream_config.metadata:
+                if meta.breadcrumb == [] and (
+                    meta.metadata.get("replication-method") == "FULL_TABLE"
                 ):
                     full_table_stream_config = stream_config
                     break
@@ -197,8 +200,8 @@ class TestOracleWMSE2EComplete:
             pytest.skip("No full table streams found")
         stream = FlextTapOracleWmsStream(
             tap=tap_instance,
-            name=full_table_stream_config["tap_stream_id"],
-            schema=full_table_stream_config["schema"],
+            name=full_table_stream_config.tap_stream_id,
+            schema=self._schema(full_table_stream_config),
         )
         params = stream._build_operation_kwargs(page=1, context=None)
         if "ordering" in params:
@@ -217,8 +220,8 @@ class TestOracleWMSE2EComplete:
     ) -> None:
         """E2E: Test data quality and schema validation."""
         tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-        catalog = tap_instance.catalog_dict_typed
-        streams = catalog.get("streams", [])
+        catalog = self._catalog(tap_instance)
+        streams = catalog.streams
         quality_report = {
             "streams_tested": 0,
             "schemas_valid": 0,
@@ -228,26 +231,26 @@ class TestOracleWMSE2EComplete:
         }
         for stream_config in streams[:3]:
             quality_report["streams_tested"] += 1
-            schema = stream_config["schema"]
+            schema = stream_config.schema_definition
             properties_raw = schema.get("properties")
             if properties_raw:
                 quality_report["schemas_valid"] += 1
-            metadata = stream_config.get("metadata", [])
+            metadata = stream_config.metadata
             primary_keys: list[str] = []
             for meta in metadata:
-                breadcrumb_raw = meta.get("breadcrumb", [])
+                breadcrumb_raw = meta.breadcrumb
                 if len(breadcrumb_raw) == 1:
-                    field_meta = meta.get("metadata", {})
+                    field_meta = meta.metadata
                     if field_meta.get("inclusion") == "automatic":
                         primary_keys.append(breadcrumb_raw[0])
             if primary_keys:
                 quality_report["primary_keys_defined"] += 1
             table_metadata = next(
-                (entry for entry in metadata if entry.get("breadcrumb") == []),
+                (entry for entry in metadata if entry.breadcrumb == []),
                 None,
             )
             if table_metadata:
-                tm_meta = table_metadata.get("metadata", {})
+                tm_meta = table_metadata.metadata
                 if tm_meta.get("replication-key"):
                     quality_report["replication_keys_defined"] += 1
             nullable_documented = 0
@@ -298,9 +301,8 @@ class TestOracleWMSE2EComplete:
         invalid_config["password"] = "invalid_password"
         tap = FlextTapOracleWms(config=invalid_config)
         try:
-            catalog = tap.catalog_dict_typed
-            assert isinstance(catalog, dict)
-            assert "streams" in catalog
+            catalog = self._catalog(tap)
+            assert catalog.streams is not None
         except (
             ValueError,
             TypeError,
@@ -332,28 +334,24 @@ class TestOracleWMSE2EComplete:
     ) -> None:
         """E2E: Test complete Singer protocol compliance."""
         tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-        catalog = tap_instance.catalog_dict_typed
-        assert isinstance(catalog["streams"], list), "Streams must be list"
-        for stream in catalog["streams"]:
-            assert isinstance(stream["tap_stream_id"], str), (
-                "tap_stream_id must be string"
-            )
-            assert stream["tap_stream_id"], "tap_stream_id cannot be empty"
-            schema = stream["schema"]
+        catalog = self._catalog(tap_instance)
+        for stream in catalog.streams:
+            assert isinstance(stream.tap_stream_id, str), "tap_stream_id must be string"
+            assert stream.tap_stream_id, "tap_stream_id cannot be empty"
+            schema = stream.schema_definition
             assert schema["type"] == "t.NormalizedValue", (
                 "Schema type must be t.NormalizedValue"
             )
             assert isinstance(schema["properties"], dict), "Properties must be dict"
-            metadata = stream["metadata"]
-            assert isinstance(metadata, list), "Metadata must be list"
+            metadata = stream.metadata
             for meta in metadata:
-                assert "breadcrumb" in meta, "Metadata missing breadcrumb"
-                assert "metadata" in meta, "Metadata missing metadata field"
-                assert isinstance(meta["breadcrumb"], list), "Breadcrumb must be list"
-                assert isinstance(meta["metadata"], dict), "Metadata field must be dict"
-            table_meta = next((m for m in metadata if m.get("breadcrumb") == []), None)
+                assert isinstance(meta.breadcrumb, list), "Breadcrumb must be list"
+                assert isinstance(meta.metadata, dict), "Metadata field must be dict"
+            table_meta = next(
+                (meta for meta in metadata if meta.breadcrumb == []), None
+            )
             assert table_meta is not None, "Missing table-level metadata"
-            table_metadata = table_meta["metadata"]
+            table_metadata = table_meta.metadata
             assert "replication-method" in table_metadata, "Missing replication method"
             replication_method = table_metadata["replication-method"]
             assert replication_method in {"INCREMENTAL", "FULL_TABLE"}, (
@@ -379,14 +377,14 @@ class TestOracleWMSE2EComplete:
         """E2E: Test performance indicators and scalability."""
         start_time = time.time()
         tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-        catalog = tap_instance.catalog_dict_typed
+        catalog = self._catalog(tap_instance)
         discovery_time = time.time() - start_time
-        streams_count = len(catalog.get("streams", []))
+        streams_count = len(catalog.streams)
         assert discovery_time < 300, f"Discovery too slow: {discovery_time:.2f}s"
         assert streams_count > 0, "No streams discovered"
         properties_per_stream: list[int] = []
-        for stream in catalog["streams"]:
-            props_raw = stream["schema"].get("properties")
+        for stream in catalog.streams:
+            props_raw = stream.schema_definition.get("properties")
             prop_count = len(props_raw) if isinstance(props_raw, Mapping) else 0
             properties_per_stream.append(prop_count)
         avg_properties = (
@@ -426,24 +424,24 @@ class TestOracleWMSE2EComplete:
         try:
             start_time = time.time()
             tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
-            catalog = tap_instance.catalog_dict_typed
+            catalog = self._catalog(tap_instance)
             discovery_successful = True
-            catalog_streams = catalog["streams"]
+            catalog_streams = catalog.streams
             streams_discovered = len(catalog_streams)
             for stream in catalog_streams:
-                metadata = stream.get("metadata", [])
+                metadata = stream.metadata
                 table_meta = next(
-                    (entry for entry in metadata if entry.get("breadcrumb") == []),
+                    (entry for entry in metadata if entry.breadcrumb == []),
                     None,
                 )
                 if table_meta:
-                    tm_meta = table_meta.get("metadata", {})
+                    tm_meta = table_meta.metadata
                     replication_method = tm_meta.get("replication-method")
                     if replication_method == "INCREMENTAL":
                         incremental_streams += 1
                     elif replication_method == "FULL_TABLE":
                         full_table_streams += 1
-                schema = stream.get("schema", {})
+                schema = stream.schema_definition
                 if schema.get("properties"):
                     schemas_valid += 1
             singer_compliant = streams_discovered > 0 and schemas_valid > 0
