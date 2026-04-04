@@ -11,10 +11,7 @@ from collections.abc import MutableSequence, Sequence
 
 from flext_tests import FlextTestsUtilities
 
-from flext_tap_oracle_wms import (
-    FlextTapOracleWmsTypes as _t,
-    FlextTapOracleWmsUtilities,
-)
+from flext_tap_oracle_wms import FlextTapOracleWmsUtilities
 from tests import t
 
 
@@ -50,7 +47,7 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             username: str = "test_user",
             password: str = "test_pass",
             facility_ids: t.StrSequence | None = None,
-            **kwargs: _t.Scalar,
+            **kwargs: t.Scalar,
         ) -> t.MutableContainerMapping:
             """Create test Oracle WMS configuration."""
             config: t.MutableContainerMapping = {
@@ -70,7 +67,7 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             has_more: bool = False,
             next_page_url: str | None = None,
             facility_id: str | None = None,
-            **kwargs: _t.Scalar,
+            **kwargs: t.Scalar,
         ) -> t.MutableContainerMapping:
             """Create test Oracle WMS API response."""
             response: t.MutableContainerMapping = {
@@ -89,7 +86,7 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             count: int = 5,
             base_id: int = 1000,
             facility_id: str = "FAC001",
-            **kwargs: _t.Scalar,
+            **kwargs: t.Scalar,
         ) -> MutableSequence[t.MutableContainerMapping]:
             """Generate mock Oracle WMS records for testing."""
             records: MutableSequence[t.MutableContainerMapping] = []
