@@ -10,7 +10,7 @@ from typing import ClassVar, override
 from pydantic import SecretStr, ValidationError
 
 from flext_core import FlextLogger, r
-from flext_meltano import FlextMeltanoSingerTapBase
+from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsSettings,
@@ -32,7 +32,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[t.ContainerMapping] = {
+    config_jsonschema: ClassVar[dict[str, object]] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
         "properties": {
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
@@ -163,7 +163,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         config_map = dict(self.config)
         try:
             return FlextTapOracleWmsSettings.model_validate(config_map)
-        except c.Meltano.Singer.SAFE_EXCEPTIONS as exc:
+        except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
             msg = f"Invalid configuration: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
 

@@ -63,12 +63,12 @@ class FlextTapOracleWmsSettings(FlextSettings):
         ),
     ] = c.TapOracleWms.Settings.TAP_DEFAULT_MAX_RETRIES
     retry_delay: Annotated[
-        float,
+        int,
         Field(
-            ge=0.0,
+            ge=0,
             description="Retry delay in seconds.",
         ),
-    ] = c.TapOracleWms.Settings.TAP_DEFAULT_RETRY_DELAY
+    ] = int(c.TapOracleWms.Settings.TAP_DEFAULT_RETRY_DELAY)
     verify_ssl: Annotated[
         bool,
         Field(description="Enable SSL verification."),
@@ -91,13 +91,6 @@ class FlextTapOracleWmsSettings(FlextSettings):
             description="Sample size for schema discovery.",
         ),
     ] = c.TapOracleWms.Settings.DEFAULT_DISCOVERY_SAMPLE_SIZE
-    effective_log_level: Annotated[
-        str,
-        Field(
-            min_length=1,
-            description="Optional effective log level inherited from runtime.",
-        ),
-    ] = c.TapOracleWms.Settings.DEFAULT_LOG_LEVEL
     include_entities: Annotated[
         t.StrSequence,
         Field(description="Entities to include."),
@@ -161,9 +154,9 @@ class FlextTapOracleWmsSettings(FlextSettings):
         Field(description="Additional HTTP headers."),
     ] = Field(default_factory=dict)
     log_level: Annotated[
-        str,
-        Field(min_length=1, description="Log level."),
-    ] = c.TapOracleWms.Settings.DEFAULT_LOG_LEVEL
+        c.LogLevel,
+        Field(description="Log level."),
+    ] = c.LogLevel.INFO
     enable_request_logging: Annotated[
         bool,
         Field(description="Enable HTTP request logging."),

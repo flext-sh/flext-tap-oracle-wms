@@ -146,7 +146,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
                 page += 1
                 if not records:
                     break
-            except c.Meltano.Singer.SAFE_EXCEPTIONS as exc:
+            except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
                 msg = f"Error getting records for {self.name}: {exc}"
                 logger.exception(msg)
                 raise FlextTapOracleWmsError(msg) from exc

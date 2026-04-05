@@ -11,7 +11,8 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_meltano import FlextMeltanoSingerTapBase, FlextMeltanoTapServiceBase
+from flext_meltano import FlextMeltanoTapServiceBase
+from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapBase
 from flext_tap_oracle_wms import FlextTapOracleWms, t
 
 
