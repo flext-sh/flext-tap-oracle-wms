@@ -115,6 +115,15 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
             MAX_DISCOVERY_SAMPLE_SIZE: Final[int] = FlextMeltanoConstants.DEFAULT_SIZE
             DEFAULT_MAX_PARALLEL_STREAMS: Final[int] = 5
             DEFAULT_FLATTENING_DEPTH: Final[int] = 10
+            DEFAULT_VERIFY_SSL: Final[bool] = True
+            DEFAULT_ENABLE_PARALLEL_EXTRACTION: Final[bool] = False
+            DEFAULT_ENABLE_RATE_LIMITING: Final[bool] = True
+            DEFAULT_MAX_REQUESTS_PER_MINUTE: Final[int] = 60
+            DEFAULT_ENABLE_SCHEMA_FLATTENING: Final[bool] = True
+            DEFAULT_LOG_LEVEL: Final[str] = "INFO"
+            DEFAULT_ENABLE_REQUEST_LOGGING: Final[bool] = False
+            DEFAULT_VALIDATE_CONFIG: Final[bool] = True
+            DEFAULT_VALIDATE_SCHEMAS: Final[bool] = True
             ISO_DATE_PATTERN: Final[str] = (
                 r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
             )

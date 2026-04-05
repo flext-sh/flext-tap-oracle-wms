@@ -18,6 +18,8 @@ from flext_core import r
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 from tests import t
 
+pytest_plugins = ["flext_tests.conftest_plugin"]
+
 
 @pytest.fixture(scope="session")
 def oracle_wms_environment() -> None:

@@ -8,19 +8,22 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
-from typing import Annotated, ClassVar
+from typing import Annotated, ClassVar, override
 
-from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic.networks import AnyUrl
+from pydantic_settings import SettingsConfigDict
 
-from flext_core import r
+from flext_core import FlextSettings, r
 from flext_tap_oracle_wms import c, t
 
 
-class FlextTapOracleWmsSettings(BaseModel):
+@FlextSettings.auto_register("tap-oracle-wms")
+class FlextTapOracleWmsSettings(FlextSettings):
     """Validated settings consumed by the Oracle WMS tap runtime."""
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(
+    model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
+        env_prefix="FLEXT_TAP_ORACLE_WMS_",
         extra="ignore",
         validate_assignment=True,
     )
@@ -69,7 +72,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     verify_ssl: Annotated[
         bool,
         Field(description="Enable SSL verification."),
-    ] = True
+    ] = c.TapOracleWms.Settings.DEFAULT_VERIFY_SSL
     ssl_cert_path: Annotated[
         str | None,
         Field(description="Path to SSL certificate."),
@@ -94,7 +97,7 @@ class FlextTapOracleWmsSettings(BaseModel):
             min_length=1,
             description="Optional effective log level inherited from runtime.",
         ),
-    ] = "INFO"
+    ] = c.TapOracleWms.Settings.DEFAULT_LOG_LEVEL
     include_entities: Annotated[
         t.StrSequence,
         Field(description="Entities to include."),
@@ -122,7 +125,7 @@ class FlextTapOracleWmsSettings(BaseModel):
     enable_parallel_extraction: Annotated[
         bool,
         Field(description="Enable parallel stream extraction."),
-    ] = False
+    ] = c.TapOracleWms.Settings.DEFAULT_ENABLE_PARALLEL_EXTRACTION
     max_parallel_streams: Annotated[
         int,
         Field(
@@ -133,15 +136,15 @@ class FlextTapOracleWmsSettings(BaseModel):
     enable_rate_limiting: Annotated[
         bool,
         Field(description="Enable API rate limiting."),
-    ] = True
+    ] = c.TapOracleWms.Settings.DEFAULT_ENABLE_RATE_LIMITING
     max_requests_per_minute: Annotated[
         int,
         Field(ge=1, description="Maximum API requests per minute."),
-    ] = 60
+    ] = c.TapOracleWms.Settings.DEFAULT_MAX_REQUESTS_PER_MINUTE
     enable_schema_flattening: Annotated[
         bool,
         Field(description="Enable schema flattening."),
-    ] = True
+    ] = c.TapOracleWms.Settings.DEFAULT_ENABLE_SCHEMA_FLATTENING
     max_flattening_depth: Annotated[
         int,
         Field(
@@ -160,19 +163,19 @@ class FlextTapOracleWmsSettings(BaseModel):
     log_level: Annotated[
         str,
         Field(min_length=1, description="Log level."),
-    ] = "INFO"
+    ] = c.TapOracleWms.Settings.DEFAULT_LOG_LEVEL
     enable_request_logging: Annotated[
         bool,
         Field(description="Enable HTTP request logging."),
-    ] = False
+    ] = c.TapOracleWms.Settings.DEFAULT_ENABLE_REQUEST_LOGGING
     validate_config: Annotated[
         bool,
         Field(description="Enable configuration validation."),
-    ] = True
+    ] = c.TapOracleWms.Settings.DEFAULT_VALIDATE_CONFIG
     validate_schemas: Annotated[
         bool,
         Field(description="Enable schema validation."),
-    ] = True
+    ] = c.TapOracleWms.Settings.DEFAULT_VALIDATE_SCHEMAS
 
     @field_validator("include_entities", "exclude_entities")
     @classmethod
@@ -191,8 +194,10 @@ class FlextTapOracleWmsSettings(BaseModel):
         return v
 
     @classmethod
+    @override
     def reset_for_testing(cls) -> None:
         """Reset any cached state for test isolation."""
+        cls._reset_instance()
 
     def validate_domain_rules(self) -> r[bool]:
         """Validate domain-specific rules."""
