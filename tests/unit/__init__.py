@@ -42,11 +42,20 @@ if _t.TYPE_CHECKING:
     from flext_core.utilities import FlextUtilities as u
     from tests.unit.test_tap_initialization import TestTapInitialization
 _LAZY_IMPORTS = {
-    "TestCLI": "tests.unit.test_cli",
-    "TestConfigValidation": "tests.unit.test_config_validation",
-    "TestFlextTapOracleWms": "tests.unit.test_tap",
-    "TestFlextTapOracleWmsSettings": "tests.unit.test_config",
-    "TestTapInitialization": "tests.unit.test_tap_initialization",
+    "TestCLI": ("tests.unit.test_cli", "TestCLI"),
+    "TestConfigValidation": (
+        "tests.unit.test_config_validation",
+        "TestConfigValidation",
+    ),
+    "TestFlextTapOracleWms": ("tests.unit.test_tap", "TestFlextTapOracleWms"),
+    "TestFlextTapOracleWmsSettings": (
+        "tests.unit.test_config",
+        "TestFlextTapOracleWmsSettings",
+    ),
+    "TestTapInitialization": (
+        "tests.unit.test_tap_initialization",
+        "TestTapInitialization",
+    ),
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),

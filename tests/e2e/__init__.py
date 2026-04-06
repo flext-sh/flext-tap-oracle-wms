@@ -26,12 +26,12 @@ if _t.TYPE_CHECKING:
     from flext_core.utilities import FlextUtilities as u
     from tests.e2e.test_e2e import TestOracleWMSE2EComplete, logger
 _LAZY_IMPORTS = {
-    "TestOracleWMSE2EComplete": "tests.e2e.test_e2e",
+    "TestOracleWMSE2EComplete": ("tests.e2e.test_e2e", "TestOracleWMSE2EComplete"),
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "logger": "tests.e2e.test_e2e",
+    "logger": ("tests.e2e.test_e2e", "logger"),
     "m": ("flext_core.models", "FlextModels"),
     "p": ("flext_core.protocols", "FlextProtocols"),
     "r": ("flext_core.result", "FlextResult"),
