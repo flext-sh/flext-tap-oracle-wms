@@ -45,11 +45,7 @@ class TestTapInitialization:
             with pytest.raises(FlextTapOracleWmsConfigurationError):
                 tap.discover_streams()
 
-    @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
-    def test_discover_streams_uses_client_entities(
-        self,
-        mock_client_class: MagicMock,
-    ) -> None:
+    def test_discover_streams_uses_client_entities(self) -> None:
         """discover_streams builds streams for each discovered entity."""
         mock_client = MagicMock()
         mock_client.start.return_value = r[bool].ok(True)
@@ -57,14 +53,15 @@ class TestTapInitialization:
             "allocation",
             "order_hdr",
         ])
-        mock_client_class.return_value = mock_client
-        tap = FlextTapOracleWms(
-            config={
-                "base_url": "https://test.example.com",
-                "username": "test",
-                "password": "test",
-            },
-        )
+        with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
+            tap = FlextTapOracleWms(
+                config={
+                    "base_url": "https://test.example.com",
+                    "username": "test",
+                    "password": "test",
+                },
+            )
+        tap._wms_client = mock_client
         stream_names = [stream.name for stream in tap.discover_streams()]
         assert "allocation" in stream_names
         assert "order_hdr" in stream_names
