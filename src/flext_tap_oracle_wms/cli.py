@@ -18,17 +18,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms import FlextTapOracleWms
+from flext_tap_oracle_wms import FlextTapOracleWmsService
 
-__all__ = ["FlextTapOracleWms", "main"]
+__all__ = ["FlextTapOracleWmsService", "main"]
 
 
-def main() -> None:
-    """Execute Oracle WMS tap using Singer SDK CLI.
+def main() -> int:
+    """Execute Oracle WMS tap through the FLEXT service CLI bridge.
 
     This function serves as the primary entry point for the tap when
     executed as a command-line tool or Python module. It delegates to
-    the Singer SDK's built-in CLI functionality for full protocol compliance.
+    the FLEXT service facade, which bridges into Singer SDK internally.
 
     The CLI supports standard Singer operations:
     - `--discover`: Generate schema catalog
@@ -59,12 +59,9 @@ def main() -> None:
         >>> command = FlextMeltanoSingerCliTranslator.translate_tap_run(params)
         >>> # Executes: ["tap-oracle-wms", "--config", "config.json", "--discover"]
 
-    Raises:
-        SystemExit: On configuration errors or execution failures
-
     """
-    FlextTapOracleWms().cli()
+    return FlextTapOracleWmsService.get_instance().cli_main()
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

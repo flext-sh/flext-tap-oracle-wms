@@ -243,7 +243,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         streams_raw = catalog_result.value.streams
         if not streams_raw:
             return []
-        streams: Sequence[FlextTapOracleWmsStream] = [
+        return [
             FlextTapOracleWmsStream(
                 tap=self,
                 name=stream_raw.stream,
@@ -255,7 +255,6 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
             )
             for stream_raw in streams_raw
         ]
-        return streams
 
     def execute(self, message: str | None = None) -> r[bool]:
         """Run a full tap sync when no custom message is provided."""

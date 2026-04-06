@@ -14,14 +14,14 @@ from typing import ClassVar, override
 from pydantic import BaseModel
 
 from flext_core import FlextLogger, r
-from flext_meltano import m
+from flext_meltano import FlextMeltanoSingerStreamBase, FlextMeltanoSingerTapBase
 from flext_oracle_wms import FlextOracleWmsClient
 from flext_tap_oracle_wms import FlextTapOracleWmsError, c, p, t, u
 
 logger = FlextLogger(__name__)
 
 
-class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
+class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
     """Dynamic stream for Oracle WMS entities.
 
     Uses flext-oracle-wms client for all data operations.
@@ -32,14 +32,14 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     stream_replication_key: str | None = None
     url_base: str = ""
     # Singer SDK attributes exposed for type narrowing in tests/consumers
-    tap: m.Meltano.SingerTapBase
+    tap: FlextMeltanoSingerTapBase
     http_headers: t.MutableStrMapping
     authenticator: None = None
 
     @override
     def __init__(
         self,
-        tap: m.Meltano.SingerTapBase,
+        tap: FlextMeltanoSingerTapBase,
         name: str | None = None,
         schema: t.ContainerValueMapping | None = None,
         _path: str | None = None,
@@ -48,7 +48,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         schema_dict: dict[str, t.ContainerValue] | None = (
             dict(schema) if schema is not None else None
         )
-        m.Meltano.SingerStreamBase.__init__(
+        FlextMeltanoSingerStreamBase.__init__(
             self,
             tap=tap,
             name=name or self.name,
@@ -86,7 +86,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         ):
             msg = "WMS client not available - tap must be FlextTapOracleWms"
             raise TypeError(msg)
-        client: FlextOracleWmsClient = tap_instance.wms_client
+        client = tap_instance.wms_client
         self._client = client
         return client
 

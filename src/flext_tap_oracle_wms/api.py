@@ -12,8 +12,8 @@ from __future__ import annotations
 from typing import override
 
 from flext_meltano import FlextMeltanoTapServiceBase
-from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapBase
-from flext_tap_oracle_wms import FlextTapOracleWms, t
+from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapAdapter
+from flext_tap_oracle_wms import FlextTapOracleWms, p, t
 
 
 class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
@@ -25,9 +25,10 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
     def create_tap_instance(
         self,
         config: t.ContainerMapping | None = None,
-    ) -> FlextMeltanoSingerTapBase:
-        """Create the FlextTapOracleWms singer_sdk.Tap instance."""
-        return FlextTapOracleWms(config=config)
+    ) -> p.Meltano.SingerTapInstance:
+        """Create the internal tap runtime backed by Singer SDK."""
+        raw_config = dict(config) if config is not None else None
+        return FlextMeltanoSingerTapAdapter(FlextTapOracleWms(config=raw_config))
 
 
 __all__ = ["FlextTapOracleWmsService"]
