@@ -14,8 +14,11 @@ from typing import ClassVar, override
 from pydantic import BaseModel
 
 from flext_core import FlextLogger, r
-from flext_meltano import FlextMeltanoSingerStreamBase, FlextMeltanoSingerTapBase
-from flext_oracle_wms import FlextOracleWmsClient
+from flext_meltano.services.singer_sdk import (
+    Stream as FlextMeltanoSingerStreamBase,
+    Tap as FlextMeltanoSingerTapBase,
+)
+from flext_oracle_wms import FlextOracleWmsUtilitiesClient
 from flext_tap_oracle_wms import FlextTapOracleWmsError, c, p, t, u
 
 logger = FlextLogger(__name__)
@@ -55,7 +58,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
             schema=schema_dict,
         )
         self._typed_schema: dict[str, t.ContainerValue] | None = schema_dict
-        self._client: FlextOracleWmsClient | None = None
+        self._client: FlextOracleWmsUtilitiesClient.Client | None = None
         page_size = int(self.config.get("page_size", 100))
         self._page_size = (
             page_size
@@ -75,7 +78,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         return self._typed_schema
 
     @property
-    def client(self) -> FlextOracleWmsClient:
+    def client(self) -> FlextOracleWmsUtilitiesClient.Client:
         """Get WMS client from tap."""
         if self._client is not None:
             return self._client

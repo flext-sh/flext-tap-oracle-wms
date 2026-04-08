@@ -10,10 +10,10 @@ from typing import ClassVar, override
 from pydantic import SecretStr, ValidationError
 
 from flext_core import FlextLogger, r
-from flext_meltano import FlextMeltanoSingerTapBase
+from flext_meltano.services.singer_sdk import Tap as FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
-    FlextOracleWmsClient,
     FlextOracleWmsSettings,
+    FlextOracleWmsUtilitiesClient,
 )
 from flext_tap_oracle_wms import (
     FlextTapOracleWmsConfigurationError,
@@ -45,7 +45,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         "required": list(c.TapOracleWms.REQUIRED_CONFIG_FIELDS),
     }
 
-    _wms_client: FlextOracleWmsClient | None = None
+    _wms_client: FlextOracleWmsUtilitiesClient.Client | None = None
     _discovery: t.ContainerValue | None = None
     _schema_generator: t.ContainerValue | None = None
     _discovery_mode: bool = False
@@ -168,7 +168,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
             raise FlextTapOracleWmsConfigurationError(msg) from exc
 
     @property
-    def wms_client(self) -> FlextOracleWmsClient:
+    def wms_client(self) -> FlextOracleWmsUtilitiesClient.Client:
         """Return a started WMS client instance."""
         if self._wms_client is None:
             password = self.flext_config.password
@@ -183,7 +183,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
                 "timeout": float(self.flext_config.timeout),
                 "retry_attempts": self.flext_config.max_retries,
             })
-            client = FlextOracleWmsClient(config=wms_settings)
+            client = FlextOracleWmsUtilitiesClient.Client(config=wms_settings)
             start_result = client.start()
             if start_result.is_failure:
                 msg = start_result.error or "Failed to start Oracle WMS client"

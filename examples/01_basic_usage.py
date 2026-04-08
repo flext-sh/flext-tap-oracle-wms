@@ -23,7 +23,7 @@ def main() -> int:
             "ORACLE_WMS_BASE_URL",
             "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
         ),
-        username=os.getenv("ORACLE_WMS_USERNAME", "USER_WMS_INTEGRA"),
+        username=os.getenv("ORACLE_WMS_USERNAME", "user"),
         password=os.getenv("ORACLE_WMS_PASSWORD", "your_password"),
         api_version="v10",
         page_size=100,
