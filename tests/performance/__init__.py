@@ -24,57 +24,31 @@ if _t.TYPE_CHECKING:
     from flext_core.service import FlextService as s
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
-    from tests.performance.test_extraction_performance import (
-        TestExtractionPerformance,
-        TestRateLimitingPerformance,
-        env_path,
-        performance_config,
-        tap,
-    )
 _LAZY_IMPORTS = {
-    "TestExtractionPerformance": (
-        "tests.performance.test_extraction_performance",
-        "TestExtractionPerformance",
-    ),
-    "TestRateLimitingPerformance": (
-        "tests.performance.test_extraction_performance",
-        "TestRateLimitingPerformance",
-    ),
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
-    "env_path": ("tests.performance.test_extraction_performance", "env_path"),
     "h": ("flext_core.handlers", "FlextHandlers"),
     "m": ("flext_core.models", "FlextModels"),
     "p": ("flext_core.protocols", "FlextProtocols"),
-    "performance_config": (
-        "tests.performance.test_extraction_performance",
-        "performance_config",
-    ),
     "r": ("flext_core.result", "FlextResult"),
     "s": ("flext_core.service", "FlextService"),
     "t": ("flext_core.typings", "FlextTypes"),
-    "tap": ("tests.performance.test_extraction_performance", "tap"),
     "test_extraction_performance": "tests.performance.test_extraction_performance",
     "u": ("flext_core.utilities", "FlextUtilities"),
     "x": ("flext_core.mixins", "FlextMixins"),
 }
 
 __all__ = [
-    "TestExtractionPerformance",
-    "TestRateLimitingPerformance",
     "c",
     "d",
     "e",
-    "env_path",
     "h",
     "m",
     "p",
-    "performance_config",
     "r",
     "s",
     "t",
-    "tap",
     "test_extraction_performance",
     "u",
     "x",

@@ -20,7 +20,14 @@ from __future__ import annotations
 
 from flext_tap_oracle_wms import FlextTapOracleWmsService
 
-__all__ = ["FlextTapOracleWmsService", "main"]
+
+class FlextTapOracleWmsCli:
+    """Thin CLI bridge for the tap service facade."""
+
+    @staticmethod
+    def main() -> int:
+        """Execute Oracle WMS tap through the FLEXT service CLI bridge."""
+        return FlextTapOracleWmsService.get_instance().cli_main()
 
 
 def main() -> int:
@@ -60,7 +67,7 @@ def main() -> int:
         >>> # Executes: ["tap-oracle-wms", "--config", "config.json", "--discover"]
 
     """
-    return FlextTapOracleWmsService.get_instance().cli_main()
+    return FlextTapOracleWmsCli.main()
 
 
 if __name__ == "__main__":

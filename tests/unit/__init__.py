@@ -14,19 +14,15 @@ if _t.TYPE_CHECKING:
 
     test_cli = _tests_unit_test_cli
     import tests.unit.test_config as _tests_unit_test_config
-    from tests.unit.test_cli import TestCLI
 
     test_config = _tests_unit_test_config
     import tests.unit.test_config_validation as _tests_unit_test_config_validation
-    from tests.unit.test_config import TestFlextTapOracleWmsSettings
 
     test_config_validation = _tests_unit_test_config_validation
     import tests.unit.test_tap as _tests_unit_test_tap
-    from tests.unit.test_config_validation import TestConfigValidation
 
     test_tap = _tests_unit_test_tap
     import tests.unit.test_tap_initialization as _tests_unit_test_tap_initialization
-    from tests.unit.test_tap import TestFlextTapOracleWms
 
     test_tap_initialization = _tests_unit_test_tap_initialization
     from flext_core.constants import FlextConstants as c
@@ -40,22 +36,7 @@ if _t.TYPE_CHECKING:
     from flext_core.service import FlextService as s
     from flext_core.typings import FlextTypes as t
     from flext_core.utilities import FlextUtilities as u
-    from tests.unit.test_tap_initialization import TestTapInitialization
 _LAZY_IMPORTS = {
-    "TestCLI": ("tests.unit.test_cli", "TestCLI"),
-    "TestConfigValidation": (
-        "tests.unit.test_config_validation",
-        "TestConfigValidation",
-    ),
-    "TestFlextTapOracleWms": ("tests.unit.test_tap", "TestFlextTapOracleWms"),
-    "TestFlextTapOracleWmsSettings": (
-        "tests.unit.test_config",
-        "TestFlextTapOracleWmsSettings",
-    ),
-    "TestTapInitialization": (
-        "tests.unit.test_tap_initialization",
-        "TestTapInitialization",
-    ),
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
     "e": ("flext_core.exceptions", "FlextExceptions"),
@@ -75,11 +56,6 @@ _LAZY_IMPORTS = {
 }
 
 __all__ = [
-    "TestCLI",
-    "TestConfigValidation",
-    "TestFlextTapOracleWms",
-    "TestFlextTapOracleWmsSettings",
-    "TestTapInitialization",
     "c",
     "d",
     "e",

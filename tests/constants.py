@@ -1,4 +1,4 @@
-"""Module skeleton for FlextTapOracleWmsTestConstants.
+"""Module skeleton for TestsFlextTapOracleWmsConstants.
 
 Test constants for flext-tap-oracle-wms.
 
@@ -13,9 +13,9 @@ from flext_tests import FlextTestsConstants
 from flext_tap_oracle_wms import FlextTapOracleWmsConstants
 
 
-class FlextTapOracleWmsTestConstants(FlextTestsConstants, FlextTapOracleWmsConstants):
+class TestsFlextTapOracleWmsConstants(FlextTestsConstants, FlextTapOracleWmsConstants):
     """Test constants for flext-tap-oracle-wms."""
 
 
-c = FlextTapOracleWmsTestConstants
-__all__ = ["FlextTapOracleWmsTestConstants", "c"]
+c = TestsFlextTapOracleWmsConstants
+__all__ = ["TestsFlextTapOracleWmsConstants", "c"]

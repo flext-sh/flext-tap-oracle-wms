@@ -1,4 +1,4 @@
-"""Utilities for flext-tap-oracle-wms tests - uses composition with FlextTestsUtilities.
+"""Utilities for flext-tap-oracle-wms tests - uses composition with TestsFlextUtilities.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -15,19 +15,19 @@ from flext_tap_oracle_wms import FlextTapOracleWmsUtilities
 from tests import t
 
 
-class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtilities):
-    """Utilities for flext-tap-oracle-wms tests - uses composition with FlextTestsUtilities.
+class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtilities):
+    """Utilities for flext-tap-oracle-wms tests - uses composition with TestsFlextUtilities.
 
-    Architecture: Uses composition (not inheritance) with FlextTestsUtilities and FlextTapOracleWmsUtilities
+    Architecture: Uses composition (not inheritance) with TestsFlextUtilities and FlextTapOracleWmsUtilities
     for flext-tap-oracle-wms-specific utility definitions.
 
     Access patterns:
-    - FlextTapOracleWmsTestUtilities.Tests.* = flext_tests test utilities (via composition)
-    - FlextTapOracleWmsTestUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
-    - FlextTapOracleWmsTestUtilities.* = FlextTestsUtilities methods (via composition)
+    - TestsFlextTapOracleWmsUtilities.Tests.* = flext_tests test utilities (via composition)
+    - TestsFlextTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
+    - TestsFlextTapOracleWmsUtilities.* = TestsFlextUtilities methods (via composition)
 
     Rules:
-    - Use composition, not inheritance (FlextTestsUtilities deprecates subclassing)
+    - Use composition, not inheritance (TestsFlextUtilities deprecates subclassing)
     - flext-tap-oracle-wms-specific utilities go in TapOracleWms namespace
     - Generic utilities accessed via Tests namespace
     """
@@ -112,5 +112,5 @@ class FlextTapOracleWmsTestUtilities(FlextTestsUtilities, FlextTapOracleWmsUtili
             return all(field in config and config[field] for field in required_fields)
 
 
-u = FlextTapOracleWmsTestUtilities
-__all__ = ["FlextTapOracleWmsTestUtilities", "u"]
+u = TestsFlextTapOracleWmsUtilities
+__all__ = ["TestsFlextTapOracleWmsUtilities", "u"]

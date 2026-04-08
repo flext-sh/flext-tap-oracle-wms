@@ -1,4 +1,4 @@
-"""Types for flext-tap-oracle-wms tests - uses composition with FlextTestsTypes.
+"""Types for flext-tap-oracle-wms tests - uses composition with TestsFlextTypes.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -14,19 +14,19 @@ from flext_tests import FlextTestsTypes
 from flext_tap_oracle_wms import FlextTapOracleWmsTypes
 
 
-class FlextTapOracleWmsTestTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
-    """Types for flext-tap-oracle-wms tests - uses composition with FlextTestsTypes.
+class TestsFlextTapOracleWmsTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
+    """Types for flext-tap-oracle-wms tests - uses composition with TestsFlextTypes.
 
-    Architecture: Uses composition (not inheritance) with FlextTestsTypes and FlextTapOracleWmsTypes
+    Architecture: Uses composition (not inheritance) with TestsFlextTypes and FlextTapOracleWmsTypes
     for flext-tap-oracle-wms-specific type definitions.
 
     Access patterns:
-    - FlextTapOracleWmsTestTypes.Tests.* = flext_tests test types (via composition)
-    - FlextTapOracleWmsTestTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
-    - FlextTapOracleWmsTestTypes.* = FlextTestsTypes types (via composition)
+    - TestsFlextTapOracleWmsTypes.Tests.* = flext_tests test types (via composition)
+    - TestsFlextTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
+    - TestsFlextTapOracleWmsTypes.* = TestsFlextTypes types (via composition)
 
     Rules:
-    - Use composition, not inheritance (FlextTestsTypes deprecates subclassing)
+    - Use composition, not inheritance (TestsFlextTypes deprecates subclassing)
     - flext-tap-oracle-wms-specific types go in TapOracleWms namespace
     - Generic types accessed via Tests namespace
     """
@@ -45,10 +45,12 @@ class FlextTapOracleWmsTestTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
             str,
             Sequence[MockOracleWmsRecord] | bool | str | None,
         ]
-        type TestOracleWmsScenario = t.ContainerMapping
-        type TestOracleWmsValidationResult = Mapping[str, bool | str | t.StrSequence]
-        type TestOracleWmsApiResult = t.ContainerMapping
+        type TestOracleWmsScenario = FlextTestsTypes.ContainerMapping
+        type TestOracleWmsValidationResult = Mapping[
+            str, bool | str | FlextTestsTypes.StrSequence
+        ]
+        type TestOracleWmsApiResult = FlextTestsTypes.ContainerMapping
 
 
-t = FlextTapOracleWmsTestTypes
-__all__ = ["FlextTapOracleWmsTestTypes", "t"]
+t = TestsFlextTapOracleWmsTypes
+__all__ = ["TestsFlextTapOracleWmsTypes", "t"]

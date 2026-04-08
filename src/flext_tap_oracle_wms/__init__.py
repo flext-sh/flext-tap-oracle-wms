@@ -22,7 +22,7 @@ if _t.TYPE_CHECKING:
 
     cli = _flext_tap_oracle_wms_cli
     import flext_tap_oracle_wms.constants as _flext_tap_oracle_wms_constants
-    from flext_tap_oracle_wms.cli import main
+    from flext_tap_oracle_wms.cli import FlextTapOracleWmsCli
 
     constants = _flext_tap_oracle_wms_constants
     import flext_tap_oracle_wms.errors as _flext_tap_oracle_wms_errors
@@ -64,11 +64,7 @@ if _t.TYPE_CHECKING:
 
     tap = _flext_tap_oracle_wms_tap
     import flext_tap_oracle_wms.typings as _flext_tap_oracle_wms_typings
-    from flext_tap_oracle_wms.tap import (
-        FlextTapOracleWms,
-        FlextTapOracleWmsPlugin,
-        logger,
-    )
+    from flext_tap_oracle_wms.tap import FlextTapOracleWms, FlextTapOracleWmsPlugin
 
     typings = _flext_tap_oracle_wms_typings
     import flext_tap_oracle_wms.utilities as _flext_tap_oracle_wms_utilities
@@ -89,6 +85,7 @@ if _t.TYPE_CHECKING:
     )
 _LAZY_IMPORTS = {
     "FlextTapOracleWms": ("flext_tap_oracle_wms.tap", "FlextTapOracleWms"),
+    "FlextTapOracleWmsCli": ("flext_tap_oracle_wms.cli", "FlextTapOracleWmsCli"),
     "FlextTapOracleWmsConfigurationError": (
         "flext_tap_oracle_wms.errors",
         "FlextTapOracleWmsConfigurationError",
@@ -151,9 +148,7 @@ _LAZY_IMPORTS = {
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "errors": "flext_tap_oracle_wms.errors",
     "h": ("flext_core.handlers", "FlextHandlers"),
-    "logger": ("flext_tap_oracle_wms.tap", "logger"),
     "m": ("flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"),
-    "main": ("flext_tap_oracle_wms.cli", "main"),
     "models": "flext_tap_oracle_wms.models",
     "p": ("flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"),
     "protocols": "flext_tap_oracle_wms.protocols",
@@ -171,6 +166,7 @@ _LAZY_IMPORTS = {
 
 __all__ = [
     "FlextTapOracleWms",
+    "FlextTapOracleWmsCli",
     "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsConnectionError",
     "FlextTapOracleWmsConstants",
@@ -200,9 +196,7 @@ __all__ = [
     "e",
     "errors",
     "h",
-    "logger",
     "m",
-    "main",
     "models",
     "p",
     "protocols",
