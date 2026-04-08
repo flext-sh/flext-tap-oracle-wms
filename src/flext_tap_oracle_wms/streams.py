@@ -14,7 +14,7 @@ from typing import ClassVar, override
 from pydantic import BaseModel
 
 from flext_core import FlextLogger, r
-from flext_meltano.services.singer_sdk import (
+from flext_meltano import (
     Stream as FlextMeltanoSingerStreamBase,
     Tap as FlextMeltanoSingerTapBase,
 )
