@@ -5,37 +5,8 @@
 
 from __future__ import annotations
 
-import typing as _t
-
 from flext_core.lazy import install_lazy_exports
 
-if _t.TYPE_CHECKING:
-    import tests.unit.test_cli as _tests_unit_test_cli
-
-    test_cli = _tests_unit_test_cli
-    import tests.unit.test_config as _tests_unit_test_config
-
-    test_config = _tests_unit_test_config
-    import tests.unit.test_config_validation as _tests_unit_test_config_validation
-
-    test_config_validation = _tests_unit_test_config_validation
-    import tests.unit.test_tap as _tests_unit_test_tap
-
-    test_tap = _tests_unit_test_tap
-    import tests.unit.test_tap_initialization as _tests_unit_test_tap_initialization
-
-    test_tap_initialization = _tests_unit_test_tap_initialization
-    from flext_core.constants import FlextConstants as c
-    from flext_core.decorators import FlextDecorators as d
-    from flext_core.exceptions import FlextExceptions as e
-    from flext_core.handlers import FlextHandlers as h
-    from flext_core.mixins import FlextMixins as x
-    from flext_core.models import FlextModels as m
-    from flext_core.protocols import FlextProtocols as p
-    from flext_core.result import FlextResult as r
-    from flext_core.service import FlextService as s
-    from flext_core.typings import FlextTypes as t
-    from flext_core.utilities import FlextUtilities as u
 _LAZY_IMPORTS = {
     "c": ("flext_core.constants", "FlextConstants"),
     "d": ("flext_core.decorators", "FlextDecorators"),
@@ -55,24 +26,5 @@ _LAZY_IMPORTS = {
     "x": ("flext_core.mixins", "FlextMixins"),
 }
 
-__all__ = [
-    "c",
-    "d",
-    "e",
-    "h",
-    "m",
-    "p",
-    "r",
-    "s",
-    "t",
-    "test_cli",
-    "test_config",
-    "test_config_validation",
-    "test_tap",
-    "test_tap_initialization",
-    "u",
-    "x",
-]
 
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)
