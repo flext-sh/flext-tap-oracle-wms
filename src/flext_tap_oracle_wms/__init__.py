@@ -18,7 +18,7 @@ if _t.TYPE_CHECKING:
         FlextTapOracleWmsService,
         FlextTapOracleWmsService as s,
     )
-    from flext_tap_oracle_wms.cli import FlextTapOracleWmsCli
+    from flext_tap_oracle_wms.cli import FlextTapOracleWmsCli, main
     from flext_tap_oracle_wms.constants import (
         FlextTapOracleWmsConstants,
         FlextTapOracleWmsConstants as c,
@@ -77,6 +77,7 @@ _LAZY_IMPORTS = {
     "e": ("flext_core.exceptions", "FlextExceptions"),
     "h": ("flext_core.handlers", "FlextHandlers"),
     "m": (".models", "FlextTapOracleWmsModels"),
+    "main": ".cli",
     "p": (".protocols", "FlextTapOracleWmsProtocols"),
     "r": ("flext_core.result", "FlextResult"),
     "s": (".api", "FlextTapOracleWmsService"),
@@ -114,6 +115,7 @@ __all__ = [
     "e",
     "h",
     "m",
+    "main",
     "p",
     "r",
     "s",
