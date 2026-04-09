@@ -31,7 +31,6 @@ class TestCLI:
 
     def test_cli_module_structure(self) -> None:
         """CLI module exposes the service-based entry point."""
-        assert hasattr(cli_module, "main")
         assert callable(cli_module.main)
         assert cli_module.__doc__ is not None
         assert main.__doc__ is not None
@@ -39,5 +38,4 @@ class TestCLI:
 
     def test_module_imports(self) -> None:
         """CLI module re-exports the service facade it dispatches through."""
-        assert hasattr(cli_module, "FlextTapOracleWmsService")
         assert cli_module.FlextTapOracleWmsService is FlextTapOracleWmsService

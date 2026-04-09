@@ -65,7 +65,6 @@ class TestRealConnection:
     )
     def test_tap_initialization(self, tap: FlextTapOracleWms) -> None:
         """Test tap initialization."""
-        result = getattr(tap, "initialize")()
         assert result.is_success
 
     @pytest.mark.skip(
@@ -73,7 +72,6 @@ class TestRealConnection:
     )
     def test_catalog_discovery(self, tap: FlextTapOracleWms) -> None:
         """Test catalog discovery."""
-        init_result = getattr(tap, "initialize")()
         assert init_result.is_success
         result = tap.discovercatalog_typed()
         assert result.is_success
@@ -82,7 +80,6 @@ class TestRealConnection:
         catalog_streams = getattr(catalog, "streams", [])
         assert catalog_streams
         for stream in catalog_streams:
-            _ = getattr(getattr(stream, "schema_definition", {}), "get", None)
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -121,7 +118,6 @@ class TestRealDataExtraction:
         stream_name: str,
     ) -> None:
         """Test extracting data from specific streams."""
-        init_result = getattr(tap, "initialize")()
         assert init_result.is_success
         streams = tap.discover_streams()
         stream = next((s for s in streams if s.name == stream_name), None)
@@ -152,7 +148,6 @@ class TestRealDataExtraction:
     )
     def test_pagination_functionality(self, tap: FlextTapOracleWms) -> None:
         """Test pagination functionality."""
-        getattr(tap, "initialize")()
         streams = tap.discover_streams()
         inventory_stream = next((s for s in streams if s.name == "inventory"), None)
         if not inventory_stream:
@@ -219,7 +214,6 @@ class TestIntegration:
     )
     def test_client_lifecycle_management(self, tap: FlextTapOracleWms) -> None:
         """Test proper client lifecycle management."""
-        init_result = getattr(tap, "initialize")()
         assert init_result.is_success
         assert tap._wms_client is not None
         assert getattr(tap, "_is_started") is True

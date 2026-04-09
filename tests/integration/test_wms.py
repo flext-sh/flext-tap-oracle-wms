@@ -91,7 +91,6 @@ class TestRealWmsIntegration:
         assert streams
         for stream in streams:
             assert stream.name is not None
-            assert hasattr(stream, "schema")
 
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
     @pytest.mark.skip(

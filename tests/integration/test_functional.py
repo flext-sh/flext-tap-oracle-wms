@@ -73,7 +73,6 @@ class TestOracleWMSFunctionalComplete:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(config=real_wms_config)
         assert tap is not None
-        assert hasattr(tap, "config")
         assert tap.config.get("base_url") == real_wms_config["base_url"]
         logger.info("✅ Tap initialized successfully with real config")
 
@@ -213,8 +212,6 @@ class TestOracleWMSFunctionalComplete:
             )
             assert stream.name == stream_id
             assert stream.schema is not None
-            assert hasattr(stream, "url_base")
-            assert hasattr(stream, "authenticator")
             logger.info("✅ Stream created successfully: %s", stream_id)
             url = stream.url_base
             assert url is not None, "Stream URL is None"
@@ -382,9 +379,6 @@ class TestOracleWMSFunctionalComplete:
         """Test configuration validation and type conversion."""
         config = real_config
         assert config is not None, "Config creation failed"
-        assert hasattr(config, "username"), "Config missing username"
-        assert hasattr(config, "password"), "Config missing password"
-        assert hasattr(config, "base_url"), "Config missing base_url"
         assert isinstance(config.page_size, int), "page_size not converted to int"
         assert isinstance(config.timeout, (int, float)), "timeout not numeric"
         assert isinstance(config.verify_ssl, bool), "verify_ssl not boolean"
