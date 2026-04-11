@@ -120,7 +120,7 @@ class TestRealDataExtraction:
         stream_name: str,
     ) -> None:
         """Test extracting data from specific streams."""
-        assert init_result.is_success
+        assert tap.initialize().is_success
         streams = tap.discover_streams()
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
@@ -216,9 +216,9 @@ class TestIntegration:
     )
     def test_client_lifecycle_management(self, tap: FlextTapOracleWms) -> None:
         """Test proper client lifecycle management."""
-        assert init_result.is_success
-        assert tap._wms_client is not None
-        assert getattr(tap, "_is_started") is True
+        assert tap.initialize().is_success
+        assert tap.wms_client is not None
+        assert tap._wms_client is tap.wms_client
         result = tap.discovercatalog_typed()
         assert result.is_success
 

@@ -1,18 +1,18 @@
-# AUTO-GENERATED FILE — DO NOT EDIT MANUALLY.
-# Regenerate with: make gen
-#
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """Integration package."""
 
 from __future__ import annotations
 
-from flext_core.lazy import install_lazy_exports
+from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
-_LAZY_IMPORTS = {
-    "test_functional": "tests.integration.test_functional",
-    "test_streams_functional": "tests.integration.test_streams_functional",
-    "test_wms": "tests.integration.test_wms",
-    "test_wms_connection": "tests.integration.test_wms_connection",
-}
+_LAZY_IMPORTS = build_lazy_import_map(
+    {
+        ".test_functional": ("test_functional",),
+        ".test_streams_functional": ("test_streams_functional",),
+        ".test_wms": ("test_wms",),
+        ".test_wms_connection": ("test_wms_connection",),
+    },
+)
 
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)
