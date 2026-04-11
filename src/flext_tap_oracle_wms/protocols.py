@@ -38,7 +38,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def establish_wms_connection(
                     self,
-                    config: t.ConfigMap,
+                    settings: t.ConfigMap,
                 ) -> FlextOracleWmsProtocols.Result[t.Container]:
                     """Establish connection to Oracle WMS."""
                     ...
@@ -52,7 +52,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def discover_inventory(
                     self,
-                    config: t.ConfigMap,
+                    settings: t.ConfigMap,
                 ) -> FlextOracleWmsProtocols.Result[Sequence[t.ConfigMap]]:
                     """Discover WMS inventory."""
                     ...
@@ -66,7 +66,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def process_orders(
                     self,
-                    config: t.ConfigMap,
+                    settings: t.ConfigMap,
                 ) -> FlextOracleWmsProtocols.Result[Sequence[t.ConfigMap]]:
                     """Process WMS orders."""
                     ...
@@ -80,7 +80,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def get_warehouse_operations(
                     self,
-                    config: t.ConfigMap,
+                    settings: t.ConfigMap,
                 ) -> FlextOracleWmsProtocols.Result[Sequence[t.ConfigMap]]:
                     """Get WMS warehouse operations."""
                     ...
@@ -94,7 +94,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def generate_catalog(
                     self,
-                    config: t.ConfigMap,
+                    settings: t.ConfigMap,
                 ) -> FlextOracleWmsProtocols.Result[m.Meltano.SingerCatalog]:
                     """Generate Singer catalog."""
                     ...
@@ -116,7 +116,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def validate_config(
                     self,
-                    config: t.ConfigMap,
+                    settings: t.ConfigMap,
                 ) -> FlextOracleWmsProtocols.Result[bool]:
                     """Validate WMS configuration."""
                     ...

@@ -79,7 +79,7 @@ src/flext_tap_oracle_wms/
 ├── exceptions.py             # 316 lines - OVER-ENGINEERED error hierarchy
 ├── models.py                 # 314 lines - DUPLICATED domain models
 ├── interfaces.py             # 287 lines - UNNECESSARY abstractions
-├── config.py                 # 265 lines - COMPLEX configuration system
+├── settings.py                 # 265 lines - COMPLEX configuration system
 ├── cache.py                  # 200 lines - OVER-ENGINEERED caching
 ├── simple_api.py             # 149 lines - IRONIC "simple" API
 ├── critical_validation.py    # 148 lines - SPECIALIZED validation
@@ -112,7 +112,7 @@ src/flext_tap_oracle_wms/
 ├── __version__.py            # 🎯 Version management (~10 lines)
 ├── tap.py                    # 🚀 Main tap class (~150 lines)
 ├── streams.py                # 🚀 Stream implementations (~200 lines)
-├── config.py                 # ⚙️ Configuration using flext-core (~100 lines)
+├── settings.py                 # ⚙️ Configuration using flext-core (~100 lines)
 ├── discovery.py              # 🏛️ Unified entity discovery (~150 lines)
 ├── schema.py                 # 🏛️ Schema utilities (~100 lines)
 ├── auth.py                   # 🔧 Authentication wrapper (~50 lines)
@@ -227,9 +227,9 @@ class FlextTapOracleWms(Tap):
     name = "tap-oracle-wms"
     config_jsonschema = WMSConfig.schema()
 
-    def __init__(self, config: dict):
-        super().__init__(config)
-        self.config = WMSConfig(**config)
+    def __init__(self, settings: dict):
+        super().__init__(settings)
+        self.settings = WMSConfig(**settings)
         self.logger = u.fetch_logger(__name__)
         self._wms_client = None
 
@@ -238,12 +238,12 @@ class FlextTapOracleWms(Tap):
         """Get configured WMS client using flext-oracle-wms library."""
         if not self._wms_client:
             self._wms_client = FlextOracleWmsClient(
-                base_url=self.config.base_url,
-                auth_method=self.config.auth_method,
-                username=self.config.username,
-                password=self.config.password,
-                company_code=self.config.company_code,
-                facility_code=self.config.facility_code,
+                base_url=self.settings.base_url,
+                auth_method=self.settings.auth_method,
+                username=self.settings.username,
+                password=self.settings.password,
+                company_code=self.settings.company_code,
+                facility_code=self.settings.facility_code,
             )
         return self._wms_client
 
@@ -258,7 +258,7 @@ class FlextTapOracleWms(Tap):
         return [
             FlextTapOracleWmsStream(tap=self, name=entity)
             for entity in entities_result.data
-            if entity in self.config.entities
+            if entity in self.settings.entities
         ]
 ```
 
@@ -269,14 +269,14 @@ class FlextTapOracleWms(Tap):
 ```python
 from flext_tap_oracle_wms import FlextTapOracleWms
 
-config = {
+settings = {
     "base_url": "https://wms.example.com",
     "auth_method": "basic",
     "username": "user",
-    # ... other config
+    # ... other settings
 }
 
-tap = FlextTapOracleWms(config)
+tap = FlextTapOracleWms(settings)
 streams = tap.discover_streams()
 ```
 
@@ -356,9 +356,9 @@ class FlextTapOracleWmsStream(RESTStream):
     def get_url_params(self, context, next_page_token) -> t.Dict:
         """Build URL parameters for WMS API requests."""
         params = {
-            "limit": min(self.config.get("page_size", 1000), 1250),
-            "companyCode": self.tap.config.company_code,
-            "facilityCode": self.tap.config.facility_code,
+            "limit": min(self.settings.get("page_size", 1000), 1250),
+            "companyCode": self.tap.settings.company_code,
+            "facilityCode": self.tap.settings.facility_code,
         }
 
         # Add incremental extraction parameters
@@ -395,7 +395,7 @@ class FlextTapOracleWmsStream(RESTStream):
 ### **Infrastructure Layer - Configuration**
 
 ```python
-# config.py - Configuration Management (~100 lines)
+# settings.py - Configuration Management (~100 lines)
 """
 Configuration management using FLEXT Core patterns and Pydantic validation.
 
@@ -677,15 +677,15 @@ class AuthenticationManager:
     """
 
     @staticmethod
-    def create_authenticated_client(config: WMSConfig) -> FlextOracleWmsClient:
+    def create_authenticated_client(settings: WMSConfig) -> FlextOracleWmsClient:
         """Create authenticated WMS client."""
         return FlextOracleWmsClient(
-            base_url=config.base_url,
-            auth_method=config.auth_method,
-            username=config.username,
-            password=config.password,
-            company_code=config.company_code,
-            facility_code=config.facility_code,
+            base_url=settings.base_url,
+            auth_method=settings.auth_method,
+            username=settings.username,
+            password=settings.password,
+            company_code=settings.company_code,
+            facility_code=settings.facility_code,
         )
 
 
@@ -757,7 +757,7 @@ Following FLEXT ecosystem patterns with Singer tap specificity:
 # Core modules - descriptive and focused
 tap.py  # Main tap implementation (FlextTapOracleWms)
 streams.py  # Stream definitions (FlextTapOracleWmsStream, WMSPaginator)
-config.py  # Configuration management (WMSConfig)
+settings.py  # Configuration management (WMSConfig)
 discovery.py  # Entity discovery (EntityDiscovery)
 schema.py  # Schema utilities (SchemaGenerator)
 auth.py  # Authentication (AuthenticationManager)
@@ -793,7 +793,7 @@ WMSDiscoveryError  # Specific error (descriptive)
 def discover_streams() -> List[Stream]:           # Singer SDK pattern
 def discover_entities() -> r[t.StringList]: # FLEXT pattern
 def generate_schema(entity: str) -> r[Dict]: # Business action
-def create_authenticated_client(config) -> Client:    # Factory pattern
+def create_authenticated_client(settings) -> Client:    # Factory pattern
 
 # Property naming
 @property
@@ -814,7 +814,7 @@ ______________________________________________________________________
 # Dependencies flow following Clean Architecture
 Application Layer (tap.py, streams.py)
     ↓
-Domain Layer (discovery.py, schema.py, config.py)
+Domain Layer (discovery.py, schema.py, settings.py)
     ↓
 Infrastructure Layer (auth.py, exceptions.py)
     ↓
@@ -873,7 +873,7 @@ from flext_tap_oracle_wms import SchemaGenerator
 from flext_tap_oracle_wms import *
 
 # ❌ Don't create circular dependencies
-# config.py importing from tap.py
+# settings.py importing from tap.py
 
 # ❌ Don't bypass abstraction layers
 # tap.py directly importing from flext_oracle_wms internals
@@ -979,9 +979,9 @@ ______________________________________________________________________
 
 ```python
 # REMOVE these over-engineered modules:
-❌ config_mapper.py          # 1,030 lines → merge into config.py
+❌ config_mapper.py          # 1,030 lines → merge into settings.py
 ❌ modern_discovery.py       # 791 lines → merge into discovery.py
-❌ config_validator.py       # 516 lines → merge into config.py validation
+❌ config_validator.py       # 516 lines → merge into settings.py validation
 ❌ entity_discovery.py       # 500 lines → merge into discovery.py
 ❌ schema_flattener.py       # 484 lines → simplify in schema.py
 ❌ schema_generator.py       # 425 lines → merge into schema.py
@@ -989,7 +989,7 @@ ______________________________________________________________________
 ❌ models.py                 # 314 lines → use flext-oracle-wms models
 ❌ cache.py                  # 200 lines → remove caching complexity
 ❌ simple_api.py             # 149 lines → integrate into streams.py
-❌ critical_validation.py    # 148 lines → merge into config.py
+❌ critical_validation.py    # 148 lines → merge into settings.py
 ❌ type_mapping.py           # 101 lines → merge into schema.py
 ❌ client.py                 # 32 lines → remove wrapper
 ❌ domain/ directory         # Use flext-oracle-wms domain models
@@ -1002,7 +1002,7 @@ ______________________________________________________________________
 ✅ tap.py           # 1,042 → ~150 lines (remove complexity)
 ✅ streams.py       # 897 → ~200 lines (simplify implementation)
 ✅ discovery.py     # 418 → ~150 lines (unified discovery)
-✅ config.py        # 265 → ~100 lines (use FlextSettings)
+✅ settings.py        # 265 → ~100 lines (use FlextSettings)
 ✅ auth.py          # 109 → ~50 lines (wrapper around flext-oracle-wms)
 ✅ exceptions.py    # 316 → ~30 lines (use e.Error hierarchy)
 ✅ schema.py        # NEW → ~100 lines (unified schema handling)
@@ -1072,7 +1072,7 @@ tests/
 ├── unit/                          # Unit tests for each module
 │   ├── test_tap.py               # Tests for tap.py
 │   ├── test_streams.py           # Tests for streams.py
-│   ├── test_config.py            # Tests for config.py
+│   ├── test_config.py            # Tests for settings.py
 │   ├── test_discovery.py         # Tests for discovery.py
 │   ├── test_schema.py            # Tests for schema.py
 │   ├── test_auth.py              # Tests for auth.py

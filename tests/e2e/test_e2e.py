@@ -57,7 +57,7 @@ class TestOracleWMSE2EComplete:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test complete discovery process generating valid Singer catalog."""
-        tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         catalog = self._catalog(tap_instance)
         assert catalog is not None, "Discovery returned None catalog"
         streams = catalog.streams
@@ -93,7 +93,7 @@ class TestOracleWMSE2EComplete:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test catalog serialization and stream selection."""
-        tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         catalog = self._catalog(tap_instance)
         catalog_payload = catalog.model_dump(mode="json")
         catalog_json = json.dumps(catalog_payload, indent=2)
@@ -115,7 +115,7 @@ class TestOracleWMSE2EComplete:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test single stream data extraction with real data."""
-        tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
         if not streams:
@@ -143,7 +143,7 @@ class TestOracleWMSE2EComplete:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test incremental extraction workflow."""
-        tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
         incremental_stream_config: m.Meltano.SingerCatalogEntry | None = None
@@ -182,7 +182,7 @@ class TestOracleWMSE2EComplete:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test full table extraction workflow."""
-        tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
         full_table_stream_config: m.Meltano.SingerCatalogEntry | None = None
@@ -218,7 +218,7 @@ class TestOracleWMSE2EComplete:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test data quality and schema validation."""
-        tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
         quality_report = {
@@ -298,7 +298,7 @@ class TestOracleWMSE2EComplete:
         """E2E: Test error recovery and system resilience."""
         invalid_config: t.MutableContainerMapping = dict(real_wms_config)
         invalid_config["password"] = "invalid_password"
-        tap = FlextTapOracleWms(config=invalid_config)
+        tap = FlextTapOracleWms(settings=invalid_config)
         try:
             catalog = self._catalog(tap)
             assert catalog.streams is not None
@@ -332,7 +332,7 @@ class TestOracleWMSE2EComplete:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test complete Singer protocol compliance."""
-        tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         catalog = self._catalog(tap_instance)
         for stream in catalog.streams:
             assert isinstance(stream.tap_stream_id, str), "tap_stream_id must be string"
@@ -375,7 +375,7 @@ class TestOracleWMSE2EComplete:
     ) -> None:
         """E2E: Test performance indicators and scalability."""
         start_time = time.time()
-        tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         catalog = self._catalog(tap_instance)
         discovery_time = time.time() - start_time
         streams_count = len(catalog.streams)
@@ -422,7 +422,9 @@ class TestOracleWMSE2EComplete:
         errors: list[str] = []
         try:
             start_time = time.time()
-            tap_instance = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+            tap_instance = FlextTapOracleWms(
+                settings=real_config.model_dump(mode="json")
+            )
             catalog = self._catalog(tap_instance)
             discovery_successful = True
             catalog_streams = catalog.streams

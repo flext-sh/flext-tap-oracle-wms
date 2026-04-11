@@ -22,28 +22,28 @@ class TestFlextTapOracleWmsSettings:
         FlextTapOracleWmsSettings.reset_for_testing()
 
     def test_minimal_config(self) -> None:
-        """Test creating config with minimal fields."""
-        config = FlextTapOracleWmsSettings(
+        """Test creating settings with minimal fields."""
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="test_user",
             password="test_pass",
         )
-        assert str(config.base_url).rstrip("/") == "https://wms.example.com"
-        assert config.username == "test_user"
-        password = config.password
+        assert str(settings.base_url).rstrip("/") == "https://wms.example.com"
+        assert settings.username == "test_user"
+        password = settings.password
         password_value = (
             password.get_secret_value() if isinstance(password, SecretStr) else password
         )
         assert password_value == "test_pass"
-        assert config.api_version == "V1"
-        assert config.timeout == 30
-        assert config.page_size == 10
-        assert config.verify_ssl is True
-        assert config.enable_rate_limiting is True
+        assert settings.api_version == "V1"
+        assert settings.timeout == 30
+        assert settings.page_size == 10
+        assert settings.verify_ssl is True
+        assert settings.enable_rate_limiting is True
 
     def test_full_config(self) -> None:
-        """Test creating config with all fields."""
-        config = FlextTapOracleWmsSettings(
+        """Test creating settings with all fields."""
+        settings = FlextTapOracleWmsSettings(
             base_url="https://prod.wms.example.com",
             username="prod_user",
             password="prod_pass",
@@ -69,28 +69,28 @@ class TestFlextTapOracleWmsSettings:
             validate_config=False,
             validate_schemas=False,
         )
-        config.include_entities = ["inventory", "orders"]
-        config.exclude_entities = ["test_entity"]
-        config.additional_headers = {"X-Custom": "value"}
-        config.column_mappings = {"inventory": {"old": "new"}}
-        config.ignored_columns = ["internal_id"]
-        assert config.api_version == "v11"
-        assert config.timeout == 60
-        assert config.page_size == 500
-        assert config.verify_ssl is False
-        assert config.include_entities == ["inventory", "orders"]
-        assert config.enable_rate_limiting is False
-        assert config.log_level == "DEBUG"
-        assert config.max_parallel_streams == 5
+        settings.include_entities = ["inventory", "orders"]
+        settings.exclude_entities = ["test_entity"]
+        settings.additional_headers = {"X-Custom": "value"}
+        settings.column_mappings = {"inventory": {"old": "new"}}
+        settings.ignored_columns = ["internal_id"]
+        assert settings.api_version == "v11"
+        assert settings.timeout == 60
+        assert settings.page_size == 500
+        assert settings.verify_ssl is False
+        assert settings.include_entities == ["inventory", "orders"]
+        assert settings.enable_rate_limiting is False
+        assert settings.log_level == "DEBUG"
+        assert settings.max_parallel_streams == 5
 
     def test_base_url_validation(self) -> None:
         """Test base URL validation accepts valid URLs and bare strings."""
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com/",
             username="user",
             password="pass",
         )
-        assert "wms.example.com" in str(config.base_url)
+        assert "wms.example.com" in str(settings.base_url)
         # str | AnyUrl union accepts bare hostnames as str
         config_bare = FlextTapOracleWmsSettings(
             base_url="wms.example.com",
@@ -101,25 +101,25 @@ class TestFlextTapOracleWmsSettings:
 
     def test_entity_list_validation(self) -> None:
         """Test entity list validation."""
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password="pass",
         )
         with pytest.raises(ValidationError) as exc_info:
-            config.include_entities = ["inventory", "orders", "inventory"]
+            settings.include_entities = ["inventory", "orders", "inventory"]
         assert "contains duplicates" in str(exc_info.value)
 
     def test_date_validation(self) -> None:
         """Test date format validation."""
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password="pass",
             start_date="2024-01-01T00:00:00Z",
             end_date="2024-12-31T23:59:59Z",
         )
-        assert config.start_date == "2024-01-01T00:00:00Z"
+        assert settings.start_date == "2024-01-01T00:00:00Z"
         with pytest.raises(ValidationError) as exc_info:
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
@@ -148,40 +148,40 @@ class TestFlextTapOracleWmsSettings:
 
     def test_validate_business_rules(self) -> None:
         """Test Oracle WMS specific business-rule validation."""
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password="pass",
         )
-        result = config.validate_business_rules()
+        result = settings.validate_business_rules()
         assert result.success
         assert result.value is True
         FlextTapOracleWmsSettings.reset_for_testing()
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password="pass",
         )
-        config.include_entities = ["inventory", "orders"]
-        config.exclude_entities = ["orders", "shipments"]
-        result = config.validate_business_rules()
+        settings.include_entities = ["inventory", "orders"]
+        settings.exclude_entities = ["orders", "shipments"]
+        result = settings.validate_business_rules()
         assert result.failure
         assert "cannot be both included and excluded" in str(result.error)
         FlextTapOracleWmsSettings.reset_for_testing()
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password="pass",
             start_date="2024-12-31T00:00:00Z",
             end_date="2024-01-01T00:00:00Z",
         )
-        result = config.validate_business_rules()
+        result = settings.validate_business_rules()
         assert result.failure
         assert "start_date must be <= end_date" in str(result.error)
 
     def test_model_dump_for_client_payload(self) -> None:
         """Test generating a serializable client payload from settings."""
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password="pass",
@@ -189,10 +189,10 @@ class TestFlextTapOracleWmsSettings:
             timeout=45,
             user_agent="TestAgent/1.0",
         )
-        client_config = config.model_dump(mode="json")
+        client_config = settings.model_dump(mode="json")
         assert "wms.example.com" in str(client_config["base_url"])
         assert client_config["username"] == "user"
-        # Password may be str or masked SecretStr depending on model config
+        # Password may be str or masked SecretStr depending on model settings
         assert client_config["password"] is not None
         assert client_config["api_version"] == "v11"
         assert client_config["timeout"] == 45
@@ -200,44 +200,44 @@ class TestFlextTapOracleWmsSettings:
 
     def test_stream_related_fields_available(self) -> None:
         """Test stream-related configuration fields are preserved in model."""
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password="pass",
             page_size=200,
             start_date="2024-01-01T00:00:00Z",
         )
-        config.column_mappings = {
+        settings.column_mappings = {
             "inventory": {"old_name": "new_name"},
             "orders": {"customer_id": "cust_id"},
         }
-        config.ignored_columns = ["internal_id"]
-        payload = config.model_dump(mode="json")
+        settings.ignored_columns = ["internal_id"]
+        payload = settings.model_dump(mode="json")
         assert payload["page_size"] == 200
         assert payload["start_date"] == "2024-01-01T00:00:00Z"
         assert payload["column_mappings"]["inventory"] == {"old_name": "new_name"}
         assert payload["ignored_columns"] == ["internal_id"]
 
     def test_config_mutability_with_assignment_validation(self) -> None:
-        """Test that config is mutable but still validated on assignment."""
-        config = FlextTapOracleWmsSettings(
+        """Test that settings is mutable but still validated on assignment."""
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password="pass",
         )
-        config.base_url = AnyUrl("https://new.example.com")
-        assert str(config.base_url) == "https://new.example.com/"
+        settings.base_url = AnyUrl("https://new.example.com")
+        assert str(settings.base_url) == "https://new.example.com/"
 
     def test_password_hiding(self) -> None:
         """Test password field is stored (str | SecretStr union)."""
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
             password="super_secret_password",
         )
         password_value = (
-            config.password.get_secret_value()
-            if isinstance(config.password, SecretStr)
-            else config.password
+            settings.password.get_secret_value()
+            if isinstance(settings.password, SecretStr)
+            else settings.password
         )
         assert password_value == "super_secret_password"

@@ -287,8 +287,8 @@ class WMSConfig(FlextSettings):
 class FlextTapOracleWms:
     """FLEXT-compliant tap implementation."""
 
-    def __init__(self, config: dict):
-        self.config = WMSConfig(**config)
+    def __init__(self, settings: dict):
+        self.settings = WMSConfig(**settings)
         self.logger = u.fetch_logger(__name__)
 
     def discover_streams(self) -> r[List[Stream]]:
@@ -311,7 +311,7 @@ from flext_core import TAnyDict
 
 
 def extract_records(
-    entity: str, config: TAnyDict, filters: Optional[t.Dict] = None
+    entity: str, settings: TAnyDict, filters: Optional[t.Dict] = None
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety
@@ -407,7 +407,7 @@ pre-commit run --all-files
       "type": "python",
       "request": "launch",
       "module": "flext_tap_oracle_wms.tap",
-      "args": ["--config", "config.json", "--discover"],
+      "args": ["--settings", "settings.json", "--discover"],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}"
     },
@@ -416,7 +416,7 @@ pre-commit run --all-files
       "type": "python",
       "request": "launch",
       "module": "flext_tap_oracle_wms.tap",
-      "args": ["--config", "config.json", "--catalog", "catalog.json"],
+      "args": ["--settings", "settings.json", "--catalog", "catalog.json"],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}"
     }
@@ -468,7 +468,7 @@ def test_new_entity_extraction(mock_wms_client):
 make wms-test
 
 # Debug authentication
-TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap --config config.json --discover
+TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap --settings settings.json --discover
 ```
 
 #### Schema Issues
@@ -487,7 +487,7 @@ print(schema)
 
 ```bash
 # Profile extraction
-python -m cProfile -o profile.stats -m flext_tap_oracle_wms.tap --config config.json --catalog catalog.json
+python -m cProfile -o profile.stats -m flext_tap_oracle_wms.tap --settings settings.json --catalog catalog.json
 
 # Analyze profile
 python -c "

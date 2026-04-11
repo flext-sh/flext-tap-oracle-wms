@@ -51,7 +51,7 @@ This directory contains the core implementation of FLEXT Tap Oracle WMS, a Singe
 
 #### **Configuration Management**
 
-- [`config.py`](config.py) - Configuration models using Pydantic
+- [`settings.py`](settings.py) - Configuration models using Pydantic
 - [`config_mapper.py`](config_mapper.py) - Configuration mapping utilities
 - [`config_validator.py`](config_validator.py) - Business rule validation
 - [`critical_validation.py`](critical_validation.py) - Environment validation
@@ -120,7 +120,7 @@ The module integrates with FLEXT ecosystem components:
 ```python
 from flext_tap_oracle_wms import FlextTapOracleWms
 
-config = {
+settings = {
     "base_url": "https://wms.example.com",
     "auth_method": "basic",
     "username": "user",
@@ -129,7 +129,7 @@ config = {
     "facility_code": "FACILITY",
 }
 
-tap = FlextTapOracleWms(config)
+tap = FlextTapOracleWms(settings)
 streams = tap.discover_streams()
 ```
 
@@ -138,7 +138,7 @@ streams = tap.discover_streams()
 ```python
 from flext_tap_oracle_wms import get_wms_authenticator
 
-auth = get_wms_authenticator(stream, config)
+auth = get_wms_authenticator(stream, settings)
 authenticated_request = auth(request)
 ```
 
@@ -157,7 +157,7 @@ entities = discovery.discover_entities()
 from flext_tap_oracle_wms import ConfigValidator
 
 validator = ConfigValidator()
-result = validator.validate_config(config)
+result = validator.validate_config(settings)
 ```
 
 ## Development Guidelines

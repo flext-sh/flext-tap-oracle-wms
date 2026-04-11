@@ -53,7 +53,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     @override
     def __init__(
         self,
-        config: t.ContainerMapping
+        settings: t.ContainerMapping
         | t.ContainerValueMapping
         | FlextTapOracleWmsSettings
         | None = None,
@@ -64,13 +64,13 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
         raw_config: t.ContainerMapping
-        if isinstance(config, FlextTapOracleWmsSettings):
-            raw_config = dict(config.model_dump(mode="json").items())
+        if isinstance(settings, FlextTapOracleWmsSettings):
+            raw_config = dict(settings.model_dump(mode="json").items())
         else:
-            raw_config = dict(config) if config else {}
+            raw_config = dict(settings) if settings else {}
         parent_init: Callable[..., None] = getattr(super(), "__init__")
         parent_init(
-            config=raw_config,
+            settings=raw_config,
             catalog=catalog,
             state=state,
             parse_env_config=parse_env_config,
@@ -160,7 +160,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:
         """Return validated tap settings."""
-        config_map = dict(self.config)
+        config_map = dict(self.settings)
         try:
             return FlextTapOracleWmsSettings.model_validate(config_map)
         except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
@@ -183,7 +183,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
                 "timeout": float(self.flext_config.timeout),
                 "retry_attempts": self.flext_config.max_retries,
             })
-            client = FlextOracleWmsUtilitiesClient.Client(config=wms_settings)
+            client = FlextOracleWmsUtilitiesClient.Client(settings=wms_settings)
             start_result = client.start()
             if start_result.failure:
                 msg = start_result.error or "Failed to start Oracle WMS client"
@@ -304,9 +304,9 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
 class FlextTapOracleWmsPlugin:
     """Plugin wrapper exposing tap operations to the host runtime."""
 
-    def __init__(self, config: t.ContainerValueMapping) -> None:
+    def __init__(self, settings: t.ContainerValueMapping) -> None:
         """Initialize plugin state and hold tap configuration."""
-        self._config = config
+        self._config = settings
         self._tap: FlextTapOracleWms | None = None
         self._name = "flext-tap-oracle-wms"
         self._version = "0.9.0"
@@ -361,7 +361,7 @@ class FlextTapOracleWmsPlugin:
 
     def initialize(self, _context: t.ContainerValue | None) -> r[bool]:
         """Instantiate the tap for subsequent operations."""
-        self._tap = FlextTapOracleWms(config=dict(self._config))
+        self._tap = FlextTapOracleWms(settings=dict(self._config))
         return r[bool].ok(True)
 
     def shutdown(self) -> r[bool]:

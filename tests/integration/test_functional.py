@@ -51,8 +51,8 @@ class TestOracleWMSFunctionalComplete:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
         for key in required_config:
-            assert real_wms_config.get(key), f"Missing required config: {key}"
-            assert real_wms_config[key], f"Empty config value: {key}"
+            assert real_wms_config.get(key), f"Missing required settings: {key}"
+            assert real_wms_config[key], f"Empty settings value: {key}"
         base_url = str(real_wms_config["base_url"])
         assert "invalid.wms.ocs.oraclecloud.com" in base_url, (
             f"Not ta29 environment: {base_url}"
@@ -70,10 +70,10 @@ class TestOracleWMSFunctionalComplete:
         real_wms_config: t.MutableContainerMapping,
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
-        tap = FlextTapOracleWms(config=real_wms_config)
+        tap = FlextTapOracleWms(settings=real_wms_config)
         assert tap is not None
-        assert tap.config.get("base_url") == real_wms_config["base_url"]
-        logger.info("✅ Tap initialized successfully with real config")
+        assert tap.settings.get("base_url") == real_wms_config["base_url"]
+        logger.info("✅ Tap initialized successfully with real settings")
 
     @pytest.mark.discovery
     @pytest.mark.skip(
@@ -344,7 +344,7 @@ class TestOracleWMSFunctionalComplete:
         """Test error handling with invalid configurations."""
         invalid_config: t.MutableContainerMapping = dict(real_wms_config)
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
-        tap = FlextTapOracleWms(config=invalid_config)
+        tap = FlextTapOracleWms(settings=invalid_config)
         try:
             catalog = self._catalog(tap)
             assert catalog.streams is not None, "Catalog should expose typed streams"
@@ -376,11 +376,11 @@ class TestOracleWMSFunctionalComplete:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test configuration validation and type conversion."""
-        config = real_config
-        assert config is not None, "Config creation failed"
-        assert isinstance(config.page_size, int), "page_size not converted to int"
-        assert isinstance(config.timeout, (int, float)), "timeout not numeric"
-        assert isinstance(config.verify_ssl, bool), "verify_ssl not boolean"
+        settings = real_config
+        assert settings is not None, "Config creation failed"
+        assert isinstance(settings.page_size, int), "page_size not converted to int"
+        assert isinstance(settings.timeout, (int, float)), "timeout not numeric"
+        assert isinstance(settings.verify_ssl, bool), "verify_ssl not boolean"
         logger.info("✅ Configuration validated and types converted correctly")
 
     @pytest.mark.singer

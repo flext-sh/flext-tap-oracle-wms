@@ -150,7 +150,7 @@ pytest -m "not slow"
 
 # Run specific component tests
 pytest -k "auth" tests/unit/
-pytest -k "config" tests/unit/
+pytest -k "settings" tests/unit/
 pytest -k "discovery" tests/unit/
 ```
 

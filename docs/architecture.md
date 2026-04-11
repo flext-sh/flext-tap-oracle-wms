@@ -60,7 +60,7 @@ src/flext_tap_oracle_wms/
 ├── streams.py                  # Stream definitions (over-engineered)
 ├── client.py                   # Unnecessary wrapper around flext-oracle-wms
 ├── auth.py                     # Authentication handling
-├── config.py                   # Configuration models
+├── settings.py                   # Configuration models
 ├── config_mapper.py            # Configuration mapping layer (redundant)
 ├── config_validator.py         # Configuration validation
 ├── discovery.py                # Legacy discovery implementation
@@ -97,7 +97,7 @@ src/flext_tap_oracle_wms/
 src/flext_tap_oracle_wms/
 ├── tap.py                      # Main tap class (Singer SDK compliant)
 ├── streams.py                  # Stream definitions (simplified)
-├── config.py                   # Single configuration system
+├── settings.py                   # Single configuration system
 ├── discovery.py                # Unified discovery implementation
 ├── auth.py                     # Authentication (using flext-oracle-wms)
 ├── schema.py                   # Schema handling utilities
@@ -126,7 +126,7 @@ src/flext_tap_oracle_wms/
 
 #### 3. Domain Layer
 
-- **config.py**: Configuration domain models and validation
+- **settings.py**: Configuration domain models and validation
 - **schema.py**: Schema transformation and validation logic
 
 #### 4. Infrastructure Layer
@@ -148,7 +148,7 @@ graph TB
     subgraph "Tap Architecture"
         TAP[tap.py]
         STREAMS[streams.py]
-        CONFIG[config.py]
+        CONFIG[settings.py]
         DISCOVERY[discovery.py]
         AUTH[auth.py]
         SCHEMA[schema.py]
@@ -192,9 +192,9 @@ class WMSEntityConfig:
 
 # Application Layer (orchestration)
 class EntityDiscovery:
-    def __init__(self, wms_client: WMSClient, config: WMSEntityConfig):
+    def __init__(self, wms_client: WMSClient, settings: WMSEntityConfig):
         self._wms_client = wms_client
-        self._config = config
+        self._config = settings
 
 
 # Infrastructure Layer (external dependencies)
@@ -220,7 +220,7 @@ class FlextTapOracleWms(Tap):
         """Discover available streams from WMS API."""
         return [
             FlextTapOracleWmsStream(tap=self, name=entity, path=f"/api/{entity}")
-            for entity in self.config["entities"]
+            for entity in self.settings["entities"]
         ]
 
 
@@ -371,11 +371,11 @@ from flext_oracle_wms import FlextOracleWmsClient
 class WMSConnectionManager:
     """Manage WMS connections using flext-oracle-wms."""
 
-    def __init__(self, config: WMSConfig):
+    def __init__(self, settings: WMSConfig):
         self.client = FlextOracleWmsClient(
-            base_url=config.base_url,
-            auth_method=config.auth_method,
-            # ... other config
+            base_url=settings.base_url,
+            auth_method=settings.auth_method,
+            # ... other settings
         )
 
     def get_client(self) -> FlextOracleWmsClient:
@@ -523,10 +523,10 @@ from flext_oracle_wms import WMSAuthenticator
 class TapAuthentication:
     """Delegate authentication to flext-oracle-wms library."""
 
-    def __init__(self, config: WMSConfig):
+    def __init__(self, settings: WMSConfig):
         self.authenticator = WMSAuthenticator(
-            auth_method=config.auth_method,
-            credentials=self._extract_credentials(config),
+            auth_method=settings.auth_method,
+            credentials=self._extract_credentials(settings),
         )
 
     def get_authenticated_client(self):

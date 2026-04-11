@@ -14,23 +14,23 @@ class TestTapInitialization:
     """Verify initialization and stream loading without external I/O."""
 
     def test_tap_initialization_uses_normalized_config(self) -> None:
-        """Tap stores normalized config values from settings serialization."""
+        """Tap stores normalized settings values from settings serialization."""
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
-                config={
+                settings={
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
                 },
             )
-        assert "test.example.com" in str(tap.config["base_url"])
-        assert tap.config["username"] == "test"
+        assert "test.example.com" in str(tap.settings["base_url"])
+        assert tap.settings["username"] == "test"
 
     def test_discover_streams_returns_empty_on_discovery_failure(self) -> None:
         """discover_streams returns no streams if catalog discovery fails."""
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
-                config={
+                settings={
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
@@ -55,7 +55,7 @@ class TestTapInitialization:
         ])
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
-                config={
+                settings={
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
@@ -70,7 +70,7 @@ class TestTapInitialization:
         """execute() delegates to sync_all when no message is passed."""
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
-                config={
+                settings={
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",

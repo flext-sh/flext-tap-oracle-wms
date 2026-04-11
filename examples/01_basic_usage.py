@@ -18,7 +18,7 @@ def main() -> int:
       int: Description.
 
     """
-    config = FlextTapOracleWmsSettings(
+    settings = FlextTapOracleWmsSettings(
         base_url=os.getenv(
             "ORACLE_WMS_BASE_URL",
             "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
@@ -31,7 +31,7 @@ def main() -> int:
         include_entities=["inventory", "locations", "orders"],
         enable_request_logging=True,
     )
-    tap = FlextTapOracleWms(config=config)
+    tap = FlextTapOracleWms(settings=settings)
     validation_result = tap.validate_configuration()
     if not validation_result.success:
         return 1

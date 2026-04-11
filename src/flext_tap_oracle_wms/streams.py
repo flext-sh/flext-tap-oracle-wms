@@ -59,7 +59,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         )
         self._typed_schema: dict[str, t.ContainerValue] | None = schema_dict
         self._client: FlextOracleWmsUtilitiesClient.Client | None = None
-        page_size = int(self.config.get("page_size", 100))
+        page_size = int(self.settings.get("page_size", 100))
         self._page_size = (
             page_size
             if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(
@@ -166,7 +166,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
     ) -> dict[str, t.Scalar]:
         """Post-process a record."""
         conv = u.TapOracleWms.MappingConversion
-        config_map: t.ContainerMapping = self.config
+        config_map: t.ContainerMapping = self.settings
         column_mappings_raw = config_map.get("column_mappings")
         column_mappings = (
             conv.as_map(

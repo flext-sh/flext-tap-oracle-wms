@@ -45,8 +45,8 @@ class TestRealWmsIntegration:
         self,
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
-        """Test tap can be created with real config."""
-        tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        """Test tap can be created with real settings."""
+        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         assert tap is not None
         assert tap.name == "flext-tap-oracle-wms"
 
@@ -58,7 +58,7 @@ class TestRealWmsIntegration:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test configuration validation."""
-        tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         result = tap.validate_configuration()
         if result.success:
             value = result.value
@@ -71,7 +71,7 @@ class TestRealWmsIntegration:
     )
     def test_tap_initialization(self, real_config: FlextTapOracleWmsSettings) -> None:
         """Test tap initialization."""
-        tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         result = tap.initialize()
         if not result.success:
             pytest.skip(f"Tap initialization failed: {result.error}")
@@ -81,7 +81,7 @@ class TestRealWmsIntegration:
     )
     def test_stream_discovery(self, real_config: FlextTapOracleWmsSettings) -> None:
         """Test stream discovery."""
-        tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         init_result = tap.initialize()
         if init_result.failure:
             pytest.skip(
@@ -102,7 +102,7 @@ class TestRealWmsIntegration:
         stream_name: str,
     ) -> None:
         """Test data extraction from specific streams."""
-        tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         init_result = tap.initialize()
         if init_result.failure:
             pytest.skip(

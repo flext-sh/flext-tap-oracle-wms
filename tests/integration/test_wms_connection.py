@@ -42,7 +42,7 @@ def real_config() -> FlextTapOracleWmsSettings:
 @pytest.fixture
 def tap(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance with real configuration."""
-    return FlextTapOracleWms(config=real_config.model_dump(mode="json"))
+    return FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
 
 
 class TestRealConnection:
@@ -177,11 +177,11 @@ class TestFilteringAndSelection:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test including specific entities."""
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             **real_config.model_dump(),
             include_entities=["inventory", "locations"],
         )
-        tap = FlextTapOracleWms(config=config.model_dump(mode="json"))
+        tap = FlextTapOracleWms(settings=settings.model_dump(mode="json"))
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
         assert "inventory" in stream_names
@@ -196,11 +196,11 @@ class TestFilteringAndSelection:
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test excluding specific entities."""
-        config = FlextTapOracleWmsSettings(
+        settings = FlextTapOracleWmsSettings(
             **real_config.model_dump(),
             exclude_entities=["orders", "shipments"],
         )
-        tap = FlextTapOracleWms(config=config.model_dump(mode="json"))
+        tap = FlextTapOracleWms(settings=settings.model_dump(mode="json"))
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
         assert "orders" not in stream_names
@@ -232,7 +232,7 @@ class TestIntegration:
             username="invalid",
             password="invalid",
         )
-        tap = FlextTapOracleWms(config=bad_config)
+        tap = FlextTapOracleWms(settings=bad_config)
         result = tap.validate_configuration()
         assert result.failure
 

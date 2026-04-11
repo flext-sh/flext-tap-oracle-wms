@@ -77,7 +77,7 @@ All configuration examples follow the JSON format required by Singer taps and in
 
 ```bash
 # Test basic configuration
-tap-oracle-wms --config examples/configs/basic.json --discover
+tap-oracle-wms --settings examples/configs/basic.json --discover
 ```
 
 #### [production.JSON](configs/production.json)
@@ -93,7 +93,7 @@ tap-oracle-wms --config examples/configs/basic.json --discover
 
 ```bash
 # Production discovery
-tap-oracle-wms --config examples/configs/production.json --discover > catalog.json
+tap-oracle-wms --settings examples/configs/production.json --discover > catalog.json
 ```
 
 ### Authentication Examples
@@ -299,13 +299,13 @@ tap-oracle-wms --config examples/configs/production.json --discover > catalog.js
 
 ```bash
 # Copy example configuration
-cp examples/configs/basic.json config.json
+cp examples/configs/basic.json settings.json
 
 # Edit with your WMS details
-vim config.json
+vim settings.json
 
 # Test configuration
-make validate-config
+make validate-settings
 
 # Run discovery
 make discover
@@ -321,7 +321,7 @@ make run
 extractors:
   - name: tap-oracle-wms
     variant: flext
-    config:
+    settings:
       base_url: $WMS_BASE_URL
       auth_method: oauth2
       oauth_client_id: $WMS_CLIENT_ID
@@ -419,7 +419,7 @@ All configurations must include:
 }
 
 // Solution: Use discovery to check available entities
-tap-oracle-wms --config config.json --discover
+tap-oracle-wms --settings settings.json --discover
 ```
 
 #### Page Size Issues

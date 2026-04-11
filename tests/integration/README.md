@@ -102,8 +102,8 @@ def test_tap_stream_integration():
 def test_auth_client_integration():
     """Test authentication integration with client requests."""
     with mock_wms_auth_server():
-        auth = get_wms_authenticator(stream, config)
-        client = WMSClient(config, auth)
+        auth = get_wms_authenticator(stream, settings)
+        client = WMSClient(settings, auth)
 
         # Test authenticated request flow
         response = client.get_entities()
@@ -134,11 +134,11 @@ def test_discovery_schema_integration():
 ```python
 def test_config_validation_chain():
     """Test complete configuration validation workflow."""
-    config = load_test_config("complex_config.json")
+    settings = load_test_config("complex_config.json")
 
     # Test validation chain
     mapper = ConfigMapper()
-    mapped_config = mapper.map_config(config)
+    mapped_config = mapper.map_config(settings)
 
     validator = ConfigValidator()
     validation_result = validator.validate(mapped_config)
@@ -220,9 +220,9 @@ tests/fixtures/integration/
 │   ├── pagination_responses.json   # Paginated responses
 │   └── error_responses.json        # Error scenarios
 ├── configurations/
-│   ├── basic_integration.json      # Basic integration config
-│   ├── oauth_integration.json      # OAuth integration config
-│   └── complex_integration.json    # Complex scenario config
+│   ├── basic_integration.json      # Basic integration settings
+│   ├── oauth_integration.json      # OAuth integration settings
+│   └── complex_integration.json    # Complex scenario settings
 └── expected_outputs/
     ├── catalog_schema.json         # Expected catalog output
     ├── item_records.json           # Expected item records

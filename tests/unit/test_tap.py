@@ -26,30 +26,30 @@ class TestFlextTapOracleWms:
     ) -> None:
         """Tap stores validated settings and starts with lazy client."""
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
-            tap = FlextTapOracleWms(config=sample_config.model_dump(mode="json"))
+            tap = FlextTapOracleWms(settings=sample_config.model_dump(mode="json"))
         assert tap.name == "flext-tap-oracle-wms"
 
     def test_tap_initialization_with_dict(self) -> None:
-        """Tap accepts plain config mappings and normalizes settings values."""
+        """Tap accepts plain settings mappings and normalizes settings values."""
         config_dict: t.ContainerMapping = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
             "password": "test_password",
         }
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
-            tap = FlextTapOracleWms(config=config_dict)
+            tap = FlextTapOracleWms(settings=config_dict)
         assert "test.wms.example.com" in str(tap.flext_config.base_url)
         assert tap.flext_config.username == "test_user"
 
     def test_tap_initialization_invalid_config(self) -> None:
-        """Invalid config payload raises configuration error."""
+        """Invalid settings payload raises configuration error."""
         config_dict: t.ContainerMapping = {
             "base_url": "invalid-url",
             "username": "test_user",
             "password": "test_password",
         }
         with pytest.raises(FlextTapOracleWmsConfigurationError):
-            FlextTapOracleWms(config=config_dict)
+            FlextTapOracleWms(settings=config_dict)
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
     def test_wms_client_property_lazy_initialization(
@@ -62,7 +62,7 @@ class TestFlextTapOracleWms:
         mock_client.discover_entities.return_value = r[t.StrSequence].ok([])
         mock_client_class.return_value = mock_client
         tap = FlextTapOracleWms(
-            config={
+            settings={
                 "base_url": "https://test.wms.example.com",
                 "username": "test_user",
                 "password": "test_password",
@@ -77,13 +77,13 @@ class TestFlextTapOracleWms:
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsClient")
     def test_wms_client_connection_failure(self, mock_client_class: MagicMock) -> None:
-        """Failed WMS client start is surfaced as tap config error."""
+        """Failed WMS client start is surfaced as tap settings error."""
         mock_client = MagicMock()
         mock_client.start.return_value = r[bool].fail("Connection refused")
         mock_client_class.return_value = mock_client
         with pytest.raises(FlextTapOracleWmsConfigurationError):
             _ = FlextTapOracleWms(
-                config={
+                settings={
                     "base_url": "https://test.wms.example.com",
                     "username": "test_user",
                     "password": "test_password",
@@ -180,7 +180,7 @@ class TestFlextTapOracleWms:
         assert "Tap does not support message execution" in str(result.error)
 
     def test_validate_configuration(self, tap_instance: FlextTapOracleWms) -> None:
-        """Validation method exposes non-secret effective config values."""
+        """Validation method exposes non-secret effective settings values."""
         result = tap_instance.validate_configuration()
         assert result.success
         value = result.value

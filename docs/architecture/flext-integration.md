@@ -97,8 +97,8 @@ class WMSConfig(FlextSettings):
 class FlextTapOracleWms:
     """Main tap implementation using flext-core patterns."""
 
-    def __init__(self, config: TAnyDict):
-        self.config = WMSConfig(**config)
+    def __init__(self, settings: TAnyDict):
+        self.settings = WMSConfig(**settings)
         self.logger = u.fetch_logger(__name__)
 
     def discover_streams(self) -> r[List[Stream]]:
@@ -211,8 +211,8 @@ from flext_oracle_wms import (
 class WMSClientManager:
     """Manage WMS client using flext-oracle-wms library."""
 
-    def __init__(self, config: WMSConfig):
-        self.config = config
+    def __init__(self, settings: WMSConfig):
+        self.settings = settings
         self._client = None
         self.logger = u.fetch_logger(__name__)
 
@@ -221,12 +221,12 @@ class WMSClientManager:
         """Get configured WMS client."""
         if not self._client:
             self._client = FlextOracleWmsClient(
-                base_url=self.config.base_url,
-                auth_method=self.config.auth_method,
-                username=self.config.username,
-                password=self.config.password,
-                company_code=self.config.company_code,
-                facility_code=self.config.facility_code,
+                base_url=self.settings.base_url,
+                auth_method=self.settings.auth_method,
+                username=self.settings.username,
+                password=self.settings.password,
+                company_code=self.settings.company_code,
+                facility_code=self.settings.facility_code,
             )
         return self._client
 
@@ -311,9 +311,9 @@ class FlextTapOracleWms(Tap):
     name = "tap-oracle-wms"
     config_jsonschema = WMSConfig.schema()
 
-    def __init__(self, config: dict):
-        super().__init__(config)
-        self.wms_client_manager = WMSClientManager(self.config)
+    def __init__(self, settings: dict):
+        super().__init__(settings)
+        self.wms_client_manager = WMSClientManager(self.settings)
 
     def discover_streams(self) -> List[Stream]:
         """Discover streams using flext-meltano patterns."""
@@ -326,7 +326,7 @@ class FlextTapOracleWms(Tap):
         return [
             FlextTapOracleWmsStream(tap=self, name=entity)
             for entity in entities_result.data
-            if entity in self.config.entities
+            if entity in self.settings.entities
         ]
 
 
@@ -429,8 +429,8 @@ from flext_observability import (
 class FlextTapOracleWms(Tap):
     """Tap with comprehensive observability."""
 
-    def __init__(self, config: dict):
-        super().__init__(config)
+    def __init__(self, settings: dict):
+        super().__init__(settings)
         self.metrics = FlextMetrics(service_name="tap-oracle-wms")
         self.health_check = FlextHealthCheck()
         self.tracing = FlextTracing()

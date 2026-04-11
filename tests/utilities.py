@@ -50,15 +50,15 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
             **kwargs: t.Scalar,
         ) -> t.MutableContainerMapping:
             """Create test Oracle WMS configuration."""
-            config: t.MutableContainerMapping = {
+            settings: t.MutableContainerMapping = {
                 "base_url": base_url,
                 "username": username,
                 "password": password,
             }
             if facility_ids:
-                config["facility_ids"] = facility_ids
-            config.update(kwargs)
-            return config
+                settings["facility_ids"] = facility_ids
+            settings.update(kwargs)
+            return settings
 
         @staticmethod
         def create_test_oracle_wms_api_response(
@@ -105,11 +105,13 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
 
         @staticmethod
         def validate_oracle_wms_config(
-            config: t.MutableContainerMapping,
+            settings: t.MutableContainerMapping,
         ) -> bool:
             """Validate Oracle WMS configuration for testing."""
             required_fields = ["base_url", "username"]
-            return all(field in config and config[field] for field in required_fields)
+            return all(
+                field in settings and settings[field] for field in required_fields
+            )
 
 
 u = TestsFlextTapOracleWmsUtilities

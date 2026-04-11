@@ -39,7 +39,7 @@ def performance_config() -> FlextTapOracleWmsSettings:
 @pytest.fixture
 def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance for performance testing."""
-    return FlextTapOracleWms(config=performance_config.model_dump(mode="json"))
+    return FlextTapOracleWms(settings=performance_config.model_dump(mode="json"))
 
 
 @pytest.mark.performance
@@ -140,7 +140,9 @@ class TestRateLimitingPerformance:
             **performance_config.model_dump(),
             enable_rate_limiting=False,
         )
-        tap_no_limit = FlextTapOracleWms(config=config_no_limit.model_dump(mode="json"))
+        tap_no_limit = FlextTapOracleWms(
+            settings=config_no_limit.model_dump(mode="json")
+        )
         tap_no_limit.initialize()
         config_with_limit = FlextTapOracleWmsSettings(
             **performance_config.model_dump(),
@@ -148,7 +150,7 @@ class TestRateLimitingPerformance:
             max_requests_per_minute=60,
         )
         tap_with_limit = FlextTapOracleWms(
-            config=config_with_limit.model_dump(mode="json"),
+            settings=config_with_limit.model_dump(mode="json"),
         )
         tap_with_limit.initialize()
         for tap, _label in [(tap_no_limit, "No Limit"), (tap_with_limit, "With Limit")]:
