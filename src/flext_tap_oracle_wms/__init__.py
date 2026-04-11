@@ -10,8 +10,8 @@ from flext_tap_oracle_wms.__version__ import *
 
 if _t.TYPE_CHECKING:
     from flext_meltano import d, e, h, r, s, x
-    from flext_tap_oracle_wms.api import FlextTapOracleWmsService
-    from flext_tap_oracle_wms.cli import FlextTapOracleWmsCli
+    from flext_tap_oracle_wms.api import FlextTapOracleWmsService, tap_oracle_wms
+    from flext_tap_oracle_wms.cli import FlextTapOracleWmsCli, main
     from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants, c
     from flext_tap_oracle_wms.errors import (
         FlextTapOracleWmsConfigurationError,
@@ -38,8 +38,14 @@ _LAZY_IMPORTS = build_lazy_import_map(
             "__version__",
             "__version_info__",
         ),
-        ".api": ("FlextTapOracleWmsService",),
-        ".cli": ("FlextTapOracleWmsCli",),
+        ".api": (
+            "FlextTapOracleWmsService",
+            "tap_oracle_wms",
+        ),
+        ".cli": (
+            "FlextTapOracleWmsCli",
+            "main",
+        ),
         ".constants": (
             "FlextTapOracleWmsConstants",
             "c",
@@ -115,10 +121,12 @@ __all__ = [
     "e",
     "h",
     "m",
+    "main",
     "p",
     "r",
     "s",
     "t",
+    "tap_oracle_wms",
     "u",
     "x",
 ]

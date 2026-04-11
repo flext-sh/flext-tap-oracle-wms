@@ -99,7 +99,7 @@ class FlextTapOracleWms:
 
     def __init__(self, config: TAnyDict):
         self.config = WMSConfig(**config)
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def discover_streams(self) -> r[List[Stream]]:
         """Return streams using r pattern."""
@@ -170,7 +170,7 @@ class FlextTapOracleWmsStream:
     def __init__(self, tap, name: str):
         self.tap = tap
         self.name = name
-        self.logger = FlextLogger(f"{__name__}.{name}")
+        self.logger = u.fetch_logger(f"{__name__}.{name}")
 
     def get_records(self, context):
         """Extract records with comprehensive logging."""
@@ -214,7 +214,7 @@ class WMSClientManager:
     def __init__(self, config: WMSConfig):
         self.config = config
         self._client = None
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     @property
     def client(self) -> FlextOracleWmsClient:
@@ -259,7 +259,7 @@ class EntityDiscovery:
 
     def __init__(self, wms_client: FlextOracleWmsClient):
         self.wms_client = wms_client
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def discover_entities(self) -> r[t.StringList]:
         """Discover available entities using WMS client."""

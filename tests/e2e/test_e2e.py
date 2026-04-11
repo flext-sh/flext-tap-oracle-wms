@@ -18,15 +18,14 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from flext_core import FlextLogger
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStream,
 )
-from tests import m, t
+from tests import m, t, u
 
-logger = FlextLogger(__name__)
+logger = u.fetch_logger(__name__)
 
 
 @pytest.mark.e2e

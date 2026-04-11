@@ -13,7 +13,7 @@ from typing import ClassVar, override
 
 from pydantic import BaseModel
 
-from flext_core import FlextLogger, r
+from flext_core import r
 from flext_meltano import (
     Stream as FlextMeltanoSingerStreamBase,
     Tap as FlextMeltanoSingerTapBase,
@@ -21,7 +21,7 @@ from flext_meltano import (
 from flext_oracle_wms import FlextOracleWmsUtilitiesClient
 from flext_tap_oracle_wms import FlextTapOracleWmsError, c, p, t, u
 
-logger = FlextLogger(__name__)
+logger = u.fetch_logger(__name__)
 
 
 class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):

@@ -289,7 +289,7 @@ class FlextTapOracleWms:
 
     def __init__(self, config: dict):
         self.config = WMSConfig(**config)
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def discover_streams(self) -> r[List[Stream]]:
         """Use r pattern for error handling."""

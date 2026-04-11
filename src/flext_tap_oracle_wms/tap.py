@@ -9,7 +9,7 @@ from typing import ClassVar, override
 
 from pydantic import SecretStr, ValidationError
 
-from flext_core import FlextLogger, r
+from flext_core import r
 from flext_meltano import Tap as FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsSettings,
@@ -25,7 +25,7 @@ from flext_tap_oracle_wms import (
     u,
 )
 
-logger = FlextLogger(__name__)
+logger = u.fetch_logger(__name__)
 
 
 class FlextTapOracleWms(FlextMeltanoSingerTapBase):

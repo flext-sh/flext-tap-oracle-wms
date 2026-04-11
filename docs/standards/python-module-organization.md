@@ -230,7 +230,7 @@ class FlextTapOracleWms(Tap):
     def __init__(self, config: dict):
         super().__init__(config)
         self.config = WMSConfig(**config)
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
         self._wms_client = None
 
     @property
@@ -338,7 +338,7 @@ class FlextTapOracleWmsStream(RESTStream):
         super().__init__(tap)
         self.name = name
         self.path = f"/api/rest/v1/{name}"
-        self.logger = FlextLogger(f"{__name__}.{name}")
+        self.logger = u.fetch_logger(f"{__name__}.{name}")
         self._schema_generator = SchemaGenerator(tap.wms_client)
 
     @property
@@ -550,7 +550,7 @@ class EntityDiscovery:
 
     def __init__(self, wms_client: FlextOracleWmsClient):
         self.wms_client = wms_client
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def discover_entities(self) -> r[t.StringList]:
         """Discover available entities from WMS API."""
@@ -617,7 +617,7 @@ class SchemaGenerator:
     def __init__(self, wms_client: FlextOracleWmsClient):
         self.wms_client = wms_client
         self.discovery = EntityDiscovery(wms_client)
-        self.logger = FlextLogger(__name__)
+        self.logger = u.fetch_logger(__name__)
 
     def generate_schema(self, entity: str) -> r[t.Dict]:
         """Generate Singer schema for WMS entity."""
@@ -940,7 +940,7 @@ def discover_entities(self) -> r[t.StringList]:
 
 
 # Logging using FLEXT patterns
-self.logger = FlextLogger(__name__)
+self.logger = u.fetch_logger(__name__)
 self.logger.info("Starting extraction", entity=entity_name)
 ```
 
@@ -1037,7 +1037,7 @@ from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 # REMOVE custom implementations:
 - Custom configuration classes → use FlextSettings
 - Custom error handling → use r railway pattern
-- Custom logging → use FlextLogger()
+- Custom logging → use u.fetch_logger()
 - Custom WMS client → use FlextOracleWmsClient
 - Custom result types → use r[T]
 ```
@@ -1194,12 +1194,12 @@ class WMSConfig(FlextSettings):          # Configuration
 def process_data() -> r[Data]:     # Error handling
     pass
 
-logger = FlextLogger(__name__)                # Logging
+logger = u.fetch_logger(__name__)                # Logging
 
 # ❌ Don't create project-specific alternatives
 class CustomConfig(BaseModel):               # Use FlextSettings
 class CustomResult[T]:                       # Use r
-custom_logger = logging.getLogger()          # Use FlextLogger()
+custom_logger = logging.getLogger()          # Use u.fetch_logger()
 ```
 
 ### **Library Integration**
