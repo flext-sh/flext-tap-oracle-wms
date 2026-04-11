@@ -30,4 +30,6 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         return FlextMeltanoSingerTapAdapter(FlextTapOracleWms(config=raw_config))
 
 
-__all__ = ["FlextTapOracleWmsService"]
+tap_oracle_wms = FlextTapOracleWmsService
+
+__all__ = ["FlextTapOracleWmsService", "tap_oracle_wms"]
