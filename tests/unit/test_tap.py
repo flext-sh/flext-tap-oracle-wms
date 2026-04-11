@@ -104,7 +104,7 @@ class TestFlextTapOracleWms:
             return_value=mock_client,
         ):
             result = tap_instance.discovercatalog_typed()
-        assert result.is_success
+        assert result.success
         assert result.value.streams[0].stream == "inventory"
         assert result.value.streams[1].stream == "locations"
 
@@ -119,7 +119,7 @@ class TestFlextTapOracleWms:
             return_value=mock_client,
         ):
             result = tap_instance.discovercatalog_typed()
-        assert result.is_failure
+        assert result.failure
         assert result.error == "boom"
 
     def test_discover_streams_empty_when_catalog_fails(
@@ -167,7 +167,7 @@ class TestFlextTapOracleWms:
         """Execute without message triggers sync flow and returns success."""
         with patch.object(tap_instance, "sync_all") as mock_sync:
             result = tap_instance.execute()
-        assert result.is_success
+        assert result.success
         mock_sync.assert_called_once()
 
     def test_execute_with_message_unsupported(
@@ -176,13 +176,13 @@ class TestFlextTapOracleWms:
     ) -> None:
         """Custom message execution is not supported by the tap."""
         result = tap_instance.execute("some message")
-        assert result.is_failure
+        assert result.failure
         assert "Tap does not support message execution" in str(result.error)
 
     def test_validate_configuration(self, tap_instance: FlextTapOracleWms) -> None:
         """Validation method exposes non-secret effective config values."""
         result = tap_instance.validate_configuration()
-        assert result.is_success
+        assert result.success
         value = result.value
         assert isinstance(value, Mapping)
         assert value["base_url"] == str(tap_instance.flext_config.base_url)
@@ -200,7 +200,7 @@ class TestFlextTapOracleWms:
         """Metrics payload contains baseline tap observability fields."""
         with patch.object(tap_instance, "discover_streams", return_value=[]):
             result = tap_instance.get_implementation_metrics()
-        assert result.is_success
+        assert result.success
         metrics = result.value
         assert isinstance(metrics, Mapping)
         assert metrics["tap_name"] == "flext-tap-oracle-wms"

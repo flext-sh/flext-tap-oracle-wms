@@ -136,7 +136,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         while has_more:
             try:
                 page_result = self._fetch_page_data(page, context)
-                if page_result.is_failure:
+                if page_result.failure:
                     logger.error(
                         "Failed to fetch page %s for %s: %s",
                         page,
@@ -247,7 +247,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
             limit=limit,
             filters=filters or None,
         )
-        if result.is_failure:
+        if result.failure:
             return r[tuple[Sequence[t.ScalarMapping], bool]].fail(
                 f"Failed to get records for {self.name}: {result.error}",
             )

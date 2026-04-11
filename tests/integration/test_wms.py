@@ -60,7 +60,7 @@ class TestRealWmsIntegration:
         """Test configuration validation."""
         tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
         result = tap.validate_configuration()
-        if result.is_success:
+        if result.success:
             value = result.value
             assert isinstance(value, Mapping) and value.get("valid") is True
         else:
@@ -73,7 +73,7 @@ class TestRealWmsIntegration:
         """Test tap initialization."""
         tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
         result = tap.initialize()
-        if not result.is_success:
+        if not result.success:
             pytest.skip(f"Tap initialization failed: {result.error}")
 
     @pytest.mark.skip(
@@ -83,7 +83,7 @@ class TestRealWmsIntegration:
         """Test stream discovery."""
         tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
         init_result = tap.initialize()
-        if init_result.is_failure:
+        if init_result.failure:
             pytest.skip(
                 f"Cannot test discovery, initialization failed: {init_result.error}",
             )
@@ -104,7 +104,7 @@ class TestRealWmsIntegration:
         """Test data extraction from specific streams."""
         tap = FlextTapOracleWms(config=real_config.model_dump(mode="json"))
         init_result = tap.initialize()
-        if init_result.is_failure:
+        if init_result.failure:
             pytest.skip(
                 f"Cannot test extraction, initialization failed: {init_result.error}",
             )

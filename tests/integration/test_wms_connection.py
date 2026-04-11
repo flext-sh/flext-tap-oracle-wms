@@ -54,7 +54,7 @@ class TestRealConnection:
     def test_configuration_validation(self, tap: FlextTapOracleWms) -> None:
         """Test configuration validation."""
         result = tap.validate_configuration()
-        assert result.is_success
+        assert result.success
         value = result.value
         assert isinstance(value, Mapping)
         assert value.get("valid") is True
@@ -75,7 +75,7 @@ class TestRealConnection:
         """Test catalog discovery."""
         # assert init_result.is_success
         result = tap.discovercatalog_typed()
-        assert result.is_success
+        assert result.success
         catalog = result.value
         assert getattr(catalog, "type", None) == "CATALOG"
         catalog_streams = getattr(catalog, "streams", [])
@@ -120,7 +120,7 @@ class TestRealDataExtraction:
         stream_name: str,
     ) -> None:
         """Test extracting data from specific streams."""
-        assert tap.initialize().is_success
+        assert tap.initialize().success
         streams = tap.discover_streams()
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
@@ -216,11 +216,11 @@ class TestIntegration:
     )
     def test_client_lifecycle_management(self, tap: FlextTapOracleWms) -> None:
         """Test proper client lifecycle management."""
-        assert tap.initialize().is_success
+        assert tap.initialize().success
         assert tap.wms_client is not None
         assert tap._wms_client is tap.wms_client
         result = tap.discovercatalog_typed()
-        assert result.is_success
+        assert result.success
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -234,7 +234,7 @@ class TestIntegration:
         )
         tap = FlextTapOracleWms(config=bad_config)
         result = tap.validate_configuration()
-        assert result.is_failure
+        assert result.failure
 
 
 if __name__ == "__main__":

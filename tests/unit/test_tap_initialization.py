@@ -78,5 +78,5 @@ class TestTapInitialization:
             )
         with patch.object(tap, "sync_all") as mock_sync:
             result = tap.execute()
-        assert result.is_success
+        assert result.success
         mock_sync.assert_called_once()

@@ -9,13 +9,7 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 from flext_tap_oracle_wms.__version__ import *
 
 if _t.TYPE_CHECKING:
-    from flext_cli.base import s
-
-    from flext_core.decorators import d
-    from flext_core.exceptions import e
-    from flext_core.handlers import h
-    from flext_core.mixins import x
-    from flext_core.result import r
+    from flext_meltano import d, e, h, r, s, x
     from flext_tap_oracle_wms.api import FlextTapOracleWmsService
     from flext_tap_oracle_wms.cli import FlextTapOracleWmsCli, main
     from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants, c
@@ -81,12 +75,14 @@ _LAZY_IMPORTS = build_lazy_import_map(
             "FlextTapOracleWmsUtilities",
             "u",
         ),
-        "flext_cli.base": ("s",),
-        "flext_core.decorators": ("d",),
-        "flext_core.exceptions": ("e",),
-        "flext_core.handlers": ("h",),
-        "flext_core.mixins": ("x",),
-        "flext_core.result": ("r",),
+        "flext_meltano": (
+            "d",
+            "e",
+            "h",
+            "r",
+            "s",
+            "x",
+        ),
     },
 )
 

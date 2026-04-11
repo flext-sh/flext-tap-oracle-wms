@@ -154,7 +154,7 @@ class TestFlextTapOracleWmsSettings:
             password="pass",
         )
         result = config.validate_business_rules()
-        assert result.is_success
+        assert result.success
         assert result.value is True
         FlextTapOracleWmsSettings.reset_for_testing()
         config = FlextTapOracleWmsSettings(
@@ -165,7 +165,7 @@ class TestFlextTapOracleWmsSettings:
         config.include_entities = ["inventory", "orders"]
         config.exclude_entities = ["orders", "shipments"]
         result = config.validate_business_rules()
-        assert result.is_failure
+        assert result.failure
         assert "cannot be both included and excluded" in str(result.error)
         FlextTapOracleWmsSettings.reset_for_testing()
         config = FlextTapOracleWmsSettings(
@@ -176,7 +176,7 @@ class TestFlextTapOracleWmsSettings:
             end_date="2024-01-01T00:00:00Z",
         )
         result = config.validate_business_rules()
-        assert result.is_failure
+        assert result.failure
         assert "start_date must be <= end_date" in str(result.error)
 
     def test_model_dump_for_client_payload(self) -> None:

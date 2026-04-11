@@ -37,7 +37,7 @@ class TestOracleWMSE2EComplete:
     def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
         """Return the typed discovered catalog used by runtime code."""
         result = tap.discovercatalog_typed()
-        assert result.is_success, result.error
+        assert result.success, result.error
         return result.value
 
     @staticmethod

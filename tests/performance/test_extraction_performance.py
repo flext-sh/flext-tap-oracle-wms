@@ -55,7 +55,7 @@ class TestExtractionPerformance:
         start_time = time.time()
         result = tap.discovercatalog_typed()
         discovery_time = time.time() - start_time
-        assert result.is_success
+        assert result.success
         assert discovery_time < 10.0
 
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])

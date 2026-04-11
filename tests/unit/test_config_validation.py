@@ -93,7 +93,7 @@ class TestConfigValidation:
             password="pass",
         )
         result = config.validate_domain_rules()
-        assert result.is_success
+        assert result.success
 
     def test_business_rules_valid(self) -> None:
         """Test business rules validation passes for valid config."""
@@ -103,7 +103,7 @@ class TestConfigValidation:
             password="pass",
         )
         result = config.validate_business_rules()
-        assert result.is_success
+        assert result.success
 
     def test_stream_related_config_fields(self) -> None:
         """Test stream-related configuration fields are accessible."""

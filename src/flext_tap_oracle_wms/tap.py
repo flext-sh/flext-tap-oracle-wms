@@ -185,7 +185,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
             })
             client = FlextOracleWmsUtilitiesClient.Client(config=wms_settings)
             start_result = client.start()
-            if start_result.is_failure:
+            if start_result.failure:
                 msg = start_result.error or "Failed to start Oracle WMS client"
                 raise FlextTapOracleWmsConfigurationError(msg)
             self._wms_client = client
@@ -199,7 +199,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     def discovercatalog_typed(self) -> r[m.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
         discovery_result = self.wms_client.discover_entities()
-        if discovery_result.is_failure:
+        if discovery_result.failure:
             return r[m.Meltano.SingerCatalog].fail(
                 discovery_result.error or "Discovery failed",
             )
@@ -237,7 +237,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
         """Build stream objects from the discovered catalog."""
         catalog_result = self.discovercatalog_typed()
-        if catalog_result.is_failure:
+        if catalog_result.failure:
             msg = f"Catalog discovery failed: {catalog_result.error or 'unknown error'}"
             raise FlextTapOracleWmsConfigurationError(msg)
         streams_raw = catalog_result.value.streams
@@ -329,7 +329,7 @@ class FlextTapOracleWmsPlugin:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
             init_result = self.initialize(None)
-            if init_result.is_failure:
+            if init_result.failure:
                 return r[t.ContainerValue].fail(
                     init_result.error or "Tap initialization failed",
                 )
@@ -338,14 +338,14 @@ class FlextTapOracleWmsPlugin:
             return r[t.ContainerValue].fail("Tap not initialized")
         if operation == "discover":
             catalog_result = tap.discovercatalog_typed()
-            if catalog_result.is_failure:
+            if catalog_result.failure:
                 return r[t.ContainerValue].fail(
                     catalog_result.error or "Discovery failed",
                 )
             return r[t.ContainerValue].ok(catalog_result.value.model_dump(mode="json"))
         if operation == "sync":
             execute_result = tap.execute()
-            if execute_result.is_failure:
+            if execute_result.failure:
                 return r[t.ContainerValue].fail(execute_result.error or "Sync failed")
             return r[t.ContainerValue].ok({"success": True})
         return r[t.ContainerValue].fail(f"Unsupported operation: {operation}")

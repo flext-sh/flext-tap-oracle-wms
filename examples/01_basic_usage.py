@@ -33,10 +33,10 @@ def main() -> int:
     )
     tap = FlextTapOracleWms(config=config)
     validation_result = tap.validate_configuration()
-    if not validation_result.is_success:
+    if not validation_result.success:
         return 1
     catalog_result = tap.discovercatalog_typed()
-    if not catalog_result.is_success:
+    if not catalog_result.success:
         return 1
     catalog = catalog_result.value
     for stream_entry in catalog.streams:
