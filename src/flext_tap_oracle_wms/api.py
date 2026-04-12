@@ -27,7 +27,7 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
     ) -> p.Meltano.SingerTapInstance:
         """Create the internal tap runtime backed by Singer SDK."""
         raw_config = dict(settings) if settings is not None else None
-        return FlextMeltanoSingerTapAdapter(FlextTapOracleWms(settings=raw_config))
+        return FlextMeltanoSingerTapAdapter(FlextTapOracleWms(config=raw_config))
 
 
 tap_oracle_wms = FlextTapOracleWmsService

@@ -139,6 +139,12 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 wms_client: FlextOracleWmsUtilitiesClient.Client
 
+            @runtime_checkable
+            class TapWithWmsClientSettings(TapWithWmsClient, Protocol):
+                """Protocol for tap instances with WMS client and settings."""
+
+                settings: t.ContainerMapping
+
 
 p = FlextTapOracleWmsProtocols
 __all__ = ["FlextTapOracleWmsProtocols", "p"]

@@ -10,7 +10,7 @@ from typing import ClassVar, override
 from pydantic import SecretStr, ValidationError
 
 from flext_core import r
-from flext_meltano import Tap as FlextMeltanoSingerTapBase
+from flext_meltano.services.singer_sdk import Tap as FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsSettings,
     FlextOracleWmsUtilitiesClient,
@@ -57,6 +57,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         | t.ContainerValueMapping
         | FlextTapOracleWmsSettings
         | None = None,
+        config: t.ContainerMapping | t.ContainerValueMapping | None = None,
         catalog: t.StrMapping | None = None,
         state: t.StrMapping | None = None,
         parse_env_config: bool = False,
@@ -64,18 +65,25 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
         raw_config: t.ContainerMapping
-        if isinstance(settings, FlextTapOracleWmsSettings):
-            raw_config = dict(settings.model_dump(mode="json").items())
+        effective_config = config if config is not None else settings
+        if isinstance(effective_config, FlextTapOracleWmsSettings):
+            raw_config = dict(effective_config.model_dump(mode="json").items())
         else:
-            raw_config = dict(settings) if settings else {}
+            raw_config = dict(effective_config) if effective_config else {}
         parent_init: Callable[..., None] = getattr(super(), "__init__")
         parent_init(
-            settings=raw_config,
+            config=raw_config,
             catalog=catalog,
             state=state,
             parse_env_config=parse_env_config,
             validate_config=validate_config,
         )
+
+    @property
+    def settings(self) -> t.ContainerMapping:
+        """Expose tap configuration through legacy settings contract."""
+        config = self.config
+        return {str(key): value for key, value in config.items()}
 
     @property
     def catalog_dict_typed(self) -> t.MutableContainerMapping:

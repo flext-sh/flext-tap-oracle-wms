@@ -14,7 +14,7 @@ from typing import ClassVar, override
 from pydantic import BaseModel
 
 from flext_core import r
-from flext_meltano import (
+from flext_meltano.services.singer_sdk import (
     Stream as FlextMeltanoSingerStreamBase,
     Tap as FlextMeltanoSingerTapBase,
 )
@@ -59,7 +59,14 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         )
         self._typed_schema: dict[str, t.ContainerValue] | None = schema_dict
         self._client: FlextOracleWmsUtilitiesClient.Client | None = None
-        page_size = int(self.settings.get("page_size", 100))
+        tap_instance = self._tap
+        settings_map: t.ContainerMapping = {}
+        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
+            settings_map = tap_instance.settings
+        page_size_raw = settings_map.get("page_size", 100)
+        page_size = (
+            int(page_size_raw) if isinstance(page_size_raw, (int, float, str)) else 100
+        )
         self._page_size = (
             page_size
             if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(
@@ -166,7 +173,10 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
     ) -> dict[str, t.Scalar]:
         """Post-process a record."""
         conv = u.TapOracleWms.MappingConversion
-        config_map: t.ContainerMapping = self.settings
+        tap_instance = self._tap
+        config_map: t.ContainerMapping = {}
+        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
+            config_map = tap_instance.settings
         column_mappings_raw = config_map.get("column_mappings")
         column_mappings = (
             conv.as_map(

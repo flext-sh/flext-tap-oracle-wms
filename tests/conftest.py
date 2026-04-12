@@ -164,10 +164,11 @@ def mock_request() -> MagicMock:
 
 
 def pytest_collection_modifyitems(
-    settings: pytest.Config,
+    config: pytest.Config,
     items: Sequence[pytest.Item],
 ) -> None:
     """Add markers to tests based on their location."""
+    _ = config
     for item in items:
         if hasattr(item, "fspath") and "integration" in str(item.fspath):
             item.add_marker(pytest.mark.oracle_wms)
