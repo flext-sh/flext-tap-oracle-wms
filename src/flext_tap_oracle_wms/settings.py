@@ -206,4 +206,4 @@ class FlextTapOracleWmsSettings(FlextSettings):
         return r[bool].ok(True)
 
 
-__all__ = ["FlextTapOracleWmsSettings"]
+__all__: list[str] = ["FlextTapOracleWmsSettings"]

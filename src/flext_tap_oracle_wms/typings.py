@@ -36,4 +36,4 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
 
 
 t = FlextTapOracleWmsTypes
-__all__ = ["FlextTapOracleWmsTypes", "t"]
+__all__: list[str] = ["FlextTapOracleWmsTypes", "t"]

@@ -22,4 +22,4 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
 
 m = FlextTapOracleWmsModels
 
-__all__ = ["FlextTapOracleWmsModels", "m"]
+__all__: list[str] = ["FlextTapOracleWmsModels", "m"]

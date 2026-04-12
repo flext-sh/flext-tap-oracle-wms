@@ -178,7 +178,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
 u = FlextTapOracleWmsUtilities
 """Facade assignment for module-level utility access."""
 
-__all__ = [
+__all__: list[str] = [
     "FlextTapOracleWmsUtilities",
     "u",
 ]

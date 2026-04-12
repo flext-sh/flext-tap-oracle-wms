@@ -130,4 +130,4 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
 
 
 c = FlextTapOracleWmsConstants
-__all__ = ["FlextTapOracleWmsConstants", "c"]
+__all__: list[str] = ["FlextTapOracleWmsConstants", "c"]

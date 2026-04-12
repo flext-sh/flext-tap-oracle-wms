@@ -92,7 +92,7 @@ _LAZY_IMPORTS = build_lazy_import_map(
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
-__all__ = [
+__all__: list[str] = [
     "FlextTapOracleWms",
     "FlextTapOracleWmsCli",
     "FlextTapOracleWmsConfigurationError",

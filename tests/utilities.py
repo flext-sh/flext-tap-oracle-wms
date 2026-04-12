@@ -115,4 +115,4 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
 
 
 u = TestsFlextTapOracleWmsUtilities
-__all__ = ["TestsFlextTapOracleWmsUtilities", "u"]
+__all__: list[str] = ["TestsFlextTapOracleWmsUtilities", "u"]
