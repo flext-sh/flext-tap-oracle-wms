@@ -64,7 +64,7 @@ class TestOracleWMSE2EComplete:
         assert streams, "No streams discovered"
         for stream in streams:
             schema = stream.schema_definition
-            assert schema.get("type") == "t.NormalizedValue", "Invalid schema type"
+            assert schema.get("type") == "t.RecursiveContainer", "Invalid schema type"
             assert "properties" in schema, "Schema missing properties"
             props = schema.get("properties")
             assert props, "Empty schema properties"
@@ -293,10 +293,10 @@ class TestOracleWMSE2EComplete:
     )
     def test_error_recovery_and_resilience(
         self,
-        real_wms_config: t.ContainerMapping,
+        real_wms_config: t.RecursiveContainerMapping,
     ) -> None:
         """E2E: Test error recovery and system resilience."""
-        invalid_config: t.MutableContainerMapping = dict(real_wms_config)
+        invalid_config: t.MutableRecursiveContainerMapping = dict(real_wms_config)
         invalid_config["password"] = "invalid_password"
         tap = FlextTapOracleWms(settings=invalid_config)
         try:
@@ -338,8 +338,8 @@ class TestOracleWMSE2EComplete:
             assert isinstance(stream.tap_stream_id, str), "tap_stream_id must be string"
             assert stream.tap_stream_id, "tap_stream_id cannot be empty"
             schema = stream.schema_definition
-            assert schema["type"] == "t.NormalizedValue", (
-                "Schema type must be t.NormalizedValue"
+            assert schema["type"] == "t.RecursiveContainer", (
+                "Schema type must be t.RecursiveContainer"
             )
             assert isinstance(schema["properties"], dict), "Properties must be dict"
             metadata = stream.metadata

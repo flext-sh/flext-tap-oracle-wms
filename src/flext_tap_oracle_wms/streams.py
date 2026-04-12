@@ -60,7 +60,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         self._typed_schema: dict[str, t.ContainerValue] | None = schema_dict
         self._client: FlextOracleWmsUtilitiesClient.Client | None = None
         tap_instance = self._tap
-        settings_map: t.ContainerMapping = {}
+        settings_map: t.RecursiveContainerMapping = {}
         if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
             settings_map = tap_instance.settings
         page_size_raw = settings_map.get("page_size", 100)
@@ -101,7 +101,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         return client
 
     @staticmethod
-    def normalize_json_value(value: t.NormalizedValue) -> t.Scalar:
+    def normalize_json_value(value: t.RecursiveContainer) -> t.Scalar:
         """Normalize arbitrary values into Singer-compatible JSON values."""
         if isinstance(value, t.SCALAR_TYPES):
             return value
@@ -174,7 +174,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         """Post-process a record."""
         conv = u.TapOracleWms.MappingConversion
         tap_instance = self._tap
-        config_map: t.ContainerMapping = {}
+        config_map: t.RecursiveContainerMapping = {}
         if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
             config_map = tap_instance.settings
         column_mappings_raw = config_map.get("column_mappings")

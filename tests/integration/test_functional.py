@@ -46,7 +46,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_real_wms_environment_verification(
         self,
-        real_wms_config: t.MutableContainerMapping,
+        real_wms_config: t.MutableRecursiveContainerMapping,
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -67,7 +67,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_tap_initialization_real_config(
         self,
-        real_wms_config: t.MutableContainerMapping,
+        real_wms_config: t.MutableRecursiveContainerMapping,
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(settings=real_wms_config)
@@ -149,7 +149,7 @@ class TestOracleWMSFunctionalComplete:
         for stream in streams[:3]:
             schema = stream.schema_definition
             assert "type" in schema, f"Schema missing type for {stream.tap_stream_id}"
-            assert schema["type"] == "t.NormalizedValue", (
+            assert schema["type"] == "t.RecursiveContainer", (
                 f"Invalid schema type for {stream.tap_stream_id}"
             )
             assert "properties" in schema, (
@@ -172,7 +172,7 @@ class TestOracleWMSFunctionalComplete:
                     "number",
                     "boolean",
                     "array",
-                    "t.NormalizedValue",
+                    "t.RecursiveContainer",
                     ["string", "null"],
                     ["integer", "null"],
                     ["number", "null"],
@@ -339,10 +339,10 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_error_handling_and_validation(
         self,
-        real_wms_config: t.MutableContainerMapping,
+        real_wms_config: t.MutableRecursiveContainerMapping,
     ) -> None:
         """Test error handling with invalid configurations."""
-        invalid_config: t.MutableContainerMapping = dict(real_wms_config)
+        invalid_config: t.MutableRecursiveContainerMapping = dict(real_wms_config)
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
         tap = FlextTapOracleWms(settings=invalid_config)
         try:
@@ -397,8 +397,8 @@ class TestOracleWMSFunctionalComplete:
         for stream in catalog.streams:
             schema = stream.schema_definition
             assert "type" in schema, "Schema missing type"
-            assert schema["type"] == "t.NormalizedValue", (
-                "Schema type must be t.NormalizedValue"
+            assert schema["type"] == "t.RecursiveContainer", (
+                "Schema type must be t.RecursiveContainer"
             )
             assert "properties" in schema, "Schema missing properties"
             for meta in stream.metadata:

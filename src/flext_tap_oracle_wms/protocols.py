@@ -143,7 +143,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
             class TapWithWmsClientSettings(TapWithWmsClient, Protocol):
                 """Protocol for tap instances with WMS client and settings."""
 
-                settings: t.ContainerMapping
+                settings: t.RecursiveContainerMapping
 
 
 p = FlextTapOracleWmsProtocols

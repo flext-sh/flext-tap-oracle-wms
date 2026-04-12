@@ -53,18 +53,18 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     @override
     def __init__(
         self,
-        settings: t.ContainerMapping
+        settings: t.RecursiveContainerMapping
         | t.ContainerValueMapping
         | FlextTapOracleWmsSettings
         | None = None,
-        config: t.ContainerMapping | t.ContainerValueMapping | None = None,
+        config: t.RecursiveContainerMapping | t.ContainerValueMapping | None = None,
         catalog: t.StrMapping | None = None,
         state: t.StrMapping | None = None,
         parse_env_config: bool = False,
         validate_config: bool = True,
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
-        raw_config: t.ContainerMapping
+        raw_config: t.RecursiveContainerMapping
         effective_config = config if config is not None else settings
         if isinstance(effective_config, FlextTapOracleWmsSettings):
             raw_config = dict(effective_config.model_dump(mode="json").items())
@@ -80,13 +80,13 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         )
 
     @property
-    def settings(self) -> t.ContainerMapping:
+    def settings(self) -> t.RecursiveContainerMapping:
         """Expose tap configuration through legacy settings contract."""
         config = self.config
         return {str(key): value for key, value in config.items()}
 
     @property
-    def catalog_dict_typed(self) -> t.MutableContainerMapping:
+    def catalog_dict_typed(self) -> t.MutableRecursiveContainerMapping:
         """Return a validated Singer catalog mapping with recursive contracts."""
         raw_catalog_dict: t.ContainerValueMapping = getattr(super(), "catalog_dict", {})
         try:
@@ -103,7 +103,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
     @staticmethod
     def _to_typed_catalog(
         raw: t.ContainerValueMapping,
-    ) -> t.MutableContainerMapping:
+    ) -> t.MutableRecursiveContainerMapping:
         """Convert a raw catalog mapping into a validated Singer catalog dict."""
         raw_streams = raw.get("streams")
         raw_streams_seq: Sequence[t.ContainerValue] = (
