@@ -23,9 +23,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
     """Validated settings consumed by the Oracle WMS tap runtime."""
 
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
-        env_prefix="FLEXT_TAP_ORACLE_WMS_",
-        extra="ignore",
-        validate_assignment=True,
+        env_prefix="FLEXT_TAP_ORACLE_WMS_", extra="ignore", validate_assignment=True
     )
 
     base_url: Annotated[

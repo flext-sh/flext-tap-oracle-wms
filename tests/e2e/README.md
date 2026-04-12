@@ -79,7 +79,7 @@ This directory contains end-to-end (E2E) tests for FLEXT Tap Oracle WMS, focusin
 
 ```bash
 # Planned E2E test scenarios
-tap-oracle-wms --settings settings.json --discover > catalog.json
+tap-oracle-wms --config settings.json --discover > catalog.json
 ```
 
 **Test Coverage**:
@@ -95,7 +95,7 @@ tap-oracle-wms --settings settings.json --discover > catalog.json
 
 ```bash
 # Complete extraction pipeline
-tap-oracle-wms --settings settings.json --catalog catalog.json > output.jsonl
+tap-oracle-wms --config settings.json --catalog catalog.json > output.jsonl
 ```
 
 **Test Coverage**:
@@ -111,7 +111,7 @@ tap-oracle-wms --settings settings.json --catalog catalog.json > output.jsonl
 
 ```bash
 # Configuration validation testing
-tap-oracle-wms --settings invalid_config.json --discover
+tap-oracle-wms --config invalid_config.json --discover
 ```
 
 **Test Coverage**:
@@ -129,7 +129,7 @@ tap-oracle-wms --settings invalid_config.json --discover
 def test_singer_message_compliance():
     """Test complete Singer message format compliance."""
     # Execute tap and capture output
-    result = run_tap_command(["--settings", "test_config.json", "--discover"])
+    result = run_tap_command(["--config", "test_config.json", "--discover"])
 
     # Parse and validate Singer messages
     messages = parse_singer_output(result.stdout)
@@ -261,7 +261,7 @@ def test_cli_discovery_execution():
     """Test CLI discovery command execution."""
     with e2e_mock_environment():
         result = run_tap_command([
-            "--settings",
+            "--config",
             "tests/fixtures/e2e/basic_e2e.json",
             "--discover",
         ])
@@ -327,9 +327,9 @@ def test_e2e_performance_benchmarks():
         start_time = time.time()
 
         # Execute complete workflow
-        discovery = run_tap_command(["--settings", "perf_config.json", "--discover"])
+        discovery = run_tap_command(["--config", "perf_config.json", "--discover"])
         extraction = run_tap_command([
-            "--settings",
+            "--config",
             "perf_config.json",
             "--catalog",
             "perf_catalog.json",
@@ -356,7 +356,7 @@ def test_e2e_resource_usage():
     import psutil
 
     with e2e_mock_environment():
-        process = start_tap_process(["--settings", "settings.json", "--discover"])
+        process = start_tap_process(["--config", "settings.json", "--discover"])
 
         # Monitor resource usage
         max_memory = 0
@@ -387,7 +387,7 @@ def test_e2e_network_failures():
     with e2e_mock_environment() as env:
         # Start extraction
         process = start_tap_process([
-            "--settings",
+            "--config",
             "settings.json",
             "--catalog",
             "catalog.json",
@@ -423,7 +423,7 @@ def test_e2e_configuration_errors():
 
     for config_file in error_configs:
         result = run_tap_command([
-            "--settings",
+            "--config",
             f"error_configs/{config_file}",
             "--discover",
         ])
@@ -492,7 +492,7 @@ def test_business_user_daily_extraction():
     with e2e_business_environment():
         # 1. Discovery phase
         discovery = run_tap_command([
-            "--settings",
+            "--config",
             "business_config.json",
             "--discover",
         ])
@@ -500,7 +500,7 @@ def test_business_user_daily_extraction():
 
         # 2. Extraction phase
         extraction = run_tap_command([
-            "--settings",
+            "--config",
             "business_config.json",
             "--catalog",
             "business_catalog.json",

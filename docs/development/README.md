@@ -407,7 +407,7 @@ pre-commit run --all-files
       "type": "python",
       "request": "launch",
       "module": "flext_tap_oracle_wms.tap",
-      "args": ["--settings", "settings.json", "--discover"],
+      "args": ["--config", "settings.json", "--discover"],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}"
     },
@@ -416,7 +416,7 @@ pre-commit run --all-files
       "type": "python",
       "request": "launch",
       "module": "flext_tap_oracle_wms.tap",
-      "args": ["--settings", "settings.json", "--catalog", "catalog.json"],
+      "args": ["--config", "settings.json", "--catalog", "catalog.json"],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}"
     }
@@ -468,7 +468,7 @@ def test_new_entity_extraction(mock_wms_client):
 make wms-test
 
 # Debug authentication
-TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap --settings settings.json --discover
+TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap --config settings.json --discover
 ```
 
 #### Schema Issues
@@ -487,7 +487,7 @@ print(schema)
 
 ```bash
 # Profile extraction
-python -m cProfile -o profile.stats -m flext_tap_oracle_wms.tap --settings settings.json --catalog catalog.json
+python -m cProfile -o profile.stats -m flext_tap_oracle_wms.tap --config settings.json --catalog catalog.json
 
 # Analyze profile
 python -c "

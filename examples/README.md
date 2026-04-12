@@ -77,7 +77,7 @@ All configuration examples follow the JSON format required by Singer taps and in
 
 ```bash
 # Test basic configuration
-tap-oracle-wms --settings examples/configs/basic.json --discover
+tap-oracle-wms --config examples/configs/basic.json --discover
 ```
 
 #### [production.JSON](configs/production.json)
@@ -93,7 +93,7 @@ tap-oracle-wms --settings examples/configs/basic.json --discover
 
 ```bash
 # Production discovery
-tap-oracle-wms --settings examples/configs/production.json --discover > catalog.json
+tap-oracle-wms --config examples/configs/production.json --discover > catalog.json
 ```
 
 ### Authentication Examples
@@ -419,7 +419,7 @@ All configurations must include:
 }
 
 // Solution: Use discovery to check available entities
-tap-oracle-wms --settings settings.json --discover
+tap-oracle-wms --config settings.json --discover
 ```
 
 #### Page Size Issues

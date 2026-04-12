@@ -6,7 +6,7 @@ integration for orchestration compatibility.
 
 The tap supports standard Singer protocol operations:
 - Discovery: Generate catalog with `--discover`
-- Extraction: Run data extraction with `--settings`, `--catalog`, `--state`
+- Extraction: Run data extraction with `--config`, `--catalog`, `--state`
 
 Integration with flext-meltano's FlextMeltanoSingerCliTranslator enables automated
 command generation and pipeline orchestration.
@@ -39,19 +39,19 @@ def main() -> int:
 
     The CLI supports standard Singer operations:
     - `--discover`: Generate schema catalog
-    - `--settings FILE`: Specify tap configuration
+    - `--config FILE`: Specify tap configuration
     - `--catalog FILE`: Specify stream catalog
     - `--state FILE`: Specify state for incremental extraction
 
     Example:
         # Discovery
-        tap-oracle-wms --settings settings.json --discover > catalog.json
+        tap-oracle-wms --config settings.json --discover > catalog.json
 
         # Extraction
-        tap-oracle-wms --settings settings.json --catalog catalog.json
+        tap-oracle-wms --config settings.json --catalog catalog.json
 
         # Incremental sync
-        tap-oracle-wms --settings settings.json --catalog catalog.json --state state.json
+        tap-oracle-wms --config settings.json --catalog catalog.json --state state.json
 
     Integration:
         Compatible with flext-meltano FlextMeltanoSingerCliTranslator for orchestration:
@@ -64,7 +64,7 @@ def main() -> int:
         ...     tap_name="tap-oracle-wms", config_file="settings.json", discover=True
         ... )
         >>> command = FlextMeltanoSingerCliTranslator.translate_tap_run(params)
-        >>> # Executes: ["tap-oracle-wms", "--settings", "settings.json", "--discover"]
+        >>> # Executes: ["tap-oracle-wms", "--config", "settings.json", "--discover"]
 
     """
     return FlextTapOracleWmsCli.main()
