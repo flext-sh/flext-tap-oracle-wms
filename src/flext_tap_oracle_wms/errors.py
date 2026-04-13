@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_core import e
+from flext_tap_oracle_wms import e
 
 
 class FlextTapOracleWmsError(e.BaseError):

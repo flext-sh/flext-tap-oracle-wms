@@ -14,8 +14,8 @@ from pydantic import Field, SecretStr, field_validator
 from pydantic.networks import AnyUrl
 from pydantic_settings import SettingsConfigDict
 
-from flext_core import FlextSettings, r
-from flext_tap_oracle_wms import c, t
+from flext_core import FlextSettings
+from flext_tap_oracle_wms import c, p, r, t
 
 
 @FlextSettings.auto_register("tap-oracle-wms")

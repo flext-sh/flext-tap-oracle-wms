@@ -9,7 +9,6 @@ from typing import ClassVar, override
 
 from pydantic import SecretStr, ValidationError
 
-from flext_core import p, r
 from flext_meltano.services.singer_sdk import Tap as FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsSettings,
@@ -21,6 +20,8 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsStream,
     c,
     m,
+    p,
+    r,
     t,
     u,
 )
