@@ -190,11 +190,11 @@ class FlextTapOracleWmsSettings(FlextSettings):
         """Reset any cached state for test isolation."""
         cls._reset_instance()
 
-    def validate_domain_rules(self) -> r[bool]:
+    def validate_domain_rules(self) -> p.Result[bool]:
         """Validate domain-specific rules."""
         return self.validate_business_rules()
 
-    def validate_business_rules(self) -> r[bool]:
+    def validate_business_rules(self) -> p.Result[bool]:
         """Validate Oracle WMS business rules."""
         overlap = set(self.include_entities) & set(self.exclude_entities)
         if overlap:

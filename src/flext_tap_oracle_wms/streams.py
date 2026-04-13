@@ -13,7 +13,7 @@ from typing import ClassVar, override
 
 from pydantic import BaseModel
 
-from flext_core import r
+from flext_core import p, r
 from flext_meltano.services.singer_sdk import (
     Stream as FlextMeltanoSingerStreamBase,
     Tap as FlextMeltanoSingerTapBase,
@@ -243,7 +243,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         self,
         page: int,
         context: t.ScalarMapping | None,
-    ) -> r[tuple[Sequence[t.ScalarMapping], bool]]:
+    ) -> p.Result[tuple[Sequence[t.ScalarMapping], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")

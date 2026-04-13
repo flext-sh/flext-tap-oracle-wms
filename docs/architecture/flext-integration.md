@@ -101,7 +101,7 @@ class FlextTapOracleWms:
         self.settings = WMSConfig(**settings)
         self.logger = u.fetch_logger(__name__)
 
-    def discover_streams(self) -> r[List[Stream]]:
+    def discover_streams(self) -> p.Result[List[Stream]]:
         """Return streams using r pattern."""
         try:
             streams = self._build_streams()
@@ -156,7 +156,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -229,7 +229,7 @@ class WMSClientManager:
             )
         return self._client
 
-    def test_connection(self) -> r[bool]:
+    def test_connection(self) -> p.Result[bool]:
         """Test WMS connection using library client."""
         try:
             result = self.client.test_connection()
@@ -260,7 +260,7 @@ class EntityDiscovery:
         self.wms_client = wms_client
         self.logger = u.fetch_logger(__name__)
 
-    def discover_entities(self) -> r[t.StringList]:
+    def discover_entities(self) -> p.Result[t.StringList]:
         """Discover available entities using WMS client."""
         try:
             entities = self.wms_client.get_available_entities()
@@ -270,7 +270,7 @@ class EntityDiscovery:
             self.logger.error(f"Entity discovery failed: {e}")
             return r.failure(f"Discovery error: {e}")
 
-    def get_entity_metadata(self, entity: str) -> r[WMSEntityMetadata]:
+    def get_entity_metadata(self, entity: str) -> p.Result[WMSEntityMetadata]:
         """Get entity metadata using library client."""
         try:
             metadata = self.wms_client.get_entity_metadata(entity)
@@ -279,7 +279,7 @@ class EntityDiscovery:
             self.logger.error(f"Metadata retrieval failed for {entity}: {e}")
             return r.failure(f"Metadata error: {e}")
 
-    def generate_schema(self, entity: str) -> r[t.Dict]:
+    def generate_schema(self, entity: str) -> p.Result[t.Dict]:
         """Generate Singer schema from WMS metadata."""
         metadata_result = self.get_entity_metadata(entity)
         if not metadata_result.success:

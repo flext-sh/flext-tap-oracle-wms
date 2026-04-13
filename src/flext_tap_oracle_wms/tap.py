@@ -9,7 +9,7 @@ from typing import ClassVar, override
 
 from pydantic import SecretStr, ValidationError
 
-from flext_core import r
+from flext_core import p, r
 from flext_meltano.services.singer_sdk import Tap as FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsSettings,
@@ -204,7 +204,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         """Return a default Singer JSON schema for discovered entities."""
         return {"type": c.TapOracleWms.SCHEMA_TYPE_OBJECT}
 
-    def discovercatalog_typed(self) -> r[m.Meltano.SingerCatalog]:
+    def discovercatalog_typed(self) -> p.Result[m.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.failure:
@@ -264,14 +264,14 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
             for stream_raw in streams_raw
         ]
 
-    def execute(self, message: str | None = None) -> r[bool]:
+    def execute(self, message: str | None = None) -> p.Result[bool]:
         """Run a full tap sync when no custom message is provided."""
         if message:
             return r[bool].fail("Tap does not support message execution")
         self.sync_all()
         return r[bool].ok(True)
 
-    def get_implementation_metrics(self) -> r[t.ContainerValue]:
+    def get_implementation_metrics(self) -> p.Result[t.ContainerValue]:
         """Return basic runtime metrics for observability."""
         return r[t.ContainerValue].ok({
             "tap_name": self.name,
@@ -287,7 +287,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
         """Return installed package version."""
         return importlib.metadata.version("flext-tap-oracle-wms")
 
-    def validate_configuration(self) -> r[t.ContainerValue]:
+    def validate_configuration(self) -> p.Result[t.ContainerValue]:
         """Expose non-secret validated configuration fields."""
         return r[t.ContainerValue].ok({
             "base_url": str(self.flext_config.base_url),
@@ -295,7 +295,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
             "page_size": self.flext_config.page_size,
         })
 
-    def initialize(self) -> r[bool]:
+    def initialize(self) -> p.Result[bool]:
         """Initialize the tap and validate connectivity."""
         try:
             _ = self.flext_config
@@ -333,7 +333,7 @@ class FlextTapOracleWmsPlugin:
         self,
         operation: str,
         _parameters: t.ContainerValueMapping | None = None,
-    ) -> r[t.ContainerValue]:
+    ) -> p.Result[t.ContainerValue]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
             init_result = self.initialize(None)
@@ -367,12 +367,12 @@ class FlextTapOracleWmsPlugin:
             "capabilities": ["discover", "sync"],
         }
 
-    def initialize(self, _context: t.ContainerValue | None) -> r[bool]:
+    def initialize(self, _context: t.ContainerValue | None) -> p.Result[bool]:
         """Instantiate the tap for subsequent operations."""
         self._tap = FlextTapOracleWms(settings=dict(self._config))
         return r[bool].ok(True)
 
-    def shutdown(self) -> r[bool]:
+    def shutdown(self) -> p.Result[bool]:
         """Release tap resources held by this plugin."""
         self._tap = None
         return r[bool].ok(True)

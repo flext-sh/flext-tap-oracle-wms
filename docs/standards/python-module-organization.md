@@ -203,7 +203,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -306,7 +306,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -417,7 +417,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -528,7 +528,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -548,7 +548,7 @@ class EntityDiscovery:
         self.wms_client = wms_client
         self.logger = u.fetch_logger(__name__)
 
-    def discover_entities(self) -> r[t.StringList]:
+    def discover_entities(self) -> p.Result[t.StringList]:
         """Discover available entities from WMS API."""
         try:
             entities = self.wms_client.get_available_entities()
@@ -558,7 +558,7 @@ class EntityDiscovery:
             self.logger.error(f"Entity discovery failed: {e}")
             return r[bool].fail(f"Discovery error: {e}")
 
-    def get_entity_metadata(self, entity: str) -> r[WMSEntityMetadata]:
+    def get_entity_metadata(self, entity: str) -> p.Result[WMSEntityMetadata]:
         """Get metadata for specific entity."""
         try:
             metadata = self.wms_client.get_entity_metadata(entity)
@@ -591,7 +591,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -614,7 +614,7 @@ class SchemaGenerator:
         self.discovery = EntityDiscovery(wms_client)
         self.logger = u.fetch_logger(__name__)
 
-    def generate_schema(self, entity: str) -> r[t.Dict]:
+    def generate_schema(self, entity: str) -> p.Result[t.Dict]:
         """Generate Singer schema for WMS entity."""
         metadata_result = self.discovery.get_entity_metadata(entity)
         if not metadata_result.success:
@@ -706,7 +706,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -785,8 +785,8 @@ WMSDiscoveryError  # Specific error (descriptive)
 ```python
 # Action-oriented naming
 def discover_streams() -> List[Stream]:           # Singer SDK pattern
-def discover_entities() -> r[t.StringList]: # FLEXT pattern
-def generate_schema(entity: str) -> r[Dict]: # Business action
+def discover_entities() -> p.Result[t.StringList]: # FLEXT pattern
+def generate_schema(entity: str) -> p.Result[Dict]: # Business action
 def create_authenticated_client(settings) -> Client:    # Factory pattern
 
 # Property naming
@@ -844,7 +844,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -923,7 +923,7 @@ class WMSConfig(FlextSettings):
 
 
 # Error handling using r
-def discover_entities(self) -> r[t.StringList]:
+def discover_entities(self) -> p.Result[t.StringList]:
     """Business logic with railway-oriented programming."""
     try:
         entities = self.wms_client.get_available_entities()
@@ -1019,7 +1019,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -1128,7 +1128,7 @@ make security             # Bandit + pip-audit
 ### **Documentation Standards**
 
 ```python
-def discover_entities(self) -> r[t.StringList]:
+def discover_entities(self) -> p.Result[t.StringList]:
     """
     Discover available entities from Oracle WMS API.
 
@@ -1173,7 +1173,7 @@ from flext_core import FlextModels
 from flext_core import FlextProcessors
 from flext_core import p
 from flext_core import FlextRegistry
-from flext_core import r
+from flext_core import r, p
 from flext_core import u
 from flext_core import s
 from flext_core import t
@@ -1182,7 +1182,7 @@ from flext_core import u
 class WMSConfig(FlextSettings):          # Configuration
     pass
 
-def process_data() -> r[Data]:     # Error handling
+def process_data() -> p.Result[Data]:     # Error handling
     pass
 
 logger = u.fetch_logger(__name__)                # Logging
