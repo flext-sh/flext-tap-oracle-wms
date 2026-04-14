@@ -251,12 +251,12 @@ class FlextTapOracleWms(Tap):
         discovery = EntityDiscovery(self.wms_client)
         entities_result = discovery.discover_entities()
 
-        if not entities_result.success:
+        if entities_result.failure:
             raise RuntimeError(f"Stream discovery failed: {entities_result.error}")
 
         return [
             FlextTapOracleWmsStream(tap=self, name=entity)
-            for entity in entities_result.data
+            for entity in entities_result.value
             if entity in self.settings.entities
         ]
 ```
@@ -343,9 +343,9 @@ class FlextTapOracleWmsStream(RESTStream):
     def schema(self) -> t.Dict:
         """Get stream schema from WMS metadata."""
         schema_result = self._schema_generator.generate_schema(self.name)
-        if not schema_result.success:
+        if schema_result.failure:
             raise RuntimeError(f"Schema generation failed: {schema_result.error}")
-        return schema_result.data
+        return schema_result.value
 
     def get_new_paginator(self) -> WMSPaginator:
         """Get paginator for WMS HATEOAS pagination."""
@@ -617,11 +617,11 @@ class SchemaGenerator:
     def generate_schema(self, entity: str) -> p.Result[t.Dict]:
         """Generate Singer schema for WMS entity."""
         metadata_result = self.discovery.get_entity_metadata(entity)
-        if not metadata_result.success:
+        if metadata_result.failure:
             return r[bool].fail(metadata_result.error)
 
         try:
-            schema = self._convert_metadata_to_schema(metadata_result.data)
+            schema = self._convert_metadata_to_schema(metadata_result.value)
             return r[bool].ok(schema)
         except Exception as e:
             return r[bool].fail(f"Schema generation error: {e}")
@@ -1144,7 +1144,7 @@ def discover_entities(self) -> p.Result[t.StringList]:
         >>> discovery = EntityDiscovery(wms_client)
         >>> result = discovery.discover_entities()
         >>> if result.success:
-        ...     print(f"Found entities: {result.data}")
+        ...     print(f"Found entities: {result.value}")
         ... else:
         ...     print(f"Discovery failed: {result.error}")
     """
@@ -1238,4 +1238,4 @@ ______________________________________________________________________
 **Last Updated**: August 4, 2025
 **Target Audience**: FLEXT Tap Oracle WMS developers and architects
 **Scope**: Module organization for Singer tap refactoring
-**Status**: Architecture defined, implementation pending · 1.0.0 Release Preparation
+**Status**: Architecture defined, implementation pending · 1.0.0 Current

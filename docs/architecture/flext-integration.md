@@ -282,11 +282,11 @@ class EntityDiscovery:
     def generate_schema(self, entity: str) -> p.Result[t.Dict]:
         """Generate Singer schema from WMS metadata."""
         metadata_result = self.get_entity_metadata(entity)
-        if not metadata_result.success:
+        if metadata_result.failure:
             return r.failure(metadata_result.error)
 
         try:
-            schema = self._convert_metadata_to_schema(metadata_result.data)
+            schema = self._convert_metadata_to_schema(metadata_result.value)
             return r.success(schema)
         except Exception as e:
             return r.failure(f"Schema generation error: {e}")
@@ -319,12 +319,12 @@ class FlextTapOracleWms(Tap):
         discovery = EntityDiscovery(self.wms_client_manager.client)
         entities_result = discovery.discover_entities()
 
-        if not entities_result.success:
+        if entities_result.failure:
             raise RuntimeError(f"Stream discovery failed: {entities_result.error}")
 
         return [
             FlextTapOracleWmsStream(tap=self, name=entity)
-            for entity in entities_result.data
+            for entity in entities_result.value
             if entity in self.settings.entities
         ]
 
@@ -343,10 +343,10 @@ class FlextTapOracleWmsStream(Stream):
         discovery = EntityDiscovery(self.tap.wms_client_manager.client)
         schema_result = discovery.generate_schema(self.name)
 
-        if not schema_result.success:
+        if schema_result.failure:
             raise RuntimeError(f"Schema generation failed: {schema_result.error}")
 
-        return schema_result.data
+        return schema_result.value
 
     def get_records(self, context) -> Iterator[t.Dict]:
         """Extract records using WMS client."""
@@ -616,4 +616,4 @@ class WMSHealthCheck:
 
 ______________________________________________________________________
 
-**Updated**: 2025-08-13 | **Status**: Integration Documented · 1.0.0 Release Preparation | **Next**: Implementation Planning
+**Updated**: 2025-08-13 | **Status**: Integration Documented · 1.0.0 Current | **Next**: Implementation Planning

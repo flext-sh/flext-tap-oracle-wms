@@ -597,7 +597,7 @@ class SecureWMSConfig(WMSConfig):
 
 ______________________________________________________________________
 
-**Status**: Architecture Defined · 1.0.0 Release Preparation | **Next**: Implementation of simplified architecture | **Updated**: 2025-08-13
+**Status**: Architecture Defined · 1.0.0 Current | **Next**: Implementation of simplified architecture | **Updated**: 2025-08-13
 
 ## Related Documentation
 
