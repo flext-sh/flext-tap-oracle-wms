@@ -55,7 +55,7 @@ FLEXT Tap Oracle WMS follows a **simplified layered module architecture** aligne
 1. **Singer SDK Compliance**: Follows Singer specification and SDK patterns
 1. **FLEXT Integration**: Leverages flext-core foundation and ecosystem libraries
 1. **Single Responsibility**: Each module has one clear purpose
-1. **Railway-Oriented**: r[T] threading through all operations
+1. **Railway-Oriented**: p.Result[T] threading through all operations
 1. **Simplicity Over Complexity**: Favor maintainable solutions over engineering sophistication
 
 ______________________________________________________________________
