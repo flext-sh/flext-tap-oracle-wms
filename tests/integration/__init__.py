@@ -11,6 +11,19 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".test_streams_functional": ("test_streams_functional",),
         ".test_wms": ("test_wms",),
         ".test_wms_connection": ("test_wms_connection",),
+        "flext_tap_oracle_wms": (
+            "c",
+            "d",
+            "e",
+            "h",
+            "m",
+            "p",
+            "r",
+            "s",
+            "t",
+            "u",
+            "x",
+        ),
     },
 )
 

@@ -9,7 +9,7 @@ from typing import ClassVar, override
 
 from pydantic import SecretStr, ValidationError
 
-from flext_meltano.services.singer_sdk import Tap as FlextMeltanoSingerTapBase
+from flext_meltano import Tap as FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsSettings,
     FlextOracleWmsUtilitiesClient,

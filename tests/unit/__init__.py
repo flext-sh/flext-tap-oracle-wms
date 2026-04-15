@@ -12,6 +12,19 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".test_config_validation": ("test_config_validation",),
         ".test_tap": ("test_tap",),
         ".test_tap_initialization": ("test_tap_initialization",),
+        "flext_tap_oracle_wms": (
+            "c",
+            "d",
+            "e",
+            "h",
+            "m",
+            "p",
+            "r",
+            "s",
+            "t",
+            "u",
+            "x",
+        ),
     },
 )
 
