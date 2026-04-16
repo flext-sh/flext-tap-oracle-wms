@@ -629,7 +629,7 @@ class SchemaGenerator:
     def _convert_metadata_to_schema(self, metadata) -> t.Dict:
         """Convert WMS metadata to Singer JSON schema."""
         return {
-            "type": "t.RecursiveContainer",
+            "type": "object",
             "properties": {
                 field.name: self._map_field_type(field) for field in metadata.fields
             },
