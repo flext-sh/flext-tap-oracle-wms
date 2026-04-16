@@ -264,10 +264,10 @@ class WMSConfig(FlextSettings):
     """Unified WMS tap configuration."""
 
     base_url: str
-    auth_method: str = Field(..., regex="^(basic|oauth2)$")
+    auth_method: str = m.Field(..., regex="^(basic|oauth2)$")
     company_code: str
     facility_code: str
-    entities: t.StringList = Field(default_factory=lambda: ["item", "inventory"])
+    entities: t.StringList = m.Field(default_factory=lambda: ["item", "inventory"])
 
     # Authentication fields
     username: Optional[str] = None

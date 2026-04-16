@@ -8,17 +8,15 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
-from pydantic import ValidationError
-
-from flext_meltano import FlextMeltanoUtilities
+from flext_meltano import u
 from flext_oracle_wms import FlextOracleWmsUtilities
-from flext_tap_oracle_wms import t
+from flext_tap_oracle_wms import c, t
 
 
-class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities):
+class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
     """Domain-specific Oracle WMS tap utilities.
 
-    Inherits from FlextMeltanoUtilities to avoid duplication.
+    Inherits from u to avoid duplication.
     """
 
     class TapOracleWms:
@@ -116,7 +114,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 if map_adapter is not None:
                     try:
                         validated_map = map_adapter.validate_python(value)
-                    except ValidationError as exc:
+                    except c.ValidationError as exc:
                         if error_cls is not None:
                             msg = f"Validation failed for mapping: {exc}"
                             raise error_cls(msg) from exc
@@ -161,7 +159,7 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                 if list_adapter is not None:
                     try:
                         validated_seq = list_adapter.validate_python(value)
-                    except ValidationError as exc:
+                    except c.ValidationError as exc:
                         if error_cls is not None:
                             msg = f"Validation failed for list: {exc}"
                             raise error_cls(msg) from exc

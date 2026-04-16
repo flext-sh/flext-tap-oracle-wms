@@ -271,8 +271,8 @@ from pydantic import Field, validator
 class WMSConfig(FlextSettings):
     """FLEXT-compliant configuration."""
 
-    base_url: str = Field(..., description="WMS instance URL")
-    auth_method: str = Field(..., regex="^(basic|oauth2)$")
+    base_url: str = m.Field(..., description="WMS instance URL")
+    auth_method: str = m.Field(..., regex="^(basic|oauth2)$")
 
     class Config:
         env_prefix = "TAP_ORACLE_WMS_"

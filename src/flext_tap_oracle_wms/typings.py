@@ -16,6 +16,7 @@ from pydantic import TypeAdapter
 
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
+from flext_tap_oracle_wms import m
 
 
 class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
@@ -24,15 +25,17 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     type ScalarNormalizer = Callable[
         [FlextMeltanoTypes.ContainerValue], FlextMeltanoTypes.Scalar
     ]
-    type ContainerValueMapAdapter = TypeAdapter[FlextMeltanoTypes.ContainerValueMapping]
-    type ContainerValueListAdapter = TypeAdapter[FlextMeltanoTypes.ContainerValueList]
+    type ContainerValueMapAdapter = m.TypeAdapter[
+        FlextMeltanoTypes.ContainerValueMapping
+    ]
+    type ContainerValueListAdapter = m.TypeAdapter[FlextMeltanoTypes.ContainerValueList]
 
-    CONTAINER_VALUE_MAP_ADAPTER: TypeAdapter[
+    CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[
         FlextMeltanoTypes.ContainerValueMapping
     ] = TypeAdapter(FlextMeltanoTypes.ContainerValueMapping)
-    CONTAINER_VALUE_LIST_ADAPTER: TypeAdapter[FlextMeltanoTypes.ContainerValueList] = (
-        TypeAdapter(FlextMeltanoTypes.ContainerValueList)
-    )
+    CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[
+        FlextMeltanoTypes.ContainerValueList
+    ] = TypeAdapter(FlextMeltanoTypes.ContainerValueList)
 
 
 t = FlextTapOracleWmsTypes

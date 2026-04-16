@@ -7,7 +7,7 @@ from collections.abc import Callable, Mapping, MutableSequence, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
-from pydantic import SecretStr, ValidationError
+from pydantic import SecretStr
 
 from flext_meltano import Tap as FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
@@ -94,7 +94,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
             validated_catalog = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
                 raw_catalog_dict,
             )
-        except ValidationError as exc:
+        except c.ValidationError as exc:
             msg = f"Invalid catalog_dict format: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
         return self._to_typed_catalog(

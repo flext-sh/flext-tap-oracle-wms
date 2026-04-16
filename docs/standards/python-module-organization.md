@@ -433,31 +433,31 @@ class WMSConfig(FlextSettings):
     """
 
     # Connection settings
-    base_url: str = Field(..., description="Oracle WMS instance URL")
-    auth_method: str = Field(
+    base_url: str = m.Field(..., description="Oracle WMS instance URL")
+    auth_method: str = m.Field(
         ..., regex="^(basic|oauth2)$", description="Authentication method"
     )
-    company_code: str = Field(..., description="WMS company code")
-    facility_code: str = Field(..., description="WMS facility code")
+    company_code: str = m.Field(..., description="WMS company code")
+    facility_code: str = m.Field(..., description="WMS facility code")
 
     # Authentication settings
-    username: Optional[str] = Field(None, description="Username for basic auth")
-    password: Optional[str] = Field(
+    username: Optional[str] = m.Field(None, description="Username for basic auth")
+    password: Optional[str] = m.Field(
         None, description="Password for basic auth", repr=False
     )
-    oauth_client_id: Optional[str] = Field(None, description="OAuth2 client ID")
-    oauth_client_secret: Optional[str] = Field(
+    oauth_client_id: Optional[str] = m.Field(None, description="OAuth2 client ID")
+    oauth_client_secret: Optional[str] = m.Field(
         None, description="OAuth2 client secret", repr=False
     )
 
     # Extraction settings
-    entities: t.StringList = Field(
+    entities: t.StringList = m.Field(
         default=["item", "inventory"], description="List of WMS entities to extract"
     )
-    page_size: int = Field(
+    page_size: int = m.Field(
         default=1000, le=1250, description="Records per page (max 1250)"
     )
-    start_date: Optional[str] = Field(
+    start_date: Optional[str] = m.Field(
         None, description="Start date for incremental extraction (ISO8601)"
     )
 
@@ -1188,7 +1188,7 @@ def process_data() -> p.Result[Data]:     # Error handling
 logger = u.fetch_logger(__name__)                # Logging
 
 # ❌ Don't create project-specific alternatives
-class CustomConfig(BaseModel):               # Use FlextSettings
+class CustomConfig(m.BaseModel):               # Use FlextSettings
 class CustomResult[T]:                       # Use r
 custom_logger = logging.getLogger()          # Use u.fetch_logger()
 ```
