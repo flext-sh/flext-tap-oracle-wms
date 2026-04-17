@@ -22,7 +22,7 @@
   - [Meltano Integration](#meltano-integration)
   - [Environment Variables](#environment-variables)
 - [Configuration Validation](#configuration-validation)
-  - [Required Fields](#required-fields)
+  - [Required u.Fields](#required-fields)
   - [Authentication Requirements](#authentication-requirements)
   - [Optional Settings](#optional-settings)
 - [Troubleshooting Configurations](#troubleshooting-configurations)
@@ -203,7 +203,7 @@ tap-oracle-wms --config examples/configs/production.json --discover > catalog.js
 **Features**:
 
 - Advanced entity filtering
-- Field selection
+- u.Field selection
 - Date range filtering
 - Status-based filtering
 
@@ -355,7 +355,7 @@ export TAP_ORACLE_WMS_FACILITY_CODE="DC01"
 
 ## Configuration Validation
 
-### Required Fields
+### Required u.Fields
 
 All configurations must include:
 

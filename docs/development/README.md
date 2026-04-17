@@ -82,11 +82,11 @@ This directory contains comprehensive development documentation for FLEXT Tap Or
 
 ### Quality Metrics
 
-| Metric              | Current              | Target  | Status                  |
-| ------------------- | -------------------- | ------- | ----------------------- |
+| Metric              | Current              | Target  | Status                 |
+| ------------------- | -------------------- | ------- | ---------------------- |
 | **Test Coverage**   | ~70% (with disabled) | 100%    | ❌ Requires work        |
 | **Code Complexity** | Very High            | Low     | ❌ Requires refactoring |
-| **Type Coverage**   | ~85%                 | 100%    | ⚠️ Needs improvement    |
+| **Type Coverage**   | ~85%                 | 100%    | ⚠️ Needs improvement   |
 | **Security Scan**   | Clean                | Clean   | ✅ Passing              |
 | **Lint Score**      | Passing              | Passing | ✅ Passing              |
 
@@ -265,14 +265,14 @@ from flext_core import s
 from flext_core import t
 from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
-from pydantic import Field, validator
+from pydantic import u.Field, validator
 
 
 class WMSConfig(FlextSettings):
     """FLEXT-compliant configuration."""
 
-    base_url: str = m.Field(..., description="WMS instance URL")
-    auth_method: str = m.Field(..., regex="^(basic|oauth2)$")
+    base_url: str = u.Field(..., description="WMS instance URL")
+    auth_method: str = u.Field(..., regex="^(basic|oauth2)$")
 
     class Config:
         env_prefix = "TAP_ORACLE_WMS_"
@@ -442,7 +442,7 @@ VALID_ENTITIES = [
 ]
 ```
 
-2. **Create Entity Tests**:
+1. **Create Entity Tests**:
 
 ```python
 def test_new_entity_extraction(mock_wms_client):
@@ -451,7 +451,7 @@ def test_new_entity_extraction(mock_wms_client):
     pass
 ```
 
-3. **Update Documentation**:
+1. **Update Documentation**:
 
 - Add entity to README.md entity table
 - Update configuration examples

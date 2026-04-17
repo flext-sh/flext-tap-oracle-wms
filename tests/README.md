@@ -50,9 +50,9 @@ This directory contains the test suite for FLEXT Tap Oracle WMS. The testing str
 
 | Test Type             | Status                | Coverage | Issues                             |
 | --------------------- | --------------------- | -------- | ---------------------------------- |
-| **Unit Tests**        | ✅ Working            | ~70%\*   | Some comprehensive tests available |
+| **Unit Tests**        | ✅ Working             | ~70%\*   | Some comprehensive tests available |
 | **Integration Tests** | ⚠️ Partially Disabled | ~40%\*   | External WMS dependencies          |
-| **E2E Tests**         | ❌ Disabled           | 0%       | Requires live WMS instance         |
+| **E2E Tests**         | ❌ Disabled            | 0%       | Requires live WMS instance         |
 
 \*Coverage percentages are estimates based on enabled tests only
 

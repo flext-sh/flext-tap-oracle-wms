@@ -238,7 +238,7 @@ class FlextTapOracleWmsStream(RESTStream):
 **Single Source of Truth**: Unified configuration system
 
 ```python
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, u.Field
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -264,10 +264,10 @@ class WMSConfig(FlextSettings):
     """Unified WMS tap configuration."""
 
     base_url: str
-    auth_method: str = m.Field(..., regex="^(basic|oauth2)$")
+    auth_method: str = u.Field(..., regex="^(basic|oauth2)$")
     company_code: str
     facility_code: str
-    entities: t.StringList = m.Field(default_factory=lambda: ["item", "inventory"])
+    entities: t.StringList = u.Field(default_factory=lambda: ["item", "inventory"])
 
     # Authentication fields
     username: Optional[str] = None

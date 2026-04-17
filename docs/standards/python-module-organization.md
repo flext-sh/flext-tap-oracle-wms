@@ -402,7 +402,7 @@ validation, and FLEXT ecosystem integration.
 """
 
 from typing import List, Optional
-from pydantic import Field, validator
+from pydantic import u.Field, validator
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -433,31 +433,31 @@ class WMSConfig(FlextSettings):
     """
 
     # Connection settings
-    base_url: str = m.Field(..., description="Oracle WMS instance URL")
-    auth_method: str = m.Field(
+    base_url: str = u.Field(..., description="Oracle WMS instance URL")
+    auth_method: str = u.Field(
         ..., regex="^(basic|oauth2)$", description="Authentication method"
     )
-    company_code: str = m.Field(..., description="WMS company code")
-    facility_code: str = m.Field(..., description="WMS facility code")
+    company_code: str = u.Field(..., description="WMS company code")
+    facility_code: str = u.Field(..., description="WMS facility code")
 
     # Authentication settings
-    username: Optional[str] = m.Field(None, description="Username for basic auth")
-    password: Optional[str] = m.Field(
+    username: Optional[str] = u.Field(None, description="Username for basic auth")
+    password: Optional[str] = u.Field(
         None, description="Password for basic auth", repr=False
     )
-    oauth_client_id: Optional[str] = m.Field(None, description="OAuth2 client ID")
-    oauth_client_secret: Optional[str] = m.Field(
+    oauth_client_id: Optional[str] = u.Field(None, description="OAuth2 client ID")
+    oauth_client_secret: Optional[str] = u.Field(
         None, description="OAuth2 client secret", repr=False
     )
 
     # Extraction settings
-    entities: t.StringList = m.Field(
+    entities: t.StringList = u.Field(
         default=["item", "inventory"], description="List of WMS entities to extract"
     )
-    page_size: int = m.Field(
+    page_size: int = u.Field(
         default=1000, le=1250, description="Records per page (max 1250)"
     )
-    start_date: Optional[str] = m.Field(
+    start_date: Optional[str] = u.Field(
         None, description="Start date for incremental extraction (ISO8601)"
     )
 
@@ -825,7 +825,7 @@ External Libraries (singer-sdk, pydantic)
 # External dependencies first
 from typing import List, Dict, Optional, Iterator
 
-from pydantic import Field, validator
+from pydantic import u.Field, validator
 from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
