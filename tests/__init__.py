@@ -16,9 +16,28 @@ if _t.TYPE_CHECKING:
 
     from flext_tap_oracle_wms import d, e, h, r, s, x
     from tests.constants import TestsFlextTapOracleWmsConstants, c
+    from tests.e2e.test_e2e import TestOracleWMSE2EComplete
+    from tests.integration.test_functional import TestOracleWMSFunctionalComplete
+    from tests.integration.test_streams_functional import TestStreamsFunctional
+    from tests.integration.test_wms import TestRealWmsIntegration
+    from tests.integration.test_wms_connection import (
+        TestFilteringAndSelection,
+        TestIntegration,
+        TestRealConnection,
+        TestRealDataExtraction,
+    )
     from tests.models import TestsFlextTapOracleWmsModels, m
+    from tests.performance.test_extraction_performance import (
+        TestExtractionPerformance,
+        TestRateLimitingPerformance,
+    )
     from tests.protocols import TestsFlextTapOracleWmsProtocols, p
     from tests.typings import TestsFlextTapOracleWmsTypes, t
+    from tests.unit.test_cli import TestCLI
+    from tests.unit.test_config import TestFlextTapOracleWmsSettings
+    from tests.unit.test_config_validation import TestConfigValidation
+    from tests.unit.test_tap import TestFlextTapOracleWms
+    from tests.unit.test_tap_initialization import TestTapInitialization
     from tests.utilities import TestsFlextTapOracleWmsUtilities, u
 _LAZY_IMPORTS = merge_lazy_imports(
     (
@@ -33,9 +52,23 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestsFlextTapOracleWmsConstants",
                 "c",
             ),
+            ".e2e.test_e2e": ("TestOracleWMSE2EComplete",),
+            ".integration.test_functional": ("TestOracleWMSFunctionalComplete",),
+            ".integration.test_streams_functional": ("TestStreamsFunctional",),
+            ".integration.test_wms": ("TestRealWmsIntegration",),
+            ".integration.test_wms_connection": (
+                "TestFilteringAndSelection",
+                "TestIntegration",
+                "TestRealConnection",
+                "TestRealDataExtraction",
+            ),
             ".models": (
                 "TestsFlextTapOracleWmsModels",
                 "m",
+            ),
+            ".performance.test_extraction_performance": (
+                "TestExtractionPerformance",
+                "TestRateLimitingPerformance",
             ),
             ".protocols": (
                 "TestsFlextTapOracleWmsProtocols",
@@ -45,6 +78,11 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestsFlextTapOracleWmsTypes",
                 "t",
             ),
+            ".unit.test_cli": ("TestCLI",),
+            ".unit.test_config": ("TestFlextTapOracleWmsSettings",),
+            ".unit.test_config_validation": ("TestConfigValidation",),
+            ".unit.test_tap": ("TestFlextTapOracleWms",),
+            ".unit.test_tap_initialization": ("TestTapInitialization",),
             ".utilities": (
                 "TestsFlextTapOracleWmsUtilities",
                 "u",
@@ -82,6 +120,21 @@ _LAZY_IMPORTS = merge_lazy_imports(
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
 __all__: list[str] = [
+    "TestCLI",
+    "TestConfigValidation",
+    "TestExtractionPerformance",
+    "TestFilteringAndSelection",
+    "TestFlextTapOracleWms",
+    "TestFlextTapOracleWmsSettings",
+    "TestIntegration",
+    "TestOracleWMSE2EComplete",
+    "TestOracleWMSFunctionalComplete",
+    "TestRateLimitingPerformance",
+    "TestRealConnection",
+    "TestRealDataExtraction",
+    "TestRealWmsIntegration",
+    "TestStreamsFunctional",
+    "TestTapInitialization",
     "TestsFlextTapOracleWmsConstants",
     "TestsFlextTapOracleWmsModels",
     "TestsFlextTapOracleWmsProtocols",

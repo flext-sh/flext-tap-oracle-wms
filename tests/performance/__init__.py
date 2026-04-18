@@ -7,19 +7,9 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 _LAZY_IMPORTS = build_lazy_import_map(
     {
-        ".test_extraction_performance": ("test_extraction_performance",),
-        "flext_tap_oracle_wms": (
-            "c",
-            "d",
-            "e",
-            "h",
-            "m",
-            "p",
-            "r",
-            "s",
-            "t",
-            "u",
-            "x",
+        ".test_extraction_performance": (
+            "TestExtractionPerformance",
+            "TestRateLimitingPerformance",
         ),
     },
 )

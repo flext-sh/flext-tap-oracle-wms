@@ -7,22 +7,14 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 _LAZY_IMPORTS = build_lazy_import_map(
     {
-        ".test_functional": ("test_functional",),
-        ".test_streams_functional": ("test_streams_functional",),
-        ".test_wms": ("test_wms",),
-        ".test_wms_connection": ("test_wms_connection",),
-        "flext_tap_oracle_wms": (
-            "c",
-            "d",
-            "e",
-            "h",
-            "m",
-            "p",
-            "r",
-            "s",
-            "t",
-            "u",
-            "x",
+        ".test_functional": ("TestOracleWMSFunctionalComplete",),
+        ".test_streams_functional": ("TestStreamsFunctional",),
+        ".test_wms": ("TestRealWmsIntegration",),
+        ".test_wms_connection": (
+            "TestFilteringAndSelection",
+            "TestIntegration",
+            "TestRealConnection",
+            "TestRealDataExtraction",
         ),
     },
 )

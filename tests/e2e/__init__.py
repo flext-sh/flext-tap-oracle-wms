@@ -7,20 +7,7 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 _LAZY_IMPORTS = build_lazy_import_map(
     {
-        ".test_e2e": ("test_e2e",),
-        "flext_tap_oracle_wms": (
-            "c",
-            "d",
-            "e",
-            "h",
-            "m",
-            "p",
-            "r",
-            "s",
-            "t",
-            "u",
-            "x",
-        ),
+        ".test_e2e": ("TestOracleWMSE2EComplete",),
     },
 )
 

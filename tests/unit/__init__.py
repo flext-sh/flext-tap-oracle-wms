@@ -7,24 +7,11 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 _LAZY_IMPORTS = build_lazy_import_map(
     {
-        ".test_cli": ("test_cli",),
-        ".test_config": ("test_config",),
-        ".test_config_validation": ("test_config_validation",),
-        ".test_tap": ("test_tap",),
-        ".test_tap_initialization": ("test_tap_initialization",),
-        "flext_tap_oracle_wms": (
-            "c",
-            "d",
-            "e",
-            "h",
-            "m",
-            "p",
-            "r",
-            "s",
-            "t",
-            "u",
-            "x",
-        ),
+        ".test_cli": ("TestCLI",),
+        ".test_config": ("TestFlextTapOracleWmsSettings",),
+        ".test_config_validation": ("TestConfigValidation",),
+        ".test_tap": ("TestFlextTapOracleWms",),
+        ".test_tap_initialization": ("TestTapInitialization",),
     },
 )
 
