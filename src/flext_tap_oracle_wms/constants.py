@@ -26,7 +26,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
 
     DEFAULT_WMS_TIMEOUT: Final[int] = FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
     DEFAULT_FETCH_SIZE: Final[int] = (
-        FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
+        FlextOracleWmsConstants.OracleWms.WmsProcessing.DEFAULT_BATCH_SIZE
     )
     TAP_MAX_BATCH_SIZE: Final[int] = FlextMeltanoConstants.MAX_ITEMS
 
@@ -63,7 +63,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
             RECEIVING = "RECEIVING"
 
         class Authentication(
-            FlextOracleWmsConstants.Authentication,
+            FlextOracleWmsConstants.OracleWms.Authentication,
         ):
             """Merged authentication constants from both parent hierarchies."""
 
@@ -74,10 +74,10 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
             """
 
             DEFAULT_PAGE_SIZE: Final[int] = (
-                FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
+                FlextOracleWmsConstants.OracleWms.WmsProcessing.DEFAULT_BATCH_SIZE
             )
             MAX_RECORDS_PER_BATCH: Final[int] = (
-                FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
+                FlextOracleWmsConstants.OracleWms.WmsProcessing.MAX_BATCH_SIZE
             )
             DEFAULT_API_TIMEOUT: Final[int] = (
                 FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
@@ -91,13 +91,13 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
             """WMS-specific extraction configuration."""
 
             DEFAULT_ENTITY_LIMIT: Final[int] = (
-                FlextOracleWmsConstants.WmsProcessing.DEFAULT_BATCH_SIZE
+                FlextOracleWmsConstants.OracleWms.WmsProcessing.DEFAULT_BATCH_SIZE
             )
             DEFAULT_DISCOVERY_TIMEOUT: Final[int] = (
                 FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
             )
             MAX_ENTITY_BATCH_SIZE: Final[int] = (
-                FlextOracleWmsConstants.WmsProcessing.MAX_BATCH_SIZE
+                FlextOracleWmsConstants.OracleWms.WmsProcessing.MAX_BATCH_SIZE
             )
 
         class Settings:

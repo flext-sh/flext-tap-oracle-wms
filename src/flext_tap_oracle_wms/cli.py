@@ -27,7 +27,7 @@ class FlextTapOracleWmsCli:
     @staticmethod
     def main() -> int:
         """Execute Oracle WMS tap through the FLEXT service CLI bridge."""
-        return FlextTapOracleWmsService.get_instance().cli_main()
+        return FlextTapOracleWmsService().cli_main()
 
 
 def main() -> int:
