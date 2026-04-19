@@ -1,0 +1,46 @@
+tests/e2e/test_e2e.py
+  h_9db9d35f50cf33 67,296
+docs/guides/troubleshooting.md
+  h_9db9d35f50cf33 141,155
+src/flext_tap_oracle_wms/streams.py
+  h_9db9d35f50cf33 56,97,170
+docs/architecture.md
+  h_9db9d35f50cf33 359
+docs/guides/testing.md
+  h_9db9d35f50cf33 528
+docs/architecture/flext-integration.md
+  h_9db9d35f50cf33 282,341,351,471
+tests/integration/test_functional.py
+  h_9db9d35f50cf33 152,175,400
+src/flext_tap_oracle_wms/protocols.py
+  h_9db9d35f50cf33 9,41,55-56,69-70,83-84,97,119,146
+docs/development/README.md
+  h_9db9d35f50cf33 313
+tests/utilities.py
+  h_9db9d35f50cf33 10,65
+tests/unit/test_tap.py
+  h_9db9d35f50cf33 33,45
+src/flext_tap_oracle_wms/utilities.py
+  h_9db9d35f50cf33 94,139
+src/flext_tap_oracle_wms/api.py
+  h_9db9d35f50cf33 30
+docs/guides/development.md
+  h_9db9d35f50cf33 154,193,196,202,353,356,405
+docs/standards/python-module-organization.md
+  h_9db9d35f50cf33 343,354,617,629,638,796,905
+tests/conftest.py
+  h_9db9d35f50cf33 109,143,208
+src/flext_tap_oracle_wms/tap.py
+  h_9db9d35f50cf33 54,58,65,81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "f1111175009e66f8c6f28b158e5e578bd2483775",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
