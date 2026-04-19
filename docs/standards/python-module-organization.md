@@ -340,7 +340,7 @@ class FlextTapOracleWmsStream(RESTStream):
         self._schema_generator = SchemaGenerator(tap.wms_client)
 
     @property
-    def schema(self) -> t.Dict:
+    def schema(self) -> m.Dict:
         """Get stream schema from WMS metadata."""
         schema_result = self._schema_generator.generate_schema(self.name)
         if schema_result.failure:
@@ -351,7 +351,7 @@ class FlextTapOracleWmsStream(RESTStream):
         """Get paginator for WMS HATEOAS pagination."""
         return WMSPaginator()
 
-    def get_url_params(self, context, next_page_token) -> t.Dict:
+    def get_url_params(self, context, next_page_token) -> m.Dict:
         """Build URL parameters for WMS API requests."""
         params = {
             "limit": min(self.settings.get("page_size", 1000), 1250),
@@ -614,7 +614,7 @@ class SchemaGenerator:
         self.discovery = EntityDiscovery(wms_client)
         self.logger = u.fetch_logger(__name__)
 
-    def generate_schema(self, entity: str) -> p.Result[t.Dict]:
+    def generate_schema(self, entity: str) -> p.Result[m.Dict]:
         """Generate Singer schema for WMS entity."""
         metadata_result = self.discovery.get_entity_metadata(entity)
         if metadata_result.failure:
@@ -626,7 +626,7 @@ class SchemaGenerator:
         except Exception as e:
             return r[bool].fail(f"Schema generation error: {e}")
 
-    def _convert_metadata_to_schema(self, metadata) -> t.Dict:
+    def _convert_metadata_to_schema(self, metadata) -> m.Dict:
         """Convert WMS metadata to Singer JSON schema."""
         return {
             "type": "object",
@@ -635,7 +635,7 @@ class SchemaGenerator:
             },
         }
 
-    def _map_field_type(self, field) -> t.Dict:
+    def _map_field_type(self, field) -> m.Dict:
         """Map WMS field type to Singer type."""
         type_mapping = {
             "STRING": {"type": "string"},
@@ -793,7 +793,7 @@ def create_authenticated_client(settings) -> Client:    # Factory pattern
 @property
 def wms_client(self) -> FlextOracleWmsClient:     # Resource access
 @property
-def schema(self) -> t.Dict:               # Computed property
+def schema(self) -> m.Dict:               # Computed property
 ```
 
 **Pattern**: Verbs for actions, nouns for properties, clear business intent.
@@ -902,7 +902,7 @@ class FlextTapOracleWmsStream(RESTStream):
     """Stream following Singer RESTStream pattern."""
 
     @property
-    def schema(self) -> t.Dict:  # Required property
+    def schema(self) -> m.Dict:  # Required property
         """JSON schema for stream records."""
         pass
 

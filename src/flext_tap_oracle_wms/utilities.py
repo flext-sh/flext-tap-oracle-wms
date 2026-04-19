@@ -91,7 +91,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
 
             @staticmethod
             def as_map(
-                value: t.RecursiveContainer,
+                value: t.Container,
                 *,
                 normalizer: t.ScalarNormalizer | None = None,
                 map_adapter: t.ContainerValueMapAdapter | None = None,
@@ -136,7 +136,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
 
             @staticmethod
             def as_list(
-                value: t.RecursiveContainer,
+                value: t.Container,
                 *,
                 normalizer: t.ScalarNormalizer | None = None,
                 list_adapter: t.ContainerValueListAdapter | None = None,

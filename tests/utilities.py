@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import MutableSequence, Sequence
+from collections.abc import Mapping, MutableSequence, Sequence
 
 from flext_tests import FlextTestsUtilities
 
@@ -62,7 +62,7 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
 
         @staticmethod
         def create_test_oracle_wms_api_response(
-            data: Sequence[t.RecursiveContainerMapping],
+            data: Sequence[Mapping[str, t.Container]],
             *,
             has_more: bool = False,
             next_page_url: str | None = None,

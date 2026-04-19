@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import Protocol, runtime_checkable
 
 from flext_meltano import FlextMeltanoProtocols, m
@@ -38,7 +38,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def establish_wms_connection(
                     self,
-                    settings: t.ConfigMap,
+                    settings: m.ConfigMap,
                 ) -> FlextOracleWmsProtocols.Result[t.Container]:
                     """Establish connection to Oracle WMS."""
                     ...
@@ -52,8 +52,8 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def discover_inventory(
                     self,
-                    settings: t.ConfigMap,
-                ) -> FlextOracleWmsProtocols.Result[Sequence[t.ConfigMap]]:
+                    settings: m.ConfigMap,
+                ) -> FlextOracleWmsProtocols.Result[Sequence[m.ConfigMap]]:
                     """Discover WMS inventory."""
                     ...
 
@@ -66,8 +66,8 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def process_orders(
                     self,
-                    settings: t.ConfigMap,
-                ) -> FlextOracleWmsProtocols.Result[Sequence[t.ConfigMap]]:
+                    settings: m.ConfigMap,
+                ) -> FlextOracleWmsProtocols.Result[Sequence[m.ConfigMap]]:
                     """Process WMS orders."""
                     ...
 
@@ -80,8 +80,8 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def get_warehouse_operations(
                     self,
-                    settings: t.ConfigMap,
-                ) -> FlextOracleWmsProtocols.Result[Sequence[t.ConfigMap]]:
+                    settings: m.ConfigMap,
+                ) -> FlextOracleWmsProtocols.Result[Sequence[m.ConfigMap]]:
                     """Get WMS warehouse operations."""
                     ...
 
@@ -94,7 +94,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def generate_catalog(
                     self,
-                    settings: t.ConfigMap,
+                    settings: m.ConfigMap,
                 ) -> FlextOracleWmsProtocols.Result[m.Meltano.SingerCatalog]:
                     """Generate Singer catalog."""
                     ...
@@ -116,7 +116,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
 
                 def validate_config(
                     self,
-                    settings: t.ConfigMap,
+                    settings: m.ConfigMap,
                 ) -> FlextOracleWmsProtocols.Result[bool]:
                     """Validate WMS configuration."""
                     ...
@@ -143,7 +143,7 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
             class TapWithWmsClientSettings(TapWithWmsClient, Protocol):
                 """Protocol for tap instances with WMS client and settings."""
 
-                settings: t.RecursiveContainerMapping
+                settings: Mapping[str, t.Container]
 
 
 p = FlextTapOracleWmsProtocols

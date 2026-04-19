@@ -51,18 +51,18 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @override
     def __init__(
         self,
-        settings: t.RecursiveContainerMapping
+        settings: Mapping[str, t.Container]
         | t.ContainerValueMapping
         | FlextTapOracleWmsSettings
         | None = None,
-        config: t.RecursiveContainerMapping | t.ContainerValueMapping | None = None,
+        config: Mapping[str, t.Container] | t.ContainerValueMapping | None = None,
         catalog: t.StrMapping | None = None,
         state: t.StrMapping | None = None,
         parse_env_config: bool = False,
         validate_config: bool = True,
     ) -> None:
         """Initialize tap, accepting settings object or raw dict."""
-        raw_config: t.RecursiveContainerMapping
+        raw_config: Mapping[str, t.Container]
         effective_config = config if config is not None else settings
         if isinstance(effective_config, FlextTapOracleWmsSettings):
             raw_config = dict(effective_config.model_dump(mode="json").items())
@@ -78,7 +78,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         )
 
     @property
-    def settings(self) -> t.RecursiveContainerMapping:
+    def settings(self) -> Mapping[str, t.Container]:
         """Expose tap configuration through legacy settings contract."""
         config = self.config
         return {str(key): value for key, value in config.items()}
