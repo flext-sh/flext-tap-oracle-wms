@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from flext_core import r
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsConfigurationError
+from tests import r
 
 
 class TestTapInitialization:

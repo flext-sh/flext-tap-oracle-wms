@@ -7,9 +7,6 @@ from collections.abc import Callable, Mapping, MutableSequence, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
-from pydantic import SecretStr
-
-from flext_meltano import Tap as FlextMeltanoSingerTapBase
 from flext_oracle_wms import (
     FlextOracleWmsSettings,
     FlextOracleWmsUtilitiesClient,
@@ -29,7 +26,7 @@ from flext_tap_oracle_wms import (
 logger = u.fetch_logger(__name__)
 
 
-class FlextTapOracleWms(FlextMeltanoSingerTapBase):
+class FlextTapOracleWms(m.Meltano.SingerTapBase):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
@@ -186,7 +183,7 @@ class FlextTapOracleWms(FlextMeltanoSingerTapBase):
                 "username": str(self.flext_config.username),
                 "password": (
                     password.get_secret_value()
-                    if isinstance(password, SecretStr)
+                    if isinstance(password, t.SecretStr)
                     else str(password)
                 ),
                 "timeout": float(self.flext_config.timeout),

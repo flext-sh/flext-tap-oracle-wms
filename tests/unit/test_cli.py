@@ -15,18 +15,18 @@ from flext_tap_oracle_wms import FlextTapOracleWmsService, cli as cli_module, ma
 class TestCLI:
     """Test CLI functionality."""
 
-    @patch("flext_tap_oracle_wms.cli.FlextTapOracleWmsService.get_instance")
-    def test_main_returns_service_exit_code(self, mock_get_instance: Mock) -> None:
+    @patch("flext_tap_oracle_wms.cli.FlextTapOracleWmsService")
+    def test_main_returns_service_exit_code(self, mock_service_cls: Mock) -> None:
         """Main returns the exit code produced by the service CLI."""
-        mock_get_instance.return_value.cli_main.return_value = 7
+        mock_service_cls.return_value.cli_main.return_value = 7
         assert main() == 7
-        mock_get_instance.return_value.cli_main.assert_called_once_with()
+        mock_service_cls.return_value.cli_main.assert_called_once_with()
 
-    @patch("flext_tap_oracle_wms.cli.FlextTapOracleWmsService.get_instance")
-    def test_main_function_callable(self, mock_get_instance: Mock) -> None:
+    @patch("flext_tap_oracle_wms.cli.FlextTapOracleWmsService")
+    def test_main_function_callable(self, mock_service_cls: Mock) -> None:
         """Main remains a callable project entry point."""
         assert callable(main)
-        mock_get_instance.return_value.cli_main.return_value = 0
+        mock_service_cls.return_value.cli_main.return_value = 0
         assert main() == 0
 
     def test_cli_module_structure(self) -> None:

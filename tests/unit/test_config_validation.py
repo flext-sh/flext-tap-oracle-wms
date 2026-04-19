@@ -9,9 +9,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from pydantic import SecretStr
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
+from tests import t
 
 
 class TestConfigValidation:
@@ -26,7 +26,7 @@ class TestConfigValidation:
         )
         assert str(settings.base_url).rstrip("/") == "https://wms.example.com"
         assert settings.username == "test_user"
-        assert isinstance(settings.password, (str, SecretStr))
+        assert isinstance(settings.password, (str, t.SecretStr))
         assert settings.api_version == "V1"
         assert settings.page_size == 10
 
@@ -166,7 +166,7 @@ class TestConfigValidation:
         )
         password_value = (
             settings.password.get_secret_value()
-            if isinstance(settings.password, SecretStr)
+            if isinstance(settings.password, t.SecretStr)
             else settings.password
         )
         assert password_value == "super_secret"

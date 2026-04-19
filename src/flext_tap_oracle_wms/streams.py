@@ -11,19 +11,13 @@ from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
-from pydantic import BaseModel
-
-from flext_meltano import (
-    Stream as FlextMeltanoSingerStreamBase,
-    Tap as FlextMeltanoSingerTapBase,
-)
 from flext_oracle_wms import FlextOracleWmsUtilitiesClient
-from flext_tap_oracle_wms import FlextTapOracleWmsError, c, p, r, t, u
+from flext_tap_oracle_wms import FlextTapOracleWmsError, c, m, p, r, t, u
 
 logger = u.fetch_logger(__name__)
 
 
-class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
+class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     """Dynamic stream for Oracle WMS entities.
 
     Uses flext-oracle-wms client for all data operations.
@@ -34,14 +28,14 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
     stream_replication_key: str | None = None
     url_base: str = ""
     # Singer SDK attributes exposed for type narrowing in tests/consumers
-    tap: FlextMeltanoSingerTapBase
+    tap: m.Meltano.SingerTapBase
     http_headers: t.MutableStrMapping
     authenticator: None = None
 
     @override
     def __init__(
         self,
-        tap: FlextMeltanoSingerTapBase,
+        tap: m.Meltano.SingerTapBase,
         name: str | None = None,
         schema: t.ContainerValueMapping | None = None,
         _path: str | None = None,
@@ -50,7 +44,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         schema_dict: dict[str, t.ContainerValue] | None = (
             dict(schema) if schema is not None else None
         )
-        FlextMeltanoSingerStreamBase.__init__(
+        m.Meltano.SingerStreamBase.__init__(
             self,
             tap=tap,
             name=name or self.name,
@@ -123,7 +117,7 @@ class FlextTapOracleWmsStream(FlextMeltanoSingerStreamBase):
         )
         if map_value is not None:
             return str(dict(map_value))
-        if isinstance(value, BaseModel | Path):
+        if isinstance(value, m.BaseModel | Path):
             return str(value)
         return str(value)
 

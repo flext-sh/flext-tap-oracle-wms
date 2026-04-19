@@ -8,9 +8,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from pydantic import AnyUrl, SecretStr, ValidationError
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
+from tests import e, t
 
 
 class TestFlextTapOracleWmsSettings:
@@ -32,7 +32,9 @@ class TestFlextTapOracleWmsSettings:
         assert settings.username == "test_user"
         password = settings.password
         password_value = (
-            password.get_secret_value() if isinstance(password, SecretStr) else password
+            password.get_secret_value()
+            if isinstance(password, t.SecretStr)
+            else password
         )
         assert password_value == "test_pass"
         assert settings.api_version == "V1"
@@ -91,7 +93,7 @@ class TestFlextTapOracleWmsSettings:
             password="pass",
         )
         assert "wms.example.com" in str(settings.base_url)
-        # str | AnyUrl union accepts bare hostnames as str
+        # str | t.AnyUrl union accepts bare hostnames as str
         config_bare = FlextTapOracleWmsSettings(
             base_url="wms.example.com",
             username="user",
@@ -106,7 +108,7 @@ class TestFlextTapOracleWmsSettings:
             username="user",
             password="pass",
         )
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(e.ValidationError) as exc_info:
             settings.include_entities = ["inventory", "orders", "inventory"]
         assert "contains duplicates" in str(exc_info.value)
 
@@ -120,7 +122,7 @@ class TestFlextTapOracleWmsSettings:
             end_date="2024-12-31T23:59:59Z",
         )
         assert settings.start_date == "2024-01-01T00:00:00Z"
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(e.ValidationError) as exc_info:
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
@@ -131,14 +133,14 @@ class TestFlextTapOracleWmsSettings:
 
     def test_numeric_validation(self) -> None:
         """Test numeric field validation."""
-        with pytest.raises(ValidationError):
+        with pytest.raises(e.ValidationError):
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
                 password="pass",
                 page_size=0,
             )
-        with pytest.raises(ValidationError):
+        with pytest.raises(e.ValidationError):
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
@@ -192,7 +194,7 @@ class TestFlextTapOracleWmsSettings:
         client_config = settings.model_dump(mode="json")
         assert "wms.example.com" in str(client_config["base_url"])
         assert client_config["username"] == "user"
-        # Password may be str or masked SecretStr depending on model settings
+        # Password may be str or masked t.SecretStr depending on model settings
         assert client_config["password"] is not None
         assert client_config["api_version"] == "v11"
         assert client_config["timeout"] == 45
@@ -225,11 +227,11 @@ class TestFlextTapOracleWmsSettings:
             username="user",
             password="pass",
         )
-        settings.base_url = AnyUrl("https://new.example.com")
+        settings.base_url = t.AnyUrl("https://new.example.com")
         assert str(settings.base_url) == "https://new.example.com/"
 
     def test_password_hiding(self) -> None:
-        """Test password field is stored (str | SecretStr union)."""
+        """Test password field is stored (str | t.SecretStr union)."""
         settings = FlextTapOracleWmsSettings(
             base_url="https://wms.example.com",
             username="user",
@@ -237,7 +239,7 @@ class TestFlextTapOracleWmsSettings:
         )
         password_value = (
             settings.password.get_secret_value()
-            if isinstance(settings.password, SecretStr)
+            if isinstance(settings.password, t.SecretStr)
             else settings.password
         )
         assert password_value == "super_secret_password"

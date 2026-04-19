@@ -46,7 +46,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         SCHEMA_TYPE_INTEGER: Final[str] = "integer"
         SCHEMA_TYPE_NULL: Final[str] = "null"
         SCHEMA_FORMAT_DATETIME: Final[str] = "date-time"
-        SCHEMA_TYPE_STRING_OR_NULL: Final[t.StrSequence] = ["string", "null"]
+        SCHEMA_TYPE_STRING_OR_NULL: Final[t.StrSequence] = ("string", "null")
 
         @unique
         class TapWmsEntityType(StrEnum):

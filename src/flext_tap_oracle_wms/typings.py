@@ -12,8 +12,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from pydantic import TypeAdapter
-
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
 from flext_tap_oracle_wms import m
@@ -32,10 +30,10 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
 
     CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[
         FlextMeltanoTypes.ContainerValueMapping
-    ] = TypeAdapter(FlextMeltanoTypes.ContainerValueMapping)
+    ] = m.TypeAdapter(FlextMeltanoTypes.ContainerValueMapping)
     CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[
         FlextMeltanoTypes.ContainerValueList
-    ] = TypeAdapter(FlextMeltanoTypes.ContainerValueList)
+    ] = m.TypeAdapter(FlextMeltanoTypes.ContainerValueList)
 
 
 t = FlextTapOracleWmsTypes

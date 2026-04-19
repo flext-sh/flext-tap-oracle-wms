@@ -10,10 +10,6 @@ import re
 from collections.abc import Mapping
 from typing import Annotated, ClassVar, override
 
-from pydantic import SecretStr
-from pydantic.networks import AnyUrl
-from pydantic_settings import SettingsConfigDict
-
 from flext_core import FlextSettings, u
 from flext_tap_oracle_wms import c, m, p, r, t
 
@@ -22,22 +18,22 @@ from flext_tap_oracle_wms import c, m, p, r, t
 class FlextTapOracleWmsSettings(FlextSettings):
     """Validated settings consumed by the Oracle WMS tap runtime."""
 
-    model_config: ClassVar[SettingsConfigDict] = m.SettingsConfigDict(
+    model_config: ClassVar[m.SettingsConfigDict] = m.SettingsConfigDict(
         env_prefix="FLEXT_TAP_ORACLE_WMS_", extra="ignore", validate_assignment=True
     )
 
     base_url: Annotated[
-        str | AnyUrl,
+        str | t.AnyUrl,
         u.Field(description="Base Oracle WMS API URL."),
-    ]
+    ] = ""
     username: Annotated[
         str,
-        u.Field(min_length=1, description="Oracle WMS username."),
-    ]
+        u.Field(description="Oracle WMS username."),
+    ] = ""
     password: Annotated[
-        str | SecretStr,
+        str | t.SecretStr,
         u.Field(description="Oracle WMS password."),
-    ]
+    ] = ""
     api_version: Annotated[
         str,
         u.Field(

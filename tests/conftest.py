@@ -14,9 +14,8 @@ from unittest.mock import MagicMock, patch as _patch
 
 import pytest
 
-from flext_core import r
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import t
+from tests import r, t
 
 
 @pytest.fixture(scope="session")
@@ -30,6 +29,20 @@ def oracle_wms_environment() -> None:
                 if line and (not line.startswith("#")):
                     key, value = line.split("=", 1)
                     os.environ[key] = value
+
+
+@pytest.fixture(autouse=True)
+def isolate_tap_oracle_wms_env(
+    monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
+) -> None:
+    """Keep unit tests deterministic regardless of host FLEXT_TAP_ORACLE_WMS_* env."""
+    if request.node.get_closest_marker(
+        "integration"
+    ) or request.node.get_closest_marker("real"):
+        return
+    for key in [key for key in os.environ if key.startswith("FLEXT_TAP_ORACLE_WMS_")]:
+        monkeypatch.delenv(key, raising=False)
 
 
 @pytest.fixture
