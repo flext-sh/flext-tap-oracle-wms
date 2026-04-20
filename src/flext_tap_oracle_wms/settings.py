@@ -13,6 +13,7 @@ from collections.abc import (
 from typing import Annotated, ClassVar, override
 
 from flext_core import FlextSettings, u
+
 from flext_tap_oracle_wms import c, m, p, r, t
 
 

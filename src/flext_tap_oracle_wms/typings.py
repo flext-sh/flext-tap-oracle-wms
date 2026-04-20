@@ -16,6 +16,7 @@ from collections.abc import (
 
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
+
 from flext_tap_oracle_wms import m
 
 

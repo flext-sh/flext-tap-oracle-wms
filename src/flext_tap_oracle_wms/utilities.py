@@ -13,6 +13,7 @@ from collections.abc import (
 
 from flext_meltano import u
 from flext_oracle_wms import FlextOracleWmsUtilities
+
 from flext_tap_oracle_wms import c, t
 
 

@@ -16,6 +16,7 @@ from typing import Annotated, override
 
 from flext_core import u
 from flext_meltano import FlextMeltanoSingerTapAdapter, FlextMeltanoTapServiceBase
+
 from flext_tap_oracle_wms import FlextTapOracleWms, p, t
 
 

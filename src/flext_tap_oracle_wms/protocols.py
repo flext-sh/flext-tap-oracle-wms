@@ -14,6 +14,7 @@ from typing import Protocol, runtime_checkable
 
 from flext_meltano import FlextMeltanoProtocols, m
 from flext_oracle_wms import FlextOracleWmsProtocols, FlextOracleWmsUtilitiesClient
+
 from flext_tap_oracle_wms import t
 
 
