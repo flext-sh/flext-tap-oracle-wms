@@ -8,7 +8,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import Generator, Sequence
+from collections.abc import (
+    Generator,
+    Mapping,
+    Sequence,
+)
 from pathlib import Path
 from unittest.mock import MagicMock, patch as _patch
 

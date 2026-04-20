@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import json
 import time
-from collections.abc import Mapping
+from collections.abc import (
+    Mapping,
+)
 from datetime import UTC, datetime, timedelta
 
 import pytest
