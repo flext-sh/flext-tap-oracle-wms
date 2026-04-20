@@ -50,7 +50,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_real_wms_environment_verification(
         self,
-        real_wms_config: t.MutableRecursiveContainerMapping,
+        real_wms_config: t.MutableFlatContainerMapping,
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -71,7 +71,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_tap_initialization_real_config(
         self,
-        real_wms_config: t.MutableRecursiveContainerMapping,
+        real_wms_config: t.MutableFlatContainerMapping,
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(settings=real_wms_config)
@@ -170,7 +170,7 @@ class TestOracleWMSFunctionalComplete:
                 )
                 assert "type" in prop_def, f"Property {prop_name} missing type"
                 prop_type = prop_def["type"]
-                valid_types: Sequence[t.ContainerValue] = [
+                valid_types: Sequence[t.Container] = [
                     "string",
                     "integer",
                     "number",
@@ -271,7 +271,7 @@ class TestOracleWMSFunctionalComplete:
         """Test automatic replication key detection."""
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
-        streams_with_replication: MutableSequence[tuple[str, t.ContainerValue]] = []
+        streams_with_replication: MutableSequence[tuple[str, t.Container]] = []
         streams_full_table: MutableSequence[str] = []
         for stream in streams:
             table_metadata = None
@@ -343,10 +343,10 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_error_handling_and_validation(
         self,
-        real_wms_config: t.MutableRecursiveContainerMapping,
+        real_wms_config: t.MutableFlatContainerMapping,
     ) -> None:
         """Test error handling with invalid configurations."""
-        invalid_config: t.MutableRecursiveContainerMapping = dict(real_wms_config)
+        invalid_config: t.MutableFlatContainerMapping = dict(real_wms_config)
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
         tap = FlextTapOracleWms(settings=invalid_config)
         try:

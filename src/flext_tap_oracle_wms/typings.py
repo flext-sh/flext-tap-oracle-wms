@@ -23,7 +23,7 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     """MRO facade composing Meltano + Oracle WMS type namespaces."""
 
     type ScalarNormalizer = Callable[
-        [FlextMeltanoTypes.ContainerValue], FlextMeltanoTypes.Scalar
+        [FlextMeltanoTypes.Container], FlextMeltanoTypes.Scalar
     ]
     type ContainerValueMapAdapter = m.TypeAdapter[
         FlextMeltanoTypes.ContainerValueMapping

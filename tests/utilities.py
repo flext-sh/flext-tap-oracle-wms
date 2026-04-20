@@ -52,9 +52,9 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
             password: str = "test_pass",
             facility_ids: t.StrSequence | None = None,
             **kwargs: t.Scalar,
-        ) -> t.MutableRecursiveContainerMapping:
+        ) -> t.MutableFlatContainerMapping:
             """Create test Oracle WMS configuration."""
-            settings: t.MutableRecursiveContainerMapping = {
+            settings: t.MutableFlatContainerMapping = {
                 "base_url": base_url,
                 "username": username,
                 "password": password,
@@ -72,9 +72,9 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
             next_page_url: str | None = None,
             facility_id: str | None = None,
             **kwargs: t.Scalar,
-        ) -> t.MutableRecursiveContainerMapping:
+        ) -> t.MutableFlatContainerMapping:
             """Create test Oracle WMS API response."""
-            response: t.MutableRecursiveContainerMapping = {
+            response: t.MutableFlatContainerMapping = {
                 "items": data,
                 "hasMore": has_more,
             }
@@ -91,11 +91,11 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
             base_id: int = 1000,
             facility_id: str = "FAC001",
             **kwargs: t.Scalar,
-        ) -> MutableSequence[t.MutableRecursiveContainerMapping]:
+        ) -> MutableSequence[t.MutableFlatContainerMapping]:
             """Generate mock Oracle WMS records for testing."""
-            records: MutableSequence[t.MutableRecursiveContainerMapping] = []
+            records: MutableSequence[t.MutableFlatContainerMapping] = []
             for i in range(count):
-                record: t.MutableRecursiveContainerMapping = {
+                record: t.MutableFlatContainerMapping = {
                     "id": base_id + i,
                     "facilityId": facility_id,
                     "itemNumber": f"ITEM{i + 1:04d}",
@@ -109,7 +109,7 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
 
         @staticmethod
         def validate_oracle_wms_config(
-            settings: t.MutableRecursiveContainerMapping,
+            settings: t.MutableFlatContainerMapping,
         ) -> bool:
             """Validate Oracle WMS configuration for testing."""
             required_fields = ["base_url", "username"]

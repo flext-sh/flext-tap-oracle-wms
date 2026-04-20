@@ -45,7 +45,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        schema_dict: dict[str, t.ContainerValue] | None = (
+        schema_dict: dict[str, t.Container] | None = (
             dict(schema) if schema is not None else None
         )
         m.Meltano.SingerStreamBase.__init__(
@@ -54,7 +54,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             name=name or self.name,
             schema=schema_dict,
         )
-        self._typed_schema: dict[str, t.ContainerValue] | None = schema_dict
+        self._typed_schema: dict[str, t.Container] | None = schema_dict
         self._client: FlextOracleWmsUtilitiesClient.Client | None = None
         tap_instance = self._tap
         settings_map: Mapping[str, t.Container] = {}
@@ -74,7 +74,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @property
     @override
-    def schema(self) -> dict[str, t.ContainerValue]:
+    def schema(self) -> dict[str, t.Container]:
         """Get schema with proper type narrowing over Singer SDK's bare ``dict``."""
         if self._typed_schema is None:
             msg = f"The schema for stream '{self.name}' was not provided"

@@ -49,8 +49,8 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     }
 
     _wms_client: FlextOracleWmsUtilitiesClient.Client | None = None
-    _discovery: t.ContainerValue | None = None
-    _schema_generator: t.ContainerValue | None = None
+    _discovery: t.Container | None = None
+    _schema_generator: t.Container | None = None
     _discovery_mode: bool = False
 
     @override
@@ -89,7 +89,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         return {str(key): value for key, value in config.items()}
 
     @property
-    def catalog_dict_typed(self) -> t.MutableRecursiveContainerMapping:
+    def catalog_dict_typed(self) -> t.MutableFlatContainerMapping:
         """Return a validated Singer catalog mapping with recursive contracts."""
         raw_catalog_dict: t.ContainerValueMapping = getattr(super(), "catalog_dict", {})
         try:
@@ -106,10 +106,10 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @staticmethod
     def _to_typed_catalog(
         raw: t.ContainerValueMapping,
-    ) -> t.MutableRecursiveContainerMapping:
+    ) -> t.MutableFlatContainerMapping:
         """Convert a raw catalog mapping into a validated Singer catalog dict."""
         raw_streams = raw.get("streams")
-        raw_streams_seq: Sequence[t.ContainerValue] = (
+        raw_streams_seq: Sequence[t.Container] = (
             raw_streams
             if isinstance(raw_streams, Sequence)
             and not isinstance(raw_streams, (str, bytes))
@@ -122,7 +122,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             s_dict: t.ContainerValueMapping = (
                 u.TapOracleWms.MappingConversion.safe_str_mapping(raw_stream)
             )
-            metadata_raw: t.ContainerValue = s_dict.get("metadata", [])
+            metadata_raw: t.Container = s_dict.get("metadata", [])
             metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata] = []
             if isinstance(metadata_raw, Sequence) and not isinstance(
                 metadata_raw, (str, bytes)
@@ -133,8 +133,8 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                     entry_dict = u.TapOracleWms.MappingConversion.safe_str_mapping(
                         raw_entry
                     )
-                    breadcrumb_raw: t.ContainerValue = entry_dict.get("breadcrumb", [])
-                    metadata_map_raw: t.ContainerValue = entry_dict.get("metadata", {})
+                    breadcrumb_raw: t.Container = entry_dict.get("breadcrumb", [])
+                    metadata_map_raw: t.Container = entry_dict.get("metadata", {})
                     metadata_entries.append(
                         m.Meltano.SingerCatalogMetadata(
                             breadcrumb=[str(item) for item in breadcrumb_raw]
@@ -148,7 +148,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                             else {},
                         )
                     )
-            schema_raw: t.ContainerValue = s_dict.get("schema", {})
+            schema_raw: t.Container = s_dict.get("schema", {})
             stream_entries.append(
                 m.Meltano.SingerCatalogEntry.model_validate({
                     "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
@@ -274,9 +274,9 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         self.sync_all()
         return r[bool].ok(True)
 
-    def get_implementation_metrics(self) -> p.Result[t.ContainerValue]:
+    def get_implementation_metrics(self) -> p.Result[t.Container]:
         """Return basic runtime metrics for observability."""
-        return r[t.ContainerValue].ok({
+        return r[t.Container].ok({
             "tap_name": self.name,
             "version": self.get_implementation_version(),
             "streams_available": len(self.discover_streams()),
@@ -290,9 +290,9 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """Return installed package version."""
         return importlib.metadata.version("flext-tap-oracle-wms")
 
-    def validate_configuration(self) -> p.Result[t.ContainerValue]:
+    def validate_configuration(self) -> p.Result[t.Container]:
         """Expose non-secret validated configuration fields."""
-        return r[t.ContainerValue].ok({
+        return r[t.Container].ok({
             "base_url": str(self.flext_config.base_url),
             "api_version": self.flext_config.api_version,
             "page_size": self.flext_config.page_size,
@@ -336,30 +336,30 @@ class FlextTapOracleWmsPlugin:
         self,
         operation: str,
         _parameters: t.ContainerValueMapping | None = None,
-    ) -> p.Result[t.ContainerValue]:
+    ) -> p.Result[t.Container]:
         """Execute supported plugin operations against the tap."""
         if self._tap is None:
             init_result = self.initialize(None)
             if init_result.failure:
-                return r[t.ContainerValue].fail(
+                return r[t.Container].fail(
                     init_result.error or "Tap initialization failed",
                 )
         tap = self._tap
         if tap is None:
-            return r[t.ContainerValue].fail("Tap not initialized")
+            return r[t.Container].fail("Tap not initialized")
         if operation == "discover":
             catalog_result = tap.discovercatalog_typed()
             if catalog_result.failure:
-                return r[t.ContainerValue].fail(
+                return r[t.Container].fail(
                     catalog_result.error or "Discovery failed",
                 )
-            return r[t.ContainerValue].ok(catalog_result.value.model_dump(mode="json"))
+            return r[t.Container].ok(catalog_result.value.model_dump(mode="json"))
         if operation == "sync":
             execute_result = tap.execute()
             if execute_result.failure:
-                return r[t.ContainerValue].fail(execute_result.error or "Sync failed")
-            return r[t.ContainerValue].ok({"success": True})
-        return r[t.ContainerValue].fail(f"Unsupported operation: {operation}")
+                return r[t.Container].fail(execute_result.error or "Sync failed")
+            return r[t.Container].ok({"success": True})
+        return r[t.Container].fail(f"Unsupported operation: {operation}")
 
     def get_info(self) -> t.ContainerValueMapping:
         """Return plugin metadata for discovery and capabilities."""
@@ -370,7 +370,7 @@ class FlextTapOracleWmsPlugin:
             "capabilities": ["discover", "sync"],
         }
 
-    def initialize(self, _context: t.ContainerValue | None) -> p.Result[bool]:
+    def initialize(self, _context: t.Container | None) -> p.Result[bool]:
         """Instantiate the tap for subsequent operations."""
         self._tap = FlextTapOracleWms(settings=dict(self._config))
         return r[bool].ok(True)

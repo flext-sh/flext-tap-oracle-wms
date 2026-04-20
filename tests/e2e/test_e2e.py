@@ -298,7 +298,7 @@ class TestOracleWMSE2EComplete:
         real_wms_config: Mapping[str, t.Container],
     ) -> None:
         """E2E: Test error recovery and system resilience."""
-        invalid_config: t.MutableRecursiveContainerMapping = dict(real_wms_config)
+        invalid_config: t.MutableFlatContainerMapping = dict(real_wms_config)
         invalid_config["password"] = "invalid_password"
         tap = FlextTapOracleWms(settings=invalid_config)
         try:

@@ -80,7 +80,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
             @staticmethod
             def safe_str_dict(
                 raw: t.ContainerValueMapping,
-            ) -> dict[str, t.ContainerValue]:
+            ) -> dict[str, t.Container]:
                 """Return a dict with str keys from an untyped dict source.
 
                 Args:
@@ -132,7 +132,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                     return {
                         str(key): normalizer(str(item)) for key, item in value.items()
                     }
-                coerced: dict[str, t.ContainerValue] = {
+                coerced: dict[str, t.Container] = {
                     str(key): str(item) for key, item in value.items()
                 }
                 return coerced
@@ -144,7 +144,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                 normalizer: t.ScalarNormalizer | None = None,
                 list_adapter: t.ContainerValueListAdapter | None = None,
                 error_cls: type[Exception] | None = None,
-            ) -> Sequence[t.ContainerValue] | None:
+            ) -> Sequence[t.Container] | None:
                 """Convert a NormalizedValue into a Sequence if possible.
 
                 Args:
@@ -172,7 +172,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                     return list(validated_seq)
                 if normalizer is not None:
                     return [normalizer(str(item)) for item in value]
-                coerced_list: list[t.ContainerValue] = [str(item) for item in value]
+                coerced_list: list[t.Container] = [str(item) for item in value]
                 return coerced_list
 
 
