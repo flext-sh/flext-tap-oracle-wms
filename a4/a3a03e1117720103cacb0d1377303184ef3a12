@@ -1,0 +1,22 @@
+src/flext_tap_oracle_wms/cli.py
+  h_9db9d35f50cf33 57,61,63
+src/flext_tap_oracle_wms/constants.py
+  h_9db9d35f50cf33 13,20,27,31,36-37
+src/flext_tap_oracle_wms/protocols.py
+  h_9db9d35f50cf33 15,21
+src/flext_tap_oracle_wms/typings.py
+  h_9db9d35f50cf33 3-4,17,23,27,30,32,35
+src/flext_tap_oracle_wms/models.py
+  h_9db9d35f50cf33 5,9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "a4a3a03e1117720103cacb0d1377303184ef3a12",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
