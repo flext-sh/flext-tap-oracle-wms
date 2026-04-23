@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import e, t
+from tests import c, t
 
 
 class TestFlextTapOracleWmsSettings:
@@ -108,7 +108,7 @@ class TestFlextTapOracleWmsSettings:
             username="user",
             password="pass",
         )
-        with pytest.raises(e.ValidationError) as exc_info:
+        with pytest.raises(c.ValidationError) as exc_info:
             settings.include_entities = ["inventory", "orders", "inventory"]
         assert "contains duplicates" in str(exc_info.value)
 
@@ -122,7 +122,7 @@ class TestFlextTapOracleWmsSettings:
             end_date="2024-12-31T23:59:59Z",
         )
         assert settings.start_date == "2024-01-01T00:00:00Z"
-        with pytest.raises(e.ValidationError) as exc_info:
+        with pytest.raises(c.ValidationError) as exc_info:
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
@@ -133,14 +133,14 @@ class TestFlextTapOracleWmsSettings:
 
     def test_numeric_validation(self) -> None:
         """Test numeric field validation."""
-        with pytest.raises(e.ValidationError):
+        with pytest.raises(c.ValidationError):
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",
                 password="pass",
                 page_size=0,
             )
-        with pytest.raises(e.ValidationError):
+        with pytest.raises(c.ValidationError):
             FlextTapOracleWmsSettings(
                 base_url="https://wms.example.com",
                 username="user",

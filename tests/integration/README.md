@@ -294,7 +294,7 @@ export TEST_FACILITY_CODE=TEST01
 
 ### **Mock Server Pattern**
 
-```python
+```text
 @pytest.fixture
 def mock_wms_server():
     """Mock WMS server for integration testing."""
@@ -317,7 +317,7 @@ def mock_wms_server():
 
 ### **Configuration Test Pattern**
 
-```python
+```text
 @pytest.fixture
 def integration_config():
     """Standard integration test configuration."""

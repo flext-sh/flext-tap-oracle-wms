@@ -172,7 +172,7 @@ TEST_FACILITY_CODE=TEST01
 
 **Example Pattern**:
 
-```python
+```text
 @pytest.fixture
 def mock_wms_client():
     """Mock WMS client for isolated testing."""
@@ -240,7 +240,7 @@ tests/
 
 ### WMS Client Mocking
 
-```python
+```text
 # Standard mock pattern for WMS client
 @pytest.fixture
 def mock_flext_wms_client():
@@ -261,7 +261,7 @@ def mock_flext_wms_client():
 
 ### Configuration Mocking
 
-```python
+```text
 # Standard configuration for testing
 @pytest.fixture
 def valid_tap_config():
@@ -315,7 +315,7 @@ def valid_tap_config():
 
 ### Test Naming Conventions
 
-```python
+```text
 # Test function naming pattern
 def test_[component]_[scenario]_[expected_outcome]():
     """Test [component] [scenario] returns [expected outcome]."""

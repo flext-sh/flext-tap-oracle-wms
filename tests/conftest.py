@@ -40,12 +40,15 @@ def isolate_tap_oracle_wms_env(
     request: pytest.FixtureRequest,
 ) -> None:
     """Keep unit tests deterministic regardless of host FLEXT_TAP_ORACLE_WMS_* env."""
+    from flext_core import FlextSettings
+
     if request.node.get_closest_marker(
         "integration"
     ) or request.node.get_closest_marker("real"):
         return
     for key in [key for key in os.environ if key.startswith("FLEXT_TAP_ORACLE_WMS_")]:
         monkeypatch.delenv(key, raising=False)
+    FlextSettings.reset_for_testing()
 
 
 @pytest.fixture

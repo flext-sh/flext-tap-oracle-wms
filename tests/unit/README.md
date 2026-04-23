@@ -183,7 +183,7 @@ def test_component_with_mock(mock_wms_client):
 
 ### **Configuration Testing Pattern**
 
-```python
+```text
 @pytest.fixture
 def valid_config():
     """Standard valid configuration for testing."""
@@ -253,7 +253,7 @@ pytest tests/unit/ --cov --cov-report=term-missing
 
 ### **Test Naming Conventions**
 
-```python
+```text
 def test_[component]_[scenario]_[expected_outcome]():
     """Test [component] [scenario] returns/raises [expected outcome]."""
     pass
@@ -305,7 +305,7 @@ def test_complex_scenario():
 
 ### **Mock Fixtures**
 
-```python
+```text
 # tests/unit/conftest.py
 @pytest.fixture
 def mock_flext_wms_client():

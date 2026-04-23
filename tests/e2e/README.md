@@ -224,7 +224,7 @@ tests/fixtures/e2e/
 
 ### **Command Execution Testing**
 
-```python
+```text
 import json
 from pathlib import Path
 
