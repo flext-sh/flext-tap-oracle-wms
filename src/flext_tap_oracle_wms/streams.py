@@ -57,7 +57,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self._typed_schema: dict[str, t.JsonValue] | None = schema_dict
         self._client: FlextOracleWmsUtilitiesClient.Client | None = None
         tap_instance = self._tap
-        settings_map = {}
+        settings_map: t.JsonMapping = {}
         if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
             settings_map = tap_instance.settings
         page_size_raw = settings_map.get("page_size", 100)
@@ -98,12 +98,12 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return client
 
     @staticmethod
-    def normalize_json_value(value: t.JsonValue) -> t.Scalar:
+    def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
-        if isinstance(value, t.SCALAR_TYPES):
+        if isinstance(value, (str, int, float, bool)):
             return value
         if value is None:
-            return ""
+            return None
         conv = u.TapOracleWms.MappingConversion
         list_value = conv.as_list(
             value,
@@ -125,6 +125,17 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             return str(value)
         return str(value)
 
+    @staticmethod
+    def normalize_scalar_value(value: t.JsonValue) -> t.JsonValue:
+        """Normalize scalar values that may include non-JSON runtime scalars."""
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        if value is None:
+            return None
+        if isinstance(value, (list, dict)):
+            return FlextTapOracleWmsStream.normalize_json_value(value)
+        return str(value)
+
     def get_primary_keys(self) -> t.StrSequence:
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
@@ -133,7 +144,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     def get_records(
         self,
         context: t.ScalarMapping | None,
-    ) -> Iterable[dict[str, t.Scalar]]:
+    ) -> Iterable[dict[str, t.JsonValue]]:
         """Get records from Oracle WMS."""
         page = 1
         has_more = True
@@ -165,13 +176,13 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @override
     def post_process(
         self,
-        row: dict[str, t.Scalar],
+        row: dict[str, t.JsonValue],
         context: t.ScalarMapping | None = None,
-    ) -> dict[str, t.Scalar]:
+    ) -> dict[str, t.JsonValue]:
         """Post-process a record."""
         conv = u.TapOracleWms.MappingConversion
         tap_instance = self._tap
-        config_map = {}
+        config_map: t.JsonMapping = {}
         if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
             config_map = tap_instance.settings
         column_mappings_raw = config_map.get("column_mappings")
@@ -240,7 +251,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self,
         page: int,
         context: t.ScalarMapping | None,
-    ) -> p.Result[tuple[Sequence[t.ScalarMapping], bool]]:
+    ) -> p.Result[tuple[Sequence[t.JsonMapping], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
@@ -255,10 +266,10 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             filters=filters or None,
         )
         if result.failure:
-            return r[tuple[Sequence[t.ScalarMapping], bool]].fail(
+            return r[tuple[Sequence[t.JsonMapping], bool]].fail(
                 f"Failed to get records for {self.name}: {result.error}",
             )
-        normalized: Sequence[t.ScalarMapping] = [
+        normalized: Sequence[t.JsonMapping] = [
             {
                 str(key): self.normalize_json_value(value)
                 for key, value in record.items()
@@ -266,20 +277,23 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             for record in result.value
         ]
         has_more = len(normalized) == self._page_size
-        return r[tuple[Sequence[t.ScalarMapping], bool]].ok((
+        return r[tuple[Sequence[t.JsonMapping], bool]].ok((
             normalized,
             has_more,
         ))
 
     def _process_page_records(
         self,
-        records: Sequence[t.ScalarMapping],
+        records: Sequence[t.JsonMapping],
         context: t.ScalarMapping | None,
-    ) -> Iterable[dict[str, t.Scalar]]:
+    ) -> Iterable[dict[str, t.JsonValue]]:
         """Process and yield records from a page."""
         conv = u.TapOracleWms.MappingConversion
         for record in records:
-            record_dict: t.JsonMapping = dict(record)
+            record_dict: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python({
+                str(key): self.normalize_scalar_value(value)
+                for key, value in record.items()
+            })
             processed_record: t.JsonMapping = (
                 u.TapOracleWms.DataProcessing.process_wms_record(
                     record=record_dict,
@@ -293,8 +307,8 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             )
             if processed_map is None:
                 continue
-            json_row: dict[str, t.Scalar] = {
-                str(k): self.normalize_json_value(v) for k, v in processed_map.items()
+            json_row: dict[str, t.JsonValue] = {
+                str(k): self.normalize_scalar_value(v) for k, v in processed_map.items()
             }
             yield self.post_process(json_row, context)
 

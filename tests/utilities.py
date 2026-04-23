@@ -51,9 +51,9 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
             password: str = "test_pass",
             facility_ids: t.StrSequence | None = None,
             **kwargs: t.Scalar,
-        ) -> t.MutableJsonMapping:
+        ) -> t.MutableMetadataMapping:
             """Create test Oracle WMS configuration."""
-            settings: t.MutableJsonMapping = {
+            settings: t.MutableMetadataMapping = {
                 "base_url": base_url,
                 "username": username,
                 "password": password,
@@ -65,15 +65,15 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
 
         @staticmethod
         def create_test_oracle_wms_api_response(
-            data: Sequence[t.JsonMapping],
+            data: Sequence[t.MetadataMapping],
             *,
             has_more: bool = False,
             next_page_url: str | None = None,
             facility_id: str | None = None,
             **kwargs: t.Scalar,
-        ) -> t.MutableJsonMapping:
+        ) -> t.MutableMetadataMapping:
             """Create test Oracle WMS API response."""
-            response: t.MutableJsonMapping = {
+            response: t.MutableMetadataMapping = {
                 "items": data,
                 "hasMore": has_more,
             }
@@ -90,11 +90,11 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
             base_id: int = 1000,
             facility_id: str = "FAC001",
             **kwargs: t.Scalar,
-        ) -> MutableSequence[t.MutableJsonMapping]:
+        ) -> MutableSequence[t.MutableMetadataMapping]:
             """Generate mock Oracle WMS records for testing."""
-            records: MutableSequence[t.MutableJsonMapping] = []
+            records: MutableSequence[t.MutableMetadataMapping] = []
             for i in range(count):
-                record: t.MutableJsonMapping = {
+                record: t.MutableMetadataMapping = {
                     "id": base_id + i,
                     "facilityId": facility_id,
                     "itemNumber": f"ITEM{i + 1:04d}",
@@ -108,7 +108,7 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
 
         @staticmethod
         def validate_oracle_wms_config(
-            settings: t.MutableJsonMapping,
+            settings: t.MutableMetadataMapping,
         ) -> bool:
             """Validate Oracle WMS configuration for testing."""
             required_fields = ["base_url", "username"]

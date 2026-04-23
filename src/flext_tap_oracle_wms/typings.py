@@ -15,7 +15,7 @@ from collections.abc import (
 )
 
 from flext_meltano import t as meltano_t
-from flext_oracle_wms import FlextOracleWmsTypes
+from flext_oracle_wms import FlextOracleWmsTypes, t
 
 from flext_tap_oracle_wms import m
 
@@ -23,16 +23,14 @@ from flext_tap_oracle_wms import m
 class FlextTapOracleWmsTypes(meltano_t, FlextOracleWmsTypes):
     """MRO facade composing Meltano + Oracle WMS type namespaces."""
 
-    type ScalarNormalizer = Callable[[meltano_t.Container], meltano_t.Scalar]
-    type ContainerValueMapAdapter = m.TypeAdapter[meltano_t.JsonMapping]
-    type ContainerValueListAdapter = m.TypeAdapter[meltano_t.JsonList]
+    type ScalarNormalizer = Callable[[t.JsonValue], t.JsonValue]
+    type ContainerValueMapAdapter = m.TypeAdapter[t.JsonMapping]
+    type ContainerValueListAdapter = m.TypeAdapter[t.JsonList]
 
-    CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[meltano_t.JsonMapping] = m.TypeAdapter(
-        meltano_t.JsonMapping
+    CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[t.JsonMapping] = m.TypeAdapter(
+        t.JsonMapping
     )
-    CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[meltano_t.JsonList] = m.TypeAdapter(
-        meltano_t.JsonList
-    )
+    CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[t.JsonList] = m.TypeAdapter(t.JsonList)
 
 
 t = FlextTapOracleWmsTypes
