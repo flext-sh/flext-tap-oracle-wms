@@ -194,7 +194,7 @@ class WMSEntityConfig:
 class EntityDiscovery:
     def __init__(self, wms_client: WMSClient, settings: WMSEntityConfig):
         self._wms_client = wms_client
-        self._config = settings
+        self.config = settings
 
 
 # Infrastructure Layer (external dependencies)

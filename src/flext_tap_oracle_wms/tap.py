@@ -335,15 +335,15 @@ class FlextTapOracleWmsPlugin:
 
     def __init__(self, settings: t.JsonMapping) -> None:
         """Initialize plugin state and hold tap configuration."""
-        self._config = settings
+        self.config = settings
         self._tap: FlextTapOracleWms | None = None
-        self._name = "flext-tap-oracle-wms"
+        self.name = "flext-tap-oracle-wms"
         self._version = "0.9.0"
 
     @property
     def name(self) -> str:
         """Return plugin identifier."""
-        return self._name
+        return self.name
 
     @property
     def version(self) -> str:
@@ -388,9 +388,14 @@ class FlextTapOracleWmsPlugin:
             "capabilities": ["discover", "sync"],
         }
 
-    def initialize(self, _context: t.JsonValue | None) -> p.Result[bool]:
+    def initialize(self, context: t.JsonValue | None) -> p.Result[bool]:
         """Instantiate the tap for subsequent operations."""
-        self._tap = FlextTapOracleWms(settings=dict(self._config))
+        runtime_settings = dict(self.config)
+        if isinstance(context, Mapping):
+            runtime_settings.update({str(key): value for key, value in context.items()})
+        elif context is not None:
+            logger.debug("Ignoring non-mapping tap initialization context: %s", context)
+        self._tap = FlextTapOracleWms(settings=runtime_settings)
         return r[bool].ok(True)
 
     def shutdown(self) -> p.Result[bool]:

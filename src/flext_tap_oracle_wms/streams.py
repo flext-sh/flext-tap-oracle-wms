@@ -226,7 +226,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
                 if isinstance(column_name, str):
                     row.pop(column_name, None)
         if context:
-            row["_context"] = str({k: str(v) for k, v in context.items()})
+            row["context"] = str({k: str(v) for k, v in context.items()})
         return row
 
     def _build_operation_kwargs(
