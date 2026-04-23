@@ -1,0 +1,38 @@
+src/flext_tap_oracle_wms/streams.py
+  h_9db9d35f50cf33 44,48,57,77,101,282-283
+src/flext_tap_oracle_wms/tap.py
+  h_9db9d35f50cf33 36-65,74,81,130,371,378,382
+src/flext_tap_oracle_wms/typings.py
+  h_9db9d35f50cf33 27-28,30-31,33-34
+src/flext_tap_oracle_wms/utilities.py
+  h_9db9d35f50cf33 50,68,83
+tests/typings.py
+  h_9db9d35f50cf33 51,55
+docs/guides/testing.md
+  h_9db9d35f50cf33 528
+docs/guides/development.md
+  h_9db9d35f50cf33 84,137,154,193,196,202,295,353,356,405
+examples/README.md
+  h_9db9d35f50cf33 1,3,5,7,9,11,13,16-18,21,23,26-27,30
+src/flext_tap_oracle_wms/__version__.py
+  h_9db9d35f50cf33 16,22
+tests/unit/test_tap.py
+  h_9db9d35f50cf33 35,47
+tests/integration/test_streams_functional.py
+  h_9db9d35f50cf33 35
+docs/guides/troubleshooting.md
+  h_9db9d35f50cf33 52,61-63,141,155,675,678
+src/flext_tap_oracle_wms/protocols.py
+  h_9db9d35f50cf33 39,45,51,65,79,93,106,117,128,149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "e387905994552e691e29837fb805c78b0deb864a",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
