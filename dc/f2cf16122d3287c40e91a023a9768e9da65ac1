@@ -1,0 +1,39 @@
+tests/unit/README.md
+  02db55bf620bbdf2 186,256,308
+tests/unit/test_config.py
+  02db55bf620bbdf2 13,111,125,136,143
+tests/README.md
+  02db55bf620bbdf2 175,243,264,318
+tests/integration/README.md
+  02db55bf620bbdf2 297,320
+tests/e2e/README.md
+  02db55bf620bbdf2 227
+tests/conftest.py
+  02db55bf620bbdf2 43-44,51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "dcf2cf16122d3287c40e91a023a9768e9da65ac1",
+  "prompts": {
+    "02db55bf620bbdf2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd88b7e6-5715-4a2d-af33-58b483877723",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 18,
+      "total_deletions": 15,
+      "accepted_lines": 18,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/454f57c5e92708cc814eeba93ffb1e4f83e4ebceb34fdb8e072bd76aa9b66d15"
+    }
+  },
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
