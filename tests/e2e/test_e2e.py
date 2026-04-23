@@ -288,7 +288,7 @@ class TestOracleWMSE2EComplete:
     def test_pagination_end_to_end(self) -> None:
         """E2E: Test pagination handling through multiple pages."""
         pages_tested: list[str] = []
-        logger.info("✅ Pagination flow tested: %s", pages_tested)
+        logger.info(f"✅ Pagination flow tested: {pages_tested}")
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -468,7 +468,7 @@ class TestOracleWMSE2EComplete:
         logger.info("  🎵 Singer compliant: %s", singer_compliant)
         logger.info("  ⚡ Performance acceptable: %s", performance_acceptable)
         if errors:
-            logger.error("  ❌ Errors: %s", errors)
+            logger.error(f"  ❌ Errors: {errors}")
         assert discovery_successful, "Discovery failed"
         assert streams_discovered > 0, "No streams discovered"
         assert schemas_valid > 0, "No valid schemas"

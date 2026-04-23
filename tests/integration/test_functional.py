@@ -94,9 +94,7 @@ class TestOracleWMSFunctionalComplete:
             assert streams, "No streams discovered"
             entity_names = [stream.tap_stream_id for stream in streams]
             logger.info(
-                "✅ Discovered %d entities: %s",
-                len(entity_names),
-                entity_names,
+                f"✅ Discovered {len(entity_names)} entities: {entity_names}",
             )
             essential_entities = ["allocation"]
             for entity in essential_entities:
@@ -257,7 +255,7 @@ class TestOracleWMSFunctionalComplete:
         assert isinstance(url_params["limit"], int), "limit must be integer"
         assert url_params["limit"] > 0, "limit must be positive"
         assert url_params["limit"] <= 1250, "limit exceeds Oracle WMS max"
-        logger.info("✅ Pagination configured: page_size=%s", url_params["page_size"])
+        logger.info(f"✅ Pagination configured: page_size={url_params['page_size']}")
 
     @pytest.mark.functional
     @pytest.mark.skip(
@@ -292,14 +290,10 @@ class TestOracleWMSFunctionalComplete:
                 elif replication_method == "FULL_TABLE":
                     streams_full_table.append(stream.tap_stream_id)
         logger.info(
-            "✅ Incremental streams (%d): %s",
-            len(streams_with_replication),
-            streams_with_replication,
+            f"✅ Incremental streams ({len(streams_with_replication)}): {streams_with_replication}",
         )
         logger.info(
-            "✅ Full table streams (%d): %s",
-            len(streams_full_table),
-            streams_full_table,
+            f"✅ Full table streams ({len(streams_full_table)}): {streams_full_table}",
         )
         assert streams_with_replication or streams_full_table, (
             "No replication methods detected"
@@ -329,12 +323,12 @@ class TestOracleWMSFunctionalComplete:
         url_params = stream._build_operation_kwargs(page=1, context=context)
         kwargs_filter = url_params.get("filter")
         if kwargs_filter and (">=" in str(kwargs_filter) or "<" in str(kwargs_filter)):
-            logger.info("✅ Timestamp filters applied: %s", kwargs_filter)
+            logger.info(f"✅ Timestamp filters applied: {kwargs_filter}")
         if "ordering" in url_params:
             ordering = url_params["ordering"]
             assert isinstance(ordering, str), "Ordering must be string"
             logger.info("✅ Ordering configured: %s", ordering)
-        logger.info("✅ URL parameters generated: %s", list(url_params.keys()))
+        logger.info(f"✅ URL parameters generated: {list(url_params.keys())}")
 
     @pytest.mark.functional
     @pytest.mark.skip(
@@ -464,7 +458,7 @@ class TestOracleWMSFunctionalComplete:
         logger.info("  📄 Pagination configured: %s", pagination_configured)
         logger.info("  🎵 Singer compliant: %s", singer_compliant)
         if errors:
-            logger.error("  ❌ Errors: %s", errors)
+            logger.error(f"  ❌ Errors: {errors}")
         assert environment_loaded, "Environment not loaded"
         assert tap_initialized, "Tap not initialized"
         assert entities_discovered > 0, "No entities discovered"

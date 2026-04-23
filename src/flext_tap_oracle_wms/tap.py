@@ -341,11 +341,6 @@ class FlextTapOracleWmsPlugin:
         self._version = "0.9.0"
 
     @property
-    def name(self) -> str:
-        """Return plugin identifier."""
-        return self.name
-
-    @property
     def version(self) -> str:
         """Return plugin version."""
         return self._version

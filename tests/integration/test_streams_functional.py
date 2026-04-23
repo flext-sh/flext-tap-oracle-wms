@@ -84,8 +84,8 @@ class TestStreamsFunctional:
         assert "limit" in url_params
         assert isinstance(url_params["limit"], int)
         assert url_params["limit"] > 0
-        logger.info("✅ URL generation working: %s", url_base)
-        logger.info("✅ Parameters: %s", list(url_params.keys()))
+        logger.info(f"✅ URL generation working: {url_base}")
+        logger.info(f"✅ Parameters: {list(url_params.keys())}")
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -143,8 +143,8 @@ class TestStreamsFunctional:
             if "WMS" in h.upper() or "Company" in h or "Facility" in h
         ]
         if wms_headers:
-            logger.info("✅ WMS-specific headers: %s", wms_headers)
-        logger.info("✅ HTTP headers configured: %s", list(headers.keys()))
+            logger.info(f"✅ WMS-specific headers: {wms_headers}")
+        logger.info(f"✅ HTTP headers configured: {list(headers.keys())}")
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -168,8 +168,8 @@ class TestStreamsFunctional:
                 incremental_streams.append((stream.name, stream.replication_key))
             elif stream.replication_method == "FULL_TABLE":
                 full_table_streams.append(stream.name)
-        logger.info("✅ Incremental streams: %s", incremental_streams)
-        logger.info("✅ Full table streams: %s", full_table_streams)
+        logger.info(f"✅ Incremental streams: {incremental_streams}")
+        logger.info(f"✅ Full table streams: {full_table_streams}")
         total_streams = len(incremental_streams) + len(full_table_streams)
         assert total_streams > 0, "No replication methods configured"
 
@@ -194,7 +194,7 @@ class TestStreamsFunctional:
                 is_timestamp = True
                 if is_timestamp:
                     timestamp_streams.append((stream.name, stream.replication_key))
-        logger.info("✅ Timestamp replication keys: %s", timestamp_streams)
+        logger.info(f"✅ Timestamp replication keys: {timestamp_streams}")
         if timestamp_streams:
             for _stream_name, replication_key in timestamp_streams:
                 assert replication_key in {

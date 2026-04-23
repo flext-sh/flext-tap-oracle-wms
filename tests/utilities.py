@@ -65,23 +65,27 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
 
         @staticmethod
         def create_test_oracle_wms_api_response(
-            data: Sequence[t.MetadataMapping],
+            data: Sequence[t.JsonMapping],
             *,
             has_more: bool = False,
             next_page_url: str | None = None,
             facility_id: str | None = None,
             **kwargs: t.Scalar,
-        ) -> t.MutableMetadataMapping:
+        ) -> t.MutableJsonMapping:
             """Create test Oracle WMS API response."""
-            response: t.MutableMetadataMapping = {
-                "items": data,
+            items_payload: list[t.JsonValue] = [dict(item) for item in data]
+            response: t.MutableJsonMapping = {
+                "items": items_payload,
                 "hasMore": has_more,
             }
             if next_page_url:
                 response["nextPageUrl"] = next_page_url
             if facility_id:
                 response["facilityId"] = facility_id
-            response.update(kwargs)
+            for key, val in kwargs.items():
+                response[key] = (
+                    val if isinstance(val, (str, int, float, bool)) else str(val)
+                )
             return response
 
         @staticmethod

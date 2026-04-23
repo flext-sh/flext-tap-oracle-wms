@@ -127,7 +127,7 @@ class TestRealDataExtraction:
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
             pytest.skip(f"Stream {stream_name} not available")
-        records: list[t.ScalarMapping] = []
+        records: list[t.JsonMapping] = []
         record_count = 0
         max_records = 5
         try:
@@ -157,7 +157,7 @@ class TestRealDataExtraction:
         if not inventory_stream:
             pytest.skip("Inventory stream not available")
         inventory_stream._page_size = 2
-        records: list[t.ScalarMapping] = []
+        records: list[t.JsonMapping] = []
         pages = 0
         for i, record in enumerate(inventory_stream.get_records(context=None)):
             records.append(record)

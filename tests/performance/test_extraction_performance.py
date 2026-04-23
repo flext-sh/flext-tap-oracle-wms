@@ -76,7 +76,7 @@ class TestExtractionPerformance:
             pytest.skip("Inventory stream not available")
         inventory_stream._page_size = page_size
         start_time = time.time()
-        records: list[t.ScalarMapping] = []
+        records: list[t.JsonMapping] = []
         for i, record in enumerate(inventory_stream.get_records(context=None)):
             records.append(record)
             if i >= 99:
@@ -114,7 +114,7 @@ class TestExtractionPerformance:
         streams = tap.discover_streams()
         if streams:
             stream = streams[0]
-            records: list[t.ScalarMapping] = []
+            records: list[t.JsonMapping] = []
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)
                 if i >= 999:
@@ -158,7 +158,7 @@ class TestRateLimitingPerformance:
             if streams:
                 stream = streams[0]
                 start_time = time.time()
-                records: list[t.ScalarMapping] = []
+                records: list[t.JsonMapping] = []
                 for i, record in enumerate(stream.get_records(context=None)):
                     records.append(record)
                     if i >= 49:
