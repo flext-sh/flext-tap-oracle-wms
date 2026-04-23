@@ -10,7 +10,6 @@ from __future__ import annotations
 from collections.abc import (
     Mapping,
     MutableSequence,
-    Sequence,
 )
 
 import pytest
@@ -39,7 +38,7 @@ class TestOracleWMSFunctionalComplete:
     @staticmethod
     def _schema(
         stream: m.Meltano.SingerCatalogEntry,
-    ) -> t.ContainerValueMapping:
+    ) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract."""
         return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
             stream.schema_definition,
@@ -50,7 +49,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_real_wms_environment_verification(
         self,
-        real_wms_config: t.MutableFlatContainerMapping,
+        real_wms_config: t.MutableJsonMapping,
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -71,7 +70,7 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_tap_initialization_real_config(
         self,
-        real_wms_config: t.MutableFlatContainerMapping,
+        real_wms_config: t.MutableJsonMapping,
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(settings=real_wms_config)
@@ -120,7 +119,7 @@ class TestOracleWMSFunctionalComplete:
                 assert isinstance(properties_raw, Mapping), (
                     f"Stream {stream.tap_stream_id} properties is not a mapping"
                 )
-                properties: t.ContainerValueMapping = properties_raw
+                properties: t.JsonMapping = properties_raw
                 assert properties, f"Stream {stream.tap_stream_id} has empty properties"
                 logger.info(
                     "✅ Stream %s has %d properties",
@@ -153,7 +152,7 @@ class TestOracleWMSFunctionalComplete:
         for stream in streams[:3]:
             schema = stream.schema_definition
             assert "type" in schema, f"Schema missing type for {stream.tap_stream_id}"
-            assert schema["type"] == "t.Container", (
+            assert schema["type"] == "t.JsonValue", (
                 f"Invalid schema type for {stream.tap_stream_id}"
             )
             assert "properties" in schema, (
@@ -163,20 +162,20 @@ class TestOracleWMSFunctionalComplete:
             assert isinstance(properties_raw, Mapping), (
                 f"Schema properties is not a mapping for {stream.tap_stream_id}"
             )
-            properties: t.ContainerValueMapping = properties_raw
+            properties: t.JsonMapping = properties_raw
             for prop_name, prop_def in properties.items():
                 assert isinstance(prop_def, Mapping), (
                     f"Property {prop_name} not a mapping"
                 )
                 assert "type" in prop_def, f"Property {prop_name} missing type"
                 prop_type = prop_def["type"]
-                valid_types: Sequence[t.Container] = [
+                valid_types: t.JsonList = [
                     "string",
                     "integer",
                     "number",
                     "boolean",
                     "array",
-                    "t.Container",
+                    "t.JsonValue",
                     ["string", "null"],
                     ["integer", "null"],
                     ["number", "null"],
@@ -271,7 +270,7 @@ class TestOracleWMSFunctionalComplete:
         """Test automatic replication key detection."""
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
-        streams_with_replication: MutableSequence[tuple[str, t.Container]] = []
+        streams_with_replication: MutableSequence[tuple[str, t.JsonValue]] = []
         streams_full_table: MutableSequence[str] = []
         for stream in streams:
             table_metadata = None
@@ -343,10 +342,10 @@ class TestOracleWMSFunctionalComplete:
     )
     def test_error_handling_and_validation(
         self,
-        real_wms_config: t.MutableFlatContainerMapping,
+        real_wms_config: t.MutableJsonMapping,
     ) -> None:
         """Test error handling with invalid configurations."""
-        invalid_config: t.MutableFlatContainerMapping = dict(real_wms_config)
+        invalid_config: t.MutableJsonMapping = dict(real_wms_config)
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
         tap = FlextTapOracleWms(settings=invalid_config)
         try:
@@ -401,7 +400,7 @@ class TestOracleWMSFunctionalComplete:
         for stream in catalog.streams:
             schema = stream.schema_definition
             assert "type" in schema, "Schema missing type"
-            assert schema["type"] == "t.Container", "Schema type must be t.Container"
+            assert schema["type"] == "t.JsonValue", "Schema type must be t.JsonValue"
             assert "properties" in schema, "Schema missing properties"
             for meta in stream.metadata:
                 assert meta.breadcrumb is not None, "Metadata missing breadcrumb"

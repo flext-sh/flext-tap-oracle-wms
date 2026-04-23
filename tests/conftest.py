@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 from collections.abc import (
     Generator,
-    Mapping,
     Sequence,
 )
 from pathlib import Path
@@ -110,7 +109,7 @@ def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 
 
 @pytest.fixture
-def sample_catalog() -> Mapping[str, t.Container]:
+def sample_catalog() -> t.JsonMapping:
     """Sample Singer catalog."""
     return {
         "type": "CATALOG",
@@ -144,7 +143,7 @@ def sample_catalog() -> Mapping[str, t.Container]:
 
 
 @pytest.fixture
-def sample_state() -> Mapping[str, t.Container]:
+def sample_state() -> t.JsonMapping:
     """Sample Singer state."""
     return {
         "bookmarks": {
@@ -209,7 +208,7 @@ def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleW
 
 
 @pytest.fixture
-def test_config_extraction() -> Mapping[str, t.Container]:
+def test_config_extraction() -> t.JsonMapping:
     """Test configuration for extraction tests."""
     return {
         "base_url": "https://test.wms.example.com",

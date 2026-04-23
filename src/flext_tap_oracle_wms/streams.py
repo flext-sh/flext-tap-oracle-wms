@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from collections.abc import (
     Iterable,
-    Mapping,
     Sequence,
 )
 from pathlib import Path
@@ -42,11 +41,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self,
         tap: m.Meltano.SingerTapBase,
         name: str | None = None,
-        schema: t.ContainerValueMapping | None = None,
+        schema: t.JsonMapping | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        schema_dict: dict[str, t.Container] | None = (
+        schema_dict: dict[str, t.JsonValue] | None = (
             dict(schema) if schema is not None else None
         )
         m.Meltano.SingerStreamBase.__init__(
@@ -55,10 +54,10 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             name=name or self.name,
             schema=schema_dict,
         )
-        self._typed_schema: dict[str, t.Container] | None = schema_dict
+        self._typed_schema: dict[str, t.JsonValue] | None = schema_dict
         self._client: FlextOracleWmsUtilitiesClient.Client | None = None
         tap_instance = self._tap
-        settings_map: Mapping[str, t.Container] = {}
+        settings_map = {}
         if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
             settings_map = tap_instance.settings
         page_size_raw = settings_map.get("page_size", 100)
@@ -75,7 +74,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @property
     @override
-    def schema(self) -> dict[str, t.Container]:
+    def schema(self) -> dict[str, t.JsonValue]:
         """Get schema with proper type narrowing over Singer SDK's bare ``dict``."""
         if self._typed_schema is None:
             msg = f"The schema for stream '{self.name}' was not provided"
@@ -99,7 +98,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return client
 
     @staticmethod
-    def normalize_json_value(value: t.Container) -> t.Scalar:
+    def normalize_json_value(value: t.JsonValue) -> t.Scalar:
         """Normalize arbitrary values into Singer-compatible JSON values."""
         if isinstance(value, t.SCALAR_TYPES):
             return value
@@ -172,7 +171,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """Post-process a record."""
         conv = u.TapOracleWms.MappingConversion
         tap_instance = self._tap
-        config_map: Mapping[str, t.Container] = {}
+        config_map = {}
         if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
             config_map = tap_instance.settings
         column_mappings_raw = config_map.get("column_mappings")
@@ -280,8 +279,8 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """Process and yield records from a page."""
         conv = u.TapOracleWms.MappingConversion
         for record in records:
-            record_dict: t.ContainerValueMapping = dict(record)
-            processed_record: t.ContainerValueMapping = (
+            record_dict: t.JsonMapping = dict(record)
+            processed_record: t.JsonMapping = (
                 u.TapOracleWms.DataProcessing.process_wms_record(
                     record=record_dict,
                 )

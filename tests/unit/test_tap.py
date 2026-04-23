@@ -32,7 +32,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_with_dict(self) -> None:
         """Tap accepts plain settings mappings and normalizes settings values."""
-        config_dict: Mapping[str, t.Container] = {
+        config_dict = {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
             "password": "test_password",
@@ -44,7 +44,7 @@ class TestFlextTapOracleWms:
 
     def test_tap_initialization_invalid_config(self) -> None:
         """Invalid settings payload raises configuration error."""
-        config_dict: Mapping[str, t.Container] = {
+        config_dict = {
             "base_url": "invalid-url",
             "username": "test_user",
             "password": "test_password",

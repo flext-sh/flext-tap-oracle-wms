@@ -32,7 +32,7 @@ class TestStreamsFunctional:
     @staticmethod
     def _schema(
         stream: m.Meltano.SingerCatalogEntry,
-    ) -> t.ContainerValueMapping:
+    ) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract."""
         return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
             stream.schema_definition,

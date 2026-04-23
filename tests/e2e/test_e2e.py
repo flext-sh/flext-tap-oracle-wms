@@ -44,7 +44,7 @@ class TestOracleWMSE2EComplete:
     @staticmethod
     def _schema(
         stream: m.Meltano.SingerCatalogEntry,
-    ) -> t.ContainerValueMapping:
+    ) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract."""
         return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
             stream.schema_definition,
@@ -66,7 +66,7 @@ class TestOracleWMSE2EComplete:
         assert streams, "No streams discovered"
         for stream in streams:
             schema = stream.schema_definition
-            assert schema.get("type") == "t.Container", "Invalid schema type"
+            assert schema.get("type") == "t.JsonValue", "Invalid schema type"
             assert "properties" in schema, "Schema missing properties"
             props = schema.get("properties")
             assert props, "Empty schema properties"
@@ -256,7 +256,7 @@ class TestOracleWMSE2EComplete:
                     quality_report["replication_keys_defined"] += 1
             nullable_documented = 0
             if isinstance(properties_raw, Mapping):
-                properties: t.ContainerValueMapping = properties_raw
+                properties: t.JsonMapping = properties_raw
                 for prop_def in properties.values():
                     if isinstance(prop_def, Mapping):
                         type_raw = prop_def.get("type")
@@ -295,10 +295,10 @@ class TestOracleWMSE2EComplete:
     )
     def test_error_recovery_and_resilience(
         self,
-        real_wms_config: Mapping[str, t.Container],
+        real_wms_config: t.JsonMapping,
     ) -> None:
         """E2E: Test error recovery and system resilience."""
-        invalid_config: t.MutableFlatContainerMapping = dict(real_wms_config)
+        invalid_config: t.MutableJsonMapping = dict(real_wms_config)
         invalid_config["password"] = "invalid_password"
         tap = FlextTapOracleWms(settings=invalid_config)
         try:
@@ -340,7 +340,7 @@ class TestOracleWMSE2EComplete:
             assert isinstance(stream.tap_stream_id, str), "tap_stream_id must be string"
             assert stream.tap_stream_id, "tap_stream_id cannot be empty"
             schema = stream.schema_definition
-            assert schema["type"] == "t.Container", "Schema type must be t.Container"
+            assert schema["type"] == "t.JsonValue", "Schema type must be t.JsonValue"
             assert isinstance(schema["properties"], dict), "Properties must be dict"
             metadata = stream.metadata
             for meta in metadata:

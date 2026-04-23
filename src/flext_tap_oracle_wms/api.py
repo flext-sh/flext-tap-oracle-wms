@@ -9,9 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Mapping,
-)
 from typing import Annotated, override
 
 from flext_core import u
@@ -31,7 +28,7 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
     @override
     def create_tap_instance(
         self,
-        settings: Mapping[str, t.Container] | None = None,
+        settings: t.JsonMapping | None = None,
     ) -> p.Meltano.SingerTapInstance:
         """Create the internal tap runtime backed by Singer SDK."""
         raw_config = dict(settings) if settings is not None else None

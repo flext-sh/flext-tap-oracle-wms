@@ -128,7 +128,7 @@ make doctor
 make install-dev
 
 # Verify quality tools
-make validate    # Should pass all quality gates
+make val    # Should pass all quality gates
 ```
 
 ## Development Workflow
@@ -146,7 +146,7 @@ make type-check         # Verify type safety
 make format             # Format code
 
 # Complete validation
-make validate           # All quality gates
+make val           # All quality gates
 ```
 
 ### 2. Testing Strategy
@@ -166,7 +166,7 @@ pytest -k "test_pattern" --tb=short
 
 ```bash
 # Pre-commit validation
-make validate           # Complete validation pipeline
+make val           # Complete validation pipeline
 make security          # Security scanning
 make deps-audit        # Dependency vulnerability check
 
@@ -512,7 +512,7 @@ p.sort_stats('cumulative').print_stats(20)
 
 1. **Create Feature Branch**: `git checkout -b feature/description`
 1. **Implement Changes**: Follow development workflow
-1. **Validate Quality**: `make validate` must pass
+1. **Validate Quality**: `make val` must pass
 1. **Write Tests**: Maintain 100% coverage target
 1. **Update Documentation**: Keep docs current
 1. **Create PR**: Include detailed description and testing notes

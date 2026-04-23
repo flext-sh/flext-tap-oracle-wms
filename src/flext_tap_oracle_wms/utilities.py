@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from collections.abc import (
     Mapping,
-    Sequence,
 )
 
 from flext_meltano import u
@@ -47,8 +46,8 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
 
             @staticmethod
             def process_wms_record(
-                record: t.ContainerValueMapping,
-            ) -> t.ContainerValueMapping:
+                record: t.JsonMapping,
+            ) -> t.JsonMapping:
                 """Process WMS record for output.
 
                 Args:
@@ -65,8 +64,8 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
 
             @staticmethod
             def safe_str_mapping(
-                raw: t.ContainerValueMapping,
-            ) -> t.ContainerValueMapping:
+                raw: t.JsonMapping,
+            ) -> t.JsonMapping:
                 """Return a Mapping with str keys from an untyped mapping source.
 
                 Args:
@@ -80,8 +79,8 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
 
             @staticmethod
             def safe_str_dict(
-                raw: t.ContainerValueMapping,
-            ) -> dict[str, t.Container]:
+                raw: t.JsonMapping,
+            ) -> dict[str, t.JsonValue]:
                 """Return a dict with str keys from an untyped dict source.
 
                 Args:
@@ -95,12 +94,12 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
 
             @staticmethod
             def as_map(
-                value: t.FlatContainerMapping | t.Container,
+                value: t.JsonMapping | t.JsonValue,
                 *,
                 normalizer: t.ScalarNormalizer | None = None,
                 map_adapter: t.ContainerValueMapAdapter | None = None,
                 error_cls: type[Exception] | None = None,
-            ) -> t.ContainerValueMapping | None:
+            ) -> t.JsonMapping | None:
                 """Convert a NormalizedValue into a Mapping if possible.
 
                 Args:
@@ -133,19 +132,19 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                     return {
                         str(key): normalizer(str(item)) for key, item in value.items()
                     }
-                coerced: dict[str, t.Container] = {
+                coerced: dict[str, t.JsonValue] = {
                     str(key): str(item) for key, item in value.items()
                 }
                 return coerced
 
             @staticmethod
             def as_list(
-                value: t.Container,
+                value: t.JsonValue,
                 *,
                 normalizer: t.ScalarNormalizer | None = None,
                 list_adapter: t.ContainerValueListAdapter | None = None,
                 error_cls: type[Exception] | None = None,
-            ) -> Sequence[t.Container] | None:
+            ) -> t.JsonList | None:
                 """Convert a NormalizedValue into a Sequence if possible.
 
                 Args:
@@ -173,7 +172,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                     return list(validated_seq)
                 if normalizer is not None:
                     return [normalizer(str(item)) for item in value]
-                coerced_list: list[t.Container] = [str(item) for item in value]
+                coerced_list: list[t.JsonValue] = [str(item) for item in value]
                 return coerced_list
 
 
