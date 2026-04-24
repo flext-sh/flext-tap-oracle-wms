@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 from flext_tap_oracle_wms import FlextTapOracleWmsService, cli as cli_module, main
 
 
-class TestCLI:
+class TestsFlextTapOracleWmsCli:
     """Test CLI functionality."""
 
     @patch("flext_tap_oracle_wms.cli.FlextTapOracleWmsService")

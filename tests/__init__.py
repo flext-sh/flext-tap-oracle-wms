@@ -33,11 +33,13 @@ if _t.TYPE_CHECKING:
     )
     from tests.protocols import TestsFlextTapOracleWmsProtocols, p
     from tests.typings import TestsFlextTapOracleWmsTypes, t
-    from tests.unit.test_cli import TestCLI
-    from tests.unit.test_config import TestFlextTapOracleWmsSettings
-    from tests.unit.test_config_validation import TestConfigValidation
-    from tests.unit.test_tap import TestFlextTapOracleWms
-    from tests.unit.test_tap_initialization import TestTapInitialization
+    from tests.unit.test_cli import TestsFlextTapOracleWmsCli
+    from tests.unit.test_config import TestsFlextTapOracleWmsConfig
+    from tests.unit.test_config_validation import TestsFlextTapOracleWmsConfigValidation
+    from tests.unit.test_tap import TestsFlextTapOracleWmsTap
+    from tests.unit.test_tap_initialization import (
+        TestsFlextTapOracleWmsTapInitialization,
+    )
     from tests.utilities import TestsFlextTapOracleWmsUtilities, u
 _LAZY_IMPORTS = merge_lazy_imports(
     (
@@ -78,11 +80,13 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestsFlextTapOracleWmsTypes",
                 "t",
             ),
-            ".unit.test_cli": ("TestCLI",),
-            ".unit.test_config": ("TestFlextTapOracleWmsSettings",),
-            ".unit.test_config_validation": ("TestConfigValidation",),
-            ".unit.test_tap": ("TestFlextTapOracleWms",),
-            ".unit.test_tap_initialization": ("TestTapInitialization",),
+            ".unit.test_cli": ("TestsFlextTapOracleWmsCli",),
+            ".unit.test_config": ("TestsFlextTapOracleWmsConfig",),
+            ".unit.test_config_validation": ("TestsFlextTapOracleWmsConfigValidation",),
+            ".unit.test_tap": ("TestsFlextTapOracleWmsTap",),
+            ".unit.test_tap_initialization": (
+                "TestsFlextTapOracleWmsTapInitialization",
+            ),
             ".utilities": (
                 "TestsFlextTapOracleWmsUtilities",
                 "u",
@@ -120,12 +124,8 @@ _LAZY_IMPORTS = merge_lazy_imports(
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
 __all__: list[str] = [
-    "TestCLI",
-    "TestConfigValidation",
     "TestExtractionPerformance",
     "TestFilteringAndSelection",
-    "TestFlextTapOracleWms",
-    "TestFlextTapOracleWmsSettings",
     "TestIntegration",
     "TestOracleWMSE2EComplete",
     "TestOracleWMSFunctionalComplete",
@@ -134,10 +134,14 @@ __all__: list[str] = [
     "TestRealDataExtraction",
     "TestRealWmsIntegration",
     "TestStreamsFunctional",
-    "TestTapInitialization",
+    "TestsFlextTapOracleWmsCli",
+    "TestsFlextTapOracleWmsConfig",
+    "TestsFlextTapOracleWmsConfigValidation",
     "TestsFlextTapOracleWmsConstants",
     "TestsFlextTapOracleWmsModels",
     "TestsFlextTapOracleWmsProtocols",
+    "TestsFlextTapOracleWmsTap",
+    "TestsFlextTapOracleWmsTapInitialization",
     "TestsFlextTapOracleWmsTypes",
     "TestsFlextTapOracleWmsUtilities",
     "c",

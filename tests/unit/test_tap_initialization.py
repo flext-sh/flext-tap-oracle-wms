@@ -10,7 +10,7 @@ from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsConfigurati
 from tests import r
 
 
-class TestTapInitialization:
+class TestsFlextTapOracleWmsTapInitialization:
     """Verify initialization and stream loading without external I/O."""
 
     def test_tap_initialization_uses_normalized_config(self) -> None:

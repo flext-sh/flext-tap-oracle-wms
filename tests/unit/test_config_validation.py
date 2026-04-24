@@ -14,7 +14,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from tests import t
 
 
-class TestConfigValidation:
+class TestsFlextTapOracleWmsConfigValidation:
     """Test configuration validation."""
 
     def test_minimal_valid_config(self) -> None:

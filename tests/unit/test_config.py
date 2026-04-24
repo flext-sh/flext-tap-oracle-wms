@@ -13,7 +13,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from tests import c, t
 
 
-class TestFlextTapOracleWmsSettings:
+class TestsFlextTapOracleWmsConfig:
     """Test configuration class."""
 
     @pytest.fixture(autouse=True)

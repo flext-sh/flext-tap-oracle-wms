@@ -18,7 +18,7 @@ from flext_tap_oracle_wms import (
 from tests import r, t
 
 
-class TestFlextTapOracleWms:
+class TestsFlextTapOracleWmsTap:
     """Validate tap behavior against current implementation contract."""
 
     def test_tap_initialization_with_config(
