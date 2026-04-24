@@ -29,45 +29,35 @@ from flext_tap_oracle_wms import (
     u,
 )
 
-logger = u.fetch_logger(__name__)
-
-
-def _build_config_jsonschema() -> dict[str, t.JsonValue]:
-    properties: dict[str, t.JsonValue] = {
-        "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
-        "username": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
-        "password": {
-            "type": c.TapOracleWms.SCHEMA_TYPE_STRING,
-            "secret": True,
-        },
-        "api_version": {
-            "type": c.TapOracleWms.SCHEMA_TYPE_STRING,
-            "default": "v1",
-        },
-        "page_size": {
-            "type": c.TapOracleWms.SCHEMA_TYPE_INTEGER,
-            "default": 100,
-        },
-        "verify_ssl": {
-            "type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN,
-            "default": True,
-        },
-    }
-    required: list[t.JsonValue] = [
-        str(field) for field in c.TapOracleWms.REQUIRED_CONFIG_FIELDS
-    ]
-    return {
-        "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
-        "properties": properties,
-        "required": required,
-    }
-
 
 class FlextTapOracleWms(m.Meltano.SingerTapBase):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[dict[str, t.JsonValue]] = _build_config_jsonschema()
+    config_jsonschema: ClassVar[dict[str, t.JsonValue]] = {
+        "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
+        "properties": {
+            "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
+            "username": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
+            "password": {
+                "type": c.TapOracleWms.SCHEMA_TYPE_STRING,
+                "secret": True,
+            },
+            "api_version": {
+                "type": c.TapOracleWms.SCHEMA_TYPE_STRING,
+                "default": "v1",
+            },
+            "page_size": {
+                "type": c.TapOracleWms.SCHEMA_TYPE_INTEGER,
+                "default": 100,
+            },
+            "verify_ssl": {
+                "type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN,
+                "default": True,
+            },
+        },
+        "required": [str(field) for field in c.TapOracleWms.REQUIRED_CONFIG_FIELDS],
+    }
 
     _wms_client: FlextOracleWmsUtilitiesClient.Client | None = None
     _discovery: t.JsonValue | None = None
@@ -408,7 +398,9 @@ class FlextTapOracleWmsPlugin:
         if isinstance(context, Mapping):
             runtime_settings.update({str(key): value for key, value in context.items()})
         elif context is not None:
-            logger.debug("Ignoring non-mapping tap initialization context: %s", context)
+            u.fetch_logger(__name__).debug(
+                "Ignoring non-mapping tap initialization context: %s", context
+            )
         self._tap = FlextTapOracleWms(settings=runtime_settings)
         return r[bool].ok(True)
 
