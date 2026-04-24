@@ -111,10 +111,8 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """Return a validated Singer catalog mapping with recursive contracts."""
         raw_catalog_dict: t.JsonMapping = getattr(super(), "catalog_dict", {})
         try:
-            validated_catalog = (
-                t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-                    raw_catalog_dict,
-                )
+            validated_catalog = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+                raw_catalog_dict,
             )
         except c.ValidationError as exc:
             msg = f"Invalid catalog_dict format: {exc}"
@@ -185,9 +183,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             exclude_none=True,
             mode="json",
         )
-        validated_dump = t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-            dumped_catalog
-        )
+        validated_dump = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(dumped_catalog)
         return dict(validated_dump.items())
 
     @property

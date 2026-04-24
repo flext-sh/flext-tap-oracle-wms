@@ -108,7 +108,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         list_value = conv.as_list(
             value,
             normalizer=FlextTapOracleWmsStream.normalize_json_value,
-            list_adapter=t.TapOracleWms.CONTAINER_VALUE_LIST_ADAPTER,
+            list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
             error_cls=FlextTapOracleWmsError,
         )
         if list_value is not None:
@@ -116,7 +116,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         map_value = conv.as_map(
             value,
             normalizer=FlextTapOracleWmsStream.normalize_json_value,
-            map_adapter=t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER,
+            map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
             error_cls=FlextTapOracleWmsError,
         )
         if map_value is not None:
@@ -189,7 +189,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         column_mappings = (
             conv.as_map(
                 column_mappings_raw,
-                map_adapter=t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER,
+                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
                 error_cls=FlextTapOracleWmsError,
             )
             if column_mappings_raw
@@ -200,7 +200,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             mapping = (
                 conv.as_map(
                     mapping_raw,
-                    map_adapter=t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER,
+                    map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
                     error_cls=FlextTapOracleWmsError,
                 )
                 if mapping_raw is not None
@@ -215,7 +215,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         ignored_columns = (
             conv.as_list(
                 ignored_columns_raw,
-                list_adapter=t.TapOracleWms.CONTAINER_VALUE_LIST_ADAPTER,
+                list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
                 error_cls=FlextTapOracleWmsError,
             )
             if ignored_columns_raw
@@ -290,12 +290,10 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """Process and yield records from a page."""
         conv = u.TapOracleWms.MappingConversion
         for record in records:
-            record_dict: t.JsonMapping = (
-                t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER.validate_python({
-                    str(key): self.normalize_scalar_value(value)
-                    for key, value in record.items()
-                })
-            )
+            record_dict: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python({
+                str(key): self.normalize_scalar_value(value)
+                for key, value in record.items()
+            })
             processed_record: t.JsonMapping = (
                 u.TapOracleWms.DataProcessing.process_wms_record(
                     record=record_dict,
@@ -304,7 +302,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             processed_map = conv.as_map(
                 processed_record,
                 normalizer=self.normalize_json_value,
-                map_adapter=t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER,
+                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
                 error_cls=FlextTapOracleWmsError,
             )
             if processed_map is None:
