@@ -167,15 +167,30 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                         )
                     )
             schema_raw: t.JsonValue = s_dict.get("schema", {})
-            stream_entries.append(
-                m.Meltano.SingerCatalogEntry.model_validate({
-                    "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
-                    "stream": str(s_dict.get("stream", "")),
-                    "schema": u.TapOracleWms.MappingConversion.safe_str_dict(schema_raw)
+            stream_name = str(s_dict.get("stream", ""))
+            entry_result = u.Meltano.build_catalog_entry(
+                stream_name=stream_name,
+                schema=(
+                    u.TapOracleWms.MappingConversion.safe_str_dict(schema_raw)
                     if isinstance(schema_raw, Mapping)
-                    else {},
-                    "metadata": metadata_entries,
-                })
+                    else {}
+                ),
+                key_properties=(),
+            )
+            if entry_result.failure or entry_result.value is None:
+                msg = (
+                    entry_result.error
+                    or f"Failed to build catalog entry for {stream_name}"
+                )
+                raise FlextTapOracleWmsConfigurationError(msg)
+            stream_entries.append(
+                entry_result.value.model_copy(
+                    update={
+                        "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
+                        "stream": stream_name,
+                        "metadata": metadata_entries,
+                    }
+                )
             )
         catalog = m.Meltano.SingerCatalog(streams=stream_entries)
         dumped_catalog = catalog.model_dump(
@@ -233,31 +248,35 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 discovery_result.error or "Discovery failed",
             )
         entities: t.StrSequence = list(discovery_result.value)
-        streams = [
-            m.Meltano.SingerCatalogEntry.model_validate({
-                "tap_stream_id": entity,
-                "stream": entity,
-                "schema": dict(self._schema_for_entity()),
-                "metadata": [
-                    m.Meltano.SingerCatalogMetadata(
-                        breadcrumb=[],
-                        metadata={
-                            "inclusion": "available",
-                            "forced-replication-method": "FULL_TABLE",
-                            "table-key-properties": ["id"],
-                        },
-                    ),
-                ],
-                "key_properties": ["id"],
-                "replication_key": None,
-                "replication_method": "FULL_TABLE",
-                "is_view": None,
-                "table_name": None,
-                "database_name": None,
-                "row_count": None,
-            })
-            for entity in entities
-        ]
+        streams: list[m.Meltano.SingerCatalogEntry] = []
+        for entity in entities:
+            entry_result = u.Meltano.build_catalog_entry(
+                stream_name=entity,
+                schema=dict(self._schema_for_entity()),
+                key_properties=("id",),
+            )
+            if entry_result.failure:
+                return r[m.Meltano.SingerCatalog].fail(
+                    entry_result.error
+                    or f"Failed to build Singer catalog entry for {entity}",
+                )
+            if entry_result.value is not None:
+                streams.append(
+                    entry_result.value.model_copy(
+                        update={
+                            "metadata": [
+                                m.Meltano.SingerCatalogMetadata(
+                                    breadcrumb=[],
+                                    metadata={
+                                        "inclusion": "available",
+                                        "forced-replication-method": "FULL_TABLE",
+                                        "table-key-properties": ["id"],
+                                    },
+                                ),
+                            ]
+                        }
+                    )
+                )
         return r[m.Meltano.SingerCatalog].ok(
             m.Meltano.SingerCatalog(type="CATALOG", streams=streams),
         )
