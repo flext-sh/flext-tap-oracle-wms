@@ -20,6 +20,8 @@ from __future__ import annotations
 
 from flext_tap_oracle_wms import FlextTapOracleWmsService
 
+__all__ = ["FlextTapOracleWmsCli", "FlextTapOracleWmsService", "main"]
+
 
 class FlextTapOracleWmsCli:
     """Thin CLI bridge for the tap service facade."""
