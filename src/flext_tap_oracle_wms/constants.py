@@ -33,8 +33,8 @@ class FlextTapOracleWmsConstants(meltano_c, FlextOracleWmsConstants):
     class TapOracleWms:
         """Oracle WMS tap-specific constants."""
 
-        DEFAULT_TIMEOUT: Final[int] = meltano_c.DEFAULT_TIMEOUT_SECONDS
-        MAX_RETRIES: Final[int] = meltano_c.DEFAULT_MAX_RETRY_ATTEMPTS
+        DEFAULT_TIMEOUT: Final[int] = meltano_c.Meltano.DEFAULT_TIMEOUT_SECONDS
+        MAX_RETRIES: Final[int] = 3
         REQUIRED_CONFIG_FIELDS: Final[frozenset[str]] = frozenset({
             "base_url",
             "username",
