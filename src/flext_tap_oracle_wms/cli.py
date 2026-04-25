@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from flext_tap_oracle_wms import FlextTapOracleWmsService
 
-__all__ = ["FlextTapOracleWmsCli", "main"]
+__all__ = ["FlextTapOracleWmsCli", "FlextTapOracleWmsService", "main"]
 
 
 class FlextTapOracleWmsCli:
