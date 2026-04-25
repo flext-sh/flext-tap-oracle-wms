@@ -33,7 +33,9 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
     class TapOracleWms:
         """Oracle WMS tap-specific constants."""
 
-        DEFAULT_TIMEOUT: Final[int] = FlextMeltanoConstants.Meltano.DEFAULT_TIMEOUT_SECONDS
+        DEFAULT_TIMEOUT: Final[int] = (
+            FlextMeltanoConstants.Meltano.DEFAULT_TIMEOUT_SECONDS
+        )
         MAX_RETRIES: Final[int] = 3
         REQUIRED_CONFIG_FIELDS: Final[frozenset[str]] = frozenset({
             "base_url",
@@ -79,7 +81,9 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
             MAX_RECORDS_PER_BATCH: Final[int] = (
                 FlextOracleWmsConstants.OracleWms.WmsProcessing.MAX_BATCH_SIZE
             )
-            DEFAULT_API_TIMEOUT: Final[int] = FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
+            DEFAULT_API_TIMEOUT: Final[int] = (
+                FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
+            )
             ORACLE_WMS_PAGE_SIZE_LIMIT: Final[int] = 1250
             USERNAME_TRUNCATION_LENGTH: Final[int] = 3
             HIGH_ALLOCATION_THRESHOLD: Final[float] = 0.8
@@ -91,7 +95,9 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
             DEFAULT_ENTITY_LIMIT: Final[int] = (
                 FlextOracleWmsConstants.OracleWms.WmsProcessing.DEFAULT_BATCH_SIZE
             )
-            DEFAULT_DISCOVERY_TIMEOUT: Final[int] = FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
+            DEFAULT_DISCOVERY_TIMEOUT: Final[int] = (
+                FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
+            )
             MAX_ENTITY_BATCH_SIZE: Final[int] = (
                 FlextOracleWmsConstants.OracleWms.WmsProcessing.MAX_BATCH_SIZE
             )

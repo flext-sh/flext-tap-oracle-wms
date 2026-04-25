@@ -19,7 +19,7 @@ This section is generated from public exports and real docstrings.
 
 ## Surface Summary
 
-- Primary facades: `FlextTapOracleWms`, `FlextTapOracleWmsConfigurationError`, `FlextTapOracleWmsConnectionError`, `FlextTapOracleWmsConstants`, `FlextTapOracleWmsError`, `FlextTapOracleWmsModels` (+8 more)
-- Generated module pages: `11`
+- Primary facades: `FlextTapOracleWmsStream`, `FlextTapOracleWmsPlugin`, `FlextTapOracleWmsModels`, `FlextTapOracleWmsService`, `FlextTapOracleWmsUtilities`, `FlextTapOracleWmsConnectionError` (+8 more)
+- Generated module pages: `12`
 
 - [Back to project docs](../index.md)
