@@ -47,7 +47,7 @@ def tap(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     return FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
 
 
-class TestRealConnection:
+class TestsFlextTapOracleWmsWmsConnection:
     """Test real Oracle WMS connection."""
 
     @pytest.mark.skip(
@@ -108,8 +108,6 @@ class TestRealConnection:
                 properties = stream_schema["properties"]
                 assert properties
 
-
-class TestRealDataExtraction:
     """Test real data extraction from Oracle WMS."""
 
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
@@ -167,8 +165,6 @@ class TestRealDataExtraction:
                 break
         assert len(records) > 2
 
-
-class TestFilteringAndSelection:
     """Test entity filtering and selection."""
 
     @pytest.mark.skip(
@@ -209,8 +205,6 @@ class TestFilteringAndSelection:
         assert "shipments" not in stream_names
         assert stream_names
 
-
-class TestIntegration:
     """Test /sync integration with flext-oracle-wms."""
 
     @pytest.mark.skip(

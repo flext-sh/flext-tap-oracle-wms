@@ -37,7 +37,7 @@ def real_config() -> FlextTapOracleWmsSettings:
 
 @pytest.mark.integration
 @pytest.mark.oracle_wms
-class TestRealWmsIntegration:
+class TestsFlextTapOracleWmsWms:
     """Test real Oracle WMS integration."""
 
     @pytest.mark.skip(

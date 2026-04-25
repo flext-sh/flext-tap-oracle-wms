@@ -25,7 +25,7 @@ logger = u.fetch_logger(__name__)
 
 
 @pytest.mark.functional
-class TestOracleWMSFunctionalComplete:
+class TestsFlextTapOracleWmsFunctional:
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
     @staticmethod

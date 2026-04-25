@@ -43,7 +43,7 @@ def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 
 
 @pytest.mark.performance
-class TestExtractionPerformance:
+class TestsFlextTapOracleWmsExtractionPerformance:
     """Test data extraction performance."""
 
     @pytest.mark.skip(
@@ -123,9 +123,6 @@ class TestExtractionPerformance:
             memory_increase = final_memory - initial_memory
             assert memory_increase < 100
 
-
-@pytest.mark.performance
-class TestRateLimitingPerformance:
     """Test rate limiting impact on performance."""
 
     @pytest.mark.skip(

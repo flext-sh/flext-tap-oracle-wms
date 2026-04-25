@@ -31,7 +31,7 @@ logger = u.fetch_logger(__name__)
 
 
 @pytest.mark.e2e
-class TestOracleWMSE2EComplete:
+class TestsFlextTapOracleWmsE2e:
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
 
     @staticmethod

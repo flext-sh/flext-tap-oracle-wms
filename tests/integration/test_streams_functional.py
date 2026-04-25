@@ -19,7 +19,7 @@ from tests import m, t, u
 logger = u.fetch_logger(__name__)
 
 
-class TestStreamsFunctional:
+class TestsFlextTapOracleWmsStreamsFunctional:
     """Test streams functionality."""
 
     @staticmethod
