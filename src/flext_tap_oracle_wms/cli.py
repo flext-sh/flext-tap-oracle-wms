@@ -1,15 +1,8 @@
 """FLEXT Tap Oracle WMS - Singer SDK CLI Integration.
 
-This module provides the command-line interface for the Oracle WMS Singer tap,
-leveraging the Singer SDK's built-in CLI functionality with flext-meltano
-integration for orchestration compatibility.
-
-The tap supports standard Singer protocol operations:
-- Discovery: Generate catalog with `--discover`
-- Extraction: Run data extraction with `--config`, `--catalog`, `--state`
-
-Integration with flext-meltano's FlextMeltanoSingerCliTranslator enables automated
-command generation and pipeline orchestration.
+Module entrypoint that dispatches into ``FlextTapOracleWmsService.cli_main``.
+The Singer SDK CLI verbs are documented on the service itself; this module
+exists solely to provide ``main`` as the ``[project.scripts]`` target.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -18,58 +11,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms import FlextTapOracleWmsService
+from flext_tap_oracle_wms.api import FlextTapOracleWmsService
 
-__all__ = ["FlextTapOracleWmsCli", "main"]
-
-
-class FlextTapOracleWmsCli:
-    """Thin CLI bridge for the tap service facade."""
-
-    @staticmethod
-    def main() -> int:
-        """Execute Oracle WMS tap through the FLEXT service CLI bridge."""
-        return FlextTapOracleWmsService().cli_main()
+__all__: list[str] = ["main"]
 
 
 def main() -> int:
-    """Execute Oracle WMS tap through the FLEXT service CLI bridge.
-
-    This function serves as the primary entry point for the tap when
-    executed as a command-line tool or Python module. It delegates to
-    the FLEXT service facade, which bridges into Singer SDK internally.
-
-    The CLI supports standard Singer operations:
-    - `--discover`: Generate schema catalog
-    - `--config FILE`: Specify tap configuration
-    - `--catalog FILE`: Specify stream catalog
-    - `--state FILE`: Specify state for incremental extraction
-
-    Example:
-        # Discovery
-        tap-oracle-wms --config settings.json --discover > catalog.json
-
-        # Extraction
-        tap-oracle-wms --config settings.json --catalog catalog.json
-
-        # Incremental sync
-        tap-oracle-wms --config settings.json --catalog catalog.json --state state.json
-
-    Integration:
-        Compatible with flext-meltano Singer CLI translation for orchestration:
-
-        >>> from flext_meltano import (
-        ...     FlextMeltanoSingerCliTranslator,
-        ...     m,
-        ... )
-        >>> params = m.Meltano.TapRunParams(
-        ...     tap_name="tap-oracle-wms", config_file="settings.json", discover=True
-        ... )
-        >>> command = FlextMeltanoSingerCliTranslator.translate_tap_run(params)
-        >>> # Executes: ["tap-oracle-wms", "--config", "settings.json", "--discover"]
-
-    """
-    return FlextTapOracleWmsCli.main()
+    """Execute Oracle WMS tap through the FLEXT service CLI bridge."""
+    return FlextTapOracleWmsService().cli_main()
 
 
 if __name__ == "__main__":

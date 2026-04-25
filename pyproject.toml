@@ -123,8 +123,8 @@ dev = [
 ]
 
 [project.scripts]
-flext-tap-oracle-wms = "flext_tap_oracle_wms.tap:main"
-tap-oracle-wms = "flext_tap_oracle_wms.tap:main"
+flext-tap-oracle-wms = "flext_tap_oracle_wms.cli:main"
+tap-oracle-wms = "flext_tap_oracle_wms.cli:main"
 
 [project.urls]
 Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"

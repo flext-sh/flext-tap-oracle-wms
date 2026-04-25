@@ -13,7 +13,7 @@ if _t.TYPE_CHECKING:
     from flext_meltano import d, e, h, r, s, x
 
     from flext_tap_oracle_wms.api import FlextTapOracleWmsService, tap_oracle_wms
-    from flext_tap_oracle_wms.cli import FlextTapOracleWmsCli, main
+    from flext_tap_oracle_wms.cli import main
     from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants, c
     from flext_tap_oracle_wms.errors import (
         FlextTapOracleWmsConfigurationError,
@@ -44,10 +44,7 @@ _LAZY_IMPORTS = build_lazy_import_map(
             "FlextTapOracleWmsService",
             "tap_oracle_wms",
         ),
-        ".cli": (
-            "FlextTapOracleWmsCli",
-            "main",
-        ),
+        ".cli": ("main",),
         ".constants": (
             "FlextTapOracleWmsConstants",
             "c",
@@ -96,7 +93,6 @@ install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 
 __all__: list[str] = [
     "FlextTapOracleWms",
-    "FlextTapOracleWmsCli",
     "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsConnectionError",
     "FlextTapOracleWmsConstants",
