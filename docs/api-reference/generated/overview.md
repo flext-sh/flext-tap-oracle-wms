@@ -7,9 +7,9 @@
 - Description: FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System
 - Project class: `integration`
 - Keywords: `data-extraction`, `enterprise`, `etl`, `flext`, `singer`, `tap`, `typed`
-- Main facades: `FlextTapOracleWmsStream`, `FlextTapOracleWmsPlugin`, `FlextTapOracleWmsModels`, `FlextTapOracleWmsService`, `FlextTapOracleWmsUtilities`, `FlextTapOracleWmsConnectionError`, `FlextTapOracleWmsError`, `FlextTapOracleWmsConstants` (+6 more)
+- Main facades: `FlextTapOracleWmsModels`, `FlextTapOracleWmsValidationError`, `FlextTapOracleWmsConfigurationError`, `FlextTapOracleWmsSettings`, `FlextTapOracleWmsStream`, `FlextTapOracleWmsConstants`, `FlextTapOracleWmsTypes`, `FlextTapOracleWmsProtocols` (+6 more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextTapOracleWmsStream`, `FlextTapOracleWmsPlugin`, `FlextTapOracleWmsModels`, `FlextTapOracleWmsService`, `FlextTapOracleWmsUtilities`, `FlextTapOracleWmsConnectionError`, `tap_oracle_wms`, `FlextTapOracleWmsError`, `FlextTapOracleWmsConstants`, `FlextTapOracleWmsProtocols` (+6 more)
+- Public symbol exports: `tap_oracle_wms`, `main`, `FlextTapOracleWmsModels`, `FlextTapOracleWmsValidationError`, `FlextTapOracleWmsConfigurationError`, `FlextTapOracleWmsSettings`, `FlextTapOracleWmsStream`, `FlextTapOracleWmsConstants`, `FlextTapOracleWmsTypes`, `FlextTapOracleWmsProtocols` (+6 more)
 - Exported module shortcuts: _none_
 - Generated module pages: `12`
 
