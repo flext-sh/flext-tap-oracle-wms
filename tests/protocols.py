@@ -15,22 +15,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsProtocols
 
 
 class TestsFlextTapOracleWmsProtocols(FlextTestsProtocols, FlextTapOracleWmsProtocols):
-    """Test protocols combining TestsFlextProtocols and FlextTapOracleWmsProtocols.
-
-    Provides access to:
-    - TestsFlextProtocols.Tests.Docker.* (from TestsFlextProtocols)
-    - TestsFlextProtocols.Tests.Factory.* (from TestsFlextProtocols)
-    - FlextTapOracleWmsProtocols.TapOracleWms.* (from FlextTapOracleWmsProtocols)
-    """
-
-    class TapOracleWms(FlextTapOracleWmsProtocols.TapOracleWms):
-        """TapOracleWms-specific protocols."""
-
-        class Tests:
-            """Project-specific test protocols.
-
-            Extends TestsFlextProtocols.Tests with TapOracleWms-specific protocols.
-            """
+    """Test protocols combining TestsFlextProtocols and FlextTapOracleWmsProtocols."""
 
 
 p = TestsFlextTapOracleWmsProtocols
