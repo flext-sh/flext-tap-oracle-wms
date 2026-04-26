@@ -7,15 +7,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    MutableSequence,
-    Sequence,
-)
-
 from flext_tests import FlextTestsUtilities
 
 from flext_tap_oracle_wms import FlextTapOracleWmsUtilities
-from tests import t
 
 
 class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtilities):
@@ -35,90 +29,7 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
     - Generic utilities accessed via Tests namespace
     """
 
-    class TapOracleWms(FlextTapOracleWmsUtilities.TapOracleWms):
-        """Tap Oracle WMS test utilities - domain-specific for Oracle WMS tap testing.
-
-        Contains test utilities specific to Oracle WMS tap functionality including:
-        - Oracle WMS connection test helpers
-        - Oracle WMS API test helpers
-        - Oracle WMS data generation helpers
-        """
-
-        @staticmethod
-        def create_test_oracle_wms_config(
-            base_url: str = "https://test-wms.oraclecloud.com",
-            username: str = "test_user",
-            password: str = "test_pass",
-            facility_ids: t.StrSequence | None = None,
-            **kwargs: t.Scalar,
-        ) -> t.MutableMetadataMapping:
-            """Create test Oracle WMS configuration."""
-            settings: t.MutableMetadataMapping = {
-                "base_url": base_url,
-                "username": username,
-                "password": password,
-            }
-            if facility_ids:
-                settings["facility_ids"] = facility_ids
-            settings.update(kwargs)
-            return settings
-
-        @staticmethod
-        def create_test_oracle_wms_api_response(
-            data: Sequence[t.JsonMapping],
-            *,
-            has_more: bool = False,
-            next_page_url: str | None = None,
-            facility_id: str | None = None,
-            **kwargs: t.Scalar,
-        ) -> t.MutableJsonMapping:
-            """Create test Oracle WMS API response."""
-            items_payload: list[t.JsonValue] = [dict(item) for item in data]
-            response: t.MutableJsonMapping = {
-                "items": items_payload,
-                "hasMore": has_more,
-            }
-            if next_page_url:
-                response["nextPageUrl"] = next_page_url
-            if facility_id:
-                response["facilityId"] = facility_id
-            for key, val in kwargs.items():
-                response[key] = (
-                    val if isinstance(val, (str, int, float, bool)) else str(val)
-                )
-            return response
-
-        @staticmethod
-        def generate_mock_oracle_wms_records(
-            count: int = 5,
-            base_id: int = 1000,
-            facility_id: str = "FAC001",
-            **kwargs: t.Scalar,
-        ) -> MutableSequence[t.MutableMetadataMapping]:
-            """Generate mock Oracle WMS records for testing."""
-            records: MutableSequence[t.MutableMetadataMapping] = []
-            for i in range(count):
-                record: t.MutableMetadataMapping = {
-                    "id": base_id + i,
-                    "facilityId": facility_id,
-                    "itemNumber": f"ITEM{i + 1:04d}",
-                    "description": f"Test Item {i + 1}",
-                    "createdDate": "2023-01-01T00:00:00Z",
-                    "modifiedDate": "2023-01-01T00:00:00Z",
-                }
-                record.update(kwargs)
-                records.append(record)
-            return records
-
-        @staticmethod
-        def validate_oracle_wms_config(
-            settings: t.MutableMetadataMapping,
-        ) -> bool:
-            """Validate Oracle WMS configuration for testing."""
-            required_fields = ["base_url", "username"]
-            return all(
-                field in settings and settings[field] for field in required_fields
-            )
+    pass
 
 
 u = TestsFlextTapOracleWmsUtilities

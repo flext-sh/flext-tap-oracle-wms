@@ -16,8 +16,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch as _patch
 
 import pytest
-from flext_core import FlextSettings
 
+from flext_core import FlextSettings
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 from tests import r, t
 
