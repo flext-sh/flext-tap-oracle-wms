@@ -1,0 +1,14 @@
+src/flext_tap_oracle_wms/tap.py
+  h_9db9d35f50cf33 362,366,370-372,374-378,380-383,385-391
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "056596c972ba65ee2739f706c5fcd7a794309d61",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
