@@ -359,28 +359,37 @@ class FlextTapOracleWmsPlugin:
         _parameters: t.JsonMapping | None = None,
     ) -> p.Result[t.JsonValue]:
         """Execute supported plugin operations against the tap."""
+        result: p.Result[t.JsonValue] = r[t.JsonValue].fail("Tap not initialized")
         if self._tap is None:
             init_result = self.initialize(None)
             if init_result.failure:
-                return r[t.JsonValue].fail(
+                result = r[t.JsonValue].fail(
                     init_result.error or "Tap initialization failed",
                 )
         tap = self._tap
-        if tap is None:
-            return r[t.JsonValue].fail("Tap not initialized")
-        if operation == "discover":
-            catalog_result = tap.discovercatalog_typed()
-            if catalog_result.failure:
-                return r[t.JsonValue].fail(
-                    catalog_result.error or "Discovery failed",
-                )
-            return r[t.JsonValue].ok(catalog_result.value.model_dump(mode="json"))
-        if operation == "sync":
-            execute_result = tap.execute()
-            if execute_result.failure:
-                return r[t.JsonValue].fail(execute_result.error or "Sync failed")
-            return r[t.JsonValue].ok({"success": True})
-        return r[t.JsonValue].fail(f"Unsupported operation: {operation}")
+        if tap is not None:
+            match operation:
+                case "discover":
+                    catalog_result = tap.discovercatalog_typed()
+                    result = (
+                        r[t.JsonValue].ok(catalog_result.value.model_dump(mode="json"))
+                        if catalog_result.success
+                        else r[t.JsonValue].fail(
+                            catalog_result.error or "Discovery failed",
+                        )
+                    )
+                case "sync":
+                    execute_result = tap.execute()
+                    result = (
+                        r[t.JsonValue].ok({"success": True})
+                        if execute_result.success
+                        else r[t.JsonValue].fail(
+                            execute_result.error or "Sync failed",
+                        )
+                    )
+                case _:
+                    result = r[t.JsonValue].fail(f"Unsupported operation: {operation}")
+        return result
 
     def get_info(self) -> t.JsonMapping:
         """Return plugin metadata for discovery and capabilities."""
