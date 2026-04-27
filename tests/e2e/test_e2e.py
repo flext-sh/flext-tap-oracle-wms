@@ -20,6 +20,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from flext_meltano import c as meltano_c
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
@@ -78,7 +79,7 @@ class TestsFlextTapOracleWmsE2e:
             assert table_metadata is not None, "Missing table metadata"
             meta = table_metadata.metadata
             assert "replication-method" in meta, "Missing replication method"
-            assert meta["replication-method"] in {"INCREMENTAL", "FULL_TABLE"}, (
+            assert meta["replication-method"] in {meltano_c.Meltano.SingerReplicationMethod.INCREMENTAL.value, meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value}, (
                 "Invalid replication method"
             )
         logger.info(
@@ -191,7 +192,7 @@ class TestsFlextTapOracleWmsE2e:
         for stream_config in streams:
             for meta in stream_config.metadata:
                 if meta.breadcrumb == [] and (
-                    meta.metadata.get("replication-method") == "FULL_TABLE"
+                    meta.metadata.get("replication-method") == meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value
                 ):
                     full_table_stream_config = stream_config
                     break
@@ -353,7 +354,7 @@ class TestsFlextTapOracleWmsE2e:
             table_metadata = table_meta.metadata
             assert "replication-method" in table_metadata, "Missing replication method"
             replication_method = table_metadata["replication-method"]
-            assert replication_method in {"INCREMENTAL", "FULL_TABLE"}, (
+            assert replication_method in {meltano_c.Meltano.SingerReplicationMethod.INCREMENTAL.value, meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value}, (
                 f"Invalid replication method: {replication_method}"
             )
             if replication_method == "INCREMENTAL":
@@ -440,7 +441,7 @@ class TestsFlextTapOracleWmsE2e:
                     replication_method = tm_meta.get("replication-method")
                     if replication_method == "INCREMENTAL":
                         incremental_streams += 1
-                    elif replication_method == "FULL_TABLE":
+                    elif replication_method == meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value:
                         full_table_streams += 1
                 schema = stream.schema_definition
                 if schema.get("properties"):
