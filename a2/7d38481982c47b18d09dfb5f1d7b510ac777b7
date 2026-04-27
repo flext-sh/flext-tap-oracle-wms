@@ -1,0 +1,14 @@
+tests/e2e/test_e2e.py
+  h_9db9d35f50cf33 23,82,195,357,444
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "a27d38481982c47b18d09dfb5f1d7b510ac777b7",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
