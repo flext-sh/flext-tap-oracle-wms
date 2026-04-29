@@ -35,7 +35,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     name = "flext-tap-oracle-wms"
     config_jsonschema: ClassVar[dict[str, t.JsonValue]] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
-        "properties": {
+        "properties": u.normalize_to_json_value({
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
             "username": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
             "password": {
@@ -54,8 +54,10 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 "type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN,
                 "default": True,
             },
-        },
-        "required": [str(field) for field in c.TapOracleWms.REQUIRED_CONFIG_FIELDS],
+        }),
+        "required": u.normalize_to_json_value(
+            list(c.TapOracleWms.REQUIRED_CONFIG_FIELDS)
+        ),
     }
 
     _wms_client: FlextOracleWmsUtilitiesClient.Client | None = None
@@ -93,7 +95,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     def settings(self) -> t.JsonMapping:
         """Expose tap configuration through legacy settings contract."""
         config = self.config
-        return {str(key): value for key, value in config.items()}
+        return dict(config.items())
 
     @property
     def catalog_dict_typed(self) -> t.MutableJsonMapping:
@@ -207,11 +209,11 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             password = self.flext_config.password
             wms_settings = FlextOracleWmsSettings.model_validate({
                 "base_url": str(self.flext_config.base_url),
-                "username": str(self.flext_config.username),
+                "username": self.flext_config.username,
                 "password": (
                     password.get_secret_value()
                     if isinstance(password, t.SecretStr)
-                    else str(password)
+                    else password
                 ),
                 "timeout": float(self.flext_config.timeout),
                 "retry_attempts": self.flext_config.max_retries,
@@ -404,7 +406,7 @@ class FlextTapOracleWmsPlugin:
         """Instantiate the tap for subsequent operations."""
         runtime_settings = dict(self.config)
         if isinstance(context, Mapping):
-            runtime_settings.update({str(key): value for key, value in context.items()})
+            runtime_settings.update(dict(context.items()))
         elif context is not None:
             u.fetch_logger(__name__).debug(
                 "Ignoring non-mapping tap initialization context: %s", context

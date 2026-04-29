@@ -269,10 +269,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
                 f"Failed to get records for {self.name}: {result.error}",
             )
         normalized: Sequence[t.JsonMapping] = [
-            {
-                str(key): self.normalize_json_value(value)
-                for key, value in record.items()
-            }
+            {key: self.normalize_json_value(value) for key, value in record.items()}
             for record in result.value
         ]
         has_more = len(normalized) == self._page_size
@@ -290,8 +287,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         conv = u.TapOracleWms.MappingConversion
         for record in records:
             record_dict: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python({
-                str(key): self.normalize_scalar_value(value)
-                for key, value in record.items()
+                key: self.normalize_scalar_value(value) for key, value in record.items()
             })
             processed_record: t.JsonMapping = (
                 u.TapOracleWms.DataProcessing.process_wms_record(
@@ -307,7 +303,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             if processed_map is None:
                 continue
             json_row: dict[str, t.JsonValue] = {
-                str(k): self.normalize_scalar_value(v) for k, v in processed_map.items()
+                k: self.normalize_scalar_value(v) for k, v in processed_map.items()
             }
             yield self.post_process(json_row, context)
 
