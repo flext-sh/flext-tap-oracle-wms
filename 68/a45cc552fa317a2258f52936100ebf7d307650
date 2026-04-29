@@ -1,0 +1,16 @@
+pyproject.toml
+  h_9db9d35f50cf33 311
+src/flext_tap_oracle_wms/tap.py
+  h_9db9d35f50cf33 38,59-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "68a45cc552fa317a2258f52936100ebf7d307650",
+  "prompts": {},
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
