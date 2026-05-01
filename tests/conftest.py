@@ -181,7 +181,7 @@ def mock_request() -> MagicMock:
 
 def pytest_collection_modifyitems(
     config: pytest.Config,
-    items: Sequence[pytest.Item],
+    items: t.SequenceOf[pytest.Item],
 ) -> None:
     """Add markers to tests based on their location."""
     _ = config

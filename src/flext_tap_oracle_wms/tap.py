@@ -273,7 +273,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         )
 
     @override
-    def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
+    def discover_streams(self) -> t.SequenceOf[FlextTapOracleWmsStream]:
         """Build stream objects from the discovered catalog."""
         catalog_result = self.discovercatalog_typed()
         if catalog_result.failure:

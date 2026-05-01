@@ -268,7 +268,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             return r[tuple[Sequence[t.JsonMapping], bool]].fail(
                 f"Failed to get records for {self.name}: {result.error}",
             )
-        normalized: Sequence[t.JsonMapping] = [
+        normalized: t.SequenceOf[t.JsonMapping] = [
             {key: self.normalize_json_value(value) for key, value in record.items()}
             for record in result.value
         ]
@@ -280,7 +280,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     def _process_page_records(
         self,
-        records: Sequence[t.JsonMapping],
+        records: t.SequenceOf[t.JsonMapping],
         context: t.ScalarMapping | None,
     ) -> Iterable[dict[str, t.JsonValue]]:
         """Process and yield records from a page."""

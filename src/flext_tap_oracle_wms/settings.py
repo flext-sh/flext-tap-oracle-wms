@@ -7,9 +7,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
-from collections.abc import (
-    Mapping,
-)
 from typing import Annotated, ClassVar, override
 
 from flext_core import FlextSettings, u
@@ -104,7 +101,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         u.Field(description="End date for incremental extraction."),
     ] = None
     column_mappings: Annotated[
-        Mapping[str, t.StrMapping],
+        t.MappingKV[str, t.StrMapping],
         u.Field(description="Column rename mappings per stream."),
     ] = u.Field(default_factory=dict)
     ignored_columns: Annotated[
