@@ -70,9 +70,7 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ),
         ".settings": ("FlextTapOracleWmsSettings",),
         ".streams": ("FlextTapOracleWmsStream",),
-        ".tap": (
-            "FlextTapOracleWms",
-        ),
+        ".tap": ("FlextTapOracleWms",),
         ".typings": (
             "FlextTapOracleWmsTypes",
             "t",
