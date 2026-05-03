@@ -9,10 +9,6 @@ class FlextTapOracleWmsError(e.BaseError):
     """Base exception for Oracle WMS tap failures."""
 
 
-class FlextTapOracleWmsConnectionError(FlextTapOracleWmsError):
-    """Raised when connection to Oracle WMS fails."""
-
-
 class FlextTapOracleWmsValidationError(FlextTapOracleWmsError):
     """Raised when tap configuration or payload validation fails."""
 

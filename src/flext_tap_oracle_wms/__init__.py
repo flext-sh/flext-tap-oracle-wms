@@ -24,7 +24,6 @@ if _t.TYPE_CHECKING:
     from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants, c
     from flext_tap_oracle_wms.errors import (
         FlextTapOracleWmsConfigurationError,
-        FlextTapOracleWmsConnectionError,
         FlextTapOracleWmsError,
         FlextTapOracleWmsValidationError,
     )
@@ -32,7 +31,7 @@ if _t.TYPE_CHECKING:
     from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols, p
     from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
     from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
-    from flext_tap_oracle_wms.tap import FlextTapOracleWms, FlextTapOracleWmsPlugin
+    from flext_tap_oracle_wms.tap import FlextTapOracleWms
     from flext_tap_oracle_wms.typings import FlextTapOracleWmsTypes, t
     from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities, u
 _LAZY_IMPORTS = build_lazy_import_map(
@@ -58,7 +57,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ),
         ".errors": (
             "FlextTapOracleWmsConfigurationError",
-            "FlextTapOracleWmsConnectionError",
             "FlextTapOracleWmsError",
             "FlextTapOracleWmsValidationError",
         ),
@@ -74,7 +72,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
         ".streams": ("FlextTapOracleWmsStream",),
         ".tap": (
             "FlextTapOracleWms",
-            "FlextTapOracleWmsPlugin",
         ),
         ".typings": (
             "FlextTapOracleWmsTypes",
@@ -101,11 +98,9 @@ install_lazy_exports(__name__, globals(), _LAZY_IMPORTS)
 __all__: list[str] = [
     "FlextTapOracleWms",
     "FlextTapOracleWmsConfigurationError",
-    "FlextTapOracleWmsConnectionError",
     "FlextTapOracleWmsConstants",
     "FlextTapOracleWmsError",
     "FlextTapOracleWmsModels",
-    "FlextTapOracleWmsPlugin",
     "FlextTapOracleWmsProtocols",
     "FlextTapOracleWmsService",
     "FlextTapOracleWmsSettings",

@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from enum import StrEnum, unique
 from typing import TYPE_CHECKING, Final
 
 from flext_meltano import FlextMeltanoConstants
@@ -50,44 +49,10 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         SCHEMA_FORMAT_DATETIME: Final[str] = "date-time"
         SCHEMA_TYPE_STRING_OR_NULL: Final[t.StrSequence] = ("string", "null")
 
-        @unique
-        class TapWmsEntityType(StrEnum):
-            """Oracle WMS entity types using StrEnum for type safety.
-
-            DRY Pattern:
-                StrEnum is the single source of truth. Use TapWmsEntityType.INVENTORY.value
-                or TapWmsEntityType.INVENTORY directly - no base strings needed.
-            """
-
-            INVENTORY = "INVENTORY"
-            SHIPMENT = "SHIPMENT"
-            PICKING = "PICKING"
-            RECEIVING = "RECEIVING"
-
         class Authentication(
             FlextOracleWmsConstants.OracleWms.Authentication,
         ):
             """Merged authentication constants from both parent hierarchies."""
-
-        class TapWmsProcessing:
-            """WMS tap processing configuration.
-
-            Note: Does not override parent Processing class to avoid inheritance conflicts.
-            """
-
-            DEFAULT_PAGE_SIZE: Final[int] = (
-                FlextOracleWmsConstants.OracleWms.WmsProcessing.DEFAULT_BATCH_SIZE
-            )
-            MAX_RECORDS_PER_BATCH: Final[int] = (
-                FlextOracleWmsConstants.OracleWms.WmsProcessing.MAX_BATCH_SIZE
-            )
-            DEFAULT_API_TIMEOUT: Final[int] = (
-                FlextMeltanoConstants.DEFAULT_TIMEOUT_SECONDS
-            )
-            ORACLE_WMS_PAGE_SIZE_LIMIT: Final[int] = 1250
-            USERNAME_TRUNCATION_LENGTH: Final[int] = 3
-            HIGH_ALLOCATION_THRESHOLD: Final[float] = 0.8
-            MEDIUM_ALLOCATION_THRESHOLD: Final[float] = 0.5
 
         class Extraction:
             """WMS-specific extraction configuration."""
