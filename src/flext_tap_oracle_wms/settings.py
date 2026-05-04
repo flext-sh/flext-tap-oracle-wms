@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import re
 from typing import Annotated, ClassVar, override
 
 from flext_core import FlextSettings, u
@@ -174,7 +173,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
     @u.field_validator("start_date", "end_date")
     @classmethod
     def _check_iso_date(cls, v: str | None) -> str | None:
-        if v is not None and not re.match(c.TapOracleWms.Settings.ISO_DATE_PATTERN, v):
+        if v is not None and not c.TapOracleWms.Settings.ISO_DATE_RE.match(v):
             msg = f"Invalid date format: {v}. Expected ISO 8601 format."
             raise ValueError(msg)
         return v
