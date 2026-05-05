@@ -182,7 +182,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
     @override
     def reset_for_testing(cls) -> None:
         """Reset any cached state for test isolation."""
-        cls._reset_instance()
+        cls.reset_instance()
 
     def validate_domain_rules(self) -> p.Result[bool]:
         """Validate domain-specific rules."""
