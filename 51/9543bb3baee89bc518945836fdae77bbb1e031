@@ -1,0 +1,29 @@
+src/flext_tap_oracle_wms/constants.py
+  h_9db9d35f50cf33 11,16-17,77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "519543bb3baee89bc518945836fdae77bbb1e031",
+  "prompts": {
+    "31ee9137f8909d3e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cbeb61c6-cd2e-4000-9bed-dcd82a916aec",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 3,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/38e90ccf18450fdc9964ca0b0f889e5d33d4a9c12e2d7c88e137170b91e2776a"
+    }
+  },
+  "humans": {
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  }
+}
