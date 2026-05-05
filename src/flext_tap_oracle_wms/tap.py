@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.metadata
 from collections.abc import (
     Callable,
     Mapping,
@@ -20,6 +19,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsConfigurationError,
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStream,
+    __version__,
     c,
     m,
     p,
@@ -316,7 +316,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
     def get_implementation_version(self) -> str:
         """Return installed package version."""
-        return importlib.metadata.version("flext-tap-oracle-wms")
+        return __version__
 
     def validate_configuration(self) -> p.Result[t.JsonValue]:
         """Expose non-secret validated configuration fields."""
