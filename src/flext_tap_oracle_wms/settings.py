@@ -8,12 +8,11 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar, override
 
-from flext_core import FlextSettings, u
+from flext_core import FlextSettingsBase, u
 from flext_tap_oracle_wms import c, m, p, r, t
 
 
-@FlextSettings.auto_register("tap-oracle-wms")
-class FlextTapOracleWmsSettings(FlextSettings):
+class FlextTapOracleWmsSettings(FlextSettingsBase):
     """Validated settings consumed by the Oracle WMS tap runtime."""
 
     model_config: ClassVar[m.SettingsConfigDict] = m.SettingsConfigDict(
