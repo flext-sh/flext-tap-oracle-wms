@@ -11,7 +11,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import json
 import time
 from collections.abc import (
     Mapping,
@@ -19,6 +18,7 @@ from collections.abc import (
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from flext_cli import u as cli_u
 
 from flext_meltano import c as meltano_c
 from flext_tap_oracle_wms import (
@@ -100,9 +100,9 @@ class TestsFlextTapOracleWmsE2e:
         tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
         catalog = self._catalog(tap_instance)
         catalog_payload = catalog.model_dump(mode="json")
-        catalog_json = json.dumps(catalog_payload, indent=2)
+        catalog_json = cli_u.Cli.json_dumps(catalog_payload, indent=2).unwrap()
         assert catalog_json, "Catalog serialization failed"
-        deserialized = json.loads(catalog_json)
+        deserialized = cli_u.Cli.json_loads(catalog_json).unwrap()
         assert deserialized == catalog_payload, (
             "Catalog serialization/deserialization mismatch"
         )
