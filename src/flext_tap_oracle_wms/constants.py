@@ -8,10 +8,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
-from typing import ClassVar, Final
+from typing import TYPE_CHECKING, ClassVar, Final
 
 from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
+
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms import t
 
 
 class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants):
@@ -71,7 +74,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
             ISO_DATE_PATTERN: Final[str] = (
                 r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
             )
-            ISO_DATE_RE: ClassVar[re.Pattern[str]] = re.compile(ISO_DATE_PATTERN)
+            ISO_DATE_RE: ClassVar[t.RegexPattern] = re.compile(ISO_DATE_PATTERN)
 
 
 c = FlextTapOracleWmsConstants
