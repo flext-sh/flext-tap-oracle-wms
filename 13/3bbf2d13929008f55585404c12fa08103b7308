@@ -1,0 +1,53 @@
+src/flext_tap_oracle_wms/tap.py
+  s_552d8e4891a938::t_a9e53bf6bc9d78 100,194
+  h_5cf852cc46bf92 82-83,86
+src/flext_tap_oracle_wms/typings.py
+  s_b15aa8dbf80823::t_14f0e58cc6d1a2 29-30
+tests/e2e/test_e2e.py
+  s_0290f35b98ef0c::t_078a7aa973e1af 22
+src/flext_tap_oracle_wms/streams.py
+  s_b15aa8dbf80823::t_8e9b9138755b1c 100,128
+  h_5cf852cc46bf92 44,47,144,283,287,303,305
+src/flext_tap_oracle_wms/utilities.py
+  s_552d8e4891a938::t_a9e53bf6bc9d78 77,90,126,129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "133bbf2d13929008f55585404c12fa08103b7308",
+  "prompts": {},
+  "humans": {
+    "h_5cf852cc46bf92": {
+      "author": "FLEXT Bot <team@flext.sh>"
+    },
+    "h_9db9d35f50cf33": {
+      "author": "FLEXT Bot"
+    }
+  },
+  "sessions": {
+    "s_0290f35b98ef0c": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0c4cc853-563f-48ad-a39a-f49b587090b8",
+        "model": "unknown"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>"
+    },
+    "s_552d8e4891a938": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "35c0040b-2ae9-466e-90aa-7721509e1e19",
+        "model": "unknown"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>"
+    },
+    "s_b15aa8dbf80823": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d896ab0f-dd16-4dca-9ad4-b3d924a501e7",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>"
+    }
+  }
+}
