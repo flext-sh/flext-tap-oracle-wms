@@ -44,16 +44,14 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        schema_dict: dict[str, t.JsonValue] | None = (
-            dict(schema) if schema is not None else None
-        )
+        schema_dict: t.JsonDict | None = dict(schema) if schema is not None else None
         m.Meltano.SingerStreamBase.__init__(
             self,
             tap=tap,
             name=name or self.name,
             schema=schema_dict,
         )
-        self._typed_schema: dict[str, t.JsonValue] | None = schema_dict
+        self._typed_schema: t.JsonDict | None = schema_dict
         self._client: FlextOracleWmsUtilitiesClient.Client | None = None
         tap_instance = self._tap
         settings_map: t.JsonMapping = {}
@@ -73,7 +71,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @property
     @override
-    def schema(self) -> dict[str, t.JsonValue]:
+    def schema(self) -> t.JsonDict:
         """Get schema with proper type narrowing over Singer SDK's bare ``dict``."""
         if self._typed_schema is None:
             msg = f"The schema for stream '{self.name}' was not provided"
@@ -175,9 +173,9 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @override
     def post_process(
         self,
-        row: dict[str, t.JsonValue],
+        row: t.JsonDict,
         context: t.ScalarMapping | None = None,
-    ) -> dict[str, t.JsonValue]:
+    ) -> t.JsonDict:
         """Post-process a record."""
         conv = u.TapOracleWms.MappingConversion
         tap_instance = self._tap
@@ -302,7 +300,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             )
             if processed_map is None:
                 continue
-            json_row: dict[str, t.JsonValue] = {
+            json_row: t.JsonDict = {
                 k: self.normalize_scalar_value(v) for k, v in processed_map.items()
             }
             yield self.post_process(json_row, context)

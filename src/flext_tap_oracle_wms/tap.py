@@ -33,7 +33,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     """Singer-compatible tap implementation backed by flext_oracle_wms."""
 
     name = "flext-tap-oracle-wms"
-    config_jsonschema: ClassVar[dict[str, t.JsonValue]] = {
+    config_jsonschema: ClassVar[t.JsonDict] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
         "properties": u.normalize_to_json_value({
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},

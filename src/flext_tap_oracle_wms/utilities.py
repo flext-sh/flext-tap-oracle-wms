@@ -77,9 +77,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                 return dict(raw.items())
 
             @staticmethod
-            def safe_str_dict(
-                raw: t.JsonMapping,
-            ) -> dict[str, t.JsonValue]:
+            def safe_str_dict(raw: t.JsonMapping) -> t.JsonDict:
                 """Return a dict with str keys from an untyped dict source.
 
                 Args:
@@ -128,7 +126,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                     return dict(validated_map.items())
                 if normalizer is not None:
                     return {key: normalizer(item) for key, item in value.items()}
-                coerced: dict[str, t.JsonValue] = dict(value.items())
+                coerced: t.JsonDict = dict(value.items())
                 return coerced
 
             @staticmethod
