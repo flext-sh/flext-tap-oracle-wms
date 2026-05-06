@@ -79,9 +79,11 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         raw_config: t.JsonMapping
         effective_config = config if config is not None else settings
         if isinstance(effective_config, FlextTapOracleWmsSettings):
-            raw_config = dict(effective_config.model_dump(mode="json").items())
+            raw_config = t.json_dict_adapter().validate_python(
+                effective_config.model_dump(mode="json"),
+            )
         else:
-            raw_config = dict(effective_config) if effective_config else {}
+            raw_config = t.json_dict_adapter().validate_python(effective_config or {})
         parent_init: Callable[..., None] = getattr(super(), "__init__")
         parent_init(
             config=raw_config,
@@ -95,7 +97,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     def settings(self) -> t.JsonMapping:
         """Expose tap configuration through legacy settings contract."""
         config = self.config
-        return dict(config.items())
+        return t.json_dict_adapter().validate_python(config)
 
     @property
     def catalog_dict_typed(self) -> t.MutableJsonMapping:
@@ -189,8 +191,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             exclude_none=True,
             mode="json",
         )
-        validated_dump = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(dumped_catalog)
-        return dict(validated_dump.items())
+        return t.json_dict_adapter().validate_python(dumped_catalog)
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:

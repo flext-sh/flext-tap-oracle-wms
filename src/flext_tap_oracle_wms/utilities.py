@@ -74,7 +74,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                     Mapping with string keys.
 
                 """
-                return dict(raw.items())
+                return t.json_mapping_adapter().validate_python(raw)
 
             @staticmethod
             def safe_str_dict(raw: t.JsonMapping) -> t.JsonDict:
@@ -87,7 +87,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                     Dict with string keys.
 
                 """
-                return dict(raw.items())
+                return t.json_dict_adapter().validate_python(raw)
 
             @staticmethod
             def as_map(
@@ -123,11 +123,10 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                         return {
                             key: normalizer(item) for key, item in validated_map.items()
                         }
-                    return dict(validated_map.items())
+                    return t.json_dict_adapter().validate_python(validated_map)
                 if normalizer is not None:
                     return {key: normalizer(item) for key, item in value.items()}
-                coerced: t.JsonDict = dict(value.items())
-                return coerced
+                return t.json_dict_adapter().validate_python(value)
 
             @staticmethod
             def as_list(

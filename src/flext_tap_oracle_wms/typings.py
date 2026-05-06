@@ -26,10 +26,8 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, t):
     type ContainerValueMapAdapter = m.TypeAdapter[t.JsonMapping]
     type ContainerValueListAdapter = m.TypeAdapter[t.JsonList]
 
-    CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[t.JsonMapping] = m.TypeAdapter(
-        t.JsonMapping
-    )
-    CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[t.JsonList] = m.TypeAdapter(t.JsonList)
+    CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+    CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[t.JsonList] = t.json_list_adapter()
 
 
 t = FlextTapOracleWmsTypes

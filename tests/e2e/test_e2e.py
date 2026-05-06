@@ -18,8 +18,8 @@ from collections.abc import (
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from flext_cli import u as cli_u
 
+from flext_cli import u as cli_u
 from flext_meltano import c as meltano_c
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,

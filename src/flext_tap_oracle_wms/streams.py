@@ -7,10 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Iterable,
-    Sequence,
-)
 from pathlib import Path
 from typing import ClassVar, override
 
@@ -44,7 +40,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        schema_dict: t.JsonDict | None = dict(schema) if schema is not None else None
+        schema_dict: t.JsonDict | None = (
+            t.json_dict_adapter().validate_python(schema)
+            if schema is not None
+            else None
+        )
         m.Meltano.SingerStreamBase.__init__(
             self,
             tap=tap,
@@ -97,7 +97,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @staticmethod
     def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
-        if isinstance(value, (str, int, float, bool)):
+        if isinstance(value, t.PRIMITIVES_TYPES):
             return value
         if value is None:
             return None
@@ -125,7 +125,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @staticmethod
     def normalize_scalar_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize scalar values that may include non-JSON runtime scalars."""
-        if isinstance(value, (str, int, float, bool)):
+        if isinstance(value, t.PRIMITIVES_TYPES):
             return value
         if value is None:
             return None
@@ -141,7 +141,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     def get_records(
         self,
         context: t.ScalarMapping | None,
-    ) -> Iterable[dict[str, t.JsonValue]]:
+    ) -> t.IterableOf[t.JsonDict]:
         """Get records from Oracle WMS."""
         page = 1
         has_more = True
@@ -248,7 +248,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self,
         page: int,
         context: t.ScalarMapping | None,
-    ) -> p.Result[tuple[Sequence[t.JsonMapping], bool]]:
+    ) -> p.Result[tuple[t.SequenceOf[t.JsonMapping], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
@@ -263,7 +263,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             filters=filters or None,
         )
         if result.failure:
-            return r[tuple[Sequence[t.JsonMapping], bool]].fail(
+            return r[tuple[t.SequenceOf[t.JsonMapping], bool]].fail(
                 f"Failed to get records for {self.name}: {result.error}",
             )
         normalized: t.SequenceOf[t.JsonMapping] = [
@@ -271,7 +271,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             for record in result.value
         ]
         has_more = len(normalized) == self._page_size
-        return r[tuple[Sequence[t.JsonMapping], bool]].ok((
+        return r[tuple[t.SequenceOf[t.JsonMapping], bool]].ok((
             normalized,
             has_more,
         ))
@@ -280,11 +280,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self,
         records: t.SequenceOf[t.JsonMapping],
         context: t.ScalarMapping | None,
-    ) -> Iterable[dict[str, t.JsonValue]]:
+    ) -> t.IterableOf[t.JsonDict]:
         """Process and yield records from a page."""
         conv = u.TapOracleWms.MappingConversion
         for record in records:
-            record_dict: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python({
+            record_dict = t.json_dict_adapter().validate_python({
                 key: self.normalize_scalar_value(value) for key, value in record.items()
             })
             processed_record: t.JsonMapping = (
@@ -300,9 +300,9 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             )
             if processed_map is None:
                 continue
-            json_row: t.JsonDict = {
+            json_row = t.json_dict_adapter().validate_python({
                 k: self.normalize_scalar_value(v) for k, v in processed_map.items()
-            }
+            })
             yield self.post_process(json_row, context)
 
     def _run(self, value: t.Scalar) -> t.Scalar:

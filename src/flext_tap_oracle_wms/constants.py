@@ -78,4 +78,4 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
 
 
 c = FlextTapOracleWmsConstants
-__all__: tuple[str, ...] = ("FlextTapOracleWmsConstants", "c")
+__all__: t.StrSequence = ("FlextTapOracleWmsConstants", "c")
