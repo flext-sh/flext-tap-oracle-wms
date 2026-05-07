@@ -123,7 +123,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         raw_streams_seq: t.JsonList = (
             raw_streams
             if isinstance(raw_streams, Sequence)
-            and not isinstance(raw_streams, (str, bytes))
+            and not isinstance(raw_streams, t.STR_BYTES_TYPES)
             else []
         )
         stream_entries: MutableSequence[m.Meltano.SingerCatalogEntry] = []
@@ -136,7 +136,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             metadata_raw: t.JsonValue = s_dict.get("metadata", [])
             metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata] = []
             if isinstance(metadata_raw, Sequence) and not isinstance(
-                metadata_raw, (str, bytes)
+                metadata_raw, t.STR_BYTES_TYPES
             ):
                 for raw_entry in metadata_raw:
                     if not isinstance(raw_entry, Mapping):
@@ -150,7 +150,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                         m.Meltano.SingerCatalogMetadata(
                             breadcrumb=[str(item) for item in breadcrumb_raw]
                             if isinstance(breadcrumb_raw, Sequence)
-                            and not isinstance(breadcrumb_raw, (str, bytes))
+                            and not isinstance(breadcrumb_raw, t.STR_BYTES_TYPES)
                             else [],
                             metadata=u.TapOracleWms.MappingConversion.safe_str_dict(
                                 metadata_map_raw

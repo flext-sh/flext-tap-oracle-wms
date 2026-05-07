@@ -163,7 +163,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
                     return list(validated_seq)
                 if normalizer is not None:
                     return [normalizer(str(item)) for item in value]
-                coerced_list: list[t.JsonValue] = [str(item) for item in value]
+                coerced_list: t.JsonValueList = [str(item) for item in value]
                 return coerced_list
 
 

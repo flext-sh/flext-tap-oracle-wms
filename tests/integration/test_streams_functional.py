@@ -9,8 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from unittest.mock import Mock
-
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream
@@ -105,13 +103,9 @@ class TestsFlextTapOracleWmsStreamsFunctional:
             name=test_stream.tap_stream_id,
             schema=self._schema(test_stream),
         )
-        authenticator = stream.authenticator
-        assert authenticator is not None
-        request = Mock()
-        request.headers = dict[str, str]()
-        authenticated_request = authenticator(request)
-        assert "Authorization" in authenticated_request.headers
-        auth_header = authenticated_request.headers["Authorization"]
+        headers = stream.http_headers
+        auth_header = headers.get("Authorization") or headers.get("authorization")
+        assert isinstance(auth_header, str)
         assert auth_header.startswith("Basic "), f"Expected Basic auth: {auth_header}"
         logger.info("✅ Authentication configured correctly")
 
