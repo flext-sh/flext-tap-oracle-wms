@@ -14,7 +14,8 @@ from flext_core.lazy import (
 if _t.TYPE_CHECKING:
     from flext_tests import td, tf, tk, tm, tv
 
-    from flext_tap_oracle_wms import d, e, h, r, s, x
+    from flext_tap_oracle_wms import d, e, h, r, x
+    from tests.base import TestsFlextTapOracleWmsServiceBase, s
     from tests.constants import TestsFlextTapOracleWmsConstants, c
     from tests.e2e.test_e2e import TestsFlextTapOracleWmsE2e
     from tests.integration.test_functional import TestsFlextTapOracleWmsFunctional
@@ -30,6 +31,7 @@ if _t.TYPE_CHECKING:
         TestsFlextTapOracleWmsExtractionPerformance,
     )
     from tests.protocols import TestsFlextTapOracleWmsProtocols, p
+    from tests.settings import TestsFlextTapOracleWmsSettings
     from tests.typings import TestsFlextTapOracleWmsTypes, t
     from tests.unit.test_cli import TestsFlextTapOracleWmsCli
     from tests.unit.test_config import TestsFlextTapOracleWmsConfig
@@ -48,6 +50,10 @@ _LAZY_IMPORTS = merge_lazy_imports(
     ),
     build_lazy_import_map(
         {
+            ".base": (
+                "TestsFlextTapOracleWmsServiceBase",
+                "s",
+            ),
             ".constants": (
                 "TestsFlextTapOracleWmsConstants",
                 "c",
@@ -72,6 +78,7 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "TestsFlextTapOracleWmsProtocols",
                 "p",
             ),
+            ".settings": ("TestsFlextTapOracleWmsSettings",),
             ".typings": (
                 "TestsFlextTapOracleWmsTypes",
                 "t",
@@ -92,7 +99,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "e",
                 "h",
                 "r",
-                "s",
                 "x",
             ),
             "flext_tests": (
@@ -139,6 +145,8 @@ __all__: list[str] = [
     "TestsFlextTapOracleWmsFunctional",
     "TestsFlextTapOracleWmsModels",
     "TestsFlextTapOracleWmsProtocols",
+    "TestsFlextTapOracleWmsServiceBase",
+    "TestsFlextTapOracleWmsSettings",
     "TestsFlextTapOracleWmsStreamsFunctional",
     "TestsFlextTapOracleWmsTap",
     "TestsFlextTapOracleWmsTapInitialization",

@@ -16,11 +16,6 @@ from tests import c, t
 class TestsFlextTapOracleWmsConfig:
     """Test configuration class."""
 
-    @pytest.fixture(autouse=True)
-    def reset_settings_singleton(self) -> None:
-        """Avoid singleton state leakage between tests."""
-        FlextTapOracleWmsSettings.reset_for_testing()
-
     def test_minimal_config(self) -> None:
         """Test creating settings with minimal fields."""
         settings = FlextTapOracleWmsSettings(

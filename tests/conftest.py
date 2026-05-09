@@ -13,10 +13,12 @@ from pathlib import Path
 from unittest.mock import patch as _patch
 
 import pytest
+from flext_tests import reset_settings as _shared_reset_settings
 
-from flext_core import FlextSettings
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 from tests import t
+
+reset_settings = _shared_reset_settings
 
 
 @pytest.fixture(scope="session")
@@ -36,15 +38,16 @@ def oracle_wms_environment() -> None:
 def isolate_tap_oracle_wms_env(
     monkeypatch: pytest.MonkeyPatch,
     request: pytest.FixtureRequest,
+    reset_settings: None,
 ) -> None:
     """Keep unit tests deterministic regardless of host FLEXT_TAP_ORACLE_WMS_* env."""
+    _ = reset_settings
     if request.node.get_closest_marker(
         "integration"
     ) or request.node.get_closest_marker("real"):
         return
     for key in [key for key in os.environ if key.startswith("FLEXT_TAP_ORACLE_WMS_")]:
         monkeypatch.delenv(key, raising=False)
-    FlextSettings.reset_for_testing()
 
 
 @pytest.fixture
