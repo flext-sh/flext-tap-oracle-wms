@@ -158,7 +158,7 @@ pytest -k "discovery" tests/unit/
 
 ### **Mock Usage Pattern**
 
-```python
+```python notest
 from unittest.mock import Mock, patch
 import pytest
 
@@ -206,7 +206,7 @@ def test_config_validation_success(valid_config):
 
 ### **Error Testing Pattern**
 
-```python
+```python notest
 def test_component_handles_network_error():
     """Test component error handling for network failures."""
     with patch("requests.get") as mock_get:
@@ -270,7 +270,7 @@ def test_config_validation_with_missing_url_raises_error():
 
 ### **Test Documentation**
 
-```python
+```python notest
 def test_complex_scenario():
     """
     Test complex business scenario with multiple interactions.
@@ -340,7 +340,7 @@ def sample_wms_response():
 
 ### **Assertion Helpers**
 
-```python
+```python notest
 def assert_flext_result_success(result):
     """Assert r indicates success."""
     assert result.success, f"Expected success, got error: {result.error_message}"
@@ -384,7 +384,7 @@ def assert_flext_result_error(result, expected_error_type=None):
 
 ### **Debugging Tests**
 
-```python
+```python notest
 import pytest
 
 

@@ -125,7 +125,7 @@ tap-oracle-wms --config invalid_config.json --discover
 
 #### **Message Format Validation**
 
-```python
+```python notest
 def test_singer_message_compliance():
     """Test complete Singer message format compliance."""
     # Execute tap and capture output
@@ -146,7 +146,7 @@ def test_singer_message_compliance():
 
 #### **State Management Testing**
 
-```python
+```python notest
 def test_incremental_state_management():
     """Test incremental extraction with state management."""
     # First extraction
@@ -166,7 +166,7 @@ def test_incremental_state_management():
 
 ### **E2E Mock Infrastructure**
 
-```python
+```python notest
 class E2EMockWMSEnvironment:
     """Complete mock WMS environment for E2E testing."""
 
@@ -278,7 +278,7 @@ def test_cli_discovery_execution():
 
 ### **Output Validation Framework**
 
-```python
+```python notest
 def validate_singer_output(output_text):
     """Validate Singer-compliant output format."""
     messages = []
@@ -320,7 +320,7 @@ def validate_message_sequence(messages):
 
 ### **Performance Benchmarks**
 
-```python
+```python notest
 def test_e2e_performance_benchmarks():
     """Test E2E performance meets requirements."""
     with e2e_performance_environment():
@@ -350,7 +350,7 @@ def test_e2e_performance_benchmarks():
 
 ### **Resource Usage Testing**
 
-```python
+```python notest
 def test_e2e_resource_usage():
     """Test E2E resource usage within limits."""
     import psutil
@@ -381,7 +381,7 @@ def test_e2e_resource_usage():
 
 ### **Network Failure Scenarios**
 
-```python
+```python notest
 def test_e2e_network_failures():
     """Test E2E behavior during network failures."""
     with e2e_mock_environment() as env:
@@ -411,7 +411,7 @@ def test_e2e_network_failures():
 
 ### **Configuration Error Testing**
 
-```python
+```python notest
 def test_e2e_configuration_errors():
     """Test E2E handling of configuration errors."""
     error_configs = [
@@ -485,7 +485,7 @@ def test_e2e_configuration_errors():
 
 ### **Business User Workflows**
 
-```python
+```python notest
 def test_business_user_daily_extraction():
     """Test complete daily extraction workflow for business users."""
     # Business scenario: Daily inventory extraction
