@@ -243,7 +243,7 @@ tests/
 
 ### FLEXT Standards Compliance
 
-```python
+```python notest
 # Example of FLEXT-compliant code
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -302,7 +302,7 @@ class FlextTapOracleWms:
 
 ### Type Safety Requirements
 
-```python
+```python notest
 # Strict type annotations required
 from typing import List, Dict, Optional, Iterator
 
@@ -319,7 +319,7 @@ def extract_records(
 
 ### Error Handling Standards
 
-```python
+```python notest
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -428,7 +428,7 @@ pre-commit run --all-files
 
 1. **Update Configuration**:
 
-```python
+```python notest
 # Add entity to valid entities list
 VALID_ENTITIES = [
     "item",
@@ -444,7 +444,7 @@ VALID_ENTITIES = [
 
 1. **Create Entity Tests**:
 
-```python
+```python notest
 def test_new_entity_extraction(mock_wms_client):
     """Test new entity extraction."""
     # Implementation

@@ -68,7 +68,7 @@ graph TB
 
 #### Base Pattern Usage
 
-```python
+```python notest
 from flext_core import (
     FlextSettings,  # Configuration base class
     FlextLogger,  # Standardized logging
@@ -113,7 +113,7 @@ class FlextTapOracleWms:
 
 #### Type System Integration
 
-```python
+```python notest
 from flext_core import TAnyDict, TEntityId, TValue
 
 # Use centralized types instead of custom definitions
@@ -141,7 +141,7 @@ class FlextTapOracleWmsStream:
 
 #### Logging Integration
 
-```python
+```python notest
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -198,7 +198,7 @@ class FlextTapOracleWmsStream:
 
 #### WMS Client Integration
 
-```python
+```python notest
 from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsError,
@@ -248,7 +248,7 @@ class WMSClientManager:
 
 #### Entity Discovery Integration
 
-```python
+```python notest
 from flext_oracle_wms import WMSEntityMetadata
 from typing import List, Dict
 
@@ -296,7 +296,7 @@ class EntityDiscovery:
 
 #### Singer SDK Integration
 
-```python
+```python notest
 from flext_meltano import (
     Tap,  # Base tap class with FLEXT patterns
     Stream,  # Base stream class
@@ -360,7 +360,7 @@ class FlextTapOracleWmsStream(Stream):
 
 #### Configuration Integration
 
-```python
+```python notest
 from flext_meltano import MeltanoConfig
 from pydantic import u.Field, validator
 
@@ -419,7 +419,7 @@ class WMSMeltanoConfig(MeltanoConfig):
 
 #### Monitoring Integration
 
-```python
+```python notest
 from flext_observability import (
     FlextMetrics,
     FlextHealthCheck,
@@ -508,7 +508,7 @@ class FlextTapOracleWmsStream(Stream):
 
 #### Health Check Integration
 
-```python
+```python notest
 from flext_observability import HealthCheckResult, HealthStatus
 
 

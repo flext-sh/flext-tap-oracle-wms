@@ -182,7 +182,7 @@ graph TB
 
 **Dependency Rule**: Dependencies point inward toward domain layer
 
-```python
+```python notest
 # Domain Layer (core business logic)
 class WMSEntityConfig:
     entity_name: str
@@ -207,7 +207,7 @@ class WMSAuthenticator:
 
 **Stream Pattern**: Standard Singer SDK stream implementation
 
-```python
+```python notest
 from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
@@ -237,7 +237,7 @@ class FlextTapOracleWmsStream(RESTStream):
 
 **Single Source of Truth**: Unified configuration system
 
-```python
+```python notest
 from pydantic import BaseModel, u.Field
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -333,7 +333,7 @@ sequenceDiagram
 
 ### 1. Pagination Strategy
 
-```python
+```python notest
 class WMSPaginator:
     """Simplified pagination for Oracle WMS HATEOAS."""
 
@@ -347,7 +347,7 @@ class WMSPaginator:
 
 ### 2. Caching Strategy
 
-```python
+```python notest
 from functools import lru_cache
 from typing import Dict
 
@@ -363,7 +363,7 @@ class WMSCache:
 
 ### 3. Connection Management
 
-```python
+```python notest
 from flext_oracle_wms import FlextOracleWmsClient
 
 
@@ -386,7 +386,7 @@ class WMSConnectionManager:
 
 ### 1. Exception Hierarchy
 
-```python
+```python notest
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -434,7 +434,7 @@ class WMSSchemaError(WMSTapError):
 
 ### 2. Error Recovery
 
-```python
+```python notest
 import time
 from typing import Iterator
 
@@ -481,7 +481,7 @@ tests/
 
 ### 2. Mock Strategy
 
-```python
+```python notest
 import pytest
 from unittest.mock import Mock, patch
 from flext_oracle_wms import FlextOracleWmsClient
@@ -514,7 +514,7 @@ def test_stream_extraction(mock_wms_client):
 
 ### 1. Authentication Integration
 
-```python
+```python notest
 from flext_oracle_wms import WMSAuthenticator
 
 
@@ -534,7 +534,7 @@ class TapAuthentication:
 
 ### 2. Configuration Security
 
-```python
+```python notest
 from pydantic import SecretStr
 
 
