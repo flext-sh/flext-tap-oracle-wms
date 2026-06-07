@@ -1,0 +1,43 @@
+tests/e2e/README.md
+  s_73cbfc60e45e37::t_7a49595f985309 488
+  s_73cbfc60e45e37::t_3b5ce09300f126 149
+  s_73cbfc60e45e37::t_8932f1c2521130 128
+  s_73cbfc60e45e37::t_c761eaaf5018e2 281
+  s_73cbfc60e45e37::t_8dc5dfd653a4bb 323
+  s_73cbfc60e45e37::t_84a538be36bdbf 169
+  s_73cbfc60e45e37::t_77df441c422610 414
+  s_73cbfc60e45e37::t_42379677dd307c 384
+  s_73cbfc60e45e37::t_548f8ed2570921 353
+tests/integration/README.md
+  s_73cbfc60e45e37::t_60d14cfc1327b8 115
+  s_73cbfc60e45e37::t_5e387170dccb7c 101
+  s_73cbfc60e45e37::t_7721260471e0b3 368
+  s_73cbfc60e45e37::t_6e94dc5c01fe10 384
+  s_73cbfc60e45e37::t_94be04c5881aa5 134
+  s_73cbfc60e45e37::t_015a0bee6e221f 338
+  s_73cbfc60e45e37::t_6255d5838f62c8 82
+  s_73cbfc60e45e37::t_e9210e4c27c083 186
+  s_73cbfc60e45e37::t_00c8636cc4009e 407
+  s_73cbfc60e45e37::t_2a136fcc3a2ff2 158
+tests/unit/README.md
+  s_73cbfc60e45e37::t_851e51f149d444 273
+  s_73cbfc60e45e37::t_c8ea2eda5fb419 209
+  s_73cbfc60e45e37::t_faaf9103188fe5 161
+  s_73cbfc60e45e37::t_d769402839247f 387
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "64377eb0c0ba9e7c70011d39545ea7cd2db0ff2b",
+  "prompts": {},
+  "sessions": {
+    "s_73cbfc60e45e37": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "80f2c44c-f1f2-49a0-8035-ccac60ac602b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
