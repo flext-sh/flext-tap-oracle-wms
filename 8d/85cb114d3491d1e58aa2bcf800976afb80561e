@@ -1,0 +1,42 @@
+docs/TODO.md
+  s_73cbfc60e45e37::t_839e8def60f781 107,210
+docs/architecture.md
+  s_73cbfc60e45e37::t_5f63abfa032758 185,210,240,336,350,366,389,437,484,517,537
+docs/guides/troubleshooting.md
+  s_73cbfc60e45e37::t_eb5b5e164f699d 88,118,139,148,175,196,210,225,255,291,300,315,325,348,357,372,380,397,408,430,442,453,490,527,558,619,642,722,733,771,784,795,808
+docs/guides/configuration.md
+  s_73cbfc60e45e37::t_6e24050f867b56 106,144,164,178,231,264,308,344,380,417,455
+docs/architecture/flext-integration.md
+  s_73cbfc60e45e37::t_84643f2614ab3d 71,116,144,201,251,299,363,422,511
+docs/guides/testing.md
+  s_73cbfc60e45e37::t_d5416ae46a3401 76,128,176,219,292,333,357,396,439,471,517,588,611,638,658,700
+docs/standards/python-module-organization.md
+  s_73cbfc60e45e37::t_0cdca94dab13f3 67,108,136,175,182,268,284,395,507,653,750,765,785,807,824,864,884,916,942,973,993,1006,1039,1061,1085,1113,1130,1160,1198
+docs/guides/development.md
+  s_73cbfc60e45e37::t_aa8f32c6850624 152,169,189,228,313,404,432
+docs/development/README.md
+  s_73cbfc60e45e37::t_9db1732bedc587 246,305,322,431,447
+docs/guides/getting-started.md
+  s_73cbfc60e45e37::t_a6159867cb668e 101,133,154,207,278
+src/flext_tap_oracle_wms/README.md
+  s_73cbfc60e45e37::t_70b2a87c30e99d 156
+  s_73cbfc60e45e37::t_657e2f95845f08 147
+  s_73cbfc60e45e37::t_88d41e657c4914 120
+  s_73cbfc60e45e37::t_adca67dc111a06 138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "8d85cb114d3491d1e58aa2bcf800976afb80561e",
+  "prompts": {},
+  "sessions": {
+    "s_73cbfc60e45e37": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "80f2c44c-f1f2-49a0-8035-ccac60ac602b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Zed <hi@zed.dev>"
+    }
+  }
+}
