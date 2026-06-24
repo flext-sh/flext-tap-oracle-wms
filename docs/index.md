@@ -2,7 +2,7 @@
 
 # flext-tap-oracle-wms Documentation
 
-- Version: `unknown`
+- Version: `0.12.0-dev`
 - Project class: `integration`
 - Package: `flext_tap_oracle_wms`
 - Description: FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System
