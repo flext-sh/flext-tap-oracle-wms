@@ -1,24 +1,5 @@
 # FLEXT Ecosystem Integration
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [FLEXT Ecosystem Architecture](#flext-ecosystem-architecture)
-- [Integration Patterns](#integration-patterns)
-  - [1. flext-core Integration](#1-flext-core-integration)
-  - [2. flext-oracle-wms Integration](#2-flext-oracle-wms-integration)
-  - [3. flext-meltano Integration](#3-flext-meltano-integration)
-  - [4. flext-observability Integration](#4-flext-observability-integration)
-- [Integration Benefits](#integration-benefits)
-  - [Consistency](#consistency)
-  - [Maintainability](#maintainability)
-  - [Observability](#observability)
-  - [Scalability](#scalability)
-- [Migration Considerations](#migration-considerations)
-  - [Current Integration Issues](#current-integration-issues)
-  - [Migration Strategy](#migration-strategy)
-  - [Validation Steps](#validation-steps)
-<!-- TOC END -->
-
 ## Overview
 
 This document describes the integration patterns between FLEXT Tap Oracle WMS and the FLEXT ecosystem components, including flext-core, flext-oracle-wms, flext-meltano, and flext-observability.
@@ -68,7 +49,7 @@ graph TB
 
 #### Base Pattern Usage
 
-```python notest
+```python
 from flext_core import (
     FlextSettings,  # Configuration base class
     FlextLogger,  # Standardized logging
@@ -113,7 +94,7 @@ class FlextTapOracleWms:
 
 #### Type System Integration
 
-```python notest
+```python
 from flext_core import TAnyDict, TEntityId, TValue
 
 # Use centralized types instead of custom definitions
@@ -141,7 +122,7 @@ class FlextTapOracleWmsStream:
 
 #### Logging Integration
 
-```python notest
+```python
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -198,7 +179,7 @@ class FlextTapOracleWmsStream:
 
 #### WMS Client Integration
 
-```python notest
+```python
 from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsError,
@@ -248,7 +229,7 @@ class WMSClientManager:
 
 #### Entity Discovery Integration
 
-```python notest
+```python
 from flext_oracle_wms import WMSEntityMetadata
 from typing import List, Dict
 
@@ -296,7 +277,7 @@ class EntityDiscovery:
 
 #### Singer SDK Integration
 
-```python notest
+```python
 from flext_meltano import (
     Tap,  # Base tap class with FLEXT patterns
     Stream,  # Base stream class
@@ -360,7 +341,7 @@ class FlextTapOracleWmsStream(Stream):
 
 #### Configuration Integration
 
-```python notest
+```python
 from flext_meltano import MeltanoConfig
 from pydantic import u.Field, validator
 
@@ -419,7 +400,7 @@ class WMSMeltanoConfig(MeltanoConfig):
 
 #### Monitoring Integration
 
-```python notest
+```python
 from flext_observability import (
     FlextMetrics,
     FlextHealthCheck,
@@ -508,7 +489,7 @@ class FlextTapOracleWmsStream(Stream):
 
 #### Health Check Integration
 
-```python notest
+```python
 from flext_observability import HealthCheckResult, HealthStatus
 
 

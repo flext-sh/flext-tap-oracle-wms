@@ -1,44 +1,5 @@
 # Architecture Documentation
 
-<!-- TOC START -->
-- [Overview](#overview)
-- [Current Architecture Issues](#current-architecture-issues)
-  - [Critical Problems Identified](#critical-problems-identified)
-  - [Current Component Structure](#current-component-structure)
-- [Target Architecture](#target-architecture)
-  - [Simplified Component Structure](#simplified-component-structure)
-  - [Architecture Layers](#architecture-layers)
-  - [FLEXT Ecosystem Integration](#flext-ecosystem-integration)
-- [Design Patterns](#design-patterns)
-  - [1. Clean Architecture Compliance](#1-clean-architecture-compliance)
-  - [2. Singer SDK Integration](#2-singer-sdk-integration)
-  - [3. Configuration Management](#3-configuration-management)
-- [Data Flow Architecture](#data-flow-architecture)
-  - [1. Discovery Flow](#1-discovery-flow)
-  - [2. Extraction Flow](#2-extraction-flow)
-- [Performance Architecture](#performance-architecture)
-  - [1. Pagination Strategy](#1-pagination-strategy)
-  - [2. Caching Strategy](#2-caching-strategy)
-  - [3. Connection Management](#3-connection-management)
-- [Error Handling Architecture](#error-handling-architecture)
-  - [1. Exception Hierarchy](#1-exception-hierarchy)
-  - [2. Error Recovery](#2-error-recovery)
-- [Testing Architecture](#testing-architecture)
-  - [1. Test Structure](#1-test-structure)
-  - [2. Mock Strategy](#2-mock-strategy)
-- [Security Architecture](#security-architecture)
-  - [1. Authentication Integration](#1-authentication-integration)
-  - [2. Configuration Security](#2-configuration-security)
-- [Migration Strategy](#migration-strategy)
-  - [Phase 1: Emergency Simplification (Week 1)](#phase-1-emergency-simplification-week-1)
-  - [Phase 2: Structural Refactoring (Weeks 2-3)](#phase-2-structural-refactoring-weeks-2-3)
-  - [Phase 3: Performance Optimization (Week 4)](#phase-3-performance-optimization-week-4)
-- [Quality Metrics](#quality-metrics)
-  - [Target Metrics](#target-metrics)
-  - [Quality Gates](#quality-gates)
-- [Related Documentation](#related-documentation)
-<!-- TOC END -->
-
 ## Overview
 
 FLEXT Tap Oracle WMS implements a Singer-compliant data extraction tap for Oracle Warehouse Management Systems. This document provides comprehensive architectural analysis of the current implementation and target architecture after refactoring.
@@ -182,7 +143,7 @@ graph TB
 
 **Dependency Rule**: Dependencies point inward toward domain layer
 
-```python notest
+```python
 # Domain Layer (core business logic)
 class WMSEntityConfig:
     entity_name: str
@@ -207,7 +168,7 @@ class WMSAuthenticator:
 
 **Stream Pattern**: Standard Singer SDK stream implementation
 
-```python notest
+```python
 from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
@@ -237,7 +198,7 @@ class FlextTapOracleWmsStream(RESTStream):
 
 **Single Source of Truth**: Unified configuration system
 
-```python notest
+```python
 from pydantic import BaseModel, u.Field
 from flext_core import FlextBus
 from flext_core import FlextSettings
@@ -333,7 +294,7 @@ sequenceDiagram
 
 ### 1. Pagination Strategy
 
-```python notest
+```python
 class WMSPaginator:
     """Simplified pagination for Oracle WMS HATEOAS."""
 
@@ -347,7 +308,7 @@ class WMSPaginator:
 
 ### 2. Caching Strategy
 
-```python notest
+```python
 from functools import lru_cache
 from typing import Dict
 
@@ -363,7 +324,7 @@ class WMSCache:
 
 ### 3. Connection Management
 
-```python notest
+```python
 from flext_oracle_wms import FlextOracleWmsClient
 
 
@@ -386,7 +347,7 @@ class WMSConnectionManager:
 
 ### 1. Exception Hierarchy
 
-```python notest
+```python
 from flext_core import FlextBus
 from flext_core import FlextSettings
 from flext_core import FlextConstants
@@ -434,7 +395,7 @@ class WMSSchemaError(WMSTapError):
 
 ### 2. Error Recovery
 
-```python notest
+```python
 import time
 from typing import Iterator
 
@@ -481,7 +442,7 @@ tests/
 
 ### 2. Mock Strategy
 
-```python notest
+```python
 import pytest
 from unittest.mock import Mock, patch
 from flext_oracle_wms import FlextOracleWmsClient
@@ -514,7 +475,7 @@ def test_stream_extraction(mock_wms_client):
 
 ### 1. Authentication Integration
 
-```python notest
+```python
 from flext_oracle_wms import WMSAuthenticator
 
 
@@ -534,7 +495,7 @@ class TapAuthentication:
 
 ### 2. Configuration Security
 
-```python notest
+```python
 from pydantic import SecretStr
 
 
