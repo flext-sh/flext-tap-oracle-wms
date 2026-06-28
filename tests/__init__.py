@@ -12,35 +12,69 @@ from flext_core.lazy import (
 )
 
 if _t.TYPE_CHECKING:
-    from flext_tests import td, tf, tk, tm, tv
+    from flext_tests import td as td, tf as tf, tk as tk, tv as tv
 
-    from flext_tap_oracle_wms import d, e, h, r, x
-    from tests.base import TestsFlextTapOracleWmsServiceBase, s
-    from tests.constants import TestsFlextTapOracleWmsConstants, c
-    from tests.e2e.test_e2e import TestsFlextTapOracleWmsE2e
-    from tests.integration.test_functional import TestsFlextTapOracleWmsFunctional
+    from flext_tap_oracle_wms import d as d, e as e, h as h, r as r, x as x
+    from tests.base import (
+        TestsFlextTapOracleWmsServiceBase as TestsFlextTapOracleWmsServiceBase,
+        s as s,
+    )
+    from tests.constants import (
+        TestsFlextTapOracleWmsConstants as TestsFlextTapOracleWmsConstants,
+        c as c,
+    )
+    from tests.e2e.test_e2e import (
+        TestsFlextTapOracleWmsE2e as TestsFlextTapOracleWmsE2e,
+    )
+    from tests.integration.test_functional import (
+        TestsFlextTapOracleWmsFunctional as TestsFlextTapOracleWmsFunctional,
+    )
     from tests.integration.test_streams_functional import (
-        TestsFlextTapOracleWmsStreamsFunctional,
+        TestsFlextTapOracleWmsStreamsFunctional as TestsFlextTapOracleWmsStreamsFunctional,
     )
-    from tests.integration.test_wms import TestsFlextTapOracleWmsWms
+    from tests.integration.test_wms import (
+        TestsFlextTapOracleWmsWms as TestsFlextTapOracleWmsWms,
+    )
     from tests.integration.test_wms_connection import (
-        TestsFlextTapOracleWmsWmsConnection,
+        TestsFlextTapOracleWmsWmsConnection as TestsFlextTapOracleWmsWmsConnection,
     )
-    from tests.models import TestsFlextTapOracleWmsModels, m
+    from tests.models import (
+        TestsFlextTapOracleWmsModels as TestsFlextTapOracleWmsModels,
+        m as m,
+    )
     from tests.performance.test_extraction_performance import (
-        TestsFlextTapOracleWmsExtractionPerformance,
+        TestsFlextTapOracleWmsExtractionPerformance as TestsFlextTapOracleWmsExtractionPerformance,
     )
-    from tests.protocols import TestsFlextTapOracleWmsProtocols, p
-    from tests.settings import TestsFlextTapOracleWmsSettings
-    from tests.typings import TestsFlextTapOracleWmsTypes, t
-    from tests.unit.test_cli import TestsFlextTapOracleWmsCli
-    from tests.unit.test_config import TestsFlextTapOracleWmsConfig
-    from tests.unit.test_config_validation import TestsFlextTapOracleWmsConfigValidation
-    from tests.unit.test_tap import TestsFlextTapOracleWmsTap
+    from tests.protocols import (
+        TestsFlextTapOracleWmsProtocols as TestsFlextTapOracleWmsProtocols,
+        p as p,
+    )
+    from tests.settings import (
+        TestsFlextTapOracleWmsSettings as TestsFlextTapOracleWmsSettings,
+    )
+    from tests.typings import (
+        TestsFlextTapOracleWmsTypes as TestsFlextTapOracleWmsTypes,
+        t as t,
+    )
+    from tests.unit.test_cli import (
+        TestsFlextTapOracleWmsCli as TestsFlextTapOracleWmsCli,
+    )
+    from tests.unit.test_config import (
+        TestsFlextTapOracleWmsConfig as TestsFlextTapOracleWmsConfig,
+    )
+    from tests.unit.test_config_validation import (
+        TestsFlextTapOracleWmsConfigValidation as TestsFlextTapOracleWmsConfigValidation,
+    )
+    from tests.unit.test_tap import (
+        TestsFlextTapOracleWmsTap as TestsFlextTapOracleWmsTap,
+    )
     from tests.unit.test_tap_initialization import (
-        TestsFlextTapOracleWmsTapInitialization,
+        TestsFlextTapOracleWmsTapInitialization as TestsFlextTapOracleWmsTapInitialization,
     )
-    from tests.utilities import TestsFlextTapOracleWmsUtilities, u
+    from tests.utilities import (
+        TestsFlextTapOracleWmsUtilities as TestsFlextTapOracleWmsUtilities,
+        u as u,
+    )
 _LAZY_IMPORTS = merge_lazy_imports(
     (
         ".e2e",
@@ -105,7 +139,6 @@ _LAZY_IMPORTS = merge_lazy_imports(
                 "td",
                 "tf",
                 "tk",
-                "tm",
                 "tv",
             ),
         },
@@ -166,7 +199,6 @@ __all__: list[str] = [
     "td",
     "tf",
     "tk",
-    "tm",
     "tv",
     "u",
     "x",
