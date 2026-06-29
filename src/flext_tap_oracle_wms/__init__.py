@@ -28,11 +28,6 @@ if _t.TYPE_CHECKING:
         FlextTapOracleWmsConstants as FlextTapOracleWmsConstants,
         c as c,
     )
-    from flext_tap_oracle_wms.errors import (
-        FlextTapOracleWmsConfigurationError as FlextTapOracleWmsConfigurationError,
-        FlextTapOracleWmsError as FlextTapOracleWmsError,
-        FlextTapOracleWmsValidationError as FlextTapOracleWmsValidationError,
-    )
     from flext_tap_oracle_wms.models import (
         FlextTapOracleWmsModels as FlextTapOracleWmsModels,
         m as m,
@@ -44,10 +39,6 @@ if _t.TYPE_CHECKING:
     from flext_tap_oracle_wms.settings import (
         FlextTapOracleWmsSettings as FlextTapOracleWmsSettings,
     )
-    from flext_tap_oracle_wms.streams import (
-        FlextTapOracleWmsStream as FlextTapOracleWmsStream,
-    )
-    from flext_tap_oracle_wms.tap import FlextTapOracleWms as FlextTapOracleWms
     from flext_tap_oracle_wms.typings import (
         FlextTapOracleWmsTypes as FlextTapOracleWmsTypes,
         t as t,
@@ -67,11 +58,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
             "FlextTapOracleWmsConstants",
             "c",
         ),
-        ".errors": (
-            "FlextTapOracleWmsConfigurationError",
-            "FlextTapOracleWmsError",
-            "FlextTapOracleWmsValidationError",
-        ),
         ".models": (
             "FlextTapOracleWmsModels",
             "m",
@@ -81,8 +67,6 @@ _LAZY_IMPORTS = build_lazy_import_map(
             "p",
         ),
         ".settings": ("FlextTapOracleWmsSettings",),
-        ".streams": ("FlextTapOracleWmsStream",),
-        ".tap": ("FlextTapOracleWms",),
         ".typings": (
             "FlextTapOracleWmsTypes",
             "t",
@@ -103,35 +87,14 @@ _LAZY_IMPORTS = build_lazy_import_map(
 )
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    [
-        "__author__",
-        "__author_email__",
-        "__description__",
-        "__license__",
-        "__title__",
-        "__url__",
-        "__version__",
-        "__version_info__",
-    ],
-)
-
-__all__: list[str] = [
-    "FlextTapOracleWms",
-    "FlextTapOracleWmsConfigurationError",
+__all__: tuple[str, ...] = (
     "FlextTapOracleWmsConstants",
-    "FlextTapOracleWmsError",
     "FlextTapOracleWmsModels",
     "FlextTapOracleWmsProtocols",
     "FlextTapOracleWmsService",
     "FlextTapOracleWmsSettings",
-    "FlextTapOracleWmsStream",
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
-    "FlextTapOracleWmsValidationError",
     "__author__",
     "__author_email__",
     "__description__",
@@ -153,4 +116,12 @@ __all__: list[str] = [
     "tap_oracle_wms",
     "u",
     "x",
-]
+)
+
+
+install_lazy_exports(
+    __name__,
+    globals(),
+    _LAZY_IMPORTS,
+    public_exports=__all__,
+)

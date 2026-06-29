@@ -11,7 +11,8 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from flext_oracle_wms import FlextOracleWmsUtilitiesClient
-from flext_tap_oracle_wms import FlextTapOracleWmsError, c, m, p, r, t, u
+from flext_tap_oracle_wms import c, m, p, r, t, u
+from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
 
 logger = u.fetch_logger(__name__)
 

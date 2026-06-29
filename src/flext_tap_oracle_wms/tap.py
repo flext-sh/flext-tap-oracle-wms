@@ -15,18 +15,9 @@ from flext_oracle_wms import (
     FlextOracleWmsSettings,
     FlextOracleWmsUtilitiesClient,
 )
-from flext_tap_oracle_wms import (
-    FlextTapOracleWmsConfigurationError,
-    FlextTapOracleWmsSettings,
-    FlextTapOracleWmsStream,
-    __version__,
-    c,
-    m,
-    p,
-    r,
-    t,
-    u,
-)
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings, __version__, c, m, p, r, t, u
+from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 
 
 class FlextTapOracleWms(m.Meltano.SingerTapBase):

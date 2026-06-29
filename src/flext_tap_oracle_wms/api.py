@@ -14,7 +14,8 @@ from typing import Annotated, override
 from flext_core import u
 from flext_meltano import FlextMeltanoTapServiceBase
 from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapAdapter
-from flext_tap_oracle_wms import FlextTapOracleWms, p, t
+from flext_tap_oracle_wms import p, t
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
 class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
