@@ -60,7 +60,7 @@ class TestsFlextTapOracleWmsTap:
         """Client is created only once and reused after first access."""
         mock_client = MagicMock()
         mock_client.start.return_value = r[bool].ok(True)
-        mock_client.discover_entities.return_value = r[t.StrSequence].ok([])
+        mock_client.discover_entities.return_value = r[t.StrSequence].ok(())
         mock_client_class.return_value = mock_client
         tap = FlextTapOracleWms(
             settings={
