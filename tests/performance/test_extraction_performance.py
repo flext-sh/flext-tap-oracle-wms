@@ -15,8 +15,9 @@ import psutil
 import pytest
 from dotenv import load_dotenv
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import t
+from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from tests.typings import t
 
 env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(env_path)

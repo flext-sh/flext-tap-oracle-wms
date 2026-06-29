@@ -10,7 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import ClassVar, override
 
-from flext_oracle_wms import FlextOracleWmsUtilitiesClient
+from flext_oracle_wms.utilities import FlextOracleWmsUtilities
 from flext_tap_oracle_wms import c, m, p, r, t, u
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
 
@@ -53,7 +53,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             schema=schema_dict,
         )
         self._typed_schema: t.JsonDict | None = schema_dict
-        self._client: FlextOracleWmsUtilitiesClient.Client | None = None
+        self._client: FlextOracleWmsUtilities.OracleWms.Client | None = None
         tap_instance = self._tap
         settings_map: t.JsonMapping = {}
         if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
@@ -80,7 +80,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return self._typed_schema
 
     @property
-    def client(self) -> FlextOracleWmsUtilitiesClient.Client:
+    def client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
         """Get WMS client from tap."""
         if self._client is not None:
             return self._client

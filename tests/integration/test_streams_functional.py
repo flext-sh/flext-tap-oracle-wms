@@ -11,8 +11,11 @@ from __future__ import annotations
 
 import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsStream
-from tests import m, t, u
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from tests.models import m
+from tests.typings import t
+from tests.utilities import u
 
 logger = u.fetch_logger(__name__)
 

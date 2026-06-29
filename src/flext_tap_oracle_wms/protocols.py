@@ -15,7 +15,8 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 
 from flext_meltano import p as meltano_p
-from flext_oracle_wms import FlextOracleWmsProtocols, FlextOracleWmsUtilitiesClient
+from flext_oracle_wms import FlextOracleWmsProtocols
+from flext_oracle_wms.utilities import FlextOracleWmsUtilities
 from flext_tap_oracle_wms import t
 
 
@@ -32,7 +33,7 @@ class FlextTapOracleWmsProtocols(meltano_p, FlextOracleWmsProtocols):
             class TapWithWmsClient(Protocol):
                 """Protocol for tap instances that provide ``wms_client``."""
 
-                wms_client: FlextOracleWmsUtilitiesClient.Client
+                wms_client: FlextOracleWmsUtilities.OracleWms.Client
 
             @runtime_checkable
             class TapWithWmsClientSettings(TapWithWmsClient, Protocol):

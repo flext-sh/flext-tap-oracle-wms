@@ -8,14 +8,13 @@ from collections.abc import (
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
+from flext_tests import r
 
-from flext_tap_oracle_wms import (
-    FlextTapOracleWms,
-    FlextTapOracleWmsConfigurationError,
-    FlextTapOracleWmsSettings,
-    m,
-)
-from tests import r, t
+from flext_tap_oracle_wms import m
+from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
+from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from tests.typings import t
 
 
 class TestsFlextTapOracleWmsTap:

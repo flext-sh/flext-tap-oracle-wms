@@ -13,9 +13,18 @@ from typing import ClassVar, override
 
 from flext_oracle_wms import (
     FlextOracleWmsSettings,
-    FlextOracleWmsUtilitiesClient,
 )
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings, __version__, c, m, p, r, t, u
+from flext_oracle_wms.utilities import FlextOracleWmsUtilities
+from flext_tap_oracle_wms import (
+    FlextTapOracleWmsSettings,
+    __version__,
+    c,
+    m,
+    p,
+    r,
+    t,
+    u,
+)
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 
@@ -51,7 +60,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         ),
     }
 
-    _wms_client: FlextOracleWmsUtilitiesClient.Client | None = None
+    _wms_client: FlextOracleWmsUtilities.OracleWms.Client | None = None
     _discovery: t.JsonValue | None = None
     _schema_generator: t.JsonValue | None = None
     _discovery_mode: bool = False
@@ -195,7 +204,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             raise FlextTapOracleWmsConfigurationError(msg) from exc
 
     @property
-    def wms_client(self) -> FlextOracleWmsUtilitiesClient.Client:
+    def wms_client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
         """Return a started WMS client instance."""
         if self._wms_client is None:
             password = self.flext_config.password
@@ -210,7 +219,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 "timeout": float(self.flext_config.timeout),
                 "retry_attempts": self.flext_config.max_retries,
             })
-            client = FlextOracleWmsUtilitiesClient.Client(settings=wms_settings)
+            client = FlextOracleWmsUtilities.OracleWms.Client(settings=wms_settings)
             start_result = client.start()
             if start_result.failure:
                 msg = start_result.error or "Failed to start Oracle WMS client"

@@ -10,7 +10,8 @@ from __future__ import annotations
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import c, t
+from tests.constants import c
+from tests.typings import t
 
 
 class TestsFlextTapOracleWmsConfig:

@@ -5,9 +5,10 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
+from flext_tests import r
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsConfigurationError
-from tests import r
+from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
 class TestsFlextTapOracleWmsTapInitialization:
