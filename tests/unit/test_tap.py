@@ -51,7 +51,7 @@ class TestsFlextTapOracleWmsTap:
         with pytest.raises(FlextTapOracleWmsConfigurationError):
             FlextTapOracleWms(settings=config_dict)
 
-    @patch("flext_tap_oracle_wms.tap.FlextOracleWmsUtilitiesClient.Client")
+    @patch("flext_tap_oracle_wms.tap.FlextOracleWmsUtilities.OracleWms.Client")
     def test_wms_client_property_lazy_initialization(
         self,
         mock_client_class: MagicMock,
@@ -75,7 +75,7 @@ class TestsFlextTapOracleWmsTap:
         mock_client_class.assert_called_once()
         mock_client.start.assert_called_once()
 
-    @patch("flext_tap_oracle_wms.tap.FlextOracleWmsUtilitiesClient.Client")
+    @patch("flext_tap_oracle_wms.tap.FlextOracleWmsUtilities.OracleWms.Client")
     def test_wms_client_connection_failure(self, mock_client_class: MagicMock) -> None:
         """Failed WMS client start is surfaced as tap settings error."""
         mock_client = MagicMock()
