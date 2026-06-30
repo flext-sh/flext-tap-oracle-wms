@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
+from flext_core import d, e, h, r, s, x
 from flext_core.lazy import install_lazy_exports
-from flext_meltano import d, e, h, r, s, x
 from flext_tap_oracle_wms.__version__ import (
     __author__,
     __author_email__,
