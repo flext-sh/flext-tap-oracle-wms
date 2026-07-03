@@ -1,5 +1,6 @@
 """Configuration contracts for FLEXT Tap Oracle WMS.
 
+from flext_tap_oracle_wms.utilities import u
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
@@ -8,8 +9,8 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar, override
 
-from flext_core import FlextSettingsBase, u
-from flext_tap_oracle_wms import c, m, p, r, t
+from flext_core import FlextSettingsBase
+from flext_tap_oracle_wms import c, m, p, r, t, u
 
 
 class FlextTapOracleWmsSettings(FlextSettingsBase):

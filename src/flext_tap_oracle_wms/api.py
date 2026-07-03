@@ -1,5 +1,6 @@
 """FLEXT service orchestrator for tap-oracle-wms.
 
+from flext_tap_oracle_wms.utilities import u
 Thin facade — all infrastructure from ``FlextMeltanoTapServiceBase`` via MRO.
 Only domain-specific tap creation defined here.
 
@@ -11,12 +12,11 @@ from __future__ import annotations
 
 from typing import Annotated, override
 
-from flext_core import u
 from flext_meltano.services.consumer_bases.tap_service_base import (
     FlextMeltanoTapServiceBase,
 )
 from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapAdapter
-from flext_tap_oracle_wms import p, t
+from flext_tap_oracle_wms import p, t, u
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
