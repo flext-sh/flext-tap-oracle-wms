@@ -7,132 +7,149 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
-from datetime import datetime
 from pathlib import Path
 from typing import ClassVar, override
 
-from flext_core import FlextLogger, r, t
-from flext_oracle_wms import FlextOracleWmsClient
-from pydantic import BaseModel, TypeAdapter, ValidationError
-from singer_sdk.streams import Stream
-from singer_sdk.tap_base import Tap
+from flext_oracle_wms.utilities import FlextOracleWmsUtilities
+from flext_tap_oracle_wms import c, m, p, r, t, u
+from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
 
-from flext_tap_oracle_wms.protocols import p
-from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
-
-logger = FlextLogger(__name__)
+logger = u.fetch_logger(__name__)
 
 
-def _as_map(value: object) -> Mapping[str, t.ContainerValue] | None:
-    if not isinstance(value, Mapping):
-        return None
-    try:
-        validated_map = TypeAdapter(dict[str, object]).validate_python(value)
-    except ValidationError:
-        return None
-    return {
-        str(key): FlextTapOracleWmsStream.normalize_json_value(item)
-        for key, item in validated_map.items()
-    }
-
-
-def _as_list(value: object) -> list[t.ContainerValue] | None:
-    if not isinstance(value, list):
-        return None
-    try:
-        validated_list = TypeAdapter(list[object]).validate_python(value)
-    except ValidationError:
-        return None
-    return [
-        FlextTapOracleWmsStream.normalize_json_value(item) for item in validated_list
-    ]
-
-
-class FlextTapOracleWmsStream(Stream):
+class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     """Dynamic stream for Oracle WMS entities.
 
     Uses flext-oracle-wms client for all data operations.
     This is a generic stream class that adapts to any Oracle WMS entity dynamically.
     """
 
-    stream_primary_keys: ClassVar[list[str]] = []
+    stream_primary_keys: ClassVar[t.StrSequence] = []
     stream_replication_key: str | None = None
+    url_base: str = ""
+    # Singer SDK attributes exposed for type narrowing in tests/consumers
+    tap: m.Meltano.SingerTapBase
+    http_headers: t.MutableStrMapping
+    authenticator: None = None
 
     @override
     def __init__(
         self,
-        tap: Tap,
+        tap: m.Meltano.SingerTapBase,
         name: str | None = None,
-        schema: dict[str, t.Container] | None = None,
+        schema: t.JsonMapping | None = None,
         _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        Stream.__init__(self, tap=tap, name=name or self.name, schema=schema)
-        self._utilities = FlextTapOracleWmsUtilities()
-        self._client: FlextOracleWmsClient | None = None
-        page_size = int(self.config.get("page_size", 100))
+        schema_dict: t.JsonDict | None = (
+            t.json_dict_adapter().validate_python(schema)
+            if schema is not None
+            else None
+        )
+        m.Meltano.SingerStreamBase.__init__(
+            self,
+            tap=tap,
+            name=name or self.name,
+            schema=schema_dict,
+        )
+        self._typed_schema: t.JsonDict | None = schema_dict
+        self._client: FlextOracleWmsUtilities.OracleWms.Client | None = None
+        tap_instance = self._tap
+        settings_map: t.JsonMapping = {}
+        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
+            settings_map = tap_instance.settings
+        page_size_raw = settings_map.get("page_size", 100)
+        page_size = (
+            int(page_size_raw) if isinstance(page_size_raw, (int, float, str)) else 100
+        )
         self._page_size = (
             page_size
-            if self._utilities.ConfigurationProcessing.validate_stream_page_size(
-                page_size
+            if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(
+                page_size,
             )
             else 100
         )
 
     @property
-    def client(self) -> FlextOracleWmsClient:
+    @override
+    def schema(self) -> t.JsonDict:
+        """Get schema with proper type narrowing over Singer SDK's bare ``dict``."""
+        if self._typed_schema is None:
+            msg = f"The schema for stream '{self.name}' was not provided"
+            raise ValueError(msg)
+        return self._typed_schema
+
+    @property
+    def client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
         """Get WMS client from tap."""
-        if self._client is None:
-            tap_instance = self._tap
-            if tap_instance and isinstance(
-                tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClient
-            ):
-                wms_tap: p.TapOracleWms.OracleWms.TapWithWmsClient = tap_instance
-                self._client = wms_tap.wms_client
-            else:
-                msg = "WMS client not available - tap must be FlextTapOracleWms"
-                raise RuntimeError(msg)
-        return self._client
+        if self._client is not None:
+            return self._client
+        tap_instance = self._tap
+        if not isinstance(
+            tap_instance,
+            p.TapOracleWms.OracleWms.TapWithWmsClient,
+        ):
+            msg = "WMS client not available - tap must be FlextTapOracleWms"
+            raise TypeError(msg)
+        client = tap_instance.wms_client
+        self._client = client
+        return client
 
     @staticmethod
-    def normalize_json_value(value: object) -> t.Scalar:
+    def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
-        if isinstance(value, str | int | float | bool | datetime):
+        if isinstance(value, t.PRIMITIVES_TYPES):
             return value
         if value is None:
-            return ""
-        list_value = _as_list(value)
+            return None
+        conv = u.TapOracleWms.MappingConversion
+        list_value = conv.as_list(
+            value,
+            normalizer=FlextTapOracleWmsStream.normalize_json_value,
+            list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
         if list_value is not None:
-            return str([
-                FlextTapOracleWmsStream.normalize_json_value(item)
-                for item in list_value
-            ])
-        map_value = _as_map(value)
+            return str(list(list_value))
+        map_value = conv.as_map(
+            value,
+            normalizer=FlextTapOracleWmsStream.normalize_json_value,
+            map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
         if map_value is not None:
-            return str({
-                key: FlextTapOracleWmsStream.normalize_json_value(item)
-                for key, item in map_value.items()
-            })
-        if isinstance(value, BaseModel | Path):
+            return str(dict(map_value))
+        if isinstance(value, m.BaseModel | Path):
             return str(value)
         return str(value)
 
-    def get_primary_keys(self) -> list[str]:
+    @staticmethod
+    def normalize_scalar_value(value: t.JsonValue) -> t.JsonValue:
+        """Normalize scalar values that may include non-JSON runtime scalars."""
+        if isinstance(value, t.PRIMITIVES_TYPES):
+            return value
+        if value is None:
+            return None
+        if isinstance(value, (list, dict)):
+            return FlextTapOracleWmsStream.normalize_json_value(value)
+        return str(value)
+
+    def get_primary_keys(self) -> t.StrSequence:
         """Get primary keys for this stream."""
         return list(self.stream_primary_keys)
 
     @override
     def get_records(
-        self, context: Mapping[str, t.Scalar] | None
-    ) -> Iterable[dict[str, t.Scalar]]:
+        self,
+        context: t.ScalarMapping | None,
+    ) -> t.IterableOf[t.JsonDict]:
         """Get records from Oracle WMS."""
         page = 1
         has_more = True
         while has_more:
             try:
                 page_result = self._fetch_page_data(page, context)
-                if page_result.is_failure:
+                if page_result.failure:
                     logger.error(
                         "Failed to fetch page %s for %s: %s",
                         page,
@@ -145,17 +162,10 @@ class FlextTapOracleWmsStream(Stream):
                 page += 1
                 if not records:
                     break
-            except (
-                ValueError,
-                TypeError,
-                KeyError,
-                AttributeError,
-                OSError,
-                RuntimeError,
-                ImportError,
-            ):
-                logger.exception("Error getting records for %s", self.name)
-                break
+            except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
+                msg = f"Error getting records for {self.name}: {exc}"
+                logger.exception(msg)
+                raise FlextTapOracleWmsError(msg) from exc
 
     def get_replication_key(self) -> str | None:
         """Get replication key for this stream."""
@@ -164,94 +174,137 @@ class FlextTapOracleWmsStream(Stream):
     @override
     def post_process(
         self,
-        row: dict[str, t.Scalar],
-        context: Mapping[str, t.Scalar] | None = None,
-    ) -> dict[str, t.Scalar]:
+        row: t.JsonDict,
+        context: t.ScalarMapping | None = None,
+    ) -> t.JsonDict:
         """Post-process a record."""
-        config_map: Mapping[str, object] = self.config
+        conv = u.TapOracleWms.MappingConversion
+        tap_instance = self._tap
+        config_map: t.JsonMapping = {}
+        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
+            config_map = tap_instance.settings
         column_mappings_raw = config_map.get("column_mappings")
-        column_mappings = _as_map(column_mappings_raw) if column_mappings_raw else None
+        column_mappings = (
+            conv.as_map(
+                column_mappings_raw,
+                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                error_cls=FlextTapOracleWmsError,
+            )
+            if column_mappings_raw
+            else None
+        )
         if column_mappings is not None:
             mapping_raw = column_mappings.get(self.name)
-            mapping = _as_map(mapping_raw) if mapping_raw is not None else None
+            mapping = (
+                conv.as_map(
+                    mapping_raw,
+                    map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                    error_cls=FlextTapOracleWmsError,
+                )
+                if mapping_raw is not None
+                else None
+            )
             if mapping is not None:
                 for old_name, new_name in mapping.items():
                     new_name_str = str(new_name)
                     if old_name in row:
                         row[new_name_str] = row.pop(old_name)
         ignored_columns_raw = config_map.get("ignored_columns")
-        ignored_columns = _as_list(ignored_columns_raw) if ignored_columns_raw else None
+        ignored_columns = (
+            conv.as_list(
+                ignored_columns_raw,
+                list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
+                error_cls=FlextTapOracleWmsError,
+            )
+            if ignored_columns_raw
+            else None
+        )
         if ignored_columns is not None:
             for column_name in ignored_columns:
                 if isinstance(column_name, str):
                     row.pop(column_name, None)
         if context:
-            row["_context"] = str({k: str(v) for k, v in context.items()})
+            row["context"] = str({k: str(v) for k, v in context.items()})
         return row
 
     def _build_operation_kwargs(
-        self, page: int, context: Mapping[str, t.Scalar] | None
-    ) -> Mapping[str, t.Scalar]:
+        self,
+        page: int,
+        context: t.ScalarMapping | None,
+    ) -> t.MutableScalarMapping:
         """Build kwargs for the operation call."""
-        kwargs: dict[str, t.Scalar] = {"page": page, "limit": self._page_size}
+        result_kwargs: t.MutableScalarMapping = {}
+        result_kwargs["page"] = page
+        result_kwargs["limit"] = self._page_size
         if self.stream_replication_key:
             starting_timestamp = self.get_starting_timestamp(context)
             if starting_timestamp:
                 kwargs_filter = (
                     f"{self.stream_replication_key}>={starting_timestamp.isoformat()}"
                 )
-                kwargs["filter"] = kwargs_filter
-        return kwargs
+                result_kwargs["filter"] = kwargs_filter
+        return result_kwargs
 
     def _fetch_page_data(
-        self, page: int, context: Mapping[str, t.Scalar] | None
-    ) -> r[tuple[list[dict[str, t.Scalar]], bool]]:
+        self,
+        page: int,
+        context: t.ScalarMapping | None,
+    ) -> p.Result[tuple[t.SequenceOf[t.JsonMapping], bool]]:
         """Fetch data for a specific page."""
         kwargs = self._build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
-        limit = int(limit_raw) if isinstance(limit_raw, int) else self._page_size
-        filters: dict[str, t.Scalar] = {}
+        limit = u.to_int(limit_raw, default=self._page_size)
+        filters: t.MutableScalarMapping = {}
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
         result = self.client.get_entity_data(
-            entity_name=self.name, limit=limit, filters=filters or None
+            entity_name=self.name,
+            limit=limit,
+            filters=filters or None,
         )
-        if result.is_failure:
-            return r[tuple[list[dict[str, t.Scalar]], bool]].fail(
-                f"Failed to get records for {self.name}: {result.error}"
+        if result.failure:
+            return r[tuple[t.SequenceOf[t.JsonMapping], bool]].fail(
+                f"Failed to get records for {self.name}: {result.error}",
             )
-        normalized: list[dict[str, t.Scalar]] = [
-            {
-                str(key): self.normalize_json_value(value)
-                for key, value in record.items()
-            }
+        normalized: t.SequenceOf[t.JsonMapping] = [
+            {key: self.normalize_json_value(value) for key, value in record.items()}
             for record in result.value
         ]
         has_more = len(normalized) == self._page_size
-        return r[tuple[list[dict[str, t.Scalar]], bool]].ok((
+        return r[tuple[t.SequenceOf[t.JsonMapping], bool]].ok((
             normalized,
             has_more,
         ))
 
     def _process_page_records(
         self,
-        records: list[dict[str, t.Scalar]],
-        context: Mapping[str, t.Scalar] | None,
-    ) -> Iterable[dict[str, t.Scalar]]:
+        records: t.SequenceOf[t.JsonMapping],
+        context: t.ScalarMapping | None,
+    ) -> t.IterableOf[t.JsonDict]:
         """Process and yield records from a page."""
+        conv = u.TapOracleWms.MappingConversion
         for record in records:
-            record_dict: dict[str, t.Scalar] = dict(record)
-            processed_record = self._utilities.DataProcessing.process_wms_record(
-                record=record_dict
+            record_dict = t.json_dict_adapter().validate_python({
+                key: self.normalize_scalar_value(value) for key, value in record.items()
+            })
+            processed_record: t.JsonMapping = (
+                u.TapOracleWms.DataProcessing.process_wms_record(
+                    record=record_dict,
+                )
             )
-            processed_map = _as_map(processed_record)
+            processed_map = conv.as_map(
+                processed_record,
+                normalizer=self.normalize_json_value,
+                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                error_cls=FlextTapOracleWmsError,
+            )
             if processed_map is None:
                 continue
-            json_row: dict[str, t.Scalar] = {
-                str(k): self.normalize_json_value(v) for k, v in processed_map.items()
-            }
+            json_row = t.json_dict_adapter().validate_python({
+                k: self.normalize_scalar_value(v) for k, v in processed_map.items()
+            })
             yield self.post_process(json_row, context)
 
-    def _run(self, value: object) -> object:
+    def _run(self, value: t.Scalar) -> t.Scalar:
         return value

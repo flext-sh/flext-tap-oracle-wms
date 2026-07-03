@@ -79,7 +79,7 @@ This directory contains end-to-end (E2E) tests for FLEXT Tap Oracle WMS, focusin
 
 ```bash
 # Planned E2E test scenarios
-tap-oracle-wms --config config.json --discover > catalog.json
+tap-oracle-wms --config settings.json --discover > catalog.json
 ```
 
 **Test Coverage**:
@@ -95,7 +95,7 @@ tap-oracle-wms --config config.json --discover > catalog.json
 
 ```bash
 # Complete extraction pipeline
-tap-oracle-wms --config config.json --catalog catalog.json > output.jsonl
+tap-oracle-wms --config settings.json --catalog catalog.json > output.jsonl
 ```
 
 **Test Coverage**:
@@ -125,7 +125,7 @@ tap-oracle-wms --config invalid_config.json --discover
 
 #### **Message Format Validation**
 
-```python
+```python notest
 def test_singer_message_compliance():
     """Test complete Singer message format compliance."""
     # Execute tap and capture output
@@ -146,15 +146,15 @@ def test_singer_message_compliance():
 
 #### **State Management Testing**
 
-```python
+```python notest
 def test_incremental_state_management():
     """Test incremental extraction with state management."""
     # First extraction
-    result1 = run_tap_extraction(config, catalog)
+    result1 = run_tap_extraction(settings, catalog)
     state1 = extract_final_state(result1)
 
     # Second extraction with state
-    result2 = run_tap_extraction(config, catalog, state1)
+    result2 = run_tap_extraction(settings, catalog, state1)
     state2 = extract_final_state(result2)
 
     # Validate incremental behavior
@@ -166,7 +166,7 @@ def test_incremental_state_management():
 
 ### **E2E Mock Infrastructure**
 
-```python
+```python notest
 class E2EMockWMSEnvironment:
     """Complete mock WMS environment for E2E testing."""
 
@@ -224,7 +224,7 @@ tests/fixtures/e2e/
 
 ### **Command Execution Testing**
 
-```python
+```text
 import json
 from pathlib import Path
 
@@ -278,7 +278,7 @@ def test_cli_discovery_execution():
 
 ### **Output Validation Framework**
 
-```python
+```python notest
 def validate_singer_output(output_text):
     """Validate Singer-compliant output format."""
     messages = []
@@ -320,7 +320,7 @@ def validate_message_sequence(messages):
 
 ### **Performance Benchmarks**
 
-```python
+```python notest
 def test_e2e_performance_benchmarks():
     """Test E2E performance meets requirements."""
     with e2e_performance_environment():
@@ -350,13 +350,13 @@ def test_e2e_performance_benchmarks():
 
 ### **Resource Usage Testing**
 
-```python
+```python notest
 def test_e2e_resource_usage():
     """Test E2E resource usage within limits."""
     import psutil
 
     with e2e_mock_environment():
-        process = start_tap_process(["--config", "config.json", "--discover"])
+        process = start_tap_process(["--config", "settings.json", "--discover"])
 
         # Monitor resource usage
         max_memory = 0
@@ -381,14 +381,14 @@ def test_e2e_resource_usage():
 
 ### **Network Failure Scenarios**
 
-```python
+```python notest
 def test_e2e_network_failures():
     """Test E2E behavior during network failures."""
     with e2e_mock_environment() as env:
         # Start extraction
         process = start_tap_process([
             "--config",
-            "config.json",
+            "settings.json",
             "--catalog",
             "catalog.json",
         ])
@@ -411,7 +411,7 @@ def test_e2e_network_failures():
 
 ### **Configuration Error Testing**
 
-```python
+```python notest
 def test_e2e_configuration_errors():
     """Test E2E handling of configuration errors."""
     error_configs = [
@@ -485,13 +485,17 @@ def test_e2e_configuration_errors():
 
 ### **Business User Workflows**
 
-```python
+```python notest
 def test_business_user_daily_extraction():
     """Test complete daily extraction workflow for business users."""
     # Business scenario: Daily inventory extraction
     with e2e_business_environment():
         # 1. Discovery phase
-        discovery = run_tap_command(["--config", "business_config.json", "--discover"])
+        discovery = run_tap_command([
+            "--config",
+            "business_config.json",
+            "--discover",
+        ])
         assert discovery.returncode == 0
 
         # 2. Extraction phase

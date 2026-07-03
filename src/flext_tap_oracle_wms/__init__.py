@@ -1,165 +1,72 @@
-"""Enterprise Singer Tap for Oracle WMS data extraction.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT.
-"""
+# AUTO-GENERATED FILE — Regenerate with: make gen
+"""Flext Tap Oracle Wms package."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from flext_core.lazy import install_lazy_exports
+from flext_tap_oracle_wms.__version__ import (
+    __author__,
+    __author_email__,
+    __description__,
+    __license__,
+    __title__,
+    __url__,
+    __version__,
+    __version_info__,
+)
+from flext_tap_oracle_wms._exports import FLEXT_TAP_ORACLE_WMS_LAZY_IMPORTS
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+_LAZY_IMPORTS = FLEXT_TAP_ORACLE_WMS_LAZY_IMPORTS
 
-if TYPE_CHECKING:
-    from flext_core import FlextLogger, r, t
-    from flext_meltano import (
-        FlextMeltanoBridge,
-        FlextMeltanoService,
-        FlextMeltanoSettings,
-    )
 
-    from flext_tap_oracle_wms.cli import main
-    from flext_tap_oracle_wms.constants import (
-        FlextTapOracleWmsConstants,
-        FlextTapOracleWmsConstants as c,
-    )
-    from flext_tap_oracle_wms.exceptions import (
-        FlextTapOracleWmsConfigurationError,
-        FlextTapOracleWmsConnectionError,
-        FlextTapOracleWmsError,
-        FlextTapOracleWmsValidationError,
-    )
-    from flext_tap_oracle_wms.models import (
-        FlextTapOracleWmsModels,
-        FlextTapOracleWmsModels as m,
-    )
-    from flext_tap_oracle_wms.protocols import (
-        FlextTapOracleWmsProtocols,
-        FlextTapOracleWmsProtocols as p,
-    )
-    from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
-    from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
-    from flext_tap_oracle_wms.tap import FlextTapOracleWms, FlextTapOracleWmsPlugin
-    from flext_tap_oracle_wms.typings import FlextTapOracleWmsTypes
-    from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities
-    from flext_tap_oracle_wms.version import (
-        VERSION,
-        VERSION as PROJECT_VERSION,
-        FlextTapOracleWmsVersion,
-        __version__,
-        __version_info__,
-    )
+_EAGER_EXPORTS = (
+    __author__,
+    __author_email__,
+    __description__,
+    __license__,
+    __title__,
+    __url__,
+    __version__,
+    __version_info__,
+)
 
-# Lazy import mapping: export_name -> (module_path, attr_name)
-_LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "FlextLogger": ("flext_core", "FlextLogger"),
-    "FlextMeltanoBridge": ("flext_meltano", "FlextMeltanoBridge"),
-    "FlextMeltanoService": ("flext_meltano", "FlextMeltanoService"),
-    "FlextMeltanoSettings": ("flext_meltano", "FlextMeltanoSettings"),
-    "r": ("flext_core", "r"),
-    "FlextTapOracleWms": ("flext_tap_oracle_wms.tap", "FlextTapOracleWms"),
-    "FlextTapOracleWmsConfigurationError": (
-        "flext_tap_oracle_wms.exceptions",
-        "FlextTapOracleWmsConfigurationError",
-    ),
-    "FlextTapOracleWmsConnectionError": (
-        "flext_tap_oracle_wms.exceptions",
-        "FlextTapOracleWmsConnectionError",
-    ),
-    "FlextTapOracleWmsConstants": (
-        "flext_tap_oracle_wms.constants",
-        "FlextTapOracleWmsConstants",
-    ),
-    "FlextTapOracleWmsError": (
-        "flext_tap_oracle_wms.exceptions",
-        "FlextTapOracleWmsError",
-    ),
-    "FlextTapOracleWmsModels": (
-        "flext_tap_oracle_wms.models",
-        "FlextTapOracleWmsModels",
-    ),
-    "FlextTapOracleWmsPlugin": ("flext_tap_oracle_wms.tap", "FlextTapOracleWmsPlugin"),
-    "FlextTapOracleWmsProtocols": (
-        "flext_tap_oracle_wms.protocols",
-        "FlextTapOracleWmsProtocols",
-    ),
-    "FlextTapOracleWmsSettings": (
-        "flext_tap_oracle_wms.settings",
-        "FlextTapOracleWmsSettings",
-    ),
-    "FlextTapOracleWmsStream": (
-        "flext_tap_oracle_wms.streams",
-        "FlextTapOracleWmsStream",
-    ),
-    "FlextTapOracleWmsTypes": (
-        "flext_tap_oracle_wms.typings",
-        "FlextTapOracleWmsTypes",
-    ),
-    "FlextTapOracleWmsUtilities": (
-        "flext_tap_oracle_wms.utilities",
-        "FlextTapOracleWmsUtilities",
-    ),
-    "FlextTapOracleWmsValidationError": (
-        "flext_tap_oracle_wms.exceptions",
-        "FlextTapOracleWmsValidationError",
-    ),
-    "FlextTapOracleWmsVersion": (
-        "flext_tap_oracle_wms.version",
-        "FlextTapOracleWmsVersion",
-    ),
-    "PROJECT_VERSION": ("flext_tap_oracle_wms.version", "VERSION"),
-    "VERSION": ("flext_tap_oracle_wms.version", "VERSION"),
-    "__version__": ("flext_tap_oracle_wms.version", "__version__"),
-    "__version_info__": ("flext_tap_oracle_wms.version", "__version_info__"),
-    "c": ("flext_tap_oracle_wms.constants", "FlextTapOracleWmsConstants"),
-    "m": ("flext_tap_oracle_wms.models", "FlextTapOracleWmsModels"),
-    "main": ("flext_tap_oracle_wms.cli", "main"),
-    "p": ("flext_tap_oracle_wms.protocols", "FlextTapOracleWmsProtocols"),
-    "t": ("flext_core", "t"),
-}
 
-__all__ = [
-    "PROJECT_VERSION",
-    "VERSION",
-    "FlextLogger",
-    "FlextMeltanoBridge",
-    "FlextMeltanoService",
-    "FlextMeltanoSettings",
+_PUBLIC_EXPORTS: tuple[str, ...] = (
     "FlextTapOracleWms",
-    "FlextTapOracleWmsConfigurationError",
-    "FlextTapOracleWmsConnectionError",
     "FlextTapOracleWmsConstants",
-    "FlextTapOracleWmsError",
     "FlextTapOracleWmsModels",
-    "FlextTapOracleWmsPlugin",
     "FlextTapOracleWmsProtocols",
+    "FlextTapOracleWmsService",
     "FlextTapOracleWmsSettings",
-    "FlextTapOracleWmsStream",
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
-    "FlextTapOracleWmsValidationError",
-    "FlextTapOracleWmsVersion",
+    "tap_oracle_wms",
+    "__author__",
+    "__author_email__",
+    "__description__",
+    "__license__",
+    "__title__",
+    "__url__",
     "__version__",
     "__version_info__",
     "c",
+    "d",
+    "e",
+    "h",
     "m",
     "main",
     "p",
     "r",
+    "s",
     "t",
-]
+    "u",
+    "x",
+)
 
 
-def __getattr__(
-    name: str,
-) -> Any:  # JUSTIFIED: Ruff (any-type) with PEP 562 dynamic module exports — https://docs.astral.sh/ruff/rules/any-type/
-    """Lazy-load module attributes on first access (PEP 562)."""
-    return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
-
-
-def __dir__() -> list[str]:
-    """Return list of available attributes for dir() and autocomplete."""
-    return sorted(__all__)
-
-
-cleanup_submodule_namespace(__name__, _LAZY_IMPORTS)
+install_lazy_exports(
+    __name__,
+    globals(),
+    _LAZY_IMPORTS,
+    public_exports=_PUBLIC_EXPORTS,
+)

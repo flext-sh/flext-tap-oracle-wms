@@ -50,9 +50,9 @@ This directory contains the test suite for FLEXT Tap Oracle WMS. The testing str
 
 | Test Type             | Status                | Coverage | Issues                             |
 | --------------------- | --------------------- | -------- | ---------------------------------- |
-| **Unit Tests**        | ✅ Working            | ~70%\*   | Some comprehensive tests available |
+| **Unit Tests**        | ✅ Working             | ~70%\*   | Some comprehensive tests available |
 | **Integration Tests** | ⚠️ Partially Disabled | ~40%\*   | External WMS dependencies          |
-| **E2E Tests**         | ❌ Disabled           | 0%       | Requires live WMS instance         |
+| **E2E Tests**         | ❌ Disabled            | 0%       | Requires live WMS instance         |
 
 \*Coverage percentages are estimates based on enabled tests only
 
@@ -172,7 +172,7 @@ TEST_FACILITY_CODE=TEST01
 
 **Example Pattern**:
 
-```python
+```text
 @pytest.fixture
 def mock_wms_client():
     """Mock WMS client for isolated testing."""
@@ -240,7 +240,7 @@ tests/
 
 ### WMS Client Mocking
 
-```python
+```text
 # Standard mock pattern for WMS client
 @pytest.fixture
 def mock_flext_wms_client():
@@ -261,7 +261,7 @@ def mock_flext_wms_client():
 
 ### Configuration Mocking
 
-```python
+```text
 # Standard configuration for testing
 @pytest.fixture
 def valid_tap_config():
@@ -315,7 +315,7 @@ def valid_tap_config():
 
 ### Test Naming Conventions
 
-```python
+```text
 # Test function naming pattern
 def test_[component]_[scenario]_[expected_outcome]():
     """Test [component] [scenario] returns [expected outcome]."""

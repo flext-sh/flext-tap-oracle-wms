@@ -1,139 +1,46 @@
 """Singer Oracle WMS tap protocols for FLEXT ecosystem.
 
+Of the 9 inner ``TapOracleWms.*`` Protocol classes that previously lived
+here, 7 had **zero workspace consumers** (per AGENTS.md §3.5 + STRICT YAGNI
+they were deleted). Only ``TapOracleWms.OracleWms.TapWithWmsClient`` and
+``TapWithWmsClientSettings`` remain (consumed by ``streams.py`` via
+``isinstance`` runtime dispatch).
+
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
-if TYPE_CHECKING:
-    from flext_oracle_wms import FlextOracleWmsClient
-from flext_core import FlextProtocols, t
-from flext_meltano import FlextMeltanoProtocols, m
-from flext_oracle_wms.protocols import FlextOracleWmsProtocols
+from flext_meltano import p as meltano_p
+from flext_oracle_wms import FlextOracleWmsProtocols
+from flext_oracle_wms.utilities import FlextOracleWmsUtilities
+from flext_tap_oracle_wms import t
 
 
-class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols):
-    """Singer Tap Oracle WMS protocols extending OracleWms and Meltano protocols.
-
-    Extends both FlextOracleWmsProtocols and FlextMeltanoProtocols via multiple inheritance
-    to inherit all Oracle WMS protocols, Meltano protocols, and foundation protocols.
-
-    Architecture:
-    - EXTENDS: FlextOracleWmsProtocols (inherits .OracleWms.* protocols)
-    - EXTENDS: FlextMeltanoProtocols (inherits .Meltano.* protocols)
-    - ADDS: Tap Oracle WMS-specific protocols in TapOracleWms namespace
-    - PROVIDES: Root-level alias `p` for convenient access
-
-    Usage:
-    from flext_tap_oracle_wms.protocols import p
-
-    # Foundation protocols (inherited)
-    result: p.Result[str]
-    service: p.Service[str]
-
-    # Oracle WMS protocols (inherited)
-    wms: p.OracleWms.*
-
-    # Meltano protocols (inherited)
-    tap: p.Meltano.Tap
-
-    # Tap Oracle WMS-specific protocols
-    wms_connection: p.TapOracleWms.OracleWms.WmsConnection
-    """
+class FlextTapOracleWmsProtocols(meltano_p, FlextOracleWmsProtocols):
+    """Singer Oracle WMS tap protocols facade — composes Meltano + OracleWms."""
 
     class TapOracleWms:
-        """Singer Tap domain protocols."""
+        """Singer Tap Oracle WMS structural protocols (consumer surface)."""
 
         class OracleWms:
-            """Singer Tap Oracle WMS domain protocols for Oracle Warehouse Management System extraction."""
-
-            @runtime_checkable
-            class WmsConnection(FlextProtocols.Service[t.Container], Protocol):
-                """Protocol for Oracle WMS connection operations."""
-
-                def establish_wms_connection(
-                    self, config: m.ConfigMap
-                ) -> FlextProtocols.Result[t.Container]:
-                    """Establish connection to Oracle WMS."""
-                    ...
-
-            @runtime_checkable
-            class InventoryDiscovery(FlextProtocols.Service[t.Container], Protocol):
-                """Protocol for WMS inventory discovery."""
-
-                def discover_inventory(
-                    self, config: m.ConfigMap
-                ) -> FlextProtocols.Result[list[m.ConfigMap]]:
-                    """Discover WMS inventory."""
-                    ...
-
-            @runtime_checkable
-            class OrderProcessing(FlextProtocols.Service[t.Container], Protocol):
-                """Protocol for WMS order processing."""
-
-                def process_orders(
-                    self, config: m.ConfigMap
-                ) -> FlextProtocols.Result[list[m.ConfigMap]]:
-                    """Process WMS orders."""
-                    ...
-
-            @runtime_checkable
-            class WarehouseOperations(FlextProtocols.Service[t.Container], Protocol):
-                """Protocol for WMS warehouse operations."""
-
-                def get_warehouse_operations(
-                    self, config: m.ConfigMap
-                ) -> FlextProtocols.Result[list[m.ConfigMap]]:
-                    """Get WMS warehouse operations."""
-                    ...
-
-            @runtime_checkable
-            class StreamGeneration(FlextProtocols.Service[t.Container], Protocol):
-                """Protocol for Singer stream generation."""
-
-                def generate_catalog(
-                    self, config: m.ConfigMap
-                ) -> FlextProtocols.Result[m.Meltano.SingerCatalog]:
-                    """Generate Singer catalog."""
-                    ...
-
-            @runtime_checkable
-            class Performance(FlextProtocols.Service[t.Container], Protocol):
-                """Protocol for WMS extraction performance."""
-
-                def optimize_query(self, query: str) -> FlextProtocols.Result[str]:
-                    """Optimize WMS query."""
-                    ...
-
-            @runtime_checkable
-            class Validation(FlextProtocols.Service[t.Container], Protocol):
-                """Protocol for WMS data validation."""
-
-                def validate_config(
-                    self, config: m.ConfigMap
-                ) -> FlextProtocols.Result[bool]:
-                    """Validate WMS configuration."""
-                    ...
-
-            @runtime_checkable
-            class Monitoring(FlextProtocols.Service[t.Container], Protocol):
-                """Protocol for WMS extraction monitoring."""
-
-                def track_progress(
-                    self, entity: str, records: int
-                ) -> FlextProtocols.Result[bool]:
-                    """Track WMS extraction progress."""
-                    ...
+            """OracleWms-rooted protocol cluster used by stream isinstance dispatch."""
 
             @runtime_checkable
             class TapWithWmsClient(Protocol):
-                """Protocol for tap instances that provide wms_client."""
+                """Protocol for tap instances that provide ``wms_client``."""
 
-                wms_client: FlextOracleWmsClient
+                wms_client: FlextOracleWmsUtilities.OracleWms.Client
+
+            @runtime_checkable
+            class TapWithWmsClientSettings(TapWithWmsClient, Protocol):
+                """Protocol for tap instances with WMS client and settings."""
+
+                settings: t.JsonMapping
 
 
 p = FlextTapOracleWmsProtocols
-__all__ = ["FlextTapOracleWmsProtocols", "p"]
+__all__: list[str] = ["FlextTapOracleWmsProtocols", "p"]

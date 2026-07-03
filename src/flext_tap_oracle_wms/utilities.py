@@ -6,45 +6,172 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_meltano import FlextMeltanoUtilities
+from collections.abc import (
+    Mapping,
+)
+
+from flext_core import FlextUtilitiesConversion
+from flext_meltano import u
+from flext_oracle_wms import FlextOracleWmsUtilities
+from flext_tap_oracle_wms import c, t
 
 
-class FlextTapOracleWmsUtilities(FlextMeltanoUtilities):
+class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities, FlextUtilitiesConversion):
     """Domain-specific Oracle WMS tap utilities.
 
-    Inherits from FlextMeltanoUtilities to avoid duplication.
+    Inherits from u to avoid duplication.
     """
 
-    class ConfigurationProcessing:
-        """Configuration processing utilities for Oracle WMS."""
+    class TapOracleWms:
+        """Oracle WMS tap utilities namespace."""
 
-        @staticmethod
-        def validate_stream_page_size(page_size: int) -> bool:
-            """Validate stream page size.
+        class ConfigurationProcessing:
+            """Configuration processing utilities for Oracle WMS."""
 
-            Args:
-                page_size: Page size to validate.
+            @staticmethod
+            def validate_stream_page_size(page_size: int) -> bool:
+                """Validate stream page size.
 
-            Returns:
-                True if valid, False otherwise.
+                Args:
+                    page_size: Page size to validate.
 
-            """
-            return page_size > 0
+                Returns:
+                    True if valid, False otherwise.
 
-    class DataProcessing:
-        """Data processing utilities for Oracle WMS records."""
+                """
+                return page_size > 0
 
-        @staticmethod
-        def process_wms_record(
-            record: object,
-        ) -> object:
-            """Process WMS record for output.
+        class DataProcessing:
+            """Data processing utilities for Oracle WMS records."""
 
-            Args:
-                record: Raw WMS record.
+            @staticmethod
+            def process_wms_record(
+                record: t.JsonMapping,
+            ) -> t.JsonMapping:
+                """Process WMS record for output.
 
-            Returns:
-                Processed record.
+                Args:
+                    record: Raw WMS record.
 
-            """
-            return record
+                Returns:
+                    Processed record.
+
+                """
+                return record
+
+        class MappingConversion:
+            """Mapping and sequence conversion utilities for Singer protocol."""
+
+            @staticmethod
+            def safe_str_mapping(
+                raw: t.JsonMapping,
+            ) -> t.JsonMapping:
+                """Return a Mapping with str keys from an untyped mapping source.
+
+                Args:
+                    raw: Raw mapping to convert.
+
+                Returns:
+                    Mapping with string keys.
+
+                """
+                return t.json_mapping_adapter().validate_python(raw)
+
+            @staticmethod
+            def safe_str_dict(raw: t.JsonMapping) -> t.JsonDict:
+                """Return a dict with str keys from an untyped dict source.
+
+                Args:
+                    raw: Raw mapping to convert.
+
+                Returns:
+                    Dict with string keys.
+
+                """
+                return t.json_dict_adapter().validate_python(raw)
+
+            @staticmethod
+            def as_map(
+                value: t.JsonMapping | t.JsonValue,
+                *,
+                normalizer: t.ScalarNormalizer | None = None,
+                map_adapter: t.ContainerValueMapAdapter | None = None,
+                error_cls: type[Exception] | None = None,
+            ) -> t.JsonMapping | None:
+                """Convert a NormalizedValue into a Mapping if possible.
+
+                Args:
+                    value: Value to convert.
+                    normalizer: Callable that normalizes JSON values.
+                    map_adapter: TypeAdapter for validating mappings.
+                    error_cls: Exception class to raise on validation failure.
+
+                Returns:
+                    Mapping with string keys, or None if not a mapping.
+
+                """
+                if not isinstance(value, Mapping):
+                    return None
+                if map_adapter is not None:
+                    try:
+                        validated_map = map_adapter.validate_python(value)
+                    except c.ValidationError as exc:
+                        if error_cls is not None:
+                            msg = f"Validation failed for mapping: {exc}"
+                            raise error_cls(msg) from exc
+                        return None
+                    if normalizer is not None:
+                        return {
+                            key: normalizer(item) for key, item in validated_map.items()
+                        }
+                    return t.json_dict_adapter().validate_python(validated_map)
+                if normalizer is not None:
+                    return {key: normalizer(item) for key, item in value.items()}
+                return t.json_dict_adapter().validate_python(value)
+
+            @staticmethod
+            def as_list(
+                value: t.JsonValue,
+                *,
+                normalizer: t.ScalarNormalizer | None = None,
+                list_adapter: t.ContainerValueListAdapter | None = None,
+                error_cls: type[Exception] | None = None,
+            ) -> t.JsonList | None:
+                """Convert a NormalizedValue into a Sequence if possible.
+
+                Args:
+                    value: Value to convert.
+                    normalizer: Callable that normalizes JSON values.
+                    list_adapter: TypeAdapter for validating lists.
+                    error_cls: Exception class to raise on validation failure.
+
+                Returns:
+                    Sequence of container values, or None if not a list.
+
+                """
+                if not isinstance(value, list):
+                    return None
+                if list_adapter is not None:
+                    try:
+                        validated_seq = list_adapter.validate_python(value)
+                    except c.ValidationError as exc:
+                        if error_cls is not None:
+                            msg = f"Validation failed for list: {exc}"
+                            raise error_cls(msg) from exc
+                        return None
+                    if normalizer is not None:
+                        return [normalizer(item) for item in validated_seq]
+                    return list(validated_seq)
+                if normalizer is not None:
+                    return [normalizer(str(item)) for item in value]
+                coerced_list: t.JsonValueList = [str(item) for item in value]
+                return coerced_list
+
+
+u = FlextTapOracleWmsUtilities
+"""Facade assignment for module-level utility access."""
+
+__all__: list[str] = [
+    "FlextTapOracleWmsUtilities",
+    "u",
+]

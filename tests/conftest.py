@@ -10,12 +10,16 @@ from __future__ import annotations
 import os
 from collections.abc import Generator
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import patch as _patch
 
 import pytest
-from flext_core import r
+from flext_tests import reset_settings as _shared_reset_settings
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from tests.typings import t
+
+reset_settings = _shared_reset_settings
 
 
 @pytest.fixture(scope="session")
@@ -29,6 +33,22 @@ def oracle_wms_environment() -> None:
                 if line and (not line.startswith("#")):
                     key, value = line.split("=", 1)
                     os.environ[key] = value
+
+
+@pytest.fixture(autouse=True)
+def isolate_tap_oracle_wms_env(
+    monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
+    reset_settings: None,
+) -> None:
+    """Keep unit tests deterministic regardless of host FLEXT_TAP_ORACLE_WMS_* env."""
+    _ = reset_settings
+    if request.node.get_closest_marker(
+        "integration"
+    ) or request.node.get_closest_marker("real"):
+        return
+    for key in [key for key in os.environ if key.startswith("FLEXT_TAP_ORACLE_WMS_")]:
+        monkeypatch.delenv(key, raising=False)
 
 
 @pytest.fixture
@@ -49,6 +69,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
 @pytest.fixture
 def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
     """Real configuration from environment."""
+    _ = oracle_wms_environment
     return FlextTapOracleWmsSettings(
         base_url=os.environ.get("ORACLE_WMS_BASE_URL", ""),
         username=os.environ.get("ORACLE_WMS_USERNAME", ""),
@@ -61,103 +82,36 @@ def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
 
 
 @pytest.fixture
-def mock_wms_client() -> MagicMock:
-    """Mock Oracle WMS client."""
-    client = MagicMock()
-    client.connect.return_value = r[bool].ok(value=True)
-    client.list_entities.return_value = r[list[str]].ok([
-        "inventory",
-        "locations",
-        "shipments",
-        "receipts",
-    ])
-    client.get_records.return_value = r[list[object]].ok([
-        {"id": "1", "name": "Test Item 1", "quantity": 100},
-        {"id": "2", "name": "Test Item 2", "quantity": 200},
-    ])
-    client.get_entity_metadata.return_value = r[dict[str, str | list[str]]].ok({
-        "display_name": "Inventory",
-        "description": "Inventory data",
-        "primary_key": ["inventory_id"],
-        "replication_key": "mod_ts",
-    })
-    return client
-
-
-@pytest.fixture
 def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
-    """Create tap instance with sample config."""
-    return FlextTapOracleWms(config=sample_config)
+    """Create tap instance with sample settings (mocked discovery)."""
+    with _patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
+        return FlextTapOracleWms(settings=sample_config.model_dump(mode="json"))
 
 
 @pytest.fixture
-def sample_catalog() -> dict[str, object]:
-    """Sample Singer catalog."""
+def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
+    """Real tap instance for integration tests."""
+    return FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+
+
+@pytest.fixture
+def test_config_extraction() -> t.JsonMapping:
+    """Test configuration for extraction tests."""
     return {
-        "type": "CATALOG",
-        "streams": [
-            {
-                "tap_stream_id": "inventory",
-                "stream": "inventory",
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "inventory_id": {"type": "string"},
-                        "item_id": {"type": "string"},
-                        "quantity": {"type": "number"},
-                        "mod_ts": {"type": "string", "format": "date-time"},
-                    },
-                },
-                "metadata": [
-                    {
-                        "breadcrumb": [],
-                        "metadata": {
-                            "inclusion": "available",
-                            "forced-replication-method": "INCREMENTAL",
-                            "table-key-properties": ["inventory_id"],
-                            "replication-key": "mod_ts",
-                        },
-                    }
-                ],
-            }
-        ],
+        "base_url": "https://test.wms.example.com",
+        "username": "test_user",
+        "password": "test_password",
+        "entities": ["inventory"],
+        "page_size": 10,
     }
 
 
-@pytest.fixture
-def sample_state() -> dict[str, object]:
-    """Sample Singer state."""
-    return {
-        "bookmarks": {
-            "inventory": {"replication_key_value": "2024-01-01T00:00:00Z", "version": 1}
-        }
-    }
-
-
-@pytest.fixture
-def mock_response() -> MagicMock:
-    """Mock HTTP response."""
-    response = MagicMock()
-    response.status_code = 200
-    response.json.return_value = {
-        "data": [{"id": "1", "name": "Item 1"}, {"id": "2", "name": "Item 2"}],
-        "_links": {"next": "https://test.wms.example.com/api/v10/inventory?page=2"},
-    }
-    response.text = '{"data": []}'
-    return response
-
-
-@pytest.fixture
-def mock_request() -> MagicMock:
-    """Mock HTTP request."""
-    request = MagicMock()
-    request.auth = None
-    request.headers = {}
-    return request
-
-
-def pytest_collection_modifyitems(config: object, items: list[pytest.Item]) -> None:
+def pytest_collection_modifyitems(
+    config: pytest.Config,
+    items: t.SequenceOf[pytest.Item],
+) -> None:
     """Add markers to tests based on their location."""
+    _ = config
     for item in items:
         if hasattr(item, "fspath") and "integration" in str(item.fspath):
             item.add_marker(pytest.mark.oracle_wms)
@@ -174,21 +128,3 @@ def reset_environment() -> Generator[None]:
     yield
     os.environ.clear()
     os.environ.update(original_env)
-
-
-@pytest.fixture
-def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
-    """Real tap instance for integration tests."""
-    return FlextTapOracleWms(config=real_config)
-
-
-@pytest.fixture
-def _test_config_extraction() -> dict[str, object]:
-    """Test configuration for extraction tests."""
-    return {
-        "base_url": "https://test.wms.example.com",
-        "username": "test_user",
-        "password": "test_password",
-        "entities": ["inventory"],
-        "page_size": 10,
-    }

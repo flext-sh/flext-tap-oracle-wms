@@ -150,7 +150,7 @@ pytest -m "not slow"
 
 # Run specific component tests
 pytest -k "auth" tests/unit/
-pytest -k "config" tests/unit/
+pytest -k "settings" tests/unit/
 pytest -k "discovery" tests/unit/
 ```
 
@@ -158,7 +158,7 @@ pytest -k "discovery" tests/unit/
 
 ### **Mock Usage Pattern**
 
-```python
+```python notest
 from unittest.mock import Mock, patch
 import pytest
 
@@ -183,7 +183,7 @@ def test_component_with_mock(mock_wms_client):
 
 ### **Configuration Testing Pattern**
 
-```python
+```text
 @pytest.fixture
 def valid_config():
     """Standard valid configuration for testing."""
@@ -206,7 +206,7 @@ def test_config_validation_success(valid_config):
 
 ### **Error Testing Pattern**
 
-```python
+```python notest
 def test_component_handles_network_error():
     """Test component error handling for network failures."""
     with patch("requests.get") as mock_get:
@@ -253,7 +253,7 @@ pytest tests/unit/ --cov --cov-report=term-missing
 
 ### **Test Naming Conventions**
 
-```python
+```text
 def test_[component]_[scenario]_[expected_outcome]():
     """Test [component] [scenario] returns/raises [expected outcome]."""
     pass
@@ -270,7 +270,7 @@ def test_config_validation_with_missing_url_raises_error():
 
 ### **Test Documentation**
 
-```python
+```python notest
 def test_complex_scenario():
     """
     Test complex business scenario with multiple interactions.
@@ -305,7 +305,7 @@ def test_complex_scenario():
 
 ### **Mock Fixtures**
 
-```python
+```text
 # tests/unit/conftest.py
 @pytest.fixture
 def mock_flext_wms_client():
@@ -340,7 +340,7 @@ def sample_wms_response():
 
 ### **Assertion Helpers**
 
-```python
+```python notest
 def assert_flext_result_success(result):
     """Assert r indicates success."""
     assert result.success, f"Expected success, got error: {result.error_message}"
@@ -384,7 +384,7 @@ def assert_flext_result_error(result, expected_error_type=None):
 
 ### **Debugging Tests**
 
-```python
+```python notest
 import pytest
 
 

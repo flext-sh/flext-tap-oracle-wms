@@ -1,6 +1,6 @@
 """Test protocol definitions for flext-tap-oracle-wms.
 
-Provides TestsFlextTapOracleWmsProtocols, combining FlextTestsProtocols with
+Provides TestsFlextTapOracleWmsProtocols, combining TestsFlextProtocols with
 FlextTapOracleWmsProtocols for test-specific protocol definitions.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -11,28 +11,12 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsProtocols
 
-from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols
+from flext_tap_oracle_wms import FlextTapOracleWmsProtocols
 
 
 class TestsFlextTapOracleWmsProtocols(FlextTestsProtocols, FlextTapOracleWmsProtocols):
-    """Test protocols combining FlextTestsProtocols and FlextTapOracleWmsProtocols.
-
-    Provides access to:
-    - p.Tests.Docker.* (from FlextTestsProtocols)
-    - p.Tests.Factory.* (from FlextTestsProtocols)
-    - p.TapOracleWms.* (from FlextTapOracleWmsProtocols)
-    """
-
-    class TapOracleWms(FlextTapOracleWmsProtocols.TapOracleWms):
-        """TapOracleWms-specific protocols."""
-
-        class Tests:
-            """Project-specific test protocols.
-
-            Extends FlextTestsProtocols.Tests with TapOracleWms-specific protocols.
-            """
+    """Test protocols combining TestsFlextProtocols and FlextTapOracleWmsProtocols."""
 
 
 p = TestsFlextTapOracleWmsProtocols
-p = TestsFlextTapOracleWmsProtocols
-__all__ = ["TestsFlextTapOracleWmsProtocols", "p"]
+__all__: list[str] = ["TestsFlextTapOracleWmsProtocols", "p"]

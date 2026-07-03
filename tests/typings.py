@@ -1,4 +1,4 @@
-"""Types for flext-tap-oracle-wms tests - uses composition with FlextTestsTypes.
+"""Types for flext-tap-oracle-wms tests - uses composition with TestsFlextTypes.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -7,26 +7,24 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Literal
-
 from flext_tests import FlextTestsTypes
 
-from flext_tap_oracle_wms import t
+from flext_tap_oracle_wms import FlextTapOracleWmsTypes
 
 
-class TestsFlextTapOracleWmsTypes(FlextTestsTypes):
-    """Types for flext-tap-oracle-wms tests - uses composition with FlextTestsTypes.
+class TestsFlextTapOracleWmsTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
+    """Types for flext-tap-oracle-wms tests - uses composition with TestsFlextTypes.
 
-    Architecture: Uses composition (not inheritance) with FlextTestsTypes and FlextTapOracleWmsTypes
+    Architecture: Uses composition (not inheritance) with TestsFlextTypes and FlextTapOracleWmsTypes
     for flext-tap-oracle-wms-specific type definitions.
 
     Access patterns:
     - TestsFlextTapOracleWmsTypes.Tests.* = flext_tests test types (via composition)
     - TestsFlextTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
-    - TestsFlextTapOracleWmsTypes.* = FlextTestsTypes types (via composition)
+    - TestsFlextTapOracleWmsTypes.* = TestsFlextTypes types (via composition)
 
     Rules:
-    - Use composition, not inheritance (FlextTestsTypes deprecates subclassing)
+    - Use composition, not inheritance (TestsFlextTypes deprecates subclassing)
     - flext-tap-oracle-wms-specific types go in TapOracleWms namespace
     - Generic types accessed via Tests namespace
     """
@@ -40,22 +38,17 @@ class TestsFlextTapOracleWmsTypes(FlextTestsTypes):
         - Test scenario types
         """
 
-        type TestOracleWmsBaseUrl = Literal[
-            "https://test-wms.oraclecloud.com", "https://staging-wms.oraclecloud.com"
+        type MockOracleWmsRecord = t.MappingKV[str, FlextTapOracleWmsTypes.Scalar]
+        type MockOracleWmsResponse = t.MappingKV[
+            str,
+            t.SequenceOf[MockOracleWmsRecord] | bool | str | None,
         ]
-        type TestOracleWmsUsername = Literal[
-            "test_user", "REDACTED_LDAP_BIND_PASSWORD_user"
+        type TestOracleWmsScenario = FlextTestsTypes.JsonMapping
+        type TestOracleWmsValidationResult = t.MappingKV[
+            str, bool | str | FlextTestsTypes.StrSequence
         ]
-        type TestOracleWmsMethod = Literal["GET", "POST", "PUT", "DELETE"]
-        type TestFacilityId = Literal["FAC001", "FAC002", "FAC003"]
-        type MockOracleWmsRecord = dict[str, t.Scalar]
-        type MockOracleWmsResponse = dict[
-            str, list[MockOracleWmsRecord] | bool | str | None
-        ]
-        type TestOracleWmsScenario = dict[str, object]
-        type TestOracleWmsValidationResult = dict[str, bool | str | list[str]]
-        type TestOracleWmsApiResult = dict[str, object]
+        type TestOracleWmsApiResult = FlextTestsTypes.JsonMapping
 
 
-tt = TestsFlextTapOracleWmsTypes
-__all__ = ["TestsFlextTapOracleWmsTypes", "tt"]
+t = TestsFlextTapOracleWmsTypes
+__all__: list[str] = ["TestsFlextTapOracleWmsTypes", "t"]

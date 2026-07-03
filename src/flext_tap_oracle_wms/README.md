@@ -51,7 +51,7 @@ This directory contains the core implementation of FLEXT Tap Oracle WMS, a Singe
 
 #### **Configuration Management**
 
-- [`config.py`](config.py) - Configuration models using Pydantic
+- [`settings.py`](settings.py) - Configuration models using Pydantic
 - [`config_mapper.py`](config_mapper.py) - Configuration mapping utilities
 - [`config_validator.py`](config_validator.py) - Business rule validation
 - [`critical_validation.py`](critical_validation.py) - Environment validation
@@ -117,10 +117,10 @@ The module integrates with FLEXT ecosystem components:
 
 ### **Main Tap Usage**
 
-```python
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
+```python notest
+from flext_tap_oracle_wms import FlextTapOracleWms
 
-config = {
+settings = {
     "base_url": "https://wms.example.com",
     "auth_method": "basic",
     "username": "user",
@@ -129,23 +129,23 @@ config = {
     "facility_code": "FACILITY",
 }
 
-tap = FlextTapOracleWms(config)
+tap = FlextTapOracleWms(settings)
 streams = tap.discover_streams()
 ```
 
 ### **Authentication**
 
-```python
-from flext_tap_oracle_wms.auth import get_wms_authenticator
+```python notest
+from flext_tap_oracle_wms import get_wms_authenticator
 
-auth = get_wms_authenticator(stream, config)
+auth = get_wms_authenticator(stream, settings)
 authenticated_request = auth(request)
 ```
 
 ### **Entity Discovery**
 
-```python
-from flext_tap_oracle_wms.entity_discovery import EntityDiscovery
+```python notest
+from flext_tap_oracle_wms import EntityDiscovery
 
 discovery = EntityDiscovery(wms_client)
 entities = discovery.discover_entities()
@@ -153,11 +153,11 @@ entities = discovery.discover_entities()
 
 ### **Configuration Validation**
 
-```python
-from flext_tap_oracle_wms.config_validator import ConfigValidator
+```python notest
+from flext_tap_oracle_wms import ConfigValidator
 
 validator = ConfigValidator()
-result = validator.validate_config(config)
+result = validator.validate_config(settings)
 ```
 
 ## Development Guidelines
@@ -180,7 +180,7 @@ result = validator.validate_config(config)
 
 ### **FLEXT Integration**
 
-- Use `flext_core.FlextLogger()` for logging
+- Use `flext_core.u.fetch_logger()` for logging
 - Implement `r` patterns for error handling
 - Follow FLEXT configuration patterns
 - Integrate with FLEXT observability standards
