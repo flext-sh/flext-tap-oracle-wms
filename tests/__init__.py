@@ -25,63 +25,63 @@ if TYPE_CHECKING:
         x as x,
     )
 
-    from tests.base import (
+    from flext_tap_oracle_wms.tests.base import (
         TestsFlextTapOracleWmsServiceBase as TestsFlextTapOracleWmsServiceBase,
         s as s,
     )
-    from tests.constants import (
+    from flext_tap_oracle_wms.tests.constants import (
         TestsFlextTapOracleWmsConstants as TestsFlextTapOracleWmsConstants,
         c as c,
     )
-    from tests.e2e.test_e2e import (
+    from flext_tap_oracle_wms.tests.e2e.test_e2e import (
         TestsFlextTapOracleWmsE2e as TestsFlextTapOracleWmsE2e,
     )
-    from tests.integration.test_functional import (
+    from flext_tap_oracle_wms.tests.integration.test_functional import (
         TestsFlextTapOracleWmsFunctional as TestsFlextTapOracleWmsFunctional,
     )
-    from tests.integration.test_streams_functional import (
+    from flext_tap_oracle_wms.tests.integration.test_streams_functional import (
         TestsFlextTapOracleWmsStreamsFunctional as TestsFlextTapOracleWmsStreamsFunctional,
     )
-    from tests.integration.test_wms import (
+    from flext_tap_oracle_wms.tests.integration.test_wms import (
         TestsFlextTapOracleWmsWms as TestsFlextTapOracleWmsWms,
     )
-    from tests.integration.test_wms_connection import (
+    from flext_tap_oracle_wms.tests.integration.test_wms_connection import (
         TestsFlextTapOracleWmsWmsConnection as TestsFlextTapOracleWmsWmsConnection,
     )
-    from tests.models import (
+    from flext_tap_oracle_wms.tests.models import (
         TestsFlextTapOracleWmsModels as TestsFlextTapOracleWmsModels,
         m as m,
     )
-    from tests.performance.test_extraction_performance import (
+    from flext_tap_oracle_wms.tests.performance.test_extraction_performance import (
         TestsFlextTapOracleWmsExtractionPerformance as TestsFlextTapOracleWmsExtractionPerformance,
     )
-    from tests.protocols import (
+    from flext_tap_oracle_wms.tests.protocols import (
         TestsFlextTapOracleWmsProtocols as TestsFlextTapOracleWmsProtocols,
         p as p,
     )
-    from tests.settings import (
+    from flext_tap_oracle_wms.tests.settings import (
         TestsFlextTapOracleWmsSettings as TestsFlextTapOracleWmsSettings,
     )
-    from tests.typings import (
+    from flext_tap_oracle_wms.tests.typings import (
         TestsFlextTapOracleWmsTypes as TestsFlextTapOracleWmsTypes,
         t as t,
     )
-    from tests.unit.test_cli import (
+    from flext_tap_oracle_wms.tests.unit.test_cli import (
         TestsFlextTapOracleWmsCli as TestsFlextTapOracleWmsCli,
     )
-    from tests.unit.test_config import (
+    from flext_tap_oracle_wms.tests.unit.test_config import (
         TestsFlextTapOracleWmsConfig as TestsFlextTapOracleWmsConfig,
     )
-    from tests.unit.test_config_validation import (
+    from flext_tap_oracle_wms.tests.unit.test_config_validation import (
         TestsFlextTapOracleWmsConfigValidation as TestsFlextTapOracleWmsConfigValidation,
     )
-    from tests.unit.test_tap import (
+    from flext_tap_oracle_wms.tests.unit.test_tap import (
         TestsFlextTapOracleWmsTap as TestsFlextTapOracleWmsTap,
     )
-    from tests.unit.test_tap_initialization import (
+    from flext_tap_oracle_wms.tests.unit.test_tap_initialization import (
         TestsFlextTapOracleWmsTapInitialization as TestsFlextTapOracleWmsTapInitialization,
     )
-    from tests.utilities import (
+    from flext_tap_oracle_wms.tests.utilities import (
         TestsFlextTapOracleWmsUtilities as TestsFlextTapOracleWmsUtilities,
         u as u,
     )
