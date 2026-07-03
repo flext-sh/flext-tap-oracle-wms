@@ -10,12 +10,13 @@ from collections.abc import (
     Mapping,
 )
 
+from flext_core import FlextUtilitiesConversion
 from flext_meltano import u
 from flext_oracle_wms import FlextOracleWmsUtilities
 from flext_tap_oracle_wms import c, t
 
 
-class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
+class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities, FlextUtilitiesConversion):
     """Domain-specific Oracle WMS tap utilities.
 
     Inherits from u to avoid duplication.
