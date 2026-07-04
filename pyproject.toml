@@ -418,17 +418,25 @@ addopts = [
   "--ignore-glob=*/tests/utilities.py",
   "--markdown-docs",
   "--strict-markers",
+  "-m",
+  "not (integration or e2e or performance or oracle_wms or slow or real or docker)",
 ]
 filterwarnings = [
   "ignore:.*cannot collect test class.*because it has a __init__ constructor.*:pytest.PytestCollectionWarning",
+  "ignore:.*py\\.path\\.local.*:pytest.PytestRemovedIn9Warning:pytest_codeblocks.plugin",
 ]
 markers = [
+  "discovery: discovery-related tests",
   "docker: tests requiring Docker",
   "e2e: end-to-end integration tests",
   "edge_cases: edge case tests",
+  "functional: functional tests",
   "integration: integration tests",
+  "oracle_wms: Oracle WMS integration tests",
   "performance: performance and benchmark tests",
+  "real: tests requiring real external services",
   "resilience: resilience tests",
+  "singer: Singer protocol tests",
   "slow: slow-running tests",
   "stress: stress tests",
   "unit: unit tests",
