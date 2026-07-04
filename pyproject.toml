@@ -423,7 +423,6 @@ addopts = [
 ]
 filterwarnings = [
   "ignore:.*cannot collect test class.*because it has a __init__ constructor.*:pytest.PytestCollectionWarning",
-  "ignore:.*py\\.path\\.local.*:pytest.PytestRemovedIn9Warning:pytest_codeblocks.plugin",
 ]
 markers = [
   "discovery: discovery-related tests",
