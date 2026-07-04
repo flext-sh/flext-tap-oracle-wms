@@ -34,7 +34,7 @@ FLEXT_TAP_ORACLE_WMS_LAZY_IMPORTS_PART_01 = build_lazy_import_map(
             "FlextTapOracleWmsUtilities",
             "u",
         ),
-        "flext_core": (
+        "flext_meltano": (
             "d",
             "e",
             "h",
