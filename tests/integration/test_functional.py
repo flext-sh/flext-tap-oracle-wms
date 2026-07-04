@@ -87,7 +87,8 @@ class TestsFlextTapOracleWmsFunctional:
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """CRITICAL: Test automatic entity discovery with REAL Oracle WMS."""
-        try:
+
+        def _run_test_automatic_entity_discovery() -> None:
             catalog = self._catalog(real_tap_instance)
             assert catalog is not None, "Catalog is None"
             streams = catalog.streams
@@ -124,6 +125,9 @@ class TestsFlextTapOracleWmsFunctional:
                     stream.tap_stream_id,
                     len(properties),
                 )
+
+        try:
+            return _run_test_automatic_entity_discovery()
         except (
             ValueError,
             TypeError,
@@ -204,7 +208,8 @@ class TestsFlextTapOracleWmsFunctional:
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         logger.info("Testing extraction from stream: %s", stream_id)
-        try:
+
+        def _run_test_real_data_extraction_sample() -> None:
             stream = FlextTapOracleWmsStream(
                 tap=real_tap_instance,
                 name=stream_id,
@@ -218,6 +223,9 @@ class TestsFlextTapOracleWmsFunctional:
             assert url, "Stream URL is empty"
             assert "invalid.wms.ocs.oraclecloud.com" in url, f"Invalid URL: {url}"
             logger.info("✅ Stream URL generated: %s", url)
+
+        try:
+            return _run_test_real_data_extraction_sample()
         except (
             ValueError,
             TypeError,
