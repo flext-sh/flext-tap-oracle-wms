@@ -101,7 +101,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
     @property
     def catalog_dict_typed(self) -> t.MutableJsonMapping:
-        """Return a validated Singer catalog mapping with recursive contracts."""
+        """A validated Singer catalog mapping with recursive contracts."""
         raw_catalog_dict: t.JsonMapping = getattr(super(), "catalog_dict", {})
         try:
             validated_catalog = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
@@ -195,7 +195,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:
-        """Return validated tap settings."""
+        """The validated tap settings."""
         config_map = dict(self.settings)
         try:
             return FlextTapOracleWmsSettings.model_validate(config_map)
@@ -205,7 +205,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
     @property
     def wms_client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
-        """Return a started WMS client instance."""
+        """A started WMS client instance."""
         if self._wms_client is None:
             password = self.flext_config.password
             wms_settings = FlextOracleWmsSettings.model_validate({
@@ -229,7 +229,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
     @staticmethod
     def _schema_for_entity() -> t.JsonMapping:
-        """Return a default Singer JSON schema for discovered entities."""
+        """A default Singer JSON schema for discovered entities."""
         return {"type": c.TapOracleWms.SCHEMA_TYPE_OBJECT}
 
     def discovercatalog_typed(self) -> p.Result[m.Meltano.SingerCatalog]:
@@ -304,7 +304,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         return r[bool].ok(True)
 
     def get_implementation_metrics(self) -> p.Result[t.JsonValue]:
-        """Return basic runtime metrics for observability."""
+        """The basic runtime metrics for observability."""
         return r[t.JsonValue].ok({
             "tap_name": self.name,
             "version": self.get_implementation_version(),
@@ -312,11 +312,11 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         })
 
     def get_implementation_name(self) -> str:
-        """Return the human-readable implementation name."""
+        """The human-readable implementation name."""
         return "FLEXT Oracle WMS Tap"
 
     def get_implementation_version(self) -> str:
-        """Return installed package version."""
+        """The installed package version."""
         return __version__
 
     def validate_configuration(self) -> p.Result[t.JsonValue]:

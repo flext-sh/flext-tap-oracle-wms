@@ -73,7 +73,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @property
     @override
     def schema(self) -> t.JsonDict:
-        """Get schema with proper type narrowing over Singer SDK's bare ``dict``."""
+        """The schema with proper type narrowing over Singer SDK's bare ``dict``."""
         if self._typed_schema is None:
             msg = f"The schema for stream '{self.name}' was not provided"
             raise ValueError(msg)
@@ -81,7 +81,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @property
     def client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
-        """Get WMS client from tap."""
+        """The WMS client from tap."""
         if self._client is not None:
             return self._client
         tap_instance = self._tap
@@ -135,7 +135,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return str(value)
 
     def get_primary_keys(self) -> t.StrSequence:
-        """Get primary keys for this stream."""
+        """The primary keys for this stream."""
         return list(self.stream_primary_keys)
 
     @override
@@ -143,7 +143,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self,
         context: t.ScalarMapping | None,
     ) -> t.IterableOf[t.JsonDict]:
-        """Get records from Oracle WMS."""
+        """The records from Oracle WMS."""
         page = 1
         has_more = True
         while has_more:
@@ -168,7 +168,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
                 raise FlextTapOracleWmsError(msg) from exc
 
     def get_replication_key(self) -> str | None:
-        """Get replication key for this stream."""
+        """The replication key for this stream."""
         return self.stream_replication_key
 
     @override
