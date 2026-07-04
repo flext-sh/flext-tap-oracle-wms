@@ -424,15 +424,18 @@ class TestsFlextTapOracleWmsE2e:
         singer_compliant: bool = False
         performance_acceptable: bool = False
         errors: list[str] = []
-        try:
+
+        def _collect_summary() -> tuple[bool, int, int, int, int, bool, bool]:
             start_time = time.time()
             tap_instance = FlextTapOracleWms(
                 settings=real_config.model_dump(mode="json")
             )
             catalog = self._catalog(tap_instance)
-            discovery_successful = True
             catalog_streams = catalog.streams
-            streams_discovered = len(catalog_streams)
+            discovered = len(catalog_streams)
+            incremental = 0
+            full_table = 0
+            valid_schemas = 0
             for stream in catalog_streams:
                 metadata = stream.metadata
                 table_meta = next(
@@ -443,19 +446,38 @@ class TestsFlextTapOracleWmsE2e:
                     tm_meta = table_meta.metadata
                     replication_method = tm_meta.get("replication-method")
                     if replication_method == "INCREMENTAL":
-                        incremental_streams += 1
+                        incremental += 1
                     elif (
                         replication_method
                         == meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value
                     ):
-                        full_table_streams += 1
+                        full_table += 1
                 schema = stream.schema_definition
                 if schema.get("properties"):
-                    schemas_valid += 1
-            singer_compliant = streams_discovered > 0 and schemas_valid > 0
-            end_time = time.time()
-            discovery_time = end_time - start_time
-            performance_acceptable = discovery_time < 300 and streams_discovered > 0
+                    valid_schemas += 1
+            compliant = discovered > 0 and valid_schemas > 0
+            discovery_time = time.time() - start_time
+            performant = discovery_time < 300 and discovered > 0
+            return (
+                True,
+                discovered,
+                incremental,
+                full_table,
+                valid_schemas,
+                compliant,
+                performant,
+            )
+
+        try:
+            (
+                discovery_successful,
+                streams_discovered,
+                incremental_streams,
+                full_table_streams,
+                schemas_valid,
+                singer_compliant,
+                performance_acceptable,
+            ) = _collect_summary()
         except (
             ValueError,
             TypeError,

@@ -425,19 +425,20 @@ class TestsFlextTapOracleWmsFunctional:
         pagination_configured: bool = False
         singer_compliant: bool = False
         errors: MutableSequence[str] = []
-        try:
+
+        def _collect_summary() -> tuple[bool, bool, int, int, bool, bool, bool]:
             assert real_tap_instance is not None
-            environment_loaded = True
-            tap_initialized = True
             catalog = self._catalog(real_tap_instance)
             catalog_streams = catalog.streams
-            entities_discovered = len(catalog_streams)
-            for stream in catalog_streams:
-                if stream.schema_definition.get("properties"):
-                    schemas_generated += 1
+            discovered = len(catalog_streams)
+            generated = sum(
+                1
+                for stream in catalog_streams
+                if stream.schema_definition.get("properties")
+            )
             metadata_streams = [stream for stream in catalog_streams if stream.metadata]
-            replication_configured = bool(metadata_streams)
-            singer_compliant = all(stream.tap_stream_id for stream in catalog_streams)
+            compliant = all(stream.tap_stream_id for stream in catalog_streams)
+            paginated = False
             if catalog_streams:
                 test_stream = catalog_streams[0]
                 stream_obj = FlextTapOracleWmsStream(
@@ -446,7 +447,27 @@ class TestsFlextTapOracleWmsFunctional:
                     self._schema(test_stream),
                 )
                 params = stream_obj._build_operation_kwargs(page=1, context=None)
-                pagination_configured = "limit" in params
+                paginated = "limit" in params
+            return (
+                True,
+                True,
+                discovered,
+                generated,
+                bool(metadata_streams),
+                paginated,
+                compliant,
+            )
+
+        try:
+            (
+                environment_loaded,
+                tap_initialized,
+                entities_discovered,
+                schemas_generated,
+                replication_configured,
+                pagination_configured,
+                singer_compliant,
+            ) = _collect_summary()
         except (
             ValueError,
             TypeError,

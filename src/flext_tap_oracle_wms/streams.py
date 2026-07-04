@@ -149,23 +149,23 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         while has_more:
             try:
                 page_result = self._fetch_page_data(page, context)
-                if page_result.failure:
-                    logger.error(
-                        "Failed to fetch page %s for %s: %s",
-                        page,
-                        self.name,
-                        page_result.error or "",
-                    )
-                    break
-                records, has_more = page_result.value
-                yield from self._process_page_records(records, context)
-                page += 1
-                if not records:
-                    break
             except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
                 msg = f"Error getting records for {self.name}: {exc}"
                 logger.exception(msg)
                 raise FlextTapOracleWmsError(msg) from exc
+            if page_result.failure:
+                logger.error(
+                    "Failed to fetch page %s for %s: %s",
+                    page,
+                    self.name,
+                    page_result.error or "",
+                )
+                break
+            records, has_more = page_result.value
+            yield from self._process_page_records(records, context)
+            page += 1
+            if not records:
+                break
 
     def get_replication_key(self) -> str | None:
         """The replication key for this stream."""
