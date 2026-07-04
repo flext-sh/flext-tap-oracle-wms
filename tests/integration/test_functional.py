@@ -11,15 +11,18 @@ from collections.abc import (
     Mapping,
     MutableSequence,
 )
+from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.models import m
 from tests.typings import t
 from tests.utilities import u
+
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+    from tests.models import m
 
 logger = u.fetch_logger(__name__)
 
@@ -331,7 +334,7 @@ class TestsFlextTapOracleWmsFunctional:
         url_params = stream._build_operation_kwargs(page=1, context=context)
         kwargs_filter = url_params.get("filter")
         if kwargs_filter and (">=" in str(kwargs_filter) or "<" in str(kwargs_filter)):
-            logger.info(f"✅ Timestamp filters applied: {kwargs_filter}")
+            logger.info("✅ Timestamp filters applied: %s", kwargs_filter)
         if "ordering" in url_params:
             ordering = url_params["ordering"]
             assert isinstance(ordering, str), "Ordering must be string"
@@ -487,7 +490,7 @@ class TestsFlextTapOracleWmsFunctional:
         logger.info("  📄 Pagination configured: %s", pagination_configured)
         logger.info("  🎵 Singer compliant: %s", singer_compliant)
         if errors:
-            logger.error(f"  ❌ Errors: {errors}")
+            logger.error("  ❌ Errors: %s", errors)
         assert environment_loaded, "Environment not loaded"
         assert tap_initialized, "Tap not initialized"
         assert entities_discovered > 0, "No entities discovered"

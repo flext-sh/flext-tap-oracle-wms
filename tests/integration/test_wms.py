@@ -14,12 +14,15 @@ import os
 from collections.abc import (
     Mapping,
 )
+from typing import TYPE_CHECKING
 
 import pytest
 
 from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.typings import t
+
+if TYPE_CHECKING:
+    from tests.typings import t
 
 
 @pytest.fixture

@@ -8,8 +8,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import Generator
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import patch as _patch
 
 import pytest
@@ -17,7 +17,11 @@ from flext_tests import reset_settings as _shared_reset_settings
 
 from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.typings import t
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from tests.typings import t
 
 reset_settings = _shared_reset_settings
 
@@ -44,7 +48,7 @@ def isolate_tap_oracle_wms_env(
     """Keep unit tests deterministic regardless of host FLEXT_TAP_ORACLE_WMS_* env."""
     _ = reset_settings
     if request.node.get_closest_marker(
-        "integration"
+        "integration",
     ) or request.node.get_closest_marker("real"):
         return
     for key in [key for key in os.environ if key.startswith("FLEXT_TAP_ORACLE_WMS_")]:

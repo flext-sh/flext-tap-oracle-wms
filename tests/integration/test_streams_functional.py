@@ -9,13 +9,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.models import m
 from tests.typings import t
 from tests.utilities import u
+
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms.tap import FlextTapOracleWms
+    from tests.models import m
 
 logger = u.fetch_logger(__name__)
 
@@ -85,7 +89,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         assert "limit" in url_params
         assert isinstance(url_params["limit"], int)
         assert url_params["limit"] > 0
-        logger.info(f"✅ URL generation working: {url_base}")
+        logger.info("✅ URL generation working: %s", url_base)
         logger.info(f"✅ Parameters: {list(url_params.keys())}")
 
     @pytest.mark.skip(
@@ -140,7 +144,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
             if "WMS" in h.upper() or "Company" in h or "Facility" in h
         ]
         if wms_headers:
-            logger.info(f"✅ WMS-specific headers: {wms_headers}")
+            logger.info("✅ WMS-specific headers: %s", wms_headers)
         logger.info(f"✅ HTTP headers configured: {list(headers.keys())}")
 
     @pytest.mark.skip(
@@ -165,8 +169,8 @@ class TestsFlextTapOracleWmsStreamsFunctional:
                 incremental_streams.append((stream.name, stream.replication_key))
             elif stream.replication_method == "FULL_TABLE":
                 full_table_streams.append(stream.name)
-        logger.info(f"✅ Incremental streams: {incremental_streams}")
-        logger.info(f"✅ Full table streams: {full_table_streams}")
+        logger.info("✅ Incremental streams: %s", incremental_streams)
+        logger.info("✅ Full table streams: %s", full_table_streams)
         total_streams = len(incremental_streams) + len(full_table_streams)
         assert total_streams > 0, "No replication methods configured"
 
@@ -191,7 +195,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
                 is_timestamp = True
                 if is_timestamp:
                     timestamp_streams.append((stream.name, stream.replication_key))
-        logger.info(f"✅ Timestamp replication keys: {timestamp_streams}")
+        logger.info("✅ Timestamp replication keys: %s", timestamp_streams)
         if timestamp_streams:
             for _stream_name, replication_key in timestamp_streams:
                 assert replication_key in {

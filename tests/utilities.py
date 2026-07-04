@@ -29,8 +29,6 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
     - Generic utilities accessed via Tests namespace
     """
 
-    pass
-
 
 u = TestsFlextTapOracleWmsUtilities
 __all__: list[str] = ["TestsFlextTapOracleWmsUtilities", "u"]

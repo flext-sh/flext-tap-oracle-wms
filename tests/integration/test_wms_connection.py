@@ -14,13 +14,16 @@ from collections.abc import (
     Mapping,
 )
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from dotenv import load_dotenv
 
 from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.typings import t
+
+if TYPE_CHECKING:
+    from tests.typings import t
 
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(env_path)
@@ -69,7 +72,6 @@ class TestsFlextTapOracleWmsWmsConnection:
     def test_tap_initialization(self, tap: FlextTapOracleWms) -> None:
         """Test tap initialization."""
         # assert result.is_success
-        pass
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",

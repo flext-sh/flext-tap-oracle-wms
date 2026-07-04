@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import (
     Mapping,
 )
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
@@ -12,9 +13,11 @@ from flext_tests import r
 
 from flext_tap_oracle_wms import m
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
-from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests.typings import t
+
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 
 
 class TestsFlextTapOracleWmsTap:

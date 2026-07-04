@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import psutil
 import pytest
@@ -17,7 +18,9 @@ from dotenv import load_dotenv
 
 from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.typings import t
+
+if TYPE_CHECKING:
+    from tests.typings import t
 
 env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(env_path)
@@ -139,7 +142,7 @@ class TestsFlextTapOracleWmsExtractionPerformance:
             enable_rate_limiting=False,
         )
         tap_no_limit = FlextTapOracleWms(
-            settings=config_no_limit.model_dump(mode="json")
+            settings=config_no_limit.model_dump(mode="json"),
         )
         tap_no_limit.initialize()
         config_with_limit = FlextTapOracleWmsSettings(

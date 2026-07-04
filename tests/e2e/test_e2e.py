@@ -16,17 +16,20 @@ from collections.abc import (
     Mapping,
 )
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 import pytest
 
 from flext_cli import u as cli_u
 from flext_meltano import c as meltano_c
-from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.models import m
 from tests.typings import t
 from tests.utilities import u
+
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+    from tests.models import m
 
 logger = u.fetch_logger(__name__)
 
@@ -291,7 +294,7 @@ class TestsFlextTapOracleWmsE2e:
     def test_pagination_end_to_end(self) -> None:
         """E2E: Test pagination handling through multiple pages."""
         pages_tested: list[str] = []
-        logger.info(f"✅ Pagination flow tested: {pages_tested}")
+        logger.info("✅ Pagination flow tested: %s", pages_tested)
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -350,7 +353,8 @@ class TestsFlextTapOracleWmsE2e:
                 assert isinstance(meta.breadcrumb, list), "Breadcrumb must be list"
                 assert isinstance(meta.metadata, dict), "Metadata field must be dict"
             table_meta = next(
-                (meta for meta in metadata if meta.breadcrumb == []), None
+                (meta for meta in metadata if meta.breadcrumb == []),
+                None,
             )
             assert table_meta is not None, "Missing table-level metadata"
             table_metadata = table_meta.metadata
@@ -428,7 +432,7 @@ class TestsFlextTapOracleWmsE2e:
         def _collect_summary() -> tuple[bool, int, int, int, int, bool, bool]:
             start_time = time.time()
             tap_instance = FlextTapOracleWms(
-                settings=real_config.model_dump(mode="json")
+                settings=real_config.model_dump(mode="json"),
             )
             catalog = self._catalog(tap_instance)
             catalog_streams = catalog.streams
@@ -497,7 +501,7 @@ class TestsFlextTapOracleWmsE2e:
         logger.info("  🎵 Singer compliant: %s", singer_compliant)
         logger.info("  ⚡ Performance acceptable: %s", performance_acceptable)
         if errors:
-            logger.error(f"  ❌ Errors: {errors}")
+            logger.error("  ❌ Errors: %s", errors)
         assert discovery_successful, "Discovery failed"
         assert streams_discovered > 0, "No streams discovered"
         assert schemas_valid > 0, "No valid schemas"
