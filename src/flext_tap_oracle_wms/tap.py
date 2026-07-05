@@ -17,7 +17,6 @@ from flext_oracle_wms import (
 from flext_oracle_wms.utilities import FlextOracleWmsUtilities
 from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
-    __version__,
     c,
     m,
     p,
@@ -25,6 +24,7 @@ from flext_tap_oracle_wms import (
     t,
     u,
 )
+from flext_tap_oracle_wms.__version__ import __version__
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 
