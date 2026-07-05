@@ -39,7 +39,7 @@ def oracle_wms_environment() -> None:
                     os.environ[key] = value
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def isolate_tap_oracle_wms_env(
     monkeypatch: pytest.MonkeyPatch,
     request: pytest.FixtureRequest,
@@ -125,7 +125,7 @@ def pytest_collection_modifyitems(
             item.add_marker(pytest.mark.slow)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def reset_environment() -> Generator[None]:
     """Reset environment after each test."""
     original_env = os.environ.copy()
