@@ -19,14 +19,7 @@ from flext_tap_oracle_wms.__version__ import (
 from flext_tap_oracle_wms._exports import FLEXT_TAP_ORACLE_WMS_LAZY_IMPORTS
 
 if TYPE_CHECKING:
-    from flext_core._root_typing_parts.facades import (
-        d as d,
-        e as e,
-        h as h,
-        r as r,
-        s as s,
-        x as x,
-    )
+    from flext_meltano import d as d, e as e, h as h, r as r, s as s, x as x
     from flext_tap_oracle_wms.api import (
         FlextTapOracleWmsService as FlextTapOracleWmsService,
         tap_oracle_wms as tap_oracle_wms,

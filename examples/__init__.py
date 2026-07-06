@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_core._root_typing_parts.facades import (
+    from flext_tap_oracle_wms import (
         c as c,
         d as d,
         e as e,
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     )
 _LAZY_IMPORTS = build_lazy_import_map(
     {
-        "flext_core._root_typing_parts.facades": (
+        "flext_tap_oracle_wms": (
             "c",
             "d",
             "e",
