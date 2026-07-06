@@ -171,7 +171,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 ),
                 key_properties=(),
             )
-            if entry_result.failure or entry_result.value is None:
+            if entry_result.failure:
                 msg = (
                     entry_result.error
                     or f"Failed to build catalog entry for {stream_name}"
@@ -253,23 +253,22 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                     entry_result.error
                     or f"Failed to build Singer catalog entry for {entity}",
                 )
-            if entry_result.value is not None:
-                streams.append(
-                    entry_result.value.model_copy(
-                        update={
-                            "metadata": [
-                                m.Meltano.SingerCatalogMetadata(
-                                    breadcrumb=[],
-                                    metadata={
-                                        "inclusion": "available",
-                                        "forced-replication-method": "FULL_TABLE",
-                                        "table-key-properties": ["id"],
-                                    },
-                                ),
-                            ],
-                        },
-                    ),
-                )
+            streams.append(
+                entry_result.value.model_copy(
+                    update={
+                        "metadata": [
+                            m.Meltano.SingerCatalogMetadata(
+                                breadcrumb=[],
+                                metadata={
+                                    "inclusion": "available",
+                                    "forced-replication-method": "FULL_TABLE",
+                                    "table-key-properties": ["id"],
+                                },
+                            ),
+                        ],
+                    },
+                ),
+            )
         return r[m.Meltano.SingerCatalog].ok(
             m.Meltano.SingerCatalog(type="CATALOG", streams=streams),
         )
