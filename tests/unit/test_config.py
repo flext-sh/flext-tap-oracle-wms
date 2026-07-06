@@ -223,8 +223,8 @@ class TestsFlextTapOracleWmsConfig:
             username="user",
             password="pass",
         )
-        settings.base_url = t.AnyUrl("https://new.example.com")
-        assert str(settings.base_url) == "https://new.example.com/"
+        settings.base_url = "https://new.example.com"
+        assert str(settings.base_url) == "https://new.example.com"
 
     def test_password_hiding(self) -> None:
         """Test password field is stored (str | t.SecretStr union)."""
