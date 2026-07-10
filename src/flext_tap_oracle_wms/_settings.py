@@ -78,10 +78,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
             str | None,
             Field(default=None, description="Incremental extraction end date"),
         ]
-        column_mappings: Annotated[
-            dict[str, dict[str, str]],
-            Field(default_factory=dict, description="Column rename mappings per stream"),
-        ]
+        column_mappings: Annotated[str, Field(default="{}", description="Column rename mappings per stream (JSON)")]
         ignored_columns: Annotated[
             list[str],
             Field(default_factory=list, description="Columns to ignore"),
