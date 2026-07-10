@@ -9,11 +9,11 @@ from __future__ import annotations
 
 from typing import Annotated, ClassVar, override
 
-from flext_core import FlextSettingsBase
+from flext_core import FlextSettings
 from flext_tap_oracle_wms import c, m, p, r, t, u
 
 
-class FlextTapOracleWmsSettings(FlextSettingsBase):
+class FlextTapOracleWmsSettings(FlextSettings):
     """Validated settings consumed by the Oracle WMS tap runtime."""
 
     model_config: ClassVar[m.SettingsConfigDict] = m.SettingsConfigDict(
@@ -202,4 +202,8 @@ class FlextTapOracleWmsSettings(FlextSettingsBase):
         return r[bool].ok(True)
 
 
-__all__: list[str] = ["FlextTapOracleWmsSettings"]
+
+settings: FlextTapOracleWmsSettings = FlextTapOracleWmsSettings.fetch_global()
+"""Pre-instantiated project settings singleton — ``from flext_tap_oracle_wms import settings``."""
+
+__all__: list[str] = ["FlextTapOracleWmsSettings", "settings"]

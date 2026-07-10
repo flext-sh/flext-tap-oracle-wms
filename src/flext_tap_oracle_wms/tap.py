@@ -96,7 +96,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @property
     def settings(self) -> t.JsonMapping:
         """Expose tap configuration through legacy settings contract."""
-        config = self.config
+        config = config
         return t.json_dict_adapter().validate_python(config)
 
     @property
@@ -197,7 +197,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:
         """The validated tap settings."""
-        config_map = dict(self.settings)
+        config_map = dict(settings)
         try:
             return FlextTapOracleWmsSettings.model_validate(config_map)
         except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
