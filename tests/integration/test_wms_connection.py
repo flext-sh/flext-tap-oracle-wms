@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 import pytest
 from dotenv import load_dotenv
 
-from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 if TYPE_CHECKING:

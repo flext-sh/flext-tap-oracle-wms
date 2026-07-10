@@ -17,7 +17,7 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests.typings import t
 
 if TYPE_CHECKING:
-    from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+    from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 
 
 class TestsFlextTapOracleWmsTap:

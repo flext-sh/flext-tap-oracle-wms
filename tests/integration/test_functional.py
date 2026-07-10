@@ -21,7 +21,7 @@ from tests.typings import t
 from tests.utilities import u
 
 if TYPE_CHECKING:
-    from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+    from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
     from tests.models import m
 
 logger = u.fetch_logger(__name__)

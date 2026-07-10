@@ -15,7 +15,7 @@ from unittest.mock import patch as _patch
 import pytest
 from flext_tests import reset_settings as _shared_reset_settings
 
-from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 if TYPE_CHECKING:
