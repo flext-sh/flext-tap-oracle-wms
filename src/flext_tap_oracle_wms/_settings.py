@@ -1,206 +1,160 @@
-"""Configuration contracts for FLEXT Tap Oracle WMS.
+"""FLEXT Tap Oracle WMS settings — namespaced under ``settings.TapOracleWms``.
 
-from flext_tap_oracle_wms.utilities import u
+Universal fields via MRO; project fields in the ``TapOracleWms`` group with
+simple scalar types (env-settable). Domain/business validation lives at the
+model boundary, not in settings.
+
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
-from typing import Annotated, ClassVar, override
+import re
+from typing import TYPE_CHECKING, Annotated
+
+from pydantic import BaseModel, Field, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from flext_core import FlextSettings
-from flext_tap_oracle_wms import c, m, p, r, t, u
+
+_ISO_DATE_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$",
+)
 
 
 class FlextTapOracleWmsSettings(FlextSettings):
-    """Validated settings consumed by the Oracle WMS tap runtime."""
+    """Oracle WMS Singer tap settings; fields under ``settings.TapOracleWms.*``."""
 
-    model_config: ClassVar[m.SettingsConfigDict] = m.SettingsConfigDict(
+    model_config = SettingsConfigDict(
         env_prefix="FLEXT_TAP_ORACLE_WMS_",
+        env_nested_delimiter="__",
         extra="ignore",
         validate_assignment=True,
     )
 
-    base_url: Annotated[
-        str | t.AnyUrl,
-        u.Field(description="Base Oracle WMS API URL."),
-    ] = ""
-    username: Annotated[
-        str,
-        u.Field(description="Oracle WMS username."),
-    ] = ""
-    password: Annotated[
-        str | t.SecretStr,
-        u.Field(description="Oracle WMS password."),
-    ] = ""
-    api_version: Annotated[
-        str,
-        u.Field(
-            min_length=1,
-            description="Oracle WMS API version.",
-        ),
-    ] = c.TapOracleWms.Settings.DEFAULT_API_VERSION
-    timeout: Annotated[
-        int,
-        u.Field(
-            ge=c.TapOracleWms.Settings.TAP_MIN_TIMEOUT,
-            le=c.TapOracleWms.Settings.TAP_MAX_TIMEOUT,
-            description="Request timeout in seconds.",
-        ),
-    ] = c.TapOracleWms.Settings.TAP_DEFAULT_TIMEOUT
-    max_retries: Annotated[
-        int,
-        u.Field(
-            ge=0,
-            description="Maximum request retries.",
-        ),
-    ] = c.TapOracleWms.Settings.TAP_DEFAULT_MAX_RETRIES
-    retry_delay: Annotated[
-        int,
-        u.Field(
-            ge=0,
-            description="Retry delay in seconds.",
-        ),
-    ] = int(c.TapOracleWms.Settings.TAP_DEFAULT_RETRY_DELAY)
-    verify_ssl: Annotated[
-        bool,
-        u.Field(description="Enable SSL verification."),
-    ] = c.TapOracleWms.Settings.DEFAULT_VERIFY_SSL
-    ssl_cert_path: Annotated[
-        str | None,
-        u.Field(description="Path to SSL certificate."),
-    ] = None
-    page_size: Annotated[
-        int,
-        u.Field(
-            ge=1,
-            description="Page size used for extraction requests.",
-        ),
-    ] = c.TapOracleWms.Settings.TAP_DEFAULT_PAGE_SIZE
-    discovery_sample_size: Annotated[
-        int,
-        u.Field(
-            ge=1,
-            description="Sample size for schema discovery.",
-        ),
-    ] = c.TapOracleWms.Settings.DEFAULT_DISCOVERY_SAMPLE_SIZE
-    include_entities: Annotated[
-        t.StrSequence,
-        u.Field(description="Entities to include."),
-    ] = u.Field(default_factory=list)
-    exclude_entities: Annotated[
-        t.StrSequence,
-        u.Field(description="Entities to exclude."),
-    ] = u.Field(default_factory=list)
-    start_date: Annotated[
-        str | None,
-        u.Field(description="Start date for incremental extraction."),
-    ] = None
-    end_date: Annotated[
-        str | None,
-        u.Field(description="End date for incremental extraction."),
-    ] = None
-    column_mappings: Annotated[
-        t.MappingKV[str, t.StrMapping],
-        u.Field(description="Column rename mappings per stream."),
-    ] = u.Field(default_factory=dict)
-    ignored_columns: Annotated[
-        t.StrSequence,
-        u.Field(description="Columns to ignore during extraction."),
-    ] = u.Field(default_factory=list)
-    enable_parallel_extraction: Annotated[
-        bool,
-        u.Field(description="Enable parallel stream extraction."),
-    ] = c.TapOracleWms.Settings.DEFAULT_ENABLE_PARALLEL_EXTRACTION
-    max_parallel_streams: Annotated[
-        int,
-        u.Field(
-            ge=1,
-            description="Maximum parallel streams.",
-        ),
-    ] = c.TapOracleWms.Settings.DEFAULT_MAX_PARALLEL_STREAMS
-    enable_rate_limiting: Annotated[
-        bool,
-        u.Field(description="Enable API rate limiting."),
-    ] = c.TapOracleWms.Settings.DEFAULT_ENABLE_RATE_LIMITING
-    max_requests_per_minute: Annotated[
-        int,
-        u.Field(ge=1, description="Maximum API requests per minute."),
-    ] = c.TapOracleWms.Settings.DEFAULT_MAX_REQUESTS_PER_MINUTE
-    enable_schema_flattening: Annotated[
-        bool,
-        u.Field(description="Enable schema flattening."),
-    ] = c.TapOracleWms.Settings.DEFAULT_ENABLE_SCHEMA_FLATTENING
-    max_flattening_depth: Annotated[
-        int,
-        u.Field(
-            ge=1,
-            description="Maximum schema flattening depth.",
-        ),
-    ] = c.TapOracleWms.Settings.DEFAULT_FLATTENING_DEPTH
-    user_agent: Annotated[
-        str | None,
-        u.Field(description="Custom User-Agent header."),
-    ] = None
-    additional_headers: Annotated[
-        t.StrMapping,
-        u.Field(description="Additional HTTP headers."),
-    ] = u.Field(default_factory=dict)
-    log_level: Annotated[
-        c.LogLevel,
-        u.Field(description="Log level."),
-    ] = c.LogLevel.INFO
-    enable_request_logging: Annotated[
-        bool,
-        u.Field(description="Enable HTTP request logging."),
-    ] = c.TapOracleWms.Settings.DEFAULT_ENABLE_REQUEST_LOGGING
-    validate_config: Annotated[
-        bool,
-        u.Field(description="Enable configuration validation."),
-    ] = c.TapOracleWms.Settings.DEFAULT_VALIDATE_CONFIG
-    validate_schemas: Annotated[
-        bool,
-        u.Field(description="Enable schema validation."),
-    ] = c.TapOracleWms.Settings.DEFAULT_VALIDATE_SCHEMAS
+    class _TapOracleWms(BaseModel):
+        """Namespaced Oracle WMS tap settings (simple scalars only)."""
 
-    @u.field_validator("include_entities", "exclude_entities")
-    @classmethod
-    def _check_no_duplicates(cls, v: t.StrSequence) -> t.StrSequence:
-        if len(v) != len(set(v)):
-            msg = "Entity list contains duplicates"
-            raise ValueError(msg)
-        return v
+        base_url: Annotated[str, Field(default="", description="Base Oracle WMS API URL")]
+        username: Annotated[str, Field(default="", description="Oracle WMS username")]
+        password: Annotated[str, Field(default="", description="Oracle WMS password")]
+        api_version: Annotated[
+            str,
+            Field(default="V1", min_length=1, description="Oracle WMS API version"),
+        ]
+        timeout: Annotated[
+            int,
+            Field(default=30, ge=1, le=300, description="Request timeout (s)"),
+        ]
+        max_retries: Annotated[int, Field(default=3, ge=0, description="Max retries")]
+        retry_delay: Annotated[
+            float,
+            Field(default=1.0, ge=0, description="Retry delay (s)"),
+        ]
+        verify_ssl: Annotated[bool, Field(default=True, description="Verify SSL")]
+        ssl_cert_path: Annotated[
+            str | None,
+            Field(default=None, description="Path to SSL certificate"),
+        ]
+        page_size: Annotated[int, Field(default=10, ge=1, description="Page size")]
+        discovery_sample_size: Annotated[
+            int,
+            Field(default=100, ge=1, description="Schema discovery sample size"),
+        ]
+        include_entities: Annotated[
+            list[str],
+            Field(default_factory=list, description="Entities to include"),
+        ]
+        exclude_entities: Annotated[
+            list[str],
+            Field(default_factory=list, description="Entities to exclude"),
+        ]
+        start_date: Annotated[
+            str | None,
+            Field(default=None, description="Incremental extraction start date"),
+        ]
+        end_date: Annotated[
+            str | None,
+            Field(default=None, description="Incremental extraction end date"),
+        ]
+        column_mappings: Annotated[
+            dict[str, dict[str, str]],
+            Field(default_factory=dict, description="Column rename mappings per stream"),
+        ]
+        ignored_columns: Annotated[
+            list[str],
+            Field(default_factory=list, description="Columns to ignore"),
+        ]
+        enable_parallel_extraction: Annotated[
+            bool,
+            Field(default=False, description="Enable parallel stream extraction"),
+        ]
+        max_parallel_streams: Annotated[
+            int,
+            Field(default=5, ge=1, description="Maximum parallel streams"),
+        ]
+        enable_rate_limiting: Annotated[
+            bool,
+            Field(default=True, description="Enable API rate limiting"),
+        ]
+        max_requests_per_minute: Annotated[
+            int,
+            Field(default=60, ge=1, description="Maximum API requests per minute"),
+        ]
+        enable_schema_flattening: Annotated[
+            bool,
+            Field(default=True, description="Enable schema flattening"),
+        ]
+        max_flattening_depth: Annotated[
+            int,
+            Field(default=10, ge=1, description="Maximum schema flattening depth"),
+        ]
+        user_agent: Annotated[
+            str | None,
+            Field(default=None, description="Custom User-Agent header"),
+        ]
+        additional_headers: Annotated[
+            dict[str, str],
+            Field(default_factory=dict, description="Additional HTTP headers"),
+        ]
+        log_level: Annotated[str, Field(default="INFO", description="Log level")]
+        enable_request_logging: Annotated[
+            bool,
+            Field(default=False, description="Enable HTTP request logging"),
+        ]
+        validate_config: Annotated[
+            bool,
+            Field(default=True, description="Enable configuration validation"),
+        ]
+        validate_schemas: Annotated[
+            bool,
+            Field(default=True, description="Enable schema validation"),
+        ]
 
-    @u.field_validator("start_date", "end_date")
-    @classmethod
-    def _check_iso_date(cls, v: str | None) -> str | None:
-        if v is not None and not c.TapOracleWms.Settings.ISO_DATE_RE.match(v):
-            msg = f"Invalid date format: {v}. Expected ISO 8601 format."
-            raise ValueError(msg)
-        return v
+        @field_validator("include_entities", "exclude_entities")
+        @classmethod
+        def _check_no_duplicates(cls, v: list[str]) -> list[str]:
+            if len(v) != len(set(v)):
+                msg = "Entity list contains duplicates"
+                raise ValueError(msg)
+            return v
 
-    @classmethod
-    @override
-    def reset_for_testing(cls) -> None:
-        """Reset any cached state for test isolation."""
-        cls.reset_instance()
+        @field_validator("start_date", "end_date")
+        @classmethod
+        def _check_iso_date(cls, v: str | None) -> str | None:
+            if v is not None and not _ISO_DATE_RE.match(v):
+                msg = f"Invalid date format: {v}. Expected ISO 8601 format."
+                raise ValueError(msg)
+            return v
 
-    def validate_domain_rules(self) -> p.Result[bool]:
-        """Validate domain-specific rules."""
-        return self.validate_business_rules()
-
-    def validate_business_rules(self) -> p.Result[bool]:
-        """Validate Oracle WMS business rules."""
-        overlap = set(self.include_entities) & set(self.exclude_entities)
-        if overlap:
-            return r[bool].fail(
-                f"Entities {overlap} cannot be both included and excluded",
-            )
-        if self.start_date and self.end_date and self.start_date > self.end_date:
-            return r[bool].fail("start_date must be <= end_date")
-        return r[bool].ok(True)
-
+    if TYPE_CHECKING:
+        TapOracleWms: _TapOracleWms
+    else:
+        TapOracleWms: _TapOracleWms = Field(
+            default_factory=_TapOracleWms,
+            description="Namespaced Oracle WMS tap settings.",
+        )
 
 
 settings: FlextTapOracleWmsSettings = FlextTapOracleWmsSettings.fetch_global()
