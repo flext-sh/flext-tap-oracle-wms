@@ -19,6 +19,10 @@ from flext_tap_oracle_wms.__version__ import (
 
 if TYPE_CHECKING:
     from flext_meltano import d as d, e as e, h as h, r as r, s as s, x as x
+    from flext_tap_oracle_wms._settings import (
+        FlextTapOracleWmsSettings as FlextTapOracleWmsSettings,
+        settings as settings,
+    )
     from flext_tap_oracle_wms.api import (
         FlextTapOracleWmsService as FlextTapOracleWmsService,
         tap_oracle_wms as tap_oracle_wms,
