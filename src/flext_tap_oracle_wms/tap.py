@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import (
-    Callable,
     Mapping,
     MutableSequence,
     Sequence,
@@ -65,39 +64,12 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     _schema_generator: t.JsonValue | None = None
     _discovery_mode: bool = False
 
-    @override
-    def __init__(
-        self,
-        settings: t.JsonMapping | FlextTapOracleWmsSettings | None = None,
-        config: t.JsonMapping | None = None,
-        catalog: t.StrMapping | None = None,
-        state: t.StrMapping | None = None,
-        parse_env_config: bool = False,
-        validate_config: bool = True,
-    ) -> None:
-        """Initialize tap, accepting settings object or raw dict."""
-        raw_config: t.JsonMapping
-        effective_config = config if config is not None else settings
-        if isinstance(effective_config, FlextTapOracleWmsSettings):
-            raw_config = t.json_dict_adapter().validate_python(
-                effective_config.model_dump(mode="json"),
-            )
-        else:
-            raw_config = t.json_dict_adapter().validate_python(effective_config or {})
-        parent_init: Callable[..., None] = super().__init__
-        parent_init(
-            config=raw_config,
-            catalog=catalog,
-            state=state,
-            parse_env_config=parse_env_config,
-            validate_config=validate_config,
-        )
-
     @property
     def settings(self) -> t.JsonMapping:
         """Expose tap configuration through legacy settings contract."""
-        config = config
-        return t.json_dict_adapter().validate_python(config)
+        # NOTE (multi-agent): mro-rn88 — read the Singer tap config (self.config), not an
+        # undefined bare `config` (settings-fallout left a self-referential assignment).
+        return t.json_dict_adapter().validate_python(self.config)
 
     @property
     def catalog_dict_typed(self) -> t.MutableJsonMapping:
@@ -197,9 +169,14 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:
         """The validated tap settings."""
-        config_map = dict(settings)
+        # NOTE (multi-agent): mro-rn88 — the Singer config is FLAT (config_jsonschema
+        # properties); the FLEXT settings model namespaces project fields under
+        # TapOracleWms.*, so wrap the flat config before validating.
+        config_map = dict(self.config)
         try:
-            return FlextTapOracleWmsSettings.model_validate(config_map)
+            return FlextTapOracleWmsSettings.model_validate({
+                "TapOracleWms": config_map
+            })
         except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
             msg = f"Invalid configuration: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
@@ -208,17 +185,21 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     def wms_client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
         """A started WMS client instance."""
         if self._wms_client is None:
-            password = self.flext_config.password
+            password = self.flext_config.TapOracleWms.password
+            # NOTE (multi-agent): mro-rn88 — both settings models namespace project fields;
+            # read via TapOracleWms.* and build the upstream config under OracleWms.*.
             wms_settings = FlextOracleWmsSettings.model_validate({
-                "base_url": str(self.flext_config.base_url),
-                "username": self.flext_config.username,
-                "password": (
-                    password.get_secret_value()
-                    if isinstance(password, t.SecretStr)
-                    else password
-                ),
-                "timeout": float(self.flext_config.timeout),
-                "retry_attempts": self.flext_config.max_retries,
+                "OracleWms": {
+                    "base_url": self.flext_config.TapOracleWms.base_url,
+                    "username": self.flext_config.TapOracleWms.username,
+                    "password": (
+                        password.get_secret_value()
+                        if isinstance(password, t.SecretStr)
+                        else password
+                    ),
+                    "timeout": float(self.flext_config.TapOracleWms.timeout),
+                    "retry_attempts": self.flext_config.TapOracleWms.max_retries,
+                },
             })
             client = FlextOracleWmsUtilities.OracleWms.Client(settings=wms_settings)
             start_result = client.start()
@@ -322,9 +303,9 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     def validate_configuration(self) -> p.Result[t.JsonValue]:
         """Expose non-secret validated configuration fields."""
         return r[t.JsonValue].ok({
-            "base_url": str(self.flext_config.base_url),
-            "api_version": self.flext_config.api_version,
-            "page_size": self.flext_config.page_size,
+            "base_url": self.flext_config.TapOracleWms.base_url,
+            "api_version": self.flext_config.TapOracleWms.api_version,
+            "page_size": self.flext_config.TapOracleWms.page_size,
         })
 
     def initialize(self) -> p.Result[bool]:
