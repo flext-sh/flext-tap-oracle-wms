@@ -36,7 +36,9 @@ class FlextTapOracleWmsSettings(FlextSettings):
     class _TapOracleWms(BaseModel):
         """Namespaced Oracle WMS tap settings (simple scalars only)."""
 
-        base_url: Annotated[str, Field(default="", description="Base Oracle WMS API URL")]
+        base_url: Annotated[
+            str, Field(default="", description="Base Oracle WMS API URL")
+        ]
         username: Annotated[str, Field(default="", description="Oracle WMS username")]
         password: Annotated[str, Field(default="", description="Oracle WMS password")]
         api_version: Annotated[
@@ -78,7 +80,10 @@ class FlextTapOracleWmsSettings(FlextSettings):
             str | None,
             Field(default=None, description="Incremental extraction end date"),
         ]
-        column_mappings: Annotated[str, Field(default="{}", description="Column rename mappings per stream (JSON)")]
+        column_mappings: Annotated[
+            str,
+            Field(default="{}", description="Column rename mappings per stream (JSON)"),
+        ]
         ignored_columns: Annotated[
             list[str],
             Field(default_factory=list, description="Columns to ignore"),
