@@ -76,7 +76,7 @@ class TestsFlextTapOracleWmsFunctional:
         real_wms_config: t.MutableJsonMapping,
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
-        tap = FlextTapOracleWms(settings=real_wms_config)
+        tap = FlextTapOracleWms(config=dict(real_wms_config))
         assert tap is not None
         assert tap.settings.get("base_url") == real_wms_config["base_url"]
         logger.info("✅ Tap initialized successfully with real settings")
@@ -352,7 +352,7 @@ class TestsFlextTapOracleWmsFunctional:
         """Test error handling with invalid configurations."""
         invalid_config: t.MutableJsonMapping = dict(real_wms_config)
         invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
-        tap = FlextTapOracleWms(settings=invalid_config)
+        tap = FlextTapOracleWms(config=dict(invalid_config))
         try:
             catalog = self._catalog(tap)
             assert catalog.streams is not None, "Catalog should expose typed streams"
@@ -386,9 +386,10 @@ class TestsFlextTapOracleWmsFunctional:
         """Test configuration validation and type conversion."""
         settings = real_config
         assert settings is not None, "Config creation failed"
-        assert isinstance(settings.page_size, int), "page_size not converted to int"
-        assert isinstance(settings.timeout, (int, float)), "timeout not numeric"
-        assert isinstance(settings.verify_ssl, bool), "verify_ssl not boolean"
+        namespace = settings.TapOracleWms
+        assert isinstance(namespace.page_size, int), "page_size not converted to int"
+        assert isinstance(namespace.timeout, (int, float)), "timeout not numeric"
+        assert isinstance(namespace.verify_ssl, bool), "verify_ssl not boolean"
         logger.info("✅ Configuration validated and types converted correctly")
 
     @pytest.mark.singer

@@ -32,23 +32,29 @@ load_dotenv(env_path)
 @pytest.fixture
 def real_config() -> FlextTapOracleWmsSettings:
     """Create real configuration from environment."""
+    # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
+    # settings.TapOracleWms.*; construct via the namespace payload.
     return FlextTapOracleWmsSettings(
-        base_url=os.getenv("ORACLE_WMS_BASE_URL") or "https://test.example.com",
-        username=os.getenv("ORACLE_WMS_USERNAME") or "test_user",
-        password=os.getenv("ORACLE_WMS_PASSWORD") or "test_password",
-        api_version=os.getenv("ORACLE_WMS_API_VERSION", "v10"),
-        timeout=int(os.getenv("ORACLE_WMS_TIMEOUT", "30")),
-        page_size=int(os.getenv("ORACLE_WMS_PAGE_SIZE", "100")),
-        verify_ssl=os.getenv("ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
-        enable_rate_limiting=True,
-        max_requests_per_minute=60,
+        TapOracleWms={
+            "base_url": os.getenv("ORACLE_WMS_BASE_URL") or "https://test.example.com",
+            "username": os.getenv("ORACLE_WMS_USERNAME") or "test_user",
+            "password": os.getenv("ORACLE_WMS_PASSWORD") or "test_password",
+            "api_version": os.getenv("ORACLE_WMS_API_VERSION", "v10"),
+            "timeout": int(os.getenv("ORACLE_WMS_TIMEOUT", "30")),
+            "page_size": int(os.getenv("ORACLE_WMS_PAGE_SIZE", "100")),
+            "verify_ssl": os.getenv("ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
+            "enable_rate_limiting": True,
+            "max_requests_per_minute": 60,
+        },
     )
 
 
 @pytest.fixture
 def tap(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance with real configuration."""
-    return FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+    return FlextTapOracleWms(
+        config=real_config.TapOracleWms.model_dump(mode="json"),
+    )
 
 
 class TestsFlextTapOracleWmsWmsConnection:
@@ -179,10 +185,14 @@ class TestsFlextTapOracleWmsWmsConnection:
     ) -> None:
         """Test including specific entities."""
         settings = FlextTapOracleWmsSettings(
-            **real_config.model_dump(),
-            include_entities=["inventory", "locations"],
+            TapOracleWms={
+                **real_config.TapOracleWms.model_dump(),
+                "include_entities": ["inventory", "locations"],
+            },
         )
-        tap = FlextTapOracleWms(settings=settings.model_dump(mode="json"))
+        tap = FlextTapOracleWms(
+            config=settings.TapOracleWms.model_dump(mode="json"),
+        )
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
         assert "inventory" in stream_names
@@ -198,10 +208,14 @@ class TestsFlextTapOracleWmsWmsConnection:
     ) -> None:
         """Test excluding specific entities."""
         settings = FlextTapOracleWmsSettings(
-            **real_config.model_dump(),
-            exclude_entities=["orders", "shipments"],
+            TapOracleWms={
+                **real_config.TapOracleWms.model_dump(),
+                "exclude_entities": ["orders", "shipments"],
+            },
         )
-        tap = FlextTapOracleWms(settings=settings.model_dump(mode="json"))
+        tap = FlextTapOracleWms(
+            config=settings.TapOracleWms.model_dump(mode="json"),
+        )
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
         assert "orders" not in stream_names
@@ -226,12 +240,12 @@ class TestsFlextTapOracleWmsWmsConnection:
     )
     def test_error_handling(self) -> None:
         """Test error handling with invalid configuration."""
-        bad_config = FlextTapOracleWmsSettings(
-            base_url="https://invalid.example.com",
-            username="invalid",
-            password="invalid",
-        )
-        tap = FlextTapOracleWms(settings=bad_config)
+        bad_config: t.JsonMapping = {
+            "base_url": "https://invalid.example.com",
+            "username": "invalid",
+            "password": "invalid",
+        }
+        tap = FlextTapOracleWms(config=dict(bad_config))
         result = tap.validate_configuration()
         assert result.failure
 

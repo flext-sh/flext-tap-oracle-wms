@@ -29,21 +29,27 @@ load_dotenv(env_path)
 @pytest.fixture
 def performance_config() -> FlextTapOracleWmsSettings:
     """Create configuration for performance testing."""
+    # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
+    # settings.TapOracleWms.*; construct via the namespace payload.
     return FlextTapOracleWmsSettings(
-        base_url=os.getenv("ORACLE_WMS_BASE_URL", "https://localhost"),
-        username=os.getenv("ORACLE_WMS_USERNAME", "user"),
-        password=os.getenv("ORACLE_WMS_PASSWORD", "pass"),
-        api_version=os.getenv("ORACLE_WMS_API_VERSION", "v10"),
-        page_size=100,
-        verify_ssl=True,
-        enable_rate_limiting=False,
+        TapOracleWms={
+            "base_url": os.getenv("ORACLE_WMS_BASE_URL", "https://localhost"),
+            "username": os.getenv("ORACLE_WMS_USERNAME", "user"),
+            "password": os.getenv("ORACLE_WMS_PASSWORD", "pass"),
+            "api_version": os.getenv("ORACLE_WMS_API_VERSION", "v10"),
+            "page_size": 100,
+            "verify_ssl": True,
+            "enable_rate_limiting": False,
+        },
     )
 
 
 @pytest.fixture
 def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance for performance testing."""
-    return FlextTapOracleWms(settings=performance_config.model_dump(mode="json"))
+    return FlextTapOracleWms(
+        config=performance_config.TapOracleWms.model_dump(mode="json"),
+    )
 
 
 @pytest.mark.performance
@@ -73,7 +79,7 @@ class TestsFlextTapOracleWmsExtractionPerformance:
     ) -> None:
         """Benchmark different page sizes."""
         tap.initialize()
-        tap.flext_config.page_size = page_size
+        tap.flext_config.TapOracleWms.page_size = page_size
         streams = tap.discover_streams()
         inventory_stream = next((s for s in streams if s.name == "inventory"), None)
         if not inventory_stream:
@@ -138,20 +144,24 @@ class TestsFlextTapOracleWmsExtractionPerformance:
     ) -> None:
         """Compare performance with and without rate limiting."""
         config_no_limit = FlextTapOracleWmsSettings(
-            **performance_config.model_dump(),
-            enable_rate_limiting=False,
+            TapOracleWms={
+                **performance_config.TapOracleWms.model_dump(),
+                "enable_rate_limiting": False,
+            },
         )
         tap_no_limit = FlextTapOracleWms(
-            settings=config_no_limit.model_dump(mode="json"),
+            config=config_no_limit.TapOracleWms.model_dump(mode="json"),
         )
         tap_no_limit.initialize()
         config_with_limit = FlextTapOracleWmsSettings(
-            **performance_config.model_dump(),
-            enable_rate_limiting=True,
-            max_requests_per_minute=60,
+            TapOracleWms={
+                **performance_config.TapOracleWms.model_dump(),
+                "enable_rate_limiting": True,
+                "max_requests_per_minute": 60,
+            },
         )
         tap_with_limit = FlextTapOracleWms(
-            settings=config_with_limit.model_dump(mode="json"),
+            config=config_with_limit.TapOracleWms.model_dump(mode="json"),
         )
         tap_with_limit.initialize()
         for tap, _label in [(tap_no_limit, "No Limit"), (tap_with_limit, "With Limit")]:

@@ -58,15 +58,19 @@ def isolate_tap_oracle_wms_env(
 @pytest.fixture
 def sample_config() -> FlextTapOracleWmsSettings:
     """Sample configuration for tests."""
+    # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
+    # settings.TapOracleWms.*; construct via the namespace payload.
     return FlextTapOracleWmsSettings(
-        base_url="https://test.wms.example.com",
-        username="test_user",
-        password="test_password",
-        api_version="v10",
-        page_size=100,
-        timeout=30,
-        max_retries=3,
-        verify_ssl=False,
+        TapOracleWms={
+            "base_url": "https://test.wms.example.com",
+            "username": "test_user",
+            "password": "test_password",
+            "api_version": "v10",
+            "page_size": 100,
+            "timeout": 30,
+            "max_retries": 3,
+            "verify_ssl": False,
+        },
     )
 
 
@@ -75,27 +79,37 @@ def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
     """Real configuration from environment."""
     _ = oracle_wms_environment
     return FlextTapOracleWmsSettings(
-        base_url=os.environ.get("ORACLE_WMS_BASE_URL", ""),
-        username=os.environ.get("ORACLE_WMS_USERNAME", ""),
-        password=os.environ.get("ORACLE_WMS_PASSWORD", ""),
-        api_version=os.environ.get("ORACLE_WMS_API_VERSION", "v10"),
-        page_size=int(os.environ.get("ORACLE_WMS_PAGE_SIZE", "100")),
-        timeout=int(os.environ.get("ORACLE_WMS_TIMEOUT", "30")),
-        verify_ssl=os.environ.get("ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
+        TapOracleWms={
+            "base_url": os.environ.get("ORACLE_WMS_BASE_URL", ""),
+            "username": os.environ.get("ORACLE_WMS_USERNAME", ""),
+            "password": os.environ.get("ORACLE_WMS_PASSWORD", ""),
+            "api_version": os.environ.get("ORACLE_WMS_API_VERSION", "v10"),
+            "page_size": int(os.environ.get("ORACLE_WMS_PAGE_SIZE", "100")),
+            "timeout": int(os.environ.get("ORACLE_WMS_TIMEOUT", "30")),
+            "verify_ssl": os.environ.get("ORACLE_WMS_VERIFY_SSL", "true").lower()
+            == "true",
+        },
     )
 
 
 @pytest.fixture
 def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance with sample settings (mocked discovery)."""
+    # NOTE (multi-agent): mro-u3eu — singer_sdk.Tap.__init__ takes the FLAT
+    # Singer config via `config=`; the namespaced settings dump goes through
+    # the TapOracleWms namespace payload.
     with _patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
-        return FlextTapOracleWms(settings=sample_config.model_dump(mode="json"))
+        return FlextTapOracleWms(
+            config=sample_config.TapOracleWms.model_dump(mode="json"),
+        )
 
 
 @pytest.fixture
 def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Real tap instance for integration tests."""
-    return FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+    return FlextTapOracleWms(
+        config=real_config.TapOracleWms.model_dump(mode="json"),
+    )
 
 
 @pytest.fixture

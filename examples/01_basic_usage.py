@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 
-from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
@@ -19,19 +19,25 @@ def main() -> int:
 
     """
     settings = FlextTapOracleWmsSettings(
-        base_url=os.getenv(
-            "ORACLE_WMS_BASE_URL",
-            "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
-        ),
-        username=os.getenv("ORACLE_WMS_USERNAME", "user"),
-        password=os.getenv("ORACLE_WMS_PASSWORD", "your_password"),
-        api_version="v10",
-        page_size=100,
-        verify_ssl=True,
-        include_entities=["inventory", "locations", "orders"],
-        enable_request_logging=True,
+        TapOracleWms={
+            "base_url": os.getenv(
+                "ORACLE_WMS_BASE_URL",
+                "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
+            ),
+            "username": os.getenv("ORACLE_WMS_USERNAME", "user"),
+            "password": os.getenv("ORACLE_WMS_PASSWORD", "your_password"),
+            "api_version": "v10",
+            "page_size": 100,
+            "verify_ssl": True,
+            "include_entities": ["inventory", "locations", "orders"],
+            "enable_request_logging": True,
+        },
     )
-    tap = FlextTapOracleWms(settings=settings)
+    # NOTE (multi-agent): mro-u3eu — singer_sdk.Tap.__init__ takes the FLAT
+    # Singer config via `config=`; pass the namespaced settings payload.
+    tap = FlextTapOracleWms(
+        config=settings.TapOracleWms.model_dump(mode="json"),
+    )
     validation_result = tap.validate_configuration()
     if not validation_result.success:
         return 1

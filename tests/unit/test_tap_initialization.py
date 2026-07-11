@@ -18,7 +18,7 @@ class TestsFlextTapOracleWmsTapInitialization:
         """Tap stores normalized settings values from settings serialization."""
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
-                settings={
+                config={
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
@@ -31,7 +31,7 @@ class TestsFlextTapOracleWmsTapInitialization:
         """discover_streams returns no streams if catalog discovery fails."""
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
-                settings={
+                config={
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
@@ -56,7 +56,7 @@ class TestsFlextTapOracleWmsTapInitialization:
         ])
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
-                settings={
+                config={
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
@@ -71,7 +71,7 @@ class TestsFlextTapOracleWmsTapInitialization:
         """execute() delegates to sync_all when no message is passed."""
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
-                settings={
+                config={
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
