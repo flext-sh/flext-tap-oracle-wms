@@ -11,7 +11,7 @@
 - Keywords: `data-extraction`, `enterprise`, `etl`, `flext`, `singer`, `tap`, `typed`
 - Main facades: _none_
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
-- Public symbol exports: `FlextTapOracleWmsConstants`, `FlextTapOracleWmsSettings`, `main`, `tap_oracle_wms`, `FlextTapOracleWmsTypes`, `FlextTapOracleWmsUtilities`, `FlextTapOracleWms`, `FlextTapOracleWmsService`, `FlextTapOracleWmsProtocols`, `FlextTapOracleWmsModels` (+1 more)
+- Public symbol exports: `FlextTapOracleWmsUtilities`, `FlextTapOracleWmsProtocols`, `FlextTapOracleWmsModels`, `tap_oracle_wms`, `settings`, `FlextTapOracleWmsConstants`, `FlextTapOracleWms`, `FlextTapOracleWmsTypes`, `main`, `FlextTapOracleWmsService` (+1 more)
 - Exported module shortcuts: _none_
 - Generated module pages: `8`
 
