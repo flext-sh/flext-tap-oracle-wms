@@ -211,7 +211,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
     @staticmethod
     def _schema_for_entity() -> t.JsonMapping:
-        """A default Singer JSON schema for discovered entities."""
+        """Return a default Singer JSON schema for discovered entities."""
         return {"type": c.TapOracleWms.SCHEMA_TYPE_OBJECT}
 
     def discovercatalog_typed(self) -> p.Result[m.Meltano.SingerCatalog]:
@@ -285,7 +285,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         return r[bool].ok(True)
 
     def get_implementation_metrics(self) -> p.Result[t.JsonValue]:
-        """The basic runtime metrics for observability."""
+        """Return the basic runtime metrics for observability."""
         return r[t.JsonValue].ok({
             "tap_name": self.name,
             "version": self.get_implementation_version(),
@@ -293,11 +293,11 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         })
 
     def get_implementation_name(self) -> str:
-        """The human-readable implementation name."""
+        """Return the human-readable implementation name."""
         return "FLEXT Oracle WMS Tap"
 
     def get_implementation_version(self) -> str:
-        """The installed package version."""
+        """Return the installed package version."""
         return __version__
 
     def validate_configuration(self) -> p.Result[t.JsonValue]:

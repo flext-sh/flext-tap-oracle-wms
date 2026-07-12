@@ -137,7 +137,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return str(value)
 
     def get_primary_keys(self) -> t.StrSequence:
-        """The primary keys for this stream."""
+        """Return the primary keys for this stream."""
         return list(self.stream_primary_keys)
 
     @override
@@ -145,7 +145,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self,
         context: t.ScalarMapping | None,
     ) -> t.IterableOf[t.JsonDict]:
-        """The records from Oracle WMS."""
+        """Yield the records from Oracle WMS."""
         page = 1
         has_more = True
         while has_more:
@@ -170,7 +170,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
                 break
 
     def get_replication_key(self) -> str | None:
-        """The replication key for this stream."""
+        """Return the replication key for this stream."""
         return self.stream_replication_key
 
     @override
