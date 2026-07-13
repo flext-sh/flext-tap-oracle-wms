@@ -1,0 +1,181 @@
+"""Performance tests for Oracle WMS extraction.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
+
+import os
+import time
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+import psutil
+import pytest
+from dotenv import load_dotenv
+
+from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
+
+if TYPE_CHECKING:
+    from tests.typings import t
+
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(env_path)
+
+
+@pytest.fixture
+def performance_config() -> FlextTapOracleWmsSettings:
+    """Create configuration for performance testing."""
+    # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
+    # settings.TapOracleWms.*; construct via the namespace payload.
+    return FlextTapOracleWmsSettings(
+        TapOracleWms={
+            "base_url": os.getenv("ORACLE_WMS_BASE_URL", "https://localhost"),
+            "username": os.getenv("ORACLE_WMS_USERNAME", "user"),
+            "password": os.getenv("ORACLE_WMS_PASSWORD", "pass"),
+            "api_version": os.getenv("ORACLE_WMS_API_VERSION", "v10"),
+            "page_size": 100,
+            "verify_ssl": True,
+            "enable_rate_limiting": False,
+        },
+    )
+
+
+@pytest.fixture
+def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
+    """Create tap instance for performance testing."""
+    return FlextTapOracleWms(
+        config=performance_config.TapOracleWms.model_dump(mode="json"),
+    )
+
+
+@pytest.mark.performance
+class TestsFlextTapOracleWmsExtractionPerformance:
+    """Test data extraction performance."""
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_catalog_discovery_performance(self, tap: FlextTapOracleWms) -> None:
+        """Benchmark catalog discovery time."""
+        tap.initialize()
+        start_time = time.time()
+        result = tap.discovercatalog_typed()
+        discovery_time = time.time() - start_time
+        assert result.success
+        assert discovery_time < 10.0
+
+    @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_pagination_performance(
+        self,
+        tap: FlextTapOracleWms,
+        page_size: int,
+    ) -> None:
+        """Benchmark different page sizes."""
+        tap.initialize()
+        tap.flext_config.TapOracleWms.page_size = page_size
+        streams = tap.discover_streams()
+        inventory_stream = next((s for s in streams if s.name == "inventory"), None)
+        if not inventory_stream:
+            pytest.skip("Inventory stream not available")
+        inventory_stream._page_size = page_size
+        start_time = time.time()
+        records: list[t.JsonMapping] = []
+        for i, record in enumerate(inventory_stream.get_records(context=None)):
+            records.append(record)
+            if i >= 99:
+                break
+        _ = time.time() - start_time
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_concurrent_streams_extraction(self, tap: FlextTapOracleWms) -> None:
+        """Test extracting multiple streams concurrently."""
+        tap.initialize()
+        streams = tap.discover_streams()[:3]
+        total_records = 0
+        start_time = time.time()
+        for stream in streams:
+            stream_start = time.time()
+            records = 0
+            for i, _record in enumerate(stream.get_records(context=None)):
+                records += 1
+                if i >= 49:
+                    break
+            _ = time.time() - stream_start
+            total_records += records
+        _ = time.time() - start_time
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_memory_usage_during_large_extraction(self, tap: FlextTapOracleWms) -> None:
+        """Test memory usage during large extractions."""
+        process = psutil.Process()
+        initial_memory = process.memory_info().rss / 1024 / 1024
+        tap.initialize()
+        streams = tap.discover_streams()
+        if streams:
+            stream = streams[0]
+            records: list[t.JsonMapping] = []
+            for i, record in enumerate(stream.get_records(context=None)):
+                records.append(record)
+                if i >= 999:
+                    break
+            final_memory = process.memory_info().rss / 1024 / 1024
+            memory_increase = final_memory - initial_memory
+            assert memory_increase < 100
+
+    """Test rate limiting impact on performance."""
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_rate_limiting_impact(
+        self,
+        performance_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """Compare performance with and without rate limiting."""
+        config_no_limit = FlextTapOracleWmsSettings(
+            TapOracleWms={
+                **performance_config.TapOracleWms.model_dump(),
+                "enable_rate_limiting": False,
+            },
+        )
+        tap_no_limit = FlextTapOracleWms(
+            config=config_no_limit.TapOracleWms.model_dump(mode="json"),
+        )
+        tap_no_limit.initialize()
+        config_with_limit = FlextTapOracleWmsSettings(
+            TapOracleWms={
+                **performance_config.TapOracleWms.model_dump(),
+                "enable_rate_limiting": True,
+                "max_requests_per_minute": 60,
+            },
+        )
+        tap_with_limit = FlextTapOracleWms(
+            config=config_with_limit.TapOracleWms.model_dump(mode="json"),
+        )
+        tap_with_limit.initialize()
+        for tap, _label in [(tap_no_limit, "No Limit"), (tap_with_limit, "With Limit")]:
+            streams = tap.discover_streams()
+            if streams:
+                stream = streams[0]
+                start_time = time.time()
+                records: list[t.JsonMapping] = []
+                for i, record in enumerate(stream.get_records(context=None)):
+                    records.append(record)
+                    if i >= 49:
+                        break
+                _ = time.time() - start_time
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v", "-s", "-m", "performance"])
