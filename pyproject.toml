@@ -158,6 +158,9 @@ known_first_party = [
 ]
 pep621_dev_dependency_groups = [ "dev" ]
 
+[tool.hatch.build.targets.wheel]
+packages = [ "src/flext_tap_oracle_wms" ]
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
