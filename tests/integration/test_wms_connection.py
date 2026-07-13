@@ -18,12 +18,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 from dotenv import load_dotenv
+from flext_tests import tm
 
 from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 if TYPE_CHECKING:
-    from tests.typings import t
+    from tests import t
 
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(env_path)
@@ -66,11 +67,11 @@ class TestsFlextTapOracleWmsWmsConnection:
     def test_configuration_validation(self, tap: FlextTapOracleWms) -> None:
         """Test configuration validation."""
         result = tap.validate_configuration()
-        assert result.success
+        tm.ok(result)
         value = result.value
-        assert isinstance(value, Mapping)
-        assert value.get("valid") is True
-        assert "health" in value
+        tm.that(value, is_=Mapping)
+        tm.that(value.get("valid"), eq=True)
+        tm.that(value, has="health")
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -86,9 +87,9 @@ class TestsFlextTapOracleWmsWmsConnection:
         """Test catalog discovery."""
         # assert init_result.is_success
         result = tap.discovercatalog_typed()
-        assert result.success
+        tm.ok(result)
         catalog = result.value
-        assert getattr(catalog, "type", None) == "CATALOG"
+        tm.that(getattr(catalog, "type", None), eq="CATALOG")
         catalog_streams = getattr(catalog, "streams", [])
         assert catalog_streams
         for _stream in catalog_streams:
@@ -129,7 +130,7 @@ class TestsFlextTapOracleWmsWmsConnection:
         stream_name: str,
     ) -> None:
         """Test extracting data from specific streams."""
-        assert tap.initialize().success
+        tm.ok(tap.initialize())
         streams = tap.discover_streams()
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
@@ -195,9 +196,9 @@ class TestsFlextTapOracleWmsWmsConnection:
         )
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
-        assert "inventory" in stream_names
-        assert "locations" in stream_names
-        assert "orders" not in stream_names
+        tm.that(stream_names, has="inventory")
+        tm.that(stream_names, has="locations")
+        tm.that(stream_names, lacks="orders")
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -218,8 +219,8 @@ class TestsFlextTapOracleWmsWmsConnection:
         )
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
-        assert "orders" not in stream_names
-        assert "shipments" not in stream_names
+        tm.that(stream_names, lacks="orders")
+        tm.that(stream_names, lacks="shipments")
         assert stream_names
 
     """Test /sync integration with flext-oracle-wms."""
@@ -229,11 +230,11 @@ class TestsFlextTapOracleWmsWmsConnection:
     )
     def test_client_lifecycle_management(self, tap: FlextTapOracleWms) -> None:
         """Test proper client lifecycle management."""
-        assert tap.initialize().success
-        assert tap.wms_client is not None
+        tm.ok(tap.initialize())
+        tm.that(tap.wms_client, none=False)
         assert tap._wms_client is tap.wms_client
         result = tap.discovercatalog_typed()
-        assert result.success
+        tm.ok(result)
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -247,7 +248,7 @@ class TestsFlextTapOracleWmsWmsConnection:
         }
         tap = FlextTapOracleWms(config=dict(bad_config))
         result = tap.validate_configuration()
-        assert result.failure
+        tm.fail(result)
 
 
 if __name__ == "__main__":

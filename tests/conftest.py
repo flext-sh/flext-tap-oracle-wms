@@ -21,7 +21,7 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWms
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-    from tests.typings import t
+    from tests import t
 
 reset_settings = _shared_reset_settings
 

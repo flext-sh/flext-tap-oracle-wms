@@ -5,7 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
-from flext_tests import r
+from flext_tests import r, tm
 
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
@@ -24,8 +24,8 @@ class TestsFlextTapOracleWmsTapInitialization:
                     "password": "test",
                 },
             )
-        assert "test.example.com" in str(tap.settings["base_url"])
-        assert tap.settings["username"] == "test"
+        tm.that(str(tap.settings["base_url"]), has="test.example.com")
+        tm.that(tap.settings["username"], eq="test")
 
     def test_discover_streams_returns_empty_on_discovery_failure(self) -> None:
         """discover_streams returns no streams if catalog discovery fails."""
@@ -64,8 +64,8 @@ class TestsFlextTapOracleWmsTapInitialization:
             )
         tap._wms_client = mock_client
         stream_names = [stream.name for stream in tap.discover_streams()]
-        assert "allocation" in stream_names
-        assert "order_hdr" in stream_names
+        tm.that(stream_names, has="allocation")
+        tm.that(stream_names, has="order_hdr")
 
     def test_execute_reuses_sync_all_entrypoint(self) -> None:
         """execute() delegates to sync_all when no message is passed."""
@@ -79,5 +79,5 @@ class TestsFlextTapOracleWmsTapInitialization:
             )
         with patch.object(tap, "sync_all") as mock_sync:
             result = tap.execute()
-        assert result.success
+        tm.ok(result)
         mock_sync.assert_called_once()

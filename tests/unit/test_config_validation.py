@@ -13,10 +13,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests.constants import c
-from tests.typings import t
+from tests import c, t
 
 
 class TestsFlextTapOracleWmsConfigValidation:
@@ -32,11 +32,11 @@ class TestsFlextTapOracleWmsConfigValidation:
             },
         )
         namespace = settings.TapOracleWms
-        assert namespace.base_url.rstrip("/") == "https://wms.example.com"
-        assert namespace.username == "test_user"
-        assert isinstance(namespace.password, (str, t.SecretStr))
-        assert namespace.api_version == "V1"
-        assert namespace.page_size == 10
+        tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
+        tm.that(namespace.username, eq="test_user")
+        tm.that(namespace.password, is_=(str, t.SecretStr))
+        tm.that(namespace.api_version, eq="V1")
+        tm.that(namespace.page_size, eq=10)
 
     def test_url_accepts_trailing_slash(self) -> None:
         """Test URL with trailing slash is accepted."""
@@ -47,7 +47,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "password": "pass",
             },
         )
-        assert "wms.example.com" in settings.TapOracleWms.base_url
+        tm.that(settings.TapOracleWms.base_url, has="wms.example.com")
 
     def test_page_size_custom_value(self) -> None:
         """Test custom page size is accepted."""
@@ -59,7 +59,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "page_size": 500,
             },
         )
-        assert settings.TapOracleWms.page_size == 500
+        tm.that(settings.TapOracleWms.page_size, eq=500)
 
     def test_entity_selection_fields(self) -> None:
         """Test entity include/exclude fields are stored correctly."""
@@ -72,8 +72,8 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "exclude_entities": ["orders"],
             },
         )
-        assert settings.TapOracleWms.include_entities == ["inventory", "locations"]
-        assert settings.TapOracleWms.exclude_entities == ["orders"]
+        tm.that(settings.TapOracleWms.include_entities, eq=["inventory", "locations"])
+        tm.that(settings.TapOracleWms.exclude_entities, eq=["orders"])
 
     def test_duplicate_entities_rejected(self) -> None:
         """Test namespace validator rejects duplicate entity entries."""
@@ -98,8 +98,8 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "end_date": "2024-12-31T23:59:59Z",
             },
         )
-        assert settings.TapOracleWms.start_date == "2024-01-01T00:00:00Z"
-        assert settings.TapOracleWms.end_date == "2024-12-31T23:59:59Z"
+        tm.that(settings.TapOracleWms.start_date, eq="2024-01-01T00:00:00Z")
+        tm.that(settings.TapOracleWms.end_date, eq="2024-12-31T23:59:59Z")
 
     def test_invalid_date_rejected(self) -> None:
         """Test namespace validator rejects non-ISO date values."""
@@ -123,9 +123,9 @@ class TestsFlextTapOracleWmsConfigValidation:
             },
         )
         data = settings.TapOracleWms.model_dump()
-        assert isinstance(data, dict)
-        assert data["username"] == "user"
-        assert "base_url" in data
+        tm.that(data, is_=dict)
+        tm.that(data["username"], eq="user")
+        tm.that(data, has="base_url")
 
     def test_stream_related_config_fields(self) -> None:
         """Test stream-related configuration fields are accessible."""
@@ -140,13 +140,13 @@ class TestsFlextTapOracleWmsConfigValidation:
             },
         )
         namespace = settings.TapOracleWms
-        assert namespace.page_size == 50
+        tm.that(namespace.page_size, eq=50)
         # column_mappings is a JSON-encoded string per ADR-005 simple-scalar rule
         decoded_mappings = t.json_dict_adapter().validate_json(
             namespace.column_mappings,
         )
-        assert decoded_mappings == {"inventory": {"old_col": "new_col"}}
-        assert namespace.ignored_columns == ["internal_id"]
+        tm.that(decoded_mappings, eq={"inventory": {"old_col": "new_col"}})
+        tm.that(namespace.ignored_columns, eq=["internal_id"])
 
     def test_parallel_extraction_config(self) -> None:
         """Test parallel extraction configuration fields."""
@@ -161,9 +161,9 @@ class TestsFlextTapOracleWmsConfigValidation:
             },
         )
         namespace = settings.TapOracleWms
-        assert namespace.enable_parallel_extraction is True
-        assert namespace.max_parallel_streams == 6
-        assert namespace.enable_rate_limiting is True
+        tm.that(namespace.enable_parallel_extraction, eq=True)
+        tm.that(namespace.max_parallel_streams, eq=6)
+        tm.that(namespace.enable_rate_limiting, eq=True)
 
     def test_ssl_config(self) -> None:
         """Test SSL configuration fields."""
@@ -176,8 +176,8 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "ssl_cert_path": "/path/to/cert.pem",
             },
         )
-        assert settings.TapOracleWms.verify_ssl is False
-        assert settings.TapOracleWms.ssl_cert_path == "/path/to/cert.pem"
+        tm.that(settings.TapOracleWms.verify_ssl, eq=False)
+        tm.that(settings.TapOracleWms.ssl_cert_path, eq="/path/to/cert.pem")
 
     def test_rate_limiting_config(self) -> None:
         """Test rate limiting configuration."""
@@ -190,8 +190,8 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "max_requests_per_minute": 120,
             },
         )
-        assert settings.TapOracleWms.enable_rate_limiting is True
-        assert settings.TapOracleWms.max_requests_per_minute == 120
+        tm.that(settings.TapOracleWms.enable_rate_limiting, eq=True)
+        tm.that(settings.TapOracleWms.max_requests_per_minute, eq=120)
 
     def test_password_is_secret(self) -> None:
         """Test password field stores password value."""
@@ -208,7 +208,7 @@ class TestsFlextTapOracleWmsConfigValidation:
             if isinstance(password, t.SecretStr)
             else password
         )
-        assert password_value == "super_secret"
+        tm.that(password_value, eq="super_secret")
 
 
 if __name__ == "__main__":

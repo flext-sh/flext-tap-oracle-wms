@@ -14,15 +14,15 @@ from collections.abc import (
 from typing import TYPE_CHECKING
 
 import pytest
+from flext_tests import tm
 
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.typings import t
-from tests.utilities import u
+from tests import t, u
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
-    from tests.models import m
+    from tests import m
 
 logger = u.fetch_logger(__name__)
 
@@ -35,7 +35,7 @@ class TestsFlextTapOracleWmsFunctional:
     def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
         """Return the typed discovered catalog used by runtime code."""
         result = tap.discovercatalog_typed()
-        assert result.success, result.error
+        tm.ok(result)
         return result.value
 
     @staticmethod
@@ -60,12 +60,8 @@ class TestsFlextTapOracleWmsFunctional:
             assert real_wms_config.get(key), f"Missing required settings: {key}"
             assert real_wms_config[key], f"Empty settings value: {key}"
         base_url = str(real_wms_config["base_url"])
-        assert "invalid.wms.ocs.oraclecloud.com" in base_url, (
-            f"Not ta29 environment: {base_url}"
-        )
-        assert "company_unknow" in base_url, (
-            f"Not company_unknow environment: {base_url}"
-        )
+        tm.that(base_url, has="invalid.wms.ocs.oraclecloud.com")
+        tm.that(base_url, has="company_unknow")
         logger.info("✅ Real Oracle WMS environment verified: %s", base_url)
 
     @pytest.mark.skip(
@@ -77,8 +73,8 @@ class TestsFlextTapOracleWmsFunctional:
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(config=dict(real_wms_config))
-        assert tap is not None
-        assert tap.settings.get("base_url") == real_wms_config["base_url"]
+        tm.that(tap, none=False)
+        tm.that(tap.settings.get("base_url"), eq=real_wms_config["base_url"])
         logger.info("✅ Tap initialized successfully with real settings")
 
     @pytest.mark.discovery
@@ -93,7 +89,7 @@ class TestsFlextTapOracleWmsFunctional:
 
         def _run_test_automatic_entity_discovery() -> None:
             catalog = self._catalog(real_tap_instance)
-            assert catalog is not None, "Catalog is None"
+            tm.that(catalog, none=False)
             streams = catalog.streams
             assert streams, "No streams discovered"
             entity_names = [stream.tap_stream_id for stream in streams]
@@ -118,9 +114,7 @@ class TestsFlextTapOracleWmsFunctional:
             )
             for stream in streams:
                 properties_raw = stream.schema_definition.get("properties")
-                assert isinstance(properties_raw, Mapping), (
-                    f"Stream {stream.tap_stream_id} properties is not a mapping"
-                )
+                tm.that(properties_raw, is_=Mapping)
                 properties: t.JsonMapping = properties_raw
                 assert properties, f"Stream {stream.tap_stream_id} has empty properties"
                 logger.info(
@@ -156,23 +150,15 @@ class TestsFlextTapOracleWmsFunctional:
         streams = catalog.streams
         for stream in streams[:3]:
             schema = stream.schema_definition
-            assert "type" in schema, f"Schema missing type for {stream.tap_stream_id}"
-            assert schema["type"] == "t.JsonValue", (
-                f"Invalid schema type for {stream.tap_stream_id}"
-            )
-            assert "properties" in schema, (
-                f"Schema missing properties for {stream.tap_stream_id}"
-            )
+            tm.that(schema, has="type")
+            tm.that(schema["type"], eq="t.JsonValue")
+            tm.that(schema, has="properties")
             properties_raw = schema["properties"]
-            assert isinstance(properties_raw, Mapping), (
-                f"Schema properties is not a mapping for {stream.tap_stream_id}"
-            )
+            tm.that(properties_raw, is_=Mapping)
             properties: t.JsonMapping = properties_raw
             for prop_name, prop_def in properties.items():
-                assert isinstance(prop_def, Mapping), (
-                    f"Property {prop_name} not a mapping"
-                )
-                assert "type" in prop_def, f"Property {prop_name} missing type"
+                tm.that(prop_def, is_=Mapping)
+                tm.that(prop_def, has="type")
                 prop_type = prop_def["type"]
                 valid_types: t.JsonList = [
                     "string",
@@ -218,13 +204,13 @@ class TestsFlextTapOracleWmsFunctional:
                 name=stream_id,
                 schema=self._schema(test_stream),
             )
-            assert stream.name == stream_id
-            assert stream.schema is not None
+            tm.that(stream.name, eq=stream_id)
+            tm.that(stream.schema, none=False)
             logger.info("✅ Stream created successfully: %s", stream_id)
             url = stream.url_base
-            assert url is not None, "Stream URL is None"
+            tm.that(url, none=False)
             assert url, "Stream URL is empty"
-            assert "invalid.wms.ocs.oraclecloud.com" in url, f"Invalid URL: {url}"
+            tm.that(url, has="invalid.wms.ocs.oraclecloud.com")
             logger.info("✅ Stream URL generated: %s", url)
 
         try:
@@ -262,8 +248,8 @@ class TestsFlextTapOracleWmsFunctional:
             schema=self._schema(test_stream),
         )
         url_params = stream._build_operation_kwargs(page=1, context=None)
-        assert "limit" in url_params, "Missing limit parameter"
-        assert isinstance(url_params["limit"], int), "limit must be integer"
+        tm.that(url_params, has="limit")
+        tm.that(url_params["limit"], is_=int)
         assert url_params["limit"] > 0, "limit must be positive"
         assert url_params["limit"] <= 1250, "limit exceeds Oracle WMS max"
         logger.info(f"✅ Pagination configured: page_size={url_params['page_size']}")
@@ -337,7 +323,7 @@ class TestsFlextTapOracleWmsFunctional:
             logger.info("✅ Timestamp filters applied: %s", kwargs_filter)
         if "ordering" in url_params:
             ordering = url_params["ordering"]
-            assert isinstance(ordering, str), "Ordering must be string"
+            tm.that(ordering, is_=str)
             logger.info("✅ Ordering configured: %s", ordering)
         logger.info(f"✅ URL parameters generated: {list(url_params.keys())}")
 
@@ -355,7 +341,7 @@ class TestsFlextTapOracleWmsFunctional:
         tap = FlextTapOracleWms(config=dict(invalid_config))
         try:
             catalog = self._catalog(tap)
-            assert catalog.streams is not None, "Catalog should expose typed streams"
+            tm.that(catalog.streams, none=False)
         except (
             ValueError,
             TypeError,
@@ -385,11 +371,11 @@ class TestsFlextTapOracleWmsFunctional:
     ) -> None:
         """Test configuration validation and type conversion."""
         settings = real_config
-        assert settings is not None, "Config creation failed"
+        tm.that(settings, none=False)
         namespace = settings.TapOracleWms
-        assert isinstance(namespace.page_size, int), "page_size not converted to int"
-        assert isinstance(namespace.timeout, (int, float)), "timeout not numeric"
-        assert isinstance(namespace.verify_ssl, bool), "verify_ssl not boolean"
+        tm.that(namespace.page_size, is_=int)
+        tm.that(namespace.timeout, is_=(int, float))
+        tm.that(namespace.verify_ssl, is_=bool)
         logger.info("✅ Configuration validated and types converted correctly")
 
     @pytest.mark.singer
@@ -402,15 +388,15 @@ class TestsFlextTapOracleWmsFunctional:
     ) -> None:
         """Test Singer protocol compliance."""
         catalog = self._catalog(real_tap_instance)
-        assert catalog.streams is not None, "Catalog missing streams"
+        tm.that(catalog.streams, none=False)
         for stream in catalog.streams:
             schema = stream.schema_definition
-            assert "type" in schema, "Schema missing type"
-            assert schema["type"] == "t.JsonValue", "Schema type must be t.JsonValue"
-            assert "properties" in schema, "Schema missing properties"
+            tm.that(schema, has="type")
+            tm.that(schema["type"], eq="t.JsonValue")
+            tm.that(schema, has="properties")
             for meta in stream.metadata:
-                assert meta.breadcrumb is not None, "Metadata missing breadcrumb"
-                assert meta.metadata is not None, "Metadata missing metadata field"
+                tm.that(meta.breadcrumb, none=False)
+                tm.that(meta.metadata, none=False)
         logger.info("✅ Singer protocol compliance verified")
 
     @pytest.mark.skip(
@@ -431,7 +417,7 @@ class TestsFlextTapOracleWmsFunctional:
         errors: MutableSequence[str] = []
 
         def _collect_summary() -> tuple[bool, bool, int, int, bool, bool, bool]:
-            assert real_tap_instance is not None
+            tm.that(real_tap_instance, none=False)
             catalog = self._catalog(real_tap_instance)
             catalog_streams = catalog.streams
             discovered = len(catalog_streams)

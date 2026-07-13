@@ -17,12 +17,13 @@ from collections.abc import (
 from typing import TYPE_CHECKING
 
 import pytest
+from flext_tests import tm
 
 from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 if TYPE_CHECKING:
-    from tests.typings import t
+    from tests import t
 
 
 @pytest.fixture
@@ -55,8 +56,8 @@ class TestsFlextTapOracleWmsWms:
         tap = FlextTapOracleWms(
             config=real_config.TapOracleWms.model_dump(mode="json"),
         )
-        assert tap is not None
-        assert tap.name == "flext-tap-oracle-wms"
+        tm.that(tap, none=False)
+        tm.that(tap.name, eq="flext-tap-oracle-wms")
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -104,7 +105,7 @@ class TestsFlextTapOracleWmsWms:
         streams = tap.discover_streams()
         assert streams
         for stream in streams:
-            assert stream.name is not None
+            tm.that(stream.name, none=False)
 
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
     @pytest.mark.skip(
@@ -134,7 +135,7 @@ class TestsFlextTapOracleWmsWms:
                 records.append(record)
                 if i >= 2:
                     break
-            assert records is not None, "No records found"
+            tm.that(records, none=False)
         except (
             ValueError,
             TypeError,

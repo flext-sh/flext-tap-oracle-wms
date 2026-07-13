@@ -9,12 +9,12 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
-from flext_tests import r
+from flext_tests import r, tm
 
 from flext_tap_oracle_wms import m
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.typings import t
+from tests import t
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
@@ -32,7 +32,7 @@ class TestsFlextTapOracleWmsTap:
             tap = FlextTapOracleWms(
                 config=sample_config.TapOracleWms.model_dump(mode="json"),
             )
-        assert tap.name == "flext-tap-oracle-wms"
+        tm.that(tap.name, eq="flext-tap-oracle-wms")
 
     def test_tap_initialization_with_dict(self) -> None:
         """Tap accepts plain settings mappings and normalizes settings values."""
@@ -43,8 +43,8 @@ class TestsFlextTapOracleWmsTap:
         }
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(config=config_dict)
-        assert "test.wms.example.com" in tap.flext_config.TapOracleWms.base_url
-        assert tap.flext_config.TapOracleWms.username == "test_user"
+        tm.that(tap.flext_config.TapOracleWms.base_url, has="test.wms.example.com")
+        tm.that(tap.flext_config.TapOracleWms.username, eq="test_user")
 
     def test_tap_initialization_invalid_config(self) -> None:
         """Invalid settings payload raises configuration error."""
@@ -75,8 +75,8 @@ class TestsFlextTapOracleWmsTap:
         )
         client_1 = tap.wms_client
         client_2 = tap.wms_client
-        assert client_1 == mock_client
-        assert client_2 == mock_client
+        tm.that(client_1, eq=mock_client)
+        tm.that(client_2, eq=mock_client)
         mock_client_class.assert_called_once()
         mock_client.start.assert_called_once()
 
@@ -109,9 +109,9 @@ class TestsFlextTapOracleWmsTap:
             return_value=mock_client,
         ):
             result = tap_instance.discovercatalog_typed()
-        assert result.success
-        assert result.value.streams[0].stream == "inventory"
-        assert result.value.streams[1].stream == "locations"
+        tm.ok(result)
+        tm.that(result.value.streams[0].stream, eq="inventory")
+        tm.that(result.value.streams[1].stream, eq="locations")
 
     def test_discover_catalog_failure(self, tap_instance: FlextTapOracleWms) -> None:
         """Catalog discovery propagates client discovery failures."""
@@ -124,8 +124,8 @@ class TestsFlextTapOracleWmsTap:
             return_value=mock_client,
         ):
             result = tap_instance.discovercatalog_typed()
-        assert result.failure
-        assert result.error == "boom"
+        tm.fail(result)
+        tm.that(result.error, eq="boom")
 
     def test_discover_streams_empty_when_catalog_fails(
         self,
@@ -165,14 +165,14 @@ class TestsFlextTapOracleWmsTap:
             return_value=r[m.Meltano.SingerCatalog].ok(catalog),
         ):
             streams = tap_instance.discover_streams()
-        assert len(streams) == 1
-        assert streams[0].name == "inventory"
+        tm.that(len(streams), eq=1)
+        tm.that(streams[0].name, eq="inventory")
 
     def test_execute_normal_mode(self, tap_instance: FlextTapOracleWms) -> None:
         """Execute without message triggers sync flow and returns success."""
         with patch.object(tap_instance, "sync_all") as mock_sync:
             result = tap_instance.execute()
-        assert result.success
+        tm.ok(result)
         mock_sync.assert_called_once()
 
     def test_execute_with_message_unsupported(
@@ -181,33 +181,33 @@ class TestsFlextTapOracleWmsTap:
     ) -> None:
         """Custom message execution is not supported by the tap."""
         result = tap_instance.execute("some message")
-        assert result.failure
-        assert "Tap does not support message execution" in str(result.error)
+        tm.fail(result)
+        tm.that(str(result.error), has="Tap does not support message execution")
 
     def test_validate_configuration(self, tap_instance: FlextTapOracleWms) -> None:
         """Validation method exposes non-secret effective settings values."""
         result = tap_instance.validate_configuration()
-        assert result.success
+        tm.ok(result)
         value = result.value
-        assert isinstance(value, Mapping)
-        assert value["base_url"] == tap_instance.flext_config.TapOracleWms.base_url
-        assert "password" not in value
+        tm.that(value, is_=Mapping)
+        tm.that(value["base_url"], eq=tap_instance.flext_config.TapOracleWms.base_url)
+        tm.that(value, lacks="password")
 
     def test_get_implementation_name_and_version(
         self,
         tap_instance: FlextTapOracleWms,
     ) -> None:
         """Implementation metadata methods return stable, non-empty values."""
-        assert tap_instance.get_implementation_name() == "FLEXT Oracle WMS Tap"
-        assert tap_instance.get_implementation_version() != ""
+        tm.that(tap_instance.get_implementation_name(), eq="FLEXT Oracle WMS Tap")
+        tm.that(tap_instance.get_implementation_version(), ne="")
 
     def test_get_implementation_metrics(self, tap_instance: FlextTapOracleWms) -> None:
         """Metrics payload contains baseline tap observability fields."""
         with patch.object(tap_instance, "discover_streams", return_value=[]):
             result = tap_instance.get_implementation_metrics()
-        assert result.success
+        tm.ok(result)
         metrics = result.value
-        assert isinstance(metrics, Mapping)
-        assert metrics["tap_name"] == "flext-tap-oracle-wms"
-        assert "version" in metrics
-        assert "streams_available" in metrics
+        tm.that(metrics, is_=Mapping)
+        tm.that(metrics["tap_name"], eq="flext-tap-oracle-wms")
+        tm.that(metrics, has="version")
+        tm.that(metrics, has="streams_available")

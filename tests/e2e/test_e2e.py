@@ -19,17 +19,17 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import pytest
+from flext_tests import tm
 
 from flext_cli import u as cli_u
 from flext_meltano import c as meltano_c
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.typings import t
-from tests.utilities import u
+from tests import t, u
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
-    from tests.models import m
+    from tests import m
 
 logger = u.fetch_logger(__name__)
 
@@ -42,7 +42,7 @@ class TestsFlextTapOracleWmsE2e:
     def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
         """Return the typed discovered catalog used by runtime code."""
         result = tap.discovercatalog_typed()
-        assert result.success, result.error
+        tm.ok(result)
         return result.value
 
     @staticmethod
@@ -67,13 +67,13 @@ class TestsFlextTapOracleWmsE2e:
             config=real_config.TapOracleWms.model_dump(mode="json"),
         )
         catalog = self._catalog(tap_instance)
-        assert catalog is not None, "Discovery returned None catalog"
+        tm.that(catalog, none=False)
         streams = catalog.streams
         assert streams, "No streams discovered"
         for stream in streams:
             schema = stream.schema_definition
-            assert schema.get("type") == "t.JsonValue", "Invalid schema type"
-            assert "properties" in schema, "Schema missing properties"
+            tm.that(schema.get("type"), eq="t.JsonValue")
+            tm.that(schema, has="properties")
             props = schema.get("properties")
             assert props, "Empty schema properties"
             metadata = stream.metadata
@@ -81,13 +81,16 @@ class TestsFlextTapOracleWmsE2e:
                 (entry for entry in metadata if entry.breadcrumb == []),
                 None,
             )
-            assert table_metadata is not None, "Missing table metadata"
+            tm.that(table_metadata, none=False)
             meta = table_metadata.metadata
-            assert "replication-method" in meta, "Missing replication method"
-            assert meta["replication-method"] in {
-                meltano_c.Meltano.SingerReplicationMethod.INCREMENTAL.value,
-                meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value,
-            }, "Invalid replication method"
+            tm.that(meta, has="replication-method")
+            tm.that(
+                {
+                    meltano_c.Meltano.SingerReplicationMethod.INCREMENTAL.value,
+                    meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value,
+                },
+                has=meta["replication-method"],
+            )
         logger.info(
             "✅ Complete discovery validation passed for %d streams",
             len(streams),
@@ -110,9 +113,7 @@ class TestsFlextTapOracleWmsE2e:
         catalog_json = cli_u.Cli.json_dumps(catalog_payload, indent=2).unwrap()
         assert catalog_json, "Catalog serialization failed"
         deserialized = cli_u.Cli.json_loads(catalog_json).unwrap()
-        assert deserialized == catalog_payload, (
-            "Catalog serialization/deserialization mismatch"
-        )
+        tm.that(deserialized, eq=catalog_payload)
         if catalog.streams:
             stream = catalog.streams[0]
             assert any(meta.breadcrumb == [] for meta in stream.metadata)
@@ -141,11 +142,11 @@ class TestsFlextTapOracleWmsE2e:
             name=stream_id,
             schema=self._schema(test_stream),
         )
-        assert stream.name == stream_id
-        assert stream.url_base is not None
+        tm.that(stream.name, eq=stream_id)
+        tm.that(stream.url_base, none=False)
         params = stream._build_operation_kwargs(page=1, context=None)
-        assert isinstance(params, dict)
-        assert "limit" in params
+        tm.that(params, is_=dict)
+        tm.that(params, has="limit")
         logger.info("✅ Single stream extraction setup successful")
 
     @pytest.mark.skip(
@@ -178,8 +179,8 @@ class TestsFlextTapOracleWmsE2e:
             name=incremental_stream_config.tap_stream_id,
             schema=self._schema(incremental_stream_config),
         )
-        assert stream.replication_method == "INCREMENTAL"
-        assert stream.replication_key is not None
+        tm.that(stream.replication_method, eq="INCREMENTAL")
+        tm.that(stream.replication_key, none=False)
         yesterday = datetime.now(UTC) - timedelta(days=1)
         context = {"replication_key_value": yesterday.isoformat()}
         params = stream._build_operation_kwargs(page=1, context=context)
@@ -321,7 +322,7 @@ class TestsFlextTapOracleWmsE2e:
         tap = FlextTapOracleWms(config=dict(invalid_config))
         try:
             catalog = self._catalog(tap)
-            assert catalog.streams is not None
+            tm.that(catalog.streams, none=False)
         except (
             ValueError,
             TypeError,
@@ -357,35 +358,34 @@ class TestsFlextTapOracleWmsE2e:
         )
         catalog = self._catalog(tap_instance)
         for stream in catalog.streams:
-            assert isinstance(stream.tap_stream_id, str), "tap_stream_id must be string"
+            tm.that(stream.tap_stream_id, is_=str)
             assert stream.tap_stream_id, "tap_stream_id cannot be empty"
             schema = stream.schema_definition
-            assert schema["type"] == "t.JsonValue", "Schema type must be t.JsonValue"
-            assert isinstance(schema["properties"], dict), "Properties must be dict"
+            tm.that(schema["type"], eq="t.JsonValue")
+            tm.that(schema["properties"], is_=dict)
             metadata = stream.metadata
             for meta in metadata:
-                assert isinstance(meta.breadcrumb, list), "Breadcrumb must be list"
-                assert isinstance(meta.metadata, dict), "Metadata field must be dict"
+                tm.that(meta.breadcrumb, is_=list)
+                tm.that(meta.metadata, is_=dict)
             table_meta = next(
                 (meta for meta in metadata if meta.breadcrumb == []),
                 None,
             )
-            assert table_meta is not None, "Missing table-level metadata"
+            tm.that(table_meta, none=False)
             table_metadata = table_meta.metadata
-            assert "replication-method" in table_metadata, "Missing replication method"
+            tm.that(table_metadata, has="replication-method")
             replication_method = table_metadata["replication-method"]
-            assert replication_method in {
-                meltano_c.Meltano.SingerReplicationMethod.INCREMENTAL.value,
-                meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value,
-            }, f"Invalid replication method: {replication_method}"
+            tm.that(
+                {
+                    meltano_c.Meltano.SingerReplicationMethod.INCREMENTAL.value,
+                    meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value,
+                },
+                has=replication_method,
+            )
             if replication_method == "INCREMENTAL":
-                assert "replication-key" in table_metadata, (
-                    "Incremental stream missing replication key"
-                )
+                tm.that(table_metadata, has="replication-key")
                 replication_key = table_metadata["replication-key"]
-                assert replication_key in schema["properties"], (
-                    f"Replication key {replication_key} not in schema"
-                )
+                tm.that(schema["properties"], has=replication_key)
         logger.info("✅ Complete Singer protocol compliance verified")
 
     @pytest.mark.skip(

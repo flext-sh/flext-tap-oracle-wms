@@ -15,12 +15,13 @@ from typing import TYPE_CHECKING
 import psutil
 import pytest
 from dotenv import load_dotenv
+from flext_tests import tm
 
 from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 if TYPE_CHECKING:
-    from tests.typings import t
+    from tests import t
 
 env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(env_path)
@@ -65,7 +66,7 @@ class TestsFlextTapOracleWmsExtractionPerformance:
         start_time = time.time()
         result = tap.discovercatalog_typed()
         discovery_time = time.time() - start_time
-        assert result.success
+        tm.ok(result)
         assert discovery_time < 10.0
 
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
