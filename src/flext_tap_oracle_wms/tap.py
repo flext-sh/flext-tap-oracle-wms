@@ -12,8 +12,8 @@ from typing import ClassVar, override
 
 from flext_oracle_wms import (
     FlextOracleWmsSettings,
+    FlextOracleWmsUtilities,
 )
-from flext_oracle_wms.utilities import FlextOracleWmsUtilities
 from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     c,

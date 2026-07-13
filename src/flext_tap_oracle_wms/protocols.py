@@ -18,7 +18,7 @@ from flext_meltano import p as meltano_p
 from flext_oracle_wms import FlextOracleWmsProtocols
 
 if TYPE_CHECKING:
-    from flext_oracle_wms.utilities import FlextOracleWmsUtilities
+    from flext_oracle_wms import FlextOracleWmsUtilities
     from flext_tap_oracle_wms import t
 
 
