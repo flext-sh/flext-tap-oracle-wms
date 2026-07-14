@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     )
     from flext_tap_oracle_wms.protocols import (
         FlextTapOracleWmsProtocols as FlextTapOracleWmsProtocols,
-        p as p,
+        p,
     )
     from flext_tap_oracle_wms.tap import FlextTapOracleWms as FlextTapOracleWms
     from flext_tap_oracle_wms.typings import (
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     )
     from flext_tap_oracle_wms.utilities import (
         FlextTapOracleWmsUtilities as FlextTapOracleWmsUtilities,
-        u as u,
+        u,
     )
 _LAZY_IMPORTS = build_lazy_import_map(
     {
