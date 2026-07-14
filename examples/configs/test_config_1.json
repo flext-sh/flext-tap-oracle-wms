@@ -1,0 +1,16 @@
+{
+  "base_url": "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
+  "username": "user",
+  "password": "xyz",
+  "auth_method": "basic",
+  "page_size": 3,
+  "page_mode": "sequenced",
+  "entities": ["allocation"],
+  "request_timeout": 300,
+  "enable_incremental": true,
+  "incremental_replication": {
+    "allocation": {
+      "use_mod_ts": true
+    }
+  }
+}

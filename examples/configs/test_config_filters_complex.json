@@ -1,0 +1,18 @@
+{
+  "base_url": "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
+  "username": "user",
+  "password": "xyz",
+  "auth_method": "basic",
+  "page_size": 25,
+  "page_mode": "sequenced",
+  "record_limit": 50,
+  "entities": ["allocation"],
+  "request_timeout": 300,
+  "enable_incremental": false,
+  "entity_filters": {
+    "allocation": {
+      "id__gte": 50534800,
+      "id__lte": 50534850
+    }
+  }
+}
