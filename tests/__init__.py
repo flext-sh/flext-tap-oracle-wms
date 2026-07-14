@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     )
     from tests.protocols import (
         TestsFlextTapOracleWmsProtocols as TestsFlextTapOracleWmsProtocols,
-        p as p,
+        p,
     )
     from tests.typings import (
         TestsFlextTapOracleWmsTypes as TestsFlextTapOracleWmsTypes,
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     )
     from tests.utilities import (
         TestsFlextTapOracleWmsUtilities as TestsFlextTapOracleWmsUtilities,
-        u as u,
+        u,
     )
 
 _LAZY_IMPORTS = build_lazy_import_map(
