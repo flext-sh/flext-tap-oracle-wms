@@ -173,7 +173,7 @@ class E2EMockWMSEnvironment:
     def __init__(self):
         self.mock_server = MockWMSServer()
         self.test_data = TestDataManager()
-        self.config_generator = ConfigGenerator()
+        settings_generator = ConfigGenerator()
 
     def setup_complete_environment(self):
         """Setup complete mock environment for E2E testing."""
@@ -181,7 +181,7 @@ class E2EMockWMSEnvironment:
         self.mock_server.start()
 
         # Generate test configurations
-        self.configs = self.config_generator.generate_test_configs()
+        settingss = settings_generator.generate_test_configs()
 
         # Load test data sets
         self.test_data.load_datasets()

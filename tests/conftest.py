@@ -8,8 +8,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
+from collections.abc import Generator
 from pathlib import Path
-from typing import TYPE_CHECKING
 from unittest.mock import patch as _patch
 
 import pytest
@@ -17,11 +17,7 @@ from flext_tests import reset_settings as _shared_reset_settings
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-
-if TYPE_CHECKING:
-    from collections.abc import Generator
-
-    from tests import t
+from tests import t
 
 reset_settings = _shared_reset_settings
 

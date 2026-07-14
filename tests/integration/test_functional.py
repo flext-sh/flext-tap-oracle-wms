@@ -11,18 +11,14 @@ from collections.abc import (
     Mapping,
     MutableSequence,
 )
-from typing import TYPE_CHECKING
 
 import pytest
 from flext_tests import tm
 
+from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t, u
-
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
-    from tests import m
+from tests import m, t, u
 
 logger = u.fetch_logger(__name__)
 

@@ -8,13 +8,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, override
+from typing import ClassVar, override
 
+from flext_oracle_wms import FlextOracleWmsUtilities
 from flext_tap_oracle_wms import c, m, p, r, t, u
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
-
-if TYPE_CHECKING:
-    from flext_oracle_wms import FlextOracleWmsUtilities
 
 logger = u.fetch_logger(__name__)
 

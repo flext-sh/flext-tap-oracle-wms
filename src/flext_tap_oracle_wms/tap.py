@@ -15,7 +15,6 @@ from flext_oracle_wms import (
     FlextOracleWmsUtilities,
 )
 from flext_tap_oracle_wms import (
-    FlextTapOracleWmsSettings,
     c,
     m,
     p,
@@ -63,13 +62,6 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     _discovery: t.JsonValue | None = None
     _schema_generator: t.JsonValue | None = None
     _discovery_mode: bool = False
-
-    @property
-    def settings(self) -> t.JsonMapping:
-        """Expose tap configuration through legacy settings contract."""
-        # NOTE (multi-agent): mro-rn88 — read the Singer tap config (self.config), not an
-        # undefined bare `config` (settings-fallout left a self-referential assignment).
-        return t.json_dict_adapter().validate_python(self.config)
 
     @property
     def catalog_dict_typed(self) -> t.MutableJsonMapping:
@@ -165,21 +157,6 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             mode="json",
         )
         return t.json_dict_adapter().validate_python(dumped_catalog)
-
-    @property
-    def flext_config(self) -> FlextTapOracleWmsSettings:
-        """The validated tap settings."""
-        # NOTE (multi-agent): mro-rn88 — the Singer config is FLAT (config_jsonschema
-        # properties); the FLEXT settings model namespaces project fields under
-        # TapOracleWms.*, so wrap the flat config before validating.
-        config_map = dict(self.config)
-        try:
-            return FlextTapOracleWmsSettings.model_validate({
-                "TapOracleWms": config_map
-            })
-        except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
-            msg = f"Invalid configuration: {exc}"
-            raise FlextTapOracleWmsConfigurationError(msg) from exc
 
     @property
     def wms_client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
