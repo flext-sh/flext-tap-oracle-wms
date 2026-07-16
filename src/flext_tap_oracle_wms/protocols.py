@@ -16,7 +16,7 @@ from typing import Protocol, runtime_checkable
 
 from flext_meltano import p as meltano_p
 from flext_oracle_wms import FlextOracleWmsProtocols, FlextOracleWmsUtilities
-from flext_tap_oracle_wms import t
+from flext_tap_oracle_wms import p, t
 
 
 class FlextTapOracleWmsProtocols(meltano_p, FlextOracleWmsProtocols):

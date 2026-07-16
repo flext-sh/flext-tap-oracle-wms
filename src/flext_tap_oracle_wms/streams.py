@@ -28,14 +28,14 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     stream_replication_key: str | None = None
     url_base: str = ""
     # Singer SDK attributes exposed for type narrowing in tests/consumers
-    tap: m.Meltano.SingerTapBase
+    tap: p.Meltano.SingerTapBase
     http_headers: t.MutableStrMapping
     authenticator: None = None
 
     @override
     def __init__(
         self,
-        tap: m.Meltano.SingerTapBase,
+        tap: p.Meltano.SingerTapBase,
         name: str | None = None,
         schema: t.JsonMapping | None = None,
         _path: str | None = None,

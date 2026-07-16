@@ -25,7 +25,7 @@ from flext_meltano import c as meltano_c
 from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import m, t, u
+from tests import p, t, u
 
 logger = u.fetch_logger(__name__)
 
@@ -43,7 +43,7 @@ class TestsFlextTapOracleWmsE2e:
 
     @staticmethod
     def _schema(
-        stream: m.Meltano.SingerCatalogEntry,
+        stream: p.Meltano.SingerCatalogEntry,
     ) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract."""
         return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
@@ -158,7 +158,7 @@ class TestsFlextTapOracleWmsE2e:
         )
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
-        incremental_stream_config: m.Meltano.SingerCatalogEntry | None = None
+        incremental_stream_config: p.Meltano.SingerCatalogEntry | None = None
         for stream_config in streams:
             for meta in stream_config.metadata:
                 if meta.breadcrumb == [] and (
@@ -199,7 +199,7 @@ class TestsFlextTapOracleWmsE2e:
         )
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
-        full_table_stream_config: m.Meltano.SingerCatalogEntry | None = None
+        full_table_stream_config: p.Meltano.SingerCatalogEntry | None = None
         for stream_config in streams:
             for meta in stream_config.metadata:
                 if meta.breadcrumb == [] and (

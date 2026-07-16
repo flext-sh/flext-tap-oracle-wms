@@ -18,7 +18,7 @@ from flext_tests import tm
 from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import m, t, u
+from tests import p, t, u
 
 logger = u.fetch_logger(__name__)
 
@@ -36,7 +36,7 @@ class TestsFlextTapOracleWmsFunctional:
 
     @staticmethod
     def _schema(
-        stream: m.Meltano.SingerCatalogEntry,
+        stream: p.Meltano.SingerCatalogEntry,
     ) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract."""
         return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(

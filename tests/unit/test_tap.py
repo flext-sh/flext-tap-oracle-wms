@@ -14,7 +14,7 @@ from flext_tap_oracle_wms import m
 from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t
+from tests import p, t
 
 
 class TestsFlextTapOracleWmsTap:

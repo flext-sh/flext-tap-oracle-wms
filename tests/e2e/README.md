@@ -140,7 +140,7 @@ def test_singer_message_compliance():
     assert any(msg.type == "STATE" for msg in messages)
 
     # Validate message content
-    for schema_msg in filter(lambda m: m.type == "SCHEMA", messages):
+    for schema_msg in filter(lambda m: p.type == "SCHEMA", messages):
         validate_json_schema(schema_msg.schema)
 ```
 

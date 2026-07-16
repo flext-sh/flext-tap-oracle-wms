@@ -15,7 +15,7 @@ from collections.abc import (
 )
 
 from flext_meltano import FlextMeltanoTypes
-from flext_oracle_wms import t
+from flext_oracle_wms import p, t
 from flext_tap_oracle_wms import m
 
 
@@ -26,8 +26,8 @@ class FlextTapOracleWmsTypes(FlextMeltanoTypes, t):
     type ContainerValueMapAdapter = m.TypeAdapter[t.JsonMapping]
     type ContainerValueListAdapter = m.TypeAdapter[t.JsonList]
 
-    CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
-    CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[t.JsonList] = t.json_list_adapter()
+    CONTAINER_VALUE_MAP_ADAPTER: p.TypeAdapter[t.JsonMapping] = t.json_mapping_adapter()
+    CONTAINER_VALUE_LIST_ADAPTER: p.TypeAdapter[t.JsonList] = t.json_list_adapter()
 
 
 t = FlextTapOracleWmsTypes
