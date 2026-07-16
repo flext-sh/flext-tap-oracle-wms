@@ -96,7 +96,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return client
 
     @staticmethod
-    def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
+    def json_normalize_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
         if isinstance(value, t.PRIMITIVES_TYPES):
             return value
@@ -105,7 +105,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         conv = u.TapOracleWms.MappingConversion
         list_value = conv.as_list(
             value,
-            normalizer=FlextTapOracleWmsStream.normalize_json_value,
+            normalizer=FlextTapOracleWmsStream.json_normalize_value,
             list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
             error_cls=FlextTapOracleWmsError,
         )
@@ -113,7 +113,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             return str(list(list_value))
         map_value = conv.as_map(
             value,
-            normalizer=FlextTapOracleWmsStream.normalize_json_value,
+            normalizer=FlextTapOracleWmsStream.json_normalize_value,
             map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
             error_cls=FlextTapOracleWmsError,
         )
@@ -131,7 +131,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         if value is None:
             return None
         if isinstance(value, (list, dict)):
-            return FlextTapOracleWmsStream.normalize_json_value(value)
+            return FlextTapOracleWmsStream.json_normalize_value(value)
         return str(value)
 
     def get_primary_keys(self) -> t.StrSequence:
@@ -268,7 +268,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
                 f"Failed to get records for {self.name}: {result.error}",
             )
         normalized: t.SequenceOf[t.JsonMapping] = [
-            {key: self.normalize_json_value(value) for key, value in record.items()}
+            {key: self.json_normalize_value(value) for key, value in record.items()}
             for record in result.value
         ]
         has_more = len(normalized) == self._page_size
@@ -295,7 +295,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             )
             processed_map = conv.as_map(
                 processed_record,
-                normalizer=self.normalize_json_value,
+                normalizer=self.json_normalize_value,
                 map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
                 error_cls=FlextTapOracleWmsError,
             )
