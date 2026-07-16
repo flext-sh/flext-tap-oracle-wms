@@ -132,7 +132,7 @@ class TestsFlextTapOracleWmsTap:
         with patch.object(
             tap_instance,
             "discovercatalog_typed",
-            return_value=r[m.Meltano.SingerCatalog].fail("no catalog"),
+            return_value=r[p.Meltano.SingerCatalog].fail("no catalog"),
         ):
             with pytest.raises(FlextTapOracleWmsConfigurationError):
                 tap_instance.discover_streams()
@@ -159,7 +159,7 @@ class TestsFlextTapOracleWmsTap:
         with patch.object(
             tap_instance,
             "discovercatalog_typed",
-            return_value=r[m.Meltano.SingerCatalog].ok(catalog),
+            return_value=r[p.Meltano.SingerCatalog].ok(catalog),
         ):
             streams = tap_instance.discover_streams()
         tm.that(len(streams), eq=1)

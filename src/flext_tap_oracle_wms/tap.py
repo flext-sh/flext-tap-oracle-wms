@@ -90,7 +90,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             and not isinstance(raw_streams, t.STR_BYTES_TYPES)
             else []
         )
-        stream_entries: MutableSequence[m.Meltano.SingerCatalogEntry] = []
+        stream_entries: MutableSequence[p.Meltano.SingerCatalogEntry] = []
         for raw_stream in raw_streams_seq:
             if not isinstance(raw_stream, Mapping):
                 continue
@@ -98,7 +98,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 raw_stream,
             )
             metadata_raw: t.JsonValue = s_dict.get("metadata", [])
-            metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata] = []
+            metadata_entries: MutableSequence[p.Meltano.SingerCatalogMetadata] = []
             if isinstance(metadata_raw, Sequence) and not isinstance(
                 metadata_raw,
                 t.STR_BYTES_TYPES,
@@ -191,15 +191,15 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """Return a default Singer JSON schema for discovered entities."""
         return {"type": c.TapOracleWms.SCHEMA_TYPE_OBJECT}
 
-    def discovercatalog_typed(self) -> p.Result[m.Meltano.SingerCatalog]:
+    def discovercatalog_typed(self) -> p.Result[p.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams."""
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.failure:
-            return r[m.Meltano.SingerCatalog].fail(
+            return r[p.Meltano.SingerCatalog].fail(
                 discovery_result.error or "Discovery failed",
             )
         entities: t.StrSequence = list(discovery_result.value)
-        streams: list[m.Meltano.SingerCatalogEntry] = []
+        streams: list[p.Meltano.SingerCatalogEntry] = []
         for entity in entities:
             entry_result = u.Meltano.build_catalog_entry(
                 stream_name=entity,
@@ -207,7 +207,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 key_properties=("id",),
             )
             if entry_result.failure:
-                return r[m.Meltano.SingerCatalog].fail(
+                return r[p.Meltano.SingerCatalog].fail(
                     entry_result.error
                     or f"Failed to build Singer catalog entry for {entity}",
                 )
@@ -227,7 +227,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                     },
                 ),
             )
-        return r[m.Meltano.SingerCatalog].ok(
+        return r[p.Meltano.SingerCatalog].ok(
             m.Meltano.SingerCatalog(type="CATALOG", streams=streams),
         )
 

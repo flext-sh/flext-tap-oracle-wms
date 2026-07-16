@@ -28,7 +28,7 @@ class TestsFlextTapOracleWmsFunctional:
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
     @staticmethod
-    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
+    def _catalog(tap: FlextTapOracleWms) -> p.Meltano.SingerCatalog:
         """Return the typed discovered catalog used by runtime code."""
         result = tap.discovercatalog_typed()
         tm.ok(result)

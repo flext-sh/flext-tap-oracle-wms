@@ -17,7 +17,7 @@ class TestsFlextTapOracleWmsServiceBase(tests_s):
     # declares only its more-specific bootstrap settings type.
     @classmethod
     @override
-    def _runtime_bootstrap_options(cls) -> m.RuntimeBootstrapOptions:
+    def _runtime_bootstrap_options(cls) -> p.RuntimeBootstrapOptions:
         return m.RuntimeBootstrapOptions(settings_type=TestsFlextTapOracleWmsSettings)
 
 

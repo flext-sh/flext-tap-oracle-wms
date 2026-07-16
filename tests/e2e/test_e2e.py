@@ -35,7 +35,7 @@ class TestsFlextTapOracleWmsE2e:
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
 
     @staticmethod
-    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
+    def _catalog(tap: FlextTapOracleWms) -> p.Meltano.SingerCatalog:
         """Return the typed discovered catalog used by runtime code."""
         result = tap.discovercatalog_typed()
         tm.ok(result)
