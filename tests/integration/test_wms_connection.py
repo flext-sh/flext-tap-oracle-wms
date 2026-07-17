@@ -14,6 +14,7 @@ from collections.abc import (
     Mapping,
 )
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from dotenv import load_dotenv
@@ -21,7 +22,9 @@ from flext_tests import tm
 
 from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t
+
+if TYPE_CHECKING:
+    from tests import t
 
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(env_path)

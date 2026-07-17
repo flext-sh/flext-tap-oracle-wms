@@ -9,12 +9,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from flext_tests import tm
 
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import p, t, u
+
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 logger = u.fetch_logger(__name__)
 

@@ -12,11 +12,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from flext_meltano import p
 from flext_oracle_wms import FlextOracleWmsProtocols, FlextOracleWmsUtilities
-from flext_tap_oracle_wms import t
+
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms import t
 
 
 class FlextTapOracleWmsProtocols(p, FlextOracleWmsProtocols):
