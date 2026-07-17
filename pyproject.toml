@@ -217,7 +217,6 @@ project-excludes = [
   "**/typings/**",
   "**/vendor/**",
   "**/venv/**",
-  ".flext-deps/**",
   ".venv/**",
   "typings/**",
   "vendor/**",
@@ -227,18 +226,14 @@ python-interpreter-path = "../.venv/bin/python"
 python-version = "3.13"
 search-path = [
   ".",
-  "../flext-cli/examples",
+  "../flext-api/src",
   "../flext-cli/src",
-  "../flext-core/examples",
-  "../flext-core/scripts",
   "../flext-core/src",
   "../flext-infra/src",
-  "../flext-infra/tmp_flow_test",
-  "../flext-meltano/examples",
   "../flext-meltano/src",
-  "../flext-oracle-wms/examples",
   "../flext-oracle-wms/src",
   "../flext-tests/src",
+  "../flext-web/src",
   "src",
 ]
 use-ignore-files = false
