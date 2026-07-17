@@ -33,13 +33,20 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         self,
         settings: t.JsonMapping | None = None,
     ) -> p.Meltano.SingerTapInstance:
-        """Create the internal tap runtime backed by Singer SDK."""
+        """Create the internal tap runtime backed by Singer SDK.
+
+        Built config-free (``validate_config=False``) so the flat Singer CLI
+        (``get_singer_command``) parses and validates ``--config`` itself instead
+        of crashing at construction when no config is pre-supplied.
+        """
         raw_config = (
             t.json_dict_adapter().validate_python(settings)
             if settings is not None
             else None
         )
-        return FlextMeltanoSingerTapAdapter(FlextTapOracleWms(config=raw_config))
+        return FlextMeltanoSingerTapAdapter(
+            FlextTapOracleWms(config=raw_config, validate_config=False),
+        )
 
 
 tap_oracle_wms = FlextTapOracleWmsService
