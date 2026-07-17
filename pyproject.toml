@@ -563,10 +563,10 @@ msg = "Use cli.json_read_file / cli.json_write_file / u.Cli.json_dumps."
 msg = "Use cli.format_table / cli.show_table from flext_cli."
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.tomlkit]
-msg = "Use cli.read_toml_file / u.Cli.toml_load (flext-infra workspace orchestration is exempt)."
+msg = "Use cli.toml_read_file / u.Cli.toml_load (flext-infra workspace orchestration is exempt)."
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.tomllib]
-msg = "Use cli.read_toml_file / u.Cli.toml_load (flext-infra workspace orchestration is exempt)."
+msg = "Use cli.toml_read_file / u.Cli.toml_load (flext-infra workspace orchestration is exempt)."
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.tqdm]
 msg = "Use cli.display_progress from flext_cli."
