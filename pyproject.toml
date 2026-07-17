@@ -21,10 +21,10 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-    "flext-cli @ git+https://github.com/flext-sh/flext-cli.git@0.12.0-dev",
-    "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
-    "flext-meltano @ git+https://github.com/flext-sh/flext-meltano.git@0.12.0-dev",
-    "flext-oracle-wms @ git+https://github.com/flext-sh/flext-oracle-wms.git@0.12.0-dev",
+    "flext-cli @ git+https://github.com/flext-sh/flext-cli.git@0.20.0-dev",
+    "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.20.0-dev",
+    "flext-meltano @ git+https://github.com/flext-sh/flext-meltano.git@0.20.0-dev",
+    "flext-oracle-wms @ git+https://github.com/flext-sh/flext-oracle-wms.git@0.20.0-dev",
     "pydantic-core>=2.46.3",
     "pydantic-settings>=2.14.0",
     "pydantic>=2.13.3",
@@ -36,7 +36,7 @@ license = "MIT"
 name = "flext-tap-oracle-wms"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-version = "0.12.0.rc0"
+version = "0.20.0.dev0"
 
 [[project.authors]]
 email = "team@flext.sh"
