@@ -10,9 +10,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import (
-    Mapping,
-)
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -69,7 +66,7 @@ class TestsFlextTapOracleWmsWmsConnection:
         result = tap.validate_configuration()
         tm.ok(result)
         value = result.value
-        tm.that(value, is_=Mapping)
+        assert isinstance(value, dict)
         tm.that(value.get("valid"), eq=True)
         tm.that(value, has="health")
 

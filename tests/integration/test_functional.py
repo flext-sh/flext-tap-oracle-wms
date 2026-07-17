@@ -8,7 +8,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import (
-    Mapping,
     MutableSequence,
 )
 from typing import TYPE_CHECKING
@@ -114,7 +113,7 @@ class TestsFlextTapOracleWmsFunctional:
             )
             for stream in streams:
                 properties_raw = stream.schema_definition.get("properties")
-                tm.that(properties_raw, is_=Mapping)
+                assert isinstance(properties_raw, dict)
                 properties: t.JsonMapping = properties_raw
                 assert properties, f"Stream {stream.tap_stream_id} has empty properties"
                 logger.info(
@@ -154,10 +153,10 @@ class TestsFlextTapOracleWmsFunctional:
             tm.that(schema["type"], eq="t.JsonValue")
             tm.that(schema, has="properties")
             properties_raw = schema["properties"]
-            tm.that(properties_raw, is_=Mapping)
+            assert isinstance(properties_raw, dict)
             properties: t.JsonMapping = properties_raw
             for prop_name, prop_def in properties.items():
-                tm.that(prop_def, is_=Mapping)
+                assert isinstance(prop_def, dict)
                 tm.that(prop_def, has="type")
                 prop_type = prop_def["type"]
                 valid_types: t.JsonList = [
@@ -249,10 +248,11 @@ class TestsFlextTapOracleWmsFunctional:
         )
         url_params = stream._build_operation_kwargs(page=1, context=None)
         tm.that(url_params, has="limit")
-        tm.that(url_params["limit"], is_=int)
-        assert url_params["limit"] > 0, "limit must be positive"
-        assert url_params["limit"] <= 1250, "limit exceeds Oracle WMS max"
-        logger.info(f"✅ Pagination configured: page_size={url_params['page_size']}")
+        limit_value = url_params["limit"]
+        assert isinstance(limit_value, int)
+        assert limit_value > 0, "limit must be positive"
+        assert limit_value <= 1250, "limit exceeds Oracle WMS max"
+        logger.info("Pagination configured: page_size=%s", url_params["page_size"])
 
     @pytest.mark.functional
     @pytest.mark.skip(

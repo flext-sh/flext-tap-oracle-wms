@@ -62,7 +62,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
             schema=self._schema(stream_config),
         )
         tm.that(stream.name, eq=stream_id)
-        tm.that(stream.tap, eq=real_tap_instance)
+        assert stream.tap is real_tap_instance
         logger.info("✅ Stream created successfully: %s", stream_id)
 
     @pytest.mark.skip(
@@ -87,9 +87,10 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         url_params = stream._build_operation_kwargs(page=1, context=None)
         tm.that(url_params, is_=dict)
         tm.that(url_params, has="limit")
-        tm.that(url_params["limit"], is_=int)
-        assert url_params["limit"] > 0
-        logger.info("✅ URL generation working: %s", url_base)
+        limit_value = url_params["limit"]
+        assert isinstance(limit_value, int)
+        assert limit_value > 0
+        logger.info("URL generation working: %s", url_base)
         logger.info(f"✅ Parameters: {list(url_params.keys())}")
 
     @pytest.mark.skip(
@@ -112,9 +113,9 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         )
         headers = stream.http_headers
         auth_header = headers.get("Authorization") or headers.get("authorization")
-        tm.that(auth_header, is_=str)
+        assert auth_header is not None
         assert auth_header.startswith("Basic "), f"Expected Basic auth: {auth_header}"
-        logger.info("✅ Authentication configured correctly")
+        logger.info("Authentication configured correctly")
 
     @pytest.mark.skip(
         reason="Integration test - requires live WMS or comprehensive mocking",
@@ -229,7 +230,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         params = stream._build_operation_kwargs(page=1, context=None)
         tm.that(params, has="limit")
         page_size = params["limit"]
-        tm.that(page_size, is_=int)
+        assert isinstance(page_size, int)
         assert 1 <= page_size <= 1250, f"Invalid limit: {page_size}"
         if "page_mode" in params:
             page_mode = params["page_mode"]

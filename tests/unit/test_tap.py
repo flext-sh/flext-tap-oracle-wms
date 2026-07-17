@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import (
-    Mapping,
-)
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, PropertyMock, patch
 
@@ -189,7 +186,7 @@ class TestsFlextTapOracleWmsTap:
         result = tap_instance.validate_configuration()
         tm.ok(result)
         value = result.value
-        tm.that(value, is_=Mapping)
+        assert isinstance(value, dict)
         tm.that(value["base_url"], eq=tap_instance.flext_config.TapOracleWms.base_url)
         tm.that(value, lacks="password")
 
@@ -207,7 +204,7 @@ class TestsFlextTapOracleWmsTap:
             result = tap_instance.get_implementation_metrics()
         tm.ok(result)
         metrics = result.value
-        tm.that(metrics, is_=Mapping)
+        assert isinstance(metrics, dict)
         tm.that(metrics["tap_name"], eq="flext-tap-oracle-wms")
         tm.that(metrics, has="version")
         tm.that(metrics, has="streams_available")

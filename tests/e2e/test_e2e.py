@@ -81,7 +81,7 @@ class TestsFlextTapOracleWmsE2e:
                 (entry for entry in metadata if entry.breadcrumb == []),
                 None,
             )
-            tm.that(table_metadata, none=False)
+            assert table_metadata is not None
             meta = table_metadata.metadata
             tm.that(meta, has="replication-method")
             tm.that(
@@ -371,7 +371,7 @@ class TestsFlextTapOracleWmsE2e:
                 (meta for meta in metadata if meta.breadcrumb == []),
                 None,
             )
-            tm.that(table_meta, none=False)
+            assert table_meta is not None
             table_metadata = table_meta.metadata
             tm.that(table_metadata, has="replication-method")
             replication_method = table_metadata["replication-method"]
