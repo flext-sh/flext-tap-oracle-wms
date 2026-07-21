@@ -6,7 +6,7 @@ from typing import override
 
 from flext_tests import s as tests_s
 
-from flext_tap_oracle_wms import m
+from flext_tap_oracle_wms import m, p
 from tests.settings import TestsFlextTapOracleWmsSettings
 
 

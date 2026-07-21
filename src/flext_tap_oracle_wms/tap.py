@@ -2,26 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import (
-    Mapping,
-    MutableSequence,
-    Sequence,
-)
+from collections.abc import Mapping, MutableSequence, Sequence
 from pathlib import Path
 from typing import ClassVar, override
 
-from flext_oracle_wms import (
-    FlextOracleWmsSettings,
-    FlextOracleWmsUtilities,
-)
-from flext_tap_oracle_wms import (
-    c,
-    m,
-    p,
-    r,
-    t,
-    u,
-)
+from flext_oracle_wms import FlextOracleWmsSettings, FlextOracleWmsUtilities
+from flext_tap_oracle_wms import c, m, p, r, t, u
 from flext_tap_oracle_wms.__version__ import __version__
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream

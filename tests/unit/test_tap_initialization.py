@@ -42,9 +42,8 @@ class TestsFlextTapOracleWmsTapInitialization:
             tap,
             "discovercatalog_typed",
             return_value=r.fail("discovery unavailable"),
-        ):
-            with pytest.raises(FlextTapOracleWmsConfigurationError):
-                tap.discover_streams()
+        ), pytest.raises(FlextTapOracleWmsConfigurationError):
+            tap.discover_streams()
 
     def test_discover_streams_uses_client_entities(self) -> None:
         """discover_streams builds streams for each discovered entity."""

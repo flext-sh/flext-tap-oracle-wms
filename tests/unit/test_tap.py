@@ -133,9 +133,8 @@ class TestsFlextTapOracleWmsTap:
             tap_instance,
             "discovercatalog_typed",
             return_value=r[p.Meltano.SingerCatalog].fail("no catalog"),
-        ):
-            with pytest.raises(FlextTapOracleWmsConfigurationError):
-                tap_instance.discover_streams()
+        ), pytest.raises(FlextTapOracleWmsConfigurationError):
+            tap_instance.discover_streams()
 
     def test_discover_streams_success(self, tap_instance: FlextTapOracleWms) -> None:
         """Stream discovery builds stream objects from discovered catalog."""
