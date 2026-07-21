@@ -1,25 +1,13 @@
-# SINGER TAP CONFIGURATION
-TAP_CONFIG ?= config.json
-TAP_CATALOG ?= catalog.json
-TAP_STATE ?= state.json
-# SINGER TAP OPERATIONS
-.PHONY: discover run catalog sync validate-config test-singer
-discover: ## Run tap discovery mode
-	$(POETRY) run tap-oracle-wms --config $(TAP_CONFIG) --discover > $(TAP_CATALOG)
-run: ## Run tap extraction
-	$(POETRY) run tap-oracle-wms --config $(TAP_CONFIG) --catalog $(TAP_CATALOG) --state $(TAP_STATE)
-catalog: discover ## Alias for discover
-sync: run ## Alias for run
-validate-config: ## Validate tap configuration
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "import json; json.load(open('$(TAP_CONFIG)'))"
-# WMS-SPECIFIC TARGETS
-.PHONY: wms-test wms-entities wms-performance
-wms-test: ## Test Oracle WMS connectivity
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from flext_tap_oracle_wms.client import test_connection; test_connection()"
-wms-entities: ## List available WMS entities
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from flext_tap_oracle_wms.discovery import list_entities; list_entities()"
-wms-performance: ## Run WMS performance test
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from flext_tap_oracle_wms.performance import run_performance_test; run_performance_test()"
-# PROJECT-SPECIFIC TEST TARGETS
-test-singer: ## Run Singer protocol tests
-	$(POETRY) run pytest $(TESTS_DIR) -m singer -v
+# Private project handlers for flext-tap-oracle-wms.
+# Strict extension: only `_custom_<verb>_<what>` handlers and `(pre|post)-<verb>[-<what>]`
+# hooks. Public targets, toolchain vars, .DEFAULT_GOAL, includes, and help are
+# invalid (base.mk owns those). Each handler maps to `make <verb> WHAT=<what>`.
+.PHONY: _custom_run_discover _custom_run_tap _custom_run_wms-test _custom_test_singer
+_custom_run_discover: ## make run WHAT=discover — tap discovery -> catalog.json
+	$(Q)$(POETRY) run tap-oracle-wms --config config.json --discover > catalog.json
+_custom_run_tap: ## make run WHAT=tap — tap extraction
+	$(Q)$(POETRY) run tap-oracle-wms --config config.json --catalog catalog.json --state state.json
+_custom_run_wms-test: ## make run WHAT=wms-test — test Oracle WMS connectivity
+	$(Q)PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from flext_tap_oracle_wms.client import test_connection; test_connection()"
+_custom_test_singer: ## make test WHAT=singer — Singer protocol tests
+	$(Q)$(POETRY) run pytest $(TESTS_DIR) -m singer -v
