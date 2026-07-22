@@ -13,10 +13,10 @@ from typing import TYPE_CHECKING
 from unittest.mock import patch as _patch
 
 import pytest
-from flext_tests import reset_settings as _shared_reset_settings
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tests import reset_settings as _shared_reset_settings
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -48,7 +48,7 @@ def isolate_tap_oracle_wms_env(
     """Keep unit tests deterministic regardless of host FLEXT_TAP_ORACLE_WMS_* env."""
     _ = reset_settings
     if request.node.get_closest_marker(
-        "integration",
+        "integration"
     ) or request.node.get_closest_marker("real"):
         return
     for key in [key for key in os.environ if key.startswith("FLEXT_TAP_ORACLE_WMS_")]:
@@ -70,7 +70,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
             "timeout": 30,
             "max_retries": 3,
             "verify_ssl": False,
-        },
+        }
     )
 
 
@@ -88,7 +88,7 @@ def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
             "timeout": int(os.environ.get("ORACLE_WMS_TIMEOUT", "30")),
             "verify_ssl": os.environ.get("ORACLE_WMS_VERIFY_SSL", "true").lower()
             == "true",
-        },
+        }
     )
 
 
@@ -100,16 +100,14 @@ def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     # the TapOracleWms namespace payload.
     with _patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
         return FlextTapOracleWms(
-            config=sample_config.TapOracleWms.model_dump(mode="json"),
+            config=sample_config.TapOracleWms.model_dump(mode="json")
         )
 
 
 @pytest.fixture
 def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Real tap instance for integration tests."""
-    return FlextTapOracleWms(
-        config=real_config.TapOracleWms.model_dump(mode="json"),
-    )
+    return FlextTapOracleWms(config=real_config.TapOracleWms.model_dump(mode="json"))
 
 
 @pytest.fixture
@@ -125,8 +123,7 @@ def test_config_extraction() -> t.JsonMapping:
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config,
-    items: t.SequenceOf[pytest.Item],
+    config: pytest.Config, items: t.SequenceOf[pytest.Item]
 ) -> None:
     """Add markers to tests based on their location."""
     _ = config

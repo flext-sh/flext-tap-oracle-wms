@@ -146,11 +146,7 @@ from flext_tap_oracle_wms import FlextTapOracleWms
 from flext_tap_oracle_wms import WMSConfig
 from flext_tap_oracle_wms import __version__
 
-__all__: t.StringList = [
-    "FlextTapOracleWms",
-    "WMSConfig",
-    "__version__",
-]
+__all__: t.StringList = ["FlextTapOracleWms", "WMSConfig", "__version__"]
 
 # __version__.py - Version Management
 """Version information for FLEXT Tap Oracle WMS."""
@@ -163,8 +159,7 @@ _metadata = build_metadata_exports(__file__)
 
 __version__: Final[str] = cast(str, _metadata["__version__"])
 __version_info__: Final[tuple[int | str, ...]] = cast(
-    tuple[int | str, ...],
-    _metadata["__version_info__"],
+    tuple[int | str, ...], _metadata["__version_info__"]
 )
 ```
 

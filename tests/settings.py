@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tests import FlextTestsSettings
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 
-
-class TestsFlextTapOracleWmsSettings(
-    FlextTapOracleWmsSettings,
-    FlextTestsSettings,
-):
+class TestsFlextTapOracleWmsSettings(FlextTapOracleWmsSettings, FlextTestsSettings):
     """Tap Oracle WMS settings extended with the shared test namespace."""
 
 

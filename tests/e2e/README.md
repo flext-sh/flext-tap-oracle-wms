@@ -491,11 +491,7 @@ def test_business_user_daily_extraction():
     # Business scenario: Daily inventory extraction
     with e2e_business_environment():
         # 1. Discovery phase
-        discovery = run_tap_command([
-            "--config",
-            "business_config.json",
-            "--discover",
-        ])
+        discovery = run_tap_command(["--config", "business_config.json", "--discover"])
         assert discovery.returncode == 0
 
         # 2. Extraction phase

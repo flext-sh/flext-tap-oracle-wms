@@ -15,10 +15,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 from dotenv import load_dotenv
-from flext_tests import tm
 
 from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tests import tm
 
 if TYPE_CHECKING:
     from tests import t
@@ -43,23 +43,21 @@ def real_config() -> FlextTapOracleWmsSettings:
             "verify_ssl": os.getenv("ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
             "enable_rate_limiting": True,
             "max_requests_per_minute": 60,
-        },
+        }
     )
 
 
 @pytest.fixture
 def tap(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance with real configuration."""
-    return FlextTapOracleWms(
-        config=real_config.TapOracleWms.model_dump(mode="json"),
-    )
+    return FlextTapOracleWms(config=real_config.TapOracleWms.model_dump(mode="json"))
 
 
 class TestsFlextTapOracleWmsWmsConnection:
     """Test real Oracle WMS connection."""
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_configuration_validation(self, tap: FlextTapOracleWms) -> None:
         """Test configuration validation."""
@@ -71,14 +69,14 @@ class TestsFlextTapOracleWmsWmsConnection:
         tm.that(value, has="health")
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_tap_initialization(self, tap: FlextTapOracleWms) -> None:
         """Test tap initialization."""
         # assert result.is_success
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_catalog_discovery(self, tap: FlextTapOracleWms) -> None:
         """Test catalog discovery."""
@@ -93,7 +91,7 @@ class TestsFlextTapOracleWmsWmsConnection:
             pass
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_stream_discovery(self, tap: FlextTapOracleWms) -> None:
         """Test stream discovery."""
@@ -103,7 +101,7 @@ class TestsFlextTapOracleWmsWmsConnection:
             pass
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_stream_schemas_validation(self, tap: FlextTapOracleWms) -> None:
         """Test stream schemas."""
@@ -119,12 +117,10 @@ class TestsFlextTapOracleWmsWmsConnection:
 
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_extract_stream_data(
-        self,
-        tap: FlextTapOracleWms,
-        stream_name: str,
+        self, tap: FlextTapOracleWms, stream_name: str
     ) -> None:
         """Test extracting data from specific streams."""
         tm.ok(tap.initialize())
@@ -153,7 +149,7 @@ class TestsFlextTapOracleWmsWmsConnection:
             pytest.fail(f"Failed to extract records from {stream_name}: {e}")
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_pagination_functionality(self, tap: FlextTapOracleWms) -> None:
         """Test pagination functionality."""
@@ -175,22 +171,19 @@ class TestsFlextTapOracleWmsWmsConnection:
     """Test entity filtering and selection."""
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_entity_inclusion_filter(
-        self,
-        real_config: FlextTapOracleWmsSettings,
+        self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """Test including specific entities."""
         settings = FlextTapOracleWmsSettings(
             TapOracleWms={
                 **real_config.TapOracleWms.model_dump(),
                 "include_entities": ["inventory", "locations"],
-            },
+            }
         )
-        tap = FlextTapOracleWms(
-            config=settings.TapOracleWms.model_dump(mode="json"),
-        )
+        tap = FlextTapOracleWms(config=settings.TapOracleWms.model_dump(mode="json"))
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
         tm.that(stream_names, has="inventory")
@@ -198,22 +191,19 @@ class TestsFlextTapOracleWmsWmsConnection:
         tm.that(stream_names, lacks="orders")
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_entity_exclusion_filter(
-        self,
-        real_config: FlextTapOracleWmsSettings,
+        self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """Test excluding specific entities."""
         settings = FlextTapOracleWmsSettings(
             TapOracleWms={
                 **real_config.TapOracleWms.model_dump(),
                 "exclude_entities": ["orders", "shipments"],
-            },
+            }
         )
-        tap = FlextTapOracleWms(
-            config=settings.TapOracleWms.model_dump(mode="json"),
-        )
+        tap = FlextTapOracleWms(config=settings.TapOracleWms.model_dump(mode="json"))
         streams = tap.discover_streams()
         stream_names = {s.name for s in streams}
         tm.that(stream_names, lacks="orders")
@@ -223,7 +213,7 @@ class TestsFlextTapOracleWmsWmsConnection:
     """Test /sync integration with flext-oracle-wms."""
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_client_lifecycle_management(self, tap: FlextTapOracleWms) -> None:
         """Test proper client lifecycle management."""
@@ -234,7 +224,7 @@ class TestsFlextTapOracleWmsWmsConnection:
         tm.ok(result)
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_error_handling(self) -> None:
         """Test error handling with invalid configuration."""

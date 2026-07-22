@@ -24,14 +24,12 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
     """Orchestrator for tap-oracle-wms. All behavior from base via MRO."""
 
     tap_name: Annotated[
-        t.NonEmptyStr,
-        u.Field(description="Canonical Singer tap identifier."),
+        t.NonEmptyStr, u.Field(description="Canonical Singer tap identifier.")
     ] = "tap-oracle-wms"
 
     @override
     def create_tap_instance(
-        self,
-        settings: p.Settings | t.JsonMapping | None = None,
+        self, settings: p.Settings | t.JsonMapping | None = None
     ) -> p.Meltano.SingerTapInstance:
         """Create the internal tap runtime backed by Singer SDK.
 
@@ -47,7 +45,7 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
             else None
         )
         return FlextMeltanoSingerTapAdapter(
-            FlextTapOracleWms(config=raw_config, validate_config=False),
+            FlextTapOracleWms(config=raw_config, validate_config=False)
         )
 
 

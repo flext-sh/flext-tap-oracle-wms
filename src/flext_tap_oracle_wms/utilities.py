@@ -6,9 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Mapping,
-)
+from collections.abc import Mapping
 
 from flext_meltano import u
 from flext_oracle_wms import FlextOracleWmsUtilities
@@ -44,9 +42,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
             """Data processing utilities for Oracle WMS records."""
 
             @staticmethod
-            def process_wms_record(
-                record: t.JsonMapping,
-            ) -> t.JsonMapping:
+            def process_wms_record(record: t.JsonMapping) -> t.JsonMapping:
                 """Process WMS record for output.
 
                 Args:
@@ -62,9 +58,7 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
             """Mapping and sequence conversion utilities for Singer protocol."""
 
             @staticmethod
-            def safe_str_mapping(
-                raw: t.JsonMapping,
-            ) -> t.JsonMapping:
+            def safe_str_mapping(raw: t.JsonMapping) -> t.JsonMapping:
                 """Return a Mapping with str keys from an untyped mapping source.
 
                 Args:
@@ -170,7 +164,4 @@ class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
 u = FlextTapOracleWmsUtilities
 """Facade assignment for module-level utility access."""
 
-__all__: list[str] = [
-    "FlextTapOracleWmsUtilities",
-    "u",
-]
+__all__: list[str] = ["FlextTapOracleWmsUtilities", "u"]

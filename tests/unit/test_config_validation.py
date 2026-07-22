@@ -13,9 +13,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
+from flext_tests import tm
 from tests import c, t
 
 
@@ -29,7 +29,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "base_url": "https://wms.example.com",
                 "username": "test_user",
                 "password": "test_password",
-            },
+            }
         )
         namespace = settings.TapOracleWms
         tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
@@ -45,7 +45,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "base_url": "https://wms.example.com/",
                 "username": "user",
                 "password": "pass",
-            },
+            }
         )
         tm.that(settings.TapOracleWms.base_url, has="wms.example.com")
 
@@ -57,7 +57,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "username": "user",
                 "password": "pass",
                 "page_size": 500,
-            },
+            }
         )
         tm.that(settings.TapOracleWms.page_size, eq=500)
 
@@ -70,7 +70,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "password": "pass",
                 "include_entities": ["inventory", "locations"],
                 "exclude_entities": ["orders"],
-            },
+            }
         )
         tm.that(settings.TapOracleWms.include_entities, eq=["inventory", "locations"])
         tm.that(settings.TapOracleWms.exclude_entities, eq=["orders"])
@@ -84,7 +84,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                     "username": "user",
                     "password": "pass",
                     "exclude_entities": ["orders", "orders"],
-                },
+                }
             )
 
     def test_date_fields(self) -> None:
@@ -96,7 +96,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "password": "pass",
                 "start_date": "2024-01-01T00:00:00Z",
                 "end_date": "2024-12-31T23:59:59Z",
-            },
+            }
         )
         tm.that(settings.TapOracleWms.start_date, eq="2024-01-01T00:00:00Z")
         tm.that(settings.TapOracleWms.end_date, eq="2024-12-31T23:59:59Z")
@@ -110,7 +110,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                     "username": "user",
                     "password": "pass",
                     "end_date": "31/12/2024",
-                },
+                }
             )
 
     def test_model_serialization(self) -> None:
@@ -120,7 +120,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
-            },
+            }
         )
         data = settings.TapOracleWms.model_dump()
         tm.that(data, is_=dict)
@@ -137,13 +137,13 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "page_size": 50,
                 "column_mappings": '{"inventory": {"old_col": "new_col"}}',
                 "ignored_columns": ["internal_id"],
-            },
+            }
         )
         namespace = settings.TapOracleWms
         tm.that(namespace.page_size, eq=50)
         # column_mappings is a JSON-encoded string per ADR-005 simple-scalar rule
         decoded_mappings = t.json_dict_adapter().validate_json(
-            namespace.column_mappings,
+            namespace.column_mappings
         )
         tm.that(decoded_mappings, eq={"inventory": {"old_col": "new_col"}})
         tm.that(namespace.ignored_columns, eq=["internal_id"])
@@ -158,7 +158,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "enable_parallel_extraction": True,
                 "max_parallel_streams": 6,
                 "enable_rate_limiting": True,
-            },
+            }
         )
         namespace = settings.TapOracleWms
         tm.that(namespace.enable_parallel_extraction, eq=True)
@@ -174,7 +174,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "password": "pass",
                 "verify_ssl": False,
                 "ssl_cert_path": "/path/to/cert.pem",
-            },
+            }
         )
         tm.that(settings.TapOracleWms.verify_ssl, eq=False)
         tm.that(settings.TapOracleWms.ssl_cert_path, eq="/path/to/cert.pem")
@@ -188,7 +188,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "password": "pass",
                 "enable_rate_limiting": True,
                 "max_requests_per_minute": 120,
-            },
+            }
         )
         tm.that(settings.TapOracleWms.enable_rate_limiting, eq=True)
         tm.that(settings.TapOracleWms.max_requests_per_minute, eq=120)
@@ -200,7 +200,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "super_secret",
-            },
+            }
         )
         password = settings.TapOracleWms.password
         password_value = (

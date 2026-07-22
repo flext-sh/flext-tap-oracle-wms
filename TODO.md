@@ -107,6 +107,7 @@ tests/unit/test_discovery.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup
 ```python notest
 # Arquivo client.py (33 linhas) - COMPLETAMENTE DESNECESSÁRIO
 from flext_oracle_wms import FlextOracleWmsClient
+
 WMSClient = FlextOracleWmsClient  # Apenas um alias!
 ```
 

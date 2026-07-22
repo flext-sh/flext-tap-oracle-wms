@@ -49,45 +49,18 @@ if TYPE_CHECKING:
         FlextTapOracleWmsUtilities as FlextTapOracleWmsUtilities,
         u,
     )
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
-        "._settings": ("FlextTapOracleWmsSettings", "settings"),
-        ".api": (
-            "FlextTapOracleWmsService",
-            "tap_oracle_wms",
-        ),
-        ".cli": ("main",),
-        ".constants": (
-            "FlextTapOracleWmsConstants",
-            "c",
-        ),
-        ".models": (
-            "FlextTapOracleWmsModels",
-            "m",
-        ),
-        ".protocols": (
-            "FlextTapOracleWmsProtocols",
-            "p",
-        ),
-        ".tap": ("FlextTapOracleWms",),
-        ".typings": (
-            "FlextTapOracleWmsTypes",
-            "t",
-        ),
-        ".utilities": (
-            "FlextTapOracleWmsUtilities",
-            "u",
-        ),
-        "flext_meltano": (
-            "d",
-            "e",
-            "h",
-            "r",
-            "s",
-            "x",
-        ),
-    },
-)
+_LAZY_IMPORTS = build_lazy_import_map({
+    "._settings": ("FlextTapOracleWmsSettings", "settings"),
+    ".api": ("FlextTapOracleWmsService", "tap_oracle_wms"),
+    ".cli": ("main",),
+    ".constants": ("FlextTapOracleWmsConstants", "c"),
+    ".models": ("FlextTapOracleWmsModels", "m"),
+    ".protocols": ("FlextTapOracleWmsProtocols", "p"),
+    ".tap": ("FlextTapOracleWms",),
+    ".typings": ("FlextTapOracleWmsTypes", "t"),
+    ".utilities": ("FlextTapOracleWmsUtilities", "u"),
+    "flext_meltano": ("d", "e", "h", "r", "s", "x"),
+})
 
 
 __all__: tuple[str, ...] = (
@@ -124,9 +97,4 @@ __all__: tuple[str, ...] = (
 )
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    public_exports=__all__,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

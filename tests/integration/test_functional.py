@@ -7,16 +7,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    MutableSequence,
-)
+from collections.abc import MutableSequence
 from typing import TYPE_CHECKING
 
 import pytest
-from flext_tests import tm
 
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tests import tm
 from tests import t, u
 
 if TYPE_CHECKING:
@@ -38,20 +36,15 @@ class TestsFlextTapOracleWmsFunctional:
         return result.value
 
     @staticmethod
-    def _schema(
-        stream: m.Meltano.SingerCatalogEntry,
-    ) -> t.JsonMapping:
+    def _schema(stream: m.Meltano.SingerCatalogEntry) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract."""
-        return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-            stream.schema_definition,
-        )
+        return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(stream.schema_definition)
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_real_wms_environment_verification(
-        self,
-        real_wms_config: t.MutableJsonMapping,
+        self, real_wms_config: t.MutableJsonMapping
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         required_config = ["base_url", "username", "password"]
@@ -64,11 +57,10 @@ class TestsFlextTapOracleWmsFunctional:
         logger.info("✅ Real Oracle WMS environment verified: %s", base_url)
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_tap_initialization_real_config(
-        self,
-        real_wms_config: t.MutableJsonMapping,
+        self, real_wms_config: t.MutableJsonMapping
     ) -> None:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms(config=dict(real_wms_config))
@@ -78,11 +70,10 @@ class TestsFlextTapOracleWmsFunctional:
 
     @pytest.mark.discovery
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_automatic_entity_discovery(
-        self,
-        real_tap_instance: FlextTapOracleWms,
+        self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """CRITICAL: Test automatic entity discovery with REAL Oracle WMS."""
 
@@ -92,9 +83,7 @@ class TestsFlextTapOracleWmsFunctional:
             streams = catalog.streams
             assert streams, "No streams discovered"
             entity_names = [stream.tap_stream_id for stream in streams]
-            logger.info(
-                f"✅ Discovered {len(entity_names)} entities: {entity_names}",
-            )
+            logger.info(f"✅ Discovered {len(entity_names)} entities: {entity_names}")
             essential_entities = ["allocation"]
             for entity in essential_entities:
                 found_entities = [
@@ -138,11 +127,10 @@ class TestsFlextTapOracleWmsFunctional:
 
     @pytest.mark.singer
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_valid_singer_schema_generation(
-        self,
-        real_tap_instance: FlextTapOracleWms,
+        self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """Test schema generation produces valid Singer schemas."""
         catalog = self._catalog(real_tap_instance)
@@ -182,11 +170,10 @@ class TestsFlextTapOracleWmsFunctional:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_real_data_extraction_sample(
-        self,
-        real_tap_instance: FlextTapOracleWms,
+        self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """Test REAL data extraction with small sample."""
         catalog = self._catalog(real_tap_instance)
@@ -199,9 +186,7 @@ class TestsFlextTapOracleWmsFunctional:
 
         def _run_test_real_data_extraction_sample() -> None:
             stream = FlextTapOracleWmsStream(
-                tap=real_tap_instance,
-                name=stream_id,
-                schema=self._schema(test_stream),
+                tap=real_tap_instance, name=stream_id, schema=self._schema(test_stream)
             )
             tm.that(stream.name, eq=stream_id)
             tm.that(stream.schema, none=False)
@@ -228,11 +213,10 @@ class TestsFlextTapOracleWmsFunctional:
 
     @pytest.mark.singer
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_pagination_functionality(
-        self,
-        real_tap_instance: FlextTapOracleWms,
+        self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """Test pagination parameters are correctly configured."""
         catalog = self._catalog(real_tap_instance)
@@ -242,9 +226,7 @@ class TestsFlextTapOracleWmsFunctional:
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         stream = FlextTapOracleWmsStream(
-            tap=real_tap_instance,
-            name=stream_id,
-            schema=self._schema(test_stream),
+            tap=real_tap_instance, name=stream_id, schema=self._schema(test_stream)
         )
         url_params = stream._build_operation_kwargs(page=1, context=None)
         tm.that(url_params, has="limit")
@@ -256,11 +238,10 @@ class TestsFlextTapOracleWmsFunctional:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_replication_key_detection(
-        self,
-        real_tap_instance: FlextTapOracleWms,
+        self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """Test automatic replication key detection."""
         catalog = self._catalog(real_tap_instance)
@@ -277,8 +258,7 @@ class TestsFlextTapOracleWmsFunctional:
                 replication_method = table_metadata.metadata.get("replication-method")
                 replication_key = table_metadata.metadata.get("replication-key")
                 if replication_method == "INCREMENTAL" and isinstance(
-                    replication_key,
-                    str,
+                    replication_key, str
                 ):
                     streams_with_replication.append((
                         stream.tap_stream_id,
@@ -287,10 +267,10 @@ class TestsFlextTapOracleWmsFunctional:
                 elif replication_method == "FULL_TABLE":
                     streams_full_table.append(stream.tap_stream_id)
         logger.info(
-            f"✅ Incremental streams ({len(streams_with_replication)}): {streams_with_replication}",
+            f"✅ Incremental streams ({len(streams_with_replication)}): {streams_with_replication}"
         )
         logger.info(
-            f"✅ Full table streams ({len(streams_full_table)}): {streams_full_table}",
+            f"✅ Full table streams ({len(streams_full_table)}): {streams_full_table}"
         )
         assert streams_with_replication or streams_full_table, (
             "No replication methods detected"
@@ -298,11 +278,10 @@ class TestsFlextTapOracleWmsFunctional:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_filtering_and_ordering_parameters(
-        self,
-        real_tap_instance: FlextTapOracleWms,
+        self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """Test filtering and ordering parameters."""
         catalog = self._catalog(real_tap_instance)
@@ -312,9 +291,7 @@ class TestsFlextTapOracleWmsFunctional:
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         stream = FlextTapOracleWmsStream(
-            tap=real_tap_instance,
-            name=stream_id,
-            schema=self._schema(test_stream),
+            tap=real_tap_instance, name=stream_id, schema=self._schema(test_stream)
         )
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
         url_params = stream._build_operation_kwargs(page=1, context=context)
@@ -329,11 +306,10 @@ class TestsFlextTapOracleWmsFunctional:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_error_handling_and_validation(
-        self,
-        real_wms_config: t.MutableJsonMapping,
+        self, real_wms_config: t.MutableJsonMapping
     ) -> None:
         """Test error handling with invalid configurations."""
         invalid_config: t.MutableJsonMapping = dict(real_wms_config)
@@ -363,11 +339,10 @@ class TestsFlextTapOracleWmsFunctional:
 
     @pytest.mark.functional
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_configuration_validation(
-        self,
-        real_config: FlextTapOracleWmsSettings,
+        self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """Test configuration validation and type conversion."""
         settings = real_config
@@ -380,11 +355,10 @@ class TestsFlextTapOracleWmsFunctional:
 
     @pytest.mark.singer
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_singer_protocol_compliance(
-        self,
-        real_tap_instance: FlextTapOracleWms,
+        self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """Test Singer protocol compliance."""
         catalog = self._catalog(real_tap_instance)
@@ -400,11 +374,10 @@ class TestsFlextTapOracleWmsFunctional:
         logger.info("✅ Singer protocol compliance verified")
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_comprehensive_functionality_summary(
-        self,
-        real_tap_instance: FlextTapOracleWms,
+        self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """FINAL COMPREHENSIVE TEST: Verify all functionality works together."""
         environment_loaded: bool = False

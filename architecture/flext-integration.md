@@ -420,11 +420,7 @@ class WMSMeltanoConfig(MeltanoConfig):
 #### Monitoring Integration
 
 ```python notest
-from flext_observability import (
-    FlextMetrics,
-    FlextHealthCheck,
-    FlextTracing,
-)
+from flext_observability import FlextMetrics, FlextHealthCheck, FlextTracing
 
 
 class FlextTapOracleWms(Tap):
