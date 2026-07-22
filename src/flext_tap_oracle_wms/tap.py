@@ -37,6 +37,27 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     _schema_generator: t.JsonValue | None = None
     _discovery_mode: bool = False
 
+    @classmethod
+    def from_settings(
+        cls,
+        settings: FlextTapOracleWmsSettings,
+        *,
+        catalog: m.Meltano.SingerCatalog | None = None,
+    ) -> FlextTapOracleWms:
+        """Build a tap from typed settings (and an optional typed catalog).
+
+        This is the single boundary where the typed FLEXT models are lowered
+        into the flat mapping the Singer SDK constructor requires; callers pass
+        ``m.`` models only and never round-trip through raw dictionaries. When a
+        catalog is supplied the SDK uses it instead of performing live
+        discovery at construction.
+        """
+        catalog_arg = None if catalog is None else catalog.model_dump(mode="json")
+        return cls(
+            config=settings.TapOracleWms.model_dump(mode="json"),
+            catalog=catalog_arg,
+        )
+
     @property
     def settings(self) -> t.JsonMapping:
         """Expose tap configuration through legacy settings contract."""

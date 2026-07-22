@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 
 logger = u.fetch_logger(__name__)
 
+_ORACLE_WMS_MAX_LIMIT = 1250
+
 
 class TestsFlextTapOracleWmsStreamsFunctional:
     """Test streams functionality."""
@@ -32,16 +34,17 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         """Return the typed discovered catalog used by runtime code."""
         result = tap.discovercatalog_typed()
         tm.ok(result)
-        return result.value
+        catalog: m.Meltano.SingerCatalog = result.unwrap()
+        return catalog
 
     @staticmethod
     def _schema(stream: m.Meltano.SingerCatalogEntry) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract."""
-        return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(stream.schema_definition)
+        schema: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+            stream.schema_definition
+        )
+        return schema
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_stream_creation_with_real_wms_data(
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
@@ -58,9 +61,6 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         assert stream.tap is real_tap_instance
         logger.info("✅ Stream created successfully: %s", stream_id)
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_wms_api_url_generation(self, real_tap_instance: FlextTapOracleWms) -> None:
         """Test URL generation for Oracle WMS API."""
         catalog = self._catalog(real_tap_instance)
@@ -77,7 +77,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         assert url_base.startswith("https://"), f"URL must be HTTPS: {url_base}"
         tm.that(url_base, has="invalid.wms.ocs.oraclecloud.com")
         tm.that(url_base, has="company_unknow")
-        url_params = stream._build_operation_kwargs(page=1, context=None)
+        url_params = stream.build_operation_kwargs(page=1, context=None)
         tm.that(url_params, is_=dict)
         tm.that(url_params, has="limit")
         limit_value = url_params["limit"]
@@ -86,9 +86,6 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         logger.info("URL generation working: %s", url_base)
         logger.info(f"✅ Parameters: {list(url_params.keys())}")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_stream_authentication_with_credentials(
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
@@ -109,9 +106,6 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         assert auth_header.startswith("Basic "), f"Expected Basic auth: {auth_header}"
         logger.info("Authentication configured correctly")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_http_headers_generation(
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
@@ -139,9 +133,6 @@ class TestsFlextTapOracleWmsStreamsFunctional:
             logger.info("✅ WMS-specific headers: %s", wms_headers)
         logger.info(f"✅ HTTP headers configured: {list(headers.keys())}")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_replication_key_detection(
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
@@ -165,9 +156,6 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         total_streams = len(incremental_streams) + len(full_table_streams)
         assert total_streams > 0, "No replication methods configured"
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_timestamp_replication_key_detection(
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
@@ -193,9 +181,6 @@ class TestsFlextTapOracleWmsStreamsFunctional:
                     has=replication_key,
                 )
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_pagination_parameter_generation(
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
@@ -210,22 +195,21 @@ class TestsFlextTapOracleWmsStreamsFunctional:
             name=test_stream.tap_stream_id,
             schema=self._schema(test_stream),
         )
-        params = stream._build_operation_kwargs(page=1, context=None)
+        params = stream.build_operation_kwargs(page=1, context=None)
         tm.that(params, has="limit")
         page_size = params["limit"]
         assert isinstance(page_size, int)
-        assert 1 <= page_size <= 1250, f"Invalid limit: {page_size}"
+        assert 1 <= page_size <= _ORACLE_WMS_MAX_LIMIT, (
+            f"Invalid limit: {page_size}"
+        )
         if "page_mode" in params:
             page_mode = params["page_mode"]
             tm.that({"sequenced", "offset"}, has=page_mode)
         logger.info("✅ Pagination: limit=%s", page_size)
-        token_params = stream._build_operation_kwargs(page=2, context=None)
+        token_params = stream.build_operation_kwargs(page=2, context=None)
         tm.that(token_params, is_=dict)
         logger.info("✅ Pagination token handling working")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_incremental_filtering_with_timestamps(
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
@@ -245,11 +229,14 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         if not incremental_stream:
             pytest.skip("No incremental streams found")
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
-        params = incremental_stream._build_operation_kwargs(page=1, context=context)
+        params = incremental_stream.build_operation_kwargs(page=1, context=context)
         kwargs_filter = params.get("filter")
-        assert kwargs_filter and (
-            ">=" in str(kwargs_filter) or ">" in str(kwargs_filter)
-        ), f"No timestamp filters found in params: {list(params.keys())}"
+        assert kwargs_filter, (
+            f"No filter found in params: {list(params.keys())}"
+        )
+        assert ">=" in str(kwargs_filter) or ">" in str(kwargs_filter), (
+            f"No timestamp filters found in params: {list(params.keys())}"
+        )
         for filter_value in [str(kwargs_filter)]:
             tm.that(filter_value, is_=str)
             tm.that(filter_value, has="T")

@@ -16,7 +16,7 @@ import psutil
 import pytest
 from dotenv import load_dotenv
 
-from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from flext_tests import tm
 
@@ -26,14 +26,20 @@ if TYPE_CHECKING:
 env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(env_path)
 
+_MAX_DISCOVERY_SECONDS = 10.0
+_PAGINATION_SAMPLE_LIMIT = 99
+_CONCURRENT_SAMPLE_LIMIT = 49
+_LARGE_EXTRACTION_SAMPLE_LIMIT = 999
+_MAX_MEMORY_INCREASE_MB = 100
+
 
 @pytest.fixture
 def performance_config() -> FlextTapOracleWmsSettings:
     """Create configuration for performance testing."""
     # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
     # settings.TapOracleWms.*; construct via the namespace payload.
-    return FlextTapOracleWmsSettings(
-        TapOracleWms={
+    return FlextTapOracleWmsSettings.model_validate({
+        "TapOracleWms": {
             "base_url": os.getenv("ORACLE_WMS_BASE_URL", "https://localhost"),
             "username": os.getenv("ORACLE_WMS_USERNAME", "user"),
             "password": os.getenv("ORACLE_WMS_PASSWORD", "pass"),
@@ -42,24 +48,19 @@ def performance_config() -> FlextTapOracleWmsSettings:
             "verify_ssl": True,
             "enable_rate_limiting": False,
         }
-    )
+    })
 
 
 @pytest.fixture
 def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance for performance testing."""
-    return FlextTapOracleWms(
-        config=performance_config.TapOracleWms.model_dump(mode="json")
-    )
+    return FlextTapOracleWms.from_settings(performance_config)
 
 
 @pytest.mark.performance
 class TestsFlextTapOracleWmsExtractionPerformance:
     """Test data extraction performance."""
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_catalog_discovery_performance(self, tap: FlextTapOracleWms) -> None:
         """Benchmark catalog discovery time."""
         tap.initialize()
@@ -67,12 +68,9 @@ class TestsFlextTapOracleWmsExtractionPerformance:
         result = tap.discovercatalog_typed()
         discovery_time = time.time() - start_time
         tm.ok(result)
-        assert discovery_time < 10.0
+        assert discovery_time < _MAX_DISCOVERY_SECONDS
 
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_pagination_performance(
         self, tap: FlextTapOracleWms, page_size: int
     ) -> None:
@@ -83,18 +81,15 @@ class TestsFlextTapOracleWmsExtractionPerformance:
         inventory_stream = next((s for s in streams if s.name == "inventory"), None)
         if not inventory_stream:
             pytest.skip("Inventory stream not available")
-        inventory_stream._page_size = page_size
+        inventory_stream.page_size = page_size
         start_time = time.time()
         records: list[t.JsonMapping] = []
         for i, record in enumerate(inventory_stream.get_records(context=None)):
             records.append(record)
-            if i >= 99:
+            if i >= _PAGINATION_SAMPLE_LIMIT:
                 break
         _ = time.time() - start_time
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_concurrent_streams_extraction(self, tap: FlextTapOracleWms) -> None:
         """Test extracting multiple streams concurrently."""
         tap.initialize()
@@ -106,15 +101,12 @@ class TestsFlextTapOracleWmsExtractionPerformance:
             records = 0
             for i, _record in enumerate(stream.get_records(context=None)):
                 records += 1
-                if i >= 49:
+                if i >= _CONCURRENT_SAMPLE_LIMIT:
                     break
             _ = time.time() - stream_start
             total_records += records
         _ = time.time() - start_time
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_memory_usage_during_large_extraction(self, tap: FlextTapOracleWms) -> None:
         """Test memory usage during large extractions."""
         process = psutil.Process()
@@ -126,41 +118,34 @@ class TestsFlextTapOracleWmsExtractionPerformance:
             records: list[t.JsonMapping] = []
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)
-                if i >= 999:
+                if i >= _LARGE_EXTRACTION_SAMPLE_LIMIT:
                     break
             final_memory = process.memory_info().rss / 1024 / 1024
             memory_increase = final_memory - initial_memory
-            assert memory_increase < 100
+            assert memory_increase < _MAX_MEMORY_INCREASE_MB
 
     """Test rate limiting impact on performance."""
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_rate_limiting_impact(
         self, performance_config: FlextTapOracleWmsSettings
     ) -> None:
         """Compare performance with and without rate limiting."""
-        config_no_limit = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        config_no_limit = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 **performance_config.TapOracleWms.model_dump(),
                 "enable_rate_limiting": False,
             }
-        )
-        tap_no_limit = FlextTapOracleWms(
-            config=config_no_limit.TapOracleWms.model_dump(mode="json")
-        )
+        })
+        tap_no_limit = FlextTapOracleWms.from_settings(config_no_limit)
         tap_no_limit.initialize()
-        config_with_limit = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        config_with_limit = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 **performance_config.TapOracleWms.model_dump(),
                 "enable_rate_limiting": True,
                 "max_requests_per_minute": 60,
             }
-        )
-        tap_with_limit = FlextTapOracleWms(
-            config=config_with_limit.TapOracleWms.model_dump(mode="json")
-        )
+        })
+        tap_with_limit = FlextTapOracleWms.from_settings(config_with_limit)
         tap_with_limit.initialize()
         for tap, _label in [(tap_no_limit, "No Limit"), (tap_with_limit, "With Limit")]:
             streams = tap.discover_streams()
@@ -170,7 +155,7 @@ class TestsFlextTapOracleWmsExtractionPerformance:
                 records: list[t.JsonMapping] = []
                 for i, record in enumerate(stream.get_records(context=None)):
                     records.append(record)
-                    if i >= 49:
+                    if i >= _CONCURRENT_SAMPLE_LIMIT:
                         break
                 _ = time.time() - start_time
 

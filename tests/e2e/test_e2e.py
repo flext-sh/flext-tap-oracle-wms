@@ -20,16 +20,20 @@ import pytest
 
 from flext_cli import u as cli_u
 from flext_meltano import c as meltano_c
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from flext_tests import tm
 from tests import t, u
 
 if TYPE_CHECKING:
-    from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
     from tests import m
 
 logger = u.fetch_logger(__name__)
+
+_MAX_DISCOVERY_SECONDS = 300
+_MIN_AVG_PROPERTIES = 3
+_MIN_DISCOVERY_RATE = 0.1
 
 
 @pytest.mark.e2e
@@ -41,24 +45,22 @@ class TestsFlextTapOracleWmsE2e:
         """Return the typed discovered catalog used by runtime code."""
         result = tap.discovercatalog_typed()
         tm.ok(result)
-        return result.value
+        catalog: m.Meltano.SingerCatalog = result.unwrap()
+        return catalog
 
     @staticmethod
     def _schema(stream: m.Meltano.SingerCatalogEntry) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract."""
-        return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(stream.schema_definition)
+        schema: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+            stream.schema_definition
+        )
+        return schema
 
-    @pytest.mark.usefixtures("_mock_oracle_wms")
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_complete_discovery_to_catalog(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test complete discovery process generating valid Singer catalog."""
-        tap_instance = FlextTapOracleWms(
-            config=real_config.TapOracleWms.model_dump(mode="json")
-        )
+        tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         tm.that(catalog, none=False)
         streams = catalog.streams
@@ -87,17 +89,11 @@ class TestsFlextTapOracleWmsE2e:
             "✅ Complete discovery validation passed for %d streams", len(streams)
         )
 
-    @pytest.mark.usefixtures("_mock_oracle_wms")
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_catalog_serialization_and_selection(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test catalog serialization and stream selection."""
-        tap_instance = FlextTapOracleWms(
-            config=real_config.TapOracleWms.model_dump(mode="json")
-        )
+        tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         catalog_payload = catalog.model_dump(mode="json")
         catalog_json = cli_u.Cli.json_dumps(catalog_payload, indent=2).unwrap()
@@ -109,16 +105,11 @@ class TestsFlextTapOracleWmsE2e:
             assert any(meta.breadcrumb == [] for meta in stream.metadata)
         logger.info("✅ Catalog serialization and selection working")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_single_stream_extraction_sample(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test single stream data extraction with real data."""
-        tap_instance = FlextTapOracleWms(
-            config=real_config.TapOracleWms.model_dump(mode="json")
-        )
+        tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
         if not streams:
@@ -131,21 +122,16 @@ class TestsFlextTapOracleWmsE2e:
         )
         tm.that(stream.name, eq=stream_id)
         tm.that(stream.url_base, none=False)
-        params = stream._build_operation_kwargs(page=1, context=None)
+        params = stream.build_operation_kwargs(page=1, context=None)
         tm.that(params, is_=dict)
         tm.that(params, has="limit")
         logger.info("✅ Single stream extraction setup successful")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_incremental_extraction_workflow(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test incremental extraction workflow."""
-        tap_instance = FlextTapOracleWms(
-            config=real_config.TapOracleWms.model_dump(mode="json")
-        )
+        tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
         incremental_stream_config: m.Meltano.SingerCatalogEntry | None = None
@@ -169,23 +155,21 @@ class TestsFlextTapOracleWmsE2e:
         tm.that(stream.replication_key, none=False)
         yesterday = datetime.now(UTC) - timedelta(days=1)
         context = {"replication_key_value": yesterday.isoformat()}
-        params = stream._build_operation_kwargs(page=1, context=context)
+        params = stream.build_operation_kwargs(page=1, context=context)
         kwargs_filter = params.get("filter")
-        assert kwargs_filter is not None and (
-            ">=" in str(kwargs_filter) or ">" in str(kwargs_filter)
-        ), f"No timestamp filters in incremental stream: {list(params.keys())}"
+        assert kwargs_filter is not None, (
+            f"No filter in incremental stream: {list(params.keys())}"
+        )
+        assert ">=" in str(kwargs_filter) or ">" in str(kwargs_filter), (
+            f"No timestamp filters in incremental stream: {list(params.keys())}"
+        )
         logger.info("✅ Incremental extraction workflow validated for %s", stream.name)
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_full_table_extraction_workflow(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test full table extraction workflow."""
-        tap_instance = FlextTapOracleWms(
-            config=real_config.TapOracleWms.model_dump(mode="json")
-        )
+        tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
         full_table_stream_config: m.Meltano.SingerCatalogEntry | None = None
@@ -206,7 +190,7 @@ class TestsFlextTapOracleWmsE2e:
             name=full_table_stream_config.tap_stream_id,
             schema=self._schema(full_table_stream_config),
         )
-        params = stream._build_operation_kwargs(page=1, context=None)
+        params = stream.build_operation_kwargs(page=1, context=None)
         if "ordering" in params:
             ordering = str(params["ordering"])
             assert ordering.startswith("-") or "desc" in ordering.lower(), (
@@ -214,16 +198,11 @@ class TestsFlextTapOracleWmsE2e:
             )
         logger.info("✅ Full table extraction workflow validated for %s", stream.name)
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_data_quality_validation(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test data quality and schema validation."""
-        tap_instance = FlextTapOracleWms(
-            config=real_config.TapOracleWms.model_dump(mode="json")
-        )
+        tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
         quality_report = {
@@ -282,24 +261,23 @@ class TestsFlextTapOracleWmsE2e:
         assert quality_report["streams_tested"] > 0, "No streams tested"
         assert quality_report["schemas_valid"] > 0, "No valid schemas found"
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_pagination_end_to_end(self) -> None:
         """E2E: Test pagination handling through multiple pages."""
         pages_tested: list[str] = []
         logger.info("✅ Pagination flow tested: %s", pages_tested)
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_error_recovery_and_resilience(
-        self, real_wms_config: t.JsonMapping
+        self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test error recovery and system resilience."""
-        invalid_config: t.MutableJsonMapping = dict(real_wms_config)
-        invalid_config["password"] = "invalid_password"
-        tap = FlextTapOracleWms(config=dict(invalid_config))
+        namespace = real_config.TapOracleWms
+        invalid_settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
+                **namespace.model_dump(),
+                "password": f"{namespace.password}-wrong",
+            }
+        })
+        tap = FlextTapOracleWms.from_settings(invalid_settings)
         try:
             catalog = self._catalog(tap)
             tm.that(catalog.streams, none=False)
@@ -325,16 +303,11 @@ class TestsFlextTapOracleWmsE2e:
                 pytest.fail(f"Unexpected error: {e}")
         logger.info("✅ Error recovery tested")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_complete_singer_protocol_compliance(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test complete Singer protocol compliance."""
-        tap_instance = FlextTapOracleWms(
-            config=real_config.TapOracleWms.model_dump(mode="json")
-        )
+        tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         for stream in catalog.streams:
             tm.that(stream.tap_stream_id, is_=str)
@@ -366,21 +339,18 @@ class TestsFlextTapOracleWmsE2e:
                 tm.that(schema["properties"], has=replication_key)
         logger.info("✅ Complete Singer protocol compliance verified")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_performance_and_scalability_indicators(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test performance indicators and scalability."""
         start_time = time.time()
-        tap_instance = FlextTapOracleWms(
-            config=real_config.TapOracleWms.model_dump(mode="json")
-        )
+        tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         discovery_time = time.time() - start_time
         streams_count = len(catalog.streams)
-        assert discovery_time < 300, f"Discovery too slow: {discovery_time:.2f}s"
+        assert discovery_time < _MAX_DISCOVERY_SECONDS, (
+            f"Discovery too slow: {discovery_time:.2f}s"
+        )
         assert streams_count > 0, "No streams discovered"
         properties_per_stream: list[int] = []
         for stream in catalog.streams:
@@ -400,14 +370,13 @@ class TestsFlextTapOracleWmsE2e:
             "  Discovery rate: %.2f streams/second",
             streams_count / discovery_time if discovery_time > 0 else 0,
         )
-        assert avg_properties > 3, (
+        assert avg_properties > _MIN_AVG_PROPERTIES, (
             "Streams should have more than 3 properties on average"
         )
-        assert streams_count / discovery_time > 0.1, "Discovery rate too slow"
+        assert streams_count / discovery_time > _MIN_DISCOVERY_RATE, (
+            "Discovery rate too slow"
+        )
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking"
-    )
     def test_final_e2e_integration_summary(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
@@ -423,9 +392,7 @@ class TestsFlextTapOracleWmsE2e:
 
         def _collect_summary() -> tuple[bool, int, int, int, int, bool, bool]:
             start_time = time.time()
-            tap_instance = FlextTapOracleWms(
-                config=real_config.TapOracleWms.model_dump(mode="json")
-            )
+            tap_instance = FlextTapOracleWms.from_settings(real_config)
             catalog = self._catalog(tap_instance)
             catalog_streams = catalog.streams
             discovered = len(catalog_streams)
@@ -452,7 +419,7 @@ class TestsFlextTapOracleWmsE2e:
                     valid_schemas += 1
             compliant = discovered > 0 and valid_schemas > 0
             discovery_time = time.time() - start_time
-            performant = discovery_time < 300 and discovered > 0
+            performant = discovery_time < _MAX_DISCOVERY_SECONDS and discovered > 0
             return (
                 True,
                 discovered,

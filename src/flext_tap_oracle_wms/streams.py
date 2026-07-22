@@ -91,6 +91,22 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self._client = client
         return client
 
+    @property
+    def page_size(self) -> int:
+        """The effective page size used when requesting WMS entity pages."""
+        return self._page_size
+
+    @page_size.setter
+    def page_size(self, value: int) -> None:
+        """Override the effective page size (validated against tap limits)."""
+        self._page_size = (
+            value
+            if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(
+                value
+            )
+            else self._page_size
+        )
+
     @staticmethod
     def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
@@ -218,7 +234,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             row["context"] = str({k: str(v) for k, v in context.items()})
         return row
 
-    def _build_operation_kwargs(
+    def build_operation_kwargs(
         self, page: int, context: t.ScalarMapping | None
     ) -> t.MutableScalarMapping:
         """Build kwargs for the operation call."""
@@ -238,7 +254,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self, page: int, context: t.ScalarMapping | None
     ) -> p.Result[tuple[t.SequenceOf[t.JsonMapping], bool]]:
         """Fetch data for a specific page."""
-        kwargs = self._build_operation_kwargs(page, context)
+        kwargs = self.build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
         limit = u.to_int(limit_raw, default=self._page_size)
         filters: t.MutableScalarMapping = {}

@@ -24,13 +24,13 @@ class TestsFlextTapOracleWmsConfigValidation:
 
     def test_minimal_valid_config(self) -> None:
         """Test minimal valid configuration."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "test_user",
                 "password": "test_password",
             }
-        )
+        })
         namespace = settings.TapOracleWms
         tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
         tm.that(namespace.username, eq="test_user")
@@ -40,88 +40,88 @@ class TestsFlextTapOracleWmsConfigValidation:
 
     def test_url_accepts_trailing_slash(self) -> None:
         """Test URL with trailing slash is accepted."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com/",
                 "username": "user",
                 "password": "pass",
             }
-        )
+        })
         tm.that(settings.TapOracleWms.base_url, has="wms.example.com")
 
     def test_page_size_custom_value(self) -> None:
         """Test custom page size is accepted."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
                 "page_size": 500,
             }
-        )
+        })
         tm.that(settings.TapOracleWms.page_size, eq=500)
 
     def test_entity_selection_fields(self) -> None:
         """Test entity include/exclude fields are stored correctly."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
                 "include_entities": ["inventory", "locations"],
                 "exclude_entities": ["orders"],
             }
-        )
+        })
         tm.that(settings.TapOracleWms.include_entities, eq=["inventory", "locations"])
         tm.that(settings.TapOracleWms.exclude_entities, eq=["orders"])
 
     def test_duplicate_entities_rejected(self) -> None:
         """Test namespace validator rejects duplicate entity entries."""
         with pytest.raises(c.ValidationError):
-            FlextTapOracleWmsSettings(
-                TapOracleWms={
+            FlextTapOracleWmsSettings.model_validate({
+                "TapOracleWms": {
                     "base_url": "https://wms.example.com",
                     "username": "user",
                     "password": "pass",
                     "exclude_entities": ["orders", "orders"],
                 }
-            )
+            })
 
     def test_date_fields(self) -> None:
         """Test date fields are accepted."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
                 "start_date": "2024-01-01T00:00:00Z",
                 "end_date": "2024-12-31T23:59:59Z",
             }
-        )
+        })
         tm.that(settings.TapOracleWms.start_date, eq="2024-01-01T00:00:00Z")
         tm.that(settings.TapOracleWms.end_date, eq="2024-12-31T23:59:59Z")
 
     def test_invalid_date_rejected(self) -> None:
         """Test namespace validator rejects non-ISO date values."""
         with pytest.raises(c.ValidationError):
-            FlextTapOracleWmsSettings(
-                TapOracleWms={
+            FlextTapOracleWmsSettings.model_validate({
+                "TapOracleWms": {
                     "base_url": "https://wms.example.com",
                     "username": "user",
                     "password": "pass",
                     "end_date": "31/12/2024",
                 }
-            )
+            })
 
     def test_model_serialization(self) -> None:
         """Test configuration model serialization."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
             }
-        )
+        })
         data = settings.TapOracleWms.model_dump()
         tm.that(data, is_=dict)
         tm.that(data["username"], eq="user")
@@ -129,8 +129,8 @@ class TestsFlextTapOracleWmsConfigValidation:
 
     def test_stream_related_config_fields(self) -> None:
         """Test stream-related configuration fields are accessible."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
@@ -138,7 +138,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "column_mappings": '{"inventory": {"old_col": "new_col"}}',
                 "ignored_columns": ["internal_id"],
             }
-        )
+        })
         namespace = settings.TapOracleWms
         tm.that(namespace.page_size, eq=50)
         # column_mappings is a JSON-encoded string per ADR-005 simple-scalar rule
@@ -150,8 +150,8 @@ class TestsFlextTapOracleWmsConfigValidation:
 
     def test_parallel_extraction_config(self) -> None:
         """Test parallel extraction configuration fields."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
@@ -159,7 +159,7 @@ class TestsFlextTapOracleWmsConfigValidation:
                 "max_parallel_streams": 6,
                 "enable_rate_limiting": True,
             }
-        )
+        })
         namespace = settings.TapOracleWms
         tm.that(namespace.enable_parallel_extraction, eq=True)
         tm.that(namespace.max_parallel_streams, eq=6)
@@ -167,41 +167,41 @@ class TestsFlextTapOracleWmsConfigValidation:
 
     def test_ssl_config(self) -> None:
         """Test SSL configuration fields."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
                 "verify_ssl": False,
                 "ssl_cert_path": "/path/to/cert.pem",
             }
-        )
+        })
         tm.that(settings.TapOracleWms.verify_ssl, eq=False)
         tm.that(settings.TapOracleWms.ssl_cert_path, eq="/path/to/cert.pem")
 
     def test_rate_limiting_config(self) -> None:
         """Test rate limiting configuration."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
                 "enable_rate_limiting": True,
                 "max_requests_per_minute": 120,
             }
-        )
+        })
         tm.that(settings.TapOracleWms.enable_rate_limiting, eq=True)
         tm.that(settings.TapOracleWms.max_requests_per_minute, eq=120)
 
     def test_password_is_secret(self) -> None:
         """Test password field stores password value."""
-        settings = FlextTapOracleWmsSettings(
-            TapOracleWms={
+        settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "super_secret",
             }
-        )
+        })
         password = settings.TapOracleWms.password
         password_value = (
             password.get_secret_value()
