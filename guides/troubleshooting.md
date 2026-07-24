@@ -96,7 +96,7 @@ ModuleNotFoundError: No module named 'flext_core'
 
 ```bash
 export PYTHONPATH=src
-python -c "import flext_core; print(flext_core.__file__)"
+python -c "import flext_core; u.Cli.print(flext_core.__file__)"
 ```
 
 **Reinstall dependencies:**
@@ -119,17 +119,17 @@ poetry install
 # Debug import issues
 import sys
 
-print("Python path:")
+u.Cli.print("Python path:")
 for path in sys.path:
-    print(f"  {path}")
+    u.Cli.print(f"  {path}")
 
-print("\nTrying to import flext_core...")
+u.Cli.print("\nTrying to import flext_core...")
 try:
     import flext_core
 
-    print(f"Success: {flext_core.__file__}")
+    u.Cli.print(f"Success: {flext_core.__file__}")
 except ImportError as e:
-    print(f"Failed: {e}")
+    u.Cli.print(f"Failed: {e}")
 ```
 
 ### 2. Type Checking Errors
@@ -196,10 +196,10 @@ pytest tests/unit/test_module.py::TestClass::test_method -v --pdb
 ```python notest
 def test_with_debug():
     result = my_function()
-    print(f"Result: {result}")
-    print(f"Success: {result.success}")
+    u.Cli.print(f"Result: {result}")
+    u.Cli.print(f"Success: {result.success}")
     if result.failure:
-        print(f"Error: {result.failure()}")
+        u.Cli.print(f"Error: {result.failure()}")
     assert result.success
 ```
 
@@ -245,9 +245,9 @@ from flext_core import u
 
 try:
     settings = FlextSettings()
-    print("Configuration valid")
+    u.Cli.print("Configuration valid")
 except c.ValidationError as e:
-    print(f"Configuration error: {e}")
+    u.Cli.print(f"Configuration error: {e}")
 ```
 
 **Debug configuration loading:**
@@ -277,11 +277,11 @@ from flext_core import u
 # Print all FLEXT environment variables
 for key, value in os.environ.items():
     if key.startswith("FLEXT_"):
-        print(f"{key}={value}")
+        u.Cli.print(f"{key}={value}")
 
 # Load and print configuration
 settings = FlextSettings()
-print(f"Config: {settings.dict()}")
+u.Cli.print(f"Config: {settings.dict()}")
 ```
 
 ### 5. LDIF Processing Issues
@@ -306,8 +306,8 @@ objectClass: inetOrgPerson"""
 
 result = ldif.parse(content)
 if result.failure:
-    print(f"Parse error: {result.failure()}")
-    print(f"Content: {repr(content)}")
+    u.Cli.print(f"Parse error: {result.failure()}")
+    u.Cli.print(f"Content: {repr(content)}")
 ```
 
 **Enable debug logging:**
@@ -364,7 +364,7 @@ settings = FlextLdifSettings(
     handle_schema_extensions=True,
 )
 
-print(f"Config: {settings.dict()}")
+u.Cli.print(f"Config: {settings.dict()}")
 ```
 
 **Enable server servers:**
@@ -385,9 +385,9 @@ objectClass: inetOrgPerson"""
 
 result = ldif.parse(sample_ldif)
 if result.success:
-    print("Sample parsing successful")
+    u.Cli.print("Sample parsing successful")
 else:
-    print(f"Sample parsing failed: {result.failure()}")
+    u.Cli.print(f"Sample parsing failed: {result.failure()}")
 ```
 
 ### 7. Performance Issues
@@ -419,7 +419,7 @@ def profile_memory():
     final_memory = process.memory_info().rss
     memory_used = final_memory - initial_memory
 
-    print(f"Memory used: {memory_used / 1024 / 1024:.2f} MB")
+    u.Cli.print(f"Memory used: {memory_used / 1024 / 1024:.2f} MB")
 
 
 profile_memory()
@@ -549,8 +549,8 @@ from flext_core import u
 settings = FlextSettings(debug=True)
 
 # Debug information will be printed
-print(f"Debug mode: {settings.debug}")
-print(f"Log level: {settings.log_level}")
+u.Cli.print(f"Debug mode: {settings.debug}")
+u.Cli.print(f"Log level: {settings.log_level}")
 ```
 
 ### 4. Step-by-Step Debugging
@@ -558,21 +558,21 @@ print(f"Log level: {settings.log_level}")
 ```python notest
 def debug_ldif_processing(content: str):
     """Debug LDIF processing step by step."""
-    print(f"Input content length: {len(content)}")
-    print(f"First 100 chars: {repr(content[:100])}")
+    u.Cli.print(f"Input content length: {len(content)}")
+    u.Cli.print(f"First 100 chars: {repr(content[:100])}")
 
     # Step 1: Basic validation
     if not content.strip():
-        print("ERROR: Empty content")
+        u.Cli.print("ERROR: Empty content")
         return
 
     # Step 2: Check DN format
     lines = content.split("\n")
     dn_line = lines[0] if lines else ""
-    print(f"DN line: {repr(dn_line)}")
+    u.Cli.print(f"DN line: {repr(dn_line)}")
 
     if not dn_line.startswith("dn:"):
-        print("ERROR: Missing or invalid DN line")
+        u.Cli.print("ERROR: Missing or invalid DN line")
         return
 
     # Step 3: Try parsing
@@ -581,9 +581,9 @@ def debug_ldif_processing(content: str):
     result = ldif.parse(content)
     if result.success:
         entries = result.unwrap()
-        print(f"SUCCESS: Parsed {len(entries)} entries")
+        u.Cli.print(f"SUCCESS: Parsed {len(entries)} entries")
     else:
-        print(f"ERROR: Parse failed: {result.failure()}")
+        u.Cli.print(f"ERROR: Parse failed: {result.failure()}")
 ```
 
 ## Error Codes Reference
@@ -626,12 +626,12 @@ def monitor_memory():
     process = psutil.Process(os.getpid())
     memory_info = process.memory_info()
 
-    print(f"RSS: {memory_info.rss / 1024 / 1024:.2f} MB")
-    print(f"VMS: {memory_info.vms / 1024 / 1024:.2f} MB")
+    u.Cli.print(f"RSS: {memory_info.rss / 1024 / 1024:.2f} MB")
+    u.Cli.print(f"VMS: {memory_info.vms / 1024 / 1024:.2f} MB")
 
     # Check for memory leaks
     if memory_info.rss > 500 * 1024 * 1024:  # 500MB
-        print("WARNING: High memory usage detected")
+        u.Cli.print("WARNING: High memory usage detected")
 
 
 monitor_memory()
@@ -651,7 +651,7 @@ def monitor_cpu():
     # Get CPU usage over time
     for i in range(10):
         cpu_percent = process.cpu_percent()
-        print(f"CPU usage: {cpu_percent}%")
+        u.Cli.print(f"CPU usage: {cpu_percent}%")
         time.sleep(1)
 
 

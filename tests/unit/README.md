@@ -394,7 +394,7 @@ def test_debug_example():
     pytest.set_trace()
 
     # Print debug information
-    print(f"Debug info: {variable}")
+    u.Cli.print(f"Debug info: {variable}")
 
     # Use assert with custom messages
     assert condition, f"Failed because: {explanation}"

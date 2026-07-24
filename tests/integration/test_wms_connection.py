@@ -28,7 +28,9 @@ _MIN_SAMPLE_RECORDS = 2
 class TestsFlextTapOracleWmsWmsConnection:
     """Test real Oracle WMS connection."""
 
-    def test_configuration_validation(self, real_tap_instance: FlextTapOracleWms) -> None:
+    def test_configuration_validation(
+        self, real_tap_instance: FlextTapOracleWms
+    ) -> None:
         """Test configuration validation."""
         result = real_tap_instance.validate_configuration()
         tm.ok(result)
@@ -60,7 +62,9 @@ class TestsFlextTapOracleWmsWmsConnection:
         for _stream in streams:
             pass
 
-    def test_stream_schemas_validation(self, real_tap_instance: FlextTapOracleWms) -> None:
+    def test_stream_schemas_validation(
+        self, real_tap_instance: FlextTapOracleWms
+    ) -> None:
         """Test stream schemas."""
         streams = real_tap_instance.discover_streams()
         for stream in streams:
@@ -102,7 +106,9 @@ class TestsFlextTapOracleWmsWmsConnection:
         ) as e:
             pytest.fail(f"Failed to extract records from {stream_name}: {e}")
 
-    def test_pagination_functionality(self, real_tap_instance: FlextTapOracleWms) -> None:
+    def test_pagination_functionality(
+        self, real_tap_instance: FlextTapOracleWms
+    ) -> None:
         """Test pagination functionality."""
         streams = real_tap_instance.discover_streams()
         inventory_stream = next((s for s in streams if s.name == "inventory"), None)
@@ -157,7 +163,9 @@ class TestsFlextTapOracleWmsWmsConnection:
 
     """Test /sync integration with flext-oracle-wms."""
 
-    def test_client_lifecycle_management(self, real_tap_instance: FlextTapOracleWms) -> None:
+    def test_client_lifecycle_management(
+        self, real_tap_instance: FlextTapOracleWms
+    ) -> None:
         """Test proper client lifecycle management."""
         tm.ok(real_tap_instance.initialize())
         first_client = real_tap_instance.wms_client

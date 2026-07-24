@@ -54,8 +54,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """
         catalog_arg = None if catalog is None else catalog.model_dump(mode="json")
         return cls(
-            config=settings.TapOracleWms.model_dump(mode="json"),
-            catalog=catalog_arg,
+            config=settings.TapOracleWms.model_dump(mode="json"), catalog=catalog_arg
         )
 
     @property

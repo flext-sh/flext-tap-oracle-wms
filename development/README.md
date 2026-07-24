@@ -477,7 +477,7 @@ python -c "
 from flext_tap_oracle_wms import EntityDiscovery
 discovery = EntityDiscovery()
 schema = discovery.get_entity_schema('item')
-print(schema)
+u.Cli.print(schema)
 "
 ```
 

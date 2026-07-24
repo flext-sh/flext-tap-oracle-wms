@@ -104,8 +104,7 @@ def sample_catalog() -> m.Meltano.SingerCatalog:
 
 @pytest.fixture
 def tap_instance(
-    sample_config: FlextTapOracleWmsSettings,
-    sample_catalog: m.Meltano.SingerCatalog,
+    sample_config: FlextTapOracleWmsSettings, sample_catalog: m.Meltano.SingerCatalog
 ) -> FlextTapOracleWms:
     """Create a tap from typed settings + a typed catalog (no WMS discovery)."""
     return FlextTapOracleWms.from_settings(sample_config, catalog=sample_catalog)
@@ -167,15 +166,14 @@ def skip_when_oracle_wms_offline(request: pytest.FixtureRequest) -> None:
     """
     online_markers = ("oracle_wms", "slow", "integration", "e2e", "performance")
     requires_online = any(
-        request.node.get_closest_marker(marker) is not None
-        for marker in online_markers
+        request.node.get_closest_marker(marker) is not None for marker in online_markers
     )
     if not requires_online:
         return
     if not request.getfixturevalue("oracle_wms_online"):
         pytest.skip(
             "[env-gated] Oracle WMS online tests disabled "
-            "(set FLEXT_TAP_ORACLE_WMS_ONLINE=1)",
+            "(set FLEXT_TAP_ORACLE_WMS_ONLINE=1)"
         )
 
 

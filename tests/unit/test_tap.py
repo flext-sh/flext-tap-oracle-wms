@@ -36,8 +36,7 @@ class TestsFlextTapOracleWmsTap:
         tm.that(tap.name, eq="flext-tap-oracle-wms")
 
     def test_tap_initialization_normalizes_settings(
-        self,
-        sample_catalog: m.Meltano.SingerCatalog,
+        self, sample_catalog: m.Meltano.SingerCatalog
     ) -> None:
         """Tap normalizes settings values from a typed settings model."""
         settings = FlextTapOracleWmsSettings.model_validate({

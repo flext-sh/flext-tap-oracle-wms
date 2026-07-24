@@ -101,9 +101,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """Override the effective page size (validated against tap limits)."""
         self._page_size = (
             value
-            if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(
-                value
-            )
+            if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(value)
             else self._page_size
         )
 

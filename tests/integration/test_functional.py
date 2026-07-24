@@ -66,9 +66,7 @@ class TestsFlextTapOracleWmsFunctional:
         """Test tap initializes with REAL Oracle WMS configuration."""
         tap = FlextTapOracleWms.from_settings(real_config)
         tm.that(tap, none=False)
-        tm.that(
-            tap.settings.get("base_url"), eq=real_config.TapOracleWms.base_url
-        )
+        tm.that(tap.settings.get("base_url"), eq=real_config.TapOracleWms.base_url)
         logger.info("✅ Tap initialized successfully with real settings")
 
     @pytest.mark.discovery
@@ -224,9 +222,7 @@ class TestsFlextTapOracleWmsFunctional:
         limit_value = url_params["limit"]
         assert isinstance(limit_value, int)
         assert limit_value > 0, "limit must be positive"
-        assert limit_value <= _ORACLE_WMS_MAX_LIMIT, (
-            "limit exceeds Oracle WMS max"
-        )
+        assert limit_value <= _ORACLE_WMS_MAX_LIMIT, "limit exceeds Oracle WMS max"
         logger.info("Pagination configured: page_size=%s", url_params["page_size"])
 
     @pytest.mark.functional

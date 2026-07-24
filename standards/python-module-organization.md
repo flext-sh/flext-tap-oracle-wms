@@ -1139,9 +1139,9 @@ def discover_entities(self) -> p.Result[t.StringList]:
         >>> discovery = EntityDiscovery(wms_client)
         >>> result = discovery.discover_entities()
         >>> if result.success:
-        ...     print(f"Found entities: {result.value}")
+        ...     u.Cli.print(f"Found entities: {result.value}")
         ... else:
-        ...     print(f"Discovery failed: {result.error}")
+        ...     u.Cli.print(f"Discovery failed: {result.error}")
     """
     pass
 ```

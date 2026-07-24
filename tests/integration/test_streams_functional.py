@@ -199,9 +199,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         tm.that(params, has="limit")
         page_size = params["limit"]
         assert isinstance(page_size, int)
-        assert 1 <= page_size <= _ORACLE_WMS_MAX_LIMIT, (
-            f"Invalid limit: {page_size}"
-        )
+        assert 1 <= page_size <= _ORACLE_WMS_MAX_LIMIT, f"Invalid limit: {page_size}"
         if "page_mode" in params:
             page_mode = params["page_mode"]
             tm.that({"sequenced", "offset"}, has=page_mode)
@@ -231,9 +229,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
         params = incremental_stream.build_operation_kwargs(page=1, context=context)
         kwargs_filter = params.get("filter")
-        assert kwargs_filter, (
-            f"No filter found in params: {list(params.keys())}"
-        )
+        assert kwargs_filter, f"No filter found in params: {list(params.keys())}"
         assert ">=" in str(kwargs_filter) or ">" in str(kwargs_filter), (
             f"No timestamp filters found in params: {list(params.keys())}"
         )
