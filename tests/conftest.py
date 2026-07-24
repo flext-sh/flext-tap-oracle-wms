@@ -8,16 +8,20 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from collections.abc import Generator
 from pathlib import Path
-from unittest.mock import patch as _patch
+from typing import TYPE_CHECKING
+
 
 import pytest
+
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from flext_tests import reset_settings as _shared_reset_settings
 
-from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.typings import t
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from tests import t
 
 reset_settings = _shared_reset_settings
 
@@ -35,7 +39,7 @@ def oracle_wms_environment() -> None:
                     os.environ[key] = value
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def isolate_tap_oracle_wms_env(
     monkeypatch: pytest.MonkeyPatch,
     request: pytest.FixtureRequest,
@@ -54,61 +58,91 @@ def isolate_tap_oracle_wms_env(
 @pytest.fixture
 def sample_config() -> FlextTapOracleWmsSettings:
     """Sample configuration for tests."""
-    return FlextTapOracleWmsSettings(
-        base_url="https://test.wms.example.com",
-        username="test_user",
-        password="test_password",
-        api_version="v10",
-        page_size=100,
-        timeout=30,
-        max_retries=3,
-        verify_ssl=False,
-    )
+    # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
+    # settings.TapOracleWms.*; construct via the namespace payload.
+    return FlextTapOracleWmsSettings.model_validate({
+        "TapOracleWms": {
+            "base_url": "https://test.wms.example.com",
+            "username": "test_user",
+            "password": "test_password",
+            "api_version": "v10",
+            "page_size": 100,
+            "timeout": 30,
+            "max_retries": 3,
+            "verify_ssl": False,
+        }
+    })
 
 
 @pytest.fixture
-def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
-    """Real configuration from environment."""
+def real_config() -> FlextTapOracleWmsSettings:
+    """Real configuration resolved from the canonical FLEXT_TAP_ORACLE_WMS_* env.
+
+    The settings model declares ``env_prefix="FLEXT_TAP_ORACLE_WMS_"``, so
+    pydantic-settings loads the live credentials directly; no parallel env
+    mapping is introduced here.
+    """
+    return FlextTapOracleWmsSettings()
+
+
+@pytest.fixture
+def sample_catalog() -> m.Meltano.SingerCatalog:
+    """A real Singer catalog model so tap construction skips WMS discovery."""
+    catalog: m.Meltano.SingerCatalog = m.Meltano.SingerCatalog.model_validate({
+        "streams": [
+            {
+                "tap_stream_id": "inventory",
+                "stream": "inventory",
+                "schema": {"type": "object"},
+                "metadata": [],
+                "key_properties": ["id"],
+            }
+        ]
+    })
+    return catalog
+
+
+@pytest.fixture
+def tap_instance(
+    sample_config: FlextTapOracleWmsSettings, sample_catalog: m.Meltano.SingerCatalog
+) -> FlextTapOracleWms:
+    """Create a tap from typed settings + a typed catalog (no WMS discovery)."""
+    return FlextTapOracleWms.from_settings(sample_config, catalog=sample_catalog)
+
+
+@pytest.fixture(scope="session")
+def oracle_wms_online(oracle_wms_environment: None) -> bool:
+    """Whether online Oracle WMS tests are explicitly enabled for this session.
+
+    Online tests reach the live Oracle WMS Cloud. They run only when the
+    operator opts in via ``FLEXT_TAP_ORACLE_WMS_ONLINE`` (a truthy value) and
+    the canonical credentials are present. This is a pure settings/env check
+    evaluated once per session; it never touches the network, so offline runs
+    skip the online suites deterministically instead of erroring.
+    """
     _ = oracle_wms_environment
-    return FlextTapOracleWmsSettings(
-        base_url=os.environ.get("ORACLE_WMS_BASE_URL", ""),
-        username=os.environ.get("ORACLE_WMS_USERNAME", ""),
-        password=os.environ.get("ORACLE_WMS_PASSWORD", ""),
-        api_version=os.environ.get("ORACLE_WMS_API_VERSION", "v10"),
-        page_size=int(os.environ.get("ORACLE_WMS_PAGE_SIZE", "100")),
-        timeout=int(os.environ.get("ORACLE_WMS_TIMEOUT", "30")),
-        verify_ssl=os.environ.get("ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
+    if os.environ.get("FLEXT_TAP_ORACLE_WMS_ONLINE", "").strip().lower() not in {
+        "1",
+        "true",
+        "yes",
+    }:
+        return False
+    settings = FlextTapOracleWmsSettings()
+    return bool(
+        settings.TapOracleWms.base_url
+        and settings.TapOracleWms.username
+        and settings.TapOracleWms.password
     )
-
-
-@pytest.fixture
-def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
-    """Create tap instance with sample settings (mocked discovery)."""
-    with _patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
-        return FlextTapOracleWms(settings=sample_config.model_dump(mode="json"))
 
 
 @pytest.fixture
 def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Real tap instance for integration tests."""
-    return FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
-
-
-@pytest.fixture
-def test_config_extraction() -> t.JsonMapping:
-    """Test configuration for extraction tests."""
-    return {
-        "base_url": "https://test.wms.example.com",
-        "username": "test_user",
-        "password": "test_password",
-        "entities": ["inventory"],
-        "page_size": 10,
-    }
+    return FlextTapOracleWms.from_settings(real_config)
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config,
-    items: t.SequenceOf[pytest.Item],
+    config: pytest.Config, items: t.SequenceOf[pytest.Item]
 ) -> None:
     """Add markers to tests based on their location."""
     _ = config
@@ -122,6 +156,28 @@ def pytest_collection_modifyitems(
 
 
 @pytest.fixture(autouse=True)
+def skip_when_oracle_wms_offline(request: pytest.FixtureRequest) -> None:
+    """Skip online-gated tests when the real Oracle WMS is not enabled.
+
+    The ``oracle_wms`` and ``slow`` markers are applied at collection to the
+    integration, e2e and performance suites. When online access is not enabled
+    they are skipped here — validated once at session start — rather than
+    reaching the network during each test's setup.
+    """
+    online_markers = ("oracle_wms", "slow", "integration", "e2e", "performance")
+    requires_online = any(
+        request.node.get_closest_marker(marker) is not None for marker in online_markers
+    )
+    if not requires_online:
+        return
+    if not request.getfixturevalue("oracle_wms_online"):
+        pytest.skip(
+            "[env-gated] Oracle WMS online tests disabled "
+            "(set FLEXT_TAP_ORACLE_WMS_ONLINE=1)"
+        )
+
+
+@pytest.fixture
 def reset_environment() -> Generator[None]:
     """Reset environment after each test."""
     original_env = os.environ.copy()

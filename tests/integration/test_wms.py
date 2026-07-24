@@ -10,30 +10,21 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import os
-from collections.abc import (
-    Mapping,
-)
+
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_tap_oracle_wms.settings import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests.typings import t
+from flext_tests import tm
+
+if TYPE_CHECKING:
+    from tests import t
 
 
-@pytest.fixture
-def real_config() -> FlextTapOracleWmsSettings:
-    """Create real configuration from environment."""
-    return FlextTapOracleWmsSettings(
-        base_url=os.getenv("ORACLE_WMS_BASE_URL") or "https://test.example.com",
-        username=os.getenv("ORACLE_WMS_USERNAME") or "test_user",
-        password=os.getenv("ORACLE_WMS_PASSWORD") or "test_password",
-        api_version=os.getenv("ORACLE_WMS_API_VERSION", "v10"),
-        timeout=int(os.getenv("ORACLE_WMS_TIMEOUT", "30")),
-        page_size=int(os.getenv("ORACLE_WMS_PAGE_SIZE", "100")),
-        verify_ssl=os.getenv("ORACLE_WMS_VERIFY_SSL", "true").lower() == "true",
-    )
+_RECORD_SAMPLE_LIMIT = 2
 
 
 @pytest.mark.integration
@@ -41,75 +32,57 @@ def real_config() -> FlextTapOracleWmsSettings:
 class TestsFlextTapOracleWmsWms:
     """Test real Oracle WMS integration."""
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
     def test_tap_creation_with_real_config(
-        self,
-        real_config: FlextTapOracleWmsSettings,
+        self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """Test tap can be created with real settings."""
-        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
-        assert tap is not None
-        assert tap.name == "flext-tap-oracle-wms"
+        tap = FlextTapOracleWms.from_settings(real_config)
+        tm.that(tap, none=False)
+        tm.that(tap.name, eq="flext-tap-oracle-wms")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
     def test_configuration_validation(
-        self,
-        real_config: FlextTapOracleWmsSettings,
+        self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """Test configuration validation."""
-        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        tap = FlextTapOracleWms.from_settings(real_config)
         result = tap.validate_configuration()
         if result.success:
             value = result.value
-            assert isinstance(value, Mapping) and value.get("valid") is True
+            assert isinstance(value, Mapping)
+            assert value.get("valid") is True
         else:
             pytest.skip(f"Configuration validation failed: {result.error}")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
     def test_tap_initialization(self, real_config: FlextTapOracleWmsSettings) -> None:
         """Test tap initialization."""
-        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        tap = FlextTapOracleWms.from_settings(real_config)
         result = tap.initialize()
         if not result.success:
             pytest.skip(f"Tap initialization failed: {result.error}")
 
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
     def test_stream_discovery(self, real_config: FlextTapOracleWmsSettings) -> None:
         """Test stream discovery."""
-        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        tap = FlextTapOracleWms.from_settings(real_config)
         init_result = tap.initialize()
         if init_result.failure:
             pytest.skip(
-                f"Cannot test discovery, initialization failed: {init_result.error}",
+                f"Cannot test discovery, initialization failed: {init_result.error}"
             )
         streams = tap.discover_streams()
         assert streams
         for stream in streams:
-            assert stream.name is not None
+            tm.that(stream.name, none=False)
 
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
-    @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
-    )
     def test_stream_extraction(
-        self,
-        real_config: FlextTapOracleWmsSettings,
-        stream_name: str,
+        self, real_config: FlextTapOracleWmsSettings, stream_name: str
     ) -> None:
         """Test data extraction from specific streams."""
-        tap = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        tap = FlextTapOracleWms.from_settings(real_config)
         init_result = tap.initialize()
         if init_result.failure:
             pytest.skip(
-                f"Cannot test extraction, initialization failed: {init_result.error}",
+                f"Cannot test extraction, initialization failed: {init_result.error}"
             )
         streams = tap.discover_streams()
         stream = next((s for s in streams if s.name == stream_name), None)
@@ -119,9 +92,9 @@ class TestsFlextTapOracleWmsWms:
         try:
             for i, record in enumerate(stream.get_records(context=None)):
                 records.append(record)
-                if i >= 2:
+                if i >= _RECORD_SAMPLE_LIMIT:
                     break
-            assert records is not None, "No records found"
+            tm.that(records, none=False)
         except (
             ValueError,
             TypeError,

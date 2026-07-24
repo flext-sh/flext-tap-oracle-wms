@@ -7,9 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsUtilities
-
 from flext_tap_oracle_wms import FlextTapOracleWmsUtilities
+from flext_tests import FlextTestsUtilities
 
 
 class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtilities):
@@ -28,8 +27,6 @@ class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtil
     - flext-tap-oracle-wms-specific utilities go in TapOracleWms namespace
     - Generic utilities accessed via Tests namespace
     """
-
-    pass
 
 
 u = TestsFlextTapOracleWmsUtilities

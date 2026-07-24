@@ -117,7 +117,7 @@ The module integrates with FLEXT ecosystem components:
 
 ### **Main Tap Usage**
 
-```python notest
+```python
 from flext_tap_oracle_wms import FlextTapOracleWms
 
 settings = {
@@ -135,7 +135,7 @@ streams = tap.discover_streams()
 
 ### **Authentication**
 
-```python notest
+```python
 from flext_tap_oracle_wms import get_wms_authenticator
 
 auth = get_wms_authenticator(stream, settings)
@@ -144,7 +144,7 @@ authenticated_request = auth(request)
 
 ### **Entity Discovery**
 
-```python notest
+```python
 from flext_tap_oracle_wms import EntityDiscovery
 
 discovery = EntityDiscovery(wms_client)
@@ -153,7 +153,7 @@ entities = discovery.discover_entities()
 
 ### **Configuration Validation**
 
-```python notest
+```python
 from flext_tap_oracle_wms import ConfigValidator
 
 validator = ConfigValidator()

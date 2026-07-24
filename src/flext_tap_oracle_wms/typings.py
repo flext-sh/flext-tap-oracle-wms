@@ -10,9 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import (
-    Callable,
-)
+from collections.abc import Callable
 
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import t

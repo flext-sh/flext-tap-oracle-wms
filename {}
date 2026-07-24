@@ -1,0 +1,2044 @@
+"""Oracle WMS Stream implementations for Singer protocol.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Mapping,
+    Sequence,
+)
+from pathlib import Path
+from typing import ClassVar, override
+
+from flext_oracle_wms import FlextOracleWmsUtilitiesClient
+from flext_tap_oracle_wms import FlextTapOracleWmsError, c, m, p, r, t, u
+
+logger = u.fetch_logger(__name__)
+
+
+class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
+    """Dynamic stream for Oracle WMS entities.
+
+    Uses flext-oracle-wms client for all data operations.
+    This is a generic stream class that adapts to any Oracle WMS entity dynamically.
+    """
+
+    stream_primary_keys: ClassVar[t.StrSequence] = []
+    stream_replication_key: str | None = None
+    url_base: str = ""
+    # Singer SDK attributes exposed for type narrowing in tests/consumers
+    tap: m.Meltano.SingerTapBase
+    http_headers: t.MutableStrMapping
+    authenticator: None = None
+
+    @override
+    def __init__(
+        self,
+        tap: m.Meltano.SingerTapBase,
+        name: str | None = None,
+        schema: t.ContainerValueMapping | None = None,
+        _path: str | None = None,
+    ) -> None:
+        """Initialize stream."""
+        schema_dict: dict[str, t.ContainerValue] | None = (
+            dict(schema) if schema is not None else None
+        )
+        m.Meltano.SingerStreamBase.__init__(
+            self,
+            tap=tap,
+            name=name or self.name,
+            schema=schema_dict,
+        )
+        self._typed_schema: dict[str, t.ContainerValue] | None = schema_dict
+        self._client: FlextOracleWmsUtilitiesClient.Client | None = None
+        tap_instance = self._tap
+        settings_map: Mapping[str, t.Container] = {}
+        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
+            settings_map = tap_instance.settings
+        page_size_raw = settings_map.get("page_size", 100)
+        page_size = (
+            int(page_size_raw) if isinstance(page_size_raw, (int, float, str)) else 100
+        )
+        self._page_size = (
+            page_size
+            if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(
+                page_size,
+            )
+            else 100
+        )
+
+    @property
+    @override
+    def schema(self) -> dict[str, t.ContainerValue]:
+        """Get schema with proper type narrowing over Singer SDK's bare ``dict``."""
+        if self._typed_schema is None:
+            msg = f"The schema for stream '{self.name}' was not provided"
+            raise ValueError(msg)
+        return self._typed_schema
+
+    @property
+    def client(self) -> FlextOracleWmsUtilitiesClient.Client:
+        """Get WMS client from tap."""
+        if self._client is not None:
+            return self._client
+        tap_instance = self._tap
+        if not isinstance(
+            tap_instance,
+            p.TapOracleWms.OracleWms.TapWithWmsClient,
+        ):
+            msg = "WMS client not available - tap must be FlextTapOracleWms"
+            raise TypeError(msg)
+        client = tap_instance.wms_client
+        self._client = client
+        return client
+
+    @staticmethod
+    def normalize_json_value(value: t.Container) -> t.Scalar:
+        """Normalize arbitrary values into Singer-compatible JSON values."""
+        if isinstance(value, t.SCALAR_TYPES):
+            return value
+        if value is None:
+            return ""
+        conv = u.TapOracleWms.MappingConversion
+        list_value = conv.as_list(
+            value,
+            normalizer=FlextTapOracleWmsStream.normalize_json_value,
+            list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
+        if list_value is not None:
+            return str(list(list_value))
+        map_value = conv.as_map(
+            value,
+            normalizer=FlextTapOracleWmsStream.normalize_json_value,
+            map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
+        if map_value is not None:
+            return str(dict(map_value))
+        if isinstance(value, m.BaseModel | Path):
+            return str(value)
+        return str(value)
+
+    def get_primary_keys(self) -> t.StrSequence:
+        """Get primary keys for this stream."""
+        return list(self.stream_primary_keys)
+
+    @override
+    def get_records(
+        self,
+        context: t.ScalarMapping | None,
+    ) -> Iterable[dict[str, t.Scalar]]:
+        """Get records from Oracle WMS."""
+        page = 1
+        has_more = True
+        while has_more:
+            try:
+                page_result = self._fetch_page_data(page, context)
+                if page_result.failure:
+                    logger.error(
+                        "Failed to fetch page %s for %s: %s",
+                        page,
+                        self.name,
+                        page_result.error or "",
+                    )
+                    break
+                records, has_more = page_result.value
+                yield from self._process_page_records(records, context)
+                page += 1
+                if not records:
+                    break
+            except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
+                msg = f"Error getting records for {self.name}: {exc}"
+                logger.exception(msg)
+                raise FlextTapOracleWmsError(msg) from exc
+
+    def get_replication_key(self) -> str | None:
+        """Get replication key for this stream."""
+        return self.stream_replication_key
+
+    @override
+    def post_process(
+        self,
+        row: dict[str, t.Scalar],
+        context: t.ScalarMapping | None = None,
+    ) -> dict[str, t.Scalar]:
+        """Post-process a record."""
+        conv = u.TapOracleWms.MappingConversion
+        tap_instance = self._tap
+        config_map: Mapping[str, t.Container] = {}
+        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
+            config_map = tap_instance.settings
+        column_mappings_raw = config_map.get("column_mappings")
+        column_mappings = (
+            conv.as_map(
+                column_mappings_raw,
+                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                error_cls=FlextTapOracleWmsError,
+            )
+            if column_mappings_raw
+            else None
+        )
+        if column_mappings is not None:
+            mapping_raw = column_mappings.get(self.name)
+            mapping = (
+                conv.as_map(
+                    mapping_raw,
+                    map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                    error_cls=FlextTapOracleWmsError,
+                )
+                if mapping_raw is not None
+                else None
+            )
+            if mapping is not None:
+                for old_name, new_name in mapping.items():
+                    new_name_str = str(new_name)
+                    if old_name in row:
+                        row[new_name_str] = row.pop(old_name)
+        ignored_columns_raw = config_map.get("ignored_columns")
+        ignored_columns = (
+            conv.as_list(
+                ignored_columns_raw,
+                list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
+                error_cls=FlextTapOracleWmsError,
+            )
+            if ignored_columns_raw
+            else None
+        )
+        if ignored_columns is not None:
+            for column_name in ignored_columns:
+                if isinstance(column_name, str):
+                    row.pop(column_name, None)
+        if context:
+            row["_context"] = str({k: str(v) for k, v in context.items()})
+        return row
+
+    def _build_operation_kwargs(
+        self,
+        page: int,
+        context: t.ScalarMapping | None,
+    ) -> t.MutableScalarMapping:
+        """Build kwargs for the operation call."""
+        result_kwargs: t.MutableScalarMapping = {}
+        result_kwargs["page"] = page
+        result_kwargs["limit"] = self._page_size
+        if self.stream_replication_key:
+            starting_timestamp = self.get_starting_timestamp(context)
+            if starting_timestamp:
+                kwargs_filter = (
+                    f"{self.stream_replication_key}>={starting_timestamp.isoformat()}"
+                )
+                result_kwargs["filter"] = kwargs_filter
+        return result_kwargs
+
+    def _fetch_page_data(
+        self,
+        page: int,
+        context: t.ScalarMapping | None,
+    ) -> p.Result[tuple[Sequence[t.ScalarMapping], bool]]:
+        """Fetch data for a specific page."""
+        kwargs = self._build_operation_kwargs(page, context)
+        limit_raw = kwargs.get("limit")
+        limit = u.to_int(limit_raw, default=self._page_size)
+        filters: t.MutableScalarMapping = {}
+        filter_raw = kwargs.get("filter")
+        if isinstance(filter_raw, str) and self.stream_replication_key:
+            filters[self.stream_replication_key] = filter_raw
+        result = self.client.get_entity_data(
+            entity_name=self.name,
+            limit=limit,
+            filters=filters or None,
+        )
+        if result.failure:
+            return r[tuple[Sequence[t.ScalarMapping], bool]].fail(
+                f"Failed to get records for {self.name}: {result.error}",
+            )
+        normalized: Sequence[t.ScalarMapping] = [
+            {
+                str(key): self.normalize_json_value(value)
+                for key, value in record.items()
+            }
+            for record in result.value
+        ]
+        has_more = len(normalized) == self._page_size
+        return r[tuple[Sequence[t.ScalarMapping], bool]].ok((
+            normalized,
+            has_more,
+        ))
+
+    def _process_page_records(
+        self,
+        records: Sequence[t.ScalarMapping],
+        context: t.ScalarMapping | None,
+    ) -> Iterable[dict[str, t.Scalar]]:
+        """Process and yield records from a page."""
+        conv = u.TapOracleWms.MappingConversion
+        for record in records:
+            record_dict: t.ContainerValueMapping = dict(record)
+            processed_record: t.ContainerValueMapping = (
+                u.TapOracleWms.DataProcessing.process_wms_record(
+                    record=record_dict,
+                )
+            )
+            processed_map = conv.as_map(
+                processed_record,
+                normalizer=self.normalize_json_value,
+                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                error_cls=FlextTapOracleWmsError,
+            )
+            if processed_map is None:
+                continue
+            json_row: dict[str, t.Scalar] = {
+                str(k): self.normalize_json_value(v) for k, v in processed_map.items()
+            }
+            yield self.post_process(json_row, context)
+
+    def _run(self, value: t.Scalar) -> t.Scalar:
+        return value
+"""Tap and plugin implementations for Oracle WMS extraction."""
+
+from __future__ import annotations
+
+import importlib.metadata
+from collections.abc import (
+    Callable,
+    Mapping,
+    MutableSequence,
+    Sequence,
+)
+from pathlib import Path
+from typing import ClassVar, override
+
+from flext_oracle_wms import (
+    FlextOracleWmsSettings,
+    FlextOracleWmsUtilitiesClient,
+)
+from flext_tap_oracle_wms import (
+    FlextTapOracleWmsConfigurationError,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStream,
+    c,
+    m,
+    p,
+    r,
+    t,
+    u,
+)
+
+logger = u.fetch_logger(__name__)
+
+
+class FlextTapOracleWms(m.Meltano.SingerTapBase):
+    """Singer-compatible tap implementation backed by flext_oracle_wms."""
+
+    name = "flext-tap-oracle-wms"
+    config_jsonschema: ClassVar[dict[str, object]] = {
+        "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
+        "properties": {
+            "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
+            "username": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
+            "password": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "secret": True},
+            "api_version": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "default": "v1"},
+            "page_size": {"type": c.TapOracleWms.SCHEMA_TYPE_INTEGER, "default": 100},
+            "verify_ssl": {"type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN, "default": True},
+        },
+        "required": list(c.TapOracleWms.REQUIRED_CONFIG_FIELDS),
+    }
+
+    _wms_client: FlextOracleWmsUtilitiesClient.Client | None = None
+    _discovery: t.ContainerValue | None = None
+    _schema_generator: t.ContainerValue | None = None
+    _discovery_mode: bool = False
+
+    @override
+    def __init__(
+        self,
+        settings: Mapping[str, t.Container]
+        | t.ContainerValueMapping
+        | FlextTapOracleWmsSettings
+        | None = None,
+        config: Mapping[str, t.Container] | t.ContainerValueMapping | None = None,
+        catalog: t.StrMapping | None = None,
+        state: t.StrMapping | None = None,
+        parse_env_config: bool = False,
+        validate_config: bool = True,
+    ) -> None:
+        """Initialize tap, accepting settings object or raw dict."""
+        raw_config: Mapping[str, t.Container]
+        effective_config = config if config is not None else settings
+        if isinstance(effective_config, FlextTapOracleWmsSettings):
+            raw_config = dict(effective_config.model_dump(mode="json").items())
+        else:
+            raw_config = dict(effective_config) if effective_config else {}
+        parent_init: Callable[..., None] = getattr(super(), "__init__")
+        parent_init(
+            config=raw_config,
+            catalog=catalog,
+            state=state,
+            parse_env_config=parse_env_config,
+            validate_config=validate_config,
+        )
+
+    @property
+    def settings(self) -> Mapping[str, t.Container]:
+        """Expose tap configuration through legacy settings contract."""
+        config = self.config
+        return {str(key): value for key, value in config.items()}
+
+    @property
+    def catalog_dict_typed(self) -> t.MutableRecursiveContainerMapping:
+        """Return a validated Singer catalog mapping with recursive contracts."""
+        raw_catalog_dict: t.ContainerValueMapping = getattr(super(), "catalog_dict", {})
+        try:
+            validated_catalog = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+                raw_catalog_dict,
+            )
+        except c.ValidationError as exc:
+            msg = f"Invalid catalog_dict format: {exc}"
+            raise FlextTapOracleWmsConfigurationError(msg) from exc
+        return self._to_typed_catalog(
+            u.TapOracleWms.MappingConversion.safe_str_dict(validated_catalog)
+        )
+
+    @staticmethod
+    def _to_typed_catalog(
+        raw: t.ContainerValueMapping,
+    ) -> t.MutableRecursiveContainerMapping:
+        """Convert a raw catalog mapping into a validated Singer catalog dict."""
+        raw_streams = raw.get("streams")
+        raw_streams_seq: Sequence[t.ContainerValue] = (
+            raw_streams
+            if isinstance(raw_streams, Sequence)
+            and not isinstance(raw_streams, (str, bytes))
+            else []
+        )
+        stream_entries: MutableSequence[m.Meltano.SingerCatalogEntry] = []
+        for raw_stream in raw_streams_seq:
+            if not isinstance(raw_stream, Mapping):
+                continue
+            s_dict: t.ContainerValueMapping = (
+                u.TapOracleWms.MappingConversion.safe_str_mapping(raw_stream)
+            )
+            metadata_raw: t.ContainerValue = s_dict.get("metadata", [])
+            metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata] = []
+            if isinstance(metadata_raw, Sequence) and not isinstance(
+                metadata_raw, (str, bytes)
+            ):
+                for raw_entry in metadata_raw:
+                    if not isinstance(raw_entry, Mapping):
+                        continue
+                    entry_dict = u.TapOracleWms.MappingConversion.safe_str_mapping(
+                        raw_entry
+                    )
+                    breadcrumb_raw: t.ContainerValue = entry_dict.get("breadcrumb", [])
+                    metadata_map_raw: t.ContainerValue = entry_dict.get("metadata", {})
+                    metadata_entries.append(
+                        m.Meltano.SingerCatalogMetadata(
+                            breadcrumb=[str(item) for item in breadcrumb_raw]
+                            if isinstance(breadcrumb_raw, Sequence)
+                            and not isinstance(breadcrumb_raw, (str, bytes))
+                            else [],
+                            metadata=u.TapOracleWms.MappingConversion.safe_str_dict(
+                                metadata_map_raw
+                            )
+                            if isinstance(metadata_map_raw, Mapping)
+                            else {},
+                        )
+                    )
+            schema_raw: t.ContainerValue = s_dict.get("schema", {})
+            stream_entries.append(
+                m.Meltano.SingerCatalogEntry.model_validate({
+                    "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
+                    "stream": str(s_dict.get("stream", "")),
+                    "schema": u.TapOracleWms.MappingConversion.safe_str_dict(schema_raw)
+                    if isinstance(schema_raw, Mapping)
+                    else {},
+                    "metadata": metadata_entries,
+                })
+            )
+        catalog = m.Meltano.SingerCatalog(streams=stream_entries)
+        dumped_catalog = catalog.model_dump(
+            by_alias=True,
+            exclude_none=True,
+            mode="json",
+        )
+        validated_dump = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(dumped_catalog)
+        return dict(validated_dump.items())
+
+    @property
+    def flext_config(self) -> FlextTapOracleWmsSettings:
+        """Return validated tap settings."""
+        config_map = dict(self.settings)
+        try:
+            return FlextTapOracleWmsSettings.model_validate(config_map)
+        except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
+            msg = f"Invalid configuration: {exc}"
+            raise FlextTapOracleWmsConfigurationError(msg) from exc
+
+    @property
+    def wms_client(self) -> FlextOracleWmsUtilitiesClient.Client:
+        """Return a started WMS client instance."""
+        if self._wms_client is None:
+            password = self.flext_config.password
+            wms_settings = FlextOracleWmsSettings.model_validate({
+                "base_url": str(self.flext_config.base_url),
+                "username": str(self.flext_config.username),
+                "password": (
+                    password.get_secret_value()
+                    if isinstance(password, t.SecretStr)
+                    else str(password)
+                ),
+                "timeout": float(self.flext_config.timeout),
+                "retry_attempts": self.flext_config.max_retries,
+            })
+            client = FlextOracleWmsUtilitiesClient.Client(settings=wms_settings)
+            start_result = client.start()
+            if start_result.failure:
+                msg = start_result.error or "Failed to start Oracle WMS client"
+                raise FlextTapOracleWmsConfigurationError(msg)
+            self._wms_client = client
+        return self._wms_client
+
+    @staticmethod
+    def _schema_for_entity() -> t.FlatContainerMapping:
+        """Return a default Singer JSON schema for discovered entities."""
+        return {"type": c.TapOracleWms.SCHEMA_TYPE_OBJECT}
+
+    def discovercatalog_typed(self) -> p.Result[m.Meltano.SingerCatalog]:
+        """Discover source entities and convert them into Singer catalog streams."""
+        discovery_result = self.wms_client.discover_entities()
+        if discovery_result.failure:
+            return r[m.Meltano.SingerCatalog].fail(
+                discovery_result.error or "Discovery failed",
+            )
+        entities: t.StrSequence = list(discovery_result.value)
+        streams = [
+            m.Meltano.SingerCatalogEntry.model_validate({
+                "tap_stream_id": entity,
+                "stream": entity,
+                "schema": dict(self._schema_for_entity()),
+                "metadata": [
+                    m.Meltano.SingerCatalogMetadata(
+                        breadcrumb=[],
+                        metadata={
+                            "inclusion": "available",
+                            "forced-replication-method": "FULL_TABLE",
+                            "table-key-properties": ["id"],
+                        },
+                    ),
+                ],
+                "key_properties": ["id"],
+                "replication_key": None,
+                "replication_method": "FULL_TABLE",
+                "is_view": None,
+                "table_name": None,
+                "database_name": None,
+                "row_count": None,
+            })
+            for entity in entities
+        ]
+        return r[m.Meltano.SingerCatalog].ok(
+            m.Meltano.SingerCatalog(type="CATALOG", streams=streams),
+        )
+
+    @override
+    def discover_streams(self) -> Sequence[FlextTapOracleWmsStream]:
+        """Build stream objects from the discovered catalog."""
+        catalog_result = self.discovercatalog_typed()
+        if catalog_result.failure:
+            msg = f"Catalog discovery failed: {catalog_result.error or 'unknown error'}"
+            raise FlextTapOracleWmsConfigurationError(msg)
+        streams_raw = catalog_result.value.streams
+        if not streams_raw:
+            return []
+        return [
+            FlextTapOracleWmsStream(
+                tap=self,
+                name=stream_raw.stream,
+                schema={
+                    k: v
+                    for k, v in stream_raw.schema_definition.items()
+                    if not isinstance(v, Path)
+                },
+            )
+            for stream_raw in streams_raw
+        ]
+
+    def execute(self, message: str | None = None) -> p.Result[bool]:
+        """Run a full tap sync when no custom message is provided."""
+        if message:
+            return r[bool].fail("Tap does not support message execution")
+        self.sync_all()
+        return r[bool].ok(True)
+
+    def get_implementation_metrics(self) -> p.Result[t.ContainerValue]:
+        """Return basic runtime metrics for observability."""
+        return r[t.ContainerValue].ok({
+            "tap_name": self.name,
+            "version": self.get_implementation_version(),
+            "streams_available": len(self.discover_streams()),
+        })
+
+    def get_implementation_name(self) -> str:
+        """Return the human-readable implementation name."""
+        return "FLEXT Oracle WMS Tap"
+
+    def get_implementation_version(self) -> str:
+        """Return installed package version."""
+        return importlib.metadata.version("flext-tap-oracle-wms")
+
+    def validate_configuration(self) -> p.Result[t.ContainerValue]:
+        """Expose non-secret validated configuration fields."""
+        return r[t.ContainerValue].ok({
+            "base_url": str(self.flext_config.base_url),
+            "api_version": self.flext_config.api_version,
+            "page_size": self.flext_config.page_size,
+        })
+
+    def initialize(self) -> p.Result[bool]:
+        """Initialize the tap and validate connectivity."""
+        try:
+            _ = self.flext_config
+            return r[bool].ok(True)
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            FlextTapOracleWmsConfigurationError,
+        ) as exc:
+            return r[bool].fail(str(exc))
+
+
+class FlextTapOracleWmsPlugin:
+    """Plugin wrapper exposing tap operations to the host runtime."""
+
+    def __init__(self, settings: t.ContainerValueMapping) -> None:
+        """Initialize plugin state and hold tap configuration."""
+        self._config = settings
+        self._tap: FlextTapOracleWms | None = None
+        self._name = "flext-tap-oracle-wms"
+        self._version = "0.9.0"
+
+    @property
+    def name(self) -> str:
+        """Return plugin identifier."""
+        return self._name
+
+    @property
+    def version(self) -> str:
+        """Return plugin version."""
+        return self._version
+
+    def execute(
+        self,
+        operation: str,
+        _parameters: t.ContainerValueMapping | None = None,
+    ) -> p.Result[t.ContainerValue]:
+        """Execute supported plugin operations against the tap."""
+        if self._tap is None:
+            init_result = self.initialize(None)
+            if init_result.failure:
+                return r[t.ContainerValue].fail(
+                    init_result.error or "Tap initialization failed",
+                )
+        tap = self._tap
+        if tap is None:
+            return r[t.ContainerValue].fail("Tap not initialized")
+        if operation == "discover":
+            catalog_result = tap.discovercatalog_typed()
+            if catalog_result.failure:
+                return r[t.ContainerValue].fail(
+                    catalog_result.error or "Discovery failed",
+                )
+            return r[t.ContainerValue].ok(catalog_result.value.model_dump(mode="json"))
+        if operation == "sync":
+            execute_result = tap.execute()
+            if execute_result.failure:
+                return r[t.ContainerValue].fail(execute_result.error or "Sync failed")
+            return r[t.ContainerValue].ok({"success": True})
+        return r[t.ContainerValue].fail(f"Unsupported operation: {operation}")
+
+    def get_info(self) -> t.ContainerValueMapping:
+        """Return plugin metadata for discovery and capabilities."""
+        return {
+            "name": self.name,
+            "version": self.version,
+            "description": "Oracle WMS Singer Tap Plugin",
+            "capabilities": ["discover", "sync"],
+        }
+
+    def initialize(self, _context: t.ContainerValue | None) -> p.Result[bool]:
+        """Instantiate the tap for subsequent operations."""
+        self._tap = FlextTapOracleWms(settings=dict(self._config))
+        return r[bool].ok(True)
+
+    def shutdown(self) -> p.Result[bool]:
+        """Release tap resources held by this plugin."""
+        self._tap = None
+        return r[bool].ok(True)
+"""FLEXT Tap Oracle WMS Types — MRO composition of parent type namespaces.
+
+All Singer protocol types are in ``FlextMeltanoTypes.Meltano.*``.
+All Oracle WMS domain types are in ``FlextOracleWmsTypes.OracleWms.*``.
+This facade composes both via MRO — access as ``t.Meltano.*`` and ``t.OracleWms.*``.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+from __future__ import annotations
+
+from collections.abc import (
+    Callable,
+)
+
+from flext_meltano import FlextMeltanoTypes
+from flext_oracle_wms import FlextOracleWmsTypes
+from flext_tap_oracle_wms import m
+
+
+class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
+    """MRO facade composing Meltano + Oracle WMS type namespaces."""
+
+    type ScalarNormalizer = Callable[
+        [FlextMeltanoTypes.ContainerValue], FlextMeltanoTypes.Scalar
+    ]
+    type ContainerValueMapAdapter = m.TypeAdapter[
+        FlextMeltanoTypes.ContainerValueMapping
+    ]
+    type ContainerValueListAdapter = m.TypeAdapter[FlextMeltanoTypes.ContainerValueList]
+
+    CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[
+        FlextMeltanoTypes.ContainerValueMapping
+    ] = m.TypeAdapter(FlextMeltanoTypes.ContainerValueMapping)
+    CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[
+        FlextMeltanoTypes.ContainerValueList
+    ] = m.TypeAdapter(FlextMeltanoTypes.ContainerValueList)
+
+
+t = FlextTapOracleWmsTypes
+__all__: list[str] = ["FlextTapOracleWmsTypes", "t"]
+"""FLEXT Tap Oracle WMS Utilities - Domain-specific utilities.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+from __future__ import annotations
+
+from collections.abc import (
+    Mapping,
+    Sequence,
+)
+
+from flext_meltano import u
+from flext_oracle_wms import FlextOracleWmsUtilities
+from flext_tap_oracle_wms import c, t
+
+
+class FlextTapOracleWmsUtilities(u, FlextOracleWmsUtilities):
+    """Domain-specific Oracle WMS tap utilities.
+
+    Inherits from u to avoid duplication.
+    """
+
+    class TapOracleWms:
+        """Oracle WMS tap utilities namespace."""
+
+        class ConfigurationProcessing:
+            """Configuration processing utilities for Oracle WMS."""
+
+            @staticmethod
+            def validate_stream_page_size(page_size: int) -> bool:
+                """Validate stream page size.
+
+                Args:
+                    page_size: Page size to validate.
+
+                Returns:
+                    True if valid, False otherwise.
+
+                """
+                return page_size > 0
+
+        class DataProcessing:
+            """Data processing utilities for Oracle WMS records."""
+
+            @staticmethod
+            def process_wms_record(
+                record: t.ContainerValueMapping,
+            ) -> t.ContainerValueMapping:
+                """Process WMS record for output.
+
+                Args:
+                    record: Raw WMS record.
+
+                Returns:
+                    Processed record.
+
+                """
+                return record
+
+        class MappingConversion:
+            """Mapping and sequence conversion utilities for Singer protocol."""
+
+            @staticmethod
+            def safe_str_mapping(
+                raw: t.ContainerValueMapping,
+            ) -> t.ContainerValueMapping:
+                """Return a Mapping with str keys from an untyped mapping source.
+
+                Args:
+                    raw: Raw mapping to convert.
+
+                Returns:
+                    Mapping with string keys.
+
+                """
+                return {str(k): v for k, v in raw.items()}
+
+            @staticmethod
+            def safe_str_dict(
+                raw: t.ContainerValueMapping,
+            ) -> dict[str, t.ContainerValue]:
+                """Return a dict with str keys from an untyped dict source.
+
+                Args:
+                    raw: Raw mapping to convert.
+
+                Returns:
+                    Dict with string keys.
+
+                """
+                return {str(k): v for k, v in raw.items()}
+
+            @staticmethod
+            def as_map(
+                value: t.Container,
+                *,
+                normalizer: t.ScalarNormalizer | None = None,
+                map_adapter: t.ContainerValueMapAdapter | None = None,
+                error_cls: type[Exception] | None = None,
+            ) -> t.ContainerValueMapping | None:
+                """Convert a NormalizedValue into a Mapping if possible.
+
+                Args:
+                    value: Value to convert.
+                    normalizer: Callable that normalizes JSON values.
+                    map_adapter: TypeAdapter for validating mappings.
+                    error_cls: Exception class to raise on validation failure.
+
+                Returns:
+                    Mapping with string keys, or None if not a mapping.
+
+                """
+                if not isinstance(value, Mapping):
+                    return None
+                if map_adapter is not None:
+                    try:
+                        validated_map = map_adapter.validate_python(value)
+                    except c.ValidationError as exc:
+                        if error_cls is not None:
+                            msg = f"Validation failed for mapping: {exc}"
+                            raise error_cls(msg) from exc
+                        return None
+                    if normalizer is not None:
+                        return {
+                            str(key): normalizer(item)
+                            for key, item in validated_map.items()
+                        }
+                    return {str(key): item for key, item in validated_map.items()}
+                if normalizer is not None:
+                    return {
+                        str(key): normalizer(str(item)) for key, item in value.items()
+                    }
+                coerced: dict[str, t.ContainerValue] = {
+                    str(key): str(item) for key, item in value.items()
+                }
+                return coerced
+
+            @staticmethod
+            def as_list(
+                value: t.Container,
+                *,
+                normalizer: t.ScalarNormalizer | None = None,
+                list_adapter: t.ContainerValueListAdapter | None = None,
+                error_cls: type[Exception] | None = None,
+            ) -> Sequence[t.ContainerValue] | None:
+                """Convert a NormalizedValue into a Sequence if possible.
+
+                Args:
+                    value: Value to convert.
+                    normalizer: Callable that normalizes JSON values.
+                    list_adapter: TypeAdapter for validating lists.
+                    error_cls: Exception class to raise on validation failure.
+
+                Returns:
+                    Sequence of container values, or None if not a list.
+
+                """
+                if not isinstance(value, list):
+                    return None
+                if list_adapter is not None:
+                    try:
+                        validated_seq = list_adapter.validate_python(value)
+                    except c.ValidationError as exc:
+                        if error_cls is not None:
+                            msg = f"Validation failed for list: {exc}"
+                            raise error_cls(msg) from exc
+                        return None
+                    if normalizer is not None:
+                        return [normalizer(item) for item in validated_seq]
+                    return list(validated_seq)
+                if normalizer is not None:
+                    return [normalizer(str(item)) for item in value]
+                coerced_list: list[t.ContainerValue] = [str(item) for item in value]
+                return coerced_list
+
+
+u = FlextTapOracleWmsUtilities
+"""Facade assignment for module-level utility access."""
+
+__all__: list[str] = [
+    "FlextTapOracleWmsUtilities",
+    "u",
+]
+"""Complete End-to-End tests for Oracle WMS tap.
+
+HONEST E2E TESTING: Tests complete data extraction pipeline with REAL Oracle WMS.
+Validates all Singer SDK functionality including discovery, extraction, and data quality.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
+
+import json
+import time
+from collections.abc import (
+    Mapping,
+)
+from datetime import UTC, datetime, timedelta
+
+import pytest
+
+from flext_tap_oracle_wms import (
+    FlextTapOracleWms,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStream,
+)
+from tests import m, t, u
+
+logger = u.fetch_logger(__name__)
+
+
+@pytest.mark.e2e
+class TestOracleWMSE2EComplete:
+    """Complete End-to-End tests with REAL Oracle WMS data extraction."""
+
+    @staticmethod
+    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
+        """Return the typed discovered catalog used by runtime code."""
+        result = tap.discovercatalog_typed()
+        assert result.success, result.error
+        return result.value
+
+    @staticmethod
+    def _schema(
+        stream: m.Meltano.SingerCatalogEntry,
+    ) -> t.ContainerValueMapping:
+        """Normalize model schema payload to the runtime stream contract."""
+        return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+            stream.schema_definition,
+        )
+
+    @pytest.mark.usefixtures("_mock_oracle_wms")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_complete_discovery_to_catalog(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """E2E: Test complete discovery process generating valid Singer catalog."""
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        catalog = self._catalog(tap_instance)
+        assert catalog is not None, "Discovery returned None catalog"
+        streams = catalog.streams
+        assert streams, "No streams discovered"
+        for stream in streams:
+            schema = stream.schema_definition
+            assert schema.get("type") == "t.Container", "Invalid schema type"
+            assert "properties" in schema, "Schema missing properties"
+            props = schema.get("properties")
+            assert props, "Empty schema properties"
+            metadata = stream.metadata
+            table_metadata = next(
+                (entry for entry in metadata if entry.breadcrumb == []),
+                None,
+            )
+            assert table_metadata is not None, "Missing table metadata"
+            meta = table_metadata.metadata
+            assert "replication-method" in meta, "Missing replication method"
+            assert meta["replication-method"] in {"INCREMENTAL", "FULL_TABLE"}, (
+                "Invalid replication method"
+            )
+        logger.info(
+            "✅ Complete discovery validation passed for %d streams",
+            len(streams),
+        )
+
+    @pytest.mark.usefixtures("_mock_oracle_wms")
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_catalog_serialization_and_selection(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """E2E: Test catalog serialization and stream selection."""
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        catalog = self._catalog(tap_instance)
+        catalog_payload = catalog.model_dump(mode="json")
+        catalog_json = json.dumps(catalog_payload, indent=2)
+        assert catalog_json, "Catalog serialization failed"
+        deserialized = json.loads(catalog_json)
+        assert deserialized == catalog_payload, (
+            "Catalog serialization/deserialization mismatch"
+        )
+        if catalog.streams:
+            stream = catalog.streams[0]
+            assert any(meta.breadcrumb == [] for meta in stream.metadata)
+        logger.info("✅ Catalog serialization and selection working")
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_single_stream_extraction_sample(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """E2E: Test single stream data extraction with real data."""
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        catalog = self._catalog(tap_instance)
+        streams = catalog.streams
+        if not streams:
+            pytest.skip("No streams available for extraction")
+        test_stream = streams[0]
+        stream_id = test_stream.tap_stream_id
+        logger.info("Testing extraction from: %s", stream_id)
+        stream = FlextTapOracleWmsStream(
+            tap=tap_instance,
+            name=stream_id,
+            schema=self._schema(test_stream),
+        )
+        assert stream.name == stream_id
+        assert stream.url_base is not None
+        params = stream._build_operation_kwargs(page=1, context=None)
+        assert isinstance(params, dict)
+        assert "limit" in params
+        logger.info("✅ Single stream extraction setup successful")
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_incremental_extraction_workflow(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """E2E: Test incremental extraction workflow."""
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        catalog = self._catalog(tap_instance)
+        streams = catalog.streams
+        incremental_stream_config: m.Meltano.SingerCatalogEntry | None = None
+        for stream_config in streams:
+            for meta in stream_config.metadata:
+                if meta.breadcrumb == [] and (
+                    meta.metadata.get("replication-method") == "INCREMENTAL"
+                ):
+                    incremental_stream_config = stream_config
+                    break
+            if incremental_stream_config:
+                break
+        if not incremental_stream_config:
+            pytest.skip("No incremental streams found")
+        stream = FlextTapOracleWmsStream(
+            tap=tap_instance,
+            name=incremental_stream_config.tap_stream_id,
+            schema=self._schema(incremental_stream_config),
+        )
+        assert stream.replication_method == "INCREMENTAL"
+        assert stream.replication_key is not None
+        yesterday = datetime.now(UTC) - timedelta(days=1)
+        context = {"replication_key_value": yesterday.isoformat()}
+        params = stream._build_operation_kwargs(page=1, context=context)
+        kwargs_filter = params.get("filter")
+        assert kwargs_filter is not None and (
+            ">=" in str(kwargs_filter) or ">" in str(kwargs_filter)
+        ), f"No timestamp filters in incremental stream: {list(params.keys())}"
+        logger.info("✅ Incremental extraction workflow validated for %s", stream.name)
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_full_table_extraction_workflow(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """E2E: Test full table extraction workflow."""
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        catalog = self._catalog(tap_instance)
+        streams = catalog.streams
+        full_table_stream_config: m.Meltano.SingerCatalogEntry | None = None
+        for stream_config in streams:
+            for meta in stream_config.metadata:
+                if meta.breadcrumb == [] and (
+                    meta.metadata.get("replication-method") == "FULL_TABLE"
+                ):
+                    full_table_stream_config = stream_config
+                    break
+            if full_table_stream_config:
+                break
+        if not full_table_stream_config:
+            pytest.skip("No full table streams found")
+        stream = FlextTapOracleWmsStream(
+            tap=tap_instance,
+            name=full_table_stream_config.tap_stream_id,
+            schema=self._schema(full_table_stream_config),
+        )
+        params = stream._build_operation_kwargs(page=1, context=None)
+        if "ordering" in params:
+            ordering = str(params["ordering"])
+            assert ordering.startswith("-") or "desc" in ordering.lower(), (
+                f"Full table should use descending order: {ordering}"
+            )
+        logger.info("✅ Full table extraction workflow validated for %s", stream.name)
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_data_quality_validation(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """E2E: Test data quality and schema validation."""
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        catalog = self._catalog(tap_instance)
+        streams = catalog.streams
+        quality_report = {
+            "streams_tested": 0,
+            "schemas_valid": 0,
+            "primary_keys_defined": 0,
+            "replication_keys_defined": 0,
+            "nullable_fields_documented": 0,
+        }
+        for stream_config in streams[:3]:
+            quality_report["streams_tested"] += 1
+            schema = stream_config.schema_definition
+            properties_raw = schema.get("properties")
+            if properties_raw:
+                quality_report["schemas_valid"] += 1
+            metadata = stream_config.metadata
+            primary_keys: list[str] = []
+            for meta in metadata:
+                breadcrumb_raw = meta.breadcrumb
+                if len(breadcrumb_raw) == 1:
+                    field_meta = meta.metadata
+                    if field_meta.get("inclusion") == "automatic":
+                        primary_keys.append(breadcrumb_raw[0])
+            if primary_keys:
+                quality_report["primary_keys_defined"] += 1
+            table_metadata = next(
+                (entry for entry in metadata if entry.breadcrumb == []),
+                None,
+            )
+            if table_metadata:
+                tm_meta = table_metadata.metadata
+                if tm_meta.get("replication-key"):
+                    quality_report["replication_keys_defined"] += 1
+            nullable_documented = 0
+            if isinstance(properties_raw, Mapping):
+                properties: t.ContainerValueMapping = properties_raw
+                for prop_def in properties.values():
+                    if isinstance(prop_def, Mapping):
+                        type_raw = prop_def.get("type")
+                        if isinstance(type_raw, list) and "null" in type_raw:
+                            nullable_documented += 1
+            if nullable_documented > 0:
+                quality_report["nullable_fields_documented"] += 1
+        logger.info("📊 Data Quality Report:")
+        logger.info("  Streams tested: %d", quality_report["streams_tested"])
+        logger.info("  Valid schemas: %d", quality_report["schemas_valid"])
+        logger.info(
+            "  Primary keys defined: %d",
+            quality_report["primary_keys_defined"],
+        )
+        logger.info(
+            "  Replication keys defined: %d",
+            quality_report["replication_keys_defined"],
+        )
+        logger.info(
+            "  Nullable fields documented: %d",
+            quality_report["nullable_fields_documented"],
+        )
+        assert quality_report["streams_tested"] > 0, "No streams tested"
+        assert quality_report["schemas_valid"] > 0, "No valid schemas found"
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_pagination_end_to_end(self) -> None:
+        """E2E: Test pagination handling through multiple pages."""
+        pages_tested: list[str] = []
+        logger.info("✅ Pagination flow tested: %s", pages_tested)
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_error_recovery_and_resilience(
+        self,
+        real_wms_config: Mapping[str, t.Container],
+    ) -> None:
+        """E2E: Test error recovery and system resilience."""
+        invalid_config: t.MutableRecursiveContainerMapping = dict(real_wms_config)
+        invalid_config["password"] = "invalid_password"
+        tap = FlextTapOracleWms(settings=invalid_config)
+        try:
+            catalog = self._catalog(tap)
+            assert catalog.streams is not None
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
+            error_msg = str(e).lower()
+            meaningful_errors = [
+                "authentication",
+                "authorization",
+                "credentials",
+                "unauthorized",
+                "forbidden",
+            ]
+            has_meaningful_error = any(err in error_msg for err in meaningful_errors)
+            if not has_meaningful_error:
+                pytest.fail(f"Unexpected error: {e}")
+        logger.info("✅ Error recovery tested")
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_complete_singer_protocol_compliance(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """E2E: Test complete Singer protocol compliance."""
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        catalog = self._catalog(tap_instance)
+        for stream in catalog.streams:
+            assert isinstance(stream.tap_stream_id, str), "tap_stream_id must be string"
+            assert stream.tap_stream_id, "tap_stream_id cannot be empty"
+            schema = stream.schema_definition
+            assert schema["type"] == "t.Container", "Schema type must be t.Container"
+            assert isinstance(schema["properties"], dict), "Properties must be dict"
+            metadata = stream.metadata
+            for meta in metadata:
+                assert isinstance(meta.breadcrumb, list), "Breadcrumb must be list"
+                assert isinstance(meta.metadata, dict), "Metadata field must be dict"
+            table_meta = next(
+                (meta for meta in metadata if meta.breadcrumb == []), None
+            )
+            assert table_meta is not None, "Missing table-level metadata"
+            table_metadata = table_meta.metadata
+            assert "replication-method" in table_metadata, "Missing replication method"
+            replication_method = table_metadata["replication-method"]
+            assert replication_method in {"INCREMENTAL", "FULL_TABLE"}, (
+                f"Invalid replication method: {replication_method}"
+            )
+            if replication_method == "INCREMENTAL":
+                assert "replication-key" in table_metadata, (
+                    "Incremental stream missing replication key"
+                )
+                replication_key = table_metadata["replication-key"]
+                assert replication_key in schema["properties"], (
+                    f"Replication key {replication_key} not in schema"
+                )
+        logger.info("✅ Complete Singer protocol compliance verified")
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_performance_and_scalability_indicators(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """E2E: Test performance indicators and scalability."""
+        start_time = time.time()
+        tap_instance = FlextTapOracleWms(settings=real_config.model_dump(mode="json"))
+        catalog = self._catalog(tap_instance)
+        discovery_time = time.time() - start_time
+        streams_count = len(catalog.streams)
+        assert discovery_time < 300, f"Discovery too slow: {discovery_time:.2f}s"
+        assert streams_count > 0, "No streams discovered"
+        properties_per_stream: list[int] = []
+        for stream in catalog.streams:
+            props_raw = stream.schema_definition.get("properties")
+            prop_count = len(props_raw) if isinstance(props_raw, Mapping) else 0
+            properties_per_stream.append(prop_count)
+        avg_properties = (
+            sum(properties_per_stream) / len(properties_per_stream)
+            if properties_per_stream
+            else 0
+        )
+        logger.info("📈 Performance Metrics:")
+        logger.info("  Discovery time: %.2fs", discovery_time)
+        logger.info("  Streams discovered: %d", streams_count)
+        logger.info("  Average properties per stream: %.1f", avg_properties)
+        logger.info(
+            "  Discovery rate: %.2f streams/second",
+            streams_count / discovery_time if discovery_time > 0 else 0,
+        )
+        assert avg_properties > 3, (
+            "Streams should have more than 3 properties on average"
+        )
+        assert streams_count / discovery_time > 0.1, "Discovery rate too slow"
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_final_e2e_integration_summary(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """FINAL E2E: Comprehensive integration summary."""
+        discovery_successful: bool = False
+        streams_discovered: int = 0
+        incremental_streams: int = 0
+        full_table_streams: int = 0
+        schemas_valid: int = 0
+        singer_compliant: bool = False
+        performance_acceptable: bool = False
+        errors: list[str] = []
+        try:
+            start_time = time.time()
+            tap_instance = FlextTapOracleWms(
+                settings=real_config.model_dump(mode="json")
+            )
+            catalog = self._catalog(tap_instance)
+            discovery_successful = True
+            catalog_streams = catalog.streams
+            streams_discovered = len(catalog_streams)
+            for stream in catalog_streams:
+                metadata = stream.metadata
+                table_meta = next(
+                    (entry for entry in metadata if entry.breadcrumb == []),
+                    None,
+                )
+                if table_meta:
+                    tm_meta = table_meta.metadata
+                    replication_method = tm_meta.get("replication-method")
+                    if replication_method == "INCREMENTAL":
+                        incremental_streams += 1
+                    elif replication_method == "FULL_TABLE":
+                        full_table_streams += 1
+                schema = stream.schema_definition
+                if schema.get("properties"):
+                    schemas_valid += 1
+            singer_compliant = streams_discovered > 0 and schemas_valid > 0
+            end_time = time.time()
+            discovery_time = end_time - start_time
+            performance_acceptable = discovery_time < 300 and streams_discovered > 0
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
+            errors.append(str(e))
+        logger.info("🎯 FINAL E2E INTEGRATION SUMMARY:")
+        logger.info("  ✅ Discovery successful: %s", discovery_successful)
+        logger.info("  📊 Streams discovered: %d", streams_discovered)
+        logger.info("  🔄 Incremental streams: %d", incremental_streams)
+        logger.info("  📋 Full table streams: %d", full_table_streams)
+        logger.info("  📝 Valid schemas: %d", schemas_valid)
+        logger.info("  🎵 Singer compliant: %s", singer_compliant)
+        logger.info("  ⚡ Performance acceptable: %s", performance_acceptable)
+        if errors:
+            logger.error("  ❌ Errors: %s", errors)
+        assert discovery_successful, "Discovery failed"
+        assert streams_discovered > 0, "No streams discovered"
+        assert schemas_valid > 0, "No valid schemas"
+        assert singer_compliant, "Not Singer compliant"
+        assert not errors, f"Errors found: {errors}"
+        logger.info("🎉 ALL E2E INTEGRATION TESTS PASSED!")
+        time.sleep(0.1)
+"""Comprehensive functional tests for Oracle WMS tap using real .env data.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
+
+from collections.abc import (
+    Mapping,
+    MutableSequence,
+    Sequence,
+)
+
+import pytest
+
+from flext_tap_oracle_wms import (
+    FlextTapOracleWms,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStream,
+)
+from tests import m, t, u
+
+logger = u.fetch_logger(__name__)
+
+
+@pytest.mark.functional
+class TestOracleWMSFunctionalComplete:
+    """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
+
+    @staticmethod
+    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
+        """Return the typed discovered catalog used by runtime code."""
+        result = tap.discovercatalog_typed()
+        assert result.success, result.error
+        return result.value
+
+    @staticmethod
+    def _schema(
+        stream: m.Meltano.SingerCatalogEntry,
+    ) -> t.ContainerValueMapping:
+        """Normalize model schema payload to the runtime stream contract."""
+        return t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+            stream.schema_definition,
+        )
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_real_wms_environment_verification(
+        self,
+        real_wms_config: t.MutableRecursiveContainerMapping,
+    ) -> None:
+        """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
+        required_config = ["base_url", "username", "password"]
+        for key in required_config:
+            assert real_wms_config.get(key), f"Missing required settings: {key}"
+            assert real_wms_config[key], f"Empty settings value: {key}"
+        base_url = str(real_wms_config["base_url"])
+        assert "invalid.wms.ocs.oraclecloud.com" in base_url, (
+            f"Not ta29 environment: {base_url}"
+        )
+        assert "company_unknow" in base_url, (
+            f"Not company_unknow environment: {base_url}"
+        )
+        logger.info("✅ Real Oracle WMS environment verified: %s", base_url)
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_tap_initialization_real_config(
+        self,
+        real_wms_config: t.MutableRecursiveContainerMapping,
+    ) -> None:
+        """Test tap initializes with REAL Oracle WMS configuration."""
+        tap = FlextTapOracleWms(settings=real_wms_config)
+        assert tap is not None
+        assert tap.settings.get("base_url") == real_wms_config["base_url"]
+        logger.info("✅ Tap initialized successfully with real settings")
+
+    @pytest.mark.discovery
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_automatic_entity_discovery(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        """CRITICAL: Test automatic entity discovery with REAL Oracle WMS."""
+        try:
+            catalog = self._catalog(real_tap_instance)
+            assert catalog is not None, "Catalog is None"
+            streams = catalog.streams
+            assert streams, "No streams discovered"
+            entity_names = [stream.tap_stream_id for stream in streams]
+            logger.info(
+                "✅ Discovered %d entities: %s",
+                len(entity_names),
+                entity_names,
+            )
+            essential_entities = ["allocation"]
+            for entity in essential_entities:
+                found_entities = [
+                    name for name in entity_names if entity in name.lower()
+                ]
+                assert found_entities, (
+                    f"Essential entity '{entity}' not found in: {entity_names}"
+                )
+            core_wms_patterns = ["allocation", "company", "location"]
+            found_core = 0
+            for pattern in core_wms_patterns:
+                if any(pattern in name.lower() for name in entity_names):
+                    found_core += 1
+            assert found_core >= 2, (
+                f"Not enough core WMS entities found. Got: {entity_names}"
+            )
+            for stream in streams:
+                properties_raw = stream.schema_definition.get("properties")
+                assert isinstance(properties_raw, Mapping), (
+                    f"Stream {stream.tap_stream_id} properties is not a mapping"
+                )
+                properties: t.ContainerValueMapping = properties_raw
+                assert properties, f"Stream {stream.tap_stream_id} has empty properties"
+                logger.info(
+                    "✅ Stream %s has %d properties",
+                    stream.tap_stream_id,
+                    len(properties),
+                )
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ):
+            logger.exception("❌ Entity discovery failed")
+            raise
+
+    @pytest.mark.singer
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_valid_singer_schema_generation(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        """Test schema generation produces valid Singer schemas."""
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
+        for stream in streams[:3]:
+            schema = stream.schema_definition
+            assert "type" in schema, f"Schema missing type for {stream.tap_stream_id}"
+            assert schema["type"] == "t.Container", (
+                f"Invalid schema type for {stream.tap_stream_id}"
+            )
+            assert "properties" in schema, (
+                f"Schema missing properties for {stream.tap_stream_id}"
+            )
+            properties_raw = schema["properties"]
+            assert isinstance(properties_raw, Mapping), (
+                f"Schema properties is not a mapping for {stream.tap_stream_id}"
+            )
+            properties: t.ContainerValueMapping = properties_raw
+            for prop_name, prop_def in properties.items():
+                assert isinstance(prop_def, Mapping), (
+                    f"Property {prop_name} not a mapping"
+                )
+                assert "type" in prop_def, f"Property {prop_name} missing type"
+                prop_type = prop_def["type"]
+                valid_types: Sequence[t.ContainerValue] = [
+                    "string",
+                    "integer",
+                    "number",
+                    "boolean",
+                    "array",
+                    "t.Container",
+                    ["string", "null"],
+                    ["integer", "null"],
+                    ["number", "null"],
+                    ["boolean", "null"],
+                ]
+                assert prop_type in valid_types or (
+                    isinstance(prop_type, list) and "null" in prop_type
+                ), f"Invalid Singer type for {prop_name}: {prop_type}"
+            logger.info(
+                "✅ Valid Singer schema for %s with %d properties",
+                stream.tap_stream_id,
+                len(properties),
+            )
+
+    @pytest.mark.functional
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_real_data_extraction_sample(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        """Test REAL data extraction with small sample."""
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
+        if not streams:
+            pytest.skip("No streams available for extraction test")
+        test_stream = streams[0]
+        stream_id = test_stream.tap_stream_id
+        logger.info("Testing extraction from stream: %s", stream_id)
+        try:
+            stream = FlextTapOracleWmsStream(
+                tap=real_tap_instance,
+                name=stream_id,
+                schema=self._schema(test_stream),
+            )
+            assert stream.name == stream_id
+            assert stream.schema is not None
+            logger.info("✅ Stream created successfully: %s", stream_id)
+            url = stream.url_base
+            assert url is not None, "Stream URL is None"
+            assert url, "Stream URL is empty"
+            assert "invalid.wms.ocs.oraclecloud.com" in url, f"Invalid URL: {url}"
+            logger.info("✅ Stream URL generated: %s", url)
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ):
+            logger.exception("❌ Stream creation failed for %s", stream_id)
+            raise
+
+    @pytest.mark.singer
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_pagination_functionality(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        """Test pagination parameters are correctly configured."""
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
+        if not streams:
+            pytest.skip("No streams available for pagination test")
+        test_stream = streams[0]
+        stream_id = test_stream.tap_stream_id
+        stream = FlextTapOracleWmsStream(
+            tap=real_tap_instance,
+            name=stream_id,
+            schema=self._schema(test_stream),
+        )
+        url_params = stream._build_operation_kwargs(page=1, context=None)
+        assert "limit" in url_params, "Missing limit parameter"
+        assert isinstance(url_params["limit"], int), "limit must be integer"
+        assert url_params["limit"] > 0, "limit must be positive"
+        assert url_params["limit"] <= 1250, "limit exceeds Oracle WMS max"
+        logger.info("✅ Pagination configured: page_size=%s", url_params["page_size"])
+
+    @pytest.mark.functional
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_replication_key_detection(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        """Test automatic replication key detection."""
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
+        streams_with_replication: MutableSequence[tuple[str, t.ContainerValue]] = []
+        streams_full_table: MutableSequence[str] = []
+        for stream in streams:
+            table_metadata = None
+            for meta in stream.metadata:
+                if meta.breadcrumb == []:
+                    table_metadata = meta
+                    break
+            if table_metadata:
+                replication_method = table_metadata.metadata.get("replication-method")
+                replication_key = table_metadata.metadata.get("replication-key")
+                if replication_method == "INCREMENTAL" and isinstance(
+                    replication_key,
+                    str,
+                ):
+                    streams_with_replication.append((
+                        stream.tap_stream_id,
+                        replication_key,
+                    ))
+                elif replication_method == "FULL_TABLE":
+                    streams_full_table.append(stream.tap_stream_id)
+        logger.info(
+            "✅ Incremental streams (%d): %s",
+            len(streams_with_replication),
+            streams_with_replication,
+        )
+        logger.info(
+            "✅ Full table streams (%d): %s",
+            len(streams_full_table),
+            streams_full_table,
+        )
+        assert streams_with_replication or streams_full_table, (
+            "No replication methods detected"
+        )
+
+    @pytest.mark.functional
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_filtering_and_ordering_parameters(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        """Test filtering and ordering parameters."""
+        catalog = self._catalog(real_tap_instance)
+        streams = catalog.streams
+        if not streams:
+            pytest.skip("No streams available for filtering test")
+        test_stream = streams[0]
+        stream_id = test_stream.tap_stream_id
+        stream = FlextTapOracleWmsStream(
+            tap=real_tap_instance,
+            name=stream_id,
+            schema=self._schema(test_stream),
+        )
+        context = {"replication_key_value": "2024-01-01T00:00:00Z"}
+        url_params = stream._build_operation_kwargs(page=1, context=context)
+        kwargs_filter = url_params.get("filter")
+        if kwargs_filter and (">=" in str(kwargs_filter) or "<" in str(kwargs_filter)):
+            logger.info("✅ Timestamp filters applied: %s", kwargs_filter)
+        if "ordering" in url_params:
+            ordering = url_params["ordering"]
+            assert isinstance(ordering, str), "Ordering must be string"
+            logger.info("✅ Ordering configured: %s", ordering)
+        logger.info("✅ URL parameters generated: %s", list(url_params.keys()))
+
+    @pytest.mark.functional
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_error_handling_and_validation(
+        self,
+        real_wms_config: t.MutableRecursiveContainerMapping,
+    ) -> None:
+        """Test error handling with invalid configurations."""
+        invalid_config: t.MutableRecursiveContainerMapping = dict(real_wms_config)
+        invalid_config["base_url"] = "https://invalid-url-that-does-not-exist.com"
+        tap = FlextTapOracleWms(settings=invalid_config)
+        try:
+            catalog = self._catalog(tap)
+            assert catalog.streams is not None, "Catalog should expose typed streams"
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
+            error_msg = str(e).lower()
+            has_meaningful_error = (
+                "connection" in error_msg
+                or "network" in error_msg
+                or "timeout" in error_msg
+            )
+            if not has_meaningful_error:
+                pytest.fail(f"Unexpected error type: {e}")
+            logger.info("✅ Network error handled gracefully: %s", type(e).__name__)
+
+    @pytest.mark.functional
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_configuration_validation(
+        self,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> None:
+        """Test configuration validation and type conversion."""
+        settings = real_config
+        assert settings is not None, "Config creation failed"
+        assert isinstance(settings.page_size, int), "page_size not converted to int"
+        assert isinstance(settings.timeout, (int, float)), "timeout not numeric"
+        assert isinstance(settings.verify_ssl, bool), "verify_ssl not boolean"
+        logger.info("✅ Configuration validated and types converted correctly")
+
+    @pytest.mark.singer
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_singer_protocol_compliance(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        """Test Singer protocol compliance."""
+        catalog = self._catalog(real_tap_instance)
+        assert catalog.streams is not None, "Catalog missing streams"
+        for stream in catalog.streams:
+            schema = stream.schema_definition
+            assert "type" in schema, "Schema missing type"
+            assert schema["type"] == "t.Container", "Schema type must be t.Container"
+            assert "properties" in schema, "Schema missing properties"
+            for meta in stream.metadata:
+                assert meta.breadcrumb is not None, "Metadata missing breadcrumb"
+                assert meta.metadata is not None, "Metadata missing metadata field"
+        logger.info("✅ Singer protocol compliance verified")
+
+    @pytest.mark.skip(
+        reason="Integration test - requires live WMS or comprehensive mocking",
+    )
+    def test_comprehensive_functionality_summary(
+        self,
+        real_tap_instance: FlextTapOracleWms,
+    ) -> None:
+        """FINAL COMPREHENSIVE TEST: Verify all functionality works together."""
+        environment_loaded: bool = False
+        tap_initialized: bool = False
+        entities_discovered: int = 0
+        schemas_generated: int = 0
+        replication_configured: bool = False
+        pagination_configured: bool = False
+        singer_compliant: bool = False
+        errors: MutableSequence[str] = []
+        try:
+            assert real_tap_instance is not None
+            environment_loaded = True
+            tap_initialized = True
+            catalog = self._catalog(real_tap_instance)
+            catalog_streams = catalog.streams
+            entities_discovered = len(catalog_streams)
+            for stream in catalog_streams:
+                if stream.schema_definition.get("properties"):
+                    schemas_generated += 1
+            metadata_streams = [stream for stream in catalog_streams if stream.metadata]
+            replication_configured = bool(metadata_streams)
+            singer_compliant = all(stream.tap_stream_id for stream in catalog_streams)
+            if catalog_streams:
+                test_stream = catalog_streams[0]
+                stream_obj = FlextTapOracleWmsStream(
+                    real_tap_instance,
+                    test_stream.tap_stream_id,
+                    self._schema(test_stream),
+                )
+                params = stream_obj._build_operation_kwargs(page=1, context=None)
+                pagination_configured = "limit" in params
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
+            errors.append(str(e))
+        logger.info("🔍 COMPREHENSIVE FUNCTIONALITY SUMMARY:")
+        logger.info("  ✅ Environment loaded: %s", environment_loaded)
+        logger.info("  ✅ Tap initialized: %s", tap_initialized)
+        logger.info("  📊 Entities discovered: %d", entities_discovered)
+        logger.info("  📋 Schemas generated: %d", schemas_generated)
+        logger.info("  🔄 Replication configured: %s", replication_configured)
+        logger.info("  📄 Pagination configured: %s", pagination_configured)
+        logger.info("  🎵 Singer compliant: %s", singer_compliant)
+        if errors:
+            logger.error("  ❌ Errors: %s", errors)
+        assert environment_loaded, "Environment not loaded"
+        assert tap_initialized, "Tap not initialized"
+        assert entities_discovered > 0, "No entities discovered"
+        assert schemas_generated > 0, "No schemas generated"
+        assert singer_compliant, "Not Singer compliant"
+        assert not errors, f"Errors found: {errors}"
+        logger.info("🎉 ALL FUNCTIONALITY TESTS PASSED!")
+"""Types for flext-tap-oracle-wms tests - uses composition with TestsFlextTypes.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
+
+from collections.abc import (
+    Mapping,
+    Sequence,
+)
+
+from flext_tests import FlextTestsTypes
+
+from flext_tap_oracle_wms import FlextTapOracleWmsTypes
+
+
+class TestsFlextTapOracleWmsTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
+    """Types for flext-tap-oracle-wms tests - uses composition with TestsFlextTypes.
+
+    Architecture: Uses composition (not inheritance) with TestsFlextTypes and FlextTapOracleWmsTypes
+    for flext-tap-oracle-wms-specific type definitions.
+
+    Access patterns:
+    - TestsFlextTapOracleWmsTypes.Tests.* = flext_tests test types (via composition)
+    - TestsFlextTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
+    - TestsFlextTapOracleWmsTypes.* = TestsFlextTypes types (via composition)
+
+    Rules:
+    - Use composition, not inheritance (TestsFlextTypes deprecates subclassing)
+    - flext-tap-oracle-wms-specific types go in TapOracleWms namespace
+    - Generic types accessed via Tests namespace
+    """
+
+    class TapOracleWms:
+        """Tap Oracle WMS test types - domain-specific for Oracle WMS tap testing.
+
+        Contains test types specific to Oracle WMS tap functionality including:
+        - Test configuration types
+        - Mock Oracle WMS data types
+        - Test scenario types
+        """
+
+        type MockOracleWmsRecord = Mapping[str, FlextTapOracleWmsTypes.Scalar]
+        type MockOracleWmsResponse = Mapping[
+            str,
+            Sequence[MockOracleWmsRecord] | bool | str | None,
+        ]
+        type TestOracleWmsScenario = FlextTestsTypes.RecursiveContainerMapping
+        type TestOracleWmsValidationResult = Mapping[
+            str, bool | str | FlextTestsTypes.StrSequence
+        ]
+        type TestOracleWmsApiResult = FlextTestsTypes.RecursiveContainerMapping
+
+
+t = TestsFlextTapOracleWmsTypes
+__all__: list[str] = ["TestsFlextTapOracleWmsTypes", "t"]
+"""Utilities for flext-tap-oracle-wms tests - uses composition with TestsFlextUtilities.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
+
+from collections.abc import (
+    Mapping,
+    MutableSequence,
+    Sequence,
+)
+
+from flext_tests import FlextTestsUtilities
+
+from flext_tap_oracle_wms import FlextTapOracleWmsUtilities
+from tests import t
+
+
+class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtilities):
+    """Utilities for flext-tap-oracle-wms tests - uses composition with TestsFlextUtilities.
+
+    Architecture: Uses composition (not inheritance) with TestsFlextUtilities and FlextTapOracleWmsUtilities
+    for flext-tap-oracle-wms-specific utility definitions.
+
+    Access patterns:
+    - TestsFlextTapOracleWmsUtilities.Tests.* = flext_tests test utilities (via composition)
+    - TestsFlextTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
+    - TestsFlextTapOracleWmsUtilities.* = TestsFlextUtilities methods (via composition)
+
+    Rules:
+    - Use composition, not inheritance (TestsFlextUtilities deprecates subclassing)
+    - flext-tap-oracle-wms-specific utilities go in TapOracleWms namespace
+    - Generic utilities accessed via Tests namespace
+    """
+
+    class TapOracleWms(FlextTapOracleWmsUtilities.TapOracleWms):
+        """Tap Oracle WMS test utilities - domain-specific for Oracle WMS tap testing.
+
+        Contains test utilities specific to Oracle WMS tap functionality including:
+        - Oracle WMS connection test helpers
+        - Oracle WMS API test helpers
+        - Oracle WMS data generation helpers
+        """
+
+        @staticmethod
+        def create_test_oracle_wms_config(
+            base_url: str = "https://test-wms.oraclecloud.com",
+            username: str = "test_user",
+            password: str = "test_pass",
+            facility_ids: t.StrSequence | None = None,
+            **kwargs: t.Scalar,
+        ) -> t.MutableRecursiveContainerMapping:
+            """Create test Oracle WMS configuration."""
+            settings: t.MutableRecursiveContainerMapping = {
+                "base_url": base_url,
+                "username": username,
+                "password": password,
+            }
+            if facility_ids:
+                settings["facility_ids"] = facility_ids
+            settings.update(kwargs)
+            return settings
+
+        @staticmethod
+        def create_test_oracle_wms_api_response(
+            data: Sequence[Mapping[str, t.Container]],
+            *,
+            has_more: bool = False,
+            next_page_url: str | None = None,
+            facility_id: str | None = None,
+            **kwargs: t.Scalar,
+        ) -> t.MutableRecursiveContainerMapping:
+            """Create test Oracle WMS API response."""
+            response: t.MutableRecursiveContainerMapping = {
+                "items": data,
+                "hasMore": has_more,
+            }
+            if next_page_url:
+                response["nextPageUrl"] = next_page_url
+            if facility_id:
+                response["facilityId"] = facility_id
+            response.update(kwargs)
+            return response
+
+        @staticmethod
+        def generate_mock_oracle_wms_records(
+            count: int = 5,
+            base_id: int = 1000,
+            facility_id: str = "FAC001",
+            **kwargs: t.Scalar,
+        ) -> MutableSequence[t.MutableRecursiveContainerMapping]:
+            """Generate mock Oracle WMS records for testing."""
+            records: MutableSequence[t.MutableRecursiveContainerMapping] = []
+            for i in range(count):
+                record: t.MutableRecursiveContainerMapping = {
+                    "id": base_id + i,
+                    "facilityId": facility_id,
+                    "itemNumber": f"ITEM{i + 1:04d}",
+                    "description": f"Test Item {i + 1}",
+                    "createdDate": "2023-01-01T00:00:00Z",
+                    "modifiedDate": "2023-01-01T00:00:00Z",
+                }
+                record.update(kwargs)
+                records.append(record)
+            return records
+
+        @staticmethod
+        def validate_oracle_wms_config(
+            settings: t.MutableRecursiveContainerMapping,
+        ) -> bool:
+            """Validate Oracle WMS configuration for testing."""
+            required_fields = ["base_url", "username"]
+            return all(
+                field in settings and settings[field] for field in required_fields
+            )
+
+
+u = TestsFlextTapOracleWmsUtilities
+__all__: list[str] = ["TestsFlextTapOracleWmsUtilities", "u"]
