@@ -1,42 +1,48 @@
 # Development Documentation
 
 <!-- TOC START -->
-- [Overview](#overview)
-- [Development Documentation Structure](#development-documentation-structure)
-  - [Testing Documentation](#testing-documentation)
-  - [Quality Standards](#quality-standards)
-  - [Development Workflows](#development-workflows)
-  - [Refactoring Documentation](#refactoring-documentation)
-- [Current Development Status](#current-development-status)
-  - [Critical Issues](#critical-issues)
-  - [Quality Metrics](#quality-metrics)
-- [Development Environment Setup](#development-environment-setup)
-  - [Prerequisites](#prerequisites)
-  - [Quick Setup](#quick-setup)
-  - [Development Dependencies](#development-dependencies)
-- [Development Workflow](#development-workflow)
-  - [1. Feature Development](#1-feature-development)
-  - [2. Testing Strategy](#2-testing-strategy)
-  - [3. Quality Assurance](#3-quality-assurance)
-- [Testing Architecture](#testing-architecture)
-  - [Current Test Issues](#current-test-issues)
-  - [Target Test Architecture](#target-test-architecture)
-- [Code Quality Standards](#code-quality-standards)
-  - [FLEXT Standards Compliance](#flext-standards-compliance)
-  - [Type Safety Requirements](#type-safety-requirements)
-  - [Error Handling Standards](#error-handling-standards)
-- [Development Tools](#development-tools)
-  - [IDE Configuration](#ide-configuration)
-  - [Git Hooks](#git-hooks)
-  - [Debugging Configuration](#debugging-configuration)
-- [Common Development Tasks](#common-development-tasks)
-  - [Adding New WMS Entity](#adding-new-wms-entity)
-  - [Debugging Common Issues](#debugging-common-issues)
-- [Contributing Guidelines](#contributing-guidelines)
-  - [Code Review Checklist](#code-review-checklist)
-  - [Pull Request Process](#pull-request-process)
-- [Migration Considerations](#migration-considerations)
-  - [Current → Target Architecture](#current-target-architecture)
+- [Development Documentation](#development-documentation)
+  - [Overview](#overview)
+  - [Development Documentation Structure](#development-documentation-structure)
+    - [Testing Documentation](#testing-documentation)
+    - [Quality Standards](#quality-standards)
+    - [Development Workflows](#development-workflows)
+    - [Refactoring Documentation](#refactoring-documentation)
+  - [Current Development Status](#current-development-status)
+    - [Critical Issues](#critical-issues)
+    - [Quality Metrics](#quality-metrics)
+  - [Development Environment Setup](#development-environment-setup)
+    - [Prerequisites](#prerequisites)
+    - [Quick Setup](#quick-setup)
+    - [Development Dependencies](#development-dependencies)
+  - [Development Workflow](#development-workflow)
+    - [1. Feature Development](#1-feature-development)
+    - [2. Testing Strategy](#2-testing-strategy)
+    - [3. Quality Assurance](#3-quality-assurance)
+  - [Testing Architecture](#testing-architecture)
+    - [Current Test Issues](#current-test-issues)
+      - [Disabled Tests Analysis](#disabled-tests-analysis)
+      - [Working Test Structure](#working-test-structure)
+    - [Target Test Architecture](#target-test-architecture)
+  - [Code Quality Standards](#code-quality-standards)
+    - [FLEXT Standards Compliance](#flext-standards-compliance)
+    - [Type Safety Requirements](#type-safety-requirements)
+    - [Error Handling Standards](#error-handling-standards)
+  - [Development Tools](#development-tools)
+    - [IDE Configuration](#ide-configuration)
+    - [Git Hooks](#git-hooks)
+    - [Debugging Configuration](#debugging-configuration)
+  - [Common Development Tasks](#common-development-tasks)
+    - [Adding New WMS Entity](#adding-new-wms-entity)
+    - [Debugging Common Issues](#debugging-common-issues)
+      - [Authentication Issues](#authentication-issues)
+      - [Schema Issues](#schema-issues)
+      - [Performance Issues](#performance-issues)
+  - [Contributing Guidelines](#contributing-guidelines)
+    - [Code Review Checklist](#code-review-checklist)
+    - [Pull Request Process](#pull-request-process)
+  - [Migration Considerations](#migration-considerations)
+    - [Current → Target Architecture](#current--target-architecture)
 <!-- TOC END -->
 
 ## Overview
@@ -82,11 +88,11 @@ This directory contains comprehensive development documentation for FLEXT Tap Or
 
 ### Quality Metrics
 
-| Metric              | Current              | Target  | Status                 |
-| ------------------- | -------------------- | ------- | ---------------------- |
+| Metric              | Current              | Target  | Status                  |
+| ------------------- | -------------------- | ------- | ----------------------- |
 | **Test Coverage**   | ~70% (with disabled) | 100%    | ❌ Requires work        |
 | **Code Complexity** | Very High            | Low     | ❌ Requires refactoring |
-| **Type Coverage**   | ~85%                 | 100%    | ⚠️ Needs improvement   |
+| **Type Coverage**   | ~85%                 | 100%    | ⚠️ Needs improvement  |
 | **Security Scan**   | Clean                | Clean   | ✅ Passing              |
 | **Lint Score**      | Passing              | Passing | ✅ Passing              |
 
@@ -245,25 +251,8 @@ tests/
 
 ```python notest
 # Example of FLEXT-compliant code
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
 from pydantic import u.Field, validator
 
@@ -320,25 +309,8 @@ def extract_records(
 ### Error Handling Standards
 
 ```python notest
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class WMSTapError(e.Error):

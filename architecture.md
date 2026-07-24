@@ -1,42 +1,47 @@
 # Architecture Documentation
 
 <!-- TOC START -->
-- [Overview](#overview)
-- [Current Architecture Issues](#current-architecture-issues)
-  - [Critical Problems Identified](#critical-problems-identified)
-  - [Current Component Structure](#current-component-structure)
-- [Target Architecture](#target-architecture)
-  - [Simplified Component Structure](#simplified-component-structure)
-  - [Architecture Layers](#architecture-layers)
-  - [FLEXT Ecosystem Integration](#flext-ecosystem-integration)
-- [Design Patterns](#design-patterns)
-  - [1. Clean Architecture Compliance](#1-clean-architecture-compliance)
-  - [2. Singer SDK Integration](#2-singer-sdk-integration)
-  - [3. Configuration Management](#3-configuration-management)
-- [Data Flow Architecture](#data-flow-architecture)
-  - [1. Discovery Flow](#1-discovery-flow)
-  - [2. Extraction Flow](#2-extraction-flow)
-- [Performance Architecture](#performance-architecture)
-  - [1. Pagination Strategy](#1-pagination-strategy)
-  - [2. Caching Strategy](#2-caching-strategy)
-  - [3. Connection Management](#3-connection-management)
-- [Error Handling Architecture](#error-handling-architecture)
-  - [1. Exception Hierarchy](#1-exception-hierarchy)
-  - [2. Error Recovery](#2-error-recovery)
-- [Testing Architecture](#testing-architecture)
-  - [1. Test Structure](#1-test-structure)
-  - [2. Mock Strategy](#2-mock-strategy)
-- [Security Architecture](#security-architecture)
-  - [1. Authentication Integration](#1-authentication-integration)
-  - [2. Configuration Security](#2-configuration-security)
-- [Migration Strategy](#migration-strategy)
-  - [Phase 1: Emergency Simplification (Week 1)](#phase-1-emergency-simplification-week-1)
-  - [Phase 2: Structural Refactoring (Weeks 2-3)](#phase-2-structural-refactoring-weeks-2-3)
-  - [Phase 3: Performance Optimization (Week 4)](#phase-3-performance-optimization-week-4)
-- [Quality Metrics](#quality-metrics)
-  - [Target Metrics](#target-metrics)
-  - [Quality Gates](#quality-gates)
-- [Related Documentation](#related-documentation)
+- [Architecture Documentation](#architecture-documentation)
+  - [Overview](#overview)
+  - [Current Architecture Issues](#current-architecture-issues)
+    - [Critical Problems Identified](#critical-problems-identified)
+    - [Current Component Structure](#current-component-structure)
+  - [Target Architecture](#target-architecture)
+    - [Simplified Component Structure](#simplified-component-structure)
+    - [Architecture Layers](#architecture-layers)
+      - [1. Presentation Layer](#1-presentation-layer)
+      - [2. Application Layer](#2-application-layer)
+      - [3. Domain Layer](#3-domain-layer)
+      - [4. Infrastructure Layer](#4-infrastructure-layer)
+    - [FLEXT Ecosystem Integration](#flext-ecosystem-integration)
+  - [Design Patterns](#design-patterns)
+    - [1. Clean Architecture Compliance](#1-clean-architecture-compliance)
+    - [2. Singer SDK Integration](#2-singer-sdk-integration)
+    - [3. Configuration Management](#3-configuration-management)
+  - [Data Flow Architecture](#data-flow-architecture)
+    - [1. Discovery Flow](#1-discovery-flow)
+    - [2. Extraction Flow](#2-extraction-flow)
+  - [Performance Architecture](#performance-architecture)
+    - [1. Pagination Strategy](#1-pagination-strategy)
+    - [2. Caching Strategy](#2-caching-strategy)
+    - [3. Connection Management](#3-connection-management)
+  - [Error Handling Architecture](#error-handling-architecture)
+    - [1. Exception Hierarchy](#1-exception-hierarchy)
+    - [2. Error Recovery](#2-error-recovery)
+  - [Testing Architecture](#testing-architecture)
+    - [1. Test Structure](#1-test-structure)
+    - [2. Mock Strategy](#2-mock-strategy)
+  - [Security Architecture](#security-architecture)
+    - [1. Authentication Integration](#1-authentication-integration)
+    - [2. Configuration Security](#2-configuration-security)
+  - [Migration Strategy](#migration-strategy)
+    - [Phase 1: Emergency Simplification (Week 1)](#phase-1-emergency-simplification-week-1)
+    - [Phase 2: Structural Refactoring (Weeks 2-3)](#phase-2-structural-refactoring-weeks-2-3)
+    - [Phase 3: Performance Optimization (Week 4)](#phase-3-performance-optimization-week-4)
+  - [Quality Metrics](#quality-metrics)
+    - [Target Metrics](#target-metrics)
+    - [Quality Gates](#quality-gates)
+  - [Related Documentation](#related-documentation)
 <!-- TOC END -->
 
 ## Overview
@@ -239,25 +244,8 @@ class FlextTapOracleWmsStream(RESTStream):
 
 ```python notest
 from pydantic import BaseModel, u.Field
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class WMSConfig(FlextSettings):
@@ -387,25 +375,8 @@ class WMSConnectionManager:
 ### 1. Exception Hierarchy
 
 ```python notest
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class WMSTapError(e.Error):

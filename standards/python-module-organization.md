@@ -1,45 +1,49 @@
 # Python Module Organization & Semantic Patterns
 
 <!-- TOC START -->
-- [🏗️ **Module Architecture Overview**](#module-architecture-overview)
-  - [**Core Design Principles**](#core-design-principles)
-- [📁 **Target Module Structure & Responsibilities**](#target-module-structure-responsibilities)
-  - [**Current State Analysis**](#current-state-analysis)
-  - [**Target Simplified Structure**](#target-simplified-structure)
-- [📦 **Module Definitions & Semantic Patterns**](#module-definitions-semantic-patterns)
-  - [**Foundation Layer - Public API**](#foundation-layer-public-api)
-  - [**Application Layer - Tap Implementation**](#application-layer-tap-implementation)
-  - [**Application Layer - Stream Implementation**](#application-layer-stream-implementation)
-  - [**Infrastructure Layer - Configuration**](#infrastructure-layer-configuration)
-  - [**Domain Layer - Discovery & Schema**](#domain-layer-discovery-schema)
-  - [**Infrastructure Layer - Authentication & Utilities**](#infrastructure-layer-authentication-utilities)
-- [🎯 **Semantic Naming Conventions**](#semantic-naming-conventions)
-  - [**Module Naming Standards**](#module-naming-standards)
-  - [**Class Naming Standards**](#class-naming-standards)
-  - [**Function and Method Naming**](#function-and-method-naming)
-- [📦 **Import Patterns & Dependencies**](#import-patterns-dependencies)
-  - [**Dependency Hierarchy**](#dependency-hierarchy)
-  - [**Standard Import Patterns**](#standard-import-patterns)
-  - [**Anti-Patterns (Forbidden)**](#anti-patterns-forbidden)
-- [🏛️ **Architectural Patterns for Singer Taps**](#architectural-patterns-for-singer-taps)
-  - [**Singer SDK Integration Pattern**](#singer-sdk-integration-pattern)
-  - [**FLEXT Integration Pattern**](#flext-integration-pattern)
-  - [**Clean Architecture Boundaries**](#clean-architecture-boundaries)
-- [🔄 **Migration Strategy from Current Architecture**](#migration-strategy-from-current-architecture)
-  - [**Refactoring Approach**](#refactoring-approach)
-  - [**Migration Validation**](#migration-validation)
-- [🧪 **Testing Module Organization**](#testing-module-organization)
-  - [**Test Structure Alignment**](#test-structure-alignment)
-  - [**Testing Patterns**](#testing-patterns)
-- [📏 **Quality Standards & Validation**](#quality-standards-validation)
-  - [**Module Quality Metrics**](#module-quality-metrics)
-  - [**Documentation Standards**](#documentation-standards)
-- [🌐 **FLEXT Ecosystem Integration Standards**](#flext-ecosystem-integration-standards)
-  - [**Consistent Pattern Usage**](#consistent-pattern-usage)
-  - [**Library Integration**](#library-integration)
-- [📋 **Module Creation Checklist**](#module-creation-checklist)
-  - [**New Module Standards**](#new-module-standards)
-  - [**Refactoring Validation**](#refactoring-validation)
+- [Python Module Organization \& Semantic Patterns](#python-module-organization--semantic-patterns)
+  - [🏗️ **Module Architecture Overview**](#️-module-architecture-overview)
+    - [**Core Design Principles**](#core-design-principles)
+  - [📁 **Target Module Structure \& Responsibilities**](#-target-module-structure--responsibilities)
+    - [**Current State Analysis**](#current-state-analysis)
+    - [**Target Simplified Structure**](#target-simplified-structure)
+  - [📦 **Module Definitions \& Semantic Patterns**](#-module-definitions--semantic-patterns)
+    - [**Foundation Layer - Public API**](#foundation-layer---public-api)
+    - [**Application Layer - Tap Implementation**](#application-layer---tap-implementation)
+    - [**Application Layer - Stream Implementation**](#application-layer---stream-implementation)
+    - [**Infrastructure Layer - Configuration**](#infrastructure-layer---configuration)
+    - [**Domain Layer - Discovery \& Schema**](#domain-layer---discovery--schema)
+    - [**Infrastructure Layer - Authentication \& Utilities**](#infrastructure-layer---authentication--utilities)
+  - [🎯 **Semantic Naming Conventions**](#-semantic-naming-conventions)
+    - [**Module Naming Standards**](#module-naming-standards)
+    - [**Class Naming Standards**](#class-naming-standards)
+    - [**Function and Method Naming**](#function-and-method-naming)
+  - [📦 **Import Patterns \& Dependencies**](#-import-patterns--dependencies)
+    - [**Dependency Hierarchy**](#dependency-hierarchy)
+    - [**Standard Import Patterns**](#standard-import-patterns)
+    - [**Anti-Patterns (Forbidden)**](#anti-patterns-forbidden)
+  - [🏛️ **Architectural Patterns for Singer Taps**](#️-architectural-patterns-for-singer-taps)
+    - [**Singer SDK Integration Pattern**](#singer-sdk-integration-pattern)
+    - [**FLEXT Integration Pattern**](#flext-integration-pattern)
+    - [**Clean Architecture Boundaries**](#clean-architecture-boundaries)
+  - [🔄 **Migration Strategy from Current Architecture**](#-migration-strategy-from-current-architecture)
+    - [**Refactoring Approach**](#refactoring-approach)
+      - [**Phase 1: Elimination (Week 1)**](#phase-1-elimination-week-1)
+      - [**Phase 2: Consolidation (Week 2)**](#phase-2-consolidation-week-2)
+      - [**Phase 3: Integration (Week 3)**](#phase-3-integration-week-3)
+    - [**Migration Validation**](#migration-validation)
+  - [🧪 **Testing Module Organization**](#-testing-module-organization)
+    - [**Test Structure Alignment**](#test-structure-alignment)
+    - [**Testing Patterns**](#testing-patterns)
+  - [📏 **Quality Standards \& Validation**](#-quality-standards--validation)
+    - [**Module Quality Metrics**](#module-quality-metrics)
+    - [**Documentation Standards**](#documentation-standards)
+  - [🌐 **FLEXT Ecosystem Integration Standards**](#-flext-ecosystem-integration-standards)
+    - [**Consistent Pattern Usage**](#consistent-pattern-usage)
+    - [**Library Integration**](#library-integration)
+  - [📋 **Module Creation Checklist**](#-module-creation-checklist)
+    - [**New Module Standards**](#new-module-standards)
+    - [**Refactoring Validation**](#refactoring-validation)
 <!-- TOC END -->
 
 **FLEXT Tap Oracle WMS - Singer Tap Module Architecture & Best Practices**
@@ -184,25 +188,8 @@ FLEXT ecosystem integration for configuration, logging, and error handling.
 """
 
 from singer_sdk import Tap
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms import WMSConfig
@@ -287,25 +274,8 @@ pagination, error handling, and schema management.
 
 from singer_sdk.streams import RESTStream
 from singer_sdk.pagination import BaseHATEOASPaginator
-from flext_core import FlextBus
-from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u, TAnyDict
+from flext_cli import u
+from flext_core import FlextSettings, TAnyDict
 
 from flext_tap_oracle_wms import SchemaGenerator
 
@@ -398,25 +368,8 @@ validation, and FLEXT ecosystem integration.
 
 from typing import List, Optional
 from pydantic import u.Field, validator
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class WMSConfig(FlextSettings):
@@ -509,25 +462,8 @@ using FLEXT ecosystem patterns and error handling.
 """
 
 from typing import List, Dict
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 
@@ -572,25 +508,8 @@ and validation rules.
 """
 
 from typing import Dict
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient
 
 from flext_tap_oracle_wms import EntityDiscovery
@@ -687,25 +606,8 @@ Defines tap-specific exceptions while leveraging FLEXT core
 exception hierarchy for consistency.
 """
 
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 
 class WMSTapError(e.Error):
@@ -825,25 +727,8 @@ from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
 # FLEXT ecosystem imports
-from flext_core import FlextBus
-from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u, TAnyDict
+from flext_cli import u
+from flext_core import FlextSettings, TAnyDict
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # Project imports (relative)
@@ -1000,25 +885,8 @@ ______________________________________________________________________
 
 ```python notest
 # INTEGRATE with FLEXT ecosystem:
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # REMOVE custom implementations:
@@ -1154,25 +1022,8 @@ ______________________________________________________________________
 
 ```python notest
 # ✅ Use FLEXT patterns consistently
-from flext_core import FlextBus
+from flext_cli import u
 from flext_core import FlextSettings
-from flext_core import FlextConstants
-from flext_core import FlextContainer
-from flext_core import FlextContext
-from flext_core import d
-from flext_core import FlextDispatcher
-from flext_core import e
-from flext_core import h
-from flext_core import x
-from flext_core import FlextModels
-from flext_core import FlextProcessors
-from flext_core import p
-from flext_core import FlextRegistry
-from flext_core import r, p
-from flext_core import u
-from flext_core import s
-from flext_core import t
-from flext_core import u
 
 class WMSConfig(FlextSettings):          # Configuration
     pass
