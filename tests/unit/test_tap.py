@@ -21,13 +21,12 @@ class TestsFlextTapOracleWmsTap:
     """Validate tap behavior against current implementation contract."""
 
     def test_tap_initialization_with_config(
-        self,
-        sample_config: FlextTapOracleWmsSettings,
+        self, sample_config: FlextTapOracleWmsSettings
     ) -> None:
         """Tap stores validated settings and starts with lazy client."""
         with patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
             tap = FlextTapOracleWms(
-                config=sample_config.TapOracleWms.model_dump(mode="json"),
+                config=sample_config.TapOracleWms.model_dump(mode="json")
             )
         tm.that(tap.name, eq="flext-tap-oracle-wms")
 
@@ -55,8 +54,7 @@ class TestsFlextTapOracleWmsTap:
 
     @patch("flext_tap_oracle_wms.tap.FlextOracleWmsUtilities.OracleWms.Client")
     def test_wms_client_property_lazy_initialization(
-        self,
-        mock_client_class: MagicMock,
+        self, mock_client_class: MagicMock
     ) -> None:
         """Client is created only once and reused after first access."""
         mock_client = MagicMock()
@@ -68,7 +66,7 @@ class TestsFlextTapOracleWmsTap:
                 "base_url": "https://test.wms.example.com",
                 "username": "test_user",
                 "password": "test_password",
-            },
+            }
         )
         client_1 = tap.wms_client
         client_2 = tap.wms_client
@@ -89,7 +87,7 @@ class TestsFlextTapOracleWmsTap:
                     "base_url": "https://test.wms.example.com",
                     "username": "test_user",
                     "password": "test_password",
-                },
+                }
             )
 
     def test_discover_catalog_success(self, tap_instance: FlextTapOracleWms) -> None:
@@ -125,15 +123,17 @@ class TestsFlextTapOracleWmsTap:
         tm.that(result.error, eq="boom")
 
     def test_discover_streams_empty_when_catalog_fails(
-        self,
-        tap_instance: FlextTapOracleWms,
+        self, tap_instance: FlextTapOracleWms
     ) -> None:
         """Stream discovery raises ConfigurationError when catalog discovery fails."""
-        with patch.object(
-            tap_instance,
-            "discovercatalog_typed",
-            return_value=r[p.Meltano.SingerCatalog].fail("no catalog"),
-        ), pytest.raises(FlextTapOracleWmsConfigurationError):
+        with (
+            patch.object(
+                tap_instance,
+                "discovercatalog_typed",
+                return_value=r[p.Meltano.SingerCatalog].fail("no catalog"),
+            ),
+            pytest.raises(FlextTapOracleWmsConfigurationError),
+        ):
             tap_instance.discover_streams()
 
     def test_discover_streams_success(self, tap_instance: FlextTapOracleWms) -> None:
@@ -152,8 +152,8 @@ class TestsFlextTapOracleWmsTap:
                     "table_name": None,
                     "database_name": None,
                     "row_count": None,
-                }),
-            ],
+                })
+            ]
         )
         with patch.object(
             tap_instance,
@@ -172,8 +172,7 @@ class TestsFlextTapOracleWmsTap:
         mock_sync.assert_called_once()
 
     def test_execute_with_message_unsupported(
-        self,
-        tap_instance: FlextTapOracleWms,
+        self, tap_instance: FlextTapOracleWms
     ) -> None:
         """Custom message execution is not supported by the tap."""
         result = tap_instance.execute("some message")
@@ -190,8 +189,7 @@ class TestsFlextTapOracleWmsTap:
         tm.that(value, lacks="password")
 
     def test_get_implementation_name_and_version(
-        self,
-        tap_instance: FlextTapOracleWms,
+        self, tap_instance: FlextTapOracleWms
     ) -> None:
         """Implementation metadata methods return stable, non-empty values."""
         tm.that(tap_instance.get_implementation_name(), eq="FLEXT Oracle WMS Tap")

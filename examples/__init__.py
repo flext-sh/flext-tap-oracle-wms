@@ -21,28 +21,9 @@ if TYPE_CHECKING:
         u,
         x as x,
     )
-_LAZY_IMPORTS = build_lazy_import_map(
-    {
-        "flext_tap_oracle_wms": (
-            "c",
-            "d",
-            "e",
-            "h",
-            "m",
-            "p",
-            "r",
-            "s",
-            "t",
-            "u",
-            "x",
-        ),
-    },
-)
+_LAZY_IMPORTS = build_lazy_import_map({
+    "flext_tap_oracle_wms": ("c", "d", "e", "h", "m", "p", "r", "s", "t", "u", "x")
+})
 
 
-install_lazy_exports(
-    __name__,
-    globals(),
-    _LAZY_IMPORTS,
-    publish_all=False,
-)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)

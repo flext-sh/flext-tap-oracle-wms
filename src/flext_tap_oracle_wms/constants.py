@@ -41,9 +41,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         SCHEMA_TYPE_BOOLEAN: Final[str] = "boolean"
         SCHEMA_TYPE_INTEGER: Final[str] = "integer"
 
-        class Authentication(
-            FlextOracleWmsConstants.OracleWms.Authentication,
-        ):
+        class Authentication(FlextOracleWmsConstants.OracleWms.Authentication):
             """Merged authentication constants from both parent hierarchies."""
 
         class Extraction:

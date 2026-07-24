@@ -22,7 +22,7 @@ class TestsFlextTapOracleWmsTapInitialization:
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
-                },
+                }
             )
         tm.that(str(tap.settings["base_url"]), has="test.example.com")
         tm.that(tap.settings["username"], eq="test")
@@ -35,14 +35,17 @@ class TestsFlextTapOracleWmsTapInitialization:
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
-                },
+                }
             )
 
-        with patch.object(
-            tap,
-            "discovercatalog_typed",
-            return_value=r.fail("discovery unavailable"),
-        ), pytest.raises(FlextTapOracleWmsConfigurationError):
+        with (
+            patch.object(
+                tap,
+                "discovercatalog_typed",
+                return_value=r.fail("discovery unavailable"),
+            ),
+            pytest.raises(FlextTapOracleWmsConfigurationError),
+        ):
             tap.discover_streams()
 
     def test_discover_streams_uses_client_entities(self) -> None:
@@ -59,7 +62,7 @@ class TestsFlextTapOracleWmsTapInitialization:
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
-                },
+                }
             )
         tap._wms_client = mock_client
         stream_names = [stream.name for stream in tap.discover_streams()]
@@ -74,7 +77,7 @@ class TestsFlextTapOracleWmsTapInitialization:
                     "base_url": "https://test.example.com",
                     "username": "test",
                     "password": "test",
-                },
+                }
             )
         with patch.object(tap, "sync_all") as mock_sync:
             result = tap.execute()

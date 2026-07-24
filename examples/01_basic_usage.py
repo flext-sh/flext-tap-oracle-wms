@@ -31,13 +31,11 @@ def main() -> int:
             "verify_ssl": True,
             "include_entities": ["inventory", "locations", "orders"],
             "enable_request_logging": True,
-        },
+        }
     )
     # NOTE (multi-agent): mro-u3eu — singer_sdk.Tap.__init__ takes the FLAT
     # Singer config via `config=`; pass the namespaced settings payload.
-    tap = FlextTapOracleWms(
-        config=settings.TapOracleWms.model_dump(mode="json"),
-    )
+    tap = FlextTapOracleWms(config=settings.TapOracleWms.model_dump(mode="json"))
     validation_result = tap.validate_configuration()
     if not validation_result.success:
         return 1

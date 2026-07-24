@@ -41,7 +41,7 @@ def performance_config() -> FlextTapOracleWmsSettings:
             "page_size": 100,
             "verify_ssl": True,
             "enable_rate_limiting": False,
-        },
+        }
     )
 
 
@@ -49,7 +49,7 @@ def performance_config() -> FlextTapOracleWmsSettings:
 def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance for performance testing."""
     return FlextTapOracleWms(
-        config=performance_config.TapOracleWms.model_dump(mode="json"),
+        config=performance_config.TapOracleWms.model_dump(mode="json")
     )
 
 
@@ -58,7 +58,7 @@ class TestsFlextTapOracleWmsExtractionPerformance:
     """Test data extraction performance."""
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_catalog_discovery_performance(self, tap: FlextTapOracleWms) -> None:
         """Benchmark catalog discovery time."""
@@ -71,12 +71,10 @@ class TestsFlextTapOracleWmsExtractionPerformance:
 
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_pagination_performance(
-        self,
-        tap: FlextTapOracleWms,
-        page_size: int,
+        self, tap: FlextTapOracleWms, page_size: int
     ) -> None:
         """Benchmark different page sizes."""
         tap.initialize()
@@ -95,7 +93,7 @@ class TestsFlextTapOracleWmsExtractionPerformance:
         _ = time.time() - start_time
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_concurrent_streams_extraction(self, tap: FlextTapOracleWms) -> None:
         """Test extracting multiple streams concurrently."""
@@ -115,7 +113,7 @@ class TestsFlextTapOracleWmsExtractionPerformance:
         _ = time.time() - start_time
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_memory_usage_during_large_extraction(self, tap: FlextTapOracleWms) -> None:
         """Test memory usage during large extractions."""
@@ -137,21 +135,20 @@ class TestsFlextTapOracleWmsExtractionPerformance:
     """Test rate limiting impact on performance."""
 
     @pytest.mark.skip(
-        reason="Integration test - requires live WMS or comprehensive mocking",
+        reason="Integration test - requires live WMS or comprehensive mocking"
     )
     def test_rate_limiting_impact(
-        self,
-        performance_config: FlextTapOracleWmsSettings,
+        self, performance_config: FlextTapOracleWmsSettings
     ) -> None:
         """Compare performance with and without rate limiting."""
         config_no_limit = FlextTapOracleWmsSettings(
             TapOracleWms={
                 **performance_config.TapOracleWms.model_dump(),
                 "enable_rate_limiting": False,
-            },
+            }
         )
         tap_no_limit = FlextTapOracleWms(
-            config=config_no_limit.TapOracleWms.model_dump(mode="json"),
+            config=config_no_limit.TapOracleWms.model_dump(mode="json")
         )
         tap_no_limit.initialize()
         config_with_limit = FlextTapOracleWmsSettings(
@@ -159,10 +156,10 @@ class TestsFlextTapOracleWmsExtractionPerformance:
                 **performance_config.TapOracleWms.model_dump(),
                 "enable_rate_limiting": True,
                 "max_requests_per_minute": 60,
-            },
+            }
         )
         tap_with_limit = FlextTapOracleWms(
-            config=config_with_limit.TapOracleWms.model_dump(mode="json"),
+            config=config_with_limit.TapOracleWms.model_dump(mode="json")
         )
         tap_with_limit.initialize()
         for tap, _label in [(tap_no_limit, "No Limit"), (tap_with_limit, "With Limit")]:

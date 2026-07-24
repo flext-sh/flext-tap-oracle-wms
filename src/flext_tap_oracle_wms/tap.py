@@ -22,25 +22,13 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         "properties": u.normalize_to_json_value({
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
             "username": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
-            "password": {
-                "type": c.TapOracleWms.SCHEMA_TYPE_STRING,
-                "secret": True,
-            },
-            "api_version": {
-                "type": c.TapOracleWms.SCHEMA_TYPE_STRING,
-                "default": "v1",
-            },
-            "page_size": {
-                "type": c.TapOracleWms.SCHEMA_TYPE_INTEGER,
-                "default": 100,
-            },
-            "verify_ssl": {
-                "type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN,
-                "default": True,
-            },
+            "password": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "secret": True},
+            "api_version": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "default": "v1"},
+            "page_size": {"type": c.TapOracleWms.SCHEMA_TYPE_INTEGER, "default": 100},
+            "verify_ssl": {"type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN, "default": True},
         }),
         "required": u.normalize_to_json_value(
-            list(c.TapOracleWms.REQUIRED_CONFIG_FIELDS),
+            list(c.TapOracleWms.REQUIRED_CONFIG_FIELDS)
         ),
     }
 
@@ -55,19 +43,17 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         raw_catalog_dict: t.JsonMapping = getattr(super(), "catalog_dict", {})
         try:
             validated_catalog = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-                raw_catalog_dict,
+                raw_catalog_dict
             )
         except c.ValidationError as exc:
             msg = f"Invalid catalog_dict format: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
         return self._to_typed_catalog(
-            u.TapOracleWms.MappingConversion.safe_str_dict(validated_catalog),
+            u.TapOracleWms.MappingConversion.safe_str_dict(validated_catalog)
         )
 
     @staticmethod
-    def _to_typed_catalog(
-        raw: t.JsonMapping,
-    ) -> t.MutableJsonMapping:
+    def _to_typed_catalog(raw: t.JsonMapping) -> t.MutableJsonMapping:
         """Convert a raw catalog mapping into a validated Singer catalog dict."""
         raw_streams = raw.get("streams")
         raw_streams_seq: t.JsonList = (
@@ -81,19 +67,18 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             if not isinstance(raw_stream, Mapping):
                 continue
             s_dict: t.JsonMapping = u.TapOracleWms.MappingConversion.safe_str_mapping(
-                raw_stream,
+                raw_stream
             )
             metadata_raw: t.JsonValue = s_dict.get("metadata", [])
             metadata_entries: MutableSequence[p.Meltano.SingerCatalogMetadata] = []
             if isinstance(metadata_raw, Sequence) and not isinstance(
-                metadata_raw,
-                t.STR_BYTES_TYPES,
+                metadata_raw, t.STR_BYTES_TYPES
             ):
                 for raw_entry in metadata_raw:
                     if not isinstance(raw_entry, Mapping):
                         continue
                     entry_dict = u.TapOracleWms.MappingConversion.safe_str_mapping(
-                        raw_entry,
+                        raw_entry
                     )
                     breadcrumb_raw: t.JsonValue = entry_dict.get("breadcrumb", [])
                     metadata_map_raw: t.JsonValue = entry_dict.get("metadata", {})
@@ -104,11 +89,11 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                             and not isinstance(breadcrumb_raw, t.STR_BYTES_TYPES)
                             else [],
                             metadata=u.TapOracleWms.MappingConversion.safe_str_dict(
-                                metadata_map_raw,
+                                metadata_map_raw
                             )
                             if isinstance(metadata_map_raw, Mapping)
                             else {},
-                        ),
+                        )
                     )
             schema_raw: t.JsonValue = s_dict.get("schema", {})
             stream_name = str(s_dict.get("stream", ""))
@@ -133,14 +118,12 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                         "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
                         "stream": stream_name,
                         "metadata": metadata_entries,
-                    },
-                ),
+                    }
+                )
             )
         catalog = m.Meltano.SingerCatalog(streams=stream_entries)
         dumped_catalog = catalog.model_dump(
-            by_alias=True,
-            exclude_none=True,
-            mode="json",
+            by_alias=True, exclude_none=True, mode="json"
         )
         return t.json_dict_adapter().validate_python(dumped_catalog)
 
@@ -162,7 +145,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                     ),
                     "timeout": float(self.flext_config.TapOracleWms.timeout),
                     "retry_attempts": self.flext_config.TapOracleWms.max_retries,
-                },
+                }
             })
             client = FlextOracleWmsUtilities.OracleWms.Client(settings=wms_settings)
             start_result = client.start()
@@ -182,7 +165,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.failure:
             return r[p.Meltano.SingerCatalog].fail(
-                discovery_result.error or "Discovery failed",
+                discovery_result.error or "Discovery failed"
             )
         entities: t.StrSequence = list(discovery_result.value)
         streams: list[p.Meltano.SingerCatalogEntry] = []
@@ -195,7 +178,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             if entry_result.failure:
                 return r[p.Meltano.SingerCatalog].fail(
                     entry_result.error
-                    or f"Failed to build Singer catalog entry for {entity}",
+                    or f"Failed to build Singer catalog entry for {entity}"
                 )
             streams.append(
                 entry_result.value.model_copy(
@@ -208,13 +191,13 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                                     "forced-replication-method": "FULL_TABLE",
                                     "table-key-properties": ["id"],
                                 },
-                            ),
-                        ],
-                    },
-                ),
+                            )
+                        ]
+                    }
+                )
             )
         return r[p.Meltano.SingerCatalog].ok(
-            m.Meltano.SingerCatalog(type="CATALOG", streams=streams),
+            m.Meltano.SingerCatalog(type="CATALOG", streams=streams)
         )
 
     @override
