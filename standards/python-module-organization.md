@@ -68,7 +68,7 @@ ______________________________________________________________________
 
 ### **Current State Analysis**
 
-```python notest
+```python
 # CURRENT OVER-ENGINEERED STRUCTURE (26 files, 8,179 lines)
 src/flext_tap_oracle_wms/
 ├── tap.py                    # 1,042 lines - BLOATED main tap class
@@ -109,7 +109,7 @@ src/flext_tap_oracle_wms/
 
 Following FLEXT Core patterns and Singer SDK best practices:
 
-```python notest
+```python
 # TARGET SIMPLIFIED STRUCTURE (6-8 files, ~800 lines total)
 src/flext_tap_oracle_wms/
 ├── __init__.py               # 🎯 Public API gateway (~20 lines)
@@ -137,7 +137,7 @@ ______________________________________________________________________
 
 ### **Foundation Layer - Public API**
 
-```python notest
+```python
 # __init__.py - Public API Gateway
 """
 FLEXT Tap Oracle WMS - Singer-compliant Oracle WMS data extraction.
@@ -145,6 +145,9 @@ FLEXT Tap Oracle WMS - Singer-compliant Oracle WMS data extraction.
 This module provides the main entry points for the Oracle WMS tap,
 following Singer SDK patterns and FLEXT ecosystem standards.
 """
+
+from __future__ import annotations
+from flext_core import t
 
 from flext_tap_oracle_wms import FlextTapOracleWms
 from flext_tap_oracle_wms import WMSConfig
@@ -155,30 +158,27 @@ __all__: t.StringList = ["FlextTapOracleWms", "WMSConfig", "__version__"]
 # __version__.py - Version Management
 """Version information for FLEXT Tap Oracle WMS."""
 
-from typing import Final, cast
 
 from flext_core import build_metadata_exports
 
 _metadata = build_metadata_exports(__file__)
 
-__version__: Final[str] = cast(str, _metadata["__version__"])
-__version_info__: Final[tuple[int | str, ...]] = cast(
-    tuple[int | str, ...], _metadata["__version_info__"]
-)
+__version__: str = _metadata["__version__"]
+__version_info__: tuple[int | str, ...] = _metadata["__version_info__"]
 ```
 
 **Responsibility**: Establish clean public API and version management.
 
 **Import Pattern**:
 
-```python notest
+```python
 # Standard ecosystem usage
 from flext_tap_oracle_wms import FlextTapOracleWms, WMSConfig
 ```
 
 ### **Application Layer - Tap Implementation**
 
-```python notest
+```python
 # tap.py - Main Tap Class (~150 lines)
 """
 Oracle WMS Tap implementation using Singer SDK and FLEXT patterns.
@@ -186,6 +186,8 @@ Oracle WMS Tap implementation using Singer SDK and FLEXT patterns.
 Implements the main tap class following Singer specification with
 FLEXT ecosystem integration for configuration, logging, and error handling.
 """
+
+from __future__ import annotations
 
 from singer_sdk import Tap
 from flext_cli import u
@@ -228,7 +230,7 @@ class FlextTapOracleWms(Tap):
             )
         return self._wms_client
 
-    def discover_streams(self) -> List[Stream]:
+    def discover_streams(self) -> list[Stream]:
         """Discover available streams from WMS API."""
         discovery = EntityDiscovery(self.wms_client)
         entities_result = discovery.discover_entities()
@@ -247,7 +249,7 @@ class FlextTapOracleWms(Tap):
 
 **Usage Pattern**:
 
-```python notest
+```python
 from flext_tap_oracle_wms import FlextTapOracleWms
 
 settings = {
@@ -263,7 +265,7 @@ streams = tap.discover_streams()
 
 ### **Application Layer - Stream Implementation**
 
-```python notest
+```python
 # streams.py - Stream Definitions (~200 lines)
 """
 Oracle WMS stream implementations using Singer SDK patterns.
@@ -271,6 +273,9 @@ Oracle WMS stream implementations using Singer SDK patterns.
 Implements data extraction streams for various WMS entities with
 pagination, error handling, and schema management.
 """
+
+from __future__ import annotations
+from collections.abc import Iterator
 
 from singer_sdk.streams import RESTStream
 from singer_sdk.pagination import BaseHATEOASPaginator
@@ -283,7 +288,7 @@ from flext_tap_oracle_wms import SchemaGenerator
 class WMSPaginator(BaseHATEOASPaginator):
     """Oracle WMS HATEOAS pagination handler."""
 
-    def get_next_url(self, response) -> Optional[str]:
+    def get_next_url(self, response) -> str | None:
         """Extract next page URL from HATEOAS links."""
         links = response.json().get("links", {})
         return links.get("next")
@@ -357,7 +362,7 @@ class FlextTapOracleWmsStream(RESTStream):
 
 ### **Infrastructure Layer - Configuration**
 
-```python notest
+```python
 # settings.py - Configuration Management (~100 lines)
 """
 Configuration management using FLEXT Core patterns and Pydantic validation.
@@ -366,7 +371,9 @@ Implements unified configuration system with environment variable support,
 validation, and FLEXT ecosystem integration.
 """
 
-from typing import List, Optional
+from __future__ import annotations
+from flext_core import t
+
 from pydantic import u.Field, validator
 from flext_cli import u
 from flext_core import FlextSettings
@@ -389,12 +396,12 @@ class WMSConfig(FlextSettings):
     facility_code: str = u.Field(..., description="WMS facility code")
 
     # Authentication settings
-    username: Optional[str] = u.Field(None, description="Username for basic auth")
-    password: Optional[str] = u.Field(
+    username: str | None = u.Field(None, description="Username for basic auth")
+    password: str | None = u.Field(
         None, description="Password for basic auth", repr=False
     )
-    oauth_client_id: Optional[str] = u.Field(None, description="OAuth2 client ID")
-    oauth_client_secret: Optional[str] = u.Field(
+    oauth_client_id: str | None = u.Field(None, description="OAuth2 client ID")
+    oauth_client_secret: str | None = u.Field(
         None, description="OAuth2 client secret", repr=False
     )
 
@@ -405,7 +412,7 @@ class WMSConfig(FlextSettings):
     page_size: int = u.Field(
         default=1000, le=1250, description="Records per page (max 1250)"
     )
-    start_date: Optional[str] = u.Field(
+    start_date: str | None = u.Field(
         None, description="Start date for incremental extraction (ISO8601)"
     )
 
@@ -452,7 +459,7 @@ class WMSConfig(FlextSettings):
 
 ### **Domain Layer - Discovery & Schema**
 
-```python notest
+```python
 # discovery.py - Entity Discovery (~150 lines)
 """
 Unified entity discovery using flext-oracle-wms library.
@@ -461,7 +468,9 @@ Implements entity discovery and metadata retrieval from Oracle WMS API
 using FLEXT ecosystem patterns and error handling.
 """
 
-from typing import List, Dict
+from __future__ import annotations
+from flext_core import t
+
 from flext_cli import u
 from flext_core import FlextSettings
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
@@ -507,7 +516,6 @@ Converts WMS metadata to Singer JSON schemas with proper type mapping
 and validation rules.
 """
 
-from typing import Dict
 from flext_cli import u
 from flext_core import FlextSettings
 from flext_oracle_wms import FlextOracleWmsClient
@@ -564,7 +572,7 @@ class SchemaGenerator:
 
 ### **Infrastructure Layer - Authentication & Utilities**
 
-```python notest
+```python
 # auth.py - Authentication Wrapper (~50 lines)
 """
 Authentication wrapper using flext-oracle-wms library.
@@ -572,6 +580,8 @@ Authentication wrapper using flext-oracle-wms library.
 Provides authentication abstraction using the FLEXT ecosystem
 WMS library without reimplementing authentication logic.
 """
+
+from __future__ import annotations
 
 from flext_oracle_wms import FlextOracleWmsClient
 from flext_tap_oracle_wms import WMSConfig
@@ -606,7 +616,6 @@ Defines tap-specific exceptions while leveraging FLEXT core
 exception hierarchy for consistency.
 """
 
-from flext_cli import u
 from flext_core import FlextSettings
 
 
@@ -644,7 +653,7 @@ ______________________________________________________________________
 
 Following FLEXT ecosystem patterns with Singer tap specificity:
 
-```python notest
+```python
 # Core modules - descriptive and focused
 tap.py  # Main tap implementation (FlextTapOracleWms)
 streams.py  # Stream definitions (FlextTapOracleWmsStream, WMSPaginator)
@@ -659,7 +668,7 @@ exceptions.py  # Project exceptions (WMSTapError, etc.)
 
 ### **Class Naming Standards**
 
-```python notest
+```python
 # Main classes follow FLEXT + Singer patterns
 FlextTapOracleWms  # Main tap class (Singer SDK pattern)
 WMSConfig  # Configuration (FLEXT pattern)
@@ -679,11 +688,13 @@ WMSDiscoveryError  # Specific error (descriptive)
 
 ### **Function and Method Naming**
 
-```python notest
+```python
 # Action-oriented naming
-def discover_streams() -> List[Stream]:           # Singer SDK pattern
+from __future__ import annotations
+from flext_core import t
+def discover_streams() -> list[Stream]:           # Singer SDK pattern
 def discover_entities() -> p.Result[t.StringList]: # FLEXT pattern
-def generate_schema(entity: str) -> p.Result[Dict]: # Business action
+def generate_schema(entity: str) -> p.Result[dict]: # Business action
 def create_authenticated_client(settings) -> Client:    # Factory pattern
 
 # Property naming
@@ -701,7 +712,7 @@ ______________________________________________________________________
 
 ### **Dependency Hierarchy**
 
-```python notest
+```python
 # Dependencies flow following Clean Architecture
 Application Layer (tap.py, streams.py)
     ↓
@@ -718,10 +729,10 @@ External Libraries (singer-sdk, pydantic)
 
 ### **Standard Import Patterns**
 
-```python notest
+```python
 # External dependencies first
-from typing import List, Dict, Optional, Iterator
 
+from __future__ import annotations
 from pydantic import u.Field, validator
 from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
@@ -741,7 +752,7 @@ from flext_tap_oracle_wms import SchemaGenerator
 
 ### **Anti-Patterns (Forbidden)**
 
-```python notest
+```python
 # ❌ Don't import everything
 from flext_tap_oracle_wms import *
 
@@ -761,15 +772,19 @@ ______________________________________________________________________
 
 ### **Singer SDK Integration Pattern**
 
-```python notest
+```python
 # Standard Singer tap structure
+from __future__ import annotations
+from collections.abc import Iterator
+
+
 class FlextTapOracleWms(Tap):
     """Main tap following Singer SDK patterns."""
 
     name = "tap-oracle-wms"  # Tap identifier
     config_jsonschema = WMSConfig.schema()  # Configuration schema
 
-    def discover_streams(self) -> List[Stream]:  # Required method
+    def discover_streams(self) -> list[Stream]:  # Required method
         """Discover available data streams."""
         pass
 
@@ -793,8 +808,12 @@ class FlextTapOracleWmsStream(RESTStream):
 
 ### **FLEXT Integration Pattern**
 
-```python notest
+```python
 # Configuration using FlextSettings
+from __future__ import annotations
+from flext_core import t
+
+
 class WMSConfig(FlextSettings):
     """Configuration with FLEXT patterns."""
 
@@ -819,8 +838,11 @@ self.logger.info("Starting extraction", entity=entity_name)
 
 ### **Clean Architecture Boundaries**
 
-```python notest
+```python
 # Application Layer - orchestrates business logic
+from __future__ import annotations
+
+
 class FlextTapOracleWms:
     def discover_streams(self):
         # Orchestrates discovery without business logic
@@ -850,7 +872,7 @@ ______________________________________________________________________
 
 #### **Phase 1: Elimination (Week 1)**
 
-```python notest
+```python
 # REMOVE these over-engineered modules:
 ❌ config_mapper.py          # 1,030 lines → merge into settings.py
 ❌ modern_discovery.py       # 791 lines → merge into discovery.py
@@ -870,7 +892,7 @@ ______________________________________________________________________
 
 #### **Phase 2: Consolidation (Week 2)**
 
-```python notest
+```python
 # CONSOLIDATE remaining modules:
 ✅ tap.py           # 1,042 → ~150 lines (remove complexity)
 ✅ streams.py       # 897 → ~200 lines (simplify implementation)
@@ -883,7 +905,7 @@ ______________________________________________________________________
 
 #### **Phase 3: Integration (Week 3)**
 
-```python notest
+```python
 # INTEGRATE with FLEXT ecosystem:
 from flext_cli import u
 from flext_core import FlextSettings
@@ -899,7 +921,7 @@ from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 ### **Migration Validation**
 
-```python notest
+```python
 # BEFORE (current):
 Lines of Code: 8,179
 Module Count: 26
@@ -921,7 +943,7 @@ ______________________________________________________________________
 
 ### **Test Structure Alignment**
 
-```python notest
+```python
 # Test structure mirrors simplified source structure
 tests/
 ├── unit/                          # Unit tests for each module
@@ -945,8 +967,11 @@ tests/
 
 ### **Testing Patterns**
 
-```python notest
+```python
 # Test organization follows module responsibility
+from __future__ import annotations
+
+
 def test_tap_discover_streams():
     """Test main tap stream discovery functionality."""
     pass
@@ -973,7 +998,7 @@ ______________________________________________________________________
 
 ### **Module Quality Metrics**
 
-```python notest
+```python
 # Target metrics per module
 Lines per Module: 50-200 (max 200)
 Cyclomatic Complexity: <10 per function
@@ -990,7 +1015,11 @@ make security             # Bandit + pip-audit
 
 ### **Documentation Standards**
 
-```python notest
+```python
+from __future__ import annotations
+from flext_core import t
+
+
 def discover_entities(self) -> p.Result[t.StringList]:
     """
     Discover available entities from Oracle WMS API.
@@ -1007,9 +1036,9 @@ def discover_entities(self) -> p.Result[t.StringList]:
         >>> discovery = EntityDiscovery(wms_client)
         >>> result = discovery.discover_entities()
         >>> if result.success:
-        ...     u.Cli.print(f"Found entities: {result.value}")
+        ...     print(f"Found entities: {result.value}")
         ... else:
-        ...     u.Cli.print(f"Discovery failed: {result.error}")
+        ...     print(f"Discovery failed: {result.error}")
     """
     pass
 ```
@@ -1020,8 +1049,9 @@ ______________________________________________________________________
 
 ### **Consistent Pattern Usage**
 
-```python notest
+```python
 # ✅ Use FLEXT patterns consistently
+from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -1041,8 +1071,9 @@ custom_logger = logging.getLogger()          # Use u.fetch_logger()
 
 ### **Library Integration**
 
-```python notest
+```python
 # ✅ Use ecosystem libraries
+from __future__ import annotations
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 from flext_meltano import Tap, Stream
 

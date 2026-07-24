@@ -187,8 +187,12 @@ graph TB
 
 **Dependency Rule**: Dependencies point inward toward domain layer
 
-```python notest
+```python
 # Domain Layer (core business logic)
+from __future__ import annotations
+from flext_core import t
+
+
 class WMSEntityConfig:
     entity_name: str
     replication_method: str
@@ -212,7 +216,8 @@ class WMSAuthenticator:
 
 **Stream Pattern**: Standard Singer SDK stream implementation
 
-```python notest
+```python
+from __future__ import annotations
 from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
@@ -221,7 +226,7 @@ class FlextTapOracleWms(Tap):
     name = "tap-oracle-wms"
     config_jsonschema = WMSConfigSchema.model_json_schema()
 
-    def discover_streams(self) -> List[Stream]:
+    def discover_streams(self) -> list[Stream]:
         """Discover available streams from WMS API."""
         return [
             FlextTapOracleWmsStream(tap=self, name=entity, path=f"/api/{entity}")
@@ -242,8 +247,10 @@ class FlextTapOracleWmsStream(RESTStream):
 
 **Single Source of Truth**: Unified configuration system
 
-```python notest
-from pydantic import BaseModel, u.Field
+```python
+from __future__ import annotations
+from flext_core import t
+from pydantic import BaseModel
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -258,10 +265,10 @@ class WMSConfig(FlextSettings):
     entities: t.StringList = u.Field(default_factory=lambda: ["item", "inventory"])
 
     # Authentication fields
-    username: Optional[str] = None
-    password: Optional[str] = None
-    oauth_client_id: Optional[str] = None
-    oauth_client_secret: Optional[str] = None
+    username: str | None = None
+    password: str | None = None
+    oauth_client_id: str | None = None
+    oauth_client_secret: str | None = None
 
     @validator("entities")
     def validate_entities(cls, v):
@@ -321,23 +328,26 @@ sequenceDiagram
 
 ### 1. Pagination Strategy
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class WMSPaginator:
     """Simplified pagination for Oracle WMS HATEOAS."""
 
     def __init__(self, page_size: int = 1000):
         self.page_size = min(page_size, 1250)  # WMS limit
 
-    def get_next_url(self, response: Dict) -> Optional[str]:
+    def get_next_url(self, response: dict) -> str | None:
         """Extract next page URL from HATEOAS links."""
         return response.get("links", {}).get("next")
 ```
 
 ### 2. Caching Strategy
 
-```python notest
+```python
+from __future__ import annotations
 from functools import lru_cache
-from typing import Dict
 
 
 class WMSCache:
@@ -351,7 +361,8 @@ class WMSCache:
 
 ### 3. Connection Management
 
-```python notest
+```python
+from __future__ import annotations
 from flext_oracle_wms import FlextOracleWmsClient
 
 
@@ -374,8 +385,8 @@ class WMSConnectionManager:
 
 ### 1. Exception Hierarchy
 
-```python notest
-from flext_cli import u
+```python
+from __future__ import annotations
 from flext_core import FlextSettings
 
 
@@ -405,9 +416,9 @@ class WMSSchemaError(WMSTapError):
 
 ### 2. Error Recovery
 
-```python notest
+```python
+from __future__ import annotations
 import time
-from typing import Iterator
 
 
 def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
@@ -452,7 +463,8 @@ tests/
 
 ### 2. Mock Strategy
 
-```python notest
+```python
+from __future__ import annotations
 import pytest
 from unittest.mock import Mock, patch
 from flext_oracle_wms import FlextOracleWmsClient
@@ -485,7 +497,8 @@ def test_stream_extraction(mock_wms_client):
 
 ### 1. Authentication Integration
 
-```python notest
+```python
+from __future__ import annotations
 from flext_oracle_wms import WMSAuthenticator
 
 
@@ -505,17 +518,18 @@ class TapAuthentication:
 
 ### 2. Configuration Security
 
-```python notest
+```python
+from __future__ import annotations
 from pydantic import SecretStr
 
 
 class SecureWMSConfig(WMSConfig):
     """Secure configuration with secret handling."""
 
-    password: Optional[SecretStr] = None
-    oauth_client_secret: Optional[SecretStr] = None
+    password: SecretStr | None = None
+    oauth_client_secret: SecretStr | None = None
 
-    def get_credentials(self) -> Dict[str, str]:
+    def get_credentials(self) -> dict[str, str]:
         """Get credentials with secret values."""
         creds = {}
         if self.password:

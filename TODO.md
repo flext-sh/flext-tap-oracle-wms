@@ -104,7 +104,7 @@ tests/unit/test_discovery.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup
 
 **Código Problemático**:
 
-```python notest
+```python
 # Arquivo client.py (33 linhas) - COMPLETAMENTE DESNECESSÁRIO
 from flext_oracle_wms import FlextOracleWmsClient
 
@@ -208,7 +208,7 @@ ______________________________________________________________________
 
 **Aliases Problemáticos**:
 
-```python notest
+```python
 OracleWmsValueType = TValue
 OracleWmsEntityId = TEntityId
 OracleWmsConfigDict = TAnyDict

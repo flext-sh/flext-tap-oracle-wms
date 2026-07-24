@@ -79,8 +79,11 @@ This directory contains integration tests for FLEXT Tap Oracle WMS, focusing on 
 
 #### **Tap ↔ Stream Integration**
 
-```python notest
+```python
 # Planned integration test pattern
+from __future__ import annotations
+
+
 def test_tap_stream_integration():
     """Test tap and stream components working together."""
     with mock_wms_server():
@@ -98,7 +101,10 @@ def test_tap_stream_integration():
 
 #### **Authentication ↔ Client Integration**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_auth_client_integration():
     """Test authentication integration with client requests."""
     with mock_wms_auth_server():
@@ -112,7 +118,10 @@ def test_auth_client_integration():
 
 #### **Discovery ↔ Schema Integration**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_discovery_schema_integration():
     """Test entity discovery with schema generation."""
     with mock_wms_metadata():
@@ -131,7 +140,10 @@ def test_discovery_schema_integration():
 
 #### **Configuration Validation Chain**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_config_validation_chain():
     """Test complete configuration validation workflow."""
     settings = load_test_config("complex_config.json")
@@ -155,7 +167,10 @@ def test_config_validation_chain():
 
 #### **Extract-Transform-Load Flow**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_etl_integration_flow():
     """Test complete data extraction and transformation flow."""
     with mock_wms_data_server():
@@ -183,8 +198,11 @@ def test_etl_integration_flow():
 
 ### **Mock WMS API Server**
 
-```python notest
+```python
 # Planned mock server implementation
+from __future__ import annotations
+
+
 class MockWMSServer:
     """Mock WMS API server for integration testing."""
 
@@ -335,7 +353,10 @@ def integration_config():
 
 ### **Data Validation Pattern**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_data_integration_flow(mock_wms_server, integration_config):
     """Test complete data integration workflow."""
     # Setup mock responses
@@ -365,7 +386,10 @@ def test_data_integration_flow(mock_wms_server, integration_config):
 
 ### **Load Testing Integration**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_high_volume_integration():
     """Test integration with high-volume data extraction."""
     with mock_large_dataset():
@@ -381,7 +405,10 @@ def test_high_volume_integration():
 
 ### **Concurrent Operation Testing**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_concurrent_stream_integration():
     """Test concurrent stream operations integration."""
     import concurrent.futures
@@ -404,7 +431,10 @@ def test_concurrent_stream_integration():
 
 ### **Network Failure Testing**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_network_failure_integration():
     """Test integration behavior during network failures."""
     with mock_network_failures():

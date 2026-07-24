@@ -149,8 +149,12 @@ git push origin feature/amazing-feature
 
 ### Type Safety (ZERO TOLERANCE)
 
-```python notest
+```python
 # ✅ CORRECT - Complete type annotations
+from __future__ import annotations
+from flext_core import t
+
+
 def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
     """Process data with type safety."""
     if not data:
@@ -166,8 +170,11 @@ def process_data(data):
 
 ### Railway-Oriented Programming
 
-```python notest
+```python
 # ✅ CORRECT - Use r for all operations
+from __future__ import annotations
+
+
 def validate_and_process(data: dict) -> p.Result[ProcessedData]:
     return (
         validate_data(data)
@@ -186,8 +193,12 @@ def validate_and_process(data: dict) -> ProcessedData:
 
 ### Unified Models Pattern
 
-```python notest
+```python
 # ✅ CORRECT - Use [Project]Models pattern
+from __future__ import annotations
+from flext_core import t
+
+
 class FlextApiModels:
     class Request(m.BaseModel):
         data: t.JsonMapping
@@ -225,9 +236,9 @@ pytest --cov=src --cov-report=html
 
 ### Writing Tests
 
-```python notest
+```python
+from __future__ import annotations
 import pytest
-from flext_cli import u
 from flext_core import FlextSettings
 
 
@@ -293,9 +304,10 @@ cd flext-newlib
 
 ### 2. Implement Core Patterns
 
-```python notest
+```python
 # src/flext_newlib/__init__.py
-from flext_cli import u
+from __future__ import annotations
+from flext_core import t
 from flext_core import FlextSettings
 
 
@@ -367,7 +379,11 @@ poetry env info
 
 ### Code Documentation
 
-```python notest
+```python
+from __future__ import annotations
+from flext_core import t
+
+
 def process_data(data: t.JsonMapping) -> p.Result[ProcessedData]:
     """
     Process data using the FLEXT pipeline.
@@ -395,7 +411,7 @@ Update project README.md files when adding new features:
 
 - Add a "New Feature" section with usage and configuration examples.
 
-```python notest
+```python
 from flext_newlib import FlextNewlib
 from flext_newlib import FlextNewlibSettings
 

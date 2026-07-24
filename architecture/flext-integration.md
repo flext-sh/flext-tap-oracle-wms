@@ -68,7 +68,9 @@ graph TB
 
 #### Base Pattern Usage
 
-```python notest
+```python
+from __future__ import annotations
+from flext_core import t
 from flext_core import (
     FlextSettings,  # Configuration base class
     FlextLogger,  # Standardized logging
@@ -101,7 +103,7 @@ class FlextTapOracleWms:
         self.settings = WMSConfig(**settings)
         self.logger = u.fetch_logger(__name__)
 
-    def discover_streams(self) -> p.Result[List[Stream]]:
+    def discover_streams(self) -> p.Result[list[Stream]]:
         """Return streams using r pattern."""
         try:
             streams = self._build_streams()
@@ -113,7 +115,9 @@ class FlextTapOracleWms:
 
 #### Type System Integration
 
-```python notest
+```python
+from __future__ import annotations
+from collections.abc import Iterator
 from flext_core import TAnyDict, TEntityId, TValue
 
 # Use centralized types instead of custom definitions
@@ -141,7 +145,8 @@ class FlextTapOracleWmsStream:
 
 #### Logging Integration
 
-```python notest
+```python
+from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -181,7 +186,8 @@ class FlextTapOracleWmsStream:
 
 #### WMS Client Integration
 
-```python notest
+```python
+from __future__ import annotations
 from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsError,
@@ -231,9 +237,10 @@ class WMSClientManager:
 
 #### Entity Discovery Integration
 
-```python notest
+```python
+from __future__ import annotations
+from flext_core import t
 from flext_oracle_wms import WMSEntityMetadata
-from typing import List, Dict
 
 
 class EntityDiscovery:
@@ -279,7 +286,9 @@ class EntityDiscovery:
 
 #### Singer SDK Integration
 
-```python notest
+```python
+from __future__ import annotations
+from collections.abc import Iterator
 from flext_meltano import (
     Tap,  # Base tap class with FLEXT patterns
     Stream,  # Base stream class
@@ -297,7 +306,7 @@ class FlextTapOracleWms(Tap):
         super().__init__(settings)
         self.wms_client_manager = WMSClientManager(self.settings)
 
-    def discover_streams(self) -> List[Stream]:
+    def discover_streams(self) -> list[Stream]:
         """Discover streams using flext-meltano patterns."""
         discovery = EntityDiscovery(self.wms_client_manager.client)
         entities_result = discovery.discover_entities()
@@ -343,7 +352,9 @@ class FlextTapOracleWmsStream(Stream):
 
 #### Configuration Integration
 
-```python notest
+```python
+from __future__ import annotations
+from flext_core import t
 from flext_meltano import MeltanoConfig
 from pydantic import u.Field, validator
 
@@ -360,10 +371,10 @@ class WMSMeltanoConfig(MeltanoConfig):
     facility_code: str = u.Field(..., description="WMS facility code")
 
     # Authentication settings
-    username: Optional[str] = u.Field(None, description="Username for basic auth")
-    password: Optional[str] = u.Field(None, description="Password for basic auth")
-    oauth_client_id: Optional[str] = u.Field(None, description="OAuth2 client ID")
-    oauth_client_secret: Optional[str] = u.Field(
+    username: str | None = u.Field(None, description="Username for basic auth")
+    password: str | None = u.Field(None, description="Password for basic auth")
+    oauth_client_id: str | None = u.Field(None, description="OAuth2 client ID")
+    oauth_client_secret: str | None = u.Field(
         None, description="OAuth2 client secret"
     )
 
@@ -374,7 +385,7 @@ class WMSMeltanoConfig(MeltanoConfig):
     page_size: int = u.Field(
         default=1000, le=1250, description="Records per page (max 1250)"
     )
-    start_date: Optional[datetime] = u.Field(
+    start_date: datetime | None = u.Field(
         None, description="Start date for incremental extraction"
     )
 
@@ -402,7 +413,9 @@ class WMSMeltanoConfig(MeltanoConfig):
 
 #### Monitoring Integration
 
-```python notest
+```python
+from __future__ import annotations
+from collections.abc import Iterator
 from flext_observability import FlextMetrics, FlextHealthCheck, FlextTracing
 
 
@@ -415,7 +428,7 @@ class FlextTapOracleWms(Tap):
         self.health_check = FlextHealthCheck()
         self.tracing = FlextTracing()
 
-    def discover_streams(self) -> List[Stream]:
+    def discover_streams(self) -> list[Stream]:
         """Stream discovery with metrics and tracing."""
         with self.tracing.span("discover_streams"):
             start_time = time.time()
@@ -487,7 +500,8 @@ class FlextTapOracleWmsStream(Stream):
 
 #### Health Check Integration
 
-```python notest
+```python
+from __future__ import annotations
 from flext_observability import HealthCheckResult, HealthStatus
 
 

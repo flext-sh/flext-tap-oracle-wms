@@ -249,8 +249,9 @@ tests/
 
 ### FLEXT Standards Compliance
 
-```python notest
+```python
 # Example of FLEXT-compliant code
+from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 from flext_oracle_wms import FlextOracleWmsClient
@@ -279,7 +280,7 @@ class FlextTapOracleWms:
         self.settings = WMSConfig(**settings)
         self.logger = u.fetch_logger(__name__)
 
-    def discover_streams(self) -> p.Result[List[Stream]]:
+    def discover_streams(self) -> p.Result[list[Stream]]:
         """Use r pattern for error handling."""
         try:
             streams = self._build_streams()
@@ -291,15 +292,16 @@ class FlextTapOracleWms:
 
 ### Type Safety Requirements
 
-```python notest
+```python
 # Strict type annotations required
-from typing import List, Dict, Optional, Iterator
 
+from __future__ import annotations
+from collections.abc import Iterator
 from flext_core import TAnyDict
 
 
 def extract_records(
-    entity: str, settings: TAnyDict, filters: Optional[m.Dict] = None
+    entity: str, settings: TAnyDict, filters: m.Dict | None = None
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety
@@ -308,8 +310,8 @@ def extract_records(
 
 ### Error Handling Standards
 
-```python notest
-from flext_cli import u
+```python
+from __future__ import annotations
 from flext_core import FlextSettings
 
 
@@ -400,7 +402,7 @@ pre-commit run --all-files
 
 1. **Update Configuration**:
 
-```python notest
+```python
 # Add entity to valid entities list
 VALID_ENTITIES = [
     "item",
@@ -416,7 +418,10 @@ VALID_ENTITIES = [
 
 1. **Create Entity Tests**:
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_new_entity_extraction(mock_wms_client):
     """Test new entity extraction."""
     # Implementation
