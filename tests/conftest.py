@@ -11,7 +11,6 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
