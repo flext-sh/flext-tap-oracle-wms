@@ -1,0 +1,3 @@
+TapOracleWms:
+  name: flext-tap-oracle-wms
+  version: "0.12.0-dev"

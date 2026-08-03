@@ -7,9 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tests import FlextTestsTypes
-
 from flext_tap_oracle_wms import FlextTapOracleWmsTypes
+from flext_tests import FlextTestsTypes
 
 
 class TestsFlextTapOracleWmsTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
@@ -40,8 +39,7 @@ class TestsFlextTapOracleWmsTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
 
         type MockOracleWmsRecord = t.MappingKV[str, FlextTapOracleWmsTypes.Scalar]
         type MockOracleWmsResponse = t.MappingKV[
-            str,
-            t.SequenceOf[MockOracleWmsRecord] | bool | str | None,
+            str, t.SequenceOf[MockOracleWmsRecord] | bool | str | None
         ]
         type TestOracleWmsScenario = FlextTestsTypes.JsonMapping
         type TestOracleWmsValidationResult = t.MappingKV[

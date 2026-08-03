@@ -17,8 +17,6 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
         serialization at the Singer dict boundary.
         """
 
-        pass
-
 
 m = FlextTapOracleWmsModels
 
