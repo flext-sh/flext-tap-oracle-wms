@@ -1,48 +1,42 @@
 # Development Documentation
 
 <!-- TOC START -->
-- [Development Documentation](#development-documentation)
-  - [Overview](#overview)
-  - [Development Documentation Structure](#development-documentation-structure)
-    - [Testing Documentation](#testing-documentation)
-    - [Quality Standards](#quality-standards)
-    - [Development Workflows](#development-workflows)
-    - [Refactoring Documentation](#refactoring-documentation)
-  - [Current Development Status](#current-development-status)
-    - [Critical Issues](#critical-issues)
-    - [Quality Metrics](#quality-metrics)
-  - [Development Environment Setup](#development-environment-setup)
-    - [Prerequisites](#prerequisites)
-    - [Quick Setup](#quick-setup)
-    - [Development Dependencies](#development-dependencies)
-  - [Development Workflow](#development-workflow)
-    - [1. Feature Development](#1-feature-development)
-    - [2. Testing Strategy](#2-testing-strategy)
-    - [3. Quality Assurance](#3-quality-assurance)
-  - [Testing Architecture](#testing-architecture)
-    - [Current Test Issues](#current-test-issues)
-      - [Disabled Tests Analysis](#disabled-tests-analysis)
-      - [Working Test Structure](#working-test-structure)
-    - [Target Test Architecture](#target-test-architecture)
-  - [Code Quality Standards](#code-quality-standards)
-    - [FLEXT Standards Compliance](#flext-standards-compliance)
-    - [Type Safety Requirements](#type-safety-requirements)
-    - [Error Handling Standards](#error-handling-standards)
-  - [Development Tools](#development-tools)
-    - [IDE Configuration](#ide-configuration)
-    - [Git Hooks](#git-hooks)
-    - [Debugging Configuration](#debugging-configuration)
-  - [Common Development Tasks](#common-development-tasks)
-    - [Adding New WMS Entity](#adding-new-wms-entity)
-    - [Debugging Common Issues](#debugging-common-issues)
-      - [Authentication Issues](#authentication-issues)
-      - [Schema Issues](#schema-issues)
-      - [Performance Issues](#performance-issues)
-  - [Contributing Guidelines](#contributing-guidelines)
-    - [Code Review Checklist](#code-review-checklist)
-    - [Pull Request Process](#pull-request-process)
-  - [Migration Considerations](#migration-considerations)
-    - [Current → Target Architecture](#current--target-architecture)
+- [Overview](#overview)
+- [Development Documentation Structure](#development-documentation-structure)
+  - [Testing Documentation](#testing-documentation)
+  - [Quality Standards](#quality-standards)
+  - [Development Workflows](#development-workflows)
+  - [Refactoring Documentation](#refactoring-documentation)
+- [Current Development Status](#current-development-status)
+  - [Critical Issues](#critical-issues)
+  - [Quality Metrics](#quality-metrics)
+- [Development Environment Setup](#development-environment-setup)
+  - [Prerequisites](#prerequisites)
+  - [Quick Setup](#quick-setup)
+  - [Development Dependencies](#development-dependencies)
+- [Development Workflow](#development-workflow)
+  - [1. Feature Development](#1-feature-development)
+  - [2. Testing Strategy](#2-testing-strategy)
+  - [3. Quality Assurance](#3-quality-assurance)
+- [Testing Architecture](#testing-architecture)
+  - [Current Test Issues](#current-test-issues)
+  - [Target Test Architecture](#target-test-architecture)
+- [Code Quality Standards](#code-quality-standards)
+  - [FLEXT Standards Compliance](#flext-standards-compliance)
+  - [Type Safety Requirements](#type-safety-requirements)
+  - [Error Handling Standards](#error-handling-standards)
+- [Development Tools](#development-tools)
+  - [IDE Configuration](#ide-configuration)
+  - [Git Hooks](#git-hooks)
+  - [Debugging Configuration](#debugging-configuration)
+- [Common Development Tasks](#common-development-tasks)
+  - [Adding New WMS Entity](#adding-new-wms-entity)
+  - [Debugging Common Issues](#debugging-common-issues)
+- [Contributing Guidelines](#contributing-guidelines)
+  - [Code Review Checklist](#code-review-checklist)
+  - [Pull Request Process](#pull-request-process)
+- [Migration Considerations](#migration-considerations)
+  - [Current → Target Architecture](#current-target-architecture)
 <!-- TOC END -->
 
 ## Overview
@@ -287,9 +281,7 @@ class FlextTapOracleWms:
             return r.success(streams)
         except Exception as e:
             self.logger.error(f"Discovery failed: {e}")
-            return r.failure(str(e))
-```
-
+            return r.failure(str(e))```
 ### Type Safety Requirements
 
 ```python
@@ -305,14 +297,11 @@ def extract_records(
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety
-    pass
-```
-
+    pass```
 ### Error Handling Standards
 
 ```python
 from __future__ import annotations
-from flext_core import FlextSettings
 
 
 class WMSTapError(e.Error):
@@ -332,9 +321,7 @@ try:
     result = perform_operation()
 except WMSConfigurationError as e:
     logger.error(f"Configuration error: {e}", exc_info=True)
-    raise
-```
-
+    raise```
 ## Development Tools
 
 ### IDE Configuration
@@ -413,9 +400,7 @@ VALID_ENTITIES = [
     "receipt",
     "pick",
     "new_entity",  # Add here
-]
-```
-
+]```
 1. **Create Entity Tests**:
 
 ```python
@@ -425,9 +410,7 @@ from __future__ import annotations
 def test_new_entity_extraction(mock_wms_client):
     """Test new entity extraction."""
     # Implementation
-    pass
-```
-
+    pass```
 1. **Update Documentation**:
 
 - Add entity to README.md entity table
