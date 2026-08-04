@@ -20,10 +20,10 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "flext-cli @ git+https://github.com/flext-sh/flext-cli.git@0.12.0-dev",
-  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
-  "flext-meltano @ git+https://github.com/flext-sh/flext-meltano.git@0.12.0-dev",
-  "flext-oracle-wms @ git+https://github.com/flext-sh/flext-oracle-wms.git@0.12.0-dev",
+  "flext-cli @ git+https://github.com/flext-sh/flext-cli.git@0.12.0rc1",
+  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0rc1",
+  "flext-meltano @ git+https://github.com/flext-sh/flext-meltano.git@0.12.0rc1",
+  "flext-oracle-wms @ git+https://github.com/flext-sh/flext-oracle-wms.git@0.12.0rc1",
   "pydantic>=2.13.3",
   "pydantic-core>=2.46.3",
   "pydantic-settings>=2.14.0",
@@ -640,7 +640,7 @@ whitelines = 1
 
 [dependency-groups]
 codegen = [
-  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
+  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0rc1",
 ]
 dev = [
   "actionlint-py>=1.7.12.24",
@@ -653,7 +653,7 @@ dev = [
   "django-stubs>=5.2.2",
   "factory-boy>=3.3.1",
   "faker>=37.4",
-  "flext-tests @ git+https://github.com/flext-sh/flext-tests.git@0.12.0-dev",
+  "flext-tests @ git+https://github.com/flext-sh/flext-tests.git@0.12.0rc1",
   "hypothesis>=6.125",
   "isort>=6.0.1",
   "matplotlib-stubs>=0.3",
