@@ -296,3 +296,6 @@ CLAUDE.local.md
 !config/
 !config/workspace.yaml
 !custom.mk
+
+# Project layout exceptions
+config.json

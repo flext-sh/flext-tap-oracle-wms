@@ -172,8 +172,8 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 ### FLEXT Ecosystem
 
-- **[flext-core Architecture](https://github.com/organization/flext/tree/main/flext-core/docs/architecture/)** - Foundation patterns
-- **[flext-oracle-wms Integration](https://github.com/organization/flext/tree/main/flext-oracle-wms/docs/)** - WMS client integration
+- **[flext-core Architecture](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/)** - Foundation patterns
+- **[flext-oracle-wms Integration](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-oracle-wms/docs/)** - WMS client integration
 - **[FLEXT Platform Architecture](../../../docs/architecture/)** - Ecosystem overview
 
 ### External References

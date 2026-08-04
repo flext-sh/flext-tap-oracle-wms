@@ -2,6 +2,10 @@
 
 # flext_tap_oracle_wms.cli
 
+<!-- TOC START -->
+- No sections found
+<!-- TOC END -->
+
 ::: flext_tap_oracle_wms.cli
     options:
       show_root_heading: true

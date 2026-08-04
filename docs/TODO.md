@@ -108,9 +108,7 @@ tests/unit/test_discovery.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup
 # Arquivo client.py (33 linhas) - COMPLETAMENTE DESNECESSÁRIO
 from flext_oracle_wms import FlextOracleWmsClient
 
-WMSClient = FlextOracleWmsClient  # Apenas um alias!
-```
-
+WMSClient = FlextOracleWmsClient  # Apenas um alias!```
 **Impacto**:
 
 - **Layer desnecessário** entre tap e biblioteca WMS
@@ -211,9 +209,7 @@ ______________________________________________________________________
 ```python
 OracleWmsValueType = TValue
 OracleWmsEntityId = TEntityId
-OracleWmsConfigDict = TAnyDict
-```
-
+OracleWmsConfigDict = TAnyDict```
 **Ação Requerida**: Remover aliases e usar tipos flext-core diretamente
 
 ### 9. **DEFINIÇÕES DE SCHEMA HARDCODED**

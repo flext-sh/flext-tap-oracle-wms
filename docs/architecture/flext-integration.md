@@ -73,9 +73,7 @@ from __future__ import annotations
 from flext_core import t
 from flext_core import (
     FlextSettings,  # Configuration base class
-    FlextLogger,  # Standardized logging
     TAnyDict,
-    TEntityId,  # Entity identifier type
     r,  # Result handling pattern
 )
 
@@ -110,9 +108,7 @@ class FlextTapOracleWms:
             return r.success(streams)
         except Exception as e:
             self.logger.error(f"Stream discovery failed: {e}")
-            return r.failure(f"Discovery error: {e}")
-```
-
+            return r.failure(f"Discovery error: {e}")```
 #### Type System Integration
 
 ```python
@@ -140,15 +136,12 @@ class FlextTapOracleWmsStream:
             "id": TEntityId(raw_record.get("id")),
             "data": raw_record,
             "extracted_at": datetime.utcnow().isoformat(),
-        }
-```
-
+        }```
 #### Logging Integration
 
 ```python
 from __future__ import annotations
 from flext_cli import u
-from flext_core import FlextSettings
 
 
 class FlextTapOracleWmsStream:
@@ -179,9 +172,7 @@ class FlextTapOracleWmsStream:
 
         except Exception as e:
             self.logger.error(f"Extraction failed for {self.name}: {e}", exc_info=True)
-            raise
-```
-
+            raise```
 ### 2. flext-oracle-wms Integration
 
 #### WMS Client Integration
@@ -192,7 +183,6 @@ from flext_oracle_wms import (
     FlextOracleWmsClient,
     FlextOracleWmsError,
     FlextOracleWmsAuthenticationError,
-    WMSEntityMetadata,
 )
 
 
@@ -225,16 +215,13 @@ class WMSClientManager:
             if result:
                 self.logger.info("WMS connection successful")
                 return r.success(True)
-            else:
-                return r.failure("WMS connection test failed")
+            return r.failure("WMS connection test failed")
         except FlextOracleWmsAuthenticationError as e:
             self.logger.error(f"WMS authentication failed: {e}")
             return r.failure(f"Authentication error: {e}")
         except FlextOracleWmsError as e:
             self.logger.error(f"WMS client error: {e}")
-            return r.failure(f"WMS error: {e}")
-```
-
+            return r.failure(f"WMS error: {e}")```
 #### Entity Discovery Integration
 
 ```python
@@ -279,9 +266,7 @@ class EntityDiscovery:
             schema = self._convert_metadata_to_schema(metadata_result.value)
             return r.success(schema)
         except Exception as e:
-            return r.failure(f"Schema generation error: {e}")
-```
-
+            return r.failure(f"Schema generation error: {e}")```
 ### 3. flext-meltano Integration
 
 #### Singer SDK Integration
@@ -292,8 +277,7 @@ from collections.abc import Iterator
 from flext_meltano import (
     Tap,  # Base tap class with FLEXT patterns
     Stream,  # Base stream class
-    singer_typing as th,
-)
+    )
 
 
 class FlextTapOracleWms(Tap):
@@ -347,9 +331,7 @@ class FlextTapOracleWmsStream(Stream):
                 yield record
         except Exception as e:
             self.logger.error(f"Record extraction failed: {e}")
-            raise
-```
-
+            raise```
 #### Configuration Integration
 
 ```python
@@ -406,9 +388,7 @@ class WMSMeltanoConfig(MeltanoConfig):
         invalid = set(v) - set(valid_entities)
         if invalid:
             raise ValueError(f"Invalid entities: {invalid}")
-        return v
-```
-
+        return v```
 ### 4. flext-observability Integration
 
 #### Monitoring Integration
@@ -495,9 +475,7 @@ class FlextTapOracleWmsStream(Stream):
                 self.tap.metrics.record_counter(
                     "extraction_errors", 1, tags={"entity": self.name, "error": str(e)}
                 )
-                raise
-```
-
+                raise```
 #### Health Check Integration
 
 ```python
@@ -526,11 +504,10 @@ class WMSHealthCheck:
                 return HealthCheckResult(
                     status=HealthStatus.HEALTHY, message="WMS connection successful"
                 )
-            else:
-                return HealthCheckResult(
-                    status=HealthStatus.UNHEALTHY,
-                    message=f"WMS connection failed: {result.error}",
-                )
+            return HealthCheckResult(
+                status=HealthStatus.UNHEALTHY,
+                message=f"WMS connection failed: {result.error}",
+            )
         except Exception as e:
             return HealthCheckResult(
                 status=HealthStatus.UNHEALTHY, message=f"WMS connection error: {e}"
@@ -553,9 +530,7 @@ class WMSHealthCheck:
         except Exception as e:
             return HealthCheckResult(
                 status=HealthStatus.DEGRADED, message=f"Authentication check error: {e}"
-            )
-```
-
+            )```
 ## Integration Benefits
 
 ### Consistency

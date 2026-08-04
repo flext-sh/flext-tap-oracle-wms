@@ -1,47 +1,42 @@
 # Architecture Documentation
 
 <!-- TOC START -->
-- [Architecture Documentation](#architecture-documentation)
-  - [Overview](#overview)
-  - [Current Architecture Issues](#current-architecture-issues)
-    - [Critical Problems Identified](#critical-problems-identified)
-    - [Current Component Structure](#current-component-structure)
-  - [Target Architecture](#target-architecture)
-    - [Simplified Component Structure](#simplified-component-structure)
-    - [Architecture Layers](#architecture-layers)
-      - [1. Presentation Layer](#1-presentation-layer)
-      - [2. Application Layer](#2-application-layer)
-      - [3. Domain Layer](#3-domain-layer)
-      - [4. Infrastructure Layer](#4-infrastructure-layer)
-    - [FLEXT Ecosystem Integration](#flext-ecosystem-integration)
-  - [Design Patterns](#design-patterns)
-    - [1. Clean Architecture Compliance](#1-clean-architecture-compliance)
-    - [2. Singer SDK Integration](#2-singer-sdk-integration)
-    - [3. Configuration Management](#3-configuration-management)
-  - [Data Flow Architecture](#data-flow-architecture)
-    - [1. Discovery Flow](#1-discovery-flow)
-    - [2. Extraction Flow](#2-extraction-flow)
-  - [Performance Architecture](#performance-architecture)
-    - [1. Pagination Strategy](#1-pagination-strategy)
-    - [2. Caching Strategy](#2-caching-strategy)
-    - [3. Connection Management](#3-connection-management)
-  - [Error Handling Architecture](#error-handling-architecture)
-    - [1. Exception Hierarchy](#1-exception-hierarchy)
-    - [2. Error Recovery](#2-error-recovery)
-  - [Testing Architecture](#testing-architecture)
-    - [1. Test Structure](#1-test-structure)
-    - [2. Mock Strategy](#2-mock-strategy)
-  - [Security Architecture](#security-architecture)
-    - [1. Authentication Integration](#1-authentication-integration)
-    - [2. Configuration Security](#2-configuration-security)
-  - [Migration Strategy](#migration-strategy)
-    - [Phase 1: Emergency Simplification (Week 1)](#phase-1-emergency-simplification-week-1)
-    - [Phase 2: Structural Refactoring (Weeks 2-3)](#phase-2-structural-refactoring-weeks-2-3)
-    - [Phase 3: Performance Optimization (Week 4)](#phase-3-performance-optimization-week-4)
-  - [Quality Metrics](#quality-metrics)
-    - [Target Metrics](#target-metrics)
-    - [Quality Gates](#quality-gates)
-  - [Related Documentation](#related-documentation)
+- [Overview](#overview)
+- [Current Architecture Issues](#current-architecture-issues)
+  - [Critical Problems Identified](#critical-problems-identified)
+  - [Current Component Structure](#current-component-structure)
+- [Target Architecture](#target-architecture)
+  - [Simplified Component Structure](#simplified-component-structure)
+  - [Architecture Layers](#architecture-layers)
+  - [FLEXT Ecosystem Integration](#flext-ecosystem-integration)
+- [Design Patterns](#design-patterns)
+  - [1. Clean Architecture Compliance](#1-clean-architecture-compliance)
+  - [2. Singer SDK Integration](#2-singer-sdk-integration)
+  - [3. Configuration Management](#3-configuration-management)
+- [Data Flow Architecture](#data-flow-architecture)
+  - [1. Discovery Flow](#1-discovery-flow)
+  - [2. Extraction Flow](#2-extraction-flow)
+- [Performance Architecture](#performance-architecture)
+  - [1. Pagination Strategy](#1-pagination-strategy)
+  - [2. Caching Strategy](#2-caching-strategy)
+  - [3. Connection Management](#3-connection-management)
+- [Error Handling Architecture](#error-handling-architecture)
+  - [1. Exception Hierarchy](#1-exception-hierarchy)
+  - [2. Error Recovery](#2-error-recovery)
+- [Testing Architecture](#testing-architecture)
+  - [1. Test Structure](#1-test-structure)
+  - [2. Mock Strategy](#2-mock-strategy)
+- [Security Architecture](#security-architecture)
+  - [1. Authentication Integration](#1-authentication-integration)
+  - [2. Configuration Security](#2-configuration-security)
+- [Migration Strategy](#migration-strategy)
+  - [Phase 1: Emergency Simplification (Week 1)](#phase-1-emergency-simplification-week-1)
+  - [Phase 2: Structural Refactoring (Weeks 2-3)](#phase-2-structural-refactoring-weeks-2-3)
+  - [Phase 3: Performance Optimization (Week 4)](#phase-3-performance-optimization-week-4)
+- [Quality Metrics](#quality-metrics)
+  - [Target Metrics](#target-metrics)
+  - [Quality Gates](#quality-gates)
+- [Related Documentation](#related-documentation)
 <!-- TOC END -->
 
 ## Overview
@@ -209,9 +204,7 @@ class EntityDiscovery:
 # Infrastructure Layer (external dependencies)
 class WMSAuthenticator:
     def __init__(self, flext_wms_client: FlextOracleWmsClient):
-        self._client = flext_wms_client
-```
-
+        self._client = flext_wms_client```
 ### 2. Singer SDK Integration
 
 **Stream Pattern**: Standard Singer SDK stream implementation
@@ -240,9 +233,7 @@ class FlextTapOracleWmsStream(RESTStream):
     def get_records(self, context):
         """Extract records using flext-oracle-wms client."""
         for record in self.wms_client.get_entity_data(self.name):
-            yield record
-```
-
+            yield record```
 ### 3. Configuration Management
 
 **Single Source of Truth**: Unified configuration system
@@ -250,7 +241,6 @@ class FlextTapOracleWmsStream(RESTStream):
 ```python
 from __future__ import annotations
 from flext_core import t
-from pydantic import BaseModel
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -277,9 +267,7 @@ class WMSConfig(FlextSettings):
         invalid = set(v) - set(valid_entities)
         if invalid:
             raise ValueError(f"Invalid entities: {invalid}")
-        return v
-```
-
+        return v```
 ## Data Flow Architecture
 
 ### 1. Discovery Flow
@@ -340,9 +328,7 @@ class WMSPaginator:
 
     def get_next_url(self, response: dict) -> str | None:
         """Extract next page URL from HATEOAS links."""
-        return response.get("links", {}).get("next")
-```
-
+        return response.get("links", {}).get("next")```
 ### 2. Caching Strategy
 
 ```python
@@ -356,9 +342,7 @@ class WMSCache:
     @lru_cache(maxsize=1000)
     def get_entity_schema(self, entity_name: str) -> m.Dict:
         """Cache entity schemas for discovery."""
-        return self._fetch_schema(entity_name)
-```
-
+        return self._fetch_schema(entity_name)```
 ### 3. Connection Management
 
 ```python
@@ -378,16 +362,13 @@ class WMSConnectionManager:
 
     def get_client(self) -> FlextOracleWmsClient:
         """Get configured WMS client."""
-        return self.client
-```
-
+        return self.client```
 ## Error Handling Architecture
 
 ### 1. Exception Hierarchy
 
 ```python
 from __future__ import annotations
-from flext_core import FlextSettings
 
 
 class WMSTapError(e.Error):
@@ -411,9 +392,7 @@ class WMSEntityNotFoundError(WMSTapError):
 class WMSSchemaError(WMSTapError):
     """WMS schema validation errors."""
 
-    pass
-```
-
+    pass```
 ### 2. Error Recovery
 
 ```python
@@ -429,7 +408,7 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
             for attempt in range(max_retries):
                 try:
                     return func(*args, **kwargs)
-                except (WMSAuthenticationError, ConnectionError) as e:
+                except (WMSAuthenticationError, ConnectionError):
                     if attempt == max_retries - 1:
                         raise
                     delay = base_delay * (2**attempt)
@@ -438,9 +417,7 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
 
         return wrapper
 
-    return decorator
-```
-
+    return decorator```
 ## Testing Architecture
 
 ### 1. Test Structure
@@ -490,9 +467,7 @@ def test_stream_extraction(mock_wms_client):
         stream = FlextTapOracleWmsStream(tap=mock_tap, name="item")
         records = list(stream.get_records(None))
         assert len(records) == 2
-        assert records[0]["id"] == "1"
-```
-
+        assert records[0]["id"] == "1"```
 ## Security Architecture
 
 ### 1. Authentication Integration
@@ -513,9 +488,7 @@ class TapAuthentication:
 
     def get_authenticated_client(self):
         """Get authenticated WMS client."""
-        return self.authenticator.get_client()
-```
-
+        return self.authenticator.get_client()```
 ### 2. Configuration Security
 
 ```python
@@ -536,9 +509,7 @@ class SecureWMSConfig(WMSConfig):
             creds["password"] = self.password.get_secret_value()
         if self.oauth_client_secret:
             creds["client_secret"] = self.oauth_client_secret.get_secret_value()
-        return creds
-```
-
+        return creds```
 ## Migration Strategy
 
 ### Phase 1: Emergency Simplification (Week 1)
@@ -594,10 +565,10 @@ ______________________________________________________________________
 
 **Across Projects**:
 
-- [flext-core Foundation](https://github.com/organization/flext/tree/main/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
-- [flext-core Service Patterns](https://github.com/organization/flext/tree/main/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
-- [flext-oracle-wms Integration](https://github.com/organization/flext/tree/main/flext-oracle-wms/AGENTS.md) - Oracle WMS Cloud integration
-- [flext-meltano Pipelines](https://github.com/organization/flext/tree/main/flext-meltano/AGENTS.md) - Data integration and ELT orchestration
+- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
+- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
+- [flext-oracle-wms Integration](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-oracle-wms/AGENTS.md) - Oracle WMS Cloud integration
+- [flext-meltano Pipelines](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-meltano/AGENTS.md) - Data integration and ELT orchestration
 
 **External Resources**:
 
