@@ -141,18 +141,7 @@ extra_checks = true
 follow_imports = "normal"
 ignore_missing_imports = true
 local_partial_types = true
-mypy_path = [
-  "src",
-  ".",
-  "../flext-api/src",
-  "../flext-cli/src",
-  "../flext-core/src",
-  "../flext-infra/src",
-  "../flext-meltano/src",
-  "../flext-oracle-wms/src",
-  "../flext-tests/src",
-  "../flext-web/src",
-]
+mypy_path = ["src", "."]
 namespace_packages = true
 no_implicit_reexport = true
 plugins = ["pydantic.mypy"]
@@ -199,18 +188,7 @@ project-excludes = [
 ]
 project-includes = ["examples/**/*.py*", "src/**/*.py*", "tests/**/*.py*"]
 python-version = "3.13"
-search-path = [
-  "src",
-  ".",
-  "../flext-api/src",
-  "../flext-cli/src",
-  "../flext-core/src",
-  "../flext-infra/src",
-  "../flext-meltano/src",
-  "../flext-oracle-wms/src",
-  "../flext-tests/src",
-  "../flext-web/src",
-]
+search-path = ["src", "."]
 use-ignore-files = false
 
 [tool.pyrefly.errors]
@@ -439,6 +417,7 @@ markers = [
   "oracle_wms: Oracle WMS integration tests",
   "performance: performance and benchmark tests",
   "real: tests requiring real external services",
+  "remote: tests requiring remote/external network services",
   "resilience: resilience tests",
   "singer: Singer protocol tests",
   "slow: slow-running tests",
