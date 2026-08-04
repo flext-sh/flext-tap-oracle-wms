@@ -41,7 +41,8 @@ class FlextTapOracleWmsSettings(FlextSettings):
         username: Annotated[str, m.Field(default="", description="Oracle WMS username")]
         password: Annotated[str, m.Field(default="", description="Oracle WMS password")]
         api_version: Annotated[
-            str, m.Field(default="V1", min_length=1, description="Oracle WMS API version")
+            str,
+            m.Field(default="V1", min_length=1, description="Oracle WMS API version"),
         ]
         timeout: Annotated[
             int, m.Field(default=30, ge=1, le=300, description="Request timeout (s)")
@@ -74,13 +75,16 @@ class FlextTapOracleWmsSettings(FlextSettings):
         ]
         column_mappings: Annotated[
             str,
-            m.Field(default="{}", description="Column rename mappings per stream (JSON)"),
+            m.Field(
+                default="{}", description="Column rename mappings per stream (JSON)"
+            ),
         ]
         ignored_columns: Annotated[
             list[str], m.Field(default_factory=list, description="Columns to ignore")
         ]
         enable_parallel_extraction: Annotated[
-            bool, m.Field(default=False, description="Enable parallel stream extraction")
+            bool,
+            m.Field(default=False, description="Enable parallel stream extraction"),
         ]
         max_parallel_streams: Annotated[
             int, m.Field(default=5, ge=1, description="Maximum parallel streams")
@@ -89,13 +93,15 @@ class FlextTapOracleWmsSettings(FlextSettings):
             bool, m.Field(default=True, description="Enable API rate limiting")
         ]
         max_requests_per_minute: Annotated[
-            int, m.Field(default=60, ge=1, description="Maximum API requests per minute")
+            int,
+            m.Field(default=60, ge=1, description="Maximum API requests per minute"),
         ]
         enable_schema_flattening: Annotated[
             bool, m.Field(default=True, description="Enable schema flattening")
         ]
         max_flattening_depth: Annotated[
-            int, m.Field(default=10, ge=1, description="Maximum schema flattening depth")
+            int,
+            m.Field(default=10, ge=1, description="Maximum schema flattening depth"),
         ]
         user_agent: Annotated[
             str | None, m.Field(default=None, description="Custom User-Agent header")
