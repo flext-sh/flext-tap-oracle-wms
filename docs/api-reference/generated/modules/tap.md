@@ -1,10 +1,10 @@
-<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
-
 # flext_tap_oracle_wms.tap
 
 <!-- TOC START -->
 - No sections found
 <!-- TOC END -->
+
+<!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
 ::: flext_tap_oracle_wms.tap
     options:
