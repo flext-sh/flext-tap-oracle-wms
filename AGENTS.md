@@ -34,6 +34,8 @@ src/flext_tap_oracle_wms/
 ## Conventions (specific to this package)
 
 - Config is exposed through the Singer `self.config` contract; WMS settings remain namespaced.
+- Config/settings canonical pattern: ADR-012.
+- Codemod governance (ast-grep + make mod): ADR-014.
 
 ## Commands
 
