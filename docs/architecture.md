@@ -24,7 +24,7 @@
   - [1. Exception Hierarchy](#1-exception-hierarchy)
   - [2. Error Recovery](#2-error-recovery)
 - [Testing Architecture](#testing-architecture)
-  - [1. Test Structure](#1-test-structure)
+  - [1. Test Structure```](#1-test-structure)
   - [2. Mock Strategy](#2-mock-strategy)
 - [Security Architecture](#security-architecture)
   - [1. Authentication Integration](#1-authentication-integration)
@@ -287,9 +287,7 @@ sequenceDiagram
     WMS_API-->>WMSClient: entities list
     WMSClient-->>Discovery: parsed entities
     Discovery-->>Tap: stream catalog
-    Tap-->>CLI: catalog.json
-```
-
+    Tap-->>CLI: catalog.json```
 ### 2. Extraction Flow
 
 ```mermaid
@@ -309,9 +307,7 @@ sequenceDiagram
         WMSClient-->>Stream: processed records
         Stream-->>Tap: singer records
     end
-    Tap-->>CLI: extracted data
-```
-
+    Tap-->>CLI: extracted data```
 ## Performance Architecture
 
 ### 1. Pagination Strategy
@@ -420,9 +416,7 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
     return decorator```
 ## Testing Architecture
 
-### 1. Test Structure
-
-```
+### 1. Test Structure```
 tests/
 ├── unit/                       # Unit tests for isolated components
 │   ├── test_tap.py            # Tap class testing
@@ -435,9 +429,7 @@ tests/
 ├── fixtures/                  # Test data and fixtures
 │   ├── wms_responses.json     # Mock WMS API responses
 │   └── config_samples.json    # Configuration examples
-└── conftest.py                # Pytest configuration and fixtures
-```
-
+└── conftest.py                # Pytest configuration and fixtures```
 ### 2. Mock Strategy
 
 ```python
