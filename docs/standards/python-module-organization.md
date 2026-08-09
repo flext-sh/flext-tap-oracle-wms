@@ -90,7 +90,9 @@ src/flext_tap_oracle_wms/
 │   ├── models.py             # MORE domain models
 │   ├── types.py              # MORE type definitions
 │   └── __init__.py
-└── [13 other support files]  # Additional complexity```
+└── [13 other support files]  # Additional complexity
+```
+
 **Issues**:
 
 - **26 modules** where 6-8 would suffice
@@ -114,7 +116,9 @@ src/flext_tap_oracle_wms/
 ├── discovery.py              # 🏛️ Unified entity discovery (~150 lines)
 ├── schema.py                 # 🏛️ Schema utilities (~100 lines)
 ├── auth.py                   # 🔧 Authentication wrapper (~50 lines)
-└── exceptions.py             # 🔧 Project-specific exceptions (~30 lines)```
+└── exceptions.py             # 🔧 Project-specific exceptions (~30 lines)
+```
+
 **Benefits**:
 
 - **90% code reduction** (8,179 → ~800 lines)
@@ -155,13 +159,17 @@ from flext_core import build_metadata_exports
 _metadata = build_metadata_exports(__file__)
 
 __version__: str = _metadata["__version__"]
-__version_info__: tuple[int | str, ...] = _metadata["__version_info__"]```
+__version_info__: tuple[int | str, ...] = _metadata["__version_info__"]
+```
+
 **Responsibility**: Establish clean public API and version management.
 
 **Import Pattern**:
 
 ```python
-# Standard ecosystem usage```
+# Standard ecosystem usage
+```
+
 ### **Application Layer - Tap Implementation**
 
 ```python
@@ -225,7 +233,9 @@ class FlextTapOracleWms(Tap):
             FlextTapOracleWmsStream(tap=self, name=entity)
             for entity in entities_result.value
             if entity in self.settings.entities
-        ]```
+        ]
+```
+
 **Responsibility**: Main tap orchestration using Singer SDK with FLEXT integration.
 
 **Usage Pattern**:
@@ -241,7 +251,9 @@ settings = {
 }
 
 tap = FlextTapOracleWms(settings)
-streams = tap.discover_streams()```
+streams = tap.discover_streams()
+```
+
 ### **Application Layer - Stream Implementation**
 
 ```python
@@ -332,7 +344,9 @@ class FlextTapOracleWmsStream(RESTStream):
 
         except Exception as e:
             self.logger.error(f"Extraction failed for {self.name}: {e}", exc_info=True)
-            raise```
+            raise
+```
+
 **Responsibility**: Data stream implementation with Singer SDK compliance.
 
 ### **Infrastructure Layer - Configuration**
@@ -427,7 +441,9 @@ class WMSConfig(FlextSettings):
         if auth_method == "oauth2" and not values.get("oauth_client_id"):
             raise ValueError("OAuth client ID required for OAuth2 authentication")
 
-        return v```
+        return v
+```
+
 **Responsibility**: Unified configuration with validation and environment support.
 
 ### **Domain Layer - Discovery & Schema**
@@ -531,7 +547,9 @@ class SchemaGenerator:
             "DATE": {"type": "string", "format": "date-time"},
             "BOOLEAN": {"type": "boolean"},
         }
-        return type_mapping.get(field.type, {"type": "string"})```
+        return type_mapping.get(field.type, {"type": "string"})
+```
+
 **Responsibility**: Entity discovery and schema generation using WMS metadata.
 
 ### **Infrastructure Layer - Authentication & Utilities**
@@ -600,7 +618,9 @@ class WMSDiscoveryError(WMSTapError):
 class WMSSchemaError(WMSTapError):
     """Schema generation errors."""
 
-    pass```
+    pass
+```
+
 **Responsibility**: Authentication delegation and project-specific error handling.
 
 ______________________________________________________________________
@@ -619,7 +639,9 @@ settings.py  # Configuration management (WMSConfig)
 discovery.py  # Entity discovery (EntityDiscovery)
 schema.py  # Schema utilities (SchemaGenerator)
 auth.py  # Authentication (AuthenticationManager)
-exceptions.py  # Project exceptions (WMSTapError, etc.)```
+exceptions.py  # Project exceptions (WMSTapError, etc.)
+```
+
 **Pattern**: Each module name clearly indicates its primary responsibility.
 
 ### **Class Naming Standards**
@@ -637,7 +659,9 @@ AuthenticationManager  # Service class (descriptive)
 # Error classes follow FLEXT hierarchy
 WMSTapError  # Base error (FLEXT pattern)
 WMSConfigurationError  # Specific error (descriptive)
-WMSDiscoveryError  # Specific error (descriptive)```
+WMSDiscoveryError  # Specific error (descriptive)
+```
+
 **Pattern**: Classes use descriptive names with context (WMS) and purpose.
 
 ### **Function and Method Naming**
@@ -655,7 +679,9 @@ def create_authenticated_client(settings) -> Client:    # Factory pattern
 @property
 def wms_client(self) -> FlextOracleWmsClient:     # Resource access
 @property
-def schema(self) -> m.Dict:               # Computed property```
+def schema(self) -> m.Dict:               # Computed property
+```
+
 **Pattern**: Verbs for actions, nouns for properties, clear business intent.
 
 ______________________________________________________________________
@@ -674,7 +700,9 @@ Infrastructure Layer (auth.py, exceptions.py)
     ↓
 FLEXT Foundation (flext-core, flext-oracle-wms)
     ↓
-External Libraries (singer-sdk, pydantic)```
+External Libraries (singer-sdk, pydantic)
+```
+
 **Rule**: Higher layers depend on lower layers, never the reverse.
 
 ### **Standard Import Patterns**
@@ -695,7 +723,9 @@ from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 # Project imports (relative)
 from flext_tap_oracle_wms import WMSConfig
 from flext_tap_oracle_wms import EntityDiscovery
-from flext_tap_oracle_wms import SchemaGenerator```
+from flext_tap_oracle_wms import SchemaGenerator
+```
+
 **Pattern**: External → FLEXT ecosystem → Project modules.
 
 ### **Anti-Patterns (Forbidden)**
@@ -710,7 +740,9 @@ from flext_tap_oracle_wms import *
 # ❌ Don't bypass abstraction layers
 # tap.py directly importing from flext_oracle_wms internals
 
-# ❌ Don't duplicate FLEXT functionality```
+# ❌ Don't duplicate FLEXT functionality
+```
+
 ______________________________________________________________________
 
 ## 🏛️ **Architectural Patterns for Singer Taps**
@@ -748,7 +780,9 @@ class FlextTapOracleWmsStream(RESTStream):
 
     def get_records(self, context) -> Iterator:  # Required method
         """Generate stream records."""
-        pass```
+        pass
+```
+
 ### **FLEXT Integration Pattern**
 
 ```python
@@ -776,7 +810,9 @@ def discover_entities(self) -> p.Result[t.StringList]:
 
 # Logging using FLEXT patterns
 self.logger = u.fetch_logger(__name__)
-self.logger.info("Starting extraction", entity=entity_name)```
+self.logger.info("Starting extraction", entity=entity_name)
+```
+
 ### **Clean Architecture Boundaries**
 
 ```python
@@ -802,7 +838,9 @@ class EntityDiscovery:
 class AuthenticationManager:
     def create_authenticated_client(self):
         # Infrastructure concern - external API client
-        pass```
+        pass
+```
+
 ______________________________________________________________________
 
 ## 🔄 **Migration Strategy from Current Architecture**
@@ -826,7 +864,9 @@ ______________________________________________________________________
 ❌ critical_validation.py    # 148 lines → merge into settings.py
 ❌ type_mapping.py           # 101 lines → merge into schema.py
 ❌ client.py                 # 32 lines → remove wrapper
-❌ domain/ directory         # Use flext-oracle-wms domain models```
+❌ domain/ directory         # Use flext-oracle-wms domain models
+```
+
 #### **Phase 2: Consolidation (Week 2)**
 
 ```python
@@ -837,7 +877,9 @@ ______________________________________________________________________
 ✅ settings.py        # 265 → ~100 lines (use FlextSettings)
 ✅ auth.py          # 109 → ~50 lines (wrapper around flext-oracle-wms)
 ✅ exceptions.py    # 316 → ~30 lines (use e.Error hierarchy)
-✅ schema.py        # NEW → ~100 lines (unified schema handling)```
+✅ schema.py        # NEW → ~100 lines (unified schema handling)
+```
+
 #### **Phase 3: Integration (Week 3)**
 
 ```python
@@ -851,7 +893,9 @@ from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 - Custom error handling → use r railway pattern
 - Custom logging → use u.fetch_logger()
 - Custom WMS client → use FlextOracleWmsClient
-- Custom result types → use r[T]```
+- Custom result types → use r[T]
+```
+
 ### **Migration Validation**
 
 ```python
@@ -867,7 +911,9 @@ Lines of Code: ~800 (90% reduction)
 Module Count: 8 (69% reduction)
 Discovery Systems: 1 unified implementation
 Configuration Systems: 1 FlextSettings-based
-Test Coverage: 100% (all tests enabled)```
+Test Coverage: 100% (all tests enabled)
+```
+
 ______________________________________________________________________
 
 ## 🧪 **Testing Module Organization**
@@ -893,7 +939,9 @@ tests/
 │   ├── wms_responses.json        # Mock WMS API responses
 │   ├── config_samples.json       # Configuration examples
 │   └── schema_samples.json       # Schema definitions
-└── conftest.py                   # Pytest configuration and fixtures```
+└── conftest.py                   # Pytest configuration and fixtures
+```
+
 ### **Testing Patterns**
 
 ```python
@@ -918,7 +966,9 @@ def test_config_validation():
 
 def test_entity_discovery():
     """Test entity discovery using r patterns."""
-    pass```
+    pass
+```
+
 ______________________________________________________________________
 
 ## 📏 **Quality Standards & Validation**
@@ -937,7 +987,9 @@ Documentation Coverage: 100%
 make lint
 make type-check
 make test                 # 95% coverage minimum
-make security             # Bandit + pip-audit```
+make security             # Bandit + pip-audit
+```
+
 ### **Documentation Standards**
 
 ```python
@@ -965,7 +1017,9 @@ def discover_entities(self) -> p.Result[t.StringList]:
         ...     print(f"Discovery failed: {result.error}")
 
     """
-    pass```
+    pass
+```
+
 ______________________________________________________________________
 
 ## 🌐 **FLEXT Ecosystem Integration Standards**
@@ -989,7 +1043,9 @@ logger = u.fetch_logger(__name__)                # Logging
 # ❌ Don't create project-specific alternatives
 class CustomConfig(m.BaseModel):               # Use FlextSettings
 class CustomResult[T]:                       # Use r
-custom_logger = logging.getLogger()          # Use u.fetch_logger()```
+custom_logger = logging.getLogger()          # Use u.fetch_logger()
+```
+
 ### **Library Integration**
 
 ```python
@@ -1000,7 +1056,9 @@ from flext_meltano import Tap, Stream
 
 # ❌ Don't reimplement library functionality
 class CustomWMSClient:                       # Use FlextOracleWmsClient
-class CustomTap(BaseTap):                    # Use flext_meltano.Tap```
+class CustomTap(BaseTap):                    # Use flext_meltano.Tap
+```
+
 ______________________________________________________________________
 
 ## 📋 **Module Creation Checklist**

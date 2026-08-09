@@ -281,7 +281,9 @@ class FlextTapOracleWms:
             return r.success(streams)
         except Exception as e:
             self.logger.error(f"Discovery failed: {e}")
-            return r.failure(str(e))```
+            return r.failure(str(e))
+```
+
 ### Type Safety Requirements
 
 ```python
@@ -297,7 +299,9 @@ def extract_records(
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety
-    pass```
+    pass
+```
+
 ### Error Handling Standards
 
 ```python
@@ -321,7 +325,9 @@ try:
     result = perform_operation()
 except WMSConfigurationError as e:
     logger.error(f"Configuration error: {e}", exc_info=True)
-    raise```
+    raise
+```
+
 ## Development Tools
 
 ### IDE Configuration
@@ -341,7 +347,9 @@ except WMSConfigurationError as e:
       "source.fixAll": true
     }
   }
-}```
+}
+```
+
 ### Git Hooks
 
 ```bash
@@ -349,7 +357,9 @@ except WMSConfigurationError as e:
 pre-commit install
 
 # Manual hook execution
-pre-commit run --all-files```
+pre-commit run --all-files
+```
+
 ### Debugging Configuration
 
 ```json
@@ -396,7 +406,9 @@ VALID_ENTITIES = [
     "receipt",
     "pick",
     "new_entity",  # Add here
-]```
+]
+```
+
 1. **Create Entity Tests**:
 
 ```python
@@ -406,7 +418,9 @@ from __future__ import annotations
 def test_new_entity_extraction(mock_wms_client):
     """Test new entity extraction."""
     # Implementation
-    pass```
+    pass
+```
+
 1. **Update Documentation**:
 
 - Add entity to README.md entity table
@@ -422,7 +436,9 @@ def test_new_entity_extraction(mock_wms_client):
 make wms-test
 
 # Debug authentication
-TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap --config settings.json --discover```
+TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap --config settings.json --discover
+```
+
 #### Schema Issues
 
 ```bash
@@ -432,7 +448,9 @@ from flext_tap_oracle_wms import EntityDiscovery
 discovery = EntityDiscovery()
 schema = discovery.get_entity_schema('item')
 u.Cli.print(schema)
-"```
+"
+```
+
 #### Performance Issues
 
 ```bash
