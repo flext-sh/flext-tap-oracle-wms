@@ -281,7 +281,9 @@ class FlextTapOracleWms:
             return r.success(streams)
         except Exception as e:
             self.logger.error(f"Discovery failed: {e}")
-            return r.failure(str(e))```
+            return r.failure(str(e))
+```
+
 ### Type Safety Requirements
 
 ```python
@@ -297,7 +299,9 @@ def extract_records(
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety
-    pass```
+    pass
+```
+
 ### Error Handling Standards
 
 ```python
@@ -321,7 +325,9 @@ try:
     result = perform_operation()
 except WMSConfigurationError as e:
     logger.error(f"Configuration error: {e}", exc_info=True)
-    raise```
+    raise
+```
+
 ## Development Tools
 
 ### IDE Configuration
@@ -400,7 +406,9 @@ VALID_ENTITIES = [
     "receipt",
     "pick",
     "new_entity",  # Add here
-]```
+]
+```
+
 1. **Create Entity Tests**:
 
 ```python
@@ -410,7 +418,9 @@ from __future__ import annotations
 def test_new_entity_extraction(mock_wms_client):
     """Test new entity extraction."""
     # Implementation
-    pass```
+    pass
+```
+
 1. **Update Documentation**:
 
 - Add entity to README.md entity table

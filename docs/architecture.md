@@ -204,7 +204,9 @@ class EntityDiscovery:
 # Infrastructure Layer (external dependencies)
 class WMSAuthenticator:
     def __init__(self, flext_wms_client: FlextOracleWmsClient):
-        self._client = flext_wms_client```
+        self._client = flext_wms_client
+```
+
 ### 2. Singer SDK Integration
 
 **Stream Pattern**: Standard Singer SDK stream implementation
@@ -233,7 +235,9 @@ class FlextTapOracleWmsStream(RESTStream):
     def get_records(self, context):
         """Extract records using flext-oracle-wms client."""
         for record in self.wms_client.get_entity_data(self.name):
-            yield record```
+            yield record
+```
+
 ### 3. Configuration Management
 
 **Single Source of Truth**: Unified configuration system
@@ -267,7 +271,9 @@ class WMSConfig(FlextSettings):
         invalid = set(v) - set(valid_entities)
         if invalid:
             raise ValueError(f"Invalid entities: {invalid}")
-        return v```
+        return v
+```
+
 ## Data Flow Architecture
 
 ### 1. Discovery Flow
@@ -328,7 +334,9 @@ class WMSPaginator:
 
     def get_next_url(self, response: dict) -> str | None:
         """Extract next page URL from HATEOAS links."""
-        return response.get("links", {}).get("next")```
+        return response.get("links", {}).get("next")
+```
+
 ### 2. Caching Strategy
 
 ```python
@@ -342,7 +350,9 @@ class WMSCache:
     @lru_cache(maxsize=1000)
     def get_entity_schema(self, entity_name: str) -> m.Dict:
         """Cache entity schemas for discovery."""
-        return self._fetch_schema(entity_name)```
+        return self._fetch_schema(entity_name)
+```
+
 ### 3. Connection Management
 
 ```python
@@ -362,7 +372,9 @@ class WMSConnectionManager:
 
     def get_client(self) -> FlextOracleWmsClient:
         """Get configured WMS client."""
-        return self.client```
+        return self.client
+```
+
 ## Error Handling Architecture
 
 ### 1. Exception Hierarchy
@@ -392,7 +404,9 @@ class WMSEntityNotFoundError(WMSTapError):
 class WMSSchemaError(WMSTapError):
     """WMS schema validation errors."""
 
-    pass```
+    pass
+```
+
 ### 2. Error Recovery
 
 ```python
@@ -417,12 +431,14 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
 
         return wrapper
 
-    return decorator```
+    return decorator
+```
+
 ## Testing Architecture
 
 ### 1. Test Structure
 
-```
+```text
 tests/
 ├── unit/                       # Unit tests for isolated components
 │   ├── test_tap.py            # Tap class testing
@@ -467,7 +483,9 @@ def test_stream_extraction(mock_wms_client):
         stream = FlextTapOracleWmsStream(tap=mock_tap, name="item")
         records = list(stream.get_records(None))
         assert len(records) == 2
-        assert records[0]["id"] == "1"```
+        assert records[0]["id"] == "1"
+```
+
 ## Security Architecture
 
 ### 1. Authentication Integration
@@ -488,7 +506,9 @@ class TapAuthentication:
 
     def get_authenticated_client(self):
         """Get authenticated WMS client."""
-        return self.authenticator.get_client()```
+        return self.authenticator.get_client()
+```
+
 ### 2. Configuration Security
 
 ```python
@@ -509,7 +529,9 @@ class SecureWMSConfig(WMSConfig):
             creds["password"] = self.password.get_secret_value()
         if self.oauth_client_secret:
             creds["client_secret"] = self.oauth_client_secret.get_secret_value()
-        return creds```
+        return creds
+```
+
 ## Migration Strategy
 
 ### Phase 1: Emergency Simplification (Week 1)
@@ -561,7 +583,7 @@ ______________________________________________________________________
 
 - [Getting Started](getting-started.md) - Installation and basic usage
 - [API Reference](api-reference.md) - Complete API documentation
-- [Examples](../examples/) - Working code examples
+- [Examples](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-tap-oracle-wms/examples/) - Working code examples
 
 **Across Projects**:
 

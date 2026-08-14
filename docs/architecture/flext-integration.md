@@ -108,7 +108,9 @@ class FlextTapOracleWms:
             return r.success(streams)
         except Exception as e:
             self.logger.error(f"Stream discovery failed: {e}")
-            return r.failure(f"Discovery error: {e}")```
+            return r.failure(f"Discovery error: {e}")
+```
+
 #### Type System Integration
 
 ```python
@@ -136,7 +138,9 @@ class FlextTapOracleWmsStream:
             "id": TEntityId(raw_record.get("id")),
             "data": raw_record,
             "extracted_at": datetime.utcnow().isoformat(),
-        }```
+        }
+```
+
 #### Logging Integration
 
 ```python
@@ -172,7 +176,9 @@ class FlextTapOracleWmsStream:
 
         except Exception as e:
             self.logger.error(f"Extraction failed for {self.name}: {e}", exc_info=True)
-            raise```
+            raise
+```
+
 ### 2. flext-oracle-wms Integration
 
 #### WMS Client Integration
@@ -221,7 +227,9 @@ class WMSClientManager:
             return r.failure(f"Authentication error: {e}")
         except FlextOracleWmsError as e:
             self.logger.error(f"WMS client error: {e}")
-            return r.failure(f"WMS error: {e}")```
+            return r.failure(f"WMS error: {e}")
+```
+
 #### Entity Discovery Integration
 
 ```python
@@ -266,7 +274,9 @@ class EntityDiscovery:
             schema = self._convert_metadata_to_schema(metadata_result.value)
             return r.success(schema)
         except Exception as e:
-            return r.failure(f"Schema generation error: {e}")```
+            return r.failure(f"Schema generation error: {e}")
+```
+
 ### 3. flext-meltano Integration
 
 #### Singer SDK Integration
@@ -331,7 +341,9 @@ class FlextTapOracleWmsStream(Stream):
                 yield record
         except Exception as e:
             self.logger.error(f"Record extraction failed: {e}")
-            raise```
+            raise
+```
+
 #### Configuration Integration
 
 ```python
@@ -388,7 +400,9 @@ class WMSMeltanoConfig(MeltanoConfig):
         invalid = set(v) - set(valid_entities)
         if invalid:
             raise ValueError(f"Invalid entities: {invalid}")
-        return v```
+        return v
+```
+
 ### 4. flext-observability Integration
 
 #### Monitoring Integration
@@ -475,7 +489,9 @@ class FlextTapOracleWmsStream(Stream):
                 self.tap.metrics.record_counter(
                     "extraction_errors", 1, tags={"entity": self.name, "error": str(e)}
                 )
-                raise```
+                raise
+```
+
 #### Health Check Integration
 
 ```python
@@ -530,7 +546,9 @@ class WMSHealthCheck:
         except Exception as e:
             return HealthCheckResult(
                 status=HealthStatus.DEGRADED, message=f"Authentication check error: {e}"
-            )```
+            )
+```
+
 ## Integration Benefits
 
 ### Consistency
