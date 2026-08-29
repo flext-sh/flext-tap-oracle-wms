@@ -44,7 +44,7 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
       186          conv = u.TapOracleWms.MappingConversion
 ```
 
-**Decisão**: 
+**Decisão**: pendente
 
 ### 2 · 🟠 CRITICAL · CODE_SMELL · `python:S3776`
 **Local**: `src/flext_tap_oracle_wms/tap.py:83` · **Effort**: 19min
@@ -63,7 +63,7 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
        87              raw_streams
 ```
 
-**Decisão**: 
+**Decisão**: pendente
 
 ### 3 · 🟡 MAJOR · VULNERABILITY · `githubactions:S8264`
 **Local**: `.github/workflows/docs.yml:18` · **Effort**: 5min
@@ -82,7 +82,7 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
        22  concurrency:
 ```
 
-**Decisão**: 
+**Decisão**: pendente
 
 ### 4 · 🟡 MAJOR · VULNERABILITY · `githubactions:S8233`
 **Local**: `.github/workflows/docs.yml:19` · **Effort**: 5min
@@ -101,7 +101,7 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
        23    group: pages
 ```
 
-**Decisão**: 
+**Decisão**: pendente
 
 ### 5 · 🟡 MAJOR · VULNERABILITY · `githubactions:S8233`
 **Local**: `.github/workflows/docs.yml:20` · **Effort**: 5min
@@ -120,7 +120,7 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
        24    cancel-in-progress: false
 ```
 
-**Decisão**: 
+**Decisão**: pendente
 
 ### 6 · 🟡 MAJOR · CODE_SMELL · `python:S108`
 **Local**: `examples/01_basic_usage.py:50` · **Effort**: 5min
@@ -139,7 +139,7 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
        54  
 ```
 
-**Decisão**: 
+**Decisão**: pendente
 
 ### 7 · 🟡 MAJOR · VULNERABILITY · `text:S8565`
 **Local**: `pyproject.toml:-` · **Effort**: 5min
@@ -147,7 +147,7 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
 > Dependency versions are not predictable if the lock file (uv.lock, poetry.lock, pdm.lock or pylock.toml) is missing.
 
 
-**Decisão**: 
+**Decisão**: pendente
 
 ### 8 · 🟡 MAJOR · CODE_SMELL · `python:S3358`
 **Local**: `src/flext_tap_oracle_wms/api.py:42` · **Effort**: 5min
@@ -166,7 +166,7 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
        46          )
 ```
 
-**Decisão**: 
+**Decisão**: pendente
 
 ### 9 · ⚪ MINOR · CODE_SMELL · `python:S7504`
 **Local**: `conftest.py:20` · **Effort**: 5min
@@ -185,7 +185,7 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
        24                  sys.modules.pop(module_name, None)
 ```
 
-**Decisão**: 
+**Decisão**: pendente
 
 ### 10 · ⚪ MINOR · CODE_SMELL · `python:S8714`
 **Local**: `tests/integration/test_wms_connection.py:92` · **Effort**: 5min
@@ -204,5 +204,4 @@ Cada issue traz a **mensagem do SonarQube** (descreve o problema e o impacto), o
        96                  if record_count >= max_records:
 ```
 
-**Decisão**: 
-
+**Decisão**: pendente
