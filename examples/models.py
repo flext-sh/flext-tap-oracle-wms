@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from flext_core import FlextTapOracleWmsModels
 
+
 class ExamplesFlextTapOracleWmsModels(FlextTapOracleWmsModels):
     """Domain models for flexttaporaclewms."""
 
