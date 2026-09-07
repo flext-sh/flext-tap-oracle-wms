@@ -15,7 +15,8 @@ from typing import TYPE_CHECKING, Annotated
 
 from pydantic_settings import SettingsConfigDict
 
-from flext_core import FlextSettings, m
+from flext_core import FlextSettings
+from flext_tap_oracle_wms import m
 
 _ISO_DATE_RE = re.compile(
     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"

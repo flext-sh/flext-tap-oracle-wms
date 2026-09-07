@@ -206,9 +206,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """Discover source entities and convert them into Singer catalog streams."""
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.failure:
-            return r[m.Meltano.SingerCatalog].fail(
-                discovery_result.error or "Discovery failed"
-            )
+            return r[m.Meltano.SingerCatalog].from_failure(discovery_result)
         entities: t.StrSequence = list(discovery_result.value)
         streams: list[m.Meltano.SingerCatalogEntry] = []
         for entity in entities:
@@ -218,10 +216,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 key_properties=("id",),
             )
             if entry_result.failure:
-                return r[m.Meltano.SingerCatalog].fail(
-                    entry_result.error
-                    or f"Failed to build Singer catalog entry for {entity}"
-                )
+                return r[m.Meltano.SingerCatalog].from_failure(entry_result)
             streams.append(
                 entry_result.value.model_copy(
                     update={
@@ -307,4 +302,4 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             KeyError,
             FlextTapOracleWmsConfigurationError,
         ) as exc:
-            return r[bool].fail(str(exc))
+            return r[bool].fail(str(exc), exception=exc)
