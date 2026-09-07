@@ -38,15 +38,13 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     def __init__(
         self,
         tap: m.Meltano.SingerTapBase,
-        schema: t.JsonMapping
-        | m.Meltano.StreamDefinition.schema_definition_annotation
-        | None = None,
         name: str | None = None,
+        schema: t.JsonMapping | None = None,
     ) -> None:
         """Initialize stream."""
         schema_dict: t.JsonDict | None = (
             t.json_dict_adapter().validate_python(dict(schema))
-            if isinstance(schema, t.Mapping)
+            if schema is not None
             else None
         )
         m.Meltano.SingerStreamBase.__init__(
