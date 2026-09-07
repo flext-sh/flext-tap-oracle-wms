@@ -287,7 +287,7 @@ from collections.abc import Iterator
 from flext_meltano import (
     Tap,  # Base tap class with FLEXT patterns
     Stream,  # Base stream class
-    )
+)
 
 
 class FlextTapOracleWms(Tap):
