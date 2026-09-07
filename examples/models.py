@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_core import FlextTapOracleWmsModels
+from flext_tap_oracle_wms import FlextTapOracleWmsModels
 
 
 class ExamplesFlextTapOracleWmsModels(FlextTapOracleWmsModels):

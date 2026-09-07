@@ -49,4 +49,6 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         )
 
 
-__all__: list[str] = ["FlextTapOracleWmsService"]
+tap_oracle_wms = FlextTapOracleWmsService
+
+__all__: list[str] = ["FlextTapOracleWmsService", "tap_oracle_wms"]

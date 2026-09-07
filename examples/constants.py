@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flext_core import FlextTapOracleWmsConstants
+from flext_tap_oracle_wms import FlextTapOracleWmsConstants
 
 
 class ExamplesFlextTapOracleWmsConstants(FlextTapOracleWmsConstants):
