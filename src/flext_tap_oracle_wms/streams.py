@@ -40,11 +40,10 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         tap: m.Meltano.SingerTapBase,
         name: str | None = None,
         schema: t.JsonMapping | None = None,
-        _path: str | None = None,
     ) -> None:
         """Initialize stream."""
         schema_dict: t.JsonDict | None = (
-            t.json_dict_adapter().validate_python(schema)
+            t.json_dict_adapter().validate_python(dict(schema))
             if schema is not None
             else None
         )
