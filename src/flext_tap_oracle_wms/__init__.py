@@ -20,8 +20,6 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from typing import TYPE_CHECKING, ClassVar, Final
-
     from flext_meltano import FlextMeltanoConstants, d, e, h, r, s, x
     from flext_oracle_wms import FlextOracleWmsConstants
 
@@ -35,9 +33,6 @@ if TYPE_CHECKING:
     from .typings import FlextTapOracleWmsTypes, FlextTapOracleWmsTypes as t
     from .utilities import FlextTapOracleWmsUtilities, FlextTapOracleWmsUtilities as u
 __all__: tuple[str, ...] = (
-    "TYPE_CHECKING",
-    "ClassVar",
-    "Final",
     "FlextMeltanoConstants",
     "FlextOracleWmsConstants",
     "FlextTapOracleWmsConfig",
@@ -87,7 +82,6 @@ _LAZY_IMPORTS = MappingProxyType(
             ".utilities": ("FlextTapOracleWmsUtilities", "u"),
             "flext_meltano": ("FlextMeltanoConstants", "d", "e", "h", "r", "s", "x"),
             "flext_oracle_wms": ("FlextOracleWmsConstants",),
-            "typing": ("ClassVar", "Final", "TYPE_CHECKING"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
