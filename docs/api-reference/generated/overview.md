@@ -27,7 +27,7 @@
   `FlextTapOracleWmsConstants`, `FlextTapOracleWmsModels`,
   `FlextTapOracleWmsProtocols`, `FlextTapOracleWmsService`,
   `FlextTapOracleWmsSettings`, `FlextTapOracleWmsTypes`,
-  `FlextTapOracleWmsUtilities`, `config`, `main` (+2 more)
+  `FlextTapOracleWmsUtilities`, `config`, `main` (+1 more)
 - Exported module shortcuts: _none_
 - Generated module pages: `7`
 
