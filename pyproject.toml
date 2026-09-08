@@ -598,6 +598,7 @@ link-mode = "copy"
 
 [tool.uv.exclude-newer-package]
 cryptography = false
+torch = false
 
 [tool.vulture]
 exclude = ["*/_protocols/*"]

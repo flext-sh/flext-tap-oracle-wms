@@ -381,8 +381,8 @@ class TestsFlextTapOracleWmsFunctional:
                 test_stream = catalog_streams[0]
                 stream_obj = FlextTapOracleWmsStream(
                     real_tap_instance,
-                    test_stream.tap_stream_id,
-                    self._schema(test_stream),
+                    name=test_stream.tap_stream_id,
+                    schema=self._schema(test_stream),
                 )
                 params = stream_obj.build_operation_kwargs(page=1, context=None)
                 paginated = "limit" in params

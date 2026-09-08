@@ -49,6 +49,6 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         )
 
 
-tap_oracle_wms = FlextTapOracleWmsService
+tap_oracle_wms: FlextTapOracleWmsService = FlextTapOracleWmsService.fetch_global()
 
 __all__: list[str] = ["FlextTapOracleWmsService", "tap_oracle_wms"]

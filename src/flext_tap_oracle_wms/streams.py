@@ -7,14 +7,20 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import json
+from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, override
+
+from singer_sdk.singerlib import Schema
 
 from flext_tap_oracle_wms import c, m, p, r, t, u
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
 
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsUtilities
+
+    type SingerSchemaInput = str | PathLike[str] | t.JsonMapping | Schema | None
 
 logger = u.fetch_logger(__name__)
 
@@ -38,15 +44,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     def __init__(
         self,
         tap: m.Meltano.SingerTapBase,
+        schema: SingerSchemaInput = None,
         name: str | None = None,
-        schema: t.JsonMapping | None = None,
     ) -> None:
         """Initialize stream."""
-        schema_dict: t.JsonDict | None = (
-            t.json_dict_adapter().validate_python(dict(schema))
-            if schema is not None
-            else None
-        )
+        schema_dict: t.JsonDict | None = self._normalize_schema(schema)
         m.Meltano.SingerStreamBase.__init__(
             self, tap=tap, name=name or self.name, schema=schema_dict
         )
@@ -67,6 +69,29 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             )
             else 100
         )
+
+    @staticmethod
+    def _normalize_schema(schema: SingerSchemaInput) -> t.JsonDict | None:
+        """Normalize every schema form accepted by the Singer SDK base class.
+
+        Dictionaries pass through validation, Singer ``Schema`` objects dump to
+        their dictionary form, and file-system paths load the JSON document.
+        """
+        if schema is None:
+            return None
+        if isinstance(schema, Schema):
+            return t.json_dict_adapter().validate_python(schema.to_dict())
+        if isinstance(schema, PathLike):
+            return FlextTapOracleWmsStream._load_schema_document(Path(schema))
+        if isinstance(schema, str):
+            return FlextTapOracleWmsStream._load_schema_document(Path(schema))
+        return t.json_dict_adapter().validate_python(dict(schema))
+
+    @staticmethod
+    def _load_schema_document(path: Path) -> t.JsonDict:
+        """Load one JSON schema document from a file-system path."""
+        loaded = json.loads(path.read_text(encoding=c.DEFAULT_ENCODING))
+        return t.json_dict_adapter().validate_python(loaded)
 
     @property
     @override
