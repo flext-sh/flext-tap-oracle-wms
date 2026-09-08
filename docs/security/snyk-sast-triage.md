@@ -32,7 +32,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
        70              "max_retries": 3,
 ```
 
-**Decisão**: 
+**Decisão**:
 
 ### 2 · ⚪ LOW · Use of Hardcoded Passwords
 **Local**: `tests/integration/test_wms_connection.py:183` · **CWE**: -
@@ -49,7 +49,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
       187          result = tap.validate_configuration()
 ```
 
-**Decisão**: 
+**Decisão**:
 
 ### 3 · ⚪ LOW · Use of Hardcoded Passwords
 **Local**: `tests/unit/test_config.py:32` · **CWE**: -
@@ -66,7 +66,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
        36          tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
 ```
 
-**Decisão**: 
+**Decisão**:
 
 ### 4 · ⚪ LOW · Use of Hardcoded Passwords
 **Local**: `tests/unit/test_config.py:57` · **CWE**: -
@@ -83,7 +83,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
        61                  "retry_delay": 2,
 ```
 
-**Decisão**: 
+**Decisão**:
 
 ### 5 · ⚪ LOW · Use of Hardcoded Passwords
 **Local**: `tests/unit/test_config.py:239` · **CWE**: -
@@ -100,7 +100,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
       243          password_value = (
 ```
 
-**Decisão**: 
+**Decisão**:
 
 ### 6 · ⚪ LOW · Use of Hardcoded Passwords
 **Local**: `tests/unit/test_config_validation.py:31` · **CWE**: -
@@ -117,7 +117,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
        35          tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
 ```
 
-**Decisão**: 
+**Decisão**:
 
 ### 7 · ⚪ LOW · Use of Hardcoded Passwords
 **Local**: `tests/unit/test_config_validation.py:202` · **CWE**: -
@@ -134,7 +134,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
       206          password_value = (
 ```
 
-**Decisão**: 
+**Decisão**:
 
 ### 8 · ⚪ LOW · Use of Hardcoded Passwords
 **Local**: `tests/unit/test_tap.py:46` · **CWE**: -
@@ -151,5 +151,5 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
        50          tm.that(tap.flext_config.TapOracleWms.base_url, has="test.wms.example.com")
 ```
 
-**Decisão**: 
+**Decisão**:
 
