@@ -152,4 +152,3 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
 ```
 
 **Decisão**:
-
