@@ -17,13 +17,13 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import pytest
-
 from flext_cli import u as cli_u
 from flext_meltano import c as meltano_c
+from flext_tests import tm
+
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from flext_tests import tm
 from tests import t, u
 
 if TYPE_CHECKING:

@@ -14,6 +14,7 @@ from collections.abc import Callable
 
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import t
+
 from flext_tap_oracle_wms import m
 
 

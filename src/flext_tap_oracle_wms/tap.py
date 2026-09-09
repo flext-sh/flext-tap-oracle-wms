@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import ClassVar, override
 
 from flext_oracle_wms import FlextOracleWmsSettings, FlextOracleWmsUtilities
+
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, c, m, p, r, t, u
 from flext_tap_oracle_wms.__version__ import __version__
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError

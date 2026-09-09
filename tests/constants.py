@@ -8,8 +8,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms import FlextTapOracleWmsConstants
 from flext_tests import FlextTestsConstants
+
+from flext_tap_oracle_wms import FlextTapOracleWmsConstants
 
 
 class TestsFlextTapOracleWmsConstants(FlextTestsConstants, FlextTapOracleWmsConstants):

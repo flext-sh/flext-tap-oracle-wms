@@ -15,10 +15,10 @@ from typing import TYPE_CHECKING
 import psutil
 import pytest
 from dotenv import load_dotenv
+from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from flext_tests import tm
 
 if TYPE_CHECKING:
     from tests import t

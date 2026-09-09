@@ -11,11 +11,11 @@ from collections.abc import MutableSequence
 from typing import TYPE_CHECKING
 
 import pytest
+from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from flext_tests import tm
 from tests import t, u
 
 if TYPE_CHECKING:
