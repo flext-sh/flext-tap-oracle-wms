@@ -8,7 +8,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import MutableSequence
-from typing import TYPE_CHECKING
 
 import pytest
 from flext_tests import tm
@@ -17,9 +16,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import t, u
-
-if TYPE_CHECKING:
-    from tests import m
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 logger = u.fetch_logger(__name__)
 
@@ -28,24 +25,14 @@ _ORACLE_WMS_MAX_LIMIT = 1250
 
 
 @pytest.mark.functional
-class TestsFlextTapOracleWmsFunctional:
+class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
-    @staticmethod
-    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
-        """Return the typed discovered catalog used by runtime code."""
-        result = tap.discovercatalog_typed()
-        tm.ok(result)
-        catalog: m.Meltano.SingerCatalog = result.unwrap()
-        return catalog
-
-    @staticmethod
-    def _schema(stream: m.Meltano.SingerCatalogEntry) -> t.JsonMapping:
-        """Normalize model schema payload to the runtime stream contract."""
-        schema: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-            stream.schema_definition
-        )
-        return schema
+    _TAP_CONNECTION_ERROR_KEYWORDS = (
+        "connection",
+        "network",
+        "timeout",
+    )
 
     def test_real_wms_environment_verification(
         self, real_config: FlextTapOracleWmsSettings
@@ -111,15 +98,7 @@ class TestsFlextTapOracleWmsFunctional:
 
         try:
             return _run_test_automatic_entity_discovery()
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ):
+        except self._TAP_RECOVERABLE_EXCEPTIONS:
             logger.exception("❌ Entity discovery failed")
             raise
 
@@ -191,15 +170,7 @@ class TestsFlextTapOracleWmsFunctional:
 
         try:
             return _run_test_real_data_extraction_sample()
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ):
+        except self._TAP_RECOVERABLE_EXCEPTIONS:
             logger.exception("❌ Stream creation failed for %s", stream_id)
             raise
 
@@ -292,34 +263,11 @@ class TestsFlextTapOracleWmsFunctional:
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """Test error handling with invalid configurations."""
-        invalid_settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                **real_config.TapOracleWms.model_dump(),
-                "base_url": "https://invalid-url-that-does-not-exist.com",
-            }
-        })
-        tap = FlextTapOracleWms.from_settings(invalid_settings)
-        try:
-            catalog = self._catalog(tap)
-            tm.that(catalog.streams, none=False)
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as e:
-            error_msg = str(e).lower()
-            has_meaningful_error = (
-                "connection" in error_msg
-                or "network" in error_msg
-                or "timeout" in error_msg
-            )
-            if not has_meaningful_error:
-                pytest.fail(f"Unexpected error type: {e}")
-            logger.info("✅ Network error handled gracefully: %s", type(e).__name__)
+        self._assert_invalid_tap_recovery(
+            real_config,
+            {"base_url": "https://invalid-url-that-does-not-exist.com"},
+        )
+        logger.info("✅ Network error handled gracefully")
 
     @pytest.mark.functional
     def test_configuration_validation(
@@ -406,15 +354,7 @@ class TestsFlextTapOracleWmsFunctional:
                 pagination_configured,
                 singer_compliant,
             ) = _collect_summary()
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as e:
+        except self._TAP_RECOVERABLE_EXCEPTIONS as e:
             errors.append(str(e))
         logger.info("🔍 COMPREHENSIVE FUNCTIONALITY SUMMARY:")
         logger.info("  ✅ Environment loaded: %s", environment_loaded)

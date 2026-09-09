@@ -16,6 +16,7 @@ from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 if TYPE_CHECKING:
     from tests import t
@@ -25,7 +26,7 @@ _PAGE_SAMPLE_LIMIT = 5
 _MIN_SAMPLE_RECORDS = 2
 
 
-class TestsFlextTapOracleWmsWmsConnection:
+class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
     """Test real Oracle WMS connection."""
 
     def test_configuration_validation(
@@ -95,15 +96,7 @@ class TestsFlextTapOracleWmsWmsConnection:
                 record_count += 1
                 if record_count >= max_records:
                     break
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as e:
+        except self._TAP_RECOVERABLE_EXCEPTIONS as e:
             pytest.fail(f"Failed to extract records from {stream_name}: {e}")
 
     def test_pagination_functionality(
