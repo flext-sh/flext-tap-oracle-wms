@@ -26,9 +26,10 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
 
     def test_minimal_config(self) -> None:
         """Test creating settings with minimal fields."""
-        settings = self._tap_settings(
-            {"username": "test_user", "password": "test_pass"}
-        )
+        settings = self._tap_settings({
+            "username": "test_user",
+            "password": "test_pass",
+        })
         namespace = settings.TapOracleWms
         tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
         tm.that(namespace.username, eq="test_user")
@@ -107,9 +108,10 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
 
     def test_date_validation(self) -> None:
         """Test date format validation."""
-        settings = self._tap_settings(
-            {"start_date": "2024-01-01T00:00:00Z", "end_date": "2024-12-31T23:59:59Z"}
-        )
+        settings = self._tap_settings({
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-12-31T23:59:59Z",
+        })
         tm.that(settings.TapOracleWms.start_date, eq="2024-01-01T00:00:00Z")
         with pytest.raises(c.ValidationError) as exc_info:
             self._tap_settings({"start_date": "01/01/2024"})

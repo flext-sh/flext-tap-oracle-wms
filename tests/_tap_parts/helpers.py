@@ -79,9 +79,7 @@ class OracleWmsTapTestHelpersMixin:
         if not any(kw in error_msg for kw in self._TAP_CONNECTION_ERROR_KEYWORDS):
             pytest.fail(f"Unexpected error: {error}")
 
-    def _first_stream(
-        self, tap: FlextTapOracleWms
-    ) -> FlextTapOracleWmsStream:
+    def _first_stream(self, tap: FlextTapOracleWms) -> FlextTapOracleWmsStream:
         """Return the first discovered stream, skipping when none exist."""
         catalog = self._catalog(tap)
         streams = catalog.streams
@@ -99,10 +97,7 @@ class OracleWmsTapTestHelpersMixin:
     ) -> None:
         """Attempt catalog discovery with invalid settings; assert error."""
         invalid_settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                **real_config.TapOracleWms.model_dump(),
-                **overrides,
-            }
+            "TapOracleWms": {**real_config.TapOracleWms.model_dump(), **overrides}
         })
         tap = FlextTapOracleWms.from_settings(invalid_settings)
         try:
@@ -125,4 +120,8 @@ class OracleWmsTapTestHelpersMixin:
     def _password_value(settings: FlextTapOracleWmsSettings) -> str:
         """Extract the plaintext password from settings (handles SecretStr)."""
         password = settings.TapOracleWms.password
-        return password.get_secret_value() if isinstance(password, t.SecretStr) else password
+        return (
+            password.get_secret_value()
+            if isinstance(password, t.SecretStr)
+            else password
+        )

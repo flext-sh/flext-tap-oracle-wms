@@ -28,11 +28,7 @@ _ORACLE_WMS_MAX_LIMIT = 1250
 class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
-    _TAP_CONNECTION_ERROR_KEYWORDS = (
-        "connection",
-        "network",
-        "timeout",
-    )
+    _TAP_CONNECTION_ERROR_KEYWORDS = ("connection", "network", "timeout")
 
     def test_real_wms_environment_verification(
         self, real_config: FlextTapOracleWmsSettings
@@ -264,8 +260,7 @@ class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
     ) -> None:
         """Test error handling with invalid configurations."""
         self._assert_invalid_tap_recovery(
-            real_config,
-            {"base_url": "https://invalid-url-that-does-not-exist.com"},
+            real_config, {"base_url": "https://invalid-url-that-does-not-exist.com"}
         )
         logger.info("✅ Network error handled gracefully")
 

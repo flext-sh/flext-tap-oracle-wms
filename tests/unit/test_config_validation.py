@@ -84,9 +84,10 @@ class TestsFlextTapOracleWmsConfigValidation(OracleWmsTapTestHelpersMixin):
 
     def test_date_fields(self) -> None:
         """Test date fields are accepted."""
-        settings = self._tap_settings(
-            {"start_date": "2024-01-01T00:00:00Z", "end_date": "2024-12-31T23:59:59Z"}
-        )
+        settings = self._tap_settings({
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-12-31T23:59:59Z",
+        })
         tm.that(settings.TapOracleWms.start_date, eq="2024-01-01T00:00:00Z")
         tm.that(settings.TapOracleWms.end_date, eq="2024-12-31T23:59:59Z")
 

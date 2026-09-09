@@ -256,8 +256,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         self._assert_invalid_tap_recovery(
-            real_config,
-            {"password": f"{real_config.TapOracleWms.password}-wrong"},
+            real_config, {"password": f"{real_config.TapOracleWms.password}-wrong"}
         )
         logger.info("✅ Error recovery tested")
 
