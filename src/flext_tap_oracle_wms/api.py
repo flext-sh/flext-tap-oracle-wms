@@ -16,6 +16,7 @@ from flext_meltano.services.consumer_bases.tap_service_base import (
     FlextMeltanoTapServiceBase,
 )
 from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapAdapter
+
 from flext_tap_oracle_wms import p, t, u
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
@@ -49,6 +50,6 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         )
 
 
-tap_oracle_wms = FlextTapOracleWmsService
+tap_oracle_wms: FlextTapOracleWmsService = FlextTapOracleWmsService.fetch_global()
 
 __all__: list[str] = ["FlextTapOracleWmsService", "tap_oracle_wms"]

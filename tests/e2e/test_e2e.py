@@ -17,14 +17,15 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import pytest
-
 from flext_cli import u as cli_u
 from flext_meltano import c as meltano_c
+from flext_tests import tm
+
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from flext_tests import tm
 from tests import t, u
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 if TYPE_CHECKING:
     from tests import m
@@ -37,24 +38,8 @@ _MIN_DISCOVERY_RATE = 0.1
 
 
 @pytest.mark.e2e
-class TestsFlextTapOracleWmsE2e:
+class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
-
-    @staticmethod
-    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
-        """Return the typed discovered catalog used by runtime code."""
-        result = tap.discovercatalog_typed()
-        tm.ok(result)
-        catalog: m.Meltano.SingerCatalog = result.unwrap()
-        return catalog
-
-    @staticmethod
-    def _schema(stream: m.Meltano.SingerCatalogEntry) -> t.JsonMapping:
-        """Normalize model schema payload to the runtime stream contract."""
-        schema: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-            stream.schema_definition
-        )
-        return schema
 
     def test_complete_discovery_to_catalog(
         self, real_config: FlextTapOracleWmsSettings
@@ -270,37 +255,9 @@ class TestsFlextTapOracleWmsE2e:
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
         """E2E: Test error recovery and system resilience."""
-        namespace = real_config.TapOracleWms
-        invalid_settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                **namespace.model_dump(),
-                "password": f"{namespace.password}-wrong",
-            }
-        })
-        tap = FlextTapOracleWms.from_settings(invalid_settings)
-        try:
-            catalog = self._catalog(tap)
-            tm.that(catalog.streams, none=False)
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as e:
-            error_msg = str(e).lower()
-            meaningful_errors = [
-                "authentication",
-                "authorization",
-                "credentials",
-                "unauthorized",
-                "forbidden",
-            ]
-            has_meaningful_error = any(err in error_msg for err in meaningful_errors)
-            if not has_meaningful_error:
-                pytest.fail(f"Unexpected error: {e}")
+        self._assert_invalid_tap_recovery(
+            real_config, {"password": f"{real_config.TapOracleWms.password}-wrong"}
+        )
         logger.info("✅ Error recovery tested")
 
     def test_complete_singer_protocol_compliance(
@@ -440,15 +397,7 @@ class TestsFlextTapOracleWmsE2e:
                 singer_compliant,
                 performance_acceptable,
             ) = _collect_summary()
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as e:
+        except self._TAP_RECOVERABLE_EXCEPTIONS as e:
             errors.append(str(e))
         logger.info("🎯 FINAL E2E INTEGRATION SUMMARY:")
         logger.info("  ✅ Discovery successful: %s", discovery_successful)

@@ -12,38 +12,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
+from flext_tests import tm
 
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
-from flext_tests import tm
-from tests import t, u
+from tests import u
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms.tap import FlextTapOracleWms
-    from tests import m
 
 logger = u.fetch_logger(__name__)
 
 _ORACLE_WMS_MAX_LIMIT = 1250
 
 
-class TestsFlextTapOracleWmsStreamsFunctional:
+class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
     """Test streams functionality."""
-
-    @staticmethod
-    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
-        """Return the typed discovered catalog used by runtime code."""
-        result = tap.discovercatalog_typed()
-        tm.ok(result)
-        catalog: m.Meltano.SingerCatalog = result.unwrap()
-        return catalog
-
-    @staticmethod
-    def _schema(stream: m.Meltano.SingerCatalogEntry) -> t.JsonMapping:
-        """Normalize model schema payload to the runtime stream contract."""
-        schema: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-            stream.schema_definition
-        )
-        return schema
 
     def test_stream_creation_with_real_wms_data(
         self, real_tap_instance: FlextTapOracleWms
@@ -63,16 +47,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
 
     def test_wms_api_url_generation(self, real_tap_instance: FlextTapOracleWms) -> None:
         """Test URL generation for Oracle WMS API."""
-        catalog = self._catalog(real_tap_instance)
-        streams = catalog.streams
-        if not streams:
-            pytest.skip("No streams discovered")
-        test_stream = streams[0]
-        stream = FlextTapOracleWmsStream(
-            tap=real_tap_instance,
-            name=test_stream.tap_stream_id,
-            schema=self._schema(test_stream),
-        )
+        stream = self._first_stream(real_tap_instance)
         url_base = stream.url_base
         assert url_base.startswith("https://"), f"URL must be HTTPS: {url_base}"
         tm.that(url_base, has="invalid.wms.ocs.oraclecloud.com")
@@ -90,16 +65,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """Test stream authentication with real credentials."""
-        catalog = self._catalog(real_tap_instance)
-        streams = catalog.streams
-        if not streams:
-            pytest.skip("No streams discovered")
-        test_stream = streams[0]
-        stream = FlextTapOracleWmsStream(
-            tap=real_tap_instance,
-            name=test_stream.tap_stream_id,
-            schema=self._schema(test_stream),
-        )
+        stream = self._first_stream(real_tap_instance)
         headers = stream.http_headers
         auth_header = headers.get("Authorization") or headers.get("authorization")
         assert auth_header is not None
@@ -110,16 +76,7 @@ class TestsFlextTapOracleWmsStreamsFunctional:
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
         """Test HTTP headers generation."""
-        catalog = self._catalog(real_tap_instance)
-        streams = catalog.streams
-        if not streams:
-            pytest.skip("No streams discovered")
-        test_stream = streams[0]
-        stream = FlextTapOracleWmsStream(
-            tap=real_tap_instance,
-            name=test_stream.tap_stream_id,
-            schema=self._schema(test_stream),
-        )
+        stream = self._first_stream(real_tap_instance)
         headers = stream.http_headers
         tm.that(headers, is_=dict)
         assert "Accept" in headers or "accept" in headers

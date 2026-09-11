@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
     from tests import t
 
+
 @pytest.fixture(scope="session")
 def oracle_wms_environment() -> None:
     """Set Oracle WMS environment variables for tests."""

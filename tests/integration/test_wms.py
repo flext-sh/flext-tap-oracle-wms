@@ -14,10 +14,11 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 import pytest
+from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from flext_tests import tm
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 if TYPE_CHECKING:
     from tests import t
@@ -28,7 +29,7 @@ _RECORD_SAMPLE_LIMIT = 2
 
 @pytest.mark.integration
 @pytest.mark.oracle_wms
-class TestsFlextTapOracleWmsWms:
+class TestsFlextTapOracleWmsWms(OracleWmsTapTestHelpersMixin):
     """Test real Oracle WMS integration."""
 
     def test_tap_creation_with_real_config(
@@ -94,15 +95,7 @@ class TestsFlextTapOracleWmsWms:
                 if i >= _RECORD_SAMPLE_LIMIT:
                     break
             tm.that(records, none=False)
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as e:
+        except self._TAP_RECOVERABLE_EXCEPTIONS as e:
             error_msg = str(e).lower()
             if any(
                 x in error_msg for x in ["auth", "401", "403", "connection", "timeout"]

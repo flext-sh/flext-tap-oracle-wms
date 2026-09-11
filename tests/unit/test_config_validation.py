@@ -13,13 +13,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tests import tm
 from tests import c, t
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 
-class TestsFlextTapOracleWmsConfigValidation:
+class TestsFlextTapOracleWmsConfigValidation(OracleWmsTapTestHelpersMixin):
     """Test configuration validation."""
 
     def test_minimal_valid_config(self) -> None:
@@ -40,13 +41,7 @@ class TestsFlextTapOracleWmsConfigValidation:
 
     def test_url_accepts_trailing_slash(self) -> None:
         """Test URL with trailing slash is accepted."""
-        settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://wms.example.com/",
-                "username": "user",
-                "password": "pass",
-            }
-        })
+        settings = self._tap_settings({"base_url": "https://wms.example.com/"})
         tm.that(settings.TapOracleWms.base_url, has="wms.example.com")
 
     def test_page_size_custom_value(self) -> None:
@@ -89,14 +84,9 @@ class TestsFlextTapOracleWmsConfigValidation:
 
     def test_date_fields(self) -> None:
         """Test date fields are accepted."""
-        settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://wms.example.com",
-                "username": "user",
-                "password": "pass",
-                "start_date": "2024-01-01T00:00:00Z",
-                "end_date": "2024-12-31T23:59:59Z",
-            }
+        settings = self._tap_settings({
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-12-31T23:59:59Z",
         })
         tm.that(settings.TapOracleWms.start_date, eq="2024-01-01T00:00:00Z")
         tm.that(settings.TapOracleWms.end_date, eq="2024-12-31T23:59:59Z")
@@ -195,20 +185,8 @@ class TestsFlextTapOracleWmsConfigValidation:
 
     def test_password_is_secret(self) -> None:
         """Test password field stores password value."""
-        settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://wms.example.com",
-                "username": "user",
-                "password": "super_secret",
-            }
-        })
-        password = settings.TapOracleWms.password
-        password_value = (
-            password.get_secret_value()
-            if isinstance(password, t.SecretStr)
-            else password
-        )
-        tm.that(password_value, eq="super_secret")
+        settings = self._tap_settings({"password": "super_secret"})
+        tm.that(self._password_value(settings), eq="super_secret")
 
 
 if __name__ == "__main__":

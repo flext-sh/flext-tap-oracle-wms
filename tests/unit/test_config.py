@@ -14,34 +14,26 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tests import tm
 from tests import c, t
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 
-class TestsFlextTapOracleWmsConfig:
+class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
     """Test configuration class."""
 
     def test_minimal_config(self) -> None:
         """Test creating settings with minimal fields."""
-        settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://wms.example.com",
-                "username": "test_user",
-                "password": "test_pass",
-            }
+        settings = self._tap_settings({
+            "username": "test_user",
+            "password": "test_pass",
         })
         namespace = settings.TapOracleWms
         tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
         tm.that(namespace.username, eq="test_user")
-        password = namespace.password
-        password_value = (
-            password.get_secret_value()
-            if isinstance(password, t.SecretStr)
-            else password
-        )
-        tm.that(password_value, eq="test_pass")
+        tm.that(self._password_value(settings), eq="test_pass")
         tm.that(namespace.api_version, eq="V1")
         tm.that(namespace.timeout, eq=30)
         tm.that(namespace.page_size, eq=10)
@@ -95,22 +87,10 @@ class TestsFlextTapOracleWmsConfig:
 
     def test_base_url_validation(self) -> None:
         """Test base URL validation accepts valid URLs and bare strings."""
-        settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://wms.example.com/",
-                "username": "user",
-                "password": "pass",
-            }
-        })
+        settings = self._tap_settings({"base_url": "https://wms.example.com/"})
         tm.that(settings.TapOracleWms.base_url, has="wms.example.com")
         # str | t.AnyUrl union accepts bare hostnames as str
-        config_bare = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "wms.example.com",
-                "username": "user",
-                "password": "pass",
-            }
-        })
+        config_bare = self._tap_settings({"base_url": "wms.example.com"})
         tm.that(config_bare.TapOracleWms.base_url, eq="wms.example.com")
 
     def test_entity_list_validation(self) -> None:
@@ -128,25 +108,13 @@ class TestsFlextTapOracleWmsConfig:
 
     def test_date_validation(self) -> None:
         """Test date format validation."""
-        settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://wms.example.com",
-                "username": "user",
-                "password": "pass",
-                "start_date": "2024-01-01T00:00:00Z",
-                "end_date": "2024-12-31T23:59:59Z",
-            }
+        settings = self._tap_settings({
+            "start_date": "2024-01-01T00:00:00Z",
+            "end_date": "2024-12-31T23:59:59Z",
         })
         tm.that(settings.TapOracleWms.start_date, eq="2024-01-01T00:00:00Z")
         with pytest.raises(c.ValidationError) as exc_info:
-            FlextTapOracleWmsSettings.model_validate({
-                "TapOracleWms": {
-                    "base_url": "https://wms.example.com",
-                    "username": "user",
-                    "password": "pass",
-                    "start_date": "01/01/2024",
-                }
-            })
+            self._tap_settings({"start_date": "01/01/2024"})
         tm.that(str(exc_info.value), has="Invalid date format")
 
     def test_numeric_validation(self) -> None:
@@ -232,17 +200,5 @@ class TestsFlextTapOracleWmsConfig:
 
     def test_password_hiding(self) -> None:
         """Test password field is stored (str | t.SecretStr union)."""
-        settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://wms.example.com",
-                "username": "user",
-                "password": "super_secret_password",
-            }
-        })
-        password = settings.TapOracleWms.password
-        password_value = (
-            password.get_secret_value()
-            if isinstance(password, t.SecretStr)
-            else password
-        )
-        tm.that(password_value, eq="super_secret_password")
+        settings = self._tap_settings({"password": "super_secret_password"})
+        tm.that(self._password_value(settings), eq="super_secret_password")
