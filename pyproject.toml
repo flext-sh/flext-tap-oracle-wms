@@ -26,7 +26,7 @@ dependencies = [
   "pydantic-settings>=2.15.0",
   "pyyaml>=6.0.3",
   "singer-sdk>=0.54.5",
-  "structlog>=25.5.0",
+  "structlog>=25.5.0,<26",
   "typing-extensions>=4.16.0",
 ]
 description = "FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System"
