@@ -25,7 +25,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import t, u
-from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
+from .._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 if TYPE_CHECKING:
     from tests import m
