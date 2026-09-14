@@ -18,6 +18,7 @@ from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from tests import c, t
+
 from .._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 
