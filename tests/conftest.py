@@ -144,7 +144,7 @@ def pytest_collection_modifyitems(
     _ = config
     for item in items:
         if hasattr(item, "fspath") and "integration" in str(item.fspath):
-            item.add_marker(pytest.mark.oracle_wms)
+            item.add_marker(pytest.mark.integration)
         if hasattr(item, "fspath") and any(
             x in str(item.fspath) for x in ["e2e", "performance"]
         ):
@@ -155,12 +155,12 @@ def pytest_collection_modifyitems(
 def skip_when_oracle_wms_offline(request: pytest.FixtureRequest) -> None:
     """Skip online-gated tests when the real Oracle WMS is not enabled.
 
-    The ``oracle_wms`` and ``slow`` markers are applied at collection to the
+    The ``integration`` and ``slow`` markers are applied at collection to the
     integration, e2e and performance suites. When online access is not enabled
     they are skipped here — validated once at session start — rather than
     reaching the network during each test's setup.
     """
-    online_markers = ("oracle_wms", "slow", "integration", "e2e", "performance")
+    online_markers = ("slow", "integration", "e2e", "performance")
     requires_online = any(
         request.node.get_closest_marker(marker) is not None for marker in online_markers
     )
