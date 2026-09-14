@@ -12,6 +12,7 @@
 .claude/statsig/
 .claude/projects/
 .claude/shell-snapshots/
+.claude/worktrees/
 .claude/settings.local.json.bak
 
 # WHITELIST: Governed agent projections (every repository role)
@@ -354,3 +355,6 @@ CLAUDE.local.md
 !.vscode/settings.json
 !config/
 !config/gitleaks-release.toml
+
+# Project layout exceptions
+config.json
