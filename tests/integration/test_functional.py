@@ -16,6 +16,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import t, u
+
 from .._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 logger = u.fetch_logger(__name__)
