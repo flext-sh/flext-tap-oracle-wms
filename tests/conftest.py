@@ -36,22 +36,6 @@ def oracle_wms_environment() -> None:
 
 
 @pytest.fixture
-def isolate_tap_oracle_wms_env(
-    monkeypatch: pytest.MonkeyPatch,
-    request: pytest.FixtureRequest,
-    reset_settings: None,
-) -> None:
-    """Keep unit tests deterministic regardless of host FLEXT_TAP_ORACLE_WMS_* env."""
-    _ = reset_settings
-    if request.node.get_closest_marker(
-        "integration"
-    ) or request.node.get_closest_marker("real"):
-        return
-    for key in [key for key in os.environ if key.startswith("FLEXT_TAP_ORACLE_WMS_")]:
-        monkeypatch.delenv(key, raising=False)
-
-
-@pytest.fixture
 def sample_config() -> FlextTapOracleWmsSettings:
     """Sample configuration for tests."""
     # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
