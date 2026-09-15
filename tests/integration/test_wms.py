@@ -29,7 +29,7 @@ _RECORD_SAMPLE_LIMIT = 2
 
 
 @pytest.mark.integration
-@pytest.mark.oracle_wms
+@pytest.mark.oracle
 class TestsFlextTapOracleWmsWms(OracleWmsTapTestHelpersMixin):
     """Test real Oracle WMS integration."""
 
@@ -44,15 +44,13 @@ class TestsFlextTapOracleWmsWms(OracleWmsTapTestHelpersMixin):
     def test_configuration_validation(
         self, real_config: FlextTapOracleWmsSettings
     ) -> None:
-        """Test configuration validation."""
+        """Validation exposes exactly the non-secret configured fields."""
         tap = FlextTapOracleWms.from_settings(real_config)
         result = tap.validate_configuration()
-        if result.success:
-            value = result.value
-            assert isinstance(value, Mapping)
-            assert value.get("valid") is True
-        else:
-            pytest.skip(f"Configuration validation failed: {result.error}")
+        tm.ok(result)
+        value = result.value
+        assert isinstance(value, Mapping)
+        tm.that(set(value), eq={"base_url", "api_version", "page_size"})
 
     def test_tap_initialization(self, real_config: FlextTapOracleWmsSettings) -> None:
         """Test tap initialization."""

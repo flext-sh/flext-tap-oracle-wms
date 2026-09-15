@@ -127,11 +127,10 @@ def pytest_collection_modifyitems(
     """Add markers to tests based on their location."""
     _ = config
     for item in items:
-        if hasattr(item, "fspath") and "integration" in str(item.fspath):
-            item.add_marker(pytest.mark.oracle_wms)
-        if hasattr(item, "fspath") and any(
-            x in str(item.fspath) for x in ["e2e", "performance"]
-        ):
+        item_path = str(item.path)
+        if "integration" in item_path:
+            item.add_marker(pytest.mark.oracle)
+        if any(x in item_path for x in ["e2e", "performance"]):
             item.add_marker(pytest.mark.slow)
 
 
@@ -144,7 +143,7 @@ def skip_when_oracle_wms_offline(request: pytest.FixtureRequest) -> None:
     they are skipped here — validated once at session start — rather than
     reaching the network during each test's setup.
     """
-    online_markers = ("oracle_wms", "slow", "integration", "e2e", "performance")
+    online_markers = ("oracle", "slow", "integration", "e2e", "performance")
     requires_online = any(
         request.node.get_closest_marker(marker) is not None for marker in online_markers
     )
