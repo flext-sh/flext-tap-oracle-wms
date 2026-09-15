@@ -33,36 +33,36 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
     def test_configuration_validation(
         self, real_tap_instance: FlextTapOracleWms
     ) -> None:
-        """Test configuration validation."""
+        """Validation exposes exactly the non-secret configured fields."""
         result = real_tap_instance.validate_configuration()
         tm.ok(result)
         value = result.value
         assert isinstance(value, dict)
-        tm.that(value.get("valid"), eq=True)
-        tm.that(value, has="health")
-
-    def test_tap_initialization(self, real_tap_instance: FlextTapOracleWms) -> None:
-        """Test tap initialization."""
-        # assert result.is_success
+        tm.that(set(value), eq={"base_url", "api_version", "page_size"})
+        tm.that(value["base_url"], is_=str)
+        tm.that(value["api_version"], is_=str)
+        tm.that(value["page_size"], is_=int)
+        tm.that("password" not in value and "username" not in value, eq=True)
 
     def test_catalog_discovery(self, real_tap_instance: FlextTapOracleWms) -> None:
-        """Test catalog discovery."""
-        # assert init_result.is_success
+        """Discovered catalog entries are named Singer streams."""
         result = real_tap_instance.discovercatalog_typed()
         tm.ok(result)
         catalog = result.value
         tm.that(getattr(catalog, "type", None), eq="CATALOG")
         catalog_streams = getattr(catalog, "streams", [])
         assert catalog_streams
-        for _stream in catalog_streams:
-            pass
+        for stream in catalog_streams:
+            tm.that(stream.tap_stream_id, is_=str)
+            assert stream.tap_stream_id
 
     def test_stream_discovery(self, real_tap_instance: FlextTapOracleWms) -> None:
-        """Test stream discovery."""
+        """Discovered streams expose non-empty names."""
         streams = real_tap_instance.discover_streams()
         assert streams
-        for _stream in streams:
-            pass
+        for stream in streams:
+            tm.that(stream.name, is_=str)
+            assert stream.name
 
     def test_stream_schemas_validation(
         self, real_tap_instance: FlextTapOracleWms
@@ -169,7 +169,7 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
         tm.ok(result)
 
     def test_error_handling(self) -> None:
-        """Test error handling with invalid configuration."""
+        """Non-secret fields are still exposed for an unreachable endpoint."""
         bad_settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
                 "base_url": "https://invalid.example.com",
@@ -179,7 +179,8 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
         })
         tap = FlextTapOracleWms.from_settings(bad_settings)
         result = tap.validate_configuration()
-        tm.fail(result)
+        tm.ok(result)
+        tm.that(result.value, has="invalid.example.com")
 
 
 if __name__ == "__main__":

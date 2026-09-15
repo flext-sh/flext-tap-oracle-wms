@@ -128,9 +128,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
                 schema=self._schema(stream_config),
             )
             if stream.replication_key:
-                is_timestamp = True
-                if is_timestamp:
-                    timestamp_streams.append((stream.name, stream.replication_key))
+                timestamp_streams.append((stream.name, stream.replication_key))
         logger.info("✅ Timestamp replication keys: %s", timestamp_streams)
         if timestamp_streams:
             for _stream_name, replication_key in timestamp_streams:
@@ -191,10 +189,9 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         assert ">=" in str(kwargs_filter) or ">" in str(kwargs_filter), (
             f"No timestamp filters found in params: {list(params.keys())}"
         )
-        for filter_value in [str(kwargs_filter)]:
-            tm.that(filter_value, is_=str)
-            tm.that(filter_value, has="T")
-            assert "Z" in filter_value or "+" in filter_value, (
-                f"Invalid timestamp format - missing timezone: {filter_value}"
-            )
-        logger.info("✅ Incremental filtering: %s", [str(kwargs_filter)])
+        filter_text = str(kwargs_filter)
+        tm.that(filter_text, has="T")
+        assert "Z" in filter_text or "+" in filter_text, (
+            f"Invalid timestamp format - missing timezone: {filter_text}"
+        )
+        logger.info("✅ Incremental filtering: %s", filter_text)

@@ -37,8 +37,8 @@ class TestsFlextTapOracleWmsConfigValidation(OracleWmsTapTestHelpersMixin):
         tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
         tm.that(namespace.username, eq="test_user")
         tm.that(namespace.password, is_=(str, t.SecretStr))
-        tm.that(namespace.api_version, eq="V1")
-        tm.that(namespace.page_size, eq=10)
+        tm.that(namespace.api_version, eq=c.TapOracleWms.Settings.DEFAULT_API_VERSION)
+        tm.that(namespace.page_size, eq=c.TapOracleWms.Settings.TAP_DEFAULT_PAGE_SIZE)
 
     def test_url_accepts_trailing_slash(self) -> None:
         """Test URL with trailing slash is accepted."""
