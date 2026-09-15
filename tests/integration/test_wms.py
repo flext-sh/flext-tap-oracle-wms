@@ -29,7 +29,6 @@ _RECORD_SAMPLE_LIMIT = 2
 
 
 @pytest.mark.integration
-@pytest.mark.oracle_wms
 class TestsFlextTapOracleWmsWms(OracleWmsTapTestHelpersMixin):
     """Test real Oracle WMS integration."""
 
