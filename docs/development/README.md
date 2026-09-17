@@ -97,7 +97,6 @@ This directory contains comprehensive development documentation for FLEXT Tap Or
 ```bash
 # System requirements
 Python 3.13+
-Poetry 1.8+
 Make 4.0+
 Git 2.30+
 
@@ -128,7 +127,7 @@ make doctor
 make install-dev
 
 # Verify quality tools
-make val    # Should pass all quality gates
+make check    # Should pass all quality gates
 ```
 
 ## Development Workflow
@@ -146,7 +145,7 @@ make type-check         # Verify type safety
 make format             # Format code
 
 # Complete validation
-make val           # All quality gates
+make check           # All quality gates
 ```
 
 ### 2. Testing Strategy
@@ -166,7 +165,7 @@ pytest -k "test_pattern" --tb=short
 
 ```bash
 # Pre-commit validation
-make val           # Complete validation pipeline
+make check           # Complete validation pipeline
 make security          # Security scanning
 make deps-audit        # Dependency vulnerability check
 
@@ -482,7 +481,7 @@ p.sort_stats('cumulative').print_stats(20)
 
 1. **Create Feature Branch**: `git checkout -b feature/description`
 1. **Implement Changes**: Follow development workflow
-1. **Validate Quality**: `make val` must pass
+1. **Validate Quality**: `make check` must pass
 1. **Write Tests**: Maintain 100% coverage target
 1. **Update Documentation**: Keep docs current
 1. **Create PR**: Include detailed description and testing notes
