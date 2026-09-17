@@ -245,17 +245,18 @@ tests/
 ```python
 # Example of FLEXT-compliant code
 from __future__ import annotations
+
 from flext_cli import u
-from flext_core import FlextSettings
-from flext_oracle_wms import FlextOracleWmsClient
-from pydantic import u.Field, validator
+from flext_core import FlextSettings, p, r, t
+from flext_oracle_wms import FlextOracleWmsClient, Stream
+from pydantic import Field, validator
 
 
 class WMSConfig(FlextSettings):
     """FLEXT-compliant configuration."""
 
-    base_url: str = u.Field(..., description="WMS instance URL")
-    auth_method: str = u.Field(..., regex="^(basic|oauth2)$")
+    base_url: str = Field(..., description="WMS instance URL")
+    auth_method: str = Field(..., regex="^(basic|oauth2)$")
 
     class Config:
         env_prefix = "TAP_ORACLE_WMS_"
@@ -278,19 +279,21 @@ class FlextTapOracleWms:
         try:
             streams = self._build_streams()
             return r.success(streams)
-        except Exception as e:
-            self.logger.error(f"Discovery failed: {e}")
-            return r.failure(str(e))
+        except Exception as exc:
+            self.logger.exception("Discovery failed: %s", exc)
+            return r.failure(str(exc))
 ```
 
 ### Type Safety Requirements
-
 ```python
 # Strict type annotations required
 
 from __future__ import annotations
+
 from collections.abc import Iterator
+
 from flext_core import TAnyDict
+from flext_core import m
 
 
 def extract_records(
@@ -300,11 +303,14 @@ def extract_records(
     # Implementation with type safety
     pass
 ```
-
 ### Error Handling Standards
 
 ```python
 from __future__ import annotations
+
+import logging
+
+from flext_core import e
 
 
 class WMSTapError(e.Error):
@@ -320,10 +326,11 @@ class WMSConfigurationError(WMSTapError):
 
 
 # Usage with proper error context
+logger = logging.getLogger(__name__)
 try:
     result = perform_operation()
-except WMSConfigurationError as e:
-    logger.error(f"Configuration error: {e}", exc_info=True)
+except WMSConfigurationError as exc:
+    logger.exception("Configuration error: %s", exc)
     raise
 ```
 

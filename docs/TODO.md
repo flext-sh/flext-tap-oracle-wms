@@ -1,32 +1,32 @@
 # FLEXT-TAP-ORACLE-WMS - Desvios e Falhas de Projeto
 
 <!-- TOC START -->
-- [🚨 PROBLEMAS CRÍTICOS - AÇÃO IMEDIATA NECESSÁRIA](#problemas-crticos-ao-imediata-necessria)
-  - [1. **SUPER-ENGENHARIA ARQUITETURAL MASSIVA**](#1-super-engenharia-arquitetural-massiva)
-  - [2. **CRISE DE TESTES DESABILITADOS**](#2-crise-de-testes-desabilitados)
-  - [3. **DUPLICAÇÃO CRÍTICA DE DEPENDÊNCIAS**](#3-duplicao-crtica-de-dependncias)
+- [🚨 PROBLEMAS CRÍTICOS - AÇÃO IMEDIATA NECESSÁRIA](#problemas-criticos-acao-imediata-necessaria)
+  - [1. SUPER-ENGENHARIA ARQUITETURAL MASSIVA](#1-super-engenharia-arquitetural-massiva)
+  - [2. CRISE DE TESTES DESABILITADOS](#2-crise-de-testes-desabilitados)
+  - [3. DUPLICAÇÃO CRÍTICA DE DEPENDÊNCIAS](#3-duplicacao-critica-de-dependencias)
 - [⚠️ PROBLEMAS DE ALTA PRIORIDADE](#problemas-de-alta-prioridade)
-  - [4. **CAOS NA ARQUITETURA DE CONFIGURAÇÃO**](#4-caos-na-arquitetura-de-configurao)
-  - [5. **REDUNDÂNCIA NO SISTEMA DE DISCOVERY**](#5-redundncia-no-sistema-de-discovery)
-  - [6. **VIOLAÇÕES DA INTEGRAÇÃO FLEXT**](#6-violaes-da-integrao-flext)
-- [📋 PROBLEMAS DE PRIORIDADE MÉDIA](#problemas-de-prioridade-mdia)
-  - [7. **IMPLEMENTAÇÃO DE STREAM SUPER-COMPLEXA**](#7-implementao-de-stream-super-complexa)
-  - [8. **INCONSISTÊNCIAS NO SISTEMA DE TIPOS**](#8-inconsistncias-no-sistema-de-tipos)
-  - [9. **DEFINIÇÕES DE SCHEMA HARDCODED**](#9-definies-de-schema-hardcoded)
+  - [4. CAOS NA ARQUITETURA DE CONFIGURAÇÃO](#4-caos-na-arquitetura-de-configuracao)
+  - [5. REDUNDÂNCIA NO SISTEMA DE DISCOVERY](#5-redundancia-no-sistema-de-discovery)
+  - [6. VIOLAÇÕES DA INTEGRAÇÃO FLEXT](#6-violacoes-da-integracao-flext)
+- [📋 PROBLEMAS DE PRIORIDADE MÉDIA](#problemas-de-prioridade-media)
+  - [7. IMPLEMENTAÇÃO DE STREAM SUPER-COMPLEXA](#7-implementacao-de-stream-super-complexa)
+  - [8. INCONSISTÊNCIAS NO SISTEMA DE TIPOS](#8-inconsistencias-no-sistema-de-tipos)
+  - [9. DEFINIÇÕES DE SCHEMA HARDCODED](#9-definicoes-de-schema-hardcoded)
 - [🔧 PROBLEMAS DE BAIXA PRIORIDADE](#problemas-de-baixa-prioridade)
-  - [10. **LOGGING EXCESSIVO E COMENTÁRIOS VERBOSOS**](#10-logging-excessivo-e-comentrios-verbosos)
-  - [11. **TRATAMENTO DE ERRO INCONSISTENTE**](#11-tratamento-de-erro-inconsistente)
-  - [12. **PROLIFERAÇÃO DE ARQUIVOS DE CONFIGURAÇÃO**](#12-proliferao-de-arquivos-de-configurao)
-- [📊 ESTATÍSTICAS DO PROJETO](#estatsticas-do-projeto)
-  - [Métricas de Código](#mtricas-de-cdigo)
-  - [Análise de Complexidade](#anlise-de-complexidade)
-- [🎯 PLANO DE REFATORAÇÃO RECOMENDADO](#plano-de-refatorao-recomendado)
-  - [FASE 1: EMERGÊNCIA (1-2 semanas)](#fase-1-emergncia-1-2-semanas)
-  - [FASE 2: REFATORAÇÃO ESTRUTURAL (3-4 semanas)](#fase-2-refatorao-estrutural-3-4-semanas)
-  - [FASE 3: OTIMIZAÇÃO (2-3 semanas)](#fase-3-otimizao-2-3-semanas)
+  - [10. LOGGING EXCESSIVO E COMENTÁRIOS VERBOSOS](#10-logging-excessivo-e-comentarios-verbosos)
+  - [11. TRATAMENTO DE ERRO INCONSISTENTE](#11-tratamento-de-erro-inconsistente)
+  - [12. PROLIFERAÇÃO DE ARQUIVOS DE CONFIGURAÇÃO](#12-proliferacao-de-arquivos-de-configuracao)
+- [📊 ESTATÍSTICAS DO PROJETO](#estatisticas-do-projeto)
+  - [Métricas de Código](#metricas-de-codigo)
+  - [Análise de Complexidade](#analise-de-complexidade)
+- [🎯 PLANO DE REFATORAÇÃO RECOMENDADO](#plano-de-refatoracao-recomendado)
+  - [FASE 1: EMERGÊNCIA (1-2 semanas)](#fase-1-emergencia-1-2-semanas)
+  - [FASE 2: REFATORAÇÃO ESTRUTURAL (3-4 semanas)](#fase-2-refatoracao-estrutural-3-4-semanas)
+  - [FASE 3: OTIMIZAÇÃO (2-3 semanas)](#fase-3-otimizacao-2-3-semanas)
 - [⚡ ALTERNATIVA: REESCRITA COMPLETA](#alternativa-reescrita-completa)
   - [Justificativa para Reescrita](#justificativa-para-reescrita)
-- [🚨 RECOMENDAÇÃO FINAL](#recomendao-final)
+- [🚨 RECOMENDAÇÃO FINAL](#recomendacao-final)
 <!-- TOC END -->
 
 **Data de Análise**: 2025-08-04\
@@ -209,9 +209,9 @@ ______________________________________________________________________
 **Aliases Problemáticos**:
 
 ```python
-OracleWmsValueType = TValue
-OracleWmsEntityId = TEntityId
-OracleWmsConfigDict = TAnyDict
+OracleWmsValueType = object
+OracleWmsEntityId = str
+OracleWmsConfigDict = dict
 ```
 
 **Ação Requerida**: Remover aliases e usar tipos flext-core diretamente

@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED FILE — regenerate through `make gen` from the workspace root. -->
-<!-- Source of truth: `docs/guides/using-flext-tests.md`; adjust that source, never this projection. -->
+<!-- Source of truth: `<workspace-root>/docs/guides/using-flext-tests.md`; adjust that workspace source, never this member projection. -->
 
 # flext-tap-oracle-wms - Using flext-tests
 
@@ -89,6 +89,7 @@ FlextContainer.reset_for_testing()
 Use the `r` alias instead of importing from `returns` directly:
 
 ```python
+from flext_core import p
 from flext_tests import r
 
 
@@ -101,7 +102,7 @@ def safe_divide(a: float, b: float) -> p.Result[float]:
 def test_safe_divide() -> None:
     result = safe_divide(10, 2)
     assert result.success
-    assert result.unwrap() == 5.0
+    assert result.unwrap() == 5
 
     failure = safe_divide(10, 0)
     assert failure.failure
