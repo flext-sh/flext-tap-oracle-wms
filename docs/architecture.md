@@ -1,6 +1,7 @@
 # Architecture Documentation
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Current Architecture Issues](#current-architecture-issues)
   - [Critical Problems Identified](#critical-problems-identified)
@@ -573,7 +574,7 @@ class SecureWMSConfig(WMSConfig):
 - Full FLEXT ecosystem integration
 - Comprehensive documentation
 
-______________________________________________________________________
+---
 
 **Status**: Architecture Defined · 1.0.0 Current | **Next**: Implementation of simplified architecture | **Updated**: 2025-08-13
 

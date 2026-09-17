@@ -1,6 +1,7 @@
 # flext-tap-oracle-wms
 
 <!-- TOC START -->
+
 - [Purpose](#purpose)
 - [Module Map](#module-map)
 - [Collection Rules](#collection-rules)
@@ -25,11 +26,11 @@ FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System
 ## Module Map
 
 ::: flext_tap_oracle_wms
-    options:
-      members: false
-      show_root_heading: false
-      show_root_toc_entry: false
-      show_source: false
+options:
+members: false
+show_root_heading: false
+show_root_toc_entry: false
+show_source: false
 
 ## Collection Rules
 

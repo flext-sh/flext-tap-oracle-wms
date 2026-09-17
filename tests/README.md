@@ -50,9 +50,9 @@ This directory contains the test suite for FLEXT Tap Oracle WMS. The testing str
 
 | Test Type             | Status                | Coverage | Issues                             |
 | --------------------- | --------------------- | -------- | ---------------------------------- |
-| **Unit Tests**        | ✅ Working             | ~70%\*   | Some comprehensive tests available |
+| **Unit Tests**        | ✅ Working            | ~70%\*   | Some comprehensive tests available |
 | **Integration Tests** | ⚠️ Partially Disabled | ~40%\*   | External WMS dependencies          |
-| **E2E Tests**         | ❌ Disabled            | 0%       | Requires live WMS instance         |
+| **E2E Tests**         | ❌ Disabled           | 0%       | Requires live WMS instance         |
 
 \*Coverage percentages are estimates based on enabled tests only
 
@@ -377,7 +377,7 @@ def test_config_validation_with_missing_auth_raises_error():
 - [ ] Test follows project testing patterns
 - [ ] Test passes consistently
 
-______________________________________________________________________
+---
 
 **Status**: Test infrastructure requires significant improvement · 1.0.0 Release Preparation
 **Priority**: Re-enable disabled tests before production use\

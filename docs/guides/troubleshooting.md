@@ -6,6 +6,7 @@
 > Project profile: `flext-tap-oracle-wms`
 
 <!-- TOC START -->
+
 - [Establish the command surface](#establish-the-command-surface)
 - [Repair at the owner](#repair-at-the-owner)
 - [Documentation failures](#documentation-failures)

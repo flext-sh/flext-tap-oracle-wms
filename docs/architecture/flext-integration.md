@@ -1,6 +1,7 @@
 # FLEXT Ecosystem Integration
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [FLEXT Ecosystem Architecture](#flext-ecosystem-architecture)
 - [Integration Patterns](#integration-patterns)
@@ -17,7 +18,7 @@
   - [Current Integration Issues](#current-integration-issues)
   - [Migration Strategy](#migration-strategy)
   - [Validation Steps](#validation-steps)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 ## Overview
 
@@ -602,6 +603,6 @@ class WMSHealthCheck:
 1. **Integration Testing**: Test with other FLEXT ecosystem components
 1. **Observability Testing**: Verify metrics and monitoring work correctly
 
-______________________________________________________________________
+---
 
 **Updated**: 2025-08-13 | **Status**: Integration Documented · 1.0.0 Current | **Next**: Implementation Planning

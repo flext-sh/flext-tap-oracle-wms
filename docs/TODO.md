@@ -1,6 +1,7 @@
 # FLEXT-TAP-ORACLE-WMS - Desvios e Falhas de Projeto
 
 <!-- TOC START -->
+
 - [🚨 PROBLEMAS CRÍTICOS - AÇÃO IMEDIATA NECESSÁRIA](#problemas-crticos-ao-imediata-necessria)
   - [1. **SUPER-ENGENHARIA ARQUITETURAL MASSIVA**](#1-super-engenharia-arquitetural-massiva)
   - [2. **CRISE DE TESTES DESABILITADOS**](#2-crise-de-testes-desabilitados)
@@ -34,7 +35,7 @@
 **Status**: CRÍTICO - Necessita refatoração massiva · 1.0.0 Release Preparation
 **Linhas de Código**: 8.179 linhas em 26 arquivos Python
 
-______________________________________________________________________
+---
 
 ## 🚨 PROBLEMAS CRÍTICOS - AÇÃO IMEDIATA NECESSÁRIA
 
@@ -120,7 +121,7 @@ WMSClient = FlextOracleWmsClient  # Apenas um alias!
 
 **Ação Requerida**: Remover client.py e usar flext-oracle-wms diretamente
 
-______________________________________________________________________
+---
 
 ## ⚠️ PROBLEMAS DE ALTA PRIORIDADE
 
@@ -181,7 +182,7 @@ ______________________________________________________________________
 
 **Ação Requerida**: Refatorar para usar padrões flext-core consistentemente
 
-______________________________________________________________________
+---
 
 ## 📋 PROBLEMAS DE PRIORIDADE MÉDIA
 
@@ -224,7 +225,7 @@ OracleWmsConfigDict = TAnyDict
 
 **Ação Requerida**: Extrair schemas para arquivos separados
 
-______________________________________________________________________
+---
 
 ## 🔧 PROBLEMAS DE BAIXA PRIORIDADE
 
@@ -249,7 +250,7 @@ ______________________________________________________________________
 **Severidade**: BAIXO\
 **Problema**: 21+ arquivos de configuração de exemplo sem diferenciação clara
 
-______________________________________________________________________
+---
 
 ## 📊 ESTATÍSTICAS DO PROJETO
 
@@ -268,7 +269,7 @@ ______________________________________________________________________
 - **Sistemas de Discovery**: 3 implementações
 - **Camadas de Abstração**: 5+ camadas (excessivo)
 
-______________________________________________________________________
+---
 
 ## 🎯 PLANO DE REFATORAÇÃO RECOMENDADO
 
@@ -320,7 +321,7 @@ ______________________________________________________________________
    - [ ] Criar guias de desenvolvimento
    - [ ] Implementar métricas de qualidade
 
-______________________________________________________________________
+---
 
 ## ⚡ ALTERNATIVA: REESCRITA COMPLETA
 
@@ -337,7 +338,7 @@ Dado o nível de super-engenharia (8.179 linhas vs 400-800 necessárias), uma **
 
 **Tempo Estimado**: 4-6 semanas vs 8-10 semanas de refatoração
 
-______________________________________________________________________
+---
 
 ## 🚨 RECOMENDAÇÃO FINAL
 

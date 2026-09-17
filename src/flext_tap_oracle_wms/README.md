@@ -242,6 +242,6 @@ See [tests/README.md](../../tests/README.md) for complete testing documentation.
 - Performance optimization
 - Security best practices
 
-______________________________________________________________________
+---
 
 **Status**: 1.0.0 Release Preparation | **Architecture**: Requires Refactoring | **Updated**: 2025-08-13

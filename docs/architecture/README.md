@@ -1,6 +1,7 @@
 # Architecture Documentation
 
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Documentation Structure](#documentation-structure)
   - [Architecture Analysis](#architecture-analysis)
@@ -30,7 +31,7 @@
   - [Project Documentation](#project-documentation)
   - [FLEXT Ecosystem](#flext-ecosystem)
   - [External References](#external-references)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 ## Overview
 
@@ -182,6 +183,6 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 - **[Clean Architecture Principles](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)** - Architectural patterns
 - **[Meltano Documentation](https://docs.meltano.com/)** - Orchestration platform
 
-______________________________________________________________________
+---
 
 **Updated**: 2025-08-13 | **Status**: Architecture Defined · 1.0.0 Current | **Next**: Implementation Planning

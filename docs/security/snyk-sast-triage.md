@@ -6,9 +6,9 @@ Gerado do scan Snyk (dump 2026-08-06). Bead: `mro-8i5s`
 
 **8 achados** — critical 0, high 0, medium 0, low 8
 
-| categoria | achados |
-|---|---|
-| Use of Hardcoded Passwords | 8 |
+| categoria                  | achados |
+| -------------------------- | ------- |
+| Use of Hardcoded Passwords | 8       |
 
 ## Como usar este documento
 
@@ -18,6 +18,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
 ## Achados
 
 ### 1 · ⚪ LOW · Use of Hardcoded Passwords
+
 **Local**: `tests/conftest.py:66` · **CWE**: -
 
 ```python
@@ -35,6 +36,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
 **Decisão**:
 
 ### 2 · ⚪ LOW · Use of Hardcoded Passwords
+
 **Local**: `tests/integration/test_wms_connection.py:183` · **CWE**: -
 
 ```python
@@ -52,6 +54,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
 **Decisão**:
 
 ### 3 · ⚪ LOW · Use of Hardcoded Passwords
+
 **Local**: `tests/unit/test_config.py:32` · **CWE**: -
 
 ```python
@@ -69,6 +72,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
 **Decisão**:
 
 ### 4 · ⚪ LOW · Use of Hardcoded Passwords
+
 **Local**: `tests/unit/test_config.py:57` · **CWE**: -
 
 ```python
@@ -86,6 +90,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
 **Decisão**:
 
 ### 5 · ⚪ LOW · Use of Hardcoded Passwords
+
 **Local**: `tests/unit/test_config.py:239` · **CWE**: -
 
 ```python
@@ -103,6 +108,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
 **Decisão**:
 
 ### 6 · ⚪ LOW · Use of Hardcoded Passwords
+
 **Local**: `tests/unit/test_config_validation.py:31` · **CWE**: -
 
 ```python
@@ -120,6 +126,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
 **Decisão**:
 
 ### 7 · ⚪ LOW · Use of Hardcoded Passwords
+
 **Local**: `tests/unit/test_config_validation.py:202` · **CWE**: -
 
 ```python
@@ -137,6 +144,7 @@ Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `r
 **Decisão**:
 
 ### 8 · ⚪ LOW · Use of Hardcoded Passwords
+
 **Local**: `tests/unit/test_tap.py:46` · **CWE**: -
 
 ```python
