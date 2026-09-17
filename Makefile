@@ -200,7 +200,8 @@ export FLEXT_INFRA_PYTHON UV_PROJECT UV_PROJECT_ENVIRONMENT VIRTUAL_ENV PATH
 .PHONY: _bootstrap_setup_tools
 
 _bootstrap_setup_tools:
-	@set -eu; \
+	# The lifecycle invokes recursive make through mise, so preserve jobserver FDs.
+	+@set -eu; \
 	uv_selector="latest"; \
 	if [ ! -f "$(SETUP_MISE)" ]; then \
 		printf 'ERROR: missing generated mise launcher: %s; run make gen\n' "$(SETUP_MISE)" >&2; \
@@ -1100,6 +1101,9 @@ _builtin_test_all: _builtin_require_environment
 # fmt applies corrections and reports remaining diagnostics without failing:
 # violations are expected and their repair belongs to fix; only a real
 # tool failure (ruff exit >= 2) breaks the Make verb.
+# fmt applies corrections and reports remaining diagnostics without failing:
+# violations are expected and their repair belongs to fix; only a real
+# tool failure (ruff exit >= 2) breaks the Make verb.
 # Their reports preserve the same verdict as the underlying quality gates.
 _builtin_fmt_all: _builtin_require_environment
 	@set -eu; \
@@ -1107,11 +1111,11 @@ _builtin_fmt_all: _builtin_require_environment
 		if $(UV_RUN) ruff check --preview --fix --unsafe-fixes $(RUFF_PATHS); then \
 			printf 'INFO: fmt lint clean\n'; \
 		else \
-			rc=$$?; \
-			if [ $$rc -le 1 ]; then \
+			stamprc=$$?; \
+			if [ $$stamprc -le 1 ]; then \
 				printf 'INFO: fmt diagnostics remain (report-only, repair belongs to fix)\n'; \
 			else \
-				exit $$rc; \
+				exit $$stamprc; \
 			fi; \
 		fi
 
