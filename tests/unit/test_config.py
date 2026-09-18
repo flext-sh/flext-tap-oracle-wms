@@ -208,7 +208,7 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
 
     def test_password_hiding(self) -> None:
         """Test password field is stored (str | t.SecretStr union)."""
-        settings = self._tap_settings({"password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide"})
-        tm.that(
-            self._password_value(settings), eq=f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide"
-        )
+        settings = self._tap_settings({
+            "password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide"
+        })
+        tm.that(self._password_value(settings), eq=f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide")
