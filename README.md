@@ -14,7 +14,7 @@
 
 <!-- AUTO-GENERATED — DO NOT EDIT MANUALLY -->
 
-**Version**: `0.12.0rc0` | **Python**: 3.13+ | **Project class**: `integration`
+**Version**: `0.12.0` | **Python**: 3.13+ | **Project class**: `integration`
 
 > **Alpha (0.12.0).** This package is alpha quality. Every package in the workspace must
 > be re-checked and re-validated at 0.12.0 before any promotion beyond alpha; treat
