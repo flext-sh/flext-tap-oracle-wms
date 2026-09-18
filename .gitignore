@@ -200,6 +200,10 @@ fix-report.json
 **/*.md.backup
 **/archived/
 
+# Banned residue (never source, any profile)
+*aihub-prior*
+config/build-constraints.txt
+
 # Autofix rejection artifacts (run_skill_autofix.sh rollback output)
 **/*.rej-*.bak
 **/*.rej-*.rej
