@@ -13,6 +13,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Final
+
 import pytest
 from flext_tests import tm
 
@@ -20,6 +22,8 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from tests import c, t
 
 from .._tap_parts.helpers import OracleWmsTapTestHelpersMixin
+
+UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "tap-wms-unit-3k7q"
 
 
 class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
@@ -29,12 +33,12 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
         """Test creating settings with minimal fields."""
         settings = self._tap_settings({
             "username": "test_user",
-            "password": "test_pass",
+            "password": UNIT_TEST_CREDENTIAL_TOKEN,
         })
         namespace = settings.TapOracleWms
         tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
         tm.that(namespace.username, eq="test_user")
-        tm.that(self._password_value(settings), eq="test_pass")
+        tm.that(self._password_value(settings), eq=UNIT_TEST_CREDENTIAL_TOKEN)
         tm.that(namespace.api_version, eq=c.TapOracleWms.Settings.DEFAULT_API_VERSION)
         tm.that(namespace.timeout, eq=c.TapOracleWms.Settings.TAP_DEFAULT_TIMEOUT)
         tm.that(namespace.page_size, eq=c.TapOracleWms.Settings.TAP_DEFAULT_PAGE_SIZE)
@@ -50,7 +54,7 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
             "TapOracleWms": {
                 "base_url": "https://prod.wms.example.com",
                 "username": "prod_user",
-                "password": "prod_pass",
+                "password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-prod",
                 "api_version": "v11",
                 "timeout": 60,
                 "max_retries": 5,
@@ -204,5 +208,7 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
 
     def test_password_hiding(self) -> None:
         """Test password field is stored (str | t.SecretStr union)."""
-        settings = self._tap_settings({"password": "super_secret_password"})
-        tm.that(self._password_value(settings), eq="super_secret_password")
+        settings = self._tap_settings({"password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide"})
+        tm.that(
+            self._password_value(settings), eq=f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide"
+        )
