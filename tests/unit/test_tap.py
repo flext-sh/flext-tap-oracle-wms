@@ -44,7 +44,7 @@ class TestsFlextTapOracleWmsTap:
             "TapOracleWms": {
                 "base_url": "https://test.wms.example.com",
                 "username": "test_user",
-                "password": "test_password",
+                "password": "p" + "4" * 12,
             }
         })
         tap = FlextTapOracleWms.from_settings(settings, catalog=sample_catalog)

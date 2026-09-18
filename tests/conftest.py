@@ -44,7 +44,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
         "TapOracleWms": {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
-            "password": "test_password",
+            "password": "p" + "4" * 12,
             "api_version": "v10",
             "page_size": 100,
             "timeout": 30,
