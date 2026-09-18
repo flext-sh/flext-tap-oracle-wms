@@ -200,10 +200,6 @@ fix-report.json
 **/*.md.backup
 **/archived/
 
-# Banned residue (never source, any profile)
-*aihub-prior*
-config/build-constraints.txt
-
 # Autofix rejection artifacts (run_skill_autofix.sh rollback output)
 **/*.rej-*.bak
 **/*.rej-*.rej
@@ -303,6 +299,7 @@ __pyrefly_virtual__/
 .dolt_dropped_databases/
 .doltcfg/
 .hypothesis/
+.mimosa/
 .mypy_cache/
 .omo/
 .pylance_cache/
