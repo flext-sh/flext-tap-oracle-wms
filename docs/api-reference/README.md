@@ -28,8 +28,8 @@ This section is generated from public exports and real docstrings.
 ## Surface Summary
 
 - Primary facades: `FlextTapOracleWmsConfig`, `FlextTapOracleWmsConstants`,
-  `FlextTapOracleWmsModels`, `FlextTapOracleWmsProtocols`,
-  `FlextTapOracleWmsService`, `FlextTapOracleWmsSettings` (+2 more)
+  `FlextTapOracleWmsModels`, `FlextTapOracleWmsProtocols`, `FlextTapOracleWmsService`,
+  `FlextTapOracleWmsSettings` (+2 more)
 - Generated module pages: `7`
 
 Back to [project docs](../index.md).

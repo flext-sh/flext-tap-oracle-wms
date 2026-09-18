@@ -42,21 +42,26 @@
 
 ## Overview
 
-This directory contains comprehensive development documentation for FLEXT Tap Oracle WMS, including testing strategies, quality standards, and development workflows.
+This directory contains comprehensive development documentation for FLEXT Tap Oracle
+WMS, including testing strategies, quality standards, and development workflows.
 
 ## Development Documentation Structure
 
 ### Testing Documentation
 
-- **[testing-strategy.md](testing-strategy.md)** - Comprehensive testing approach and disabled tests analysis
+- **[testing-strategy.md](testing-strategy.md)** - Comprehensive testing approach and
+  disabled tests analysis
 - **[test-architecture.md](test-architecture.md)** - Test organization and structure
-- **[mocking-strategy.md](mocking-strategy.md)** - Mock implementation for external dependencies
+- **[mocking-strategy.md](mocking-strategy.md)** - Mock implementation for external
+  dependencies
 
 ### Quality Standards
 
-- **[quality-gates.md](quality-gates.md)** - Quality validation requirements and standards
+- **[quality-gates.md](quality-gates.md)** - Quality validation requirements and
+  standards
 - **[code-standards.md](code-standards.md)** - Code quality and style guidelines
-- **[security-standards.md](security-standards.md)** - Security requirements and validation
+- **[security-standards.md](security-standards.md)** - Security requirements and
+  validation
 
 ### Development Workflows
 
@@ -66,9 +71,12 @@ This directory contains comprehensive development documentation for FLEXT Tap Or
 
 ### Refactoring Documentation
 
-- **[refactoring-guidelines.md](refactoring-guidelines.md)** - Guidelines for the major refactoring
-- **[migration-strategy.md](migration-strategy.md)** - Migration from current to target architecture
-- **[validation-checklist.md](validation-checklist.md)** - Validation steps for refactored code
+- **[refactoring-guidelines.md](refactoring-guidelines.md)** - Guidelines for the major
+  refactoring
+- **[migration-strategy.md](migration-strategy.md)** - Migration from current to target
+  architecture
+- **[validation-checklist.md](validation-checklist.md)** - Validation steps for
+  refactored code
 
 ## Current Development Status
 
@@ -129,7 +137,7 @@ make doctor
 make install-dev
 
 # Verify quality tools
-make val    # Should pass all quality gates
+make val # Should pass all quality gates
 ```
 
 ## Development Workflow
@@ -141,22 +149,22 @@ make val    # Should pass all quality gates
 git checkout -b feature/your-feature-name
 
 # Development cycle
-make test-unit           # Run unit tests
-make lint               # Check code quality
-make type-check         # Verify type safety
-make format             # Format code
+make test-unit  # Run unit tests
+make lint       # Check code quality
+make type-check # Verify type safety
+make format     # Format code
 
 # Complete validation
-make val           # All quality gates
+make val # All quality gates
 ```
 
 ### 2. Testing Strategy
 
 ```bash
 # Test categories
-make test-unit          # Unit tests (working)
-make test-integration   # Integration tests (some disabled)
-pytest -m "not slow"    # Fast tests only
+make test-unit        # Unit tests (working)
+make test-integration # Integration tests (some disabled)
+pytest -m "not slow"  # Fast tests only
 
 # Specific test execution
 pytest tests/unit/test_specific.py -v
@@ -167,14 +175,14 @@ pytest -k "test_pattern" --tb=short
 
 ```bash
 # Pre-commit validation
-make val           # Complete validation pipeline
-make security          # Security scanning
-make deps-audit        # Dependency vulnerability check
+make val        # Complete validation pipeline
+make security   # Security scanning
+make deps-audit # Dependency vulnerability check
 
 # Code quality
 make lint
 make type-check
-make format            # Auto-format with Ruff
+make format # Auto-format with Ruff
 ```
 
 ## Testing Architecture
@@ -185,7 +193,7 @@ make format            # Auto-format with Ruff
 
 ```bash
 # Count disabled tests
-find tests/ -name "*.backup" | wc -l  # Result: 7 files
+find tests/ -name "*.backup" | wc -l # Result: 7 files
 
 # Disabled test files
 tests/conftest.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup
@@ -518,4 +526,5 @@ p.sort_stats('cumulative').print_stats(20)
 
 ---
 
-**Updated**: 2025-08-13 | **Status**: Development Guide Complete · 1.0.0 Current | **Next**: Implementation Execution
+**Updated**: 2025-08-13 | **Status**: Development Guide Complete · 1.0.0 Current |
+**Next**: Implementation Execution

@@ -35,7 +35,9 @@
 
 ## Overview
 
-This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tests focus on testing individual components in isolation using mocking to eliminate external dependencies.
+This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tests focus
+on testing individual components in isolation using mocking to eliminate external
+dependencies.
 
 ## Test Structure
 
@@ -43,7 +45,8 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Authentication Tests**
 
-- **[test_auth_comprehensive.py](test_auth_comprehensive.py)** - Authentication system testing
+- **[test_auth_comprehensive.py](test_auth_comprehensive.py)** - Authentication system
+  testing
   - Basic authentication flow
   - WMS authenticator functionality
   - Header generation and application
@@ -51,7 +54,8 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Client Tests**
 
-- **[test_client_comprehensive.py](test_client_comprehensive.py)** - WMS client wrapper testing
+- **[test_client_comprehensive.py](test_client_comprehensive.py)** - WMS client wrapper
+  testing
   - HTTP client configuration
   - Request/response handling
   - Authentication integration
@@ -59,7 +63,8 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Configuration Tests**
 
-- **[test_config_mapper_comprehensive.py](test_config_mapper_comprehensive.py)** - Configuration mapping
+- **[test_config_mapper_comprehensive.py](test_config_mapper_comprehensive.py)** -
+  Configuration mapping
 
   - Configuration transformation
   - Default value application
@@ -74,7 +79,8 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Discovery Tests**
 
-- **[test_entity_discovery_comprehensive.py](test_entity_discovery_comprehensive.py)** - Entity discovery logic
+- **[test_entity_discovery_comprehensive.py](test_entity_discovery_comprehensive.py)** -
+  Entity discovery logic
   - WMS entity discovery
   - Metadata extraction
   - Schema generation
@@ -82,7 +88,8 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Validation Tests**
 
-- **[test_critical_validation_comprehensive.py](test_critical_validation_comprehensive.py)** - Environment validation
+- **[test_critical_validation_comprehensive.py](test_critical_validation_comprehensive.py)** -
+  Environment validation
   - Critical environment variable checking
   - Configuration completeness validation
   - Business rule enforcement
@@ -90,14 +97,16 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Utility Tests**
 
-- **[test_type_mapping_comprehensive.py](test_type_mapping_comprehensive.py)** - Type mapping utilities
+- **[test_type_mapping_comprehensive.py](test_type_mapping_comprehensive.py)** - Type
+  mapping utilities
   - WMS to Singer type conversion
   - Data type validation
   - Schema compatibility checking
 
 #### **Cache Tests**
 
-- **[test_cache_manager_comprehensive.py](test_cache_manager_comprehensive.py)** - Cache functionality
+- **[test_cache_manager_comprehensive.py](test_cache_manager_comprehensive.py)** - Cache
+  functionality
   - Response caching mechanisms
   - Cache expiration handling
   - Memory management
@@ -433,4 +442,5 @@ def test_debug_example():
 
 ---
 
-**Status**: Core unit tests working with good coverage · 1.0.0 Release Preparation | **Priority**: Maintain isolation and coverage | **Updated**: 2025-08-13
+**Status**: Core unit tests working with good coverage · 1.0.0 Release Preparation |
+**Priority**: Maintain isolation and coverage | **Updated**: 2025-08-13

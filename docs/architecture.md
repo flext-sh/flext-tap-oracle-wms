@@ -43,15 +43,19 @@
 
 ## Overview
 
-FLEXT Tap Oracle WMS implements a Singer-compliant data extraction tap for Oracle Warehouse Management Systems. This document provides comprehensive architectural analysis of the current implementation and target architecture after refactoring.
+FLEXT Tap Oracle WMS implements a Singer-compliant data extraction tap for Oracle
+Warehouse Management Systems. This document provides comprehensive architectural
+analysis of the current implementation and target architecture after refactoring.
 
 ## Current Architecture Issues
 
 ### Critical Problems Identified
 
-1. **Massive Over-Engineering**: 26 Python components for simple Singer tap functionality
+1. **Massive Over-Engineering**: 26 Python components for simple Singer tap
+   functionality
 1. **Architectural Violations**: Multiple competing patterns without clear boundaries
-1. **Code Duplication**: Redundant implementations across discovery and configuration systems
+1. **Code Duplication**: Redundant implementations across discovery and configuration
+   systems
 1. **Test Infrastructure Breakdown**: 27% of tests disabled due to external dependencies
 
 ### Current Component Structure
@@ -577,7 +581,8 @@ class SecureWMSConfig(WMSConfig):
 
 ---
 
-**Status**: Architecture Defined · 1.0.0 Current | **Next**: Implementation of simplified architecture | **Updated**: 2025-08-13
+**Status**: Architecture Defined · 1.0.0 Current | **Next**: Implementation of
+simplified architecture | **Updated**: 2025-08-13
 
 ## Related Documentation
 
@@ -585,14 +590,19 @@ class SecureWMSConfig(WMSConfig):
 
 - [Getting Started](getting-started.md) - Installation and basic usage
 - [API Reference](api-reference.md) - Complete API documentation
-- [Examples](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-tap-oracle-wms/examples/) - Working code examples
+- [Examples](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-tap-oracle-wms/examples/) -
+  Working code examples
 
 **Across Projects**:
 
-- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
-- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
-- [flext-oracle-wms Integration](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-oracle-wms/AGENTS.md) - Oracle WMS Cloud integration
-- [flext-meltano Pipelines](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-meltano/AGENTS.md) - Data integration and ELT orchestration
+- [flext-core Foundation](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/overview.md) -
+  Clean architecture and CQRS patterns
+- [flext-core Service Patterns](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/guides/service-patterns.md) -
+  Service patterns and dependency injection
+- [flext-oracle-wms Integration](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-oracle-wms/AGENTS.md) -
+  Oracle WMS Cloud integration
+- [flext-meltano Pipelines](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-meltano/AGENTS.md) -
+  Data integration and ELT orchestration
 
 **External Resources**:
 

@@ -49,7 +49,9 @@
 
 ## 🏗️ **Module Architecture Overview**
 
-FLEXT Tap Oracle WMS follows a **simplified layered module architecture** aligned with Singer SDK patterns and FLEXT ecosystem standards. This document defines the target architecture after refactoring from the current over-engineered 26-component structure.
+FLEXT Tap Oracle WMS follows a **simplified layered module architecture** aligned with
+Singer SDK patterns and FLEXT ecosystem standards. This document defines the target
+architecture after refactoring from the current over-engineered 26-component structure.
 
 ### **Core Design Principles**
 
@@ -57,7 +59,8 @@ FLEXT Tap Oracle WMS follows a **simplified layered module architecture** aligne
 1. **FLEXT Integration**: Leverages flext-core foundation and ecosystem libraries
 1. **Single Responsibility**: Each module has one clear purpose
 1. **Railway-Oriented**: p.Result[T] threading through all operations
-1. **Simplicity Over Complexity**: Favor maintainable solutions over engineering sophistication
+1. **Simplicity Over Complexity**: Favor maintainable solutions over engineering
+   sophistication
 
 ---
 
@@ -1090,7 +1093,6 @@ class CustomTap(BaseTap):                    # Use flext_meltano.Tap
 
 ---
 
-**Last Updated**: August 4, 2025
-**Target Audience**: FLEXT Tap Oracle WMS developers and architects
-**Scope**: Module organization for Singer tap refactoring
-**Status**: Architecture defined, implementation pending · 1.0.0 Current
+**Last Updated**: August 4, 2025 **Target Audience**: FLEXT Tap Oracle WMS developers
+and architects **Scope**: Module organization for Singer tap refactoring **Status**:
+Architecture defined, implementation pending · 1.0.0 Current

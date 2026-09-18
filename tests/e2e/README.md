@@ -36,11 +36,13 @@
 
 ## Overview
 
-This directory contains end-to-end (E2E) tests for FLEXT Tap Oracle WMS, focusing on complete user workflows and system behavior from CLI execution to data output.
+This directory contains end-to-end (E2E) tests for FLEXT Tap Oracle WMS, focusing on
+complete user workflows and system behavior from CLI execution to data output.
 
 ## Current Status
 
-❌ **CRITICAL ISSUE**: All E2E tests are currently disabled due to external WMS dependencies.
+❌ **CRITICAL ISSUE**: All E2E tests are currently disabled due to external WMS
+dependencies.
 
 **Status Summary**:
 
@@ -54,9 +56,8 @@ This directory contains end-to-end (E2E) tests for FLEXT Tap Oracle WMS, focusin
 
 #### **[test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup](test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup)**
 
-**Purpose**: Complete end-to-end workflow testing
-**Current State**: Disabled due to live Oracle WMS instance requirements
-**Scope**:
+**Purpose**: Complete end-to-end workflow testing **Current State**: Disabled due to
+live Oracle WMS instance requirements **Scope**:
 
 - CLI command execution (discovery, extraction)
 - Complete Singer protocol compliance
@@ -537,4 +538,6 @@ def test_business_user_daily_extraction():
 
 ---
 
-**Status**: Completely disabled - Requires full reconstruction · 1.0.0 Release Preparation | **Priority**: High - Critical for user confidence | **Updated**: 2025-08-13
+**Status**: Completely disabled - Requires full reconstruction · 1.0.0 Release
+Preparation | **Priority**: High - Critical for user confidence | **Updated**:
+2025-08-13

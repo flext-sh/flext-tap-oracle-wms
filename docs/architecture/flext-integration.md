@@ -22,7 +22,9 @@
 
 ## Overview
 
-This document describes the integration patterns between FLEXT Tap Oracle WMS and the FLEXT ecosystem components, including flext-core, flext-oracle-wms, flext-meltano, and flext-observability.
+This document describes the integration patterns between FLEXT Tap Oracle WMS and the
+FLEXT ecosystem components, including flext-core, flext-oracle-wms, flext-meltano, and
+flext-observability.
 
 ## FLEXT Ecosystem Architecture
 
@@ -605,4 +607,5 @@ class WMSHealthCheck:
 
 ---
 
-**Updated**: 2025-08-13 | **Status**: Integration Documented · 1.0.0 Current | **Next**: Implementation Planning
+**Updated**: 2025-08-13 | **Status**: Integration Documented · 1.0.0 Current | **Next**:
+Implementation Planning

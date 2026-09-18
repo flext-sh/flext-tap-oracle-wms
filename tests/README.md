@@ -40,11 +40,14 @@
 
 ## Overview
 
-This directory contains the test suite for FLEXT Tap Oracle WMS. The testing strategy covers unit, integration, and end-to-end testing with a focus on Singer protocol compliance and FLEXT ecosystem integration.
+This directory contains the test suite for FLEXT Tap Oracle WMS. The testing strategy
+covers unit, integration, and end-to-end testing with a focus on Singer protocol
+compliance and FLEXT ecosystem integration.
 
 ## Current Test Status
 
-**⚠️ CRITICAL ISSUE**: 27% of the test suite is currently disabled due to external dependencies
+**⚠️ CRITICAL ISSUE**: 27% of the test suite is currently disabled due to external
+dependencies
 
 ### Test Coverage Analysis
 
@@ -135,7 +138,7 @@ pytest tests/unit/test_client_comprehensive.py -v
 pytest tests/unit/test_config_mapper_comprehensive.py -v
 
 # Run tests with coverage
-make test  # Includes coverage reporting
+make test # Includes coverage reporting
 
 # Quick test execution (no coverage)
 make test-fast
@@ -145,10 +148,10 @@ make test-fast
 
 ```bash
 # Run tests by marker (when enabled)
-pytest -m unit                    # Unit tests only
-pytest -m integration             # Integration tests (currently disabled)
-pytest -m "not slow"              # Exclude slow tests
-pytest -m singer                  # Singer protocol tests
+pytest -m unit        # Unit tests only
+pytest -m integration # Integration tests (currently disabled)
+pytest -m "not slow"  # Exclude slow tests
+pytest -m singer      # Singer protocol tests
 ```
 
 ### Environment Variables
@@ -166,9 +169,8 @@ TEST_FACILITY_CODE=TEST01
 
 ### Unit Testing Strategy
 
-**Objective**: Test individual components in isolation
-**Approach**: Mock all external dependencies
-**Coverage Target**: 95% for enabled tests
+**Objective**: Test individual components in isolation **Approach**: Mock all external
+dependencies **Coverage Target**: 95% for enabled tests
 
 **Example Pattern**:
 
@@ -191,9 +193,9 @@ def test_entity_discovery(mock_wms_client):
 
 ### Integration Testing Strategy (Planned)
 
-**Objective**: Test component interaction with mocked external services
-**Approach**: Mock WMS API responses, test internal integration
-**Coverage Target**: 90% of integration scenarios
+**Objective**: Test component interaction with mocked external services **Approach**:
+Mock WMS API responses, test internal integration **Coverage Target**: 90% of
+integration scenarios
 
 **Required Implementation**:
 
@@ -203,9 +205,9 @@ def test_entity_discovery(mock_wms_client):
 
 ### E2E Testing Strategy (Future)
 
-**Objective**: Test complete workflows with controlled environment
-**Approach**: Dedicated test WMS instance or comprehensive mocking
-**Coverage Target**: Core user workflows
+**Objective**: Test complete workflows with controlled environment **Approach**:
+Dedicated test WMS instance or comprehensive mocking **Coverage Target**: Core user
+workflows
 
 ## Test Data Management
 
@@ -379,6 +381,6 @@ def test_config_validation_with_missing_auth_raises_error():
 
 ---
 
-**Status**: Test infrastructure requires significant improvement · 1.0.0 Release Preparation
-**Priority**: Re-enable disabled tests before production use\
+**Status**: Test infrastructure requires significant improvement · 1.0.0 Release
+Preparation **Priority**: Re-enable disabled tests before production use\
 **Updated**: 2025-08-13

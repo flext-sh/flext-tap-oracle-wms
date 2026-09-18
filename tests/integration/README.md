@@ -38,11 +38,13 @@
 
 ## Overview
 
-This directory contains integration tests for FLEXT Tap Oracle WMS, focusing on testing component interactions and end-to-end workflows with controlled external dependencies.
+This directory contains integration tests for FLEXT Tap Oracle WMS, focusing on testing
+component interactions and end-to-end workflows with controlled external dependencies.
 
 ## Current Status
 
-⚠️ **CRITICAL ISSUE**: Integration tests are currently disabled due to external WMS dependencies.
+⚠️ **CRITICAL ISSUE**: Integration tests are currently disabled due to external WMS
+dependencies.
 
 **Status Summary**:
 
@@ -56,9 +58,8 @@ This directory contains integration tests for FLEXT Tap Oracle WMS, focusing on 
 
 #### **[test_simple_integration.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup](test_simple_integration.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup)**
 
-**Purpose**: Multi-component integration testing
-**Current State**: Disabled due to live WMS API dependencies
-**Scope**:
+**Purpose**: Multi-component integration testing **Current State**: Disabled due to live
+WMS API dependencies **Scope**:
 
 - Tap initialization with real configuration
 - Stream discovery and catalog generation
@@ -469,4 +470,5 @@ def test_network_failure_integration():
 
 ---
 
-**Status**: Disabled - Requires comprehensive re-enabling · 1.0.0 Release Preparation | **Priority**: High - Critical for production | **Updated**: 2025-08-13
+**Status**: Disabled - Requires comprehensive re-enabling · 1.0.0 Release Preparation |
+**Priority**: High - Critical for production | **Updated**: 2025-08-13

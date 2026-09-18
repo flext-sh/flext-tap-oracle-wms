@@ -35,7 +35,9 @@
 
 ## Overview
 
-This directory contains comprehensive architectural documentation for FLEXT Tap Oracle WMS, including current state analysis, target architecture, and FLEXT ecosystem integration patterns.
+This directory contains comprehensive architectural documentation for FLEXT Tap Oracle
+WMS, including current state analysis, target architecture, and FLEXT ecosystem
+integration patterns.
 
 ## Documentation Structure
 
@@ -43,7 +45,8 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 ### Integration Documentation
 
-- **[flext-integration.md](flext-integration.md)** - Integration patterns with FLEXT ecosystem components
+- **[flext-integration.md](flext-integration.md)** - Integration patterns with FLEXT
+  ecosystem components
 
 ### Design Patterns
 
@@ -54,7 +57,8 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 1. **Simplicity Over Complexity**: Favor simple, maintainable solutions
 1. **Single Responsibility**: Each component has one clear purpose
 1. **Dependency Inversion**: Depend on abstractions, not concretions
-1. **Configuration as Code**: All configuration should be version-controlled and validated
+1. **Configuration as Code**: All configuration should be version-controlled and
+   validated
 1. **Observability by Design**: Built-in monitoring and logging
 
 ### Singer SDK Compliance
@@ -173,16 +177,21 @@ This directory contains comprehensive architectural documentation for FLEXT Tap 
 
 ### FLEXT Ecosystem
 
-- **[flext-core Architecture](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/)** - Foundation patterns
-- **[flext-oracle-wms Integration](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-oracle-wms/docs/)** - WMS client integration
-- **[FLEXT Platform Architecture](https://github.com/flext-sh/flext/tree/0.12.0-dev/docs/architecture/)** - Ecosystem overview
+- **[flext-core Architecture](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-core/docs/architecture/)** -
+  Foundation patterns
+- **[flext-oracle-wms Integration](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-oracle-wms/docs/)** -
+  WMS client integration
+- **[FLEXT Platform Architecture](https://github.com/flext-sh/flext/tree/0.12.0-dev/docs/architecture/)** -
+  Ecosystem overview
 
 ### External References
 
 - **[Singer SDK Documentation](https://sdk.meltano.com/)** - Singer specification
-- **[Clean Architecture Principles](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)** - Architectural patterns
+- **[Clean Architecture Principles](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)** -
+  Architectural patterns
 - **[Meltano Documentation](https://docs.meltano.com/)** - Orchestration platform
 
 ---
 
-**Updated**: 2025-08-13 | **Status**: Architecture Defined · 1.0.0 Current | **Next**: Implementation Planning
+**Updated**: 2025-08-13 | **Status**: Architecture Defined · 1.0.0 Current | **Next**:
+Implementation Planning

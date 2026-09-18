@@ -32,7 +32,10 @@
 
 ## Overview
 
-This directory contains the core implementation of FLEXT Tap Oracle WMS, a Singer-compliant tap for extracting data from Oracle Warehouse Management Systems. The module provides comprehensive WMS integration capabilities while following FLEXT ecosystem patterns.
+This directory contains the core implementation of FLEXT Tap Oracle WMS, a
+Singer-compliant tap for extracting data from Oracle Warehouse Management Systems. The
+module provides comprehensive WMS integration capabilities while following FLEXT
+ecosystem patterns.
 
 ## Module Structure
 
@@ -89,7 +92,9 @@ This directory contains the core implementation of FLEXT Tap Oracle WMS, a Singe
 
 ### **Current Architecture Status**
 
-⚠️ **OVER-ENGINEERED**: This module contains 26 Python files with 8,179 lines of code, representing significant architectural complexity that will be simplified in future releases.
+⚠️ **OVER-ENGINEERED**: This module contains 26 Python files with 8,179 lines of code,
+representing significant architectural complexity that will be simplified in future
+releases.
 
 **Target Simplification**:
 
@@ -199,7 +204,8 @@ result = validator.validate_config(settings)
 1. **Consolidate Discovery**: Merge discovery components into single module
 1. **Simplify Configuration**: Single configuration approach using FLEXT patterns
 1. **Reduce Abstractions**: Eliminate unnecessary interfaces and adapters
-1. **Leverage FLEXT Libraries**: Use flext-oracle-wms instead of duplicating functionality
+1. **Leverage FLEXT Libraries**: Use flext-oracle-wms instead of duplicating
+   functionality
 
 See [docs/TODO.md](../../docs/TODO.md) for complete refactoring plan.
 
@@ -244,4 +250,5 @@ See [tests/README.md](../../tests/README.md) for complete testing documentation.
 
 ---
 
-**Status**: 1.0.0 Release Preparation | **Architecture**: Requires Refactoring | **Updated**: 2025-08-13
+**Status**: 1.0.0 Release Preparation | **Architecture**: Requires Refactoring |
+**Updated**: 2025-08-13

@@ -12,8 +12,9 @@ Gerado do scan Snyk (dump 2026-08-06). Bead: `mro-8i5s`
 
 ## Como usar este documento
 
-Cada achado traz o **código real** extraído da worktree (linha `>>>` = sink reportado), a regra completa e o CWE.
-Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar em `.snyk`) / `risco-aceito` (com prazo).
+Cada achado traz o **código real** extraído da worktree (linha `>>>` = sink reportado),
+a regra completa e o CWE. Preencha **Decisão**: `corrigir` / `falso-positivo` (registrar
+em `.snyk`) / `risco-aceito` (com prazo).
 
 ## Achados
 
