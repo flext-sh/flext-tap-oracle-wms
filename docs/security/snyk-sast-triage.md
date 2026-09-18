@@ -22,7 +22,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
 
 **Local**: `tests/conftest.py:66` · **CWE**: -
 
-```python
+```python notest
        62      return FlextTapOracleWmsSettings.model_validate({
        63          "TapOracleWms": {
        64              "base_url": "https://test.wms.example.com",
@@ -40,7 +40,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
 
 **Local**: `tests/integration/test_wms_connection.py:183` · **CWE**: -
 
-```python
+```python notest
       179          bad_settings = FlextTapOracleWmsSettings.model_validate({
       180              "TapOracleWms": {
       181                  "base_url": "https://invalid.example.com",
@@ -58,7 +58,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
 
 **Local**: `tests/unit/test_config.py:32` · **CWE**: -
 
-```python
+```python notest
        28          settings = FlextTapOracleWmsSettings.model_validate({
        29              "TapOracleWms": {
        30                  "base_url": "https://wms.example.com",
@@ -76,7 +76,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
 
 **Local**: `tests/unit/test_config.py:57` · **CWE**: -
 
-```python
+```python notest
        53          settings = FlextTapOracleWmsSettings.model_validate({
        54              "TapOracleWms": {
        55                  "base_url": "https://prod.wms.example.com",
@@ -94,7 +94,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
 
 **Local**: `tests/unit/test_config.py:239` · **CWE**: -
 
-```python
+```python notest
       235          settings = FlextTapOracleWmsSettings.model_validate({
       236              "TapOracleWms": {
       237                  "base_url": "https://wms.example.com",
@@ -112,7 +112,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
 
 **Local**: `tests/unit/test_config_validation.py:31` · **CWE**: -
 
-```python
+```python notest
        27          settings = FlextTapOracleWmsSettings.model_validate({
        28              "TapOracleWms": {
        29                  "base_url": "https://wms.example.com",
@@ -130,7 +130,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
 
 **Local**: `tests/unit/test_config_validation.py:202` · **CWE**: -
 
-```python
+```python notest
       198          settings = FlextTapOracleWmsSettings.model_validate({
       199              "TapOracleWms": {
       200                  "base_url": "https://wms.example.com",
@@ -148,7 +148,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
 
 **Local**: `tests/unit/test_tap.py:46` · **CWE**: -
 
-```python
+```python notest
        42          settings = FlextTapOracleWmsSettings.model_validate({
        43              "TapOracleWms": {
        44                  "base_url": "https://test.wms.example.com",

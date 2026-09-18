@@ -68,7 +68,7 @@ architecture after refactoring from the current over-engineered 26-component str
 
 ### **Current State Analysis**
 
-```python
+```python notest
 # CURRENT OVER-ENGINEERED STRUCTURE (26 files, 8,179 lines)
 src/flext_tap_oracle_wms/
 ├── tap.py                    # 1,042 lines - BLOATED main tap class
@@ -109,7 +109,7 @@ src/flext_tap_oracle_wms/
 
 Following FLEXT Core patterns and Singer SDK best practices:
 
-```python
+```python notest
 # TARGET SIMPLIFIED STRUCTURE (6-8 files, ~800 lines total)
 src/flext_tap_oracle_wms/
 ├── __init__.py               # 🎯 Public API gateway (~20 lines)
@@ -367,7 +367,7 @@ validation, and FLEXT ecosystem integration.
 from __future__ import annotations
 from flext_core import t
 
-from pydantic import u.Field, validator
+from pydantic import Field, validator
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -381,31 +381,31 @@ class WMSConfig(FlextSettings):
     """
 
     # Connection settings
-    base_url: str = u.Field(..., description="Oracle WMS instance URL")
-    auth_method: str = u.Field(
+    base_url: str = Field(..., description="Oracle WMS instance URL")
+    auth_method: str = Field(
         ..., regex="^(basic|oauth2)$", description="Authentication method"
     )
-    company_code: str = u.Field(..., description="WMS company code")
-    facility_code: str = u.Field(..., description="WMS facility code")
+    company_code: str = Field(..., description="WMS company code")
+    facility_code: str = Field(..., description="WMS facility code")
 
     # Authentication settings
-    username: str | None = u.Field(None, description="Username for basic auth")
-    password: str | None = u.Field(
+    username: str | None = Field(None, description="Username for basic auth")
+    password: str | None = Field(
         None, description="Password for basic auth", repr=False
     )
-    oauth_client_id: str | None = u.Field(None, description="OAuth2 client ID")
-    oauth_client_secret: str | None = u.Field(
+    oauth_client_id: str | None = Field(None, description="OAuth2 client ID")
+    oauth_client_secret: str | None = Field(
         None, description="OAuth2 client secret", repr=False
     )
 
     # Extraction settings
-    entities: t.StringList = u.Field(
+    entities: t.StringList = Field(
         default=["item", "inventory"], description="List of WMS entities to extract"
     )
-    page_size: int = u.Field(
+    page_size: int = Field(
         default=1000, le=1250, description="Records per page (max 1250)"
     )
-    start_date: str | None = u.Field(
+    start_date: str | None = Field(
         None, description="Start date for incremental extraction (ISO8601)"
     )
 
@@ -670,7 +670,7 @@ WMSDiscoveryError  # Specific error (descriptive)
 
 ### **Function and Method Naming**
 
-```python
+```python notest
 # Action-oriented naming
 from __future__ import annotations
 from flext_core import t
@@ -694,7 +694,7 @@ def schema(self) -> m.Dict:               # Computed property
 
 ### **Dependency Hierarchy**
 
-```python
+```python notest
 # Dependencies flow following Clean Architecture
 Application Layer (tap.py, streams.py)
     ↓
@@ -715,7 +715,7 @@ External Libraries (singer-sdk, pydantic)
 # External dependencies first
 
 from __future__ import annotations
-from pydantic import u.Field, validator
+from pydantic import Field, validator
 from singer_sdk import Tap
 from singer_sdk.streams import RESTStream
 
@@ -853,7 +853,7 @@ class AuthenticationManager:
 
 #### **Phase 1: Elimination (Week 1)**
 
-```python
+```python notest
 # REMOVE these over-engineered modules:
 ❌ config_mapper.py          # 1,030 lines → merge into settings.py
 ❌ modern_discovery.py       # 791 lines → merge into discovery.py
@@ -873,7 +873,7 @@ class AuthenticationManager:
 
 #### **Phase 2: Consolidation (Week 2)**
 
-```python
+```python notest
 # CONSOLIDATE remaining modules:
 ✅ tap.py           # 1,042 → ~150 lines (remove complexity)
 ✅ streams.py       # 897 → ~200 lines (simplify implementation)
@@ -886,7 +886,7 @@ class AuthenticationManager:
 
 #### **Phase 3: Integration (Week 3)**
 
-```python
+```python notest
 # INTEGRATE with FLEXT ecosystem:
 from flext_cli import u
 from flext_core import FlextSettings
@@ -902,7 +902,7 @@ from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 ### **Migration Validation**
 
-```python
+```python notest
 # BEFORE (current):
 Lines of Code: 8,179
 Module Count: 26
@@ -924,7 +924,7 @@ Test Coverage: 100% (all tests enabled)
 
 ### **Test Structure Alignment**
 
-```python
+```python notest
 # Test structure mirrors simplified source structure
 tests/
 ├── unit/                          # Unit tests for each module
@@ -979,7 +979,7 @@ def test_entity_discovery():
 
 ### **Module Quality Metrics**
 
-```python
+```python notest
 # Target metrics per module
 Lines per Module: 50-200 (max 200)
 Cyclomatic Complexity: <10 per function
@@ -1030,7 +1030,7 @@ def discover_entities(self) -> p.Result[t.StringList]:
 
 ### **Consistent Pattern Usage**
 
-```python
+```python notest
 # ✅ Use FLEXT patterns consistently
 from __future__ import annotations
 from flext_cli import u
@@ -1052,7 +1052,7 @@ custom_logger = logging.getLogger()          # Use u.fetch_logger()
 
 ### **Library Integration**
 
-```python
+```python notest
 # ✅ Use ecosystem libraries
 from __future__ import annotations
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata

@@ -258,14 +258,14 @@ from __future__ import annotations
 from flext_cli import u
 from flext_core import FlextSettings
 from flext_oracle_wms import FlextOracleWmsClient
-from pydantic import u.Field, validator
+from pydantic import Field, validator
 
 
 class WMSConfig(FlextSettings):
     """FLEXT-compliant configuration."""
 
-    base_url: str = u.Field(..., description="WMS instance URL")
-    auth_method: str = u.Field(..., regex="^(basic|oauth2)$")
+    base_url: str = Field(..., description="WMS instance URL")
+    auth_method: str = Field(..., regex="^(basic|oauth2)$")
 
     class Config:
         env_prefix = "TAP_ORACLE_WMS_"
@@ -445,7 +445,8 @@ def test_new_entity_extraction(mock_wms_client):
 make wms-test
 
 # Debug authentication
-TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap --config settings.json --discover
+TAP_ORACLE_WMS_LOG_LEVEL=DEBUG python -m flext_tap_oracle_wms.tap \
+  --config settings.json --discover
 ```
 
 #### Schema Issues
@@ -464,7 +465,8 @@ u.Cli.print(schema)
 
 ```bash
 # Profile extraction
-python -m cProfile -o profile.stats -m flext_tap_oracle_wms.tap --config settings.json --catalog catalog.json
+python -m cProfile -o profile.stats -m flext_tap_oracle_wms.tap \
+  --config settings.json --catalog catalog.json
 
 # Analyze profile
 python -c "

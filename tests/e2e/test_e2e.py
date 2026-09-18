@@ -59,7 +59,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
             assert props, "Empty schema properties"
             metadata = stream.metadata
             table_metadata = next(
-                (entry for entry in metadata if entry.breadcrumb == []), None
+                (entry for entry in metadata if entry.breadcrumb == ()), None
             )
             assert table_metadata is not None
             meta = table_metadata.metadata
@@ -88,7 +88,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         tm.that(deserialized, eq=catalog_payload)
         if catalog.streams:
             stream = catalog.streams[0]
-            assert any(meta.breadcrumb == [] for meta in stream.metadata)
+            assert any(meta.breadcrumb == () for meta in stream.metadata)
         logger.info("✅ Catalog serialization and selection working")
 
     def test_single_stream_extraction_sample(
@@ -123,7 +123,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         incremental_stream_config: m.Meltano.SingerCatalogEntry | None = None
         for stream_config in streams:
             for meta in stream_config.metadata:
-                if meta.breadcrumb == [] and (
+                if meta.breadcrumb == () and (
                     meta.metadata.get("replication-method") == "INCREMENTAL"
                 ):
                     incremental_stream_config = stream_config
@@ -161,7 +161,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         full_table_stream_config: m.Meltano.SingerCatalogEntry | None = None
         for stream_config in streams:
             for meta in stream_config.metadata:
-                if meta.breadcrumb == [] and (
+                if meta.breadcrumb == () and (
                     meta.metadata.get("replication-method")
                     == meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value
                 ):
@@ -215,7 +215,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
             if primary_keys:
                 quality_report["primary_keys_defined"] += 1
             table_metadata = next(
-                (entry for entry in metadata if entry.breadcrumb == []), None
+                (entry for entry in metadata if entry.breadcrumb == ()), None
             )
             if table_metadata:
                 tm_meta = table_metadata.metadata
@@ -278,7 +278,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
                 tm.that(meta.breadcrumb, is_=list)
                 tm.that(meta.metadata, is_=dict)
             table_meta = next(
-                (meta for meta in metadata if meta.breadcrumb == []), None
+                (meta for meta in metadata if meta.breadcrumb == ()), None
             )
             assert table_meta is not None
             table_metadata = table_meta.metadata
@@ -360,7 +360,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
             for stream in catalog_streams:
                 metadata = stream.metadata
                 table_meta = next(
-                    (entry for entry in metadata if entry.breadcrumb == []), None
+                    (entry for entry in metadata if entry.breadcrumb == ()), None
                 )
                 if table_meta:
                     tm_meta = table_meta.metadata

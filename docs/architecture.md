@@ -259,10 +259,10 @@ class WMSConfig(FlextSettings):
     """Unified WMS tap configuration."""
 
     base_url: str
-    auth_method: str = u.Field(..., regex="^(basic|oauth2)$")
+    auth_method: str = Field(..., regex="^(basic|oauth2)$")
     company_code: str
     facility_code: str
-    entities: t.StringList = u.Field(default_factory=lambda: ["item", "inventory"])
+    entities: t.StringList = Field(default_factory=lambda: ["item", "inventory"])
 
     # Authentication fields
     username: str | None = None
@@ -581,8 +581,8 @@ class SecureWMSConfig(WMSConfig):
 
 ---
 
-**Status**: Architecture Defined · 1.0.0 Current | **Next**: Implementation of
-simplified architecture | **Updated**: 2025-08-13
+**Status**: Architecture Defined · 1.0.0 Current. **Next**: Implementation of simplified
+architecture. **Updated**: 2025-08-13
 
 ## Related Documentation
 

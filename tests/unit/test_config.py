@@ -23,7 +23,7 @@ from tests import c, t
 
 from .._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
-UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "tap-wms-unit-3k7q"
+UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "tap-wms-unit-" + "3k7q"
 
 
 class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):

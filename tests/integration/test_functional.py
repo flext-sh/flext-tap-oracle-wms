@@ -205,7 +205,7 @@ class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
         for stream in streams:
             table_metadata = None
             for meta in stream.metadata:
-                if meta.breadcrumb == []:
+                if meta.breadcrumb == ():
                     table_metadata = meta
                     break
             if table_metadata:

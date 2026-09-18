@@ -88,7 +88,7 @@ class WMSConfig(FlextSettings):
     auth_method: str
     company_code: str
     facility_code: str
-    entities: t.StringList = u.Field(default=["item", "inventory"])
+    entities: t.StringList = Field(default=["item", "inventory"])
 
     class Config:
         """Pydantic configuration."""
@@ -124,7 +124,7 @@ from flext_core import TAnyDict, TEntityId, TValue
 # Use centralized types instead of custom definitions
 OracleWmsRecord = TAnyDict  # WMS record data
 OracleWmsEntityId = TEntityId  # Entity identifiers
-OracleWmsValue = TValue  # u.Field values
+OracleWmsValue = TValue  # Field values
 
 
 class FlextTapOracleWmsStream:
@@ -353,36 +353,34 @@ class FlextTapOracleWmsStream(Stream):
 from __future__ import annotations
 from flext_core import t
 from flext_meltano import MeltanoConfig
-from pydantic import u.Field, validator
+from pydantic import Field, validator
 
 
 class WMSMeltanoConfig(MeltanoConfig):
     """Meltano-specific configuration with FLEXT patterns."""
 
     # Connection settings
-    base_url: str = u.Field(..., description="Oracle WMS instance URL")
-    auth_method: str = u.Field(
+    base_url: str = Field(..., description="Oracle WMS instance URL")
+    auth_method: str = Field(
         ..., regex="^(basic|oauth2)$", description="Authentication method"
     )
-    company_code: str = u.Field(..., description="WMS company code")
-    facility_code: str = u.Field(..., description="WMS facility code")
+    company_code: str = Field(..., description="WMS company code")
+    facility_code: str = Field(..., description="WMS facility code")
 
     # Authentication settings
-    username: str | None = u.Field(None, description="Username for basic auth")
-    password: str | None = u.Field(None, description="Password for basic auth")
-    oauth_client_id: str | None = u.Field(None, description="OAuth2 client ID")
-    oauth_client_secret: str | None = u.Field(
-        None, description="OAuth2 client secret"
-    )
+    username: str | None = Field(None, description="Username for basic auth")
+    password: str | None = Field(None, description="Password for basic auth")
+    oauth_client_id: str | None = Field(None, description="OAuth2 client ID")
+    oauth_client_secret: str | None = Field(None, description="OAuth2 client secret")
 
     # Extraction settings
-    entities: t.StringList = u.Field(
+    entities: t.StringList = Field(
         default=["item", "inventory"], description="List of WMS entities to extract"
     )
-    page_size: int = u.Field(
+    page_size: int = Field(
         default=1000, le=1250, description="Records per page (max 1250)"
     )
-    start_date: datetime | None = u.Field(
+    start_date: datetime | None = Field(
         None, description="Start date for incremental extraction"
     )
 
