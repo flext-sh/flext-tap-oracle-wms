@@ -174,7 +174,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     def wms_client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
         """A started WMS client instance."""
         if self._wms_client is None:
-            password = self.flext_config.TapOracleWms.password
+            password: str | t.SecretStr = self.flext_config.TapOracleWms.password
             # NOTE (multi-agent): mro-rn88 — both settings models namespace project fields;
             # read via TapOracleWms.* and build the upstream config under OracleWms.*.
             wms_settings = FlextOracleWmsSettings.model_validate({
@@ -246,9 +246,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             msg = f"Catalog discovery failed: {catalog_result.error or 'unknown error'}"
             raise FlextTapOracleWmsConfigurationError(msg)
         streams_raw = catalog_result.value.streams
-        if not streams_raw:
-            return []
-        return [
+        streams: list[FlextTapOracleWmsStream] = [
             FlextTapOracleWmsStream(
                 tap=self,
                 name=stream_raw.stream,
@@ -260,6 +258,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             )
             for stream_raw in streams_raw
         ]
+        return streams
 
     def execute(self, message: str | None = None) -> p.Result[bool]:
         """Run a full tap sync when no custom message is provided."""
