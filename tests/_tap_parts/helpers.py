@@ -119,7 +119,7 @@ class OracleWmsTapTestHelpersMixin:
     @staticmethod
     def _password_value(settings: FlextTapOracleWmsSettings) -> str:
         """Extract the plaintext password from settings (handles SecretStr)."""
-        password = settings.TapOracleWms.password
+        password: str | t.SecretStr = settings.TapOracleWms.password
         return (
             password.get_secret_value()
             if isinstance(password, t.SecretStr)

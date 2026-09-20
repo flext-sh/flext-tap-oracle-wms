@@ -13,8 +13,6 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Annotated
 
-from pydantic_settings import SettingsConfigDict
-
 from flext_core import FlextSettings
 from flext_tap_oracle_wms import m
 
@@ -26,7 +24,7 @@ _ISO_DATE_RE = re.compile(
 class FlextTapOracleWmsSettings(FlextSettings):
     """Oracle WMS Singer tap settings; fields under ``settings.TapOracleWms.*``."""
 
-    model_config = SettingsConfigDict(
+    model_config = m.SettingsConfigDict(
         env_prefix="FLEXT_TAP_ORACLE_WMS_",
         env_nested_delimiter="__",
         extra="ignore",
