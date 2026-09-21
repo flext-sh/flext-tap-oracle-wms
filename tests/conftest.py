@@ -95,10 +95,10 @@ def oracle_wms_online(oracle_wms_environment: None) -> bool:
     """Whether online Oracle WMS tests are explicitly enabled for this session.
 
     Online tests reach the live Oracle WMS Cloud. They run only when the
-    operator opts in via ``FLEXT_TAP_ORACLE_WMS_ONLINE`` (a truthy value) and
-    the canonical credentials are present. This is a pure settings/env check
-    evaluated once per session; it never touches the network, so offline runs
-    skip the online suites deterministically instead of erroring.
+    operator opts in via ``FLEXT_TAP_ORACLE_WMS_ONLINE`` (a truthy value).
+    This fixture selects the suite only; typed settings and the real tap own
+    credential validation. Once selected, configuration and network failures
+    must fail the tests rather than turn the selected suite into skips.
     """
     _ = oracle_wms_environment
     if os.environ.get("FLEXT_TAP_ORACLE_WMS_ONLINE", "").strip().lower() not in {
@@ -107,12 +107,7 @@ def oracle_wms_online(oracle_wms_environment: None) -> bool:
         "yes",
     }:
         return False
-    settings = FlextTapOracleWmsSettings()
-    return bool(
-        settings.TapOracleWms.base_url
-        and settings.TapOracleWms.username
-        and settings.TapOracleWms.password
-    )
+    return True
 
 
 @pytest.fixture
@@ -129,7 +124,7 @@ def pytest_collection_modifyitems(
     for item in items:
         item_path = str(item.path)
         if "integration" in item_path:
-            item.add_marker(pytest.mark.oracle)
+            item.add_marker(pytest.mark.integration)
         if any(x in item_path for x in ["e2e", "performance"]):
             item.add_marker(pytest.mark.slow)
 
@@ -138,12 +133,12 @@ def pytest_collection_modifyitems(
 def skip_when_oracle_wms_offline(request: pytest.FixtureRequest) -> None:
     """Skip online-gated tests when the real Oracle WMS is not enabled.
 
-    The ``oracle_wms`` and ``slow`` markers are applied at collection to the
+    The ``integration`` and ``slow`` markers are applied at collection to the
     integration, e2e and performance suites. When online access is not enabled
     they are skipped here — validated once at session start — rather than
     reaching the network during each test's setup.
     """
-    online_markers = ("oracle", "slow", "integration", "e2e", "performance")
+    online_markers = ("slow", "integration", "e2e", "performance")
     requires_online = any(
         request.node.get_closest_marker(marker) is not None for marker in online_markers
     )
