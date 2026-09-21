@@ -9,26 +9,32 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_tap_oracle_wms import (
-        FlextTapOracleWmsConstants,
-        FlextTapOracleWmsConstants as c,
-        d,
-        e,
-        h,
-        m,
-        p,
-        r,
-        s,
-        t,
-        u,
-        x,
-    )
+    from flext_meltano import s
+    from flext_oracle_wms import e
 
-    from .constants import ExamplesFlextTapOracleWmsConstants
-    from .models import ExamplesFlextTapOracleWmsModels
-    from .protocols import ExamplesFlextTapOracleWmsProtocols
-    from .typings import ExamplesFlextTapOracleWmsTypes
-    from .utilities import ExamplesFlextTapOracleWmsUtilities
+    from flext_core import d, h, r, x
+    from flext_tap_oracle_wms import FlextTapOracleWmsConstants
+
+    from .constants import (
+        ExamplesFlextTapOracleWmsConstants,
+        ExamplesFlextTapOracleWmsConstants as c,
+    )
+    from .models import (
+        ExamplesFlextTapOracleWmsModels,
+        ExamplesFlextTapOracleWmsModels as m,
+    )
+    from .protocols import (
+        ExamplesFlextTapOracleWmsProtocols,
+        ExamplesFlextTapOracleWmsProtocols as p,
+    )
+    from .typings import (
+        ExamplesFlextTapOracleWmsTypes,
+        ExamplesFlextTapOracleWmsTypes as t,
+    )
+    from .utilities import (
+        ExamplesFlextTapOracleWmsUtilities,
+        ExamplesFlextTapOracleWmsUtilities as u,
+    )
 __all__: tuple[str, ...] = (
     "ExamplesFlextTapOracleWmsConstants",
     "ExamplesFlextTapOracleWmsModels",
@@ -52,25 +58,15 @@ __all__: tuple[str, ...] = (
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
-            ".constants": ("ExamplesFlextTapOracleWmsConstants",),
-            ".models": ("ExamplesFlextTapOracleWmsModels",),
-            ".protocols": ("ExamplesFlextTapOracleWmsProtocols",),
-            ".typings": ("ExamplesFlextTapOracleWmsTypes",),
-            ".utilities": ("ExamplesFlextTapOracleWmsUtilities",),
-            "flext_tap_oracle_wms": (
-                "FlextTapOracleWmsConstants",
-                "c",
-                "d",
-                "e",
-                "h",
-                "m",
-                "p",
-                "r",
-                "s",
-                "t",
-                "u",
-                "x",
-            ),
+            ".constants": ("ExamplesFlextTapOracleWmsConstants", "c"),
+            ".models": ("ExamplesFlextTapOracleWmsModels", "m"),
+            ".protocols": ("ExamplesFlextTapOracleWmsProtocols", "p"),
+            ".typings": ("ExamplesFlextTapOracleWmsTypes", "t"),
+            ".utilities": ("ExamplesFlextTapOracleWmsUtilities", "u"),
+            "flext_core": ("d", "h", "r", "x"),
+            "flext_meltano": ("s",),
+            "flext_oracle_wms": ("e",),
+            "flext_tap_oracle_wms": ("FlextTapOracleWmsConstants",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

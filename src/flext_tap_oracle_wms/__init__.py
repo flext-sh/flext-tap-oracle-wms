@@ -20,8 +20,10 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_meltano import FlextMeltanoConstants, d, e, h, r, s, x
-    from flext_oracle_wms import FlextOracleWmsConstants
+    from flext_meltano import s
+    from flext_oracle_wms import e
+
+    from flext_core import d, h, r, x
 
     from .__version__ import FlextTapOracleWmsVersion
     from ._config import FlextTapOracleWmsConfig, config
@@ -29,33 +31,19 @@ if TYPE_CHECKING:
     from .api import FlextTapOracleWmsService, tap_oracle_wms
     from .cli import main
     from .constants import FlextTapOracleWmsConstants, FlextTapOracleWmsConstants as c
-    from .errors import (
-        FlextTapOracleWmsConfigurationError,
-        FlextTapOracleWmsError,
-        FlextTapOracleWmsValidationError,
-    )
     from .models import FlextTapOracleWmsModels, FlextTapOracleWmsModels as m
     from .protocols import FlextTapOracleWmsProtocols, FlextTapOracleWmsProtocols as p
-    from .streams import FlextTapOracleWmsStream
-    from .tap import FlextTapOracleWms
     from .typings import FlextTapOracleWmsTypes, FlextTapOracleWmsTypes as t
     from .utilities import FlextTapOracleWmsUtilities, FlextTapOracleWmsUtilities as u
 __all__: tuple[str, ...] = (
-    "FlextMeltanoConstants",
-    "FlextOracleWmsConstants",
-    "FlextTapOracleWms",
     "FlextTapOracleWmsConfig",
-    "FlextTapOracleWmsConfigurationError",
     "FlextTapOracleWmsConstants",
-    "FlextTapOracleWmsError",
     "FlextTapOracleWmsModels",
     "FlextTapOracleWmsProtocols",
     "FlextTapOracleWmsService",
     "FlextTapOracleWmsSettings",
-    "FlextTapOracleWmsStream",
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
-    "FlextTapOracleWmsValidationError",
     "FlextTapOracleWmsVersion",
     "__author__",
     "__author_email__",
@@ -91,19 +79,13 @@ _LAZY_IMPORTS = MappingProxyType(
             ".api": ("FlextTapOracleWmsService", "tap_oracle_wms"),
             ".cli": ("main",),
             ".constants": ("FlextTapOracleWmsConstants", "c"),
-            ".errors": (
-                "FlextTapOracleWmsConfigurationError",
-                "FlextTapOracleWmsError",
-                "FlextTapOracleWmsValidationError",
-            ),
             ".models": ("FlextTapOracleWmsModels", "m"),
             ".protocols": ("FlextTapOracleWmsProtocols", "p"),
-            ".streams": ("FlextTapOracleWmsStream",),
-            ".tap": ("FlextTapOracleWms",),
             ".typings": ("FlextTapOracleWmsTypes", "t"),
             ".utilities": ("FlextTapOracleWmsUtilities", "u"),
-            "flext_meltano": ("FlextMeltanoConstants", "d", "e", "h", "r", "s", "x"),
-            "flext_oracle_wms": ("FlextOracleWmsConstants",),
+            "flext_core": ("d", "h", "r", "x"),
+            "flext_meltano": ("s",),
+            "flext_oracle_wms": ("e",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
