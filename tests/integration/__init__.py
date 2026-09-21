@@ -10,59 +10,20 @@ from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_tests import c, d, e, h, m, p, r, s, t, td, tf, tk, tm, tv, u, x
-
-    from .test_functional import TestsFlextTapOracleWmsFunctional
-    from .test_streams_functional import TestsFlextTapOracleWmsStreamsFunctional
-    from .test_wms import TestsFlextTapOracleWmsWms
-    from .test_wms_connection import TestsFlextTapOracleWmsWmsConnection
 __all__: tuple[str, ...] = (
-    "TestsFlextTapOracleWmsFunctional",
-    "TestsFlextTapOracleWmsStreamsFunctional",
-    "TestsFlextTapOracleWmsWms",
-    "TestsFlextTapOracleWmsWmsConnection",
-    "c",
-    "d",
-    "e",
-    "h",
-    "m",
-    "p",
-    "r",
-    "s",
-    "t",
-    "td",
-    "tf",
-    "tk",
-    "tm",
-    "tv",
-    "u",
-    "x",
+    "c", "d", "e", "h",
+    "m", "p", "r", "s",
+    "t", "td", "tf", "tk",
+    "tm", "tv", "u", "x",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
-            ".test_functional": ("TestsFlextTapOracleWmsFunctional",),
-            ".test_streams_functional": ("TestsFlextTapOracleWmsStreamsFunctional",),
-            ".test_wms": ("TestsFlextTapOracleWmsWms",),
-            ".test_wms_connection": ("TestsFlextTapOracleWmsWmsConnection",),
             "flext_tests": (
-                "c",
-                "d",
-                "e",
-                "h",
-                "m",
-                "p",
-                "r",
-                "s",
-                "t",
-                "td",
-                "tf",
-                "tk",
-                "tm",
-                "tv",
-                "u",
-                "x",
-            ),
+                "c", "d", "e", "h", "m", "p", "r", "s", "t", "td", "tf", "tk", "tm",
+                "tv", "u", "x",
+            )
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
