@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Self
+from typing import Annotated, Self
 
 from flext_meltano import FlextMeltanoConfig, m
 
@@ -47,7 +47,10 @@ class FlextTapOracleWmsConfig(FlextSettings, FlextMeltanoConfig):
 
     __hash__ = object.__hash__
 
-    TapOracleWms: _TapOracleWmsNamespace = _TapOracleWmsNamespace()
+    TapOracleWms: Annotated[
+        _TapOracleWmsNamespace,
+        m.Field(description="Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``."),
+    ] = _TapOracleWmsNamespace()
 
 
 config: FlextTapOracleWmsConfig = FlextTapOracleWmsConfig.fetch_global()
