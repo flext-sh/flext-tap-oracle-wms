@@ -10,14 +10,14 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, ClassVar, Final
 
-from flext_meltano import FlextMeltanoConstants
-from flext_oracle_wms import FlextOracleWmsConstants
+from flext_meltano import c
+from flext_oracle_wms import c as _oracle_wms_c
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms import t
 
 
-class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants):
+class FlextTapOracleWmsConstants(c, _oracle_wms_c):
     """Oracle WMS tap extraction-specific constants following flext-core patterns.
 
     Composes with FlextOracleWmsConstants to avoid duplication and ensure consistency.
@@ -28,7 +28,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         """Oracle WMS tap-specific constants."""
 
         DEFAULT_TIMEOUT: Final[int] = (
-            FlextMeltanoConstants.Meltano.DEFAULT_TIMEOUT_SECONDS
+            c.Meltano.DEFAULT_TIMEOUT_SECONDS
         )
         MAX_RETRIES: Final[int] = 3
         REQUIRED_CONFIG_FIELDS: Final[frozenset[str]] = frozenset({
@@ -41,7 +41,7 @@ class FlextTapOracleWmsConstants(FlextMeltanoConstants, FlextOracleWmsConstants)
         SCHEMA_TYPE_BOOLEAN: Final[str] = "boolean"
         SCHEMA_TYPE_INTEGER: Final[str] = "integer"
 
-        class Authentication(FlextOracleWmsConstants.OracleWms.Authentication):
+        class Authentication(_oracle_wms_c.OracleWms.Authentication):
             """Merged authentication constants from both parent hierarchies."""
 
         class Extraction:

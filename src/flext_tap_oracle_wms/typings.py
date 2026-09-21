@@ -12,13 +12,13 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext_meltano import FlextMeltanoTypes
+from flext_meltano import t as _meltano_t
 from flext_oracle_wms import t
 
 from flext_tap_oracle_wms import m
 
 
-class FlextTapOracleWmsTypes(FlextMeltanoTypes, t):
+class FlextTapOracleWmsTypes(_meltano_t, t):
     """MRO facade composing Meltano + Oracle WMS type namespaces."""
 
     type ScalarNormalizer = Callable[[t.JsonValue], t.JsonValue]
