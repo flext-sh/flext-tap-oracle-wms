@@ -9,10 +9,16 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
+    from flext_core import d, h, r, x
+    from flext_meltano import s
+    from flext_oracle_wms import e
     from flext_tap_oracle_wms import (
-        FlextTapOracleWmsConstants, FlextTapOracleWmsConstants as c, d, e,
-        h, m, p, r,
-        s, t, u, x,
+        FlextTapOracleWmsConstants,
+        FlextTapOracleWmsConstants as c,
+        m,
+        p,
+        t,
+        u,
     )
 
     from .constants import ExamplesFlextTapOracleWmsConstants
@@ -21,10 +27,22 @@ if TYPE_CHECKING:
     from .typings import ExamplesFlextTapOracleWmsTypes
     from .utilities import ExamplesFlextTapOracleWmsUtilities
 __all__: tuple[str, ...] = (
-    "ExamplesFlextTapOracleWmsConstants", "ExamplesFlextTapOracleWmsModels", "ExamplesFlextTapOracleWmsProtocols", "ExamplesFlextTapOracleWmsTypes",
-    "ExamplesFlextTapOracleWmsUtilities", "FlextTapOracleWmsConstants", "c", "d",
-    "e", "h", "m", "p",
-    "r", "s", "t", "u",
+    "ExamplesFlextTapOracleWmsConstants",
+    "ExamplesFlextTapOracleWmsModels",
+    "ExamplesFlextTapOracleWmsProtocols",
+    "ExamplesFlextTapOracleWmsTypes",
+    "ExamplesFlextTapOracleWmsUtilities",
+    "FlextTapOracleWmsConstants",
+    "c",
+    "d",
+    "e",
+    "h",
+    "m",
+    "p",
+    "r",
+    "s",
+    "t",
+    "u",
     "x",
 )
 
@@ -36,9 +54,16 @@ _LAZY_IMPORTS = MappingProxyType(
             ".protocols": ("ExamplesFlextTapOracleWmsProtocols",),
             ".typings": ("ExamplesFlextTapOracleWmsTypes",),
             ".utilities": ("ExamplesFlextTapOracleWmsUtilities",),
+            "flext_core": ("d", "h", "r", "x"),
+            "flext_meltano": ("s",),
+            "flext_oracle_wms": ("e",),
             "flext_tap_oracle_wms": (
-                "FlextTapOracleWmsConstants", "c", "d", "e", "h", "m", "p", "r", "s",
-                "t", "u", "x",
+                "FlextTapOracleWmsConstants",
+                "c",
+                "m",
+                "p",
+                "t",
+                "u",
             ),
         }),
         alias_groups=MappingProxyType({}),

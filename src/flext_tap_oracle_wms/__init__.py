@@ -9,12 +9,20 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 from .__version__ import (
-    __author__ as __author__, __author_email__ as __author_email__, __description__ as __description__, __license__ as __license__,
-    __title__ as __title__, __url__ as __url__, __version__ as __version__, __version_info__ as __version_info__,
+    __author__ as __author__,
+    __author_email__ as __author_email__,
+    __description__ as __description__,
+    __license__ as __license__,
+    __title__ as __title__,
+    __url__ as __url__,
+    __version__ as __version__,
+    __version_info__ as __version_info__,
 )
 
 if TYPE_CHECKING:
-    from flext_meltano import d, e, h, r, s, x
+    from flext_core import d, h, r, x
+    from flext_meltano import s
+    from flext_oracle_wms import e
 
     from .__version__ import FlextTapOracleWmsVersion
     from ._config import FlextTapOracleWmsConfig, config
@@ -27,14 +35,38 @@ if TYPE_CHECKING:
     from .typings import FlextTapOracleWmsTypes, FlextTapOracleWmsTypes as t
     from .utilities import FlextTapOracleWmsUtilities, FlextTapOracleWmsUtilities as u
 __all__: tuple[str, ...] = (
-    "FlextTapOracleWmsConfig", "FlextTapOracleWmsConstants", "FlextTapOracleWmsModels", "FlextTapOracleWmsProtocols",
-    "FlextTapOracleWmsService", "FlextTapOracleWmsSettings", "FlextTapOracleWmsTypes", "FlextTapOracleWmsUtilities",
-    "FlextTapOracleWmsVersion", "__author__", "__author_email__", "__description__",
-    "__license__", "__title__", "__url__", "__version__",
-    "__version_info__", "c", "config", "d",
-    "e", "h", "m", "main",
-    "p", "r", "s", "settings",
-    "t", "tap_oracle_wms", "u", "x",
+    "FlextTapOracleWmsConfig",
+    "FlextTapOracleWmsConstants",
+    "FlextTapOracleWmsModels",
+    "FlextTapOracleWmsProtocols",
+    "FlextTapOracleWmsService",
+    "FlextTapOracleWmsSettings",
+    "FlextTapOracleWmsTypes",
+    "FlextTapOracleWmsUtilities",
+    "FlextTapOracleWmsVersion",
+    "__author__",
+    "__author_email__",
+    "__description__",
+    "__license__",
+    "__title__",
+    "__url__",
+    "__version__",
+    "__version_info__",
+    "c",
+    "config",
+    "d",
+    "e",
+    "h",
+    "m",
+    "main",
+    "p",
+    "r",
+    "s",
+    "settings",
+    "t",
+    "tap_oracle_wms",
+    "u",
+    "x",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
@@ -50,7 +82,9 @@ _LAZY_IMPORTS = MappingProxyType(
             ".protocols": ("FlextTapOracleWmsProtocols", "p"),
             ".typings": ("FlextTapOracleWmsTypes", "t"),
             ".utilities": ("FlextTapOracleWmsUtilities", "u"),
-            "flext_meltano": ("d", "e", "h", "r", "s", "x"),
+            "flext_core": ("d", "h", "r", "x"),
+            "flext_meltano": ("s",),
+            "flext_oracle_wms": ("e",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
