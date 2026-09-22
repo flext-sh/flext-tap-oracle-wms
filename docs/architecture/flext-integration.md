@@ -304,10 +304,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from flext_meltano import (
-    Stream,
-    Tap,
-)
+from flext_meltano import Stream, Tap
 from flext_core import p, r, t, m
 from pydantic import Field
 from datetime import datetime
@@ -391,8 +388,7 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
 def configured_tap(
-    configuration: FlextTapOracleWmsSettings,
-    catalog: m.Meltano.SingerCatalog,
+    configuration: FlextTapOracleWmsSettings, catalog: m.Meltano.SingerCatalog
 ) -> FlextTapOracleWms:
     """Construct a tap through its typed public boundary."""
     return FlextTapOracleWms.from_settings(configuration, catalog=catalog)
@@ -490,7 +486,9 @@ class FlextTapOracleWmsStream(Stream):
 
             except Exception as exc:
                 self.tap.metrics.record_counter(
-                    "extraction_errors", 1, tags={"entity": self.name, "error": str(exc)}
+                    "extraction_errors",
+                    1,
+                    tags={"entity": self.name, "error": str(exc)},
                 )
                 raise
 ```
@@ -552,7 +550,8 @@ class WMSHealthCheck:
             )
         except Exception as exc:
             return HealthCheckResult(
-                status=HealthStatus.DEGRADED, message=f"Authentication check error: {exc}"
+                status=HealthStatus.DEGRADED,
+                message=f"Authentication check error: {exc}",
             )
 ```
 ## Integration Benefits
