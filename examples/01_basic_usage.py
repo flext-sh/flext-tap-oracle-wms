@@ -45,9 +45,6 @@ def main() -> int:
     catalog = catalog_result.value
     for stream_entry in catalog.streams:
         _ = stream_entry.schema_definition
-    streams = tap.discover_streams()
-    for _stream in streams:
-        pass
     tap.get_implementation_metrics()
     return 0
 
