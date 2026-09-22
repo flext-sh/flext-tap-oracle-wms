@@ -54,10 +54,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         )
         self._typed_schema: t.JsonDict | None = schema_dict
         self._client: FlextOracleWmsUtilities.OracleWms.Client | None = None
-        tap_instance = self._tap
-        settings_map: t.JsonMapping = {}
-        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
-            settings_map = tap_instance.settings
+        settings_map: t.JsonMapping = self._config_map()
         page_size_raw = settings_map.get("page_size", 100)
         page_size = (
             int(page_size_raw) if isinstance(page_size_raw, (int, float, str)) else 100
@@ -92,6 +89,13 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """Load one JSON schema document from a file-system path."""
         loaded = json.loads(path.read_text(encoding=c.DEFAULT_ENCODING))
         return t.json_dict_adapter().validate_python(loaded)
+
+    def _config_map(self) -> t.JsonMapping:
+        """The tap settings mapping when the tap exposes WMS client settings."""
+        tap_instance = self._tap
+        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
+            return tap_instance.settings
+        return {}
 
     @property
     @override
@@ -207,54 +211,58 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self, row: t.JsonDict, context: t.ScalarMapping | None = None
     ) -> t.JsonDict:
         """Post-process a record."""
-        conv = u.TapOracleWms.MappingConversion
-        tap_instance = self._tap
-        config_map: t.JsonMapping = {}
-        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
-            config_map = tap_instance.settings
-        column_mappings_raw = config_map.get("column_mappings")
-        column_mappings = (
-            conv.as_map(
-                column_mappings_raw,
-                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
-                error_cls=FlextTapOracleWmsError,
-            )
-            if column_mappings_raw
-            else None
-        )
-        if column_mappings is not None:
-            mapping_raw = column_mappings.get(self.name)
-            mapping = (
-                conv.as_map(
-                    mapping_raw,
-                    map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
-                    error_cls=FlextTapOracleWmsError,
-                )
-                if mapping_raw is not None
-                else None
-            )
-            if mapping is not None:
-                for old_name, new_name in mapping.items():
-                    new_name_str = str(new_name)
-                    if old_name in row:
-                        row[new_name_str] = row.pop(old_name)
-        ignored_columns_raw = config_map.get("ignored_columns")
-        ignored_columns = (
-            conv.as_list(
-                ignored_columns_raw,
-                list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
-                error_cls=FlextTapOracleWmsError,
-            )
-            if ignored_columns_raw
-            else None
-        )
-        if ignored_columns is not None:
-            for column_name in ignored_columns:
-                if isinstance(column_name, str):
-                    row.pop(column_name, None)
+        config_map = self._config_map()
+        self._apply_column_mappings(row, config_map)
+        self._drop_ignored_columns(row, config_map)
         if context:
             row["context"] = str({k: str(v) for k, v in context.items()})
         return row
+
+    def _apply_column_mappings(
+        self, row: t.JsonDict, config_map: t.JsonMapping
+    ) -> None:
+        """Rename record keys per the column mappings configured for this stream."""
+        conv = u.TapOracleWms.MappingConversion
+        mappings_raw = config_map.get("column_mappings")
+        if not mappings_raw:
+            return
+        column_mappings = conv.as_map(
+            mappings_raw,
+            map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
+        if column_mappings is None:
+            return
+        mapping_raw = column_mappings.get(self.name)
+        if mapping_raw is None:
+            return
+        mapping = conv.as_map(
+            mapping_raw,
+            map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
+        if mapping is None:
+            return
+        for old_name, new_name in mapping.items():
+            if old_name in row:
+                row[str(new_name)] = row.pop(old_name)
+
+    @staticmethod
+    def _drop_ignored_columns(row: t.JsonDict, config_map: t.JsonMapping) -> None:
+        """Remove the configured ignored columns from the record."""
+        ignored_raw = config_map.get("ignored_columns")
+        if not ignored_raw:
+            return
+        ignored_columns = u.TapOracleWms.MappingConversion.as_list(
+            ignored_raw,
+            list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
+        if ignored_columns is None:
+            return
+        for column_name in ignored_columns:
+            if isinstance(column_name, str):
+                row.pop(column_name, None)
 
     def build_operation_kwargs(
         self, page: int, context: t.ScalarMapping | None

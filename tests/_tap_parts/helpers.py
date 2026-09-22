@@ -43,7 +43,7 @@ class OracleWmsTapTestHelpersMixin:
         ImportError,
     )
 
-    _TAP_CONNECTION_ERROR_KEYWORDS: ClassVar[tuple[str, ...]] = (
+    _TAP_CONNECTION_ERROR_KEYWORDS: ClassVar[t.VariadicTuple[str]] = (
         "authentication",
         "authorization",
         "credentials",
