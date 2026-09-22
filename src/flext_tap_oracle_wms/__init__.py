@@ -20,21 +20,24 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_meltano import s
-    from flext_oracle_wms import e
+    from flext_api import api
+    from flext_cli import cli
+    from flext_meltano import meltano, s
+    from flext_oracle_wms import e, oracle_wms
+    from flext_web import web
+    from pydantic_core import from_json, to_json, to_jsonable_python
 
-    from flext_core import d, h, r, x
+    from flext_core import core, d, h, lazy_attribute, r, x
 
-    from .__version__ import FlextTapOracleWmsVersion
     from ._config import FlextTapOracleWmsConfig, config
     from ._settings import FlextTapOracleWmsSettings, settings
     from .api import FlextTapOracleWmsService, tap_oracle_wms
     from .cli import main
-    from .constants import FlextTapOracleWmsConstants, FlextTapOracleWmsConstants as c
-    from .models import FlextTapOracleWmsModels, FlextTapOracleWmsModels as m
-    from .protocols import FlextTapOracleWmsProtocols, FlextTapOracleWmsProtocols as p
-    from .typings import FlextTapOracleWmsTypes, FlextTapOracleWmsTypes as t
-    from .utilities import FlextTapOracleWmsUtilities, FlextTapOracleWmsUtilities as u
+    from .constants import FlextTapOracleWmsConstants, c
+    from .models import FlextTapOracleWmsModels, m
+    from .protocols import FlextTapOracleWmsProtocols, p
+    from .typings import FlextTapOracleWmsTypes, t
+    from .utilities import FlextTapOracleWmsUtilities, u
 __all__: tuple[str, ...] = (
     "FlextTapOracleWmsConfig",
     "FlextTapOracleWmsConstants",
@@ -44,7 +47,6 @@ __all__: tuple[str, ...] = (
     "FlextTapOracleWmsSettings",
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
-    "FlextTapOracleWmsVersion",
     "__author__",
     "__author_email__",
     "__description__",
@@ -53,27 +55,36 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
+    "api",
     "c",
+    "cli",
     "config",
+    "core",
     "d",
     "e",
+    "from_json",
     "h",
+    "lazy_attribute",
     "m",
     "main",
+    "meltano",
+    "oracle_wms",
     "p",
     "r",
     "s",
     "settings",
     "t",
     "tap_oracle_wms",
+    "to_json",
+    "to_jsonable_python",
     "u",
+    "web",
     "x",
 )
 
 _LAZY_IMPORTS = MappingProxyType(
     build_lazy_import_map(
         MappingProxyType({
-            ".__version__": ("FlextTapOracleWmsVersion",),
             "._config": ("FlextTapOracleWmsConfig", "config"),
             "._settings": ("FlextTapOracleWmsSettings", "settings"),
             ".api": ("FlextTapOracleWmsService", "tap_oracle_wms"),
@@ -83,9 +94,13 @@ _LAZY_IMPORTS = MappingProxyType(
             ".protocols": ("FlextTapOracleWmsProtocols", "p"),
             ".typings": ("FlextTapOracleWmsTypes", "t"),
             ".utilities": ("FlextTapOracleWmsUtilities", "u"),
-            "flext_core": ("d", "h", "r", "x"),
-            "flext_meltano": ("s",),
-            "flext_oracle_wms": ("e",),
+            "flext_api": ("api",),
+            "flext_cli": ("cli",),
+            "flext_core": ("core", "d", "h", "lazy_attribute", "r", "x"),
+            "flext_meltano": ("meltano", "s"),
+            "flext_oracle_wms": ("e", "oracle_wms"),
+            "flext_web": ("web",),
+            "pydantic_core": ("from_json", "to_json", "to_jsonable_python"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,

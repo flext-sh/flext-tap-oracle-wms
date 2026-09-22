@@ -250,7 +250,7 @@ class FlextTapOracleWmsStream(RESTStream):
 
     def get_records(self, _context):
         """Extract records using flext-oracle-wms client."""
-        for record in self.wms_client.get_entity_data(self.name):
+        for record in self.wms_client.fetch_entity_data(self.name).unwrap():
             yield record
 ```
 ### 3. Configuration Management
@@ -326,7 +326,7 @@ sequenceDiagram
     CLI->>Tap: sync()
     Tap->>Stream: get_records()
     loop For each page
-        Stream->>WMSClient: get_entity_data(page)
+        Stream->>WMSClient: fetch_entity_data(page)
         WMSClient->>WMS_API: GET /api/entity?page=N
         WMS_API-->>WMSClient: entity data
         WMSClient-->>Stream: processed records
@@ -486,7 +486,7 @@ def mock_wms_client():
     """Mock WMS client for testing."""
     client = Mock(spec=FlextOracleWmsClient)
     client.get_entities.return_value = ["item", "inventory", "order"]
-    client.get_entity_data.return_value = [
+    client.fetch_entity_data.return_value = [
         {"id": "1", "name": "Test Item"},
         {"id": "2", "name": "Another Item"},
     ]

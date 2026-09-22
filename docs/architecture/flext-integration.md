@@ -143,7 +143,7 @@ class FlextTapOracleWmsStream:
 
     def get_records(self, context) -> Iterator[TAnyDict]:
         """Return records using standard types."""
-        for record in self.wms_client.get_entity_data(self.name):
+        for record in self.wms_client.fetch_entity_data(self.name).unwrap():
             yield self._transform_record(record)
 
     def _transform_record(self, raw_record: TAnyDict) -> TAnyDict:
@@ -177,7 +177,7 @@ class FlextTapOracleWmsStream:
 
         try:
             record_count = 0
-            for record in self.wms_client.get_entity_data(self.name):
+            for record in self.wms_client.fetch_entity_data(self.name).unwrap():
                 record_count += 1
                 if record_count % 1000 == 0:
                     self.logger.info(
@@ -304,10 +304,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from flext_meltano import (
-    Stream,
-    Tap,
-)
+from flext_meltano import Stream, Tap
 from flext_core import p, r, t, m
 from pydantic import Field
 from datetime import datetime
@@ -366,7 +363,9 @@ class FlextTapOracleWmsStream(Stream):
     def get_records(self, context) -> Iterator[m.Dict]:
         """Extract records using WMS client."""
         try:
-            for record in self.tap.wms_client_manager.client.get_entity_data(self.name):
+            for record in self.tap.wms_client_manager.client.fetch_entity_data(
+                self.name
+            ).unwrap():
                 yield record
         except Exception as exc:
             self.logger.exception("Record extraction failed: %s", exc)
@@ -391,8 +390,7 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
 def configured_tap(
-    configuration: FlextTapOracleWmsSettings,
-    catalog: m.Meltano.SingerCatalog,
+    configuration: FlextTapOracleWmsSettings, catalog: m.Meltano.SingerCatalog
 ) -> FlextTapOracleWms:
     """Construct a tap through its typed public boundary."""
     return FlextTapOracleWms.from_settings(configuration, catalog=catalog)
@@ -490,7 +488,9 @@ class FlextTapOracleWmsStream(Stream):
 
             except Exception as exc:
                 self.tap.metrics.record_counter(
-                    "extraction_errors", 1, tags={"entity": self.name, "error": str(exc)}
+                    "extraction_errors",
+                    1,
+                    tags={"entity": self.name, "error": str(exc)},
                 )
                 raise
 ```
@@ -552,7 +552,8 @@ class WMSHealthCheck:
             )
         except Exception as exc:
             return HealthCheckResult(
-                status=HealthStatus.DEGRADED, message=f"Authentication check error: {exc}"
+                status=HealthStatus.DEGRADED,
+                message=f"Authentication check error: {exc}",
             )
 ```
 ## Integration Benefits

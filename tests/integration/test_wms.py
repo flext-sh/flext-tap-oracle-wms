@@ -61,9 +61,7 @@ class TestsFlextTapOracleWmsWms:
         for stream in streams:
             tm.that(stream.name, none=False)
 
-    def test_stream_extraction(
-        self, real_config: FlextTapOracleWmsSettings
-    ) -> None:
+    def test_stream_extraction(self, real_config: FlextTapOracleWmsSettings) -> None:
         """Exercise every discovered stream without suppressing extraction failures."""
         tap = FlextTapOracleWms.from_settings(real_config)
         init_result = tap.initialize()

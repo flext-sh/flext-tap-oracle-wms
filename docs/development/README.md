@@ -265,8 +265,7 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
 def create_configured_tap(
-    configuration: FlextTapOracleWmsSettings,
-    catalog: m.Meltano.SingerCatalog,
+    configuration: FlextTapOracleWmsSettings, catalog: m.Meltano.SingerCatalog
 ) -> FlextTapOracleWms:
     """Keep configuration and catalog validation at the public boundary."""
     return FlextTapOracleWms.from_settings(configuration, catalog=catalog)

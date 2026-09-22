@@ -101,13 +101,11 @@ def oracle_wms_online(oracle_wms_environment: None) -> bool:
     must fail the tests rather than turn the selected suite into skips.
     """
     _ = oracle_wms_environment
-    if os.environ.get("FLEXT_TAP_ORACLE_WMS_ONLINE", "").strip().lower() not in {
+    return os.environ.get("FLEXT_TAP_ORACLE_WMS_ONLINE", "").strip().lower() in {
         "1",
         "true",
         "yes",
-    }:
-        return False
-    return True
+    }
 
 
 @pytest.fixture
