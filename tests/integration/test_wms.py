@@ -73,7 +73,7 @@ class TestsFlextTapOracleWmsWms:
                 islice(stream.get_records(context=None), _RECORD_SAMPLE_LIMIT)
             )
             for record in records:
-                tm.that(isinstance(record, Mapping), eq=True)
+                tm.that(record, is_=Mapping)
 
 
 if __name__ == "__main__":
