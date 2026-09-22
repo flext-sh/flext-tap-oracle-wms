@@ -56,7 +56,7 @@ dependencies.
 
 ### **Disabled Integration Tests**
 
-#### **[test_simple_integration.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup](test_simple_integration.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup)**
+#### runtime_bootstrap_options
 
 **Purpose**: Multi-component integration testing **Current State**: Disabled due to live
 WMS API dependencies **Scope**:

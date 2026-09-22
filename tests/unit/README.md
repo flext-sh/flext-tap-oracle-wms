@@ -45,8 +45,7 @@ dependencies.
 
 #### **Authentication Tests**
 
-- **[test_auth_comprehensive.py](test_auth_comprehensive.py)** - Authentication system
-  testing
+- runtime_bootstrap_options
   - Basic authentication flow
   - WMS authenticator functionality
   - Header generation and application
@@ -54,8 +53,7 @@ dependencies.
 
 #### **Client Tests**
 
-- **[test_client_comprehensive.py](test_client_comprehensive.py)** - WMS client wrapper
-  testing
+- runtime_bootstrap_options
   - HTTP client configuration
   - Request/response handling
   - Authentication integration
@@ -63,8 +61,7 @@ dependencies.
 
 #### **Configuration Tests**
 
-- **[test_config_mapper_comprehensive.py](test_config_mapper_comprehensive.py)** -
-  Configuration mapping
+- runtime_bootstrap_options
 
   - Configuration transformation
   - Default value application
@@ -79,8 +76,7 @@ dependencies.
 
 #### **Discovery Tests**
 
-- **[test_entity_discovery_comprehensive.py](test_entity_discovery_comprehensive.py)** -
-  Entity discovery logic
+- runtime_bootstrap_options
   - WMS entity discovery
   - Metadata extraction
   - Schema generation
@@ -88,8 +84,7 @@ dependencies.
 
 #### **Validation Tests**
 
-- **[test_critical_validation_comprehensive.py](test_critical_validation_comprehensive.py)** -
-  Environment validation
+- runtime_bootstrap_options
   - Critical environment variable checking
   - Configuration completeness validation
   - Business rule enforcement
@@ -97,16 +92,14 @@ dependencies.
 
 #### **Utility Tests**
 
-- **[test_type_mapping_comprehensive.py](test_type_mapping_comprehensive.py)** - Type
-  mapping utilities
+- runtime_bootstrap_options
   - WMS to Singer type conversion
   - Data type validation
   - Schema compatibility checking
 
 #### **Cache Tests**
 
-- **[test_cache_manager_comprehensive.py](test_cache_manager_comprehensive.py)** - Cache
-  functionality
+- runtime_bootstrap_options
   - Response caching mechanisms
   - Cache expiration handling
   - Memory management
@@ -120,8 +113,8 @@ dependencies.
 - **[test_client.py](test_client.py)** - Basic client functionality
 - **[test_main.py](test_main.py)** - Main module entry point
 - **[test_models.py](test_models.py)** - Data model validation
-- **[test_simple_api.py](test_simple_api.py)** - Simplified API interface
-- **[test_schema_flattener.py](test_schema_flattener.py)** - Schema flattening utilities
+- runtime_bootstrap_options
+- runtime_bootstrap_options
 
 #### **Stream Tests**
 

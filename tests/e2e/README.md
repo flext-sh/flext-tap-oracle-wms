@@ -54,7 +54,7 @@ dependencies.
 
 ### **Disabled E2E Tests**
 
-#### **[test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup](test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup)**
+#### runtime_bootstrap_options
 
 **Purpose**: Complete end-to-end workflow testing **Current State**: Disabled due to
 live Oracle WMS instance requirements **Scope**:
