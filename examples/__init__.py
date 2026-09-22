@@ -9,9 +9,10 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_meltano import d, h, r, s, x
+    from flext_meltano import s
     from flext_oracle_wms import e
 
+    from flext_core import d, h, r, x
     from flext_tap_oracle_wms import FlextTapOracleWmsConstants
 
     from .constants import (
@@ -62,7 +63,8 @@ _LAZY_IMPORTS = MappingProxyType(
             ".protocols": ("ExamplesFlextTapOracleWmsProtocols", "p"),
             ".typings": ("ExamplesFlextTapOracleWmsTypes", "t"),
             ".utilities": ("ExamplesFlextTapOracleWmsUtilities", "u"),
-            "flext_meltano": ("d", "h", "r", "s", "x"),
+            "flext_core": ("d", "h", "r", "x"),
+            "flext_meltano": ("s",),
             "flext_oracle_wms": ("e",),
             "flext_tap_oracle_wms": ("FlextTapOracleWmsConstants",),
         }),
