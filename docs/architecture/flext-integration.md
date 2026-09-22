@@ -121,6 +121,7 @@ class FlextTapOracleWms:
             self.logger.exception("Stream discovery failed: %s", exc)
             return r.failure(f"Discovery error: {exc}")
 ```
+
 #### Type System Integration
 
 ```python
@@ -154,6 +155,7 @@ class FlextTapOracleWmsStream:
             "extracted_at": datetime.utcnow().isoformat(),
         }
 ```
+
 #### Logging Integration
 
 ```python
@@ -193,6 +195,7 @@ class FlextTapOracleWmsStream:
             self.logger.exception("Extraction failed for %s: %s", self.name, exc)
             raise
 ```
+
 ### 2. flext-oracle-wms Integration
 
 #### WMS Client Integration
@@ -247,6 +250,7 @@ class WMSClientManager:
             self.logger.exception("WMS client error: %s", exc)
             return r.failure(f"WMS error: {exc}")
 ```
+
 #### Entity Discovery Integration
 
 ```python
@@ -295,6 +299,7 @@ class EntityDiscovery:
         except Exception as exc:
             return r.failure(f"Schema generation error: {exc}")
 ```
+
 ### 3. flext-meltano Integration
 
 #### Singer SDK Integration
@@ -371,16 +376,16 @@ class FlextTapOracleWmsStream(Stream):
             self.logger.exception("Record extraction failed: %s", exc)
             raise
 ```
+
 #### Configuration Integration
 
 The current settings owner is `FlextTapOracleWmsSettings`, with fields under
-`TapOracleWms`. Connection credentials, entity inclusion/exclusion, pagination,
-and incremental dates are validated there. Do not recreate the removed
-`MeltanoConfig` contract or duplicate its former entity catalog and defaults.
+`TapOracleWms`. Connection credentials, entity inclusion/exclusion, pagination, and
+incremental dates are validated there. Do not recreate the removed `MeltanoConfig`
+contract or duplicate its former entity catalog and defaults.
 
-The public `from_settings` boundary lowers the typed settings and catalog to
-Singer's constructor format. Supplying a catalog avoids live discovery during
-construction:
+The public `from_settings` boundary lowers the typed settings and catalog to Singer's
+constructor format. Supplying a catalog avoids live discovery during construction:
 
 ```python
 from __future__ import annotations
@@ -494,6 +499,7 @@ class FlextTapOracleWmsStream(Stream):
                 )
                 raise
 ```
+
 #### Health Check Integration
 
 ```python
@@ -556,6 +562,7 @@ class WMSHealthCheck:
                 message=f"Authentication check error: {exc}",
             )
 ```
+
 ## Integration Benefits
 
 ### Consistency
