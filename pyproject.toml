@@ -195,10 +195,6 @@ warn_unreachable = true
 warn_unused_ignores = true
 follow_imports = "normal"
 
-[[tool.mypy.overrides]]
-module = ["dcdoc._utilities._charts._matplotlib_renderer._renders_spec"]
-disable_error_code = ["unreachable"]
-
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
@@ -473,6 +469,7 @@ exclude = [
 ]
 fix = false
 line-length = 88
+namespace-packages = ["tests", "examples", "scripts"]
 preview = true
 respect-gitignore = true
 show-fixes = true
