@@ -29,7 +29,9 @@ uv.lock
 # Agent hooks and operator config (runtime state, never source)
 .github/hooks/
 */.hooks.json.agents-governance.json
+.claude/settings.json
 .claude/*.agents-governance.json
+.gemini/settings.json
 .gemini/*.agents-governance.json
 .claude/settings.local.json
 
@@ -370,6 +372,9 @@ CLAUDE.local.md
 !.github/workflows/ci.yml
 !.github/workflows/docs.yml
 !.github/workflows/release.yml
+!.github/workflows/_fragments/
+!.github/workflows/_fragments/cross_repo_dependency_credential
+!.github/workflows/_fragments/testmon_cache
 !.qlty/
 !.qlty/qlty.toml
 !.vscode/settings.json

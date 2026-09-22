@@ -31,7 +31,8 @@
   - [Project Documentation](#project-documentation)
   - [FLEXT Ecosystem](#flext-ecosystem)
   - [External References](#external-references)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 

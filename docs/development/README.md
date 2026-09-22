@@ -38,7 +38,8 @@
   - [Pull Request Process](#pull-request-process)
 - [Migration Considerations](#migration-considerations)
   - [Current → Target Architecture](#current-target-architecture)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 
@@ -280,8 +281,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from flext_core import TAnyDict
-from flext_core import m
+from flext_core import TAnyDict, m
 
 
 def extract_records(
@@ -289,7 +289,6 @@ def extract_records(
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety
-    pass
 ```
 
 ### Error Handling Standards
@@ -305,13 +304,9 @@ from flext_core import e
 class WMSTapError(e.Error):
     """Base error for WMS tap."""
 
-    pass
-
 
 class WMSConfigurationError(WMSTapError):
     """Configuration validation errors."""
-
-    pass
 
 
 # Usage with proper error context
@@ -413,7 +408,6 @@ from __future__ import annotations
 def test_new_entity_extraction(mock_wms_client):
     """Test new entity extraction."""
     # Implementation
-    pass
 ```
 
 1. **Update Documentation**:

@@ -18,7 +18,8 @@
   - [Current Integration Issues](#current-integration-issues)
   - [Migration Strategy](#migration-strategy)
   - [Validation Steps](#validation-steps)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 ## Overview
 
@@ -74,8 +75,10 @@ graph TB
 ```python
 from __future__ import annotations
 
-from collections.abc import Iterator
+from pydantic import Field
+from singer_sdk import Stream
 
+from flext_cli import u  # utilities
 from flext_core import (
     FlextSettings,  # Configuration base class
     TAnyDict,
@@ -83,9 +86,6 @@ from flext_core import (
     r,  # Result handling pattern
     t,
 )
-from flext_cli import u  # utilities
-from pydantic import Field
-from singer_sdk import Stream
 
 
 class WMSConfig(FlextSettings):
@@ -128,10 +128,9 @@ class FlextTapOracleWms:
 from __future__ import annotations
 
 from collections.abc import Iterator
-
-from flext_core import TAnyDict, TEntityId, TValue, p, r
 from datetime import datetime
 
+from flext_core import TAnyDict, TEntityId, TValue
 
 # Use centralized types instead of custom definitions
 OracleWmsRecord = TAnyDict  # WMS record data
@@ -203,13 +202,12 @@ class FlextTapOracleWmsStream:
 ```python
 from __future__ import annotations
 
-from flext_core import t, p, r, m
+from flext_core import p, r
 from flext_oracle_wms import (
     FlextOracleWmsAuthenticationError,
     FlextOracleWmsClient,
     FlextOracleWmsError,
 )
-from pydantic import Field
 
 
 class WMSClientManager:
@@ -256,7 +254,7 @@ class WMSClientManager:
 ```python
 from __future__ import annotations
 
-from flext_core import t, p, r
+from flext_core import p, r, t
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 
@@ -309,10 +307,8 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
+from flext_core import m
 from flext_meltano import Stream, Tap
-from flext_core import p, r, t, m
-from pydantic import Field
-from datetime import datetime
 
 
 class FlextTapOracleWms(Tap):
@@ -406,13 +402,14 @@ def configured_tap(
 ```python
 from __future__ import annotations
 
+import time
 from collections.abc import Iterator
 
-from flext_observability import FlextHealthCheck, FlextMetrics, FlextTracing
-from flext_meltano import Tap
 from singer_sdk import Stream
-import time
+
 from flext_core import m, u
+from flext_meltano import Tap
+from flext_observability import FlextHealthCheck, FlextMetrics, FlextTracing
 
 
 class FlextTapOracleWms(Tap):
@@ -503,8 +500,6 @@ class FlextTapOracleWmsStream(Stream):
 ```python
 from __future__ import annotations
 
-from flext_oracle_wms import FlextOracleWmsClient
-from flext_core import p, r, u
 from flext_observability import HealthCheckResult, HealthStatus
 from flext_oracle_wms import FlextOracleWmsAuthenticationError
 
