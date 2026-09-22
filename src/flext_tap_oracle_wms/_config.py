@@ -49,7 +49,9 @@ class FlextTapOracleWmsConfig(FlextSettings, FlextMeltanoConfig):
 
     TapOracleWms: Annotated[
         _TapOracleWmsNamespace,
-        m.Field(description="Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``."),
+        m.Field(
+            description="Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``."
+        ),
     ] = _TapOracleWmsNamespace()
 
 

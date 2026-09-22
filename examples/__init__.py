@@ -9,9 +9,10 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_core import d, h, r, x
     from flext_meltano import s
     from flext_oracle_wms import e
+
+    from flext_core import d, h, r, x
     from flext_tap_oracle_wms import FlextTapOracleWmsConstants
 
     from .constants import (

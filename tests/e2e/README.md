@@ -344,14 +344,12 @@ def test_e2e_performance_benchmarks():
 
         # Execute complete workflow
         discovery = run_tap_command(["--config", "perf_config.json", "--discover"])
-        extraction = run_tap_command(
-            [
-                "--config",
-                "perf_config.json",
-                "--catalog",
-                "perf_catalog.json",
-            ]
-        )
+        extraction = run_tap_command([
+            "--config",
+            "perf_config.json",
+            "--catalog",
+            "perf_catalog.json",
+        ])
 
         total_time = time.time() - start_time
 
@@ -410,14 +408,12 @@ def test_e2e_network_failures():
     """Test E2E behavior during network failures."""
     with e2e_mock_environment() as env:
         # Start extraction
-        process = start_tap_process(
-            [
-                "--config",
-                "settings.json",
-                "--catalog",
-                "catalog.json",
-            ]
-        )
+        process = start_tap_process([
+            "--config",
+            "settings.json",
+            "--catalog",
+            "catalog.json",
+        ])
 
         # Simulate network failure mid-extraction
         time.sleep(5)
@@ -451,13 +447,11 @@ def test_e2e_configuration_errors():
     ]
 
     for config_file in error_configs:
-        result = run_tap_command(
-            [
-                "--config",
-                f"error_configs/{config_file}",
-                "--discover",
-            ]
-        )
+        result = run_tap_command([
+            "--config",
+            f"error_configs/{config_file}",
+            "--discover",
+        ])
 
         # Validate error handling
         assert result.returncode != 0
@@ -529,14 +523,12 @@ def test_business_user_daily_extraction():
         assert discovery.returncode == 0
 
         # 2. Extraction phase
-        extraction = run_tap_command(
-            [
-                "--config",
-                "business_config.json",
-                "--catalog",
-                "business_catalog.json",
-            ]
-        )
+        extraction = run_tap_command([
+            "--config",
+            "business_config.json",
+            "--catalog",
+            "business_catalog.json",
+        ])
         assert extraction.returncode == 0
 
         # 3. Validate business data requirements
