@@ -20,10 +20,8 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_meltano import s
+    from flext_meltano import d, h, r, s, x
     from flext_oracle_wms import e
-
-    from flext_core import d, h, r, x
 
     from .__version__ import FlextTapOracleWmsVersion
     from ._config import FlextTapOracleWmsConfig, config
@@ -83,8 +81,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".protocols": ("FlextTapOracleWmsProtocols", "p"),
             ".typings": ("FlextTapOracleWmsTypes", "t"),
             ".utilities": ("FlextTapOracleWmsUtilities", "u"),
-            "flext_core": ("d", "h", "r", "x"),
-            "flext_meltano": ("s",),
+            "flext_meltano": ("d", "h", "r", "s", "x"),
             "flext_oracle_wms": ("e",),
         }),
         alias_groups=MappingProxyType({}),
