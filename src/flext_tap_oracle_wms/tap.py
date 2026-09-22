@@ -81,72 +81,100 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         )
 
     @staticmethod
-    def _to_typed_catalog(raw: t.JsonMapping) -> t.MutableJsonMapping:
-        """Convert a raw catalog mapping into a validated Singer catalog dict."""
+    def _streams_sequence(raw: t.JsonMapping) -> t.JsonList:
+        """Normalize the raw ``streams`` value into a sequence of stream mappings."""
         raw_streams = raw.get("streams")
-        raw_streams_seq: t.JsonList = (
+        return (
             raw_streams
             if isinstance(raw_streams, Sequence)
             and not isinstance(raw_streams, t.STR_BYTES_TYPES)
             else []
         )
-        stream_entries: MutableSequence[m.Meltano.SingerCatalogEntry] = []
-        for raw_stream in raw_streams_seq:
+
+    @staticmethod
+    def _metadata_entries(
+        s_dict: t.JsonMapping,
+    ) -> MutableSequence[m.Meltano.SingerCatalogMetadata]:
+        """Build the typed metadata entries declared by one raw stream mapping."""
+        metadata_raw: t.JsonValue = s_dict.get("metadata", [])
+        metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata] = []
+        if not (
+            isinstance(metadata_raw, Sequence)
+            and not isinstance(metadata_raw, t.STR_BYTES_TYPES)
+        ):
+            return metadata_entries
+        for raw_entry in metadata_raw:
+            if not isinstance(raw_entry, Mapping):
+                continue
+            metadata_entries.append(FlextTapOracleWms._metadata_entry(raw_entry))
+        return metadata_entries
+
+    @staticmethod
+    def _metadata_entry(raw_entry: t.JsonMapping) -> m.Meltano.SingerCatalogMetadata:
+        """Convert one raw metadata entry into its typed model."""
+        entry_dict = u.TapOracleWms.MappingConversion.safe_str_mapping(raw_entry)
+        breadcrumb_raw: t.JsonValue = entry_dict.get("breadcrumb", [])
+        metadata_map_raw: t.JsonValue = entry_dict.get("metadata", {})
+        return m.Meltano.SingerCatalogMetadata(
+            breadcrumb=(
+                [str(item) for item in breadcrumb_raw]
+                if isinstance(breadcrumb_raw, Sequence)
+                and not isinstance(breadcrumb_raw, t.STR_BYTES_TYPES)
+                else []
+            ),
+            metadata=(
+                u.TapOracleWms.MappingConversion.safe_str_dict(metadata_map_raw)
+                if isinstance(metadata_map_raw, Mapping)
+                else {}
+            ),
+        )
+
+    @staticmethod
+    def _catalog_entry(
+        s_dict: t.JsonMapping,
+        metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata],
+    ) -> m.Meltano.SingerCatalogEntry:
+        """Build one typed catalog entry from a raw stream mapping."""
+        schema_raw: t.JsonValue = s_dict.get("schema", {})
+        stream_name = str(s_dict.get("stream", ""))
+        entry_result = u.Meltano.build_catalog_entry(
+            stream_name=stream_name,
+            schema=(
+                u.TapOracleWms.MappingConversion.safe_str_dict(schema_raw)
+                if isinstance(schema_raw, Mapping)
+                else {}
+            ),
+            key_properties=(),
+        )
+        if entry_result.failure:
+            msg = (
+                entry_result.error or f"Failed to build catalog entry for {stream_name}"
+            )
+            raise FlextTapOracleWmsConfigurationError(msg)
+        entry_value: m.Meltano.SingerCatalogEntry = entry_result.value
+        updated: m.Meltano.SingerCatalogEntry = entry_value.model_copy(
+            update={
+                "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
+                "stream": stream_name,
+                "metadata": metadata_entries,
+            }
+        )
+        return updated
+
+    @staticmethod
+    def _to_typed_catalog(raw: t.JsonMapping) -> t.MutableJsonMapping:
+        """Convert a raw catalog mapping into a validated Singer catalog dict."""
+        stream_entries: list[m.Meltano.SingerCatalogEntry] = []
+        for raw_stream in FlextTapOracleWms._streams_sequence(raw):
             if not isinstance(raw_stream, Mapping):
                 continue
             s_dict: t.JsonMapping = u.TapOracleWms.MappingConversion.safe_str_mapping(
                 raw_stream
             )
-            metadata_raw: t.JsonValue = s_dict.get("metadata", [])
-            metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata] = []
-            if isinstance(metadata_raw, Sequence) and not isinstance(
-                metadata_raw, t.STR_BYTES_TYPES
-            ):
-                for raw_entry in metadata_raw:
-                    if not isinstance(raw_entry, Mapping):
-                        continue
-                    entry_dict = u.TapOracleWms.MappingConversion.safe_str_mapping(
-                        raw_entry
-                    )
-                    breadcrumb_raw: t.JsonValue = entry_dict.get("breadcrumb", [])
-                    metadata_map_raw: t.JsonValue = entry_dict.get("metadata", {})
-                    metadata_entries.append(
-                        m.Meltano.SingerCatalogMetadata(
-                            breadcrumb=[str(item) for item in breadcrumb_raw]
-                            if isinstance(breadcrumb_raw, Sequence)
-                            and not isinstance(breadcrumb_raw, t.STR_BYTES_TYPES)
-                            else [],
-                            metadata=u.TapOracleWms.MappingConversion.safe_str_dict(
-                                metadata_map_raw
-                            )
-                            if isinstance(metadata_map_raw, Mapping)
-                            else {},
-                        )
-                    )
-            schema_raw: t.JsonValue = s_dict.get("schema", {})
-            stream_name = str(s_dict.get("stream", ""))
-            entry_result = u.Meltano.build_catalog_entry(
-                stream_name=stream_name,
-                schema=(
-                    u.TapOracleWms.MappingConversion.safe_str_dict(schema_raw)
-                    if isinstance(schema_raw, Mapping)
-                    else {}
-                ),
-                key_properties=(),
-            )
-            if entry_result.failure:
-                msg = (
-                    entry_result.error
-                    or f"Failed to build catalog entry for {stream_name}"
-                )
-                raise FlextTapOracleWmsConfigurationError(msg)
             stream_entries.append(
-                entry_result.value.model_copy(
-                    update={
-                        "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
-                        "stream": stream_name,
-                        "metadata": metadata_entries,
-                    }
+                FlextTapOracleWms._catalog_entry(
+                    s_dict=s_dict,
+                    metadata_entries=FlextTapOracleWms._metadata_entries(s_dict),
                 )
             )
         catalog = m.Meltano.SingerCatalog(streams=stream_entries)

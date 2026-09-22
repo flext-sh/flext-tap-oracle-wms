@@ -89,16 +89,11 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
         if stream is None:
             pytest.skip(f"Stream {stream_name} not available")
         records: list[t.JsonMapping] = []
-        record_count = 0
         max_records = 5
-        try:
-            for record in stream.get_records(context=None):
-                records.append(record)
-                record_count += 1
-                if record_count >= max_records:
-                    break
-        except self._TAP_RECOVERABLE_EXCEPTIONS as e:
-            pytest.fail(f"Failed to extract records from {stream_name}: {e}")
+        for i, record in enumerate(stream.get_records(context=None)):
+            records.append(record)
+            if i >= max_records:
+                break
 
     def test_pagination_functionality(
         self, real_tap_instance: FlextTapOracleWms
