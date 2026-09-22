@@ -106,7 +106,6 @@ WMS, including testing strategies, quality standards, and development workflows.
 ```bash
 # System requirements
 Python 3.13+
-Poetry 1.8+
 Make 4.0+
 Git 2.30+
 
@@ -137,7 +136,8 @@ make doctor
 make install-dev
 
 # Verify quality tools
-make val # Should pass all quality gates
+make check # Static quality gates
+make test  # Test suite
 ```
 
 ## Development Workflow
@@ -155,7 +155,8 @@ make type-check # Verify type safety
 make format     # Format code
 
 # Complete validation
-make val # All quality gates
+make check # Static quality gates
+make test  # Test suite
 ```
 
 ### 2. Testing Strategy
@@ -175,9 +176,9 @@ pytest -k "test_pattern" --tb=short
 
 ```bash
 # Pre-commit validation
-make val        # Complete validation pipeline
-make security   # Security scanning
-make deps-audit # Dependency vulnerability check
+make check # Static quality gates
+make test  # Test suite
+make audit # Security and dependency audit
 
 # Code quality
 make lint
@@ -252,55 +253,35 @@ tests/
 
 ### FLEXT Standards Compliance
 
+Use the existing typed settings, Singer catalog, and tap factory. The tap owns
+the conversion to Singer configuration; callers do not implement a second
+settings class or catch construction failures as successful results.
+
 ```python
-# Example of FLEXT-compliant code
 from __future__ import annotations
-from flext_cli import u
-from flext_core import FlextSettings
-from flext_oracle_wms import FlextOracleWmsClient
-from pydantic import Field, validator
+
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
+from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
-class WMSConfig(FlextSettings):
-    """FLEXT-compliant configuration."""
-
-    base_url: str = Field(..., description="WMS instance URL")
-    auth_method: str = Field(..., regex="^(basic|oauth2)$")
-
-    class Config:
-        env_prefix = "TAP_ORACLE_WMS_"
-
-    @validator("entities")
-    def validate_entities(cls, v):
-        # Business logic validation
-        return v
-
-
-class FlextTapOracleWms:
-    """FLEXT-compliant tap implementation."""
-
-    def __init__(self, settings: dict):
-        self.settings = WMSConfig(**settings)
-        self.logger = u.fetch_logger(__name__)
-
-    def discover_streams(self) -> p.Result[list[Stream]]:
-        """Use r pattern for error handling."""
-        try:
-            streams = self._build_streams()
-            return r.success(streams)
-        except Exception as e:
-            self.logger.error(f"Discovery failed: {e}")
-            return r.failure(str(e))
+def create_configured_tap(
+    configuration: FlextTapOracleWmsSettings,
+    catalog: m.Meltano.SingerCatalog,
+) -> FlextTapOracleWms:
+    """Keep configuration and catalog validation at the public boundary."""
+    return FlextTapOracleWms.from_settings(configuration, catalog=catalog)
 ```
 
 ### Type Safety Requirements
-
 ```python
 # Strict type annotations required
 
 from __future__ import annotations
+
 from collections.abc import Iterator
+
 from flext_core import TAnyDict
+from flext_core import m
 
 
 def extract_records(
@@ -310,11 +291,14 @@ def extract_records(
     # Implementation with type safety
     pass
 ```
-
 ### Error Handling Standards
 
 ```python
 from __future__ import annotations
+
+import logging
+
+from flext_core import e
 
 
 class WMSTapError(e.Error):
@@ -330,10 +314,11 @@ class WMSConfigurationError(WMSTapError):
 
 
 # Usage with proper error context
+logger = logging.getLogger(__name__)
 try:
     result = perform_operation()
-except WMSConfigurationError as e:
-    logger.error(f"Configuration error: {e}", exc_info=True)
+except WMSConfigurationError as exc:
+    logger.exception("Configuration error: %s", exc)
     raise
 ```
 
@@ -493,7 +478,7 @@ p.sort_stats('cumulative').print_stats(20)
 
 1. **Create Feature Branch**: `git checkout -b feature/description`
 1. **Implement Changes**: Follow development workflow
-1. **Validate Quality**: `make val` must pass
+1. **Validate Quality**: `make check` must pass
 1. **Write Tests**: Maintain 100% coverage target
 1. **Update Documentation**: Keep docs current
 1. **Create PR**: Include detailed description and testing notes

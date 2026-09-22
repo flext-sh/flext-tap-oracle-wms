@@ -191,10 +191,13 @@ graph TB
 ```python
 # Domain Layer (core business logic)
 from __future__ import annotations
+
 from flext_core import t
 
 
 class WMSEntityConfig:
+    """Entity configuration."""
+
     entity_name: str
     replication_method: str
     fields: t.StringList
@@ -202,30 +205,37 @@ class WMSEntityConfig:
 
 # Application Layer (orchestration)
 class EntityDiscovery:
-    def __init__(self, wms_client: WMSClient, settings: WMSEntityConfig):
+    """Orchestrates entity and schema discovery."""
+
+    def __init__(self, wms_client: FlextOracleWmsClient, settings: dict):
+        """Initialize with WMS client and settings."""
         self._wms_client = wms_client
         self.config = settings
 
 
 # Infrastructure Layer (external dependencies)
 class WMSAuthenticator:
+    """Handles WMS authentication."""
+
     def __init__(self, flext_wms_client: FlextOracleWmsClient):
+        """Initialize with WMS client."""
         self._client = flext_wms_client
 ```
-
 ### 2. Singer SDK Integration
 
 **Stream Pattern**: Standard Singer SDK stream implementation
 
 ```python
 from __future__ import annotations
-from singer_sdk import Tap
-from singer_sdk.streams import RESTStream
+
+from singer_sdk import Tap, Stream
 
 
 class FlextTapOracleWms(Tap):
+    """Discover available streams from WMS API."""
+
     name = "tap-oracle-wms"
-    config_jsonschema = WMSConfigSchema.model_json_schema()
+    config_jsonschema = dict
 
     def discover_streams(self) -> list[Stream]:
         """Discover available streams from WMS API."""
@@ -238,21 +248,22 @@ class FlextTapOracleWms(Tap):
 class FlextTapOracleWmsStream(RESTStream):
     """Standard Singer stream for WMS entities."""
 
-    def get_records(self, context):
+    def get_records(self, _context):
         """Extract records using flext-oracle-wms client."""
         for record in self.wms_client.get_entity_data(self.name):
             yield record
 ```
-
 ### 3. Configuration Management
 
 **Single Source of Truth**: Unified configuration system
 
 ```python
 from __future__ import annotations
-from flext_core import t
+
+from pydantic import Field, validator
 from flext_cli import u
-from flext_core import FlextSettings
+from flext_core import FlextSettings, t
+from datetime import datetime
 
 
 class WMSConfig(FlextSettings):
@@ -276,10 +287,10 @@ class WMSConfig(FlextSettings):
         valid_entities = ["item", "location", "inventory", "order", "shipment"]
         invalid = set(v) - set(valid_entities)
         if invalid:
-            raise ValueError(f"Invalid entities: {invalid}")
+            invalid_set = set(v) - set(valid_entities)
+            raise ValueError(invalid_set)
         return v
 ```
-
 ## Data Flow Architecture
 
 ### 1. Discovery Flow
@@ -347,7 +358,9 @@ class WMSPaginator:
 
 ```python
 from __future__ import annotations
+
 from functools import lru_cache
+from flext_core import m
 
 
 class WMSCache:
@@ -358,18 +371,19 @@ class WMSCache:
         """Cache entity schemas for discovery."""
         return self._fetch_schema(entity_name)
 ```
-
 ### 3. Connection Management
 
 ```python
 from __future__ import annotations
+
 from flext_oracle_wms import FlextOracleWmsClient
 
 
 class WMSConnectionManager:
     """Manage WMS connections using flext-oracle-wms."""
 
-    def __init__(self, settings: WMSConfig):
+    def __init__(self, settings: dict):
+        """Initialize connection manager."""
         self.client = FlextOracleWmsClient(
             base_url=settings.base_url,
             auth_method=settings.auth_method,
@@ -380,7 +394,6 @@ class WMSConnectionManager:
         """Get configured WMS client."""
         return self.client
 ```
-
 ## Error Handling Architecture
 
 ### 1. Exception Hierarchy
@@ -388,36 +401,32 @@ class WMSConnectionManager:
 ```python
 from __future__ import annotations
 
+from flext_core import e
+
 
 class WMSTapError(e.Error):
     """Base exception for WMS tap errors."""
-
-    pass
 
 
 class WMSAuthenticationError(WMSTapError):
     """WMS authentication failures."""
 
-    pass
-
 
 class WMSEntityNotFoundError(WMSTapError):
     """WMS entity not found or not accessible."""
 
-    pass
-
 
 class WMSSchemaError(WMSTapError):
     """WMS schema validation errors."""
-
-    pass
 ```
-
 ### 2. Error Recovery
 
 ```python
 from __future__ import annotations
+
 import time
+
+from flext_oracle_wms import WMSAuthenticationError
 
 
 def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
@@ -439,7 +448,6 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
 
     return decorator
 ```
-
 ## Testing Architecture
 
 ### 1. Test Structure
@@ -464,9 +472,13 @@ tests/
 
 ```python
 from __future__ import annotations
-import pytest
+
 from unittest.mock import Mock, patch
+
+import pytest
+
 from flext_oracle_wms import FlextOracleWmsClient
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 
 
 @pytest.fixture
@@ -483,6 +495,7 @@ def mock_wms_client():
 
 def test_stream_extraction(mock_wms_client):
     """Test stream data extraction with mocked client."""
+    mock_tap = Mock()
     with patch(
         "flext_tap_oracle_wms.streams.get_wms_client", return_value=mock_wms_client
     ):
@@ -491,20 +504,21 @@ def test_stream_extraction(mock_wms_client):
         assert len(records) == 2
         assert records[0]["id"] == "1"
 ```
-
 ## Security Architecture
 
 ### 1. Authentication Integration
 
 ```python
 from __future__ import annotations
+
 from flext_oracle_wms import WMSAuthenticator
 
 
 class TapAuthentication:
     """Delegate authentication to flext-oracle-wms library."""
 
-    def __init__(self, settings: WMSConfig):
+    def __init__(self, settings: dict):
+        """Initialize authentication."""
         self.authenticator = WMSAuthenticator(
             auth_method=settings.auth_method,
             credentials=self._extract_credentials(settings),
@@ -514,15 +528,15 @@ class TapAuthentication:
         """Get authenticated WMS client."""
         return self.authenticator.get_client()
 ```
-
 ### 2. Configuration Security
 
 ```python
 from __future__ import annotations
+
 from pydantic import SecretStr
 
 
-class SecureWMSConfig(WMSConfig):
+class SecureWMSConfig(dict):
     """Secure configuration with secret handling."""
 
     password: SecretStr | None = None
@@ -537,7 +551,6 @@ class SecureWMSConfig(WMSConfig):
             creds["client_secret"] = self.oauth_client_secret.get_secret_value()
         return creds
 ```
-
 ## Migration Strategy
 
 ### Phase 1: Emergency Simplification (Week 1)
@@ -589,9 +602,8 @@ architecture. **Updated**: 2025-08-13
 **Within Project**:
 
 - [Getting Started](getting-started.md) - Installation and basic usage
-- [API Reference](api-reference.md) - Complete API documentation
-- [Examples](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-tap-oracle-wms/examples/) -
-  Working code examples
+- [API Reference](api-reference/README.md) - Generated API documentation
+- [Examples](https://github.com/flext-sh/flext/tree/0.12.0-dev/flext-tap-oracle-wms/examples/) - Working code examples
 
 **Across Projects**:
 
