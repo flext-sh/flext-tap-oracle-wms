@@ -14,8 +14,6 @@ from typing import Annotated, Self
 
 from flext_meltano import FlextMeltanoConfig, m
 
-from flext_core import FlextSettings
-
 
 class _TapOracleWmsNamespace(m.BaseModel):
     """Open, frozen namespace exposing every ``config/*.yaml`` domain model-less."""
@@ -33,15 +31,12 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
     # ENFORCE-042 namespace-holder contract: ``FlextSettings`` contributes
     # namespacing only — instance machinery stays plain object semantics so the
     # settings singleton ``__new__`` cannot leak into the config singleton.
-    # Unlike never-instantiated namespace holders, ``__init__`` delegates to
-    # ``super()`` so the frozen, YAML-validated pydantic construction still
-    # runs, and the inherited pydantic ``__setattr__`` keeps the frozen guard.
+    # The inherited pydantic ``__init__`` still runs the frozen, YAML-validated
+    # construction, and the inherited pydantic ``__setattr__`` keeps the frozen
+    # guard.
     def __new__(cls, *args: object, **kwargs: object) -> Self:
         _ = args, kwargs
         return object.__new__(cls)
-
-    def __init__(self, *args: object, **kwargs: object) -> None:
-        super().__init__(*args, **kwargs)
 
     __eq__ = object.__eq__
 
