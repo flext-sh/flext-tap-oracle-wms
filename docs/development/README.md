@@ -253,9 +253,9 @@ tests/
 
 ### FLEXT Standards Compliance
 
-Use the existing typed settings, Singer catalog, and tap factory. The tap owns
-the conversion to Singer configuration; callers do not implement a second
-settings class or catch construction failures as successful results.
+Use the existing typed settings, Singer catalog, and tap factory. The tap owns the
+conversion to Singer configuration; callers do not implement a second settings class or
+catch construction failures as successful results.
 
 ```python
 from __future__ import annotations
@@ -272,6 +272,7 @@ def create_configured_tap(
 ```
 
 ### Type Safety Requirements
+
 ```python
 # Strict type annotations required
 
@@ -290,6 +291,7 @@ def extract_records(
     # Implementation with type safety
     pass
 ```
+
 ### Error Handling Standards
 
 ```python

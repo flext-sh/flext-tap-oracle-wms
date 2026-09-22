@@ -1,6 +1,7 @@
 # Python Module Organization & Semantic Patterns
 
 <!-- TOC START -->
+
 - [🏗️ Module Architecture Overview](#module-architecture-overview)
   - [Core Design Principles](#core-design-principles)
 - [📁 Target Module Structure & Responsibilities](#target-module-structure-responsibilities)
@@ -40,7 +41,7 @@
 - [📋 Module Creation Checklist](#module-creation-checklist)
   - [New Module Standards](#new-module-standards)
   - [Refactoring Validation](#refactoring-validation)
-<!-- TOC END -->
+  <!-- TOC END -->
 
 **FLEXT Tap Oracle WMS - Singer Tap Module Architecture & Best Practices**
 
@@ -162,6 +163,7 @@ _metadata = build_metadata_exports(__file__)
 __version__: str = _metadata["__version__"]
 __version_info__: tuple[int | str, ...] = _metadata["__version_info__"]
 ```
+
 **Responsibility**: Establish clean public API and version management.
 
 **Import Pattern**:
@@ -233,6 +235,7 @@ class FlextTapOracleWms(Tap):
             if entity in self.settings.entities
         ]
 ```
+
 **Responsibility**: Main tap orchestration using Singer SDK with FLEXT integration.
 
 **Usage Pattern**:
@@ -344,6 +347,7 @@ class FlextTapOracleWmsStream(RESTStream):
             self.logger.error(f"Extraction failed for {self.name}: {e}", exc_info=True)
             raise
 ```
+
 **Responsibility**: Data stream implementation with Singer SDK compliance.
 
 ### **Infrastructure Layer - Configuration**
@@ -546,6 +550,7 @@ class SchemaGenerator:
         }
         return type_mapping.get(field.type, {"type": "string"})
 ```
+
 **Responsibility**: Entity discovery and schema generation using WMS metadata.
 
 ### **Infrastructure Layer - Authentication & Utilities**
@@ -608,6 +613,7 @@ class WMSDiscoveryError(WMSTapError):
 class WMSSchemaError(WMSTapError):
     """Schema generation errors."""
 ```
+
 **Responsibility**: Authentication delegation and project-specific error handling.
 
 ---
@@ -769,6 +775,7 @@ class FlextTapOracleWmsStream(RESTStream):
         """Generate stream records."""
         pass
 ```
+
 ### **FLEXT Integration Pattern**
 
 ```python
