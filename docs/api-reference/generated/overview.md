@@ -22,12 +22,11 @@
 - Main facades: `FlextTapOracleWmsConfig`, `FlextTapOracleWmsConstants`,
   `FlextTapOracleWmsModels`, `FlextTapOracleWmsProtocols`, `FlextTapOracleWmsService`,
   `FlextTapOracleWmsSettings`, `FlextTapOracleWmsTypes`, `FlextTapOracleWmsUtilities`
-  (+1 more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
 - Public symbol exports: `FlextTapOracleWmsConfig`, `FlextTapOracleWmsConstants`,
   `FlextTapOracleWmsModels`, `FlextTapOracleWmsProtocols`, `FlextTapOracleWmsService`,
   `FlextTapOracleWmsSettings`, `FlextTapOracleWmsTypes`, `FlextTapOracleWmsUtilities`,
-  `FlextTapOracleWmsVersion`, `config` (+3 more)
+  `config`, `main` (+2 more)
 - Exported module shortcuts: _none_
 - Generated module pages: `7`
 

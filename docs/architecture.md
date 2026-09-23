@@ -483,8 +483,8 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
-
 from flext_oracle_wms import FlextOracleWmsClient
+
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 
 

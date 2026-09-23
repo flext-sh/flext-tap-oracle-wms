@@ -185,10 +185,10 @@ FLEXT ecosystem integration for configuration, logging, and error handling.
 
 from __future__ import annotations
 
-from singer_sdk import Tap
-
 from flext_cli import u
 from flext_oracle_wms import FlextOracleWmsClient
+from singer_sdk import Tap
+
 from flext_tap_oracle_wms import EntityDiscovery, FlextTapOracleWmsStream, WMSConfig
 
 
@@ -269,10 +269,10 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
+from flext_cli import u
 from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
 
-from flext_cli import u
 from flext_core import TAnyDict
 from flext_tap_oracle_wms import SchemaGenerator
 
@@ -458,8 +458,9 @@ using FLEXT ecosystem patterns and error handling.
 from __future__ import annotations
 
 from flext_cli import u
-from flext_core import t
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
+
+from flext_core import t
 
 
 class EntityDiscovery:
@@ -564,6 +565,7 @@ WMS library without reimplementing authentication logic.
 from __future__ import annotations
 
 from flext_oracle_wms import FlextOracleWmsClient
+
 from flext_tap_oracle_wms import WMSConfig
 
 

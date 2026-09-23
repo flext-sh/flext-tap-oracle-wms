@@ -75,10 +75,10 @@ graph TB
 ```python
 from __future__ import annotations
 
+from flext_cli import u  # utilities
 from pydantic import Field
 from singer_sdk import Stream
 
-from flext_cli import u  # utilities
 from flext_core import (
     FlextSettings,  # Configuration base class
     TAnyDict,
@@ -202,12 +202,13 @@ class FlextTapOracleWmsStream:
 ```python
 from __future__ import annotations
 
-from flext_core import p, r
 from flext_oracle_wms import (
     FlextOracleWmsAuthenticationError,
     FlextOracleWmsClient,
     FlextOracleWmsError,
 )
+
+from flext_core import p, r
 
 
 class WMSClientManager:
@@ -254,8 +255,9 @@ class WMSClientManager:
 ```python
 from __future__ import annotations
 
-from flext_core import p, r, t
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
+
+from flext_core import p, r, t
 
 
 class EntityDiscovery:
@@ -307,8 +309,9 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from flext_core import m
 from flext_meltano import Stream, Tap
+
+from flext_core import m
 
 
 class FlextTapOracleWms(Tap):
@@ -405,11 +408,11 @@ from __future__ import annotations
 import time
 from collections.abc import Iterator
 
+from flext_meltano import Tap
+from flext_observability import FlextHealthCheck, FlextMetrics, FlextTracing
 from singer_sdk import Stream
 
 from flext_core import m, u
-from flext_meltano import Tap
-from flext_observability import FlextHealthCheck, FlextMetrics, FlextTracing
 
 
 class FlextTapOracleWms(Tap):
