@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import json
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, override
@@ -87,8 +86,13 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @staticmethod
     def _load_schema_document(path: Path) -> t.JsonDict:
         """Load one JSON schema document from a file-system path."""
-        loaded = json.loads(path.read_text(encoding=c.DEFAULT_ENCODING))
-        return t.json_dict_adapter().validate_python(loaded)
+        loaded_result = u.Cli.json_loads(path.read_text(encoding=c.DEFAULT_ENCODING))
+        if loaded_result.failure:
+            msg = (
+                loaded_result.error or f"Failed to parse JSON schema document at {path}"
+            )
+            raise FlextTapOracleWmsError(msg)
+        return t.json_dict_adapter().validate_python(loaded_result.value)
 
     def _config_map(self) -> t.JsonMapping:
         """The tap settings mapping when the tap exposes WMS client settings."""
