@@ -83,9 +83,9 @@ ecosystem patterns.
 #### **Support Files**
 
 - [`exceptions.py`](exceptions.py) - Custom exception hierarchy
-- [`__init__.py`](__init__.py) - Module initialization and exports
-- [`__main__.py`](__main__.py) - Module execution entry point
-- [`__version__.py`](__version__.py) - Version information
+- runtime_bootstrap_options
+- runtime_bootstrap_options
+- runtime_bootstrap_options
 - [`py.typed`](py.typed) - Type hint marker for MyPy
 
 ## Architecture Overview

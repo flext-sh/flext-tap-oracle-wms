@@ -13,7 +13,8 @@
   - [6 · ⚪ LOW · Use of Hardcoded Passwords](#6-low-use-of-hardcoded-passwords)
   - [7 · ⚪ LOW · Use of Hardcoded Passwords](#7-low-use-of-hardcoded-passwords)
   - [8 · ⚪ LOW · Use of Hardcoded Passwords](#8-low-use-of-hardcoded-passwords)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 Gerado do scan Snyk (dump 2026-08-06). Bead: `mro-8i5s`
 

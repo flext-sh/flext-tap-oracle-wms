@@ -41,7 +41,8 @@
 - [📋 Module Creation Checklist](#module-creation-checklist)
   - [New Module Standards](#new-module-standards)
   - [Refactoring Validation](#refactoring-validation)
-  <!-- TOC END -->
+
+<!-- TOC END -->
 
 **FLEXT Tap Oracle WMS - Singer Tap Module Architecture & Best Practices**
 
@@ -184,10 +185,10 @@ FLEXT ecosystem integration for configuration, logging, and error handling.
 
 from __future__ import annotations
 
-from singer_sdk import Tap
-
 from flext_cli import u
 from flext_oracle_wms import FlextOracleWmsClient
+from singer_sdk import Tap
+
 from flext_tap_oracle_wms import EntityDiscovery, FlextTapOracleWmsStream, WMSConfig
 
 
@@ -268,10 +269,10 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
+from flext_cli import u
 from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.streams import RESTStream
 
-from flext_cli import u
 from flext_core import TAnyDict
 from flext_tap_oracle_wms import SchemaGenerator
 
@@ -354,24 +355,21 @@ class FlextTapOracleWmsStream(RESTStream):
 
 ```python
 # settings.py - Configuration Management (~100 lines)
-"""
-Configuration management using FLEXT Core patterns and Pydantic validation.
+"""Configuration management using FLEXT Core patterns and Pydantic validation.
 
 Implements unified configuration system with environment variable support,
 validation, and FLEXT ecosystem integration.
 """
 
 from __future__ import annotations
-from flext_core import t
 
 from pydantic import Field, validator
-from flext_cli import u
-from flext_core import FlextSettings
+
+from flext_core import FlextSettings, t
 
 
 class WMSConfig(FlextSettings):
-    """
-    Oracle WMS tap configuration using FLEXT patterns.
+    """Oracle WMS tap configuration using FLEXT patterns.
 
     Provides comprehensive configuration management with validation,
     environment variable support, and FLEXT ecosystem integration.
@@ -460,8 +458,9 @@ using FLEXT ecosystem patterns and error handling.
 from __future__ import annotations
 
 from flext_cli import u
-from flext_core import t
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
+
+from flext_core import t
 
 
 class EntityDiscovery:
@@ -566,6 +565,7 @@ WMS library without reimplementing authentication logic.
 from __future__ import annotations
 
 from flext_oracle_wms import FlextOracleWmsClient
+
 from flext_tap_oracle_wms import WMSConfig
 
 
@@ -659,7 +659,7 @@ WMSDiscoveryError  # Specific error (descriptive)
 
 ### **Function and Method Naming**
 
-```python notest
+```{.python .notest}
 # Action-oriented naming
 from __future__ import annotations
 from flext_core import t
@@ -704,19 +704,11 @@ External Libraries (singer-sdk, pydantic)
 # External dependencies first
 
 from __future__ import annotations
-from pydantic import Field, validator
-from singer_sdk import Tap
-from singer_sdk.streams import RESTStream
+
 
 # FLEXT ecosystem imports
-from flext_cli import u
-from flext_core import FlextSettings, t, u as core_u
-from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
 # Project imports (relative)
-from flext_tap_oracle_wms import WMSConfig
-from flext_tap_oracle_wms import EntityDiscovery
-from flext_tap_oracle_wms import SchemaGenerator
 ```
 
 **Pattern**: External → FLEXT ecosystem → Project modules.
@@ -745,6 +737,7 @@ from flext_tap_oracle_wms import *
 ```python
 # Standard Singer tap structure
 from __future__ import annotations
+
 from collections.abc import Iterator
 
 
@@ -756,11 +749,9 @@ class FlextTapOracleWms(Tap):
 
     def discover_streams(self) -> list[Stream]:  # Required method
         """Discover available data streams."""
-        pass
 
     def sync_all(self) -> None:  # Optional override
         """Custom sync logic if needed."""
-        pass
 
 
 class FlextTapOracleWmsStream(RESTStream):
@@ -769,11 +760,9 @@ class FlextTapOracleWmsStream(RESTStream):
     @property
     def schema(self) -> m.Dict:  # Required property
         """JSON schema for stream records."""
-        pass
 
     def get_records(self, context) -> Iterator:  # Required method
         """Generate stream records."""
-        pass
 ```
 
 ### **FLEXT Integration Pattern**
@@ -781,6 +770,7 @@ class FlextTapOracleWmsStream(RESTStream):
 ```python
 # Configuration using FlextSettings
 from __future__ import annotations
+
 from flext_core import t
 
 
@@ -964,7 +954,7 @@ def test_entity_discovery():
 
 ### **Module Quality Metrics**
 
-```python notest
+```{.python .notest}
 # Target metrics per module
 Lines per Module: 50-200 (max 200)
 Cyclomatic Complexity: <10 per function
@@ -983,6 +973,7 @@ make security             # Bandit + pip-audit
 
 ```python
 from __future__ import annotations
+
 from flext_core import t
 
 
@@ -1006,7 +997,6 @@ def discover_entities(self) -> p.Result[t.StringList]:
         ...     print(f"Discovery failed: {result.error}")
 
     """
-    pass
 ```
 
 ---

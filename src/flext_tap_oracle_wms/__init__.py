@@ -37,6 +37,8 @@ if TYPE_CHECKING:
     from .protocols import FlextTapOracleWmsProtocols, p
     from .typings import FlextTapOracleWmsTypes, t
     from .utilities import FlextTapOracleWmsUtilities, u
+
+
 __all__: tuple[str, ...] = (
     "FlextTapOracleWmsConfig",
     "FlextTapOracleWmsConstants",
