@@ -89,8 +89,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         loaded_result = u.Cli.json_loads(path.read_text(encoding=c.DEFAULT_ENCODING))
         if loaded_result.failure:
             msg = (
-                loaded_result.error
-                or f"Failed to parse JSON schema document at {path}"
+                loaded_result.error or f"Failed to parse JSON schema document at {path}"
             )
             raise FlextTapOracleWmsError(msg)
         return t.json_dict_adapter().validate_python(loaded_result.value)
