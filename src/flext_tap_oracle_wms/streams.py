@@ -295,7 +295,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
-        result = self.client.get_entity_data(
+        result = self.client.fetch_entity_data(
             entity_name=self.name, limit=limit, filters=filters or None
         )
         if result.failure:
