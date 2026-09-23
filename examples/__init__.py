@@ -9,20 +9,22 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_meltano import (
-        cli,
+    from flext_api import api
+    from flext_cli import cli
+    from flext_meltano import meltano, s
+    from flext_oracle_wms import e, oracle_wms
+    from flext_web import web
+
+    from flext_core import (
         core,
         d,
         h,
+        lazy,
         lazy_attribute,
-        meltano,
+        normalize_lazy_imports,
         r,
-        s,
-        services,
         x,
     )
-    from flext_oracle_wms import api, e, oracle_wms, web
-
     from flext_tap_oracle_wms import (
         c,
         config,
@@ -56,15 +58,16 @@ __all__: tuple[str, ...] = (
     "d",
     "e",
     "h",
+    "lazy",
     "lazy_attribute",
     "m",
     "main",
     "meltano",
+    "normalize_lazy_imports",
     "oracle_wms",
     "p",
     "r",
     "s",
-    "services",
     "settings",
     "t",
     "tap_oracle_wms",
@@ -81,19 +84,20 @@ _LAZY_IMPORTS = MappingProxyType(
             ".protocols": ("ExamplesFlextTapOracleWmsProtocols",),
             ".typings": ("ExamplesFlextTapOracleWmsTypes",),
             ".utilities": ("ExamplesFlextTapOracleWmsUtilities",),
-            "flext_meltano": (
-                "cli",
+            "flext_api": ("api",),
+            "flext_cli": ("cli",),
+            "flext_core": (
                 "core",
                 "d",
                 "h",
+                "lazy",
                 "lazy_attribute",
-                "meltano",
+                "normalize_lazy_imports",
                 "r",
-                "s",
-                "services",
                 "x",
             ),
-            "flext_oracle_wms": ("api", "e", "oracle_wms", "web"),
+            "flext_meltano": ("meltano", "s"),
+            "flext_oracle_wms": ("e", "oracle_wms"),
             "flext_tap_oracle_wms": (
                 "c",
                 "config",
@@ -105,6 +109,7 @@ _LAZY_IMPORTS = MappingProxyType(
                 "tap_oracle_wms",
                 "u",
             ),
+            "flext_web": ("web",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
