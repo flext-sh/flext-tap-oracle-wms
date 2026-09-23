@@ -23,7 +23,12 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         "properties": u.normalize_to_json_value({
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
             "username": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
-            "password": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "secret": True},
+            "password": {
+                "type": c.TapOracleWms.SCHEMA_TYPE_STRING,
+                # Singer JSON-schema secret marker, not a credential; operator-authorized
+                # false positive 2026-09-23 (bead flext-tdtyq).
+                "secret": True,  # nosec B105
+            },
             "api_version": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "default": "v1"},
             "page_size": {"type": c.TapOracleWms.SCHEMA_TYPE_INTEGER, "default": 100},
             "verify_ssl": {"type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN, "default": True},
