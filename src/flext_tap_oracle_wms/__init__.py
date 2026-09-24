@@ -20,19 +20,7 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_meltano import (
-        cli,
-        core,
-        d,
-        h,
-        lazy_attribute,
-        meltano,
-        r,
-        s,
-        services,
-        x,
-    )
-    from flext_oracle_wms import api, e, oracle_wms, web
+    from flext_meltano import d, e, h, r, s, x
 
     from ._config import FlextTapOracleWmsConfig, config
     from ._settings import FlextTapOracleWmsSettings, settings
@@ -62,28 +50,20 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
-    "api",
     "c",
-    "cli",
     "config",
-    "core",
     "d",
     "e",
     "h",
-    "lazy_attribute",
     "m",
     "main",
-    "meltano",
-    "oracle_wms",
     "p",
     "r",
     "s",
-    "services",
     "settings",
     "t",
     "tap_oracle_wms",
     "u",
-    "web",
     "x",
 )
 
@@ -99,19 +79,7 @@ _LAZY_IMPORTS = MappingProxyType(
             ".protocols": ("FlextTapOracleWmsProtocols", "p"),
             ".typings": ("FlextTapOracleWmsTypes", "t"),
             ".utilities": ("FlextTapOracleWmsUtilities", "u"),
-            "flext_meltano": (
-                "cli",
-                "core",
-                "d",
-                "h",
-                "lazy_attribute",
-                "meltano",
-                "r",
-                "s",
-                "services",
-                "x",
-            ),
-            "flext_oracle_wms": ("api", "e", "oracle_wms", "web"),
+            "flext_meltano": ("d", "e", "h", "r", "s", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
