@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from flext_meltano import m
-from flext_oracle_wms import m as _oracle_wms_m
+from flext_meltano import FlextMeltanoModels
+from flext_oracle_wms import FlextOracleWmsModels
 
 
-class FlextTapOracleWmsModels(m, _oracle_wms_m):
+class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
     """Container for stream schema and metadata payload models."""
 
     class TapOracleWms:
