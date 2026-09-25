@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWmsError, FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
@@ -37,11 +37,13 @@ def main() -> int:
     # Singer config via `config=`; pass the namespaced settings payload.
     tap = FlextTapOracleWms(config=settings.TapOracleWms.model_dump(mode="json"))
     validation_result = tap.validate_configuration()
-    if not validation_result.success:
-        return 1
+    if validation_result.failure:
+        raise FlextTapOracleWmsError(
+            validation_result.error or "configuration validation failed"
+        )
     catalog_result = tap.discovercatalog_typed()
-    if not catalog_result.success:
-        return 1
+    if catalog_result.failure:
+        raise FlextTapOracleWmsError(catalog_result.error or "catalog discovery failed")
     catalog = catalog_result.value
     for stream_entry in catalog.streams:
         _ = stream_entry.schema_definition
