@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import os
 
-from flext_tap_oracle_wms import FlextTapOracleWmsError, FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
