@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from flext_meltano import u
-from flext_oracle_wms import u as _oracle_wms_u
+from flext_meltano import FlextMeltanoUtilities
+from flext_oracle_wms import FlextOracleWmsUtilities
 
 from flext_tap_oracle_wms import c, t
 
 
-class FlextTapOracleWmsUtilities(u, _oracle_wms_u):
+class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities):
     """Domain-specific Oracle WMS tap utilities.
 
     Inherits from u to avoid duplication.

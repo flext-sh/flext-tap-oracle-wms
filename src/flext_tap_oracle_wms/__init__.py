@@ -20,29 +20,18 @@ from .__version__ import (
 )
 
 if TYPE_CHECKING:
-    from flext_meltano import (
-        cli,
-        core,
-        d,
-        h,
-        lazy_attribute,
-        meltano,
-        r,
-        s,
-        services,
-        x,
-    )
-    from flext_oracle_wms import api, e, oracle_wms, web
+    from flext_meltano import d, h, r, s, x
+    from flext_oracle_wms import e
 
     from ._config import FlextTapOracleWmsConfig, config
     from ._settings import FlextTapOracleWmsSettings, settings
     from .api import FlextTapOracleWmsService, tap_oracle_wms
     from .cli import main
-    from .constants import FlextTapOracleWmsConstants, c
-    from .models import FlextTapOracleWmsModels, m
-    from .protocols import FlextTapOracleWmsProtocols, p
-    from .typings import FlextTapOracleWmsTypes, t
-    from .utilities import FlextTapOracleWmsUtilities, u
+    from .constants import FlextTapOracleWmsConstants, FlextTapOracleWmsConstants as c
+    from .models import FlextTapOracleWmsModels, FlextTapOracleWmsModels as m
+    from .protocols import FlextTapOracleWmsProtocols, FlextTapOracleWmsProtocols as p
+    from .typings import FlextTapOracleWmsTypes, FlextTapOracleWmsTypes as t
+    from .utilities import FlextTapOracleWmsUtilities, FlextTapOracleWmsUtilities as u
 
 
 __all__: tuple[str, ...] = (
@@ -62,28 +51,20 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
-    "api",
     "c",
-    "cli",
     "config",
-    "core",
     "d",
     "e",
     "h",
-    "lazy_attribute",
     "m",
     "main",
-    "meltano",
-    "oracle_wms",
     "p",
     "r",
     "s",
-    "services",
     "settings",
     "t",
     "tap_oracle_wms",
     "u",
-    "web",
     "x",
 )
 
@@ -99,19 +80,8 @@ _LAZY_IMPORTS = MappingProxyType(
             ".protocols": ("FlextTapOracleWmsProtocols", "p"),
             ".typings": ("FlextTapOracleWmsTypes", "t"),
             ".utilities": ("FlextTapOracleWmsUtilities", "u"),
-            "flext_meltano": (
-                "cli",
-                "core",
-                "d",
-                "h",
-                "lazy_attribute",
-                "meltano",
-                "r",
-                "s",
-                "services",
-                "x",
-            ),
-            "flext_oracle_wms": ("api", "e", "oracle_wms", "web"),
+            "flext_meltano": ("d", "h", "r", "s", "x"),
+            "flext_oracle_wms": ("e",),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
