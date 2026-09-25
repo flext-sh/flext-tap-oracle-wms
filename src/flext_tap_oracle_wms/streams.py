@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsUtilities
 
     type SingerSchemaInput = (
-        str | PathLike[str] | t.JsonMapping | t.SingerSchema | None
+        str | PathLike[str] | t.JsonMapping | t.Meltano.SingerSchema | None
     )
 
 logger = u.fetch_logger(__name__)
@@ -75,7 +75,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """
         if schema is None:
             return None
-        if isinstance(schema, t.SingerSchema):
+        if isinstance(schema, t.Meltano.SingerSchema):
             return t.json_dict_adapter().validate_python(schema.to_dict())
         if isinstance(schema, PathLike):
             return FlextTapOracleWmsStream._load_schema_document(Path(schema))
