@@ -615,7 +615,7 @@ dependencies = [
 [[package]]
 name = "flext-meltano"
 version = "0.12.0"
-source = { git = "https://github.com/flext-sh/flext-meltano.git?rev=0.12.0-dev#6ec23613b289c0b1c00c9ca8670bc78d3a048d04" }
+source = { git = "https://github.com/flext-sh/flext-meltano.git?rev=0.12.0-dev#966797ce8cb38291ff089925a0e47092869ee70b" }
 dependencies = [
     { name = "annotated-types" },
     { name = "beartype" },
