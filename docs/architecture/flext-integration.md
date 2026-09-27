@@ -143,7 +143,7 @@ class FlextTapOracleWmsStream:
 
     def get_records(self, context) -> Iterator[TAnyDict]:
         """Return records using standard types."""
-        for record in self.wms_client.get_entity_data(self.name):
+        for record in self.wms_client.fetch_entity_data(self.name).unwrap():
             yield self._transform_record(record)
 
     def _transform_record(self, raw_record: TAnyDict) -> TAnyDict:
@@ -178,7 +178,7 @@ class FlextTapOracleWmsStream:
 
         try:
             record_count = 0
-            for record in self.wms_client.get_entity_data(self.name):
+            for record in self.wms_client.fetch_entity_data(self.name).unwrap():
                 record_count += 1
                 if record_count % 1000 == 0:
                     self.logger.info(
@@ -367,7 +367,9 @@ class FlextTapOracleWmsStream(Stream):
     def get_records(self, context) -> Iterator[m.Dict]:
         """Extract records using WMS client."""
         try:
-            for record in self.tap.wms_client_manager.client.get_entity_data(self.name):
+            for record in self.tap.wms_client_manager.client.fetch_entity_data(
+                self.name
+            ).unwrap():
                 yield record
         except Exception as exc:
             self.logger.exception("Record extraction failed: %s", exc)

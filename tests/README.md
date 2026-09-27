@@ -254,7 +254,7 @@ def mock_flext_wms_client():
         # Configure standard responses
         client_instance.get_available_entities.return_value = ["item", "inventory"]
         client_instance.get_entity_metadata.return_value = Mock()
-        client_instance.get_entity_data.return_value = iter([
+        client_instance.fetch_entity_data.return_value = iter([
             {"id": "1", "name": "test"}
         ])
 

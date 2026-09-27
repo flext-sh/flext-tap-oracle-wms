@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_meltano import p as meltano_p
-from flext_oracle_wms import p
+from flext_meltano import FlextMeltanoProtocols
+from flext_oracle_wms import FlextOracleWmsProtocols
 
 if TYPE_CHECKING:
     from flext_oracle_wms import u as _oracle_wms_u
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from flext_tap_oracle_wms import t
 
 
-class FlextTapOracleWmsProtocols(meltano_p, p):
+class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols):
     """Singer Oracle WMS tap protocols facade — composes Meltano + OracleWms."""
 
     class TapOracleWms:
