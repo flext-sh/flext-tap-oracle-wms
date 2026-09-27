@@ -90,24 +90,6 @@ def tap_instance(
     return FlextTapOracleWms.from_settings(sample_config, catalog=sample_catalog)
 
 
-@pytest.fixture(scope="session")
-def oracle_wms_online(oracle_wms_environment: None) -> bool:
-    """Whether online Oracle WMS tests are explicitly enabled for this session.
-
-    Online tests reach the live Oracle WMS Cloud. They run only when the
-    operator opts in via ``FLEXT_TAP_ORACLE_WMS_ONLINE`` (a truthy value).
-    This fixture selects the suite only; typed settings and the real tap own
-    credential validation. Once selected, configuration and network failures
-    must fail the tests rather than turn the selected suite into skips.
-    """
-    _ = oracle_wms_environment
-    return os.environ.get("FLEXT_TAP_ORACLE_WMS_ONLINE", "").strip().lower() in {
-        "1",
-        "true",
-        "yes",
-    }
-
-
 @pytest.fixture
 def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Real tap instance for integration tests."""
@@ -123,30 +105,10 @@ def pytest_collection_modifyitems(
         item_path = str(item.path)
         if "integration" in item_path:
             item.add_marker(pytest.mark.integration)
+            item.add_marker(pytest.mark.remote)
         if any(x in item_path for x in ["e2e", "performance"]):
             item.add_marker(pytest.mark.slow)
-
-
-@pytest.fixture(autouse=True)
-def skip_when_oracle_wms_offline(request: pytest.FixtureRequest) -> None:
-    """Skip online-gated tests when the real Oracle WMS is not enabled.
-
-    The ``integration`` and ``slow`` markers are applied at collection to the
-    integration, e2e and performance suites. When online access is not enabled
-    they are skipped here — validated once at session start — rather than
-    reaching the network during each test's setup.
-    """
-    online_markers = ("slow", "integration", "e2e", "performance")
-    requires_online = any(
-        request.node.get_closest_marker(marker) is not None for marker in online_markers
-    )
-    if not requires_online:
-        return
-    if not request.getfixturevalue("oracle_wms_online"):
-        pytest.skip(
-            "[env-gated] Oracle WMS online tests disabled "
-            "(set FLEXT_TAP_ORACLE_WMS_ONLINE=1)"
-        )
+            item.add_marker(pytest.mark.remote)
 
 
 @pytest.fixture

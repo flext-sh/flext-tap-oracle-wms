@@ -46,8 +46,8 @@ src/flext_tap_oracle_wms/
 ## Commands
 
 ```bash
-make check PROJECT=flext-tap-oracle-wms
-make test PROJECT=flext-tap-oracle-wms # tests/{unit,integration,e2e,performance}
+make check
+make test # tests/{unit,integration,e2e,performance}
 ```
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-END -->
