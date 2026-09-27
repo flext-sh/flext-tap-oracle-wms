@@ -11,15 +11,15 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, override
 
-from singer_sdk.singerlib import Schema
-
 from flext_tap_oracle_wms import c, m, p, r, t, u
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
 
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsUtilities
 
-    type SingerSchemaInput = str | PathLike[str] | t.JsonMapping | Schema | None
+    type SingerSchemaInput = (
+        str | PathLike[str] | t.JsonMapping | t.Meltano.SingerSchema | None
+    )
 
 logger = u.fetch_logger(__name__)
 
@@ -75,7 +75,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """
         if schema is None:
             return None
-        if isinstance(schema, Schema):
+        if isinstance(schema, t.Meltano.SingerSchema):
             return t.json_dict_adapter().validate_python(schema.to_dict())
         if isinstance(schema, PathLike):
             return FlextTapOracleWmsStream._load_schema_document(Path(schema))
@@ -89,8 +89,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         loaded_result = u.Cli.json_loads(path.read_text(encoding=c.DEFAULT_ENCODING))
         if loaded_result.failure:
             msg = (
-                loaded_result.error
-                or f"Failed to parse JSON schema document at {path}"
+                loaded_result.error or f"Failed to parse JSON schema document at {path}"
             )
             raise FlextTapOracleWmsError(msg)
         return t.json_dict_adapter().validate_python(loaded_result.value)
@@ -296,7 +295,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
-        result = self.client.get_entity_data(
+        result = self.client.fetch_entity_data(
             entity_name=self.name, limit=limit, filters=filters or None
         )
         if result.failure:
