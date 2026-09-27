@@ -11,15 +11,15 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, override
 
-from singer_sdk.singerlib import Schema
-
 from flext_tap_oracle_wms import c, m, p, r, t, u
 from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
 
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsUtilities
 
-    type SingerSchemaInput = str | PathLike[str] | t.JsonMapping | Schema | None
+    type SingerSchemaInput = (
+        str | PathLike[str] | t.JsonMapping | t.Meltano.SingerSchema | None
+    )
 
 logger = u.fetch_logger(__name__)
 
@@ -75,7 +75,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """
         if schema is None:
             return None
-        if isinstance(schema, Schema):
+        if isinstance(schema, t.Meltano.SingerSchema):
             return t.json_dict_adapter().validate_python(schema.to_dict())
         if isinstance(schema, PathLike):
             return FlextTapOracleWmsStream._load_schema_document(Path(schema))

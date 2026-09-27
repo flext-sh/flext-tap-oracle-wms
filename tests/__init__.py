@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_tests import api, d, e, h, r, td, tf, tk, tm, tv, x
+    from flext_oracle_wms import e
+    from flext_tests import api, d, h, r, td, tf, tk, tm, tv, x
 
     from . import e2e, integration, performance, unit
     from .base import (
@@ -78,19 +79,8 @@ _LAZY_IMPORTS = MappingProxyType(
             ".typings": ("TestsFlextTapOracleWmsTypes", "t"),
             ".unit": ("unit",),
             ".utilities": ("TestsFlextTapOracleWmsUtilities", "u"),
-            "flext_tests": (
-                "api",
-                "d",
-                "e",
-                "h",
-                "r",
-                "td",
-                "tf",
-                "tk",
-                "tm",
-                "tv",
-                "x",
-            ),
+            "flext_oracle_wms": ("e",),
+            "flext_tests": ("api", "d", "h", "r", "td", "tf", "tk", "tm", "tv", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
