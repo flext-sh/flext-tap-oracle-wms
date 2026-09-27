@@ -865,7 +865,7 @@ class AuthenticationManager:
 
 #### **Phase 3: Integration (Week 3)**
 
-```python
+```text
 # INTEGRATE with FLEXT ecosystem:
 from flext_cli import u
 from flext_core import FlextSettings
@@ -1005,7 +1005,7 @@ def discover_entities(self) -> p.Result[t.StringList]:
 
 ### **Consistent Pattern Usage**
 
-```python
+```text
 # ✅ Use FLEXT patterns consistently
 from __future__ import annotations
 from flext_cli import u
@@ -1027,7 +1027,7 @@ custom_logger = logging.getLogger()          # Use u.fetch_logger()
 
 ### **Library Integration**
 
-```python
+```text
 # ✅ Use ecosystem libraries
 from __future__ import annotations
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
