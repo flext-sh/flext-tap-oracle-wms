@@ -45,9 +45,12 @@ src/flext_tap_oracle_wms/
 
 ## Commands
 
+Run from the workspace root (selector-free; the root dispatcher routes to every
+member — `PROJECT=` is not a root Make variable):
+
 ```bash
-make check PROJECT=flext-tap-oracle-wms
-make test PROJECT=flext-tap-oracle-wms # tests/{unit,integration,e2e,performance}
+make check
+make test
 ```
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-END -->
