@@ -48,7 +48,9 @@ jobs:
   # Source: template + config:github_actions.*
   ci:
     name: ci
-    # Only the checkout job needs repository contents.
+    # Only the checkout job needs repository contents; packages: read is
+    # granted solely to distributions declared in codegen
+    # ci_package_registry_read, whose gates resolve GitHub Packages.
     permissions:
       contents: read
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
@@ -157,7 +159,7 @@ jobs:
         run: CI=Y make check
 
       # Both blocking steps derive from the same active default universe.
-      # CI=Y runs lint pyright silent-failure deferred-self-reference security markdown loc-cap boundary runtime-census tier-whitelist index-declarations layout canonical-alias direnv duplication.
+      # CI=Y runs lint pyright silent-failure deferred-self-reference security markdown loc-cap boundary runtime-census tier-whitelist index-declarations codemod layout canonical-alias direnv duplication.
       # CI=N runs pyrefly mypy.
       # The partitions are disjoint and together execute every active gate.
       - name: check complement (blocking)

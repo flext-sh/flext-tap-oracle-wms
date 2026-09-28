@@ -33,8 +33,8 @@
 
 **Data de Análise**: 2025-08-04\
 **Versão**: 0.9.9\
-**Status**: CRÍTICO - Necessita refatoração massiva · 1.0.0 Release Preparation **Linhas
-de Código**: 8.179 linhas em 26 arquivos Python
+**Status**: CRÍTICO - Necessita refatoração massiva · 1.0.0 Release Preparation\
+**Linhas de Código**: 8.179 linhas em 26 arquivos Python
 
 ---
 
@@ -328,8 +328,8 @@ OracleWmsConfigDict = dict
 
 ### Justificativa para Reescrita
 
-Dado o nível de super-engenharia (8.179 linhas vs 400-800 necessárias), uma **reescrita
-completa** pode ser mais eficiente que refatoração:
+Dado o nível de super-engenharia (8.179 linhas vs 400-800 necessárias), uma
+**reescrita completa** pode ser mais eficiente que refatoração:
 
 **Benefícios da Reescrita**:
 
