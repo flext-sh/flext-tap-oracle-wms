@@ -20,9 +20,7 @@ if TYPE_CHECKING:
 
 
 class FlextTapOracleWmsConstants(
-    FlextMeltanoConstants,
-    FlextOracleWmsConstants,
-    FlextTapOracleWmsConstantsValues,
+    FlextMeltanoConstants, FlextOracleWmsConstants, FlextTapOracleWmsConstantsValues
 ):
     """Oracle WMS tap extraction-specific constants following flext-core patterns.
 
