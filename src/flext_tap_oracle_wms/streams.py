@@ -140,7 +140,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @staticmethod
     def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
-        if isinstance(value, t.PRIMITIVES_TYPES):
+        if isinstance(value, c.PRIMITIVES_TYPES):
             return value
         if value is None:
             return None
@@ -168,7 +168,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @staticmethod
     def normalize_scalar_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize scalar values that may include non-JSON runtime scalars."""
-        if isinstance(value, t.PRIMITIVES_TYPES):
+        if isinstance(value, c.PRIMITIVES_TYPES):
             return value
         if value is None:
             return None
