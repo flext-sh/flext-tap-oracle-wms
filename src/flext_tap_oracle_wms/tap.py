@@ -90,7 +90,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         return (
             raw_streams
             if isinstance(raw_streams, Sequence)
-            and not isinstance(raw_streams, t.STR_BYTES_TYPES)
+            and not isinstance(raw_streams, c.STR_BYTES_TYPES)
             else []
         )
 
@@ -103,7 +103,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata] = []
         if not (
             isinstance(metadata_raw, Sequence)
-            and not isinstance(metadata_raw, t.STR_BYTES_TYPES)
+            and not isinstance(metadata_raw, c.STR_BYTES_TYPES)
         ):
             return metadata_entries
         for raw_entry in metadata_raw:
@@ -122,7 +122,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             breadcrumb=(
                 [str(item) for item in breadcrumb_raw]
                 if isinstance(breadcrumb_raw, Sequence)
-                and not isinstance(breadcrumb_raw, t.STR_BYTES_TYPES)
+                and not isinstance(breadcrumb_raw, c.STR_BYTES_TYPES)
                 else []
             ),
             metadata=(
