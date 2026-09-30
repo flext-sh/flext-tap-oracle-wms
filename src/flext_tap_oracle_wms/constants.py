@@ -31,9 +31,6 @@ class FlextTapOracleWmsConstants(
     class TapOracleWms(FlextTapOracleWmsConstantsValues.TapOracleWms):
         """Oracle WMS tap-specific constants."""
 
-        class Authentication(FlextOracleWmsConstants.OracleWms.Authentication):
-            """Merged authentication constants from both parent hierarchies."""
-
         class Extraction:
             """WMS-specific extraction configuration."""
 
