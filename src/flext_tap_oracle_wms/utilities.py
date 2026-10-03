@@ -23,66 +23,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
     class TapOracleWms:
         """Oracle WMS tap utilities namespace."""
 
-        class ConfigurationProcessing:
-            """Configuration processing utilities for Oracle WMS."""
-
-            @staticmethod
-            def validate_stream_page_size(page_size: int) -> bool:
-                """Validate stream page size.
-
-                Args:
-                    page_size: Page size to validate.
-
-                Returns:
-                    True if valid, False otherwise.
-
-                """
-                return page_size > 0
-
-        class DataProcessing:
-            """Data processing utilities for Oracle WMS records."""
-
-            @staticmethod
-            def process_wms_record(record: t.JsonMapping) -> t.JsonMapping:
-                """Process WMS record for output.
-
-                Args:
-                    record: Raw WMS record.
-
-                Returns:
-                    Processed record.
-
-                """
-                return record
-
         class MappingConversion:
             """Mapping and sequence conversion utilities for Singer protocol."""
-
-            @staticmethod
-            def safe_str_mapping(raw: t.JsonMapping) -> t.JsonMapping:
-                """Return a Mapping with str keys from an untyped mapping source.
-
-                Args:
-                    raw: Raw mapping to convert.
-
-                Returns:
-                    Mapping with string keys.
-
-                """
-                return t.json_mapping_adapter().validate_python(raw)
-
-            @staticmethod
-            def safe_str_dict(raw: t.JsonMapping) -> t.JsonDict:
-                """Return a dict with str keys from an untyped dict source.
-
-                Args:
-                    raw: Raw mapping to convert.
-
-                Returns:
-                    Dict with string keys.
-
-                """
-                return t.json_dict_adapter().validate_python(raw)
 
             @staticmethod
             def as_map(

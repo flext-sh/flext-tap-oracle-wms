@@ -7,8 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import re
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
@@ -30,16 +29,6 @@ class FlextTapOracleWmsConstants(
 
     class TapOracleWms(FlextTapOracleWmsConstantsValues.TapOracleWms):
         """Oracle WMS tap-specific constants."""
-
-        class Extraction:
-            """WMS-specific extraction configuration."""
-
-        class Settings(FlextTapOracleWmsConstantsValues.TapOracleWms.Settings):
-            """Configuration constants for tap settings."""
-
-            ISO_DATE_RE: ClassVar[t.RegexPattern] = re.compile(
-                FlextTapOracleWmsConstantsValues.TapOracleWms.Settings.ISO_DATE_PATTERN
-            )
 
 
 c = FlextTapOracleWmsConstants

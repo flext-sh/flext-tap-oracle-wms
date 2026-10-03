@@ -80,7 +80,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             msg = f"Invalid catalog_dict format: {exc}"
             raise FlextTapOracleWmsConfigurationError(msg) from exc
         return self._to_typed_catalog(
-            u.TapOracleWms.MappingConversion.safe_str_dict(validated_catalog)
+            t.json_dict_adapter().validate_python(validated_catalog)
         )
 
     @staticmethod
@@ -115,7 +115,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @staticmethod
     def _metadata_entry(raw_entry: t.JsonMapping) -> m.Meltano.SingerCatalogMetadata:
         """Convert one raw metadata entry into its typed model."""
-        entry_dict = u.TapOracleWms.MappingConversion.safe_str_mapping(raw_entry)
+        entry_dict = t.json_mapping_adapter().validate_python(raw_entry)
         breadcrumb_raw: t.JsonValue = entry_dict.get("breadcrumb", [])
         metadata_map_raw: t.JsonValue = entry_dict.get("metadata", {})
         return m.Meltano.SingerCatalogMetadata(
@@ -126,7 +126,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 else []
             ),
             metadata=(
-                u.TapOracleWms.MappingConversion.safe_str_dict(metadata_map_raw)
+                t.json_dict_adapter().validate_python(metadata_map_raw)
                 if isinstance(metadata_map_raw, Mapping)
                 else {}
             ),
@@ -143,7 +143,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         entry_result = u.Meltano.build_catalog_entry(
             stream_name=stream_name,
             schema=(
-                u.TapOracleWms.MappingConversion.safe_str_dict(schema_raw)
+                t.json_dict_adapter().validate_python(schema_raw)
                 if isinstance(schema_raw, Mapping)
                 else {}
             ),
@@ -171,9 +171,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         for raw_stream in FlextTapOracleWms._streams_sequence(raw):
             if not isinstance(raw_stream, Mapping):
                 continue
-            s_dict: t.JsonMapping = u.TapOracleWms.MappingConversion.safe_str_mapping(
-                raw_stream
-            )
+            s_dict: t.JsonMapping = t.json_mapping_adapter().validate_python(raw_stream)
             stream_entries.append(
                 FlextTapOracleWms._catalog_entry(
                     s_dict=s_dict,
