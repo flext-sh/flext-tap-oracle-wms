@@ -1,37 +1,29 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Tests package."""
+"""Tests package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
+from flext_core import build_lazy_import_map, install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_oracle_wms import e
-    from flext_tests import api, d, h, r, td, tf, tk, tm, tv, x
+    from flext_tests import api, d, h, r, td, tf, tk, tm, x
 
-    from . import e2e, integration, performance, unit
-    from .base import (
-        TestsFlextTapOracleWmsServiceBase,
-        TestsFlextTapOracleWmsServiceBase as s,
-    )
-    from .constants import (
-        TestsFlextTapOracleWmsConstants,
-        TestsFlextTapOracleWmsConstants as c,
-    )
-    from .models import TestsFlextTapOracleWmsModels, TestsFlextTapOracleWmsModels as m
-    from .protocols import (
-        TestsFlextTapOracleWmsProtocols,
-        TestsFlextTapOracleWmsProtocols as p,
-    )
-    from .settings import TestsFlextTapOracleWmsSettings
-    from .typings import TestsFlextTapOracleWmsTypes, TestsFlextTapOracleWmsTypes as t
-    from .utilities import (
-        TestsFlextTapOracleWmsUtilities,
-        TestsFlextTapOracleWmsUtilities as u,
-    )
+    from tests import e2e, integration, performance, unit
+    from tests.base import TestsFlextTapOracleWmsServiceBase, s
+    from tests.constants import TestsFlextTapOracleWmsConstants, c
+    from tests.models import TestsFlextTapOracleWmsModels, m
+    from tests.protocols import TestsFlextTapOracleWmsProtocols, p
+    from tests.settings import TestsFlextTapOracleWmsSettings
+    from tests.typings import TestsFlextTapOracleWmsTypes, t
+    from tests.utilities import TestsFlextTapOracleWmsUtilities, u
 
 
 __all__: tuple[str, ...] = (
@@ -59,7 +51,6 @@ __all__: tuple[str, ...] = (
     "tf",
     "tk",
     "tm",
-    "tv",
     "u",
     "unit",
     "x",
@@ -80,11 +71,11 @@ _LAZY_IMPORTS = MappingProxyType(
             ".unit": ("unit",),
             ".utilities": ("TestsFlextTapOracleWmsUtilities", "u"),
             "flext_oracle_wms": ("e",),
-            "flext_tests": ("api", "d", "h", "r", "td", "tf", "tk", "tm", "tv", "x"),
+            "flext_tests": ("api", "d", "h", "r", "td", "tf", "tk", "tm", "x"),
         }),
         alias_groups=MappingProxyType({}),
         sort_keys=False,
-    )
+    ),
 )
 
 install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)
