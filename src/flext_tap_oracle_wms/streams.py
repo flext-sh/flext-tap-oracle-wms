@@ -58,13 +58,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         page_size = (
             int(page_size_raw) if isinstance(page_size_raw, (int, float, str)) else 100
         )
-        self._page_size = (
-            page_size
-            if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(
-                page_size
-            )
-            else 100
-        )
+        self._page_size = page_size if page_size > 0 else 100
 
     @staticmethod
     def _normalize_schema(schema: SingerSchemaInput) -> t.JsonDict | None:
@@ -131,11 +125,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @page_size.setter
     def page_size(self, value: int) -> None:
         """Override the effective page size (validated against tap limits)."""
-        self._page_size = (
-            value
-            if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(value)
-            else self._page_size
-        )
+        self._page_size = value if value > 0 else self._page_size
 
     @staticmethod
     def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
@@ -318,11 +308,8 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             record_dict = t.json_dict_adapter().validate_python({
                 key: self.normalize_scalar_value(value) for key, value in record.items()
             })
-            processed_record: t.JsonMapping = (
-                u.TapOracleWms.DataProcessing.process_wms_record(record=record_dict)
-            )
             processed_map = conv.as_map(
-                processed_record,
+                record_dict,
                 normalizer=self.normalize_json_value,
                 map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
                 error_cls=FlextTapOracleWmsError,

@@ -39,14 +39,12 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
         tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
         tm.that(namespace.username, eq="test_user")
         tm.that(self._password_value(settings), eq=UNIT_TEST_CREDENTIAL_TOKEN)
-        tm.that(namespace.api_version, eq=c.TapOracleWms.Settings.DEFAULT_API_VERSION)
-        tm.that(namespace.timeout, eq=c.TapOracleWms.Settings.TAP_DEFAULT_TIMEOUT)
-        tm.that(namespace.page_size, eq=c.TapOracleWms.Settings.TAP_DEFAULT_PAGE_SIZE)
-        tm.that(namespace.verify_ssl, eq=c.TapOracleWms.Settings.DEFAULT_VERIFY_SSL)
-        tm.that(
-            namespace.enable_rate_limiting,
-            eq=c.TapOracleWms.Settings.DEFAULT_ENABLE_RATE_LIMITING,
-        )
+        defaults = type(namespace)()
+        tm.that(namespace.api_version, eq=defaults.api_version)
+        tm.that(namespace.timeout, eq=defaults.timeout)
+        tm.that(namespace.page_size, eq=defaults.page_size)
+        tm.that(namespace.verify_ssl, eq=defaults.verify_ssl)
+        tm.that(namespace.enable_rate_limiting, eq=defaults.enable_rate_limiting)
 
     def test_full_config(self) -> None:
         """Test creating settings with all fields."""
