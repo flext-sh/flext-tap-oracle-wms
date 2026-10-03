@@ -35,7 +35,9 @@
 
 ## Overview
 
-This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tests focus on testing individual components in isolation using mocking to eliminate external dependencies.
+This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tests focus
+on testing individual components in isolation using mocking to eliminate external
+dependencies.
 
 ## Test Structure
 
@@ -43,7 +45,7 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Authentication Tests**
 
-- **[test_auth_comprehensive.py](test_auth_comprehensive.py)** - Authentication system testing
+- runtime_bootstrap_options
   - Basic authentication flow
   - WMS authenticator functionality
   - Header generation and application
@@ -51,7 +53,7 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Client Tests**
 
-- **[test_client_comprehensive.py](test_client_comprehensive.py)** - WMS client wrapper testing
+- runtime_bootstrap_options
   - HTTP client configuration
   - Request/response handling
   - Authentication integration
@@ -59,7 +61,7 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Configuration Tests**
 
-- **[test_config_mapper_comprehensive.py](test_config_mapper_comprehensive.py)** - Configuration mapping
+- runtime_bootstrap_options
 
   - Configuration transformation
   - Default value application
@@ -74,7 +76,7 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Discovery Tests**
 
-- **[test_entity_discovery_comprehensive.py](test_entity_discovery_comprehensive.py)** - Entity discovery logic
+- runtime_bootstrap_options
   - WMS entity discovery
   - Metadata extraction
   - Schema generation
@@ -82,7 +84,7 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Validation Tests**
 
-- **[test_critical_validation_comprehensive.py](test_critical_validation_comprehensive.py)** - Environment validation
+- runtime_bootstrap_options
   - Critical environment variable checking
   - Configuration completeness validation
   - Business rule enforcement
@@ -90,14 +92,14 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 
 #### **Utility Tests**
 
-- **[test_type_mapping_comprehensive.py](test_type_mapping_comprehensive.py)** - Type mapping utilities
+- runtime_bootstrap_options
   - WMS to Singer type conversion
   - Data type validation
   - Schema compatibility checking
 
 #### **Cache Tests**
 
-- **[test_cache_manager_comprehensive.py](test_cache_manager_comprehensive.py)** - Cache functionality
+- runtime_bootstrap_options
   - Response caching mechanisms
   - Cache expiration handling
   - Memory management
@@ -111,8 +113,8 @@ This directory contains unit tests for FLEXT Tap Oracle WMS components. Unit tes
 - **[test_client.py](test_client.py)** - Basic client functionality
 - **[test_main.py](test_main.py)** - Main module entry point
 - **[test_models.py](test_models.py)** - Data model validation
-- **[test_simple_api.py](test_simple_api.py)** - Simplified API interface
-- **[test_schema_flattener.py](test_schema_flattener.py)** - Schema flattening utilities
+- runtime_bootstrap_options
+- runtime_bootstrap_options
 
 #### **Stream Tests**
 
@@ -158,7 +160,8 @@ pytest -k "discovery" tests/unit/
 
 ### **Mock Usage Pattern**
 
-```python notest
+```python
+from __future__ import annotations
 from unittest.mock import Mock, patch
 import pytest
 
@@ -206,7 +209,10 @@ def test_config_validation_success(valid_config):
 
 ### **Error Testing Pattern**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_component_handles_network_error():
     """Test component error handling for network failures."""
     with patch("requests.get") as mock_get:
@@ -270,7 +276,10 @@ def test_config_validation_with_missing_url_raises_error():
 
 ### **Test Documentation**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_complex_scenario():
     """
     Test complex business scenario with multiple interactions.
@@ -340,7 +349,10 @@ def sample_wms_response():
 
 ### **Assertion Helpers**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def assert_flext_result_success(result):
     """Assert r indicates success."""
     assert result.success, f"Expected success, got error: {result.error_message}"
@@ -384,7 +396,8 @@ def assert_flext_result_error(result, expected_error_type=None):
 
 ### **Debugging Tests**
 
-```python notest
+```python
+from __future__ import annotations
 import pytest
 
 
@@ -420,6 +433,7 @@ def test_debug_example():
 - [ ] Test executes quickly (< 100ms per test)
 - [ ] Test is deterministic and reliable
 
-______________________________________________________________________
+---
 
-**Status**: Core unit tests working with good coverage · 1.0.0 Release Preparation | **Priority**: Maintain isolation and coverage | **Updated**: 2025-08-13
+**Status**: Core unit tests working with good coverage · 1.0.0 Release Preparation |
+**Priority**: Maintain isolation and coverage | **Updated**: 2025-08-13

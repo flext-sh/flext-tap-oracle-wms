@@ -36,11 +36,13 @@
 
 ## Overview
 
-This directory contains end-to-end (E2E) tests for FLEXT Tap Oracle WMS, focusing on complete user workflows and system behavior from CLI execution to data output.
+This directory contains end-to-end (E2E) tests for FLEXT Tap Oracle WMS, focusing on
+complete user workflows and system behavior from CLI execution to data output.
 
 ## Current Status
 
-❌ **CRITICAL ISSUE**: All E2E tests are currently disabled due to external WMS dependencies.
+❌ **CRITICAL ISSUE**: All E2E tests are currently disabled due to external WMS
+dependencies.
 
 **Status Summary**:
 
@@ -52,11 +54,10 @@ This directory contains end-to-end (E2E) tests for FLEXT Tap Oracle WMS, focusin
 
 ### **Disabled E2E Tests**
 
-#### **[test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup](test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup)**
+#### runtime_bootstrap_options
 
-**Purpose**: Complete end-to-end workflow testing
-**Current State**: Disabled due to live Oracle WMS instance requirements
-**Scope**:
+**Purpose**: Complete end-to-end workflow testing **Current State**: Disabled due to
+live Oracle WMS instance requirements **Scope**:
 
 - CLI command execution (discovery, extraction)
 - Complete Singer protocol compliance
@@ -125,7 +126,10 @@ tap-oracle-wms --config invalid_config.json --discover
 
 #### **Message Format Validation**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_singer_message_compliance():
     """Test complete Singer message format compliance."""
     # Execute tap and capture output
@@ -146,7 +150,10 @@ def test_singer_message_compliance():
 
 #### **State Management Testing**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_incremental_state_management():
     """Test incremental extraction with state management."""
     # First extraction
@@ -166,7 +173,10 @@ def test_incremental_state_management():
 
 ### **E2E Mock Infrastructure**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 class E2EMockWMSEnvironment:
     """Complete mock WMS environment for E2E testing."""
 
@@ -278,7 +288,10 @@ def test_cli_discovery_execution():
 
 ### **Output Validation Framework**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def validate_singer_output(output_text):
     """Validate Singer-compliant output format."""
     messages = []
@@ -320,7 +333,10 @@ def validate_message_sequence(messages):
 
 ### **Performance Benchmarks**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_e2e_performance_benchmarks():
     """Test E2E performance meets requirements."""
     with e2e_performance_environment():
@@ -350,7 +366,10 @@ def test_e2e_performance_benchmarks():
 
 ### **Resource Usage Testing**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_e2e_resource_usage():
     """Test E2E resource usage within limits."""
     import psutil
@@ -381,7 +400,10 @@ def test_e2e_resource_usage():
 
 ### **Network Failure Scenarios**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_e2e_network_failures():
     """Test E2E behavior during network failures."""
     with e2e_mock_environment() as env:
@@ -411,7 +433,10 @@ def test_e2e_network_failures():
 
 ### **Configuration Error Testing**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_e2e_configuration_errors():
     """Test E2E handling of configuration errors."""
     error_configs = [
@@ -485,7 +510,10 @@ def test_e2e_configuration_errors():
 
 ### **Business User Workflows**
 
-```python notest
+```python
+from __future__ import annotations
+
+
 def test_business_user_daily_extraction():
     """Test complete daily extraction workflow for business users."""
     # Business scenario: Daily inventory extraction
@@ -508,6 +536,8 @@ def test_business_user_daily_extraction():
         validate_business_data_quality(records)
 ```
 
-______________________________________________________________________
+---
 
-**Status**: Completely disabled - Requires full reconstruction · 1.0.0 Release Preparation | **Priority**: High - Critical for user confidence | **Updated**: 2025-08-13
+**Status**: Completely disabled - Requires full reconstruction · 1.0.0 Release
+Preparation | **Priority**: High - Critical for user confidence | **Updated**:
+2025-08-13

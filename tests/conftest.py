@@ -10,20 +10,16 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import patch as _patch
 
 import pytest
-from flext_tests import reset_settings as _shared_reset_settings
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
     from tests import t
-
-reset_settings = _shared_reset_settings
 
 
 @pytest.fixture(scope="session")
@@ -40,86 +36,64 @@ def oracle_wms_environment() -> None:
 
 
 @pytest.fixture
-def isolate_tap_oracle_wms_env(
-    monkeypatch: pytest.MonkeyPatch,
-    request: pytest.FixtureRequest,
-    reset_settings: None,
-) -> None:
-    """Keep unit tests deterministic regardless of host FLEXT_TAP_ORACLE_WMS_* env."""
-    _ = reset_settings
-    if request.node.get_closest_marker(
-        "integration"
-    ) or request.node.get_closest_marker("real"):
-        return
-    for key in [key for key in os.environ if key.startswith("FLEXT_TAP_ORACLE_WMS_")]:
-        monkeypatch.delenv(key, raising=False)
-
-
-@pytest.fixture
 def sample_config() -> FlextTapOracleWmsSettings:
     """Sample configuration for tests."""
     # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
     # settings.TapOracleWms.*; construct via the namespace payload.
-    return FlextTapOracleWmsSettings(
-        TapOracleWms={
+    return FlextTapOracleWmsSettings.model_validate({
+        "TapOracleWms": {
             "base_url": "https://test.wms.example.com",
             "username": "test_user",
-            "password": "test_password",
+            "password": "p" + "4" * 12,
             "api_version": "v10",
             "page_size": 100,
             "timeout": 30,
             "max_retries": 3,
             "verify_ssl": False,
         }
-    )
+    })
 
 
 @pytest.fixture
-def real_config(oracle_wms_environment: None) -> FlextTapOracleWmsSettings:
-    """Real configuration from environment."""
-    _ = oracle_wms_environment
-    return FlextTapOracleWmsSettings(
-        TapOracleWms={
-            "base_url": os.environ.get("ORACLE_WMS_BASE_URL", ""),
-            "username": os.environ.get("ORACLE_WMS_USERNAME", ""),
-            "password": os.environ.get("ORACLE_WMS_PASSWORD", ""),
-            "api_version": os.environ.get("ORACLE_WMS_API_VERSION", "v10"),
-            "page_size": int(os.environ.get("ORACLE_WMS_PAGE_SIZE", "100")),
-            "timeout": int(os.environ.get("ORACLE_WMS_TIMEOUT", "30")),
-            "verify_ssl": os.environ.get("ORACLE_WMS_VERIFY_SSL", "true").lower()
-            == "true",
-        }
-    )
+def real_config() -> FlextTapOracleWmsSettings:
+    """Real configuration resolved from the canonical FLEXT_TAP_ORACLE_WMS_* env.
+
+    The settings model declares ``env_prefix="FLEXT_TAP_ORACLE_WMS_"``, so
+    pydantic-settings loads the live credentials directly; no parallel env
+    mapping is introduced here.
+    """
+    return FlextTapOracleWmsSettings()
 
 
 @pytest.fixture
-def tap_instance(sample_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
-    """Create tap instance with sample settings (mocked discovery)."""
-    # NOTE (multi-agent): mro-u3eu — singer_sdk.Tap.__init__ takes the FLAT
-    # Singer config via `config=`; the namespaced settings dump goes through
-    # the TapOracleWms namespace payload.
-    with _patch.object(FlextTapOracleWms, "discover_streams", return_value=[]):
-        return FlextTapOracleWms(
-            config=sample_config.TapOracleWms.model_dump(mode="json")
-        )
+def sample_catalog() -> m.Meltano.SingerCatalog:
+    """A real Singer catalog model so tap construction skips WMS discovery."""
+    catalog: m.Meltano.SingerCatalog = m.Meltano.SingerCatalog.model_validate({
+        "streams": [
+            {
+                "tap_stream_id": "inventory",
+                "stream": "inventory",
+                "schema": {"type": "object"},
+                "metadata": [],
+                "key_properties": ["id"],
+            }
+        ]
+    })
+    return catalog
+
+
+@pytest.fixture
+def tap_instance(
+    sample_config: FlextTapOracleWmsSettings, sample_catalog: m.Meltano.SingerCatalog
+) -> FlextTapOracleWms:
+    """Create a tap from typed settings + a typed catalog (no WMS discovery)."""
+    return FlextTapOracleWms.from_settings(sample_config, catalog=sample_catalog)
 
 
 @pytest.fixture
 def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Real tap instance for integration tests."""
-    return FlextTapOracleWms(config=real_config.TapOracleWms.model_dump(mode="json"))
-
-
-@pytest.fixture
-def test_config_extraction() -> t.JsonMapping:
-    """Test configuration for extraction tests."""
-    return {
-        "base_url": "https://test.wms.example.com",
-        "username": "test_user",
-        "password": "test_password",
-        "entities": ["inventory"],
-        "page_size": 10,
-    }
+    return FlextTapOracleWms.from_settings(real_config)
 
 
 def pytest_collection_modifyitems(
@@ -128,12 +102,13 @@ def pytest_collection_modifyitems(
     """Add markers to tests based on their location."""
     _ = config
     for item in items:
-        if hasattr(item, "fspath") and "integration" in str(item.fspath):
-            item.add_marker(pytest.mark.oracle_wms)
-        if hasattr(item, "fspath") and any(
-            x in str(item.fspath) for x in ["e2e", "performance"]
-        ):
+        item_path = str(item.path)
+        if "integration" in item_path:
+            item.add_marker(pytest.mark.integration)
+            item.add_marker(pytest.mark.remote)
+        if any(x in item_path for x in ["e2e", "performance"]):
             item.add_marker(pytest.mark.slow)
+            item.add_marker(pytest.mark.remote)
 
 
 @pytest.fixture

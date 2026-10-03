@@ -1,31 +1,18 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""E2e package."""
+"""Tests.e2e package."""
 
 from __future__ import annotations
 
+from types import MappingProxyType
+
 from flext_core.lazy import build_lazy_import_map, install_lazy_exports
 
-_LAZY_IMPORTS = build_lazy_import_map({
-    ".test_e2e": ("TestsFlextTapOracleWmsE2e",),
-    "flext_tests": (
-        "c",
-        "d",
-        "e",
-        "h",
-        "m",
-        "p",
-        "r",
-        "s",
-        "t",
-        "td",
-        "tf",
-        "tk",
-        "tm",
-        "tv",
-        "u",
-        "x",
-    ),
-})
+__all__: tuple[str, ...] = ()
 
+_LAZY_IMPORTS = MappingProxyType(
+    build_lazy_import_map(
+        MappingProxyType({}), alias_groups=MappingProxyType({}), sort_keys=False
+    )
+)
 
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, publish_all=False)
+install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)

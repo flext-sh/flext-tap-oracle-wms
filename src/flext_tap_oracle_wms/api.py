@@ -16,6 +16,7 @@ from flext_meltano.services.consumer_bases.tap_service_base import (
     FlextMeltanoTapServiceBase,
 )
 from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapAdapter
+
 from flext_tap_oracle_wms import p, t, u
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
@@ -37,18 +38,17 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         (``get_singer_command``) parses and validates ``--config`` itself instead
         of crashing at construction when no config is pre-supplied.
         """
-        raw_config = (
-            t.json_dict_adapter().validate_python(
+        raw_config: t.JsonDict | None = None
+        if settings is not None:
+            raw_payload = (
                 settings.model_dump() if hasattr(settings, "model_dump") else settings
             )
-            if settings is not None
-            else None
-        )
+            raw_config = t.json_dict_adapter().validate_python(raw_payload)
         return FlextMeltanoSingerTapAdapter(
             FlextTapOracleWms(config=raw_config, validate_config=False)
         )
 
 
-tap_oracle_wms = FlextTapOracleWmsService
+tap_oracle_wms: FlextTapOracleWmsService = FlextTapOracleWmsService.fetch_global()
 
 __all__: list[str] = ["FlextTapOracleWmsService", "tap_oracle_wms"]

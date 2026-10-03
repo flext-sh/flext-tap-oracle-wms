@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, override
 
@@ -15,6 +16,10 @@ from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
 
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsUtilities
+
+    type SingerSchemaInput = (
+        str | PathLike[str] | t.JsonMapping | t.Meltano.SingerSchema | None
+    )
 
 logger = u.fetch_logger(__name__)
 
@@ -30,33 +35,25 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     stream_replication_key: str | None = None
     url_base: str = ""
     # Singer SDK attributes exposed for type narrowing in tests/consumers
-    tap: p.Meltano.SingerTapBase
+    tap: m.Meltano.SingerTapBase
     http_headers: t.MutableStrMapping
     authenticator: None = None
 
     @override
     def __init__(
         self,
-        tap: p.Meltano.SingerTapBase,
+        tap: m.Meltano.SingerTapBase,
+        schema: SingerSchemaInput = None,
         name: str | None = None,
-        schema: t.JsonMapping | None = None,
-        _path: str | None = None,
     ) -> None:
         """Initialize stream."""
-        schema_dict: t.JsonDict | None = (
-            t.json_dict_adapter().validate_python(schema)
-            if schema is not None
-            else None
-        )
+        schema_dict: t.JsonDict | None = self._normalize_schema(schema)
         m.Meltano.SingerStreamBase.__init__(
             self, tap=tap, name=name or self.name, schema=schema_dict
         )
         self._typed_schema: t.JsonDict | None = schema_dict
         self._client: FlextOracleWmsUtilities.OracleWms.Client | None = None
-        tap_instance = self._tap
-        settings_map: t.JsonMapping = {}
-        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
-            settings_map = tap_instance.settings
+        settings_map: t.JsonMapping = self._config_map()
         page_size_raw = settings_map.get("page_size", 100)
         page_size = (
             int(page_size_raw) if isinstance(page_size_raw, (int, float, str)) else 100
@@ -68,6 +65,41 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             )
             else 100
         )
+
+    @staticmethod
+    def _normalize_schema(schema: SingerSchemaInput) -> t.JsonDict | None:
+        """Normalize every schema form accepted by the Singer SDK base class.
+
+        Dictionaries pass through validation, Singer ``Schema`` objects dump to
+        their dictionary form, and file-system paths load the JSON document.
+        """
+        if schema is None:
+            return None
+        if isinstance(schema, t.Meltano.SingerSchema):
+            return t.json_dict_adapter().validate_python(schema.to_dict())
+        if isinstance(schema, PathLike):
+            return FlextTapOracleWmsStream._load_schema_document(Path(schema))
+        if isinstance(schema, str):
+            return FlextTapOracleWmsStream._load_schema_document(Path(schema))
+        return t.json_dict_adapter().validate_python(dict(schema))
+
+    @staticmethod
+    def _load_schema_document(path: Path) -> t.JsonDict:
+        """Load one JSON schema document from a file-system path."""
+        loaded_result = u.Cli.json_loads(path.read_text(encoding=c.DEFAULT_ENCODING))
+        if loaded_result.failure:
+            msg = (
+                loaded_result.error or f"Failed to parse JSON schema document at {path}"
+            )
+            raise FlextTapOracleWmsError(msg)
+        return t.json_dict_adapter().validate_python(loaded_result.value)
+
+    def _config_map(self) -> t.JsonMapping:
+        """The tap settings mapping when the tap exposes WMS client settings."""
+        tap_instance = self._tap
+        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
+            return tap_instance.settings
+        return {}
 
     @property
     @override
@@ -91,17 +123,31 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self._client = client
         return client
 
+    @property
+    def page_size(self) -> int:
+        """The effective page size used when requesting WMS entity pages."""
+        return self._page_size
+
+    @page_size.setter
+    def page_size(self, value: int) -> None:
+        """Override the effective page size (validated against tap limits)."""
+        self._page_size = (
+            value
+            if u.TapOracleWms.ConfigurationProcessing.validate_stream_page_size(value)
+            else self._page_size
+        )
+
     @staticmethod
-    def json_normalize_value(value: t.JsonValue) -> t.JsonValue:
+    def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize arbitrary values into Singer-compatible JSON values."""
-        if isinstance(value, t.PRIMITIVES_TYPES):
+        if isinstance(value, c.PRIMITIVES_TYPES):
             return value
         if value is None:
             return None
         conv = u.TapOracleWms.MappingConversion
         list_value = conv.as_list(
             value,
-            normalizer=FlextTapOracleWmsStream.json_normalize_value,
+            normalizer=FlextTapOracleWmsStream.normalize_json_value,
             list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
             error_cls=FlextTapOracleWmsError,
         )
@@ -109,7 +155,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             return str(list(list_value))
         map_value = conv.as_map(
             value,
-            normalizer=FlextTapOracleWmsStream.json_normalize_value,
+            normalizer=FlextTapOracleWmsStream.normalize_json_value,
             map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
             error_cls=FlextTapOracleWmsError,
         )
@@ -122,12 +168,12 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @staticmethod
     def normalize_scalar_value(value: t.JsonValue) -> t.JsonValue:
         """Normalize scalar values that may include non-JSON runtime scalars."""
-        if isinstance(value, t.PRIMITIVES_TYPES):
+        if isinstance(value, c.PRIMITIVES_TYPES):
             return value
         if value is None:
             return None
         if isinstance(value, (list, dict)):
-            return FlextTapOracleWmsStream.json_normalize_value(value)
+            return FlextTapOracleWmsStream.normalize_json_value(value)
         return str(value)
 
     def get_primary_keys(self) -> t.StrSequence:
@@ -169,56 +215,60 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self, row: t.JsonDict, context: t.ScalarMapping | None = None
     ) -> t.JsonDict:
         """Post-process a record."""
-        conv = u.TapOracleWms.MappingConversion
-        tap_instance = self._tap
-        config_map: t.JsonMapping = {}
-        if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
-            config_map = tap_instance.settings
-        column_mappings_raw = config_map.get("column_mappings")
-        column_mappings = (
-            conv.as_map(
-                column_mappings_raw,
-                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
-                error_cls=FlextTapOracleWmsError,
-            )
-            if column_mappings_raw
-            else None
-        )
-        if column_mappings is not None:
-            mapping_raw = column_mappings.get(self.name)
-            mapping = (
-                conv.as_map(
-                    mapping_raw,
-                    map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
-                    error_cls=FlextTapOracleWmsError,
-                )
-                if mapping_raw is not None
-                else None
-            )
-            if mapping is not None:
-                for old_name, new_name in mapping.items():
-                    new_name_str = str(new_name)
-                    if old_name in row:
-                        row[new_name_str] = row.pop(old_name)
-        ignored_columns_raw = config_map.get("ignored_columns")
-        ignored_columns = (
-            conv.as_list(
-                ignored_columns_raw,
-                list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
-                error_cls=FlextTapOracleWmsError,
-            )
-            if ignored_columns_raw
-            else None
-        )
-        if ignored_columns is not None:
-            for column_name in ignored_columns:
-                if isinstance(column_name, str):
-                    row.pop(column_name, None)
+        config_map = self._config_map()
+        self._apply_column_mappings(row, config_map)
+        self._drop_ignored_columns(row, config_map)
         if context:
             row["context"] = str({k: str(v) for k, v in context.items()})
         return row
 
-    def _build_operation_kwargs(
+    def _apply_column_mappings(
+        self, row: t.JsonDict, config_map: t.JsonMapping
+    ) -> None:
+        """Rename record keys per the column mappings configured for this stream."""
+        conv = u.TapOracleWms.MappingConversion
+        mappings_raw = config_map.get("column_mappings")
+        if not mappings_raw:
+            return
+        column_mappings = conv.as_map(
+            mappings_raw,
+            map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
+        if column_mappings is None:
+            return
+        mapping_raw = column_mappings.get(self.name)
+        if mapping_raw is None:
+            return
+        mapping = conv.as_map(
+            mapping_raw,
+            map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
+        if mapping is None:
+            return
+        for old_name, new_name in mapping.items():
+            if old_name in row:
+                row[str(new_name)] = row.pop(old_name)
+
+    @staticmethod
+    def _drop_ignored_columns(row: t.JsonDict, config_map: t.JsonMapping) -> None:
+        """Remove the configured ignored columns from the record."""
+        ignored_raw = config_map.get("ignored_columns")
+        if not ignored_raw:
+            return
+        ignored_columns = u.TapOracleWms.MappingConversion.as_list(
+            ignored_raw,
+            list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
+            error_cls=FlextTapOracleWmsError,
+        )
+        if ignored_columns is None:
+            return
+        for column_name in ignored_columns:
+            if isinstance(column_name, str):
+                row.pop(column_name, None)
+
+    def build_operation_kwargs(
         self, page: int, context: t.ScalarMapping | None
     ) -> t.MutableScalarMapping:
         """Build kwargs for the operation call."""
@@ -238,14 +288,14 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         self, page: int, context: t.ScalarMapping | None
     ) -> p.Result[tuple[t.SequenceOf[t.JsonMapping], bool]]:
         """Fetch data for a specific page."""
-        kwargs = self._build_operation_kwargs(page, context)
+        kwargs = self.build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
         limit = u.to_int(limit_raw, default=self._page_size)
         filters: t.MutableScalarMapping = {}
         filter_raw = kwargs.get("filter")
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
-        result = self.client.get_entity_data(
+        result = self.client.fetch_entity_data(
             entity_name=self.name, limit=limit, filters=filters or None
         )
         if result.failure:
@@ -253,7 +303,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
                 f"Failed to get records for {self.name}: {result.error}"
             )
         normalized: t.SequenceOf[t.JsonMapping] = [
-            {key: self.json_normalize_value(value) for key, value in record.items()}
+            {key: self.normalize_json_value(value) for key, value in record.items()}
             for record in result.value
         ]
         has_more = len(normalized) == self._page_size
@@ -273,7 +323,7 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             )
             processed_map = conv.as_map(
                 processed_record,
-                normalizer=self.json_normalize_value,
+                normalizer=self.normalize_json_value,
                 map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
                 error_cls=FlextTapOracleWmsError,
             )
