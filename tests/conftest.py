@@ -37,7 +37,11 @@ def oracle_wms_environment() -> None:
 
 @pytest.fixture
 def sample_config() -> FlextTapOracleWmsSettings:
-    """Sample configuration for tests."""
+    """Sample configuration for tests.
+
+    Returns:
+        The resulting ``FlextTapOracleWmsSettings``.
+    """
     # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
     # settings.TapOracleWms.*; construct via the namespace payload.
     return FlextTapOracleWmsSettings.model_validate({
@@ -50,7 +54,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
             "timeout": 30,
             "max_retries": 3,
             "verify_ssl": False,
-        }
+        },
     })
 
 
@@ -61,13 +65,20 @@ def real_config() -> FlextTapOracleWmsSettings:
     The settings model declares ``env_prefix="FLEXT_TAP_ORACLE_WMS_"``, so
     pydantic-settings loads the live credentials directly; no parallel env
     mapping is introduced here.
+
+    Returns:
+        The resulting ``FlextTapOracleWmsSettings``.
     """
     return FlextTapOracleWmsSettings()
 
 
 @pytest.fixture
 def sample_catalog() -> m.Meltano.SingerCatalog:
-    """A real Singer catalog model so tap construction skips WMS discovery."""
+    """A real Singer catalog model so tap construction skips WMS discovery.
+
+    Returns:
+        The resulting ``m.Meltano.SingerCatalog``.
+    """
     catalog: m.Meltano.SingerCatalog = m.Meltano.SingerCatalog.model_validate({
         "streams": [
             {
@@ -76,28 +87,38 @@ def sample_catalog() -> m.Meltano.SingerCatalog:
                 "schema": {"type": "object"},
                 "metadata": [],
                 "key_properties": ["id"],
-            }
-        ]
+            },
+        ],
     })
     return catalog
 
 
 @pytest.fixture
 def tap_instance(
-    sample_config: FlextTapOracleWmsSettings, sample_catalog: m.Meltano.SingerCatalog
+    sample_config: FlextTapOracleWmsSettings,
+    sample_catalog: m.Meltano.SingerCatalog,
 ) -> FlextTapOracleWms:
-    """Create a tap from typed settings + a typed catalog (no WMS discovery)."""
+    """Create a tap from typed settings + a typed catalog (no WMS discovery).
+
+    Returns:
+        The resulting ``FlextTapOracleWms``.
+    """
     return FlextTapOracleWms.from_settings(sample_config, catalog=sample_catalog)
 
 
 @pytest.fixture
 def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
-    """Real tap instance for integration tests."""
+    """Real tap instance for integration tests.
+
+    Returns:
+        The resulting ``FlextTapOracleWms``.
+    """
     return FlextTapOracleWms.from_settings(real_config)
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config, items: t.SequenceOf[pytest.Item]
+    config: pytest.Config,
+    items: t.SequenceOf[pytest.Item],
 ) -> None:
     """Add markers to tests based on their location."""
     _ = config

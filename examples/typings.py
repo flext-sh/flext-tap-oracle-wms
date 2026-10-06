@@ -1,4 +1,9 @@
-"""Type aliases for flexttaporaclewms."""
+"""Type aliases for flexttaporaclewms.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+examples/typings
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 

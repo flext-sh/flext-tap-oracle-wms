@@ -1,4 +1,9 @@
-"""Protocol definitions for flexttaporaclewms."""
+"""Protocol definitions for flexttaporaclewms.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+examples/protocols
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 

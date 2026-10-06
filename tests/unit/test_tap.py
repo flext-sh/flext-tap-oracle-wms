@@ -9,6 +9,10 @@ client. The tests here construct the tap from a real ``catalog`` input — the
 canonical Singer way to build a tap without discovery — and assert only the
 genuinely local contract (settings normalization, unsupported-message
 handling, redacted validation output, and implementation metadata).
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+tests/unit/test_tap
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -27,8 +31,8 @@ if TYPE_CHECKING:
 class TestsFlextTapOracleWmsTap:
     """Validate tap behavior against current implementation contract."""
 
+    @staticmethod
     def test_tap_initialization_with_config(
-        self,
         sample_config: FlextTapOracleWmsSettings,
         sample_catalog: m.Meltano.SingerCatalog,
     ) -> None:
@@ -36,8 +40,9 @@ class TestsFlextTapOracleWmsTap:
         tap = FlextTapOracleWms.from_settings(sample_config, catalog=sample_catalog)
         tm.that(tap.name, eq="flext-tap-oracle-wms")
 
+    @staticmethod
     def test_tap_initialization_normalizes_settings(
-        self, sample_catalog: m.Meltano.SingerCatalog
+        sample_catalog: m.Meltano.SingerCatalog,
     ) -> None:
         """Tap normalizes settings values from a typed settings model."""
         settings = FlextTapOracleWmsSettings.model_validate({
@@ -45,21 +50,23 @@ class TestsFlextTapOracleWmsTap:
                 "base_url": "https://test.wms.example.com",
                 "username": "test_user",
                 "password": "p" + "4" * 12,
-            }
+            },
         })
         tap = FlextTapOracleWms.from_settings(settings, catalog=sample_catalog)
         tm.that(tap.flext_config.TapOracleWms.base_url, has="test.wms.example.com")
         tm.that(tap.flext_config.TapOracleWms.username, eq="test_user")
 
+    @staticmethod
     def test_execute_with_message_unsupported(
-        self, tap_instance: FlextTapOracleWms
+        tap_instance: FlextTapOracleWms,
     ) -> None:
         """Custom message execution is not supported by the tap."""
         result = tap_instance.execute("some message")
         tm.fail(result)
         tm.that(str(result.error), has="Tap does not support message execution")
 
-    def test_validate_configuration(self, tap_instance: FlextTapOracleWms) -> None:
+    @staticmethod
+    def test_validate_configuration(tap_instance: FlextTapOracleWms) -> None:
         """Validation method exposes non-secret effective settings values."""
         result = tap_instance.validate_configuration()
         tm.ok(result)
@@ -68,8 +75,9 @@ class TestsFlextTapOracleWmsTap:
         tm.that(value["base_url"], eq=tap_instance.flext_config.TapOracleWms.base_url)
         tm.that(value, lacks="password")
 
+    @staticmethod
     def test_get_implementation_name_and_version(
-        self, tap_instance: FlextTapOracleWms
+        tap_instance: FlextTapOracleWms,
     ) -> None:
         """Implementation metadata methods return stable, non-empty values."""
         tm.that(tap_instance.get_implementation_name(), eq="FLEXT Oracle WMS Tap")

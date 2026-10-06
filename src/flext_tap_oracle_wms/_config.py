@@ -12,7 +12,9 @@ from __future__ import annotations
 
 from typing import Annotated, Self
 
-from flext_meltano import FlextMeltanoConfig, m
+from flext_meltano import FlextMeltanoConfig
+
+from flext_tap_oracle_wms import m
 
 
 class _TapOracleWmsNamespace(m.BaseModel):
@@ -45,7 +47,7 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
     TapOracleWms: Annotated[
         _TapOracleWmsNamespace,
         m.Field(
-            description="Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``."
+            description="Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``.",
         ),
     ] = _TapOracleWmsNamespace()
 

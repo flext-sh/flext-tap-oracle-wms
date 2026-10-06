@@ -26,16 +26,18 @@ _RECORD_SAMPLE_LIMIT = 2
 class TestsFlextTapOracleWmsWms:
     """Test real Oracle WMS integration."""
 
+    @staticmethod
     def test_tap_creation_with_real_config(
-        self, real_config: FlextTapOracleWmsSettings
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test tap can be created with real settings."""
         tap = FlextTapOracleWms.from_settings(real_config)
         tm.that(tap, none=False)
         tm.that(tap.name, eq=FlextTapOracleWms.name)
 
+    @staticmethod
     def test_configuration_validation(
-        self, real_config: FlextTapOracleWmsSettings
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Validation exposes exactly the non-secret configured fields."""
         tap = FlextTapOracleWms.from_settings(real_config)
@@ -45,13 +47,15 @@ class TestsFlextTapOracleWmsWms:
         assert isinstance(value, Mapping)
         tm.that(set(value), eq={"base_url", "api_version", "page_size"})
 
-    def test_tap_initialization(self, real_config: FlextTapOracleWmsSettings) -> None:
+    @staticmethod
+    def test_tap_initialization(real_config: FlextTapOracleWmsSettings) -> None:
         """Test tap initialization."""
         tap = FlextTapOracleWms.from_settings(real_config)
         result = tap.initialize()
         tm.ok(result)
 
-    def test_stream_discovery(self, real_config: FlextTapOracleWmsSettings) -> None:
+    @staticmethod
+    def test_stream_discovery(real_config: FlextTapOracleWmsSettings) -> None:
         """Test stream discovery."""
         tap = FlextTapOracleWms.from_settings(real_config)
         init_result = tap.initialize()
@@ -61,7 +65,8 @@ class TestsFlextTapOracleWmsWms:
         for stream in streams:
             tm.that(stream.name, none=False)
 
-    def test_stream_extraction(self, real_config: FlextTapOracleWmsSettings) -> None:
+    @staticmethod
+    def test_stream_extraction(real_config: FlextTapOracleWmsSettings) -> None:
         """Exercise every discovered stream without suppressing extraction failures."""
         tap = FlextTapOracleWms.from_settings(real_config)
         init_result = tap.initialize()
@@ -70,7 +75,7 @@ class TestsFlextTapOracleWmsWms:
         tm.that(bool(streams), eq=True)
         for stream in streams:
             records = list(
-                islice(stream.get_records(context=None), _RECORD_SAMPLE_LIMIT)
+                islice(stream.get_records(context=None), _RECORD_SAMPLE_LIMIT),
             )
             for record in records:
                 tm.that(record, is_=Mapping)

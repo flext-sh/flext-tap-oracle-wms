@@ -49,7 +49,10 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         """Initialize stream."""
         schema_dict: t.JsonDict | None = self._normalize_schema(schema)
         m.Meltano.SingerStreamBase.__init__(
-            self, tap=tap, name=name or self.name, schema=schema_dict
+            self,
+            tap=tap,
+            name=name or self.name,
+            schema=schema_dict,
         )
         self._typed_schema: t.JsonDict | None = schema_dict
         self._client: FlextOracleWmsUtilities.OracleWms.Client | None = None
@@ -66,6 +69,9 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
         Dictionaries pass through validation, Singer ``Schema`` objects dump to
         their dictionary form, and file-system paths load the JSON document.
+
+        Returns:
+            The resulting ``t.JsonDict | None``.
         """
         if schema is None:
             return None
@@ -79,7 +85,14 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @staticmethod
     def _load_schema_document(path: Path) -> t.JsonDict:
-        """Load one JSON schema document from a file-system path."""
+        """Load one JSON schema document from a file-system path.
+
+        Returns:
+            The resulting ``t.JsonDict``.
+
+        Raises:
+            FlextTapOracleWmsError: If ``loaded_result.failure``.
+        """
         loaded_result = u.Cli.json_loads(path.read_text(encoding=c.DEFAULT_ENCODING))
         if loaded_result.failure:
             msg = (
@@ -89,7 +102,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return t.json_dict_adapter().validate_python(loaded_result.value)
 
     def _config_map(self) -> t.JsonMapping:
-        """The tap settings mapping when the tap exposes WMS client settings."""
+        """The tap settings mapping when the tap exposes WMS client settings.
+
+        Returns:
+            The resulting ``t.JsonMapping``.
+        """
         tap_instance = self._tap
         if isinstance(tap_instance, p.TapOracleWms.OracleWms.TapWithWmsClientSettings):
             return tap_instance.settings
@@ -98,7 +115,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
     @property
     @override
     def schema(self) -> t.JsonDict:
-        """The schema with proper type narrowing over Singer SDK's bare ``dict``."""
+        """The schema with proper type narrowing over Singer SDK's bare ``dict``.
+
+        Raises:
+            ValueError: If The schema for stream.
+        """
         if self._typed_schema is None:
             msg = f"The schema for stream '{self.name}' was not provided"
             raise ValueError(msg)
@@ -106,7 +127,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @property
     def client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
-        """The WMS client from tap."""
+        """The WMS client from tap.
+
+        Raises:
+            TypeError: If WMS client not available - tap must be FlextTapOracleWms.
+        """
         if self._client is not None:
             return self._client
         tap_instance = self._tap
@@ -129,7 +154,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @staticmethod
     def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
-        """Normalize arbitrary values into Singer-compatible JSON values."""
+        """Normalize arbitrary values into Singer-compatible JSON values.
+
+        Returns:
+            The resulting ``t.JsonValue``.
+        """
         if isinstance(value, c.PRIMITIVES_TYPES):
             return value
         if value is None:
@@ -157,7 +186,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @staticmethod
     def normalize_scalar_value(value: t.JsonValue) -> t.JsonValue:
-        """Normalize scalar values that may include non-JSON runtime scalars."""
+        """Normalize scalar values that may include non-JSON runtime scalars.
+
+        Returns:
+            The resulting ``t.JsonValue``.
+        """
         if isinstance(value, c.PRIMITIVES_TYPES):
             return value
         if value is None:
@@ -172,7 +205,11 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @override
     def get_records(self, context: t.ScalarMapping | None) -> t.IterableOf[t.JsonDict]:
-        """Yield the records from Oracle WMS."""
+        """Yield the records from Oracle WMS.
+
+        Raises:
+            FlextTapOracleWmsError: If Error getting records for.
+        """
         page = 1
         has_more = True
         while has_more:
@@ -202,9 +239,15 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
 
     @override
     def post_process(
-        self, row: t.JsonDict, context: t.ScalarMapping | None = None
+        self,
+        row: t.JsonDict,
+        context: t.ScalarMapping | None = None,
     ) -> t.JsonDict:
-        """Post-process a record."""
+        """Post-process a record.
+
+        Returns:
+            The resulting ``t.JsonDict``.
+        """
         config_map = self._config_map()
         self._apply_column_mappings(row, config_map)
         self._drop_ignored_columns(row, config_map)
@@ -213,7 +256,9 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return row
 
     def _apply_column_mappings(
-        self, row: t.JsonDict, config_map: t.JsonMapping
+        self,
+        row: t.JsonDict,
+        config_map: t.JsonMapping,
     ) -> None:
         """Rename record keys per the column mappings configured for this stream."""
         conv = u.TapOracleWms.MappingConversion
@@ -259,9 +304,15 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
                 row.pop(column_name, None)
 
     def build_operation_kwargs(
-        self, page: int, context: t.ScalarMapping | None
+        self,
+        page: int,
+        context: t.ScalarMapping | None,
     ) -> t.MutableScalarMapping:
-        """Build kwargs for the operation call."""
+        """Build kwargs for the operation call.
+
+        Returns:
+            The resulting ``t.MutableScalarMapping``.
+        """
         result_kwargs: t.MutableScalarMapping = {}
         result_kwargs["page"] = page
         result_kwargs["limit"] = self._page_size
@@ -275,9 +326,15 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return result_kwargs
 
     def _fetch_page_data(
-        self, page: int, context: t.ScalarMapping | None
+        self,
+        page: int,
+        context: t.ScalarMapping | None,
     ) -> p.Result[tuple[t.SequenceOf[t.JsonMapping], bool]]:
-        """Fetch data for a specific page."""
+        """Fetch data for a specific page.
+
+        Returns:
+            The resulting ``p.Result[tuple[t.SequenceOf[t.JsonMapping], bool]]``.
+        """
         kwargs = self.build_operation_kwargs(page, context)
         limit_raw = kwargs.get("limit")
         limit = u.to_int(limit_raw, default=self._page_size)
@@ -286,11 +343,13 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         if isinstance(filter_raw, str) and self.stream_replication_key:
             filters[self.stream_replication_key] = filter_raw
         result = self.client.fetch_entity_data(
-            entity_name=self.name, limit=limit, filters=filters or None
+            entity_name=self.name,
+            limit=limit,
+            filters=filters or None,
         )
         if result.failure:
             return r[tuple[t.SequenceOf[t.JsonMapping], bool]].fail(
-                f"Failed to get records for {self.name}: {result.error}"
+                f"Failed to get records for {self.name}: {result.error}",
             )
         normalized: t.SequenceOf[t.JsonMapping] = [
             {key: self.normalize_json_value(value) for key, value in record.items()}
@@ -300,9 +359,15 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
         return r[tuple[t.SequenceOf[t.JsonMapping], bool]].ok((normalized, has_more))
 
     def _process_page_records(
-        self, records: t.SequenceOf[t.JsonMapping], context: t.ScalarMapping | None
+        self,
+        records: t.SequenceOf[t.JsonMapping],
+        context: t.ScalarMapping | None,
     ) -> t.IterableOf[t.JsonDict]:
-        """Process and yield records from a page."""
+        """Process and yield records from a page.
+
+        Yields:
+            Each ``t.JsonDict``.
+        """
         conv = u.TapOracleWms.MappingConversion
         for record in records:
             record_dict = t.json_dict_adapter().validate_python({
@@ -321,5 +386,6 @@ class FlextTapOracleWmsStream(m.Meltano.SingerStreamBase):
             })
             yield self.post_process(json_row, context)
 
-    def _run(self, value: t.Scalar) -> t.Scalar:
+    @staticmethod
+    def _run(value: t.Scalar) -> t.Scalar:
         return value

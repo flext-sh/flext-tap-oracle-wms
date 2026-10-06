@@ -1,4 +1,9 @@
-"""Constants for flexttaporaclewms."""
+"""Constants for flexttaporaclewms.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+examples/constants
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 

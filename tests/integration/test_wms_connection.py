@@ -29,8 +29,9 @@ _MIN_SAMPLE_RECORDS = 2
 class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
     """Test real Oracle WMS connection."""
 
+    @staticmethod
     def test_configuration_validation(
-        self, real_tap_instance: FlextTapOracleWms
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Validation exposes exactly the non-secret configured fields."""
         result = real_tap_instance.validate_configuration()
@@ -43,7 +44,8 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
         tm.that(value["page_size"], is_=int)
         tm.that("password" not in value and "username" not in value, eq=True)
 
-    def test_catalog_discovery(self, real_tap_instance: FlextTapOracleWms) -> None:
+    @staticmethod
+    def test_catalog_discovery(real_tap_instance: FlextTapOracleWms) -> None:
         """Discovered catalog entries are named Singer streams."""
         result = real_tap_instance.discovercatalog_typed()
         tm.ok(result)
@@ -55,7 +57,8 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
             tm.that(stream.tap_stream_id, is_=str)
             assert stream.tap_stream_id
 
-    def test_stream_discovery(self, real_tap_instance: FlextTapOracleWms) -> None:
+    @staticmethod
+    def test_stream_discovery(real_tap_instance: FlextTapOracleWms) -> None:
         """Discovered streams expose non-empty names."""
         streams = real_tap_instance.discover_streams()
         assert streams
@@ -63,8 +66,9 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
             tm.that(stream.name, is_=str)
             assert stream.name
 
+    @staticmethod
     def test_stream_schemas_validation(
-        self, real_tap_instance: FlextTapOracleWms
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test stream schemas."""
         streams = real_tap_instance.discover_streams()
@@ -77,9 +81,11 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
 
     """Test real data extraction from Oracle WMS."""
 
+    @staticmethod
     @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
     def test_extract_stream_data(
-        self, real_tap_instance: FlextTapOracleWms, stream_name: str
+        real_tap_instance: FlextTapOracleWms,
+        stream_name: str,
     ) -> None:
         """Test extracting data from specific streams."""
         tm.ok(real_tap_instance.initialize())
@@ -94,8 +100,9 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
             if i >= max_records:
                 break
 
+    @staticmethod
     def test_pagination_functionality(
-        self, real_tap_instance: FlextTapOracleWms
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test pagination functionality."""
         streams = real_tap_instance.discover_streams()
@@ -115,15 +122,16 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
 
     """Test entity filtering and selection."""
 
+    @staticmethod
     def test_entity_inclusion_filter(
-        self, real_config: FlextTapOracleWmsSettings
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test including specific entities."""
         settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
                 **real_config.TapOracleWms.model_dump(),
                 "include_entities": ["inventory", "locations"],
-            }
+            },
         })
         real_tap_instance = FlextTapOracleWms.from_settings(settings)
         streams = real_tap_instance.discover_streams()
@@ -132,15 +140,16 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
         tm.that(stream_names, has="locations")
         tm.that(stream_names, lacks="orders")
 
+    @staticmethod
     def test_entity_exclusion_filter(
-        self, real_config: FlextTapOracleWmsSettings
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Test excluding specific entities."""
         settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
                 **real_config.TapOracleWms.model_dump(),
                 "exclude_entities": ["orders", "shipments"],
-            }
+            },
         })
         real_tap_instance = FlextTapOracleWms.from_settings(settings)
         streams = real_tap_instance.discover_streams()
@@ -151,8 +160,9 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
 
     """Test /sync integration with flext-oracle-wms."""
 
+    @staticmethod
     def test_client_lifecycle_management(
-        self, real_tap_instance: FlextTapOracleWms
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test proper client lifecycle management."""
         tm.ok(real_tap_instance.initialize())
@@ -162,14 +172,15 @@ class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
         result = real_tap_instance.discovercatalog_typed()
         tm.ok(result)
 
-    def test_error_handling(self) -> None:
+    @staticmethod
+    def test_error_handling() -> None:
         """Non-secret fields are still exposed for an unreachable endpoint."""
         bad_settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
                 "base_url": "https://invalid.example.com",
                 "username": "invalid",
                 "password": "invalid",
-            }
+            },
         })
         tap = FlextTapOracleWms.from_settings(bad_settings)
         result = tap.validate_configuration()

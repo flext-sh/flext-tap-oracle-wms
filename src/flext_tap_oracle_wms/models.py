@@ -1,4 +1,9 @@
-"""Pydantic models used by Oracle WMS tap compatibility layers."""
+"""Pydantic models used by Oracle WMS tap compatibility layers.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+src/flext_tap_oracle_wms/models
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
