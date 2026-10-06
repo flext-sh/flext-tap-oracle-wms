@@ -1,7 +1,8 @@
 """Complete End-to-End tests for Oracle WMS tap.
 
 HONEST E2E TESTING: Tests complete data extraction pipeline with REAL Oracle WMS.
-Validates all Singer SDK functionality including discovery, extraction, and data quality.
+Validates all Singer SDK functionality: discovery, extraction, and data
+quality.
 
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.

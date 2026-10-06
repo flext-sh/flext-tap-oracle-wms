@@ -62,7 +62,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         assert isinstance(limit_value, int)
         assert limit_value > 0
         logger.info("URL generation working: %s", url_base)
-        logger.info(f"✅ Parameters: {list(url_params.keys())}")
+        logger.info("✅ Parameters: %s", list(url_params.keys()))
 
     def test_stream_authentication_with_credentials(
         self,
@@ -93,7 +93,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         ]
         if wms_headers:
             logger.info("✅ WMS-specific headers: %s", wms_headers)
-        logger.info(f"✅ HTTP headers configured: {list(headers.keys())}")
+        logger.info("✅ HTTP headers configured: %s", list(headers.keys()))
 
     def test_replication_key_detection(
         self,

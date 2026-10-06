@@ -13,14 +13,17 @@ from flext_tap_oracle_wms import FlextTapOracleWmsUtilities
 
 
 class TestsFlextTapOracleWmsUtilities(FlextTestsUtilities, FlextTapOracleWmsUtilities):
-    """Utilities for flext-tap-oracle-wms tests - uses composition with TestsFlextUtilities.
+    """Utilities for flext-tap-oracle-wms tests via composition.
 
-    Architecture: Uses composition (not inheritance) with TestsFlextUtilities and FlextTapOracleWmsUtilities
+    Architecture: Uses composition (not inheritance) with TestsFlextUtilities
+    and FlextTapOracleWmsUtilities
     for flext-tap-oracle-wms-specific utility definitions.
 
     Access patterns:
-    - TestsFlextTapOracleWmsUtilities.Tests.* = flext_tests test utilities (via composition)
-    - TestsFlextTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms-specific test utilities
+    - TestsFlextTapOracleWmsUtilities.Tests.* = flext_tests test utilities
+      (via composition)
+    - TestsFlextTapOracleWmsUtilities.TapOracleWms.* = flext-tap-oracle-wms
+      specific test utilities
     - TestsFlextTapOracleWmsUtilities.* = TestsFlextUtilities methods (via composition)
 
     Rules:
