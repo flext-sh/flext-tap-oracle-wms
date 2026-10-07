@@ -67,9 +67,13 @@ class OracleWmsTapTestHelpersMixin:
 
     @staticmethod
     def _schema(stream: m.Meltano.SingerCatalogEntry) -> t.JsonMapping:
-        """Normalize model schema payload to the runtime stream contract."""
+        """Normalize model schema payload to the runtime stream contract.
+
+        Returns:
+            The resulting ``t.JsonMapping``.
+        """
         schema: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-            stream.schema_definition
+            stream.schema_definition,
         )
         return schema
 
@@ -93,11 +97,13 @@ class OracleWmsTapTestHelpersMixin:
         )
 
     def _assert_invalid_tap_recovery(
-        self, real_config: FlextTapOracleWmsSettings, overrides: t.JsonDict
+        self,
+        real_config: FlextTapOracleWmsSettings,
+        overrides: t.JsonDict,
     ) -> None:
         """Attempt catalog discovery with invalid settings; assert error."""
         invalid_settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {**real_config.TapOracleWms.model_dump(), **overrides}
+            "TapOracleWms": {**real_config.TapOracleWms.model_dump(), **overrides},
         })
         tap = FlextTapOracleWms.from_settings(invalid_settings)
         try:
@@ -108,9 +114,14 @@ class OracleWmsTapTestHelpersMixin:
 
     @classmethod
     def _tap_settings(
-        cls, overrides: t.JsonDict | None = None
+        cls,
+        overrides: t.JsonDict | None = None,
     ) -> FlextTapOracleWmsSettings:
-        """Build validated settings from common defaults plus *overrides*."""
+        """Build validated settings from common defaults plus *overrides*.
+
+        Returns:
+            The resulting ``FlextTapOracleWmsSettings``.
+        """
         fields: dict[str, t.JsonValue] = dict(cls._TAP_BASE_SETTINGS)
         if overrides:
             fields.update(overrides)
@@ -118,7 +129,11 @@ class OracleWmsTapTestHelpersMixin:
 
     @staticmethod
     def _password_value(settings: FlextTapOracleWmsSettings) -> str:
-        """Extract the plaintext password from settings (handles SecretStr)."""
+        """Extract the plaintext password from settings (handles SecretStr).
+
+        Returns:
+            The resulting ``str``.
+        """
         password: str | t.SecretStr = settings.TapOracleWms.password
         return (
             password.get_secret_value()

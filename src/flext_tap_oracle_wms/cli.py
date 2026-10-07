@@ -11,15 +11,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from .api import FlextTapOracleWmsService
-
-__all__: list[str] = ["main"]
+from flext_tap_oracle_wms.api import FlextTapOracleWmsService
 
 
 def main() -> int:
-    """Execute Oracle WMS tap through the FLEXT service CLI bridge."""
+    """Execute Oracle WMS tap through the FLEXT service CLI bridge.
+
+    Returns:
+        The resulting ``int``.
+    """
     return FlextTapOracleWmsService().cli_main()
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+__all__: list[str] = ["main"]

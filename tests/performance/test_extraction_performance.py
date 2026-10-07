@@ -35,7 +35,11 @@ _MAX_MEMORY_INCREASE_MB = 100
 
 @pytest.fixture
 def performance_config() -> FlextTapOracleWmsSettings:
-    """Create configuration for performance testing."""
+    """Create configuration for performance testing.
+
+    Returns:
+        The resulting ``FlextTapOracleWmsSettings``.
+    """
     # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
     # settings.TapOracleWms.*; construct via the namespace payload.
     return FlextTapOracleWmsSettings.model_validate({
@@ -47,13 +51,17 @@ def performance_config() -> FlextTapOracleWmsSettings:
             "page_size": 100,
             "verify_ssl": True,
             "enable_rate_limiting": False,
-        }
+        },
     })
 
 
 @pytest.fixture
 def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
-    """Create tap instance for performance testing."""
+    """Create tap instance for performance testing.
+
+    Returns:
+        The resulting ``FlextTapOracleWms``.
+    """
     return FlextTapOracleWms.from_settings(performance_config)
 
 
@@ -61,7 +69,8 @@ def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 class TestsFlextTapOracleWmsExtractionPerformance:
     """Test data extraction performance."""
 
-    def test_catalog_discovery_performance(self, tap: FlextTapOracleWms) -> None:
+    @staticmethod
+    def test_catalog_discovery_performance(tap: FlextTapOracleWms) -> None:
         """Benchmark catalog discovery time."""
         tap.initialize()
         start_time = time.time()
@@ -70,9 +79,11 @@ class TestsFlextTapOracleWmsExtractionPerformance:
         tm.ok(result)
         assert discovery_time < _MAX_DISCOVERY_SECONDS
 
+    @staticmethod
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
     def test_pagination_performance(
-        self, tap: FlextTapOracleWms, page_size: int
+        tap: FlextTapOracleWms,
+        page_size: int,
     ) -> None:
         """Benchmark different page sizes."""
         tap.initialize()
@@ -90,7 +101,8 @@ class TestsFlextTapOracleWmsExtractionPerformance:
                 break
         _ = time.time() - start_time
 
-    def test_concurrent_streams_extraction(self, tap: FlextTapOracleWms) -> None:
+    @staticmethod
+    def test_concurrent_streams_extraction(tap: FlextTapOracleWms) -> None:
         """Test extracting multiple streams concurrently."""
         tap.initialize()
         streams = tap.discover_streams()[:3]
@@ -107,7 +119,8 @@ class TestsFlextTapOracleWmsExtractionPerformance:
             total_records += records
         _ = time.time() - start_time
 
-    def test_memory_usage_during_large_extraction(self, tap: FlextTapOracleWms) -> None:
+    @staticmethod
+    def test_memory_usage_during_large_extraction(tap: FlextTapOracleWms) -> None:
         """Test memory usage during large extractions."""
         process = psutil.Process()
         initial_memory = process.memory_info().rss / 1024 / 1024
@@ -126,15 +139,16 @@ class TestsFlextTapOracleWmsExtractionPerformance:
 
     """Test rate limiting impact on performance."""
 
+    @staticmethod
     def test_rate_limiting_impact(
-        self, performance_config: FlextTapOracleWmsSettings
+        performance_config: FlextTapOracleWmsSettings,
     ) -> None:
         """Compare performance with and without rate limiting."""
         config_no_limit = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
                 **performance_config.TapOracleWms.model_dump(),
                 "enable_rate_limiting": False,
-            }
+            },
         })
         tap_no_limit = FlextTapOracleWms.from_settings(config_no_limit)
         tap_no_limit.initialize()
@@ -143,7 +157,7 @@ class TestsFlextTapOracleWmsExtractionPerformance:
                 **performance_config.TapOracleWms.model_dump(),
                 "enable_rate_limiting": True,
                 "max_requests_per_minute": 60,
-            }
+            },
         })
         tap_with_limit = FlextTapOracleWms.from_settings(config_with_limit)
         tap_with_limit.initialize()

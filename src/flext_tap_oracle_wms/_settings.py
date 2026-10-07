@@ -17,7 +17,7 @@ from flext_core import FlextSettings
 from flext_tap_oracle_wms import m
 
 _ISO_DATE_RE = re.compile(
-    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$",
 )
 
 
@@ -35,7 +35,8 @@ class FlextTapOracleWmsSettings(FlextSettings):
         """Namespaced Oracle WMS tap settings (simple scalars only)."""
 
         base_url: Annotated[
-            str, m.Field(default="", description="Base Oracle WMS API URL")
+            str,
+            m.Field(default="", description="Base Oracle WMS API URL"),
         ]
         username: Annotated[str, m.Field(default="", description="Oracle WMS username")]
         password: Annotated[str, m.Field(default="", description="Oracle WMS password")]
@@ -44,25 +45,31 @@ class FlextTapOracleWmsSettings(FlextSettings):
             m.Field(default="V1", min_length=1, description="Oracle WMS API version"),
         ]
         timeout: Annotated[
-            int, m.Field(default=30, ge=1, le=300, description="Request timeout (s)")
+            int,
+            m.Field(default=30, ge=1, le=300, description="Request timeout (s)"),
         ]
         max_retries: Annotated[int, m.Field(default=3, ge=0, description="Max retries")]
         retry_delay: Annotated[
-            float, m.Field(default=1.0, ge=0, description="Retry delay (s)")
+            float,
+            m.Field(default=1.0, ge=0, description="Retry delay (s)"),
         ]
         verify_ssl: Annotated[bool, m.Field(default=True, description="Verify SSL")]
         ssl_cert_path: Annotated[
-            str | None, m.Field(default=None, description="Path to SSL certificate")
+            str | None,
+            m.Field(default=None, description="Path to SSL certificate"),
         ]
         page_size: Annotated[int, m.Field(default=10, ge=1, description="Page size")]
         discovery_sample_size: Annotated[
-            int, m.Field(default=100, ge=1, description="Schema discovery sample size")
+            int,
+            m.Field(default=100, ge=1, description="Schema discovery sample size"),
         ]
         include_entities: Annotated[
-            list[str], m.Field(default_factory=list, description="Entities to include")
+            list[str],
+            m.Field(default_factory=list, description="Entities to include"),
         ]
         exclude_entities: Annotated[
-            list[str], m.Field(default_factory=list, description="Entities to exclude")
+            list[str],
+            m.Field(default_factory=list, description="Entities to exclude"),
         ]
         start_date: Annotated[
             str | None,
@@ -75,35 +82,41 @@ class FlextTapOracleWmsSettings(FlextSettings):
         column_mappings: Annotated[
             str,
             m.Field(
-                default="{}", description="Column rename mappings per stream (JSON)"
+                default="{}",
+                description="Column rename mappings per stream (JSON)",
             ),
         ]
         ignored_columns: Annotated[
-            list[str], m.Field(default_factory=list, description="Columns to ignore")
+            list[str],
+            m.Field(default_factory=list, description="Columns to ignore"),
         ]
         enable_parallel_extraction: Annotated[
             bool,
             m.Field(default=False, description="Enable parallel stream extraction"),
         ]
         max_parallel_streams: Annotated[
-            int, m.Field(default=5, ge=1, description="Maximum parallel streams")
+            int,
+            m.Field(default=5, ge=1, description="Maximum parallel streams"),
         ]
         enable_rate_limiting: Annotated[
-            bool, m.Field(default=True, description="Enable API rate limiting")
+            bool,
+            m.Field(default=True, description="Enable API rate limiting"),
         ]
         max_requests_per_minute: Annotated[
             int,
             m.Field(default=60, ge=1, description="Maximum API requests per minute"),
         ]
         enable_schema_flattening: Annotated[
-            bool, m.Field(default=True, description="Enable schema flattening")
+            bool,
+            m.Field(default=True, description="Enable schema flattening"),
         ]
         max_flattening_depth: Annotated[
             int,
             m.Field(default=10, ge=1, description="Maximum schema flattening depth"),
         ]
         user_agent: Annotated[
-            str | None, m.Field(default=None, description="Custom User-Agent header")
+            str | None,
+            m.Field(default=None, description="Custom User-Agent header"),
         ]
         additional_headers: Annotated[
             dict[str, str],
@@ -111,13 +124,16 @@ class FlextTapOracleWmsSettings(FlextSettings):
         ]
         log_level: Annotated[str, m.Field(default="INFO", description="Log level")]
         enable_request_logging: Annotated[
-            bool, m.Field(default=False, description="Enable HTTP request logging")
+            bool,
+            m.Field(default=False, description="Enable HTTP request logging"),
         ]
         validate_config: Annotated[
-            bool, m.Field(default=True, description="Enable configuration validation")
+            bool,
+            m.Field(default=True, description="Enable configuration validation"),
         ]
         validate_schemas: Annotated[
-            bool, m.Field(default=True, description="Enable schema validation")
+            bool,
+            m.Field(default=True, description="Enable schema validation"),
         ]
 
         @m.field_validator("include_entities", "exclude_entities")

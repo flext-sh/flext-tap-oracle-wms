@@ -25,8 +25,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import t, u
-
-from .._tap_parts.helpers import OracleWmsTapTestHelpersMixin
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 if TYPE_CHECKING:
     from tests import m
@@ -43,7 +42,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
 
     def test_complete_discovery_to_catalog(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test complete discovery process generating valid Singer catalog."""
         tap_instance = FlextTapOracleWms.from_settings(real_config)
@@ -59,7 +59,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
             assert props, "Empty schema properties"
             metadata = stream.metadata
             table_metadata = next(
-                (entry for entry in metadata if entry.breadcrumb == ()), None
+                (entry for entry in metadata if entry.breadcrumb == ()),
+                None,
             )
             assert table_metadata is not None
             meta = table_metadata.metadata
@@ -72,11 +73,13 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
                 has=meta["replication-method"],
             )
         logger.info(
-            "✅ Complete discovery validation passed for %d streams", len(streams)
+            "✅ Complete discovery validation passed for %d streams",
+            len(streams),
         )
 
     def test_catalog_serialization_and_selection(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test catalog serialization and stream selection."""
         tap_instance = FlextTapOracleWms.from_settings(real_config)
@@ -92,7 +95,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         logger.info("✅ Catalog serialization and selection working")
 
     def test_single_stream_extraction_sample(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test single stream data extraction with real data."""
         tap_instance = FlextTapOracleWms.from_settings(real_config)
@@ -104,7 +108,9 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         stream_id = test_stream.tap_stream_id
         logger.info("Testing extraction from: %s", stream_id)
         stream = FlextTapOracleWmsStream(
-            tap=tap_instance, name=stream_id, schema=self._schema(test_stream)
+            tap=tap_instance,
+            name=stream_id,
+            schema=self._schema(test_stream),
         )
         tm.that(stream.name, eq=stream_id)
         tm.that(stream.url_base, none=False)
@@ -114,7 +120,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         logger.info("✅ Single stream extraction setup successful")
 
     def test_incremental_extraction_workflow(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test incremental extraction workflow."""
         tap_instance = FlextTapOracleWms.from_settings(real_config)
@@ -152,7 +159,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         logger.info("✅ Incremental extraction workflow validated for %s", stream.name)
 
     def test_full_table_extraction_workflow(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test full table extraction workflow."""
         tap_instance = FlextTapOracleWms.from_settings(real_config)
@@ -185,7 +193,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         logger.info("✅ Full table extraction workflow validated for %s", stream.name)
 
     def test_data_quality_validation(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test data quality and schema validation."""
         tap_instance = FlextTapOracleWms.from_settings(real_config)
@@ -215,7 +224,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
             if primary_keys:
                 quality_report["primary_keys_defined"] += 1
             table_metadata = next(
-                (entry for entry in metadata if entry.breadcrumb == ()), None
+                (entry for entry in metadata if entry.breadcrumb == ()),
+                None,
             )
             if table_metadata:
                 tm_meta = table_metadata.metadata
@@ -235,10 +245,12 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         logger.info("  Streams tested: %d", quality_report["streams_tested"])
         logger.info("  Valid schemas: %d", quality_report["schemas_valid"])
         logger.info(
-            "  Primary keys defined: %d", quality_report["primary_keys_defined"]
+            "  Primary keys defined: %d",
+            quality_report["primary_keys_defined"],
         )
         logger.info(
-            "  Replication keys defined: %d", quality_report["replication_keys_defined"]
+            "  Replication keys defined: %d",
+            quality_report["replication_keys_defined"],
         )
         logger.info(
             "  Nullable fields documented: %d",
@@ -247,22 +259,26 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         assert quality_report["streams_tested"] > 0, "No streams tested"
         assert quality_report["schemas_valid"] > 0, "No valid schemas found"
 
-    def test_pagination_end_to_end(self) -> None:
+    @staticmethod
+    def test_pagination_end_to_end() -> None:
         """E2E: Test pagination handling through multiple pages."""
         pages_tested: list[str] = []
         logger.info("✅ Pagination flow tested: %s", pages_tested)
 
     def test_error_recovery_and_resilience(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test error recovery and system resilience."""
         self._assert_invalid_tap_recovery(
-            real_config, {"password": f"{real_config.TapOracleWms.password}-wrong"}
+            real_config,
+            {"password": f"{real_config.TapOracleWms.password}-wrong"},
         )
         logger.info("✅ Error recovery tested")
 
     def test_complete_singer_protocol_compliance(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test complete Singer protocol compliance."""
         tap_instance = FlextTapOracleWms.from_settings(real_config)
@@ -278,7 +294,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
                 tm.that(meta.breadcrumb, is_=list)
                 tm.that(meta.metadata, is_=dict)
             table_meta = next(
-                (meta for meta in metadata if meta.breadcrumb == ()), None
+                (meta for meta in metadata if meta.breadcrumb == ()),
+                None,
             )
             assert table_meta is not None
             table_metadata = table_meta.metadata
@@ -298,7 +315,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         logger.info("✅ Complete Singer protocol compliance verified")
 
     def test_performance_and_scalability_indicators(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """E2E: Test performance indicators and scalability."""
         start_time = time.time()
@@ -336,7 +354,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         )
 
     def test_final_e2e_integration_summary(
-        self, real_config: FlextTapOracleWmsSettings
+        self,
+        real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """FINAL E2E: Comprehensive integration summary."""
         discovery_successful: bool = False
@@ -360,7 +379,8 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
             for stream in catalog_streams:
                 metadata = stream.metadata
                 table_meta = next(
-                    (entry for entry in metadata if entry.breadcrumb == ()), None
+                    (entry for entry in metadata if entry.breadcrumb == ()),
+                    None,
                 )
                 if table_meta:
                     tm_meta = table_meta.metadata

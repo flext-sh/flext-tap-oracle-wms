@@ -16,8 +16,7 @@ from flext_tests import tm
 
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
 from tests import u
-
-from .._tap_parts.helpers import OracleWmsTapTestHelpersMixin
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms.tap import FlextTapOracleWms
@@ -31,7 +30,8 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
     """Test streams functionality."""
 
     def test_stream_creation_with_real_wms_data(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test stream creation with real Oracle WMS data."""
         catalog = self._catalog(real_tap_instance)
@@ -40,7 +40,9 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         stream_config = streams[0]
         stream_id = stream_config.tap_stream_id
         stream = FlextTapOracleWmsStream(
-            tap=real_tap_instance, name=stream_id, schema=self._schema(stream_config)
+            tap=real_tap_instance,
+            name=stream_id,
+            schema=self._schema(stream_config),
         )
         tm.that(stream.name, eq=stream_id)
         assert stream.tap is real_tap_instance
@@ -63,7 +65,8 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         logger.info(f"✅ Parameters: {list(url_params.keys())}")
 
     def test_stream_authentication_with_credentials(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test stream authentication with real credentials."""
         stream = self._first_stream(real_tap_instance)
@@ -74,7 +77,8 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         logger.info("Authentication configured correctly")
 
     def test_http_headers_generation(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test HTTP headers generation."""
         stream = self._first_stream(real_tap_instance)
@@ -92,7 +96,8 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         logger.info(f"✅ HTTP headers configured: {list(headers.keys())}")
 
     def test_replication_key_detection(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test automatic replication key detection."""
         catalog = self._catalog(real_tap_instance)
@@ -115,7 +120,8 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         assert total_streams > 0, "No replication methods configured"
 
     def test_timestamp_replication_key_detection(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test timestamp field detection for replication keys."""
         catalog = self._catalog(real_tap_instance)
@@ -138,7 +144,8 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
                 )
 
     def test_pagination_parameter_generation(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test pagination parameter generation."""
         catalog = self._catalog(real_tap_instance)
@@ -165,7 +172,8 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         logger.info("✅ Pagination token handling working")
 
     def test_incremental_filtering_with_timestamps(
-        self, real_tap_instance: FlextTapOracleWms
+        self,
+        real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test incremental filtering with timestamps."""
         catalog = self._catalog(real_tap_instance)

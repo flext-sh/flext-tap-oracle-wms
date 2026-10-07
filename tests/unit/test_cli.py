@@ -19,6 +19,7 @@ from flext_tap_oracle_wms import main
 class TestsFlextTapOracleWmsCli:
     """Test CLI entry-point contract."""
 
-    def test_main_is_callable_entry_point(self) -> None:
+    @staticmethod
+    def test_main_is_callable_entry_point() -> None:
         """Main remains a callable project entry point."""
         tm.that(callable(main), eq=True)

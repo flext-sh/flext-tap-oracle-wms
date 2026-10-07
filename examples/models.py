@@ -1,4 +1,9 @@
-"""Domain models for flexttaporaclewms."""
+"""Domain models for flexttaporaclewms.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+examples/models
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 

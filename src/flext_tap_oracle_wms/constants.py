@@ -12,14 +12,16 @@ from typing import TYPE_CHECKING
 from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
 
-from ._constants.values import FlextTapOracleWmsConstantsValues
+from flext_tap_oracle_wms._constants.values import FlextTapOracleWmsConstantsValues
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms import t
 
 
 class FlextTapOracleWmsConstants(
-    FlextMeltanoConstants, FlextOracleWmsConstants, FlextTapOracleWmsConstantsValues
+    FlextMeltanoConstants,
+    FlextOracleWmsConstants,
+    FlextTapOracleWmsConstantsValues,
 ):
     """Oracle WMS tap extraction-specific constants following flext-core patterns.
 
