@@ -1,7 +1,8 @@
 """Complete End-to-End tests for Oracle WMS tap.
 
 HONEST E2E TESTING: Tests complete data extraction pipeline with REAL Oracle WMS.
-Validates all Singer SDK functionality including discovery, extraction, and data quality.
+Validates all Singer SDK functionality: discovery, extraction, and data
+quality.
 
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -192,6 +193,64 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
             )
         logger.info("✅ Full table extraction workflow validated for %s", stream.name)
 
+    @staticmethod
+    def _count_primary_keys(metadata: object) -> int:
+        """Count automatic-inclusion leaf fields (Singer primary keys).
+
+        Returns:
+            The resulting ``int``.
+        """
+        primary_keys = 0
+        for meta in metadata:
+            breadcrumb_raw = meta.breadcrumb
+            if len(breadcrumb_raw) == 1:
+                field_meta = meta.metadata
+                if field_meta.get("inclusion") == "automatic":
+                    primary_keys += 1
+        return primary_keys
+
+    @staticmethod
+    def _count_nullable_properties(properties_raw: object) -> int:
+        """Count schema properties declaring a null type variant.
+
+        Returns:
+            The resulting ``int``.
+        """
+        nullable_documented = 0
+        if isinstance(properties_raw, Mapping):
+            properties: t.JsonMapping = properties_raw
+            for prop_def in properties.values():
+                if isinstance(prop_def, Mapping):
+                    type_raw = prop_def.get("type")
+                    if isinstance(type_raw, list) and "null" in type_raw:
+                        nullable_documented += 1
+        return nullable_documented
+
+    @classmethod
+    def _assess_stream_quality(
+        cls,
+        stream_config: object,
+        quality_report: dict[str, int],
+    ) -> None:
+        """Fold one stream's schema/metadata quality into the report."""
+        schema = stream_config.schema_definition
+        properties_raw = schema.get("properties")
+        if properties_raw:
+            quality_report["schemas_valid"] += 1
+        metadata = stream_config.metadata
+        if cls._count_primary_keys(metadata):
+            quality_report["primary_keys_defined"] += 1
+        table_metadata = next(
+            (entry for entry in metadata if entry.breadcrumb == ()),
+            None,
+        )
+        if table_metadata:
+            tm_meta = table_metadata.metadata
+            if tm_meta.get("replication-key"):
+                quality_report["replication_keys_defined"] += 1
+        if cls._count_nullable_properties(properties_raw) > 0:
+            quality_report["nullable_fields_documented"] += 1
+
     def test_data_quality_validation(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -209,38 +268,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         }
         for stream_config in streams[:3]:
             quality_report["streams_tested"] += 1
-            schema = stream_config.schema_definition
-            properties_raw = schema.get("properties")
-            if properties_raw:
-                quality_report["schemas_valid"] += 1
-            metadata = stream_config.metadata
-            primary_keys: list[str] = []
-            for meta in metadata:
-                breadcrumb_raw = meta.breadcrumb
-                if len(breadcrumb_raw) == 1:
-                    field_meta = meta.metadata
-                    if field_meta.get("inclusion") == "automatic":
-                        primary_keys.append(breadcrumb_raw[0])
-            if primary_keys:
-                quality_report["primary_keys_defined"] += 1
-            table_metadata = next(
-                (entry for entry in metadata if entry.breadcrumb == ()),
-                None,
-            )
-            if table_metadata:
-                tm_meta = table_metadata.metadata
-                if tm_meta.get("replication-key"):
-                    quality_report["replication_keys_defined"] += 1
-            nullable_documented = 0
-            if isinstance(properties_raw, Mapping):
-                properties: t.JsonMapping = properties_raw
-                for prop_def in properties.values():
-                    if isinstance(prop_def, Mapping):
-                        type_raw = prop_def.get("type")
-                        if isinstance(type_raw, list) and "null" in type_raw:
-                            nullable_documented += 1
-            if nullable_documented > 0:
-                quality_report["nullable_fields_documented"] += 1
+            self._assess_stream_quality(stream_config, quality_report)
         logger.info("📊 Data Quality Report:")
         logger.info("  Streams tested: %d", quality_report["streams_tested"])
         logger.info("  Valid schemas: %d", quality_report["schemas_valid"])
@@ -353,61 +381,79 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
             "Discovery rate too slow"
         )
 
+    @staticmethod
+    def _fold_stream_stats(
+        stream: object,
+        incremental: int,
+        full_table: int,
+        valid_schemas: int,
+    ) -> tuple[int, int, int]:
+        """Fold one stream's replication/schema stats into running counters.
+
+        Returns:
+            The resulting ``(incremental, full_table, valid_schemas)`` tuple.
+        """
+        metadata = stream.metadata
+        table_meta = next(
+            (entry for entry in metadata if entry.breadcrumb == ()),
+            None,
+        )
+        if table_meta:
+            tm_meta = table_meta.metadata
+            replication_method = tm_meta.get("replication-method")
+            if replication_method == "INCREMENTAL":
+                incremental += 1
+            elif (
+                replication_method
+                == meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value
+            ):
+                full_table += 1
+        schema = stream.schema_definition
+        if schema.get("properties"):
+            valid_schemas += 1
+        return incremental, full_table, valid_schemas
+
+    @classmethod
+    def _collect_summary(
+        cls,
+        real_config: FlextTapOracleWmsSettings,
+    ) -> tuple[bool, int, int, int, int, bool, bool]:
+        """Run discovery and fold stream statistics into a summary tuple.
+
+        Returns:
+            The resulting summary tuple.
+        """
+        start_time = time.time()
+        tap_instance = FlextTapOracleWms.from_settings(real_config)
+        catalog = cls._catalog(tap_instance)
+        discovered = len(catalog.streams)
+        incremental, full_table, valid_schemas = 0, 0, 0
+        for stream in catalog.streams:
+            incremental, full_table, valid_schemas = cls._fold_stream_stats(
+                stream,
+                incremental,
+                full_table,
+                valid_schemas,
+            )
+        compliant = discovered > 0 and valid_schemas > 0
+        discovery_time = time.time() - start_time
+        performant = discovery_time < _MAX_DISCOVERY_SECONDS and discovered > 0
+        return (
+            True,
+            discovered,
+            incremental,
+            full_table,
+            valid_schemas,
+            compliant,
+            performant,
+        )
+
     def test_final_e2e_integration_summary(
         self,
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
         """FINAL E2E: Comprehensive integration summary."""
-        discovery_successful: bool = False
-        streams_discovered: int = 0
-        incremental_streams: int = 0
-        full_table_streams: int = 0
-        schemas_valid: int = 0
-        singer_compliant: bool = False
-        performance_acceptable: bool = False
         errors: list[str] = []
-
-        def _collect_summary() -> tuple[bool, int, int, int, int, bool, bool]:
-            start_time = time.time()
-            tap_instance = FlextTapOracleWms.from_settings(real_config)
-            catalog = self._catalog(tap_instance)
-            catalog_streams = catalog.streams
-            discovered = len(catalog_streams)
-            incremental = 0
-            full_table = 0
-            valid_schemas = 0
-            for stream in catalog_streams:
-                metadata = stream.metadata
-                table_meta = next(
-                    (entry for entry in metadata if entry.breadcrumb == ()),
-                    None,
-                )
-                if table_meta:
-                    tm_meta = table_meta.metadata
-                    replication_method = tm_meta.get("replication-method")
-                    if replication_method == "INCREMENTAL":
-                        incremental += 1
-                    elif (
-                        replication_method
-                        == meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value
-                    ):
-                        full_table += 1
-                schema = stream.schema_definition
-                if schema.get("properties"):
-                    valid_schemas += 1
-            compliant = discovered > 0 and valid_schemas > 0
-            discovery_time = time.time() - start_time
-            performant = discovery_time < _MAX_DISCOVERY_SECONDS and discovered > 0
-            return (
-                True,
-                discovered,
-                incremental,
-                full_table,
-                valid_schemas,
-                compliant,
-                performant,
-            )
-
         try:
             (
                 discovery_successful,
@@ -417,7 +463,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
                 schemas_valid,
                 singer_compliant,
                 performance_acceptable,
-            ) = _collect_summary()
+            ) = self._collect_summary(real_config)
         except self._TAP_RECOVERABLE_EXCEPTIONS as e:
             errors.append(str(e))
         logger.info("🎯 FINAL E2E INTEGRATION SUMMARY:")
