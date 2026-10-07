@@ -20,8 +20,7 @@ from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from tests import c, t
-
-from .._tap_parts.helpers import OracleWmsTapTestHelpersMixin
+from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
 UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "tap-wms-unit-" + "3k7q"
 
@@ -46,7 +45,8 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
         tm.that(namespace.verify_ssl, eq=defaults.verify_ssl)
         tm.that(namespace.enable_rate_limiting, eq=defaults.enable_rate_limiting)
 
-    def test_full_config(self) -> None:
+    @staticmethod
+    def test_full_config() -> None:
         """Test creating settings with all fields."""
         settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
@@ -74,7 +74,7 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
                 "max_parallel_streams": 5,
                 "validate_config": False,
                 "validate_schemas": False,
-            }
+            },
         })
         namespace = settings.TapOracleWms
         namespace.include_entities = ["inventory", "orders"]
@@ -99,7 +99,8 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
         config_bare = self._tap_settings({"base_url": "wms.example.com"})
         tm.that(config_bare.TapOracleWms.base_url, eq="wms.example.com")
 
-    def test_entity_list_validation(self) -> None:
+    @staticmethod
+    def test_entity_list_validation() -> None:
         """Test entity list validation rejects duplicates at construction."""
         with pytest.raises(c.ValidationError) as exc_info:
             FlextTapOracleWmsSettings.model_validate({
@@ -108,7 +109,7 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
                     "username": "user",
                     "password": "pass",
                     "include_entities": ["inventory", "orders", "inventory"],
-                }
+                },
             })
         tm.that(str(exc_info.value), has="contains duplicates")
 
@@ -123,7 +124,8 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
             self._tap_settings({"start_date": "01/01/2024"})
         tm.that(str(exc_info.value), has="Invalid date format")
 
-    def test_numeric_validation(self) -> None:
+    @staticmethod
+    def test_numeric_validation() -> None:
         """Test numeric field validation."""
         with pytest.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
@@ -132,7 +134,7 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
                     "username": "user",
                     "password": "pass",
                     "page_size": 0,
-                }
+                },
             })
         with pytest.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
@@ -141,10 +143,11 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
                     "username": "user",
                     "password": "pass",
                     "timeout": 400,
-                }
+                },
             })
 
-    def test_model_dump_for_client_payload(self) -> None:
+    @staticmethod
+    def test_model_dump_for_client_payload() -> None:
         """Test generating a serializable client payload from settings."""
         settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
@@ -154,7 +157,7 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
                 "api_version": "v11",
                 "timeout": 45,
                 "user_agent": "TestAgent/1.0",
-            }
+            },
         })
         client_config = settings.TapOracleWms.model_dump(mode="json")
         tm.that(str(client_config["base_url"]), has="wms.example.com")
@@ -165,7 +168,8 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
         tm.that(client_config["timeout"], eq=45)
         tm.that(client_config["user_agent"], eq="TestAgent/1.0")
 
-    def test_stream_related_fields_available(self) -> None:
+    @staticmethod
+    def test_stream_related_fields_available() -> None:
         """Test stream-related configuration fields are preserved in model."""
         settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
@@ -174,7 +178,7 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
                 "password": "pass",
                 "page_size": 200,
                 "start_date": "2024-01-01T00:00:00Z",
-            }
+            },
         })
         namespace = settings.TapOracleWms
         # column_mappings is a JSON-encoded string per ADR-005 simple-scalar rule
@@ -187,19 +191,20 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
         tm.that(payload["page_size"], eq=200)
         tm.that(payload["start_date"], eq="2024-01-01T00:00:00Z")
         decoded_mappings = t.json_dict_adapter().validate_json(
-            payload["column_mappings"]
+            payload["column_mappings"],
         )
         tm.that(decoded_mappings["inventory"], eq={"old_name": "new_name"})
         tm.that(payload["ignored_columns"], eq=["internal_id"])
 
-    def test_config_mutability_with_assignment(self) -> None:
+    @staticmethod
+    def test_config_mutability_with_assignment() -> None:
         """Test that namespaced settings fields are mutable via assignment."""
         settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
                 "password": "pass",
-            }
+            },
         })
         settings.TapOracleWms.base_url = "https://new.example.com"
         tm.that(settings.TapOracleWms.base_url, eq="https://new.example.com")
@@ -207,6 +212,6 @@ class TestsFlextTapOracleWmsConfig(OracleWmsTapTestHelpersMixin):
     def test_password_hiding(self) -> None:
         """Test password field is stored (str | t.SecretStr union)."""
         settings = self._tap_settings({
-            "password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide"
+            "password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide",
         })
         tm.that(self._password_value(settings), eq=f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide")

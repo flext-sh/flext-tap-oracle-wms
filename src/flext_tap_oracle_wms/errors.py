@@ -1,4 +1,9 @@
-"""Domain exceptions for the Oracle WMS tap package."""
+"""Domain exceptions for the Oracle WMS tap package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+src/flext_tap_oracle_wms/errors
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 

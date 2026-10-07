@@ -1,6 +1,10 @@
 """Basic usage example for FLEXT Tap Oracle WMS.
 
 Shows how to use the tap with flext-oracle-wms integration.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+examples/01_basic_usage
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -18,6 +22,9 @@ def main() -> int:
     Returns:
       int: Description.
 
+    Raises:
+        FlextTapOracleWmsError: If ``validation_result.failure``; or if
+            ``catalog_result.failure``.
     """
     settings = FlextTapOracleWmsSettings(
         TapOracleWms={
@@ -32,7 +39,7 @@ def main() -> int:
             "verify_ssl": True,
             "include_entities": ["inventory", "locations", "orders"],
             "enable_request_logging": True,
-        }
+        },
     )
     # NOTE (multi-agent): mro-u3eu — singer_sdk.Tap.__init__ takes the FLAT
     # Singer config via `config=`; pass the namespaced settings payload.
@@ -40,7 +47,7 @@ def main() -> int:
     validation_result = tap.validate_configuration()
     if validation_result.failure:
         raise FlextTapOracleWmsError(
-            validation_result.error or "configuration validation failed"
+            validation_result.error or "configuration validation failed",
         )
     catalog_result = tap.discovercatalog_typed()
     if catalog_result.failure:

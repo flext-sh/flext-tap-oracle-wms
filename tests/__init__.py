@@ -1,37 +1,29 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Tests package."""
+"""Tests package.
+
+Copyright (c) 2026 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import build_lazy_import_map, install_lazy_exports
+from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_oracle_wms import e
-    from flext_tests import api, d, h, r, td, tf, tk, tm, tv, x
+    from flext_tests import api, d, h, r, td, tf, tk, tm, x
 
-    from . import e2e, integration, performance, unit
-    from .base import (
-        TestsFlextTapOracleWmsServiceBase,
-        TestsFlextTapOracleWmsServiceBase as s,
-    )
-    from .constants import (
-        TestsFlextTapOracleWmsConstants,
-        TestsFlextTapOracleWmsConstants as c,
-    )
-    from .models import TestsFlextTapOracleWmsModels, TestsFlextTapOracleWmsModels as m
-    from .protocols import (
-        TestsFlextTapOracleWmsProtocols,
-        TestsFlextTapOracleWmsProtocols as p,
-    )
-    from .settings import TestsFlextTapOracleWmsSettings
-    from .typings import TestsFlextTapOracleWmsTypes, TestsFlextTapOracleWmsTypes as t
-    from .utilities import (
-        TestsFlextTapOracleWmsUtilities,
-        TestsFlextTapOracleWmsUtilities as u,
-    )
+    from tests import e2e, integration, performance, unit
+    from tests.base import TestsFlextTapOracleWmsServiceBase, s
+    from tests.constants import TestsFlextTapOracleWmsConstants, c
+    from tests.models import TestsFlextTapOracleWmsModels, m
+    from tests.protocols import TestsFlextTapOracleWmsProtocols, p
+    from tests.settings import TestsFlextTapOracleWmsSettings
+    from tests.typings import TestsFlextTapOracleWmsTypes, t
+    from tests.utilities import TestsFlextTapOracleWmsUtilities, u
 
 
 __all__: tuple[str, ...] = (
@@ -59,32 +51,42 @@ __all__: tuple[str, ...] = (
     "tf",
     "tk",
     "tm",
-    "tv",
     "u",
     "unit",
     "x",
 )
 
-_LAZY_IMPORTS = MappingProxyType(
-    build_lazy_import_map(
-        MappingProxyType({
-            ".base": ("TestsFlextTapOracleWmsServiceBase", "s"),
-            ".constants": ("TestsFlextTapOracleWmsConstants", "c"),
-            ".e2e": ("e2e",),
-            ".integration": ("integration",),
-            ".models": ("TestsFlextTapOracleWmsModels", "m"),
-            ".performance": ("performance",),
-            ".protocols": ("TestsFlextTapOracleWmsProtocols", "p"),
-            ".settings": ("TestsFlextTapOracleWmsSettings",),
-            ".typings": ("TestsFlextTapOracleWmsTypes", "t"),
-            ".unit": ("unit",),
-            ".utilities": ("TestsFlextTapOracleWmsUtilities", "u"),
-            "flext_oracle_wms": ("e",),
-            "flext_tests": ("api", "d", "h", "r", "td", "tf", "tk", "tm", "tv", "x"),
-        }),
-        alias_groups=MappingProxyType({}),
-        sort_keys=False,
-    )
+install_lazy_exports(
+    __name__,
+    globals(),
+    MappingProxyType({
+        "TestsFlextTapOracleWmsConstants": ".constants",
+        "TestsFlextTapOracleWmsModels": ".models",
+        "TestsFlextTapOracleWmsProtocols": ".protocols",
+        "TestsFlextTapOracleWmsServiceBase": ".base",
+        "TestsFlextTapOracleWmsSettings": ".settings",
+        "TestsFlextTapOracleWmsTypes": ".typings",
+        "TestsFlextTapOracleWmsUtilities": ".utilities",
+        "api": "flext_tests",
+        "c": ".constants",
+        "d": "flext_tests",
+        "e": "flext_oracle_wms",
+        "e2e": ".e2e",
+        "h": "flext_tests",
+        "integration": ".integration",
+        "m": ".models",
+        "p": ".protocols",
+        "performance": ".performance",
+        "r": "flext_tests",
+        "s": ".base",
+        "t": ".typings",
+        "td": "flext_tests",
+        "tf": "flext_tests",
+        "tk": "flext_tests",
+        "tm": "flext_tests",
+        "u": ".utilities",
+        "unit": ".unit",
+        "x": "flext_tests",
+    }),
+    public_exports=__all__,
 )
-
-install_lazy_exports(__name__, globals(), _LAZY_IMPORTS, public_exports=__all__)
