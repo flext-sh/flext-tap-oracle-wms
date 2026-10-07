@@ -73,7 +73,8 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @property
     def settings(self) -> t.JsonMapping:
         """Expose tap configuration through legacy settings contract."""
-        # NOTE (multi-agent): mro-rn88 — read the Singer tap config (self.config), not an
+        # NOTE (multi-agent): mro-rn88 — read the Singer tap config (self.config),
+        # not an
         # undefined bare `config` (settings-fallout left a self-referential assignment).
         return t.json_dict_adapter().validate_python(self.config)
 
@@ -250,7 +251,8 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """
         if self._wms_client is None:
             password: str | t.SecretStr = self.flext_config.TapOracleWms.password
-            # NOTE (multi-agent): mro-rn88 — both settings models namespace project fields;
+            # NOTE (multi-agent): mro-rn88 — both settings models namespace project
+            # fields;
             # read via TapOracleWms.* and build the upstream config under OracleWms.*.
             wms_settings = FlextOracleWmsSettings.model_validate({
                 "OracleWms": {
@@ -355,7 +357,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         if message:
             return r[bool].fail("Tap does not support message execution")
         self.sync_all()
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def get_implementation_metrics(self) -> p.Result[t.JsonValue]:
         """Return the basic runtime metrics for observability."""
@@ -395,7 +397,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """
         try:
             _ = self.flext_config
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         except (
             ValueError,
             TypeError,

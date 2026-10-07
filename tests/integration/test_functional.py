@@ -67,7 +67,11 @@ class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
             streams = catalog.streams
             assert streams, "No streams discovered"
             entity_names = [stream.tap_stream_id for stream in streams]
-            logger.info(f"✅ Discovered {len(entity_names)} entities: {entity_names}")
+            logger.info(
+                "✅ Discovered %s entities: %s",
+                len(entity_names),
+                entity_names,
+            )
             essential_entities = ["allocation"]
             for entity in essential_entities:
                 found_entities = [
@@ -232,10 +236,14 @@ class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
                 elif replication_method == "FULL_TABLE":
                     streams_full_table.append(stream.tap_stream_id)
         logger.info(
-            f"✅ Incremental streams ({len(streams_with_replication)}): {streams_with_replication}",
+            "✅ Incremental streams (%s): %s",
+            len(streams_with_replication),
+            streams_with_replication,
         )
         logger.info(
-            f"✅ Full table streams ({len(streams_full_table)}): {streams_full_table}",
+            "✅ Full table streams (%s): %s",
+            len(streams_full_table),
+            streams_full_table,
         )
         assert streams_with_replication or streams_full_table, (
             "No replication methods detected"
@@ -267,7 +275,7 @@ class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
             ordering = url_params["ordering"]
             tm.that(ordering, is_=str)
             logger.info("✅ Ordering configured: %s", ordering)
-        logger.info(f"✅ URL parameters generated: {list(url_params.keys())}")
+        logger.info("✅ URL parameters generated: %s", list(url_params.keys()))
 
     @pytest.mark.functional
     def test_error_handling_and_validation(

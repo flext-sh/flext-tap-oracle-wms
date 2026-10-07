@@ -162,6 +162,9 @@ class FlextTapOracleWmsSettings(FlextSettings):
 
 
 settings: FlextTapOracleWmsSettings = FlextTapOracleWmsSettings.fetch_global()
-"""Pre-instantiated project settings singleton — ``from flext_tap_oracle_wms import settings``."""
+"""Pre-instantiated project settings singleton.
+
+Exposed as ``from flext_tap_oracle_wms import settings``.
+"""
 
 __all__: list[str] = ["FlextTapOracleWmsSettings", "settings"]

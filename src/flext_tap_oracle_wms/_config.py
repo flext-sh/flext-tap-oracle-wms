@@ -1,4 +1,6 @@
-"""FlextTapOracleWmsConfig — frozen config singleton for flext-tap-oracle-wms (ADR-005 §7).
+"""FlextTapOracleWmsConfig — frozen config singleton for flext-tap-oracle-wms.
+
+See ADR-005 §7.
 
 Model-less: business rules live in ``config/*.yaml`` under the ``TapOracleWms:`` key and
 are exposed through the open ``config.TapOracleWms`` namespace (``extra="allow"``), with
@@ -47,12 +49,17 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
     TapOracleWms: Annotated[
         _TapOracleWmsNamespace,
         m.Field(
-            description="Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``.",
+            description=(
+                "Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``."
+            ),
         ),
     ] = _TapOracleWmsNamespace()
 
 
 config: FlextTapOracleWmsConfig = FlextTapOracleWmsConfig.fetch_global()
-"""Pre-instantiated frozen config singleton — ``from flext_tap_oracle_wms import config``."""
+"""Pre-instantiated frozen config singleton.
+
+Exposed as ``from flext_tap_oracle_wms import config``.
+"""
 
 __all__: list[str] = ["FlextTapOracleWmsConfig", "config"]

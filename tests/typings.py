@@ -15,12 +15,14 @@ from flext_tap_oracle_wms import FlextTapOracleWmsTypes
 class TestsFlextTapOracleWmsTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
     """Types for flext-tap-oracle-wms tests - uses composition with TestsFlextTypes.
 
-    Architecture: Uses composition (not inheritance) with TestsFlextTypes and FlextTapOracleWmsTypes
+    Architecture: Uses composition (not inheritance) with TestsFlextTypes
+    and FlextTapOracleWmsTypes
     for flext-tap-oracle-wms-specific type definitions.
 
     Access patterns:
     - TestsFlextTapOracleWmsTypes.Tests.* = flext_tests test types (via composition)
-    - TestsFlextTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms-specific test types
+    - TestsFlextTapOracleWmsTypes.TapOracleWms.* = flext-tap-oracle-wms
+      specific test types
     - TestsFlextTapOracleWmsTypes.* = TestsFlextTypes types (via composition)
 
     Rules:
