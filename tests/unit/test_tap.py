@@ -76,9 +76,9 @@ class TestsFlextTapOracleWmsTap:
         tm.that(value, lacks="password")
 
     @staticmethod
-    def test_get_implementation_name_and_version(
+    def test_resolve_implementation_name_and_version(
         tap_instance: FlextTapOracleWms,
     ) -> None:
         """Implementation metadata methods return stable, non-empty values."""
-        tm.that(tap_instance.get_implementation_name(), eq="FLEXT Oracle WMS Tap")
-        tm.that(tap_instance.get_implementation_version(), ne="")
+        tm.that(tap_instance.resolve_implementation_name(), eq="FLEXT Oracle WMS Tap")
+        tm.that(tap_instance.resolve_implementation_version(), ne="")

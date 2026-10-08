@@ -11,8 +11,7 @@ from __future__ import annotations
 
 import os
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.errors import FlextTapOracleWmsError
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings, e
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
@@ -23,8 +22,8 @@ def main() -> int:
       int: Description.
 
     Raises:
-        FlextTapOracleWmsError: If ``validation_result.failure``; or if
-            ``catalog_result.failure``.
+        e.ConfigurationError: If ``validation_result.failure``.
+        e.OperationError: If ``catalog_result.failure``.
     """
     settings = FlextTapOracleWmsSettings(
         TapOracleWms={
@@ -46,16 +45,16 @@ def main() -> int:
     tap = FlextTapOracleWms(config=settings.TapOracleWms.model_dump(mode="json"))
     validation_result = tap.validate_configuration()
     if validation_result.failure:
-        raise FlextTapOracleWmsError(
+        raise e.ConfigurationError(
             validation_result.error or "configuration validation failed",
         )
     catalog_result = tap.discovercatalog_typed()
     if catalog_result.failure:
-        raise FlextTapOracleWmsError(catalog_result.error or "catalog discovery failed")
+        raise e.OperationError(catalog_result.error or "catalog discovery failed")
     catalog = catalog_result.value
     for stream_entry in catalog.streams:
         _ = stream_entry.schema_definition
-    tap.get_implementation_metrics()
+    tap.compute_implementation_metrics()
     return 0
 
 

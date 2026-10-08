@@ -13,10 +13,9 @@ from typing import ClassVar, override
 
 from flext_oracle_wms import FlextOracleWmsSettings, FlextOracleWmsUtilities
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings, c, m, p, r, t, u
+from flext_tap_oracle_wms import FlextTapOracleWmsSettings, c, e, m, p, r, t, u
 from flext_tap_oracle_wms.__version__ import __version__
-from flext_tap_oracle_wms.errors import FlextTapOracleWmsConfigurationError
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 
 
 class FlextTapOracleWms(m.Meltano.SingerTapBase):
@@ -83,7 +82,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """A validated Singer catalog mapping with recursive contracts.
 
         Raises:
-            FlextTapOracleWmsConfigurationError: If Invalid catalog_dict format.
+            e.ConfigurationError: If Invalid catalog_dict format.
         """
         raw_catalog_dict: t.JsonMapping = getattr(super(), "catalog_dict", {})
         try:
@@ -92,7 +91,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             )
         except c.ValidationError as exc:
             msg = f"Invalid catalog_dict format: {exc}"
-            raise FlextTapOracleWmsConfigurationError(msg) from exc
+            raise e.ConfigurationError(msg) from exc
         return self._to_typed_catalog(
             t.json_dict_adapter().validate_python(validated_catalog),
         )
@@ -169,7 +168,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             The resulting ``m.Meltano.SingerCatalogEntry``.
 
         Raises:
-            FlextTapOracleWmsConfigurationError: If ``entry_result.failure``.
+            e.ConfigurationError: If ``entry_result.failure``.
         """
         schema_raw: t.JsonValue = s_dict.get("schema", {})
         stream_name = str(s_dict.get("stream", ""))
@@ -186,7 +185,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             msg = (
                 entry_result.error or f"Failed to build catalog entry for {stream_name}"
             )
-            raise FlextTapOracleWmsConfigurationError(msg)
+            raise e.ConfigurationError(msg)
         entry_value: m.Meltano.SingerCatalogEntry = entry_result.value
         updated: m.Meltano.SingerCatalogEntry = entry_value.model_copy(
             update={
@@ -228,7 +227,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """The validated tap settings.
 
         Raises:
-            FlextTapOracleWmsConfigurationError: If Invalid configuration.
+            e.ConfigurationError: If Invalid configuration.
         """
         # NOTE (multi-agent): mro-rn88 — the Singer config is FLAT (config_jsonschema
         # properties); the FLEXT settings model namespaces project fields under
@@ -240,14 +239,14 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             })
         except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
             msg = f"Invalid configuration: {exc}"
-            raise FlextTapOracleWmsConfigurationError(msg) from exc
+            raise e.ConfigurationError(msg) from exc
 
     @property
     def wms_client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
         """A started WMS client instance.
 
         Raises:
-            FlextTapOracleWmsConfigurationError: If ``start_result.failure``.
+            e.ConfigurationError: If ``start_result.failure``.
         """
         if self._wms_client is None:
             password: str | t.SecretStr = self.flext_config.TapOracleWms.password
@@ -271,7 +270,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             start_result = client.start()
             if start_result.failure:
                 msg = start_result.error or "Failed to start Oracle WMS client"
-                raise FlextTapOracleWmsConfigurationError(msg)
+                raise e.ConfigurationError(msg)
             self._wms_client = client
         return self._wms_client
 
@@ -320,22 +319,22 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         )
 
     @override
-    def discover_streams(self) -> t.SequenceOf[FlextTapOracleWmsStream]:
+    def discover_streams(self) -> t.SequenceOf[FlextTapOracleWmsStreams.WmsStream]:
         """Build stream objects from the discovered catalog.
 
         Returns:
-            The resulting ``t.SequenceOf[FlextTapOracleWmsStream]``.
+            The resulting ``t.SequenceOf[FlextTapOracleWmsStreams.WmsStream]``.
 
         Raises:
-            FlextTapOracleWmsConfigurationError: If Catalog discovery failed.
+            e.ConfigurationError: If Catalog discovery failed.
         """
         catalog_result = self.discovercatalog_typed()
         if catalog_result.failure:
             msg = f"Catalog discovery failed: {catalog_result.error or 'unknown error'}"
-            raise FlextTapOracleWmsConfigurationError(msg)
+            raise e.ConfigurationError(msg)
         streams_raw = catalog_result.value.streams
-        streams: list[FlextTapOracleWmsStream] = [
-            FlextTapOracleWmsStream(
+        streams: list[FlextTapOracleWmsStreams.WmsStream] = [
+            FlextTapOracleWmsStreams.WmsStream(
                 tap=self,
                 name=stream_raw.stream,
                 schema={
@@ -359,21 +358,21 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         self.sync_all()
         return r[bool].ok(value=True)
 
-    def get_implementation_metrics(self) -> p.Result[t.JsonValue]:
+    def compute_implementation_metrics(self) -> p.Result[t.JsonValue]:
         """Return the basic runtime metrics for observability."""
         return r[t.JsonValue].ok({
             "tap_name": self.name,
-            "version": self.get_implementation_version(),
+            "version": self.resolve_implementation_version(),
             "streams_available": len(self.discover_streams()),
         })
 
     @staticmethod
-    def get_implementation_name() -> str:
+    def resolve_implementation_name() -> str:
         """Return the human-readable implementation name."""
         return "FLEXT Oracle WMS Tap"
 
     @staticmethod
-    def get_implementation_version() -> str:
+    def resolve_implementation_version() -> str:
         """Return the installed package version."""
         return __version__
 
@@ -402,6 +401,6 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             ValueError,
             TypeError,
             KeyError,
-            FlextTapOracleWmsConfigurationError,
+            e.ConfigurationError,
         ) as exc:
             return r[bool].fail(str(exc), exception=exc)

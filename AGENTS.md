@@ -24,18 +24,18 @@ delegating WMS access to `flext-oracle-wms`.
 src/flext_tap_oracle_wms/
 ├── api.py            # FlextTapOracleWmsService(FlextMeltanoTapServiceBase)
 ├── tap.py            # FlextTapOracleWms(m.Meltano.SingerTapBase), backed by FlextOracleWmsUtilities
-├── streams.py        # FlextTapOracleWmsStream
-├── errors.py __main__.py
+├── streams.py        # FlextTapOracleWmsStreams.WmsStream
+├── __main__.py
 ├── constants.py typings.py protocols.py models.py utilities.py   # AUTO-GENERATED facets
 ```
 
 ## Code Map
 
-| Symbol                     | Kind  | Location     | Role                         |
-| -------------------------- | ----- | ------------ | ---------------------------- |
-| `FlextTapOracleWmsService` | class | `api.py`     | `FlextMeltanoTapServiceBase` |
-| `FlextTapOracleWms`        | class | `tap.py`     | `m.Meltano.SingerTapBase`    |
-| `FlextTapOracleWmsStream`  | class | `streams.py` | stream impl                  |
+| Symbol                               | Kind  | Location     | Role                         |
+| ------------------------------------ | ----- | ------------ | ---------------------------- |
+| `FlextTapOracleWmsService`           | class | `api.py`     | `FlextMeltanoTapServiceBase` |
+| `FlextTapOracleWms`                  | class | `tap.py`     | `m.Meltano.SingerTapBase`    |
+| `FlextTapOracleWmsStreams.WmsStream` | class | `streams.py` | stream impl                  |
 
 ## Conventions (specific to this package)
 

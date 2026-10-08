@@ -1,4 +1,4 @@
-"""Functional tests for FlextTapOracleWmsStream with real Oracle WMS data.
+"""Functional tests for FlextTapOracleWmsStreams.WmsStream with real Oracle WMS data.
 
 Tests stream functionality with REAL Oracle WMS instance using .env configuration.
 
@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 import pytest
 from flext_tests import tm
 
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from tests import u
 from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
 
@@ -39,7 +39,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         assert streams, "No streams discovered"
         stream_config = streams[0]
         stream_id = stream_config.tap_stream_id
-        stream = FlextTapOracleWmsStream(
+        stream = FlextTapOracleWmsStreams.WmsStream(
             tap=real_tap_instance,
             name=stream_id,
             schema=self._schema(stream_config),
@@ -105,7 +105,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         incremental_streams: list[tuple[str, str | None]] = []
         full_table_streams: list[str] = []
         for stream_config in streams[:5]:
-            stream = FlextTapOracleWmsStream(
+            stream = FlextTapOracleWmsStreams.WmsStream(
                 tap=real_tap_instance,
                 name=stream_config.tap_stream_id,
                 schema=self._schema(stream_config),
@@ -128,7 +128,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         streams = catalog.streams
         timestamp_streams: list[tuple[str, str]] = []
         for stream_config in streams[:3]:
-            stream = FlextTapOracleWmsStream(
+            stream = FlextTapOracleWmsStreams.WmsStream(
                 tap=real_tap_instance,
                 name=stream_config.tap_stream_id,
                 schema=self._schema(stream_config),
@@ -153,7 +153,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         if not streams:
             pytest.skip("No streams discovered")
         test_stream = streams[0]
-        stream = FlextTapOracleWmsStream(
+        stream = FlextTapOracleWmsStreams.WmsStream(
             tap=real_tap_instance,
             name=test_stream.tap_stream_id,
             schema=self._schema(test_stream),
@@ -180,7 +180,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
         streams = catalog.streams
         incremental_stream = None
         for stream_config in streams:
-            stream = FlextTapOracleWmsStream(
+            stream = FlextTapOracleWmsStreams.WmsStream(
                 tap=real_tap_instance,
                 name=stream_config.tap_stream_id,
                 schema=self._schema(stream_config),
