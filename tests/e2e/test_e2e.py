@@ -23,7 +23,7 @@ from flext_meltano import c as meltano_c
 from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import t, u
 from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
@@ -108,7 +108,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         logger.info("Testing extraction from: %s", stream_id)
-        stream = FlextTapOracleWmsStream(
+        stream = FlextTapOracleWmsStreams.WmsStream(
             tap=tap_instance,
             name=stream_id,
             schema=self._schema(test_stream),
@@ -140,7 +140,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
                 break
         if not incremental_stream_config:
             pytest.skip("No incremental streams found")
-        stream = FlextTapOracleWmsStream(
+        stream = FlextTapOracleWmsStreams.WmsStream(
             tap=tap_instance,
             name=incremental_stream_config.tap_stream_id,
             schema=self._schema(incremental_stream_config),
@@ -180,7 +180,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
                 break
         if not full_table_stream_config:
             pytest.skip("No full table streams found")
-        stream = FlextTapOracleWmsStream(
+        stream = FlextTapOracleWmsStreams.WmsStream(
             tap=tap_instance,
             name=full_table_stream_config.tap_stream_id,
             schema=self._schema(full_table_stream_config),

@@ -1,10 +1,7 @@
 """Singer Oracle WMS tap protocols for FLEXT ecosystem.
 
-Of the 9 inner ``TapOracleWms.*`` Protocol classes that previously lived
-here, 7 had **zero workspace consumers** (per AGENTS.md §3.5 + STRICT YAGNI
-they were deleted). Only ``TapOracleWms.OracleWms.TapWithWmsClient`` and
-``TapWithWmsClientSettings`` remain (consumed by ``streams.py`` via
-``isinstance`` runtime dispatch).
+Only ``TapOracleWms.TapWithWmsClient`` and ``TapOracleWms.TapWithWmsClientSettings``
+exist: ``streams.py`` consumes both through ``isinstance`` runtime dispatch.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -29,20 +26,17 @@ class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols)
     class TapOracleWms:
         """Singer Tap Oracle WMS structural protocols (consumer surface)."""
 
-        class OracleWms:
-            """OracleWms-rooted protocol cluster used by stream isinstance dispatch."""
+        @runtime_checkable
+        class TapWithWmsClient(Protocol):
+            """Protocol for tap instances that provide ``wms_client``."""
 
-            @runtime_checkable
-            class TapWithWmsClient(Protocol):
-                """Protocol for tap instances that provide ``wms_client``."""
+            wms_client: _oracle_wms_u.OracleWms.Client
 
-                wms_client: _oracle_wms_u.OracleWms.Client
+        @runtime_checkable
+        class TapWithWmsClientSettings(TapWithWmsClient, Protocol):
+            """Protocol for tap instances with WMS client and settings."""
 
-            @runtime_checkable
-            class TapWithWmsClientSettings(TapWithWmsClient, Protocol):
-                """Protocol for tap instances with WMS client and settings."""
-
-                settings: t.JsonMapping
+            settings: t.JsonMapping
 
 
 p = FlextTapOracleWmsProtocols

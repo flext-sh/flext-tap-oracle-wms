@@ -11,7 +11,6 @@ These pages are generated from public modules and their docstrings.
 - [flext_tap_oracle_wms.api](api.md)
 - [flext_tap_oracle_wms.cli](cli.md)
 - [flext_tap_oracle_wms.constants](constants.md)
-- [flext_tap_oracle_wms.errors](errors.md)
 - [flext_tap_oracle_wms.models](models.md)
 - [flext_tap_oracle_wms.protocols](protocols.md)
 - [flext_tap_oracle_wms.streams](streams.md)

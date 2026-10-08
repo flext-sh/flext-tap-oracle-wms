@@ -17,7 +17,7 @@ import pytest
 from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import t
 
@@ -83,14 +83,16 @@ class OracleWmsTapTestHelpersMixin:
         if not any(kw in error_msg for kw in self._TAP_CONNECTION_ERROR_KEYWORDS):
             pytest.fail(f"Unexpected error: {error}")
 
-    def _first_stream(self, tap: FlextTapOracleWms) -> FlextTapOracleWmsStream:
+    def _first_stream(
+        self, tap: FlextTapOracleWms
+    ) -> FlextTapOracleWmsStreams.WmsStream:
         """Return the first discovered stream, skipping when none exist."""
         catalog = self._catalog(tap)
         streams = catalog.streams
         if not streams:
             pytest.skip("No streams discovered")
         stream_config = streams[0]
-        return FlextTapOracleWmsStream(
+        return FlextTapOracleWmsStreams.WmsStream(
             tap=tap,
             name=stream_config.tap_stream_id,
             schema=self._schema(stream_config),

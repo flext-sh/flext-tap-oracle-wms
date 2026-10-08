@@ -13,7 +13,7 @@ import pytest
 from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStream
+from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import t, u
 from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
@@ -161,7 +161,7 @@ class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
         logger.info("Testing extraction from stream: %s", stream_id)
 
         def _run_test_real_data_extraction_sample() -> None:
-            stream = FlextTapOracleWmsStream(
+            stream = FlextTapOracleWmsStreams.WmsStream(
                 tap=real_tap_instance,
                 name=stream_id,
                 schema=self._schema(test_stream),
@@ -193,7 +193,7 @@ class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
             pytest.skip("No streams available for pagination test")
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
-        stream = FlextTapOracleWmsStream(
+        stream = FlextTapOracleWmsStreams.WmsStream(
             tap=real_tap_instance,
             name=stream_id,
             schema=self._schema(test_stream),
@@ -261,7 +261,7 @@ class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
             pytest.skip("No streams available for filtering test")
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
-        stream = FlextTapOracleWmsStream(
+        stream = FlextTapOracleWmsStreams.WmsStream(
             tap=real_tap_instance,
             name=stream_id,
             schema=self._schema(test_stream),
@@ -350,7 +350,7 @@ class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
             paginated = False
             if catalog_streams:
                 test_stream = catalog_streams[0]
-                stream_obj = FlextTapOracleWmsStream(
+                stream_obj = FlextTapOracleWmsStreams.WmsStream(
                     real_tap_instance,
                     name=test_stream.tap_stream_id,
                     schema=self._schema(test_stream),
