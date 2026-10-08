@@ -45,10 +45,11 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         """
         raw_config: t.JsonDict | None = None
         if settings is not None:
-            raw_payload = (
-                settings.model_dump() if hasattr(settings, "model_dump") else settings
+            raw_config = t.json_dict_adapter().validate_python(
+                settings.model_dump()
+                if isinstance(settings, p.HasModelDump)
+                else settings,
             )
-            raw_config = t.json_dict_adapter().validate_python(raw_payload)
         return FlextMeltanoSingerTapAdapter(
             FlextTapOracleWms(config=raw_config, validate_config=False),
         )

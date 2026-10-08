@@ -194,7 +194,9 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         logger.info("✅ Full table extraction workflow validated for %s", stream.name)
 
     @staticmethod
-    def _count_primary_keys(metadata: object) -> int:
+    def _count_primary_keys(
+        metadata: t.SequenceOf[m.Meltano.SingerCatalogMetadata],
+    ) -> int:
         """Count automatic-inclusion leaf fields (Singer primary keys).
 
         Returns:
@@ -210,7 +212,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
         return primary_keys
 
     @staticmethod
-    def _count_nullable_properties(properties_raw: object) -> int:
+    def _count_nullable_properties(properties_raw: t.JsonValue | None) -> int:
         """Count schema properties declaring a null type variant.
 
         Returns:
@@ -229,7 +231,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
     @classmethod
     def _assess_stream_quality(
         cls,
-        stream_config: object,
+        stream_config: m.Meltano.SingerCatalogEntry,
         quality_report: dict[str, int],
     ) -> None:
         """Fold one stream's schema/metadata quality into the report."""
@@ -383,7 +385,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
 
     @staticmethod
     def _fold_stream_stats(
-        stream: object,
+        stream: m.Meltano.SingerCatalogEntry,
         incremental: int,
         full_table: int,
         valid_schemas: int,
@@ -454,6 +456,15 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
     ) -> None:
         """FINAL E2E: Comprehensive integration summary."""
         errors: list[str] = []
+        (
+            discovery_successful,
+            streams_discovered,
+            incremental_streams,
+            full_table_streams,
+            schemas_valid,
+            singer_compliant,
+            performance_acceptable,
+        ) = (False, 0, 0, 0, 0, False, False)
         try:
             (
                 discovery_successful,

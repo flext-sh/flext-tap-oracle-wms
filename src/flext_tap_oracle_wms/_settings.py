@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
 from flext_core import FlextSettings
 from flext_tap_oracle_wms import m
@@ -31,110 +31,104 @@ class FlextTapOracleWmsSettings(FlextSettings):
         validate_assignment=True,
     )
 
-    class _TapOracleWms(m.BaseModel):
+    class TapOracleWmsSettings(m.BaseModel):
         """Namespaced Oracle WMS tap settings (simple scalars only)."""
 
-        base_url: Annotated[
-            str,
-            m.Field(default="", description="Base Oracle WMS API URL"),
-        ]
-        username: Annotated[str, m.Field(default="", description="Oracle WMS username")]
-        password: Annotated[str, m.Field(default="", description="Oracle WMS password")]
+        base_url: Annotated[str, m.Field(description="Base Oracle WMS API URL")] = ""
+        username: Annotated[str, m.Field(description="Oracle WMS username")] = ""
+        password: Annotated[str, m.Field(description="Oracle WMS password")] = ""
         api_version: Annotated[
             str,
-            m.Field(default="V1", min_length=1, description="Oracle WMS API version"),
-        ]
+            m.Field(min_length=1, description="Oracle WMS API version"),
+        ] = "V1"
         timeout: Annotated[
             int,
-            m.Field(default=30, ge=1, le=300, description="Request timeout (s)"),
-        ]
-        max_retries: Annotated[int, m.Field(default=3, ge=0, description="Max retries")]
+            m.Field(ge=1, le=300, description="Request timeout (s)"),
+        ] = 30
+        max_retries: Annotated[int, m.Field(ge=0, description="Max retries")] = 3
         retry_delay: Annotated[
             float,
-            m.Field(default=1.0, ge=0, description="Retry delay (s)"),
-        ]
-        verify_ssl: Annotated[bool, m.Field(default=True, description="Verify SSL")]
+            m.Field(ge=0, description="Retry delay (s)"),
+        ] = 1.0
+        verify_ssl: Annotated[bool, m.Field(description="Verify SSL")] = True
         ssl_cert_path: Annotated[
             str | None,
-            m.Field(default=None, description="Path to SSL certificate"),
-        ]
-        page_size: Annotated[int, m.Field(default=10, ge=1, description="Page size")]
+            m.Field(description="Path to SSL certificate"),
+        ] = None
+        page_size: Annotated[int, m.Field(ge=1, description="Page size")] = 10
         discovery_sample_size: Annotated[
             int,
-            m.Field(default=100, ge=1, description="Schema discovery sample size"),
-        ]
+            m.Field(ge=1, description="Schema discovery sample size"),
+        ] = 100
         include_entities: Annotated[
             list[str],
-            m.Field(default_factory=list, description="Entities to include"),
-        ]
+            m.Field(description="Entities to include"),
+        ] = m.Field(default_factory=list[str])
         exclude_entities: Annotated[
             list[str],
-            m.Field(default_factory=list, description="Entities to exclude"),
-        ]
+            m.Field(description="Entities to exclude"),
+        ] = m.Field(default_factory=list[str])
         start_date: Annotated[
             str | None,
-            m.Field(default=None, description="Incremental extraction start date"),
-        ]
+            m.Field(description="Incremental extraction start date"),
+        ] = None
         end_date: Annotated[
             str | None,
-            m.Field(default=None, description="Incremental extraction end date"),
-        ]
+            m.Field(description="Incremental extraction end date"),
+        ] = None
         column_mappings: Annotated[
             str,
-            m.Field(
-                default="{}",
-                description="Column rename mappings per stream (JSON)",
-            ),
-        ]
+            m.Field(description="Column rename mappings per stream (JSON)"),
+        ] = "{}"
         ignored_columns: Annotated[
             list[str],
-            m.Field(default_factory=list, description="Columns to ignore"),
-        ]
+            m.Field(description="Columns to ignore"),
+        ] = m.Field(default_factory=list[str])
         enable_parallel_extraction: Annotated[
             bool,
-            m.Field(default=False, description="Enable parallel stream extraction"),
-        ]
+            m.Field(description="Enable parallel stream extraction"),
+        ] = False
         max_parallel_streams: Annotated[
             int,
-            m.Field(default=5, ge=1, description="Maximum parallel streams"),
-        ]
+            m.Field(ge=1, description="Maximum parallel streams"),
+        ] = 5
         enable_rate_limiting: Annotated[
             bool,
-            m.Field(default=True, description="Enable API rate limiting"),
-        ]
+            m.Field(description="Enable API rate limiting"),
+        ] = True
         max_requests_per_minute: Annotated[
             int,
-            m.Field(default=60, ge=1, description="Maximum API requests per minute"),
-        ]
+            m.Field(ge=1, description="Maximum API requests per minute"),
+        ] = 60
         enable_schema_flattening: Annotated[
             bool,
-            m.Field(default=True, description="Enable schema flattening"),
-        ]
+            m.Field(description="Enable schema flattening"),
+        ] = True
         max_flattening_depth: Annotated[
             int,
-            m.Field(default=10, ge=1, description="Maximum schema flattening depth"),
-        ]
+            m.Field(ge=1, description="Maximum schema flattening depth"),
+        ] = 10
         user_agent: Annotated[
             str | None,
-            m.Field(default=None, description="Custom User-Agent header"),
-        ]
+            m.Field(description="Custom User-Agent header"),
+        ] = None
         additional_headers: Annotated[
             dict[str, str],
-            m.Field(default_factory=dict, description="Additional HTTP headers"),
-        ]
-        log_level: Annotated[str, m.Field(default="INFO", description="Log level")]
+            m.Field(description="Additional HTTP headers"),
+        ] = m.Field(default_factory=dict[str, str])
+        log_level: Annotated[str, m.Field(description="Log level")] = "INFO"
         enable_request_logging: Annotated[
             bool,
-            m.Field(default=False, description="Enable HTTP request logging"),
-        ]
+            m.Field(description="Enable HTTP request logging"),
+        ] = False
         validate_config: Annotated[
             bool,
-            m.Field(default=True, description="Enable configuration validation"),
-        ]
+            m.Field(description="Enable configuration validation"),
+        ] = True
         validate_schemas: Annotated[
             bool,
-            m.Field(default=True, description="Enable schema validation"),
-        ]
+            m.Field(description="Enable schema validation"),
+        ] = True
 
         @m.field_validator("include_entities", "exclude_entities")
         @classmethod
@@ -152,13 +146,10 @@ class FlextTapOracleWmsSettings(FlextSettings):
                 raise ValueError(msg)
             return v
 
-    if TYPE_CHECKING:
-        TapOracleWms: _TapOracleWms
-    else:
-        TapOracleWms: _TapOracleWms = m.Field(
-            default_factory=_TapOracleWms,
-            description="Namespaced Oracle WMS tap settings.",
-        )
+    TapOracleWms: TapOracleWmsSettings = m.Field(
+        default_factory=TapOracleWmsSettings,
+        description="Namespaced Oracle WMS tap settings.",
+    )
 
 
 settings: FlextTapOracleWmsSettings = FlextTapOracleWmsSettings.fetch_global()
