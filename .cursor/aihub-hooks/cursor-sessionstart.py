@@ -4,6 +4,7 @@
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
+
 from __future__ import annotations
 
 import json
@@ -15,70 +16,70 @@ if not isinstance(payload, dict):
     raise TypeError(msg)
 response = json.loads(
     '{"additional_context":"<!-- AIHUB-GOVERNANCE-CAPSULE v1 sha256:5888ee9f8147f'
-    '63364a4f7cd6906e9d837f58cb8a8546844760c526ecb1a303b -->\\n# Generated sessio'
-    'n governance capsule\\n\\nThis projection is derived by `agentsctl sync`; ed'
-    'it canonical `AGENTS.md`, `rules/`, `skills/`, or `commands/`, never this ou'
-    'tput. The operator\'s newest request has precedence. Provider hooks are deli'
-    'very mechanisms, not policy owners.\\n\\n## Rule `architecture/engineering-c'
-    'ore`\\n\\n# Engineering core\\n\\nFor every implementation:\\n\\n1. Research'
-    ' repository owners, dependencies, and canonical documentation.\\n2. Remove s'
-    'cope without a current requirement or consumer (YAGNI).\\n3. Elect one writa'
-    'ble authority; every other copy is a generated projection\\n   (SSOT).\\n4. '
-    'Apply SOLID only to a responsibility or dependency boundary under change.\\n'
-    '5. Implement through the owner and simplify without weakening behavior.\\n6.'
-    ' Remove duplication and god components; recheck YAGNI, SSOT, SOLID.\\n7. Exe'
-    'rcise runtime behavior, run every applicable native gate, and complete\\n   '
-    'the approved landing cycle before changing phase.\\n\\nAt a cross-boundary f'
-    'ailure, prove the producer contract and output. Fix its\\nowner when invalid'
-    ' or the receiver when it conforms. Never alter a correct\\nadjacent owner fo'
-    'r an invalid consumer; symptom workarounds are defects.\\n\\nHardcodes, norm'
-    'alized failure, failover, retry, fallback, compatibility,\\npartial executio'
-    'n, keyring, and unevidenced success are defects. Typed owners\\nkeep default'
-    's. The first exception escapes its CLI with traceback and cause.\\n\\nGit, r'
-    'untime, build, and tests are baseline. Auxiliary tracking is a capability.\\n'
-    'Auxiliary capabilities apply only when authorized and selected; installation'
-    '\\nnever selects. Do not load, probe, or gate dormant capabilities. Invalid\\n'
-    'selected authorization, configuration, readiness, or result fails without\\n'
-    'fallback. Require only non-derivable values.\\n\\nAn external token validati'
-    'on without its token is not executed and is recorded\\nas `NOT EXECUTED`, ne'
-    'ver green; it does not block offline gates, landing, or\\npost-merge proof. '
-    'Direct invocation selects it: the token becomes required and\\nany failure e'
-    'scapes without skip, catch, fallback, or normalization.\\n\\nCompose with `g'
-    'eneralized ownership` (rule file),\\n`strict execution` (rule file),\\n`runt'
-    'ime evidence` (rule file),\\n`storage isolation` (rule file),\\n`security cl'
-    'osure` (rule file).\\n\\n## Rule `coordination/operator-precedence`\\n\\n# N'
-    'ewest operator instruction wins; adjust artifacts to it\\n\\nAuthority order'
-    ': operator request > declared orchestration contract > canonical\\ntracker >'
-    ' ADRs > skills > docs, and newest supersedes oldest. On conflict,\\nadjust t'
-    'he lower or older artifact to match; never override the operator to\\nsatisf'
-    'y stale guidance.\\n\\nWhile orchestration and tracker runtimes are suspende'
-    'd, do not invoke them.\\nCreate no substitute tracker or ledger, preserve im'
-    'plementation evidence only\\nin separately authorized Git/PR/CI, and leave p'
-    'hase closure open.\\n\\nExact operator authorization naming targets, disposi'
-    'tion, recovery, and\\nvalidation survives interruption, divergence, and red '
-    'gates; re-preflight and\\ncontinue. Ask only when the effect expands beyond '
-    'it or two evidenced current\\nintentions conflict. State alone proves no int'
-    'ention, actor, or process.\\n\\n## Rule `ethics/professional-integrity`\\n\\n'
-    '# Professional integrity is absolute\\n\\nNever lie, fabricate evidence, hid'
-    'e a blocker, bypass a gate, or patch a symptom\\nonly to make a check pass. '
-    'Fix the generalized root cause with full context and\\nreport exact command,'
-    ' working directory, exit code and decisive output.\\n\\n## Rule `runtime/str'
-    'ict-execution`\\n\\n# Strict execution is universal and non-optional\\n\\nEv'
-    'ery project and projected agent applies all of these policies together:\\n\\n'
-    '- `fail loud` (rule file);\\n- `no fallback` (rule file);\\n- `preflight bef'
-    'ore effects` (rule file);\\n- `required environment` (rule file);\\n- `atomi'
-    'c effects` (rule file);\\n- `causal subprocess propagation` (rule file);\\n-'
-    ' `no keyring` (rule file);\\n- `zero residue` (rule file).\\n\\nThe policies'
-    ' are cumulative. A project rule may make them narrower or reject\\nmore inpu'
-    'ts; it cannot relax, catch, normalize, skip, defer, or route around any\\nof'
-    ' them. Existing opposing behavior is a blocking violation to exterminate at\\n'
-    'its owner, never grandfathered compatibility.\\n\\nResolve gate applicabilit'
-    'y before invocation. A dormant external-token gate is\\nnot executed; select'
-    'ing or invoking it applies every policy above.\\n\\n## Capability indexes\\n'
-    '\\nSkills: caveman, context-canary, fix-forward-collaboration, governance-au'
-    'dit, operator-correction-learning, plan-focus-recovery, sprint-closure, stra'
-    'tegic-compact, verification-loop\\nCommands: add-language-rules, database-mi'
-    'gration, feature-development, ghi-list, pr-list, ralph-loop, security-triage'
+    "63364a4f7cd6906e9d837f58cb8a8546844760c526ecb1a303b -->\\n# Generated sessio"
+    "n governance capsule\\n\\nThis projection is derived by `agentsctl sync`; ed"
+    "it canonical `AGENTS.md`, `rules/`, `skills/`, or `commands/`, never this ou"
+    "tput. The operator's newest request has precedence. Provider hooks are deli"
+    "very mechanisms, not policy owners.\\n\\n## Rule `architecture/engineering-c"
+    "ore`\\n\\n# Engineering core\\n\\nFor every implementation:\\n\\n1. Research"
+    " repository owners, dependencies, and canonical documentation.\\n2. Remove s"
+    "cope without a current requirement or consumer (YAGNI).\\n3. Elect one writa"
+    "ble authority; every other copy is a generated projection\\n   (SSOT).\\n4. "
+    "Apply SOLID only to a responsibility or dependency boundary under change.\\n"
+    "5. Implement through the owner and simplify without weakening behavior.\\n6."
+    " Remove duplication and god components; recheck YAGNI, SSOT, SOLID.\\n7. Exe"
+    "rcise runtime behavior, run every applicable native gate, and complete\\n   "
+    "the approved landing cycle before changing phase.\\n\\nAt a cross-boundary f"
+    "ailure, prove the producer contract and output. Fix its\\nowner when invalid"
+    " or the receiver when it conforms. Never alter a correct\\nadjacent owner fo"
+    "r an invalid consumer; symptom workarounds are defects.\\n\\nHardcodes, norm"
+    "alized failure, failover, retry, fallback, compatibility,\\npartial executio"
+    "n, keyring, and unevidenced success are defects. Typed owners\\nkeep default"
+    "s. The first exception escapes its CLI with traceback and cause.\\n\\nGit, r"
+    "untime, build, and tests are baseline. Auxiliary tracking is a capability.\\n"
+    "Auxiliary capabilities apply only when authorized and selected; installation"
+    "\\nnever selects. Do not load, probe, or gate dormant capabilities. Invalid\\n"
+    "selected authorization, configuration, readiness, or result fails without\\n"
+    "fallback. Require only non-derivable values.\\n\\nAn external token validati"
+    "on without its token is not executed and is recorded\\nas `NOT EXECUTED`, ne"
+    "ver green; it does not block offline gates, landing, or\\npost-merge proof. "
+    "Direct invocation selects it: the token becomes required and\\nany failure e"
+    "scapes without skip, catch, fallback, or normalization.\\n\\nCompose with `g"
+    "eneralized ownership` (rule file),\\n`strict execution` (rule file),\\n`runt"
+    "ime evidence` (rule file),\\n`storage isolation` (rule file),\\n`security cl"
+    "osure` (rule file).\\n\\n## Rule `coordination/operator-precedence`\\n\\n# N"
+    "ewest operator instruction wins; adjust artifacts to it\\n\\nAuthority order"
+    ": operator request > declared orchestration contract > canonical\\ntracker >"
+    " ADRs > skills > docs, and newest supersedes oldest. On conflict,\\nadjust t"
+    "he lower or older artifact to match; never override the operator to\\nsatisf"
+    "y stale guidance.\\n\\nWhile orchestration and tracker runtimes are suspende"
+    "d, do not invoke them.\\nCreate no substitute tracker or ledger, preserve im"
+    "plementation evidence only\\nin separately authorized Git/PR/CI, and leave p"
+    "hase closure open.\\n\\nExact operator authorization naming targets, disposi"
+    "tion, recovery, and\\nvalidation survives interruption, divergence, and red "
+    "gates; re-preflight and\\ncontinue. Ask only when the effect expands beyond "
+    "it or two evidenced current\\nintentions conflict. State alone proves no int"
+    "ention, actor, or process.\\n\\n## Rule `ethics/professional-integrity`\\n\\n"
+    "# Professional integrity is absolute\\n\\nNever lie, fabricate evidence, hid"
+    "e a blocker, bypass a gate, or patch a symptom\\nonly to make a check pass. "
+    "Fix the generalized root cause with full context and\\nreport exact command,"
+    " working directory, exit code and decisive output.\\n\\n## Rule `runtime/str"
+    "ict-execution`\\n\\n# Strict execution is universal and non-optional\\n\\nEv"
+    "ery project and projected agent applies all of these policies together:\\n\\n"
+    "- `fail loud` (rule file);\\n- `no fallback` (rule file);\\n- `preflight bef"
+    "ore effects` (rule file);\\n- `required environment` (rule file);\\n- `atomi"
+    "c effects` (rule file);\\n- `causal subprocess propagation` (rule file);\\n-"
+    " `no keyring` (rule file);\\n- `zero residue` (rule file).\\n\\nThe policies"
+    " are cumulative. A project rule may make them narrower or reject\\nmore inpu"
+    "ts; it cannot relax, catch, normalize, skip, defer, or route around any\\nof"
+    " them. Existing opposing behavior is a blocking violation to exterminate at\\n"
+    "its owner, never grandfathered compatibility.\\n\\nResolve gate applicabilit"
+    "y before invocation. A dormant external-token gate is\\nnot executed; select"
+    "ing or invoking it applies every policy above.\\n\\n## Capability indexes\\n"
+    "\\nSkills: caveman, context-canary, fix-forward-collaboration, governance-au"
+    "dit, operator-correction-learning, plan-focus-recovery, sprint-closure, stra"
+    "tegic-compact, verification-loop\\nCommands: add-language-rules, database-mi"
+    "gration, feature-development, ghi-list, pr-list, ralph-loop, security-triage"
     ', synthesize-governance\\n"}',
 )
 json.dump(response, sys.stdout, ensure_ascii=False, separators=(",", ":"))
