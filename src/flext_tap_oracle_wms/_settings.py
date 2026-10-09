@@ -14,7 +14,7 @@ import re
 from typing import Annotated
 
 from flext_core import FlextSettings
-from flext_tap_oracle_wms import m
+from flext_tap_oracle_wms import m, t
 
 _ISO_DATE_RE = re.compile(
     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$",
@@ -113,7 +113,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
             m.Field(description="Custom User-Agent header"),
         ] = None
         additional_headers: Annotated[
-            dict[str, str],
+            t.StrMapping,
             m.Field(description="Additional HTTP headers"),
         ] = m.Field(default_factory=dict[str, str])
         log_level: Annotated[str, m.Field(description="Log level")] = "INFO"

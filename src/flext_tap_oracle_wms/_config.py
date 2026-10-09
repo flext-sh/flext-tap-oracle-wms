@@ -16,13 +16,7 @@ from typing import Annotated, Self
 
 from flext_meltano import FlextMeltanoConfig
 
-from flext_tap_oracle_wms import m
-
-
-class _TapOracleWmsNamespace(m.BaseModel):
-    """Open, frozen namespace exposing every ``config/*.yaml`` domain model-less."""
-
-    model_config = m.ConfigDict(extra="allow", frozen=True)
+from flext_tap_oracle_wms import m, t
 
 
 class FlextTapOracleWmsConfig(FlextMeltanoConfig):
@@ -38,34 +32,24 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
     # The inherited pydantic ``__init__`` still runs the frozen, YAML-validated
     # construction, and the inherited pydantic ``__setattr__`` keeps the frozen
     # guard.
-    def __new__(cls, *args: object, **kwargs: object) -> Self:
+    def __new__(cls, *args: t.JsonValue, **kwargs: t.JsonValue) -> Self:
         _ = args, kwargs
         return object.__new__(cls)
 
-    def __eq__(self, other: object) -> bool:
-        """Identity equality per the frozen-config singleton contract.
+    # Identity equality/hash per the frozen-config singleton contract: plain
+    # object semantics, never the inherited pydantic field comparison.
+    __eq__ = object.__eq__
 
-        Returns:
-            The resulting ``bool``.
-        """
-        return object.__eq__(self, other)
-
-    def __hash__(self) -> int:
-        """Identity hash per the frozen-config singleton contract.
-
-        Returns:
-            The resulting ``int``.
-        """
-        return object.__hash__(self)
+    __hash__ = object.__hash__
 
     TapOracleWms: Annotated[
-        _TapOracleWmsNamespace,
+        m.TapOracleWms.TapOracleWmsNamespace,
         m.Field(
             description=(
                 "Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``."
             ),
         ),
-    ] = _TapOracleWmsNamespace()
+    ] = m.TapOracleWms.TapOracleWmsNamespace()
 
 
 config: FlextTapOracleWmsConfig = FlextTapOracleWmsConfig.fetch_global()

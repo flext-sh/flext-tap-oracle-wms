@@ -1,5 +1,5 @@
 # AUTO-GENERATED FILE — Regenerate with: make gen
-"""Flext Tap Oracle Wms. Constants package.
+"""Flext Tap Oracle Wms. Models package.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -13,21 +13,21 @@ from typing import TYPE_CHECKING
 from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_tap_oracle_wms._constants.base import FlextTapOracleWmsConstantsBase
-    from flext_tap_oracle_wms._constants.values import FlextTapOracleWmsConstantsValues
+    from flext_tap_oracle_wms._models.base import FlextTapOracleWmsModelsBase
+    from flext_tap_oracle_wms._models.config import FlextTapOracleWmsModelsConfig
 
 
 __all__: tuple[str, ...] = (
-    "FlextTapOracleWmsConstantsBase",
-    "FlextTapOracleWmsConstantsValues",
+    "FlextTapOracleWmsModelsBase",
+    "FlextTapOracleWmsModelsConfig",
 )
 
 install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
-        "FlextTapOracleWmsConstantsBase": ".base",
-        "FlextTapOracleWmsConstantsValues": ".values",
+        "FlextTapOracleWmsModelsBase": ".base",
+        "FlextTapOracleWmsModelsConfig": ".config",
     }),
     public_exports=__all__,
 )

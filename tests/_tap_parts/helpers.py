@@ -1,6 +1,6 @@
 """Shared tap-oracle-wms test helpers extracted from e2e/integration tests.
 
-Provides the ``OracleWmsTapTestHelpersMixin`` that centralises the
+Provides the ``TestsFlextTapOracleWmsHelpersMixin`` that centralises the
 catalog-discovery and error-recovery patterns previously duplicated across
 ``test_e2e.py``, ``test_functional.py``, ``test_streams_functional.py``,
 and ``test_wms.py``.
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from tests import m
 
 
-class OracleWmsTapTestHelpersMixin:
+class TestsFlextTapOracleWmsHelpersMixin:
     """Shared helpers for Oracle WMS tap integration/e2e tests.
 
     Centralises the ``_catalog`` / ``_schema`` discovery helpers, the
@@ -124,7 +124,7 @@ class OracleWmsTapTestHelpersMixin:
         Returns:
             The resulting ``FlextTapOracleWmsSettings``.
         """
-        fields: dict[str, t.JsonValue] = dict(cls._TAP_BASE_SETTINGS)
+        fields: t.JsonDict = dict(cls._TAP_BASE_SETTINGS)
         if overrides:
             fields.update(overrides)
         return FlextTapOracleWmsSettings.model_validate({"TapOracleWms": fields})
