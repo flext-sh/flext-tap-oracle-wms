@@ -14,20 +14,13 @@ from flext_core import install_lazy_exports
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms._models.base import FlextTapOracleWmsModelsBase
-    from flext_tap_oracle_wms._models.config import FlextTapOracleWmsModelsConfig
 
 
-__all__: tuple[str, ...] = (
-    "FlextTapOracleWmsModelsBase",
-    "FlextTapOracleWmsModelsConfig",
-)
+__all__: tuple[str, ...] = ("FlextTapOracleWmsModelsBase",)
 
 install_lazy_exports(
     __name__,
     globals(),
-    MappingProxyType({
-        "FlextTapOracleWmsModelsBase": ".base",
-        "FlextTapOracleWmsModelsConfig": ".config",
-    }),
+    MappingProxyType({"FlextTapOracleWmsModelsBase": ".base"}),
     public_exports=__all__,
 )

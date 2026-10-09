@@ -11,16 +11,12 @@ from flext_meltano import FlextMeltanoModels
 from flext_oracle_wms import FlextOracleWmsModels
 
 from flext_tap_oracle_wms._models.base import FlextTapOracleWmsModelsBase
-from flext_tap_oracle_wms._models.config import FlextTapOracleWmsModelsConfig
 
 
 class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
     """Container for stream schema and metadata payload models."""
 
-    class TapOracleWms(
-        FlextTapOracleWmsModelsBase,
-        FlextTapOracleWmsModelsConfig,
-    ):
+    class TapOracleWms(FlextTapOracleWmsModelsBase):
         """TapOracleWms domain namespace.
 
         Local Singer catalog compatibility types were removed in favor of the

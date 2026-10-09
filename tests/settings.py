@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsSettings
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
+from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings
 
 
 class TestsFlextTapOracleWmsSettings(FlextTapOracleWmsSettings, FlextTestsSettings):
