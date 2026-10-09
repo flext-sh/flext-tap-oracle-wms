@@ -16,7 +16,7 @@ from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
+from tests._tap_parts.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 if TYPE_CHECKING:
     from tests import t
@@ -26,7 +26,7 @@ _PAGE_SAMPLE_LIMIT = 5
 _MIN_SAMPLE_RECORDS = 2
 
 
-class TestsFlextTapOracleWmsWmsConnection(OracleWmsTapTestHelpersMixin):
+class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
     """Test real Oracle WMS connection."""
 
     @staticmethod

@@ -20,8 +20,8 @@ if TYPE_CHECKING:
     from examples.models import ExamplesFlextTapOracleWmsModels
     from examples.protocols import ExamplesFlextTapOracleWmsProtocols
     from examples.typings import ExamplesFlextTapOracleWmsTypes
-    from examples.utilities import ExamplesFlextTapOracleWmsUtilities
-    from flext_tap_oracle_wms import c, d, h, m, p, r, t, u, x
+    from examples.utilities import ExamplesFlextTapOracleWmsUtilities, u
+    from flext_tap_oracle_wms import c, d, h, m, p, r, t, x
 
 
 __all__: tuple[str, ...] = (
@@ -61,7 +61,7 @@ install_lazy_exports(
         "r": "flext_tap_oracle_wms",
         "s": "flext_meltano",
         "t": "flext_tap_oracle_wms",
-        "u": "flext_tap_oracle_wms",
+        "u": ".utilities",
         "x": "flext_tap_oracle_wms",
     }),
     public_exports=__all__,

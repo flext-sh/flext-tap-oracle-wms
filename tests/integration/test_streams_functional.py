@@ -16,7 +16,7 @@ from flext_tests import tm
 
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from tests import u
-from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
+from tests._tap_parts.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms.tap import FlextTapOracleWms
@@ -26,7 +26,7 @@ logger = u.fetch_logger(__name__)
 _ORACLE_WMS_MAX_LIMIT = 1250
 
 
-class TestsFlextTapOracleWmsStreamsFunctional(OracleWmsTapTestHelpersMixin):
+class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin):
     """Test streams functionality."""
 
     def test_stream_creation_with_real_wms_data(

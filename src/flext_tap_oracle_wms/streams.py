@@ -20,11 +20,11 @@ if TYPE_CHECKING:
         str | PathLike[str] | t.JsonMapping | t.Meltano.SingerSchema | None
     )
 
-logger = u.fetch_logger(__name__)
-
 
 class FlextTapOracleWmsStreams:
     """Oracle WMS Singer stream namespace."""
+
+    logger = u.fetch_logger(__name__)
 
     class WmsStream(m.Meltano.SingerStreamBase):
         """Dynamic stream for Oracle WMS entities.
@@ -221,10 +221,10 @@ class FlextTapOracleWmsStreams:
                     page_result = self._fetch_page_data(page, context)
                 except c.Meltano.SINGER_SAFE_EXCEPTIONS as exc:
                     msg = f"Error getting records for {self.name}: {exc}"
-                    logger.exception(msg)
+                    FlextTapOracleWmsStreams.logger.exception(msg)
                     raise e.OperationError(msg) from exc
                 if page_result.failure:
-                    logger.error(
+                    FlextTapOracleWmsStreams.logger.error(
                         "Failed to fetch page %s for %s: %s",
                         page,
                         self.name,

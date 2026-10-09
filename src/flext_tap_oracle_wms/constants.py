@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
 
+from flext_tap_oracle_wms._constants.base import FlextTapOracleWmsConstantsBase
 from flext_tap_oracle_wms._constants.values import FlextTapOracleWmsConstantsValues
 
 if TYPE_CHECKING:
@@ -29,7 +30,11 @@ class FlextTapOracleWmsConstants(
     Note: Does not override Authentication from parent classes to avoid conflicts.
     """
 
-    class TapOracleWms(FlextTapOracleWmsConstantsValues.TapOracleWms):
+    class TapOracleWms(
+        FlextTapOracleWmsConstantsBase,
+        FlextTapOracleWmsConstantsValues.TapOracleWms,
+        FlextTapOracleWmsConstantsValues,
+    ):
         """Oracle WMS tap-specific constants."""
 
 
