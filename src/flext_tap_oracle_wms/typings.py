@@ -11,11 +11,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
 
-from flext_tap_oracle_wms import m
+if TYPE_CHECKING:
+    from flext_tap_oracle_wms import m
 
 
 class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):

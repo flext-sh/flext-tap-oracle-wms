@@ -26,7 +26,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import t, u
-from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
+from tests._tap_parts.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 if TYPE_CHECKING:
     from tests import m
@@ -39,7 +39,7 @@ _MIN_DISCOVERY_RATE = 0.1
 
 
 @pytest.mark.e2e
-class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
+class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
 
     def test_complete_discovery_to_catalog(
@@ -232,7 +232,7 @@ class TestsFlextTapOracleWmsE2e(OracleWmsTapTestHelpersMixin):
     def _assess_stream_quality(
         cls,
         stream_config: m.Meltano.SingerCatalogEntry,
-        quality_report: dict[str, int],
+        quality_report: t.IntDict,
     ) -> None:
         """Fold one stream's schema/metadata quality into the report."""
         schema = stream_config.schema_definition

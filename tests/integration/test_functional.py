@@ -16,7 +16,7 @@ from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 from tests import t, u
-from tests._tap_parts.helpers import OracleWmsTapTestHelpersMixin
+from tests._tap_parts.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 logger = u.fetch_logger(__name__)
 
@@ -25,7 +25,7 @@ _ORACLE_WMS_MAX_LIMIT = 1250
 
 
 @pytest.mark.functional
-class TestsFlextTapOracleWmsFunctional(OracleWmsTapTestHelpersMixin):
+class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
     _TAP_CONNECTION_ERROR_KEYWORDS = ("connection", "network", "timeout")
