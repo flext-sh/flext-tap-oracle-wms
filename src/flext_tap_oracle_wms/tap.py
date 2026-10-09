@@ -145,10 +145,10 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         metadata_map_raw: t.JsonValue = entry_dict.get("metadata", {})
         return m.Meltano.SingerCatalogMetadata(
             breadcrumb=(
-                [str(item) for item in breadcrumb_raw]
+                tuple(str(item) for item in breadcrumb_raw)
                 if isinstance(breadcrumb_raw, Sequence)
                 and not isinstance(breadcrumb_raw, c.STR_BYTES_TYPES)
-                else []
+                else ()
             ),
             metadata=(
                 t.json_dict_adapter().validate_python(metadata_map_raw)
@@ -214,7 +214,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                     metadata_entries=FlextTapOracleWms._metadata_entries(s_dict),
                 ),
             )
-        catalog = m.Meltano.SingerCatalog(streams=stream_entries)
+        catalog = m.Meltano.SingerCatalog(streams=tuple(stream_entries))
         dumped_catalog = catalog.model_dump(
             by_alias=True,
             exclude_none=True,
@@ -303,7 +303,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                     update={
                         "metadata": [
                             m.Meltano.SingerCatalogMetadata(
-                                breadcrumb=[],
+                                breadcrumb=(),
                                 metadata={
                                     "inclusion": "available",
                                     "forced-replication-method": "FULL_TABLE",
@@ -315,7 +315,10 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 ),
             )
         return r[m.Meltano.SingerCatalog].ok(
-            m.Meltano.SingerCatalog(type="CATALOG", streams=streams),
+            m.Meltano.SingerCatalog(
+                type=c.Meltano.SingerMessageType.CATALOG,
+                streams=tuple(streams),
+            ),
         )
 
     @override
