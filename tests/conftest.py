@@ -11,10 +11,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+from flext_tests import u
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from flext_tests import u
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -34,7 +34,8 @@ def oracle_wms_environment() -> None:
     """Load only an explicitly configured, reachable local test environment."""
     env_file = Path(__file__).parent.parent / ".env"
     u.Tests.skip_if_no_external_environment(
-        _ORACLE_WMS_REQUIRED_VARS, env_file,
+        _ORACLE_WMS_REQUIRED_VARS,
+        env_file,
         url_var=_ORACLE_WMS_REQUIRED_VARS[0],
     )
 
@@ -84,8 +85,6 @@ def real_config(oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
     Returns:
         The resulting ``FlextTapOracleWmsSettings``.
 
-    Raises:
-        pytest.skip: If Oracle WMS environment is not available.
     """
     if not oracle_wms_available:
         pytest.skip("Oracle WMS external environment not configured")
@@ -136,8 +135,6 @@ def real_tap_instance(
     Returns:
         The resulting ``FlextTapOracleWms``.
 
-    Raises:
-        pytest.skip: If Oracle WMS environment is not available.
     """
     if not oracle_wms_available:
         pytest.skip("Oracle WMS external environment not configured")
@@ -156,11 +153,14 @@ def pytest_collection_modifyitems(
             item.add_marker(pytest.mark.integration)
         if any(x in item_path for x in ["e2e", "performance"]):
             item.add_marker(pytest.mark.slow)
-        if any(name in item.fixturenames for name in ("real_config", "real_tap_instance")):
-            item.add_marker(pytest.mark.connectivity(
-                required_vars=_ORACLE_WMS_REQUIRED_VARS,
-                url_var=_ORACLE_WMS_REQUIRED_VARS[0],
-            ))
+        fixture_names = getattr(item, "fixturenames", ())
+        if any(name in fixture_names for name in ("real_config", "real_tap_instance")):
+            item.add_marker(
+                pytest.mark.connectivity(
+                    required_vars=_ORACLE_WMS_REQUIRED_VARS,
+                    url_var=_ORACLE_WMS_REQUIRED_VARS[0],
+                )
+            )
 
 
 @pytest.fixture
