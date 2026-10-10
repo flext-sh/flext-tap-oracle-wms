@@ -41,7 +41,9 @@ class FlextTapOracleWmsStreams:
         http_headers: t.MutableStrMapping
         authenticator: None = None
 
-        @override
+        # The singer SDK base initializes generically over its Tap type
+        # variable; the concrete tap/schema parameters below intentionally
+        # specialize it, so the LSP override marker does not apply here.
         def __init__(
             self,
             tap: m.Meltano.SingerTapBase,

@@ -16,7 +16,8 @@ from typing import Annotated, Self
 
 from flext_meltano import FlextMeltanoConfig
 
-from flext_tap_oracle_wms import m, t
+from flext_core import m, t
+from flext_tap_oracle_wms._models.base import FlextTapOracleWmsModelsBase
 
 
 class FlextTapOracleWmsConfig(FlextMeltanoConfig):
@@ -43,13 +44,13 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
     __hash__ = object.__hash__
 
     TapOracleWms: Annotated[
-        m.TapOracleWms.TapOracleWmsNamespace,
+        FlextTapOracleWmsModelsBase.TapOracleWmsNamespace,
         m.Field(
             description=(
                 "Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``."
             ),
         ),
-    ] = m.TapOracleWms.TapOracleWmsNamespace()
+    ] = FlextTapOracleWmsModelsBase.TapOracleWmsNamespace()
 
 
 config: FlextTapOracleWmsConfig = FlextTapOracleWmsConfig.fetch_global()

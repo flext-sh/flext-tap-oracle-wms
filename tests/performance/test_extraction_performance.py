@@ -2,29 +2,24 @@
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
-import os
 import time
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import psutil
 import pytest
-from dotenv import load_dotenv
 from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from tests._tap_parts.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 if TYPE_CHECKING:
     from tests import t
 
-env_path = Path(__file__).parent.parent.parent / ".env"
-load_dotenv(env_path)
 
 _MAX_DISCOVERY_SECONDS = 10.0
 _PAGINATION_SAMPLE_LIMIT = 99
@@ -34,25 +29,21 @@ _MAX_MEMORY_INCREASE_MB = 100
 
 
 @pytest.fixture
-def performance_config() -> FlextTapOracleWmsSettings:
-    """Create configuration for performance testing.
+def performance_config(
+    real_config: FlextTapOracleWmsSettings,
+) -> FlextTapOracleWmsSettings:
+    """Create configuration for performance testing based on real config.
 
     Returns:
         The resulting ``FlextTapOracleWmsSettings``.
     """
-    # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
-    # settings.TapOracleWms.*; construct via the namespace payload.
-    return FlextTapOracleWmsSettings.model_validate({
-        "TapOracleWms": {
-            "base_url": os.getenv("ORACLE_WMS_BASE_URL", "https://localhost"),
-            "username": os.getenv("ORACLE_WMS_USERNAME", "user"),
-            "password": os.getenv("ORACLE_WMS_PASSWORD", "pass"),
-            "api_version": os.getenv("ORACLE_WMS_API_VERSION", "v10"),
-            "page_size": 100,
-            "verify_ssl": True,
-            "enable_rate_limiting": False,
-        },
+    base = real_config.TapOracleWms.model_dump()
+    base.update({
+        "page_size": 100,
+        "verify_ssl": True,
+        "enable_rate_limiting": False,
     })
+    return FlextTapOracleWmsSettings.model_validate({"TapOracleWms": base})
 
 
 @pytest.fixture
@@ -66,7 +57,7 @@ def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 
 
 @pytest.mark.performance
-class TestsFlextTapOracleWmsExtractionPerformance:
+class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpersMixin):
     """Test data extraction performance."""
 
     @staticmethod
