@@ -76,6 +76,25 @@ class TestsFlextTapOracleWmsTap:
         tm.that(value, lacks="password")
 
     @staticmethod
+    def test_error_handling(sample_catalog: m.Meltano.SingerCatalog) -> None:
+        """Non-secret fields are still exposed for an unreachable endpoint."""
+        bad_settings = FlextTapOracleWmsSettings.model_validate({
+            "TapOracleWms": {
+                "base_url": "https://invalid.example.com",
+                "username": "invalid",
+                "password": "invalid",
+            },
+        })
+        tap = FlextTapOracleWms.from_settings(bad_settings, catalog=sample_catalog)
+        result = tap.validate_configuration()
+        tm.ok(result)
+        value = result.value
+        assert isinstance(value, dict)
+        tm.that(value["base_url"], eq=bad_settings.TapOracleWms.base_url)
+        tm.that(value, lacks="username")
+        tm.that(value, lacks="password")
+
+    @staticmethod
     def test_resolve_implementation_name_and_version(
         tap_instance: FlextTapOracleWms,
     ) -> None:

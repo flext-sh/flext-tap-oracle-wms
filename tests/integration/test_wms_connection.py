@@ -172,21 +172,6 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
         result = real_tap_instance.discovercatalog_typed()
         tm.ok(result)
 
-    @staticmethod
-    def test_error_handling() -> None:
-        """Non-secret fields are still exposed for an unreachable endpoint."""
-        bad_settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://invalid.example.com",
-                "username": "invalid",
-                "password": "invalid",
-            },
-        })
-        tap = FlextTapOracleWms.from_settings(bad_settings)
-        result = tap.validate_configuration()
-        tm.ok(result)
-        tm.that(result.value, has="invalid.example.com")
-
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-s"])

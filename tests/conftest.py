@@ -2,7 +2,6 @@
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
@@ -15,6 +14,7 @@ import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tests import u
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -22,17 +22,32 @@ if TYPE_CHECKING:
     from tests import t
 
 
+_ORACLE_WMS_REQUIRED_VARS = (
+    "FLEXT_TAP_ORACLE_WMS_BASE_URL",
+    "FLEXT_TAP_ORACLE_WMS_USERNAME",
+    "FLEXT_TAP_ORACLE_WMS_PASSWORD",
+)
+
+
 @pytest.fixture(scope="session")
 def oracle_wms_environment() -> None:
-    """Set Oracle WMS environment variables for tests."""
+    """Load only an explicitly configured, reachable local test environment."""
     env_file = Path(__file__).parent.parent / ".env"
-    if env_file.exists():
-        with env_file.open(encoding="utf-8") as f:
-            for file_line in f:
-                line = file_line.strip()
-                if line and (not line.startswith("#")):
-                    key, value = line.split("=", 1)
-                    os.environ[key] = value
+    u.Tests.skip_if_no_external_environment(
+        _ORACLE_WMS_REQUIRED_VARS, env_file,
+        url_var=_ORACLE_WMS_REQUIRED_VARS[0],
+    )
+
+
+@pytest.fixture(scope="session")
+def oracle_wms_available(oracle_wms_environment: None) -> bool:
+    """Check if Oracle WMS external environment is available for integration tests.
+
+    Returns:
+        True if all required environment variables are set, False otherwise.
+    """
+    _ = oracle_wms_environment
+    return True
 
 
 @pytest.fixture
@@ -59,7 +74,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
 
 
 @pytest.fixture
-def real_config() -> FlextTapOracleWmsSettings:
+def real_config(oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
     """Real configuration resolved from the canonical FLEXT_TAP_ORACLE_WMS_* env.
 
     The settings model declares ``env_prefix="FLEXT_TAP_ORACLE_WMS_"``, so
@@ -68,7 +83,12 @@ def real_config() -> FlextTapOracleWmsSettings:
 
     Returns:
         The resulting ``FlextTapOracleWmsSettings``.
+
+    Raises:
+        pytest.skip: If Oracle WMS environment is not available.
     """
+    if not oracle_wms_available:
+        pytest.skip("Oracle WMS external environment not configured")
     return FlextTapOracleWmsSettings()
 
 
@@ -107,12 +127,20 @@ def tap_instance(
 
 
 @pytest.fixture
-def real_tap_instance(real_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
+def real_tap_instance(
+    real_config: FlextTapOracleWmsSettings,
+    oracle_wms_available: bool,
+) -> FlextTapOracleWms:
     """Real tap instance for integration tests.
 
     Returns:
         The resulting ``FlextTapOracleWms``.
+
+    Raises:
+        pytest.skip: If Oracle WMS environment is not available.
     """
+    if not oracle_wms_available:
+        pytest.skip("Oracle WMS external environment not configured")
     return FlextTapOracleWms.from_settings(real_config)
 
 
@@ -120,16 +148,19 @@ def pytest_collection_modifyitems(
     config: pytest.Config,
     items: t.SequenceOf[pytest.Item],
 ) -> None:
-    """Add markers to tests based on their location."""
+    """Declare connectivity by fixture dependency, never integration location."""
     _ = config
     for item in items:
         item_path = str(item.path)
         if "integration" in item_path:
             item.add_marker(pytest.mark.integration)
-            item.add_marker(pytest.mark.remote)
         if any(x in item_path for x in ["e2e", "performance"]):
             item.add_marker(pytest.mark.slow)
-            item.add_marker(pytest.mark.remote)
+        if any(name in item.fixturenames for name in ("real_config", "real_tap_instance")):
+            item.add_marker(pytest.mark.connectivity(
+                required_vars=_ORACLE_WMS_REQUIRED_VARS,
+                url_var=_ORACLE_WMS_REQUIRED_VARS[0],
+            ))
 
 
 @pytest.fixture
