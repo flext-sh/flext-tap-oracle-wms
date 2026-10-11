@@ -140,7 +140,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         Returns:
             The resulting ``m.Meltano.SingerCatalogMetadata``.
         """
-        entry_dict = t.json_mapping_adapter().validate_python(raw_entry)
+        entry_dict = u.json_mapping_adapter().validate_python(raw_entry)
         breadcrumb_raw: t.JsonValue = entry_dict.get("breadcrumb", [])
         metadata_map_raw: t.JsonValue = entry_dict.get("metadata", {})
         return m.Meltano.SingerCatalogMetadata(
@@ -207,7 +207,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         for raw_stream in FlextTapOracleWms._streams_sequence(raw):
             if not isinstance(raw_stream, Mapping):
                 continue
-            s_dict: t.JsonMapping = t.json_mapping_adapter().validate_python(raw_stream)
+            s_dict: t.JsonMapping = u.json_mapping_adapter().validate_python(raw_stream)
             stream_entries.append(
                 FlextTapOracleWms._catalog_entry(
                     s_dict=s_dict,
