@@ -12,10 +12,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-from flext_tests import tm
 
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
-from tests import u
+from tests import tm, u
 from tests._tap_parts.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 if TYPE_CHECKING:
