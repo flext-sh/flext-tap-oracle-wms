@@ -366,3 +366,6 @@ CLAUDE.local.md
 
 # Project layout exceptions
 config.json
+
+# RUNTIME: local projections (derived)
+/.vscode/settings.json

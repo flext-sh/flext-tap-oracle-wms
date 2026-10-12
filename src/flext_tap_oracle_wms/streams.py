@@ -16,9 +16,12 @@ from flext_tap_oracle_wms import c, e, m, p, r, t, u
 if TYPE_CHECKING:
     from flext_oracle_wms import FlextOracleWmsUtilities
 
-    type SingerSchemaInput = (
-        str | PathLike[str] | t.JsonMapping | t.Meltano.SingerSchema | None
-    )
+    # The typed Singer schema input forms. ``t.Meltano.SingerSchema`` is a
+    # runtime class-body alias the owner declares "for isinstance and schema
+    # construction" — not for type position — so the SDK ``Schema`` object is
+    # admitted here through the runtime ``isinstance`` branch below rather than
+    # leaking the partially-unknown member type into this alias.
+    type SingerSchemaInput = str | PathLike[str] | t.JsonMapping | None
 
 
 class FlextTapOracleWmsStreams:

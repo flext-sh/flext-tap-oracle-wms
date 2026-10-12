@@ -15,7 +15,7 @@ import pytest
 
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from tests import tm, u
-from tests._tap_parts.helpers import TestsFlextTapOracleWmsHelpersMixin
+from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms.tap import FlextTapOracleWms
