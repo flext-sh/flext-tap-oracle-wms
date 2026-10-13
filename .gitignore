@@ -364,8 +364,5 @@ CLAUDE.local.md
 !config/
 !config/gitleaks-release.toml
 
-# Project layout exceptions
-config.json
-
 # RUNTIME: local projections (derived)
 /.vscode/settings.json
