@@ -76,16 +76,14 @@ class FlextTapOracleWmsStreams:
         def _normalize_schema(cls, schema: SingerSchemaInput) -> t.JsonDict | None:
             """Normalize every schema form accepted by the Singer SDK base class.
 
-            Dictionaries pass through validation, Singer ``Schema`` objects dump to
-            their dictionary form, and file-system paths load the JSON document.
+            Dictionaries pass through validation and file-system paths load the JSON
+            document.
 
             Returns:
                 The resulting ``t.JsonDict | None``.
             """
             if schema is None:
                 return None
-            if isinstance(schema, t.Meltano.SingerSchema):
-                return t.json_dict_adapter().validate_python(schema.to_dict())
             if isinstance(schema, (PathLike, str)):
                 return cls._load_schema_document(Path(schema))
             return t.json_dict_adapter().validate_python(dict(schema))
