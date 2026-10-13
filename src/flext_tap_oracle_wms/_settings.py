@@ -114,7 +114,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         additional_headers: Annotated[
             t.StrMapping,
             m.Field(description="Additional HTTP headers"),
-        ] = m.Field(default_factory=dict[str, str])
+        ] = m.Field(default_factory=t.StrDict)
         log_level: Annotated[str, m.Field(description="Log level")] = "INFO"
         enable_request_logging: Annotated[
             bool,
