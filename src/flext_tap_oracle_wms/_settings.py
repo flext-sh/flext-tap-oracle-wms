@@ -14,6 +14,7 @@ import re
 from typing import Annotated
 
 from flext_core import FlextSettings, m, t
+from typing_extensions import TypeForm
 
 _ISO_DATE_RE = re.compile(
     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$",
@@ -114,7 +115,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         additional_headers: Annotated[
             t.StrMapping,
             m.Field(description="Additional HTTP headers"),
-        ] = m.Field(default_factory=t.StrDict)
+        ] = m.Field(default_factory=m.empty(TypeForm(t.StrMapping)))
         log_level: Annotated[str, m.Field(description="Log level")] = "INFO"
         enable_request_logging: Annotated[
             bool,
