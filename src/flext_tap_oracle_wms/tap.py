@@ -60,6 +60,10 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         catalog is supplied the SDK uses it instead of performing live
         discovery at construction.
 
+        Args:
+            settings: Typed settings model lowered into the flat config mapping.
+            catalog: Typed catalog to bypass discovery, or None to discover.
+
         Returns:
             The resulting ``FlextTapOracleWms``.
         """
@@ -71,7 +75,11 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
     @property
     def settings(self) -> t.JsonMapping:
-        """Expose tap configuration through legacy settings contract."""
+        """Expose tap configuration through the legacy settings contract.
+
+        Returns:
+            The validated tap configuration mapping.
+        """
         # NOTE (multi-agent): mro-rn88 — read the Singer tap config (self.config),
         # not an
         # undefined bare `config` (settings-fallout left a self-referential assignment).
@@ -80,6 +88,9 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @property
     def catalog_dict_typed(self) -> t.MutableJsonMapping:
         """A validated Singer catalog mapping with recursive contracts.
+
+        Returns:
+            The resulting ``t.MutableJsonMapping``.
 
         Raises:
             e.ConfigurationError: If Invalid catalog_dict format.
@@ -226,6 +237,9 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     def flext_config(self) -> FlextTapOracleWmsSettings:
         """The validated tap settings.
 
+        Returns:
+            The resulting ``FlextTapOracleWmsSettings``.
+
         Raises:
             e.ConfigurationError: If Invalid configuration.
         """
@@ -243,7 +257,10 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
     @property
     def wms_client(self) -> FlextOracleWmsUtilities.OracleWms.Client:
-        """A started WMS client instance.
+        """A started WMS client instance, created on first use.
+
+        Returns:
+            The connected ``FlextOracleWmsUtilities.OracleWms.Client``.
 
         Raises:
             e.ConfigurationError: If ``start_result.failure``.
@@ -353,6 +370,9 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     def execute(self, message: str | None = None) -> p.Result[bool]:
         """Run a full tap sync when no custom message is provided.
 
+        Args:
+            message: Unsupported execution message; any non-None value fails.
+
         Returns:
             The resulting ``p.Result[bool]``.
         """
@@ -362,7 +382,11 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         return r[bool].ok(value=True)
 
     def compute_implementation_metrics(self) -> p.Result[t.JsonValue]:
-        """Return the basic runtime metrics for observability."""
+        """Return the basic runtime metrics for observability.
+
+        Returns:
+            The resulting ``p.Result[t.JsonValue]``.
+        """
         return r[t.JsonValue].ok({
             "tap_name": self.name,
             "version": self.resolve_implementation_version(),
@@ -371,12 +395,20 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
     @staticmethod
     def resolve_implementation_name() -> str:
-        """Return the human-readable implementation name."""
+        """Return the human-readable implementation name.
+
+        Returns:
+            The display name of the tap implementation.
+        """
         return "FLEXT Oracle WMS Tap"
 
     @staticmethod
     def resolve_implementation_version() -> str:
-        """Return the installed package version."""
+        """Return the installed package version.
+
+        Returns:
+            The tap package version string.
+        """
         return __version__
 
     def validate_configuration(self) -> p.Result[t.JsonValue]:

@@ -53,7 +53,15 @@ class FlextTapOracleWmsStreams:
             schema: SingerSchemaInput = None,
             name: str | None = None,
         ) -> None:
-            """Initialize stream."""
+            """Initialize the stream over its parent tap.
+
+            Args:
+                tap: Parent Singer tap instance providing configuration.
+                schema: Singer schema mapping, JSON schema file path, or None to
+                    defer to the tap catalog.
+                name: Stream name override; defaults to the class-level name.
+
+            """
             schema_dict: t.JsonDict | None = self._normalize_schema(schema)
             m.Meltano.SingerStreamBase.__init__(
                 self,
@@ -110,7 +118,7 @@ class FlextTapOracleWmsStreams:
             return t.json_dict_adapter().validate_python(loaded_result.value)
 
         def _config_map(self) -> t.JsonMapping:
-            """The tap settings mapping when the tap exposes WMS client settings.
+            """Return the tap settings mapping when the tap exposes WMS settings.
 
             Returns:
                 The resulting ``t.JsonMapping``.
@@ -152,17 +160,30 @@ class FlextTapOracleWmsStreams:
 
         @property
         def page_size(self) -> int:
-            """The effective page size used when requesting WMS entity pages."""
+            """The effective page size used when requesting WMS entity pages.
+
+            Returns:
+                The configured page size, falling back to 100 when unset.
+
+            """
             return self._page_size
 
         @page_size.setter
         def page_size(self, value: int) -> None:
-            """Override the effective page size (validated against tap limits)."""
+            """Set the effective page size when the value is positive.
+
+            Args:
+                value: Candidate page size; non-positive values are ignored.
+
+            """
             self._page_size = value if value > 0 else self._page_size
 
         @staticmethod
         def normalize_json_value(value: t.JsonValue) -> t.JsonValue:
             """Normalize arbitrary values into Singer-compatible JSON values.
+
+            Args:
+                value: Arbitrary runtime value to normalize.
 
             Returns:
                 The resulting ``t.JsonValue``.
@@ -196,6 +217,9 @@ class FlextTapOracleWmsStreams:
         def normalize_scalar_value(value: t.JsonValue) -> t.JsonValue:
             """Normalize scalar values that may include non-JSON runtime scalars.
 
+            Args:
+                value: Runtime value to normalize into a JSON-safe scalar.
+
             Returns:
                 The resulting ``t.JsonValue``.
             """
@@ -214,8 +238,14 @@ class FlextTapOracleWmsStreams:
         ) -> t.IterableOf[t.JsonDict]:
             """Yield the records from Oracle WMS (Singer SDK ``Stream`` hook).
 
+            Args:
+                context: Partition context for incremental syncs, or None.
+
+            Yields:
+                Each record mapping normalized into ``t.JsonDict`` form.
+
             Raises:
-                e.OperationError: If Error getting records for.
+                e.OperationError: If fetching a page of records fails.
             """
             page = 1
             has_more = True
@@ -246,7 +276,11 @@ class FlextTapOracleWmsStreams:
             row: t.JsonDict,
             context: t.ScalarMapping | None = None,
         ) -> t.JsonDict:
-            """Post-process a record.
+            """Post-process one record before it is emitted.
+
+            Args:
+                row: Record mapping to apply mappings and pruning against.
+                context: Partition context recorded onto the row, or None.
 
             Returns:
                 The resulting ``t.JsonDict``.
@@ -311,7 +345,11 @@ class FlextTapOracleWmsStreams:
             page: int,
             context: t.ScalarMapping | None,
         ) -> t.MutableScalarMapping:
-            """Build kwargs for the operation call.
+            """Build kwargs for the WMS operation call.
+
+            Args:
+                page: One-based page number to request.
+                context: Partition context providing the replication start, or None.
 
             Returns:
                 The resulting ``t.MutableScalarMapping``.

@@ -93,7 +93,7 @@ def real_config(oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
 
 @pytest.fixture
 def sample_catalog() -> m.Meltano.SingerCatalog:
-    """A real Singer catalog model so tap construction skips WMS discovery.
+    """Build a real Singer catalog model so tap construction skips discovery.
 
     Returns:
         The resulting ``m.Meltano.SingerCatalog``.
