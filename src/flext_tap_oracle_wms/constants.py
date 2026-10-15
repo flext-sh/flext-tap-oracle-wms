@@ -12,8 +12,10 @@ from typing import TYPE_CHECKING
 from flext_meltano import FlextMeltanoConstants
 from flext_oracle_wms import FlextOracleWmsConstants
 
-from flext_tap_oracle_wms._constants.base import FlextTapOracleWmsConstantsBase
-from flext_tap_oracle_wms._constants.values import FlextTapOracleWmsConstantsValues
+from flext_tap_oracle_wms._constants import (
+    FlextTapOracleWmsConstantsBase,
+    FlextTapOracleWmsConstantsValues,
+)
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms import t

@@ -11,11 +11,11 @@ from typing import TYPE_CHECKING
 
 import psutil
 import pytest
-from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests._tap_parts.helpers import TestsFlextTapOracleWmsHelpersMixin
+from tests import tm
+from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 if TYPE_CHECKING:
     from tests import t
@@ -36,6 +36,7 @@ def performance_config(
 
     Returns:
         The resulting ``FlextTapOracleWmsSettings``.
+
     """
     base = real_config.TapOracleWms.model_dump()
     base.update({
@@ -52,6 +53,7 @@ def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 
     Returns:
         The resulting ``FlextTapOracleWms``.
+
     """
     return FlextTapOracleWms.from_settings(performance_config)
 

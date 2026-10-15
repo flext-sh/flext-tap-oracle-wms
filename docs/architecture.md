@@ -551,7 +551,7 @@ class SecureWMSConfig(dict):
     password: SecretStr | None = None
     oauth_client_secret: SecretStr | None = None
 
-    def get_credentials(self) -> dict[str, str]:
+    def get_credentials(self) -> t.StrDict:
         """Get credentials with secret values."""
         creds = {}
         if self.password:

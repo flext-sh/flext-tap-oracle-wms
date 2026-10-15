@@ -43,7 +43,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                     error_cls: Exception class to raise on validation failure.
 
                 Returns:
-                    Mapping with string keys, or None if not a mapping.
+                    Mapping with string keys, or None if not a mapping or when
+                    adapter validation fails and ``error_cls`` is None.
 
                 """
                 if not isinstance(value, Mapping):
@@ -82,7 +83,8 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
                     error_cls: Exception class to raise on validation failure.
 
                 Returns:
-                    Sequence of container values, or None if not a list.
+                    Sequence of container values, or None if not a list or when
+                    adapter validation fails and ``error_cls`` is None.
 
                 """
                 if not isinstance(value, list):

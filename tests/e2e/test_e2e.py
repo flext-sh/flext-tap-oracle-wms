@@ -20,13 +20,12 @@ from typing import TYPE_CHECKING
 import pytest
 from flext_cli import u as cli_u
 from flext_meltano import c as meltano_c
-from flext_tests import tm
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t, u
-from tests._tap_parts.helpers import TestsFlextTapOracleWmsHelpersMixin
+from tests import t, tm, u
+from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 if TYPE_CHECKING:
     from tests import m
@@ -201,6 +200,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
 
         Returns:
             The resulting ``int``.
+
         """
         primary_keys = 0
         for meta in metadata:
@@ -217,6 +217,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
 
         Returns:
             The resulting ``int``.
+
         """
         nullable_documented = 0
         if isinstance(properties_raw, Mapping):
@@ -394,6 +395,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
 
         Returns:
             The resulting ``(incremental, full_table, valid_schemas)`` tuple.
+
         """
         metadata = stream.metadata
         table_meta = next(
@@ -424,6 +426,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
 
         Returns:
             The resulting summary tuple.
+
         """
         start_time = time.time()
         tap_instance = FlextTapOracleWms.from_settings(real_config)

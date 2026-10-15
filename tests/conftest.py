@@ -46,6 +46,7 @@ def oracle_wms_available(oracle_wms_environment: None) -> bool:
 
     Returns:
         True if all required environment variables are set, False otherwise.
+
     """
     _ = oracle_wms_environment
     return True
@@ -57,6 +58,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
 
     Returns:
         The resulting ``FlextTapOracleWmsSettings``.
+
     """
     # NOTE (multi-agent): mro-u3eu — ADR-005 namespaces project fields under
     # settings.TapOracleWms.*; construct via the namespace payload.
@@ -93,10 +95,11 @@ def real_config(oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
 
 @pytest.fixture
 def sample_catalog() -> m.Meltano.SingerCatalog:
-    """A real Singer catalog model so tap construction skips WMS discovery.
+    """Build a real Singer catalog model so tap construction skips discovery.
 
     Returns:
         The resulting ``m.Meltano.SingerCatalog``.
+
     """
     catalog: m.Meltano.SingerCatalog = m.Meltano.SingerCatalog.model_validate({
         "streams": [
@@ -121,6 +124,7 @@ def tap_instance(
 
     Returns:
         The resulting ``FlextTapOracleWms``.
+
     """
     return FlextTapOracleWms.from_settings(sample_config, catalog=sample_catalog)
 

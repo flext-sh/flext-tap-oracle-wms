@@ -40,8 +40,13 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         (``get_singer_command``) parses and validates ``--config`` itself instead
         of crashing at construction when no config is pre-supplied.
 
+        Args:
+            settings: Settings mapping or model to seed the tap config, or None
+                to defer to the Singer CLI ``--config`` parsing.
+
         Returns:
             The resulting ``p.Meltano.SingerTapInstance``.
+
         """
         raw_config: t.JsonDict | None = None
         if settings is not None:
