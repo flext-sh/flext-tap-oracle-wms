@@ -24,6 +24,7 @@ def main() -> int:
     Raises:
         e.ConfigurationError: If ``validation_result.failure``.
         e.OperationError: If ``catalog_result.failure``.
+
     """
     settings = FlextTapOracleWmsSettings.model_validate({
         "TapOracleWms": {

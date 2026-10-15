@@ -66,6 +66,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``FlextTapOracleWms``.
+
         """
         catalog_arg = None if catalog is None else catalog.model_dump(mode="json")
         return cls(
@@ -79,6 +80,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The validated tap configuration mapping.
+
         """
         # NOTE (multi-agent): mro-rn88 — read the Singer tap config (self.config),
         # not an
@@ -94,6 +96,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Raises:
             e.ConfigurationError: If Invalid catalog_dict format.
+
         """
         raw_catalog_dict: t.JsonMapping = getattr(super(), "catalog_dict", {})
         try:
@@ -113,6 +116,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``t.JsonList``.
+
         """
         raw_streams = raw.get("streams")
         return (
@@ -130,6 +134,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``MutableSequence[m.Meltano.SingerCatalogMetadata]``.
+
         """
         metadata_raw: t.JsonValue = s_dict.get("metadata", [])
         metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata] = []
@@ -150,6 +155,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``m.Meltano.SingerCatalogMetadata``.
+
         """
         entry_dict = u.json_mapping_adapter().validate_python(raw_entry)
         breadcrumb_raw: t.JsonValue = entry_dict.get("breadcrumb", [])
@@ -180,6 +186,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Raises:
             e.ConfigurationError: If ``entry_result.failure``.
+
         """
         schema_raw: t.JsonValue = s_dict.get("schema", {})
         stream_name = str(s_dict.get("stream", ""))
@@ -213,6 +220,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``t.MutableJsonMapping``.
+
         """
         stream_entries: list[m.Meltano.SingerCatalogEntry] = []
         for raw_stream in FlextTapOracleWms._streams_sequence(raw):
@@ -242,6 +250,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Raises:
             e.ConfigurationError: If Invalid configuration.
+
         """
         # NOTE (multi-agent): mro-rn88 — the Singer config is FLAT (config_jsonschema
         # properties); the FLEXT settings model namespaces project fields under
@@ -264,6 +273,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Raises:
             e.ConfigurationError: If ``start_result.failure``.
+
         """
         if self._wms_client is None:
             password: str | t.SecretStr = self.flext_config.TapOracleWms.password
@@ -301,6 +311,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``p.Result[m.Meltano.SingerCatalog]``.
+
         """
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.failure:
@@ -347,6 +358,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Raises:
             e.ConfigurationError: If Catalog discovery failed.
+
         """
         catalog_result = self.discovercatalog_typed()
         if catalog_result.failure:
@@ -375,6 +387,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         if message:
             return r[bool].fail("Tap does not support message execution")
@@ -386,6 +399,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``p.Result[t.JsonValue]``.
+
         """
         return r[t.JsonValue].ok({
             "tap_name": self.name,
@@ -399,6 +413,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The display name of the tap implementation.
+
         """
         return "FLEXT Oracle WMS Tap"
 
@@ -408,6 +423,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The tap package version string.
+
         """
         return __version__
 
@@ -416,6 +432,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``p.Result[t.JsonValue]``.
+
         """
         return r[t.JsonValue].ok({
             "base_url": self.flext_config.TapOracleWms.base_url,
@@ -428,6 +445,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         Returns:
             The resulting ``p.Result[bool]``.
+
         """
         try:
             _ = self.flext_config

@@ -200,6 +200,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
 
         Returns:
             The resulting ``int``.
+
         """
         primary_keys = 0
         for meta in metadata:
@@ -216,6 +217,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
 
         Returns:
             The resulting ``int``.
+
         """
         nullable_documented = 0
         if isinstance(properties_raw, Mapping):
@@ -393,6 +395,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
 
         Returns:
             The resulting ``(incremental, full_table, valid_schemas)`` tuple.
+
         """
         metadata = stream.metadata
         table_meta = next(
@@ -423,6 +426,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
 
         Returns:
             The resulting summary tuple.
+
         """
         start_time = time.time()
         tap_instance = FlextTapOracleWms.from_settings(real_config)

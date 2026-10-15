@@ -19,6 +19,7 @@ def main() -> int:
 
     Returns:
         The resulting ``int``.
+
     """
     return FlextTapOracleWmsService().cli_main()
 

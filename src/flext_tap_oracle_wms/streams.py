@@ -89,6 +89,7 @@ class FlextTapOracleWmsStreams:
 
             Returns:
                 The resulting ``t.JsonDict | None``.
+
             """
             if schema is None:
                 return None
@@ -105,6 +106,7 @@ class FlextTapOracleWmsStreams:
 
             Raises:
                 e.ValidationError: If ``loaded_result.failure``.
+
             """
             loaded_result = u.Cli.json_loads(
                 path.read_text(encoding=c.DEFAULT_ENCODING),
@@ -122,6 +124,7 @@ class FlextTapOracleWmsStreams:
 
             Returns:
                 The resulting ``t.JsonMapping``.
+
             """
             tap_instance = self._tap
             if isinstance(tap_instance, p.TapOracleWms.TapWithWmsClientSettings):
@@ -135,6 +138,7 @@ class FlextTapOracleWmsStreams:
 
             Raises:
                 ValueError: If The schema for stream.
+
             """
             if self._typed_schema is None:
                 msg = f"The schema for stream '{self.name}' was not provided"
@@ -147,6 +151,7 @@ class FlextTapOracleWmsStreams:
 
             Raises:
                 TypeError: If WMS client not available - tap must be FlextTapOracleWms.
+
             """
             if self._client is not None:
                 return self._client
@@ -187,6 +192,7 @@ class FlextTapOracleWmsStreams:
 
             Returns:
                 The resulting ``t.JsonValue``.
+
             """
             if isinstance(value, c.PRIMITIVES_TYPES):
                 return value
@@ -222,6 +228,7 @@ class FlextTapOracleWmsStreams:
 
             Returns:
                 The resulting ``t.JsonValue``.
+
             """
             if isinstance(value, c.PRIMITIVES_TYPES):
                 return value
@@ -246,6 +253,7 @@ class FlextTapOracleWmsStreams:
 
             Raises:
                 e.OperationError: If fetching a page of records fails.
+
             """
             page = 1
             has_more = True
@@ -284,6 +292,7 @@ class FlextTapOracleWmsStreams:
 
             Returns:
                 The resulting ``t.JsonDict``.
+
             """
             config_map = self._config_map()
             self._apply_column_mappings(row, config_map)
@@ -353,6 +362,7 @@ class FlextTapOracleWmsStreams:
 
             Returns:
                 The resulting ``t.MutableScalarMapping``.
+
             """
             result_kwargs: t.MutableScalarMapping = {}
             result_kwargs["page"] = page
@@ -376,6 +386,7 @@ class FlextTapOracleWmsStreams:
 
             Returns:
                 The resulting ``p.Result[tuple[t.SequenceOf[t.JsonMapping], bool]]``.
+
             """
             kwargs = self.build_operation_kwargs(page, context)
             limit_raw = kwargs.get("limit")
@@ -412,6 +423,7 @@ class FlextTapOracleWmsStreams:
 
             Yields:
                 Each ``t.JsonDict``.
+
             """
             conv = u.TapOracleWms.MappingConversion
             for record in records:

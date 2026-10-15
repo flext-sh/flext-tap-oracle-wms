@@ -36,6 +36,7 @@ def performance_config(
 
     Returns:
         The resulting ``FlextTapOracleWmsSettings``.
+
     """
     base = real_config.TapOracleWms.model_dump()
     base.update({
@@ -52,6 +53,7 @@ def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 
     Returns:
         The resulting ``FlextTapOracleWms``.
+
     """
     return FlextTapOracleWms.from_settings(performance_config)
 

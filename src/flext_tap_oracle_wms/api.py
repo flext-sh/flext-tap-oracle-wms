@@ -46,6 +46,7 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
 
         Returns:
             The resulting ``p.Meltano.SingerTapInstance``.
+
         """
         raw_config: t.JsonDict | None = None
         if settings is not None:

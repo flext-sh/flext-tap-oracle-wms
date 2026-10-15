@@ -14,9 +14,9 @@ from __future__ import annotations
 
 from typing import Annotated, Self
 
+from flext_core import m, t
 from flext_meltano import FlextMeltanoConfig
 
-from flext_core import m, t
 from flext_tap_oracle_wms._models.base import FlextTapOracleWmsModelsBase
 
 
@@ -48,6 +48,7 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
 
         Returns:
             The resulting ``bool``.
+
         """
         return object.__eq__(self, other)
 
@@ -56,6 +57,7 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
 
         Returns:
             The resulting ``int``.
+
         """
         return object.__hash__(self)
 
