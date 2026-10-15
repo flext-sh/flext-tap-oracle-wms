@@ -407,3 +407,6 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             e.ConfigurationError,
         ) as exc:
             return r[bool].fail(str(exc), exception=exc)
+
+
+__all__: list[str] = ["FlextTapOracleWms"]
