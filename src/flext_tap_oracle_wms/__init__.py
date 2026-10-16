@@ -10,22 +10,25 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from flext_core import install_lazy_exports
-from flext_tap_oracle_wms.__version__ import (
-    __author__,
-    __author_email__,
-    __description__,
-    __license__,
-    __title__,
-    __url__,
-    __version__,
-    __version_info__,
-)
+from flext_core.lazy import install_lazy_exports
+
+from flext_tap_oracle_wms.__version__ import __version__
 
 if TYPE_CHECKING:
     from flext_meltano import d, h, r, s, x
     from flext_oracle_wms import e
 
+    from flext_tap_oracle_wms import _constants, _models
+    from flext_tap_oracle_wms.__version__ import (
+        FlextTapOracleWmsVersion,
+        __author__,
+        __author_email__,
+        __description__,
+        __license__,
+        __title__,
+        __url__,
+        __version_info__,
+    )
     from flext_tap_oracle_wms._config import FlextTapOracleWmsConfig, config
     from flext_tap_oracle_wms._settings import FlextTapOracleWmsSettings, settings
     from flext_tap_oracle_wms.api import FlextTapOracleWmsService, tap_oracle_wms
@@ -46,6 +49,7 @@ __all__: tuple[str, ...] = (
     "FlextTapOracleWmsSettings",
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
+    "FlextTapOracleWmsVersion",
     "__author__",
     "__author_email__",
     "__description__",
@@ -54,6 +58,8 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
+    "_constants",
+    "_models",
     "c",
     "config",
     "d",
@@ -83,6 +89,16 @@ install_lazy_exports(
         "FlextTapOracleWmsSettings": "._settings",
         "FlextTapOracleWmsTypes": ".typings",
         "FlextTapOracleWmsUtilities": ".utilities",
+        "FlextTapOracleWmsVersion": ".__version__",
+        "__author__": ".__version__",
+        "__author_email__": ".__version__",
+        "__description__": ".__version__",
+        "__license__": ".__version__",
+        "__title__": ".__version__",
+        "__url__": ".__version__",
+        "__version_info__": ".__version__",
+        "_constants": "._constants",
+        "_models": "._models",
         "c": ".constants",
         "config": "._config",
         "d": "flext_meltano",

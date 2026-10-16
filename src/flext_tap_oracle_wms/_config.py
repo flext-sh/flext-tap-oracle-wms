@@ -14,9 +14,9 @@ from __future__ import annotations
 
 from typing import Annotated, Self
 
+from flext_core import m, t
 from flext_meltano import FlextMeltanoConfig
 
-from flext_core import m, t
 from flext_tap_oracle_wms._models.base import FlextTapOracleWmsModelsBase
 
 
@@ -38,10 +38,28 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
         return object.__new__(cls)
 
     # Identity equality/hash per the frozen-config singleton contract: plain
-    # object semantics, never the inherited pydantic field comparison.
-    __eq__ = object.__eq__
+    # object semantics, never the inherited pydantic field comparison. The
+    # ``object`` annotation is the narrowest spelling pyright's LSP override
+    # contract admits, mirroring ``FlextMeltanoConstantsSettings``; the
+    # ``ban-broad-annotation`` dunder carve-out does not reach typed parameters,
+    # so the directive below is a scoped admission of that tooling conflict.
+    def __eq__(self, other: object) -> bool:  # ast-grep-ignore: ban-broad-annotation
+        """Identity equality per the frozen-config singleton contract.
 
-    __hash__ = object.__hash__
+        Returns:
+            The resulting ``bool``.
+
+        """
+        return object.__eq__(self, other)
+
+    def __hash__(self) -> int:
+        """Identity hash per the frozen-config singleton contract.
+
+        Returns:
+            The resulting ``int``.
+
+        """
+        return object.__hash__(self)
 
     TapOracleWms: Annotated[
         FlextTapOracleWmsModelsBase.TapOracleWmsNamespace,

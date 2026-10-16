@@ -24,9 +24,10 @@ def main() -> int:
     Raises:
         e.ConfigurationError: If ``validation_result.failure``.
         e.OperationError: If ``catalog_result.failure``.
+
     """
-    settings = FlextTapOracleWmsSettings(
-        TapOracleWms={
+    settings = FlextTapOracleWmsSettings.model_validate({
+        "TapOracleWms": {
             "base_url": os.getenv(
                 "ORACLE_WMS_BASE_URL",
                 "https://invalid.wms.ocs.oraclecloud.com/company_unknow",
@@ -39,7 +40,7 @@ def main() -> int:
             "include_entities": ["inventory", "locations", "orders"],
             "enable_request_logging": True,
         },
-    )
+    })
     # NOTE (multi-agent): mro-u3eu — singer_sdk.Tap.__init__ takes the FLAT
     # Singer config via `config=`; pass the namespaced settings payload.
     tap = FlextTapOracleWms(config=settings.TapOracleWms.model_dump(mode="json"))
