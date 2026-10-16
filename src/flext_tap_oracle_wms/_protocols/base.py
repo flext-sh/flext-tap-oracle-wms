@@ -34,6 +34,4 @@ class FlextTapOracleWmsProtocolsBase:
 
 __all__: list[str] = [
     "FlextTapOracleWmsProtocolsBase",
-    "TapWithWmsClient",
-    "TapWithWmsClientSettings",
 ]
