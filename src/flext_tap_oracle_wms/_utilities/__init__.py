@@ -15,14 +15,18 @@ from flext_core.lazy import install_lazy_exports
 if TYPE_CHECKING:
     from flext_tap_oracle_wms._utilities.mapping import (
         FlextTapOracleWmsUtilitiesConversion,
+        MappingConversion,
     )
 
 
-__all__: tuple[str, ...] = ("FlextTapOracleWmsUtilitiesConversion",)
+__all__: tuple[str, ...] = ("FlextTapOracleWmsUtilitiesConversion", "MappingConversion")
 
 install_lazy_exports(
     __name__,
     globals(),
-    MappingProxyType({"FlextTapOracleWmsUtilitiesConversion": ".mapping"}),
+    MappingProxyType({
+        "FlextTapOracleWmsUtilitiesConversion": ".mapping",
+        "MappingConversion": ".mapping",
+    }),
     public_exports=__all__,
 )

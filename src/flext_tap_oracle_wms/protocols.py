@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """Singer Oracle WMS tap protocols for FLEXT ecosystem.
 
 Only ``TapOracleWms.TapWithWmsClient`` and ``TapOracleWms.TapWithWmsClientSettings``
@@ -12,7 +13,7 @@ from __future__ import annotations
 from flext_meltano import FlextMeltanoProtocols
 from flext_oracle_wms import FlextOracleWmsProtocols
 
-from flext_tap_oracle_wms._protocols.base import FlextTapOracleWmsProtocolsBase
+from flext_tap_oracle_wms._protocols import FlextTapOracleWmsProtocolsBase
 
 
 class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols):
