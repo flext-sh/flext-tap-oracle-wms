@@ -31,7 +31,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         validate_assignment=True,
     )
 
-    class TapOracleWmsSettings(m.BaseModel):
+    class TapOracleWmsSettings(m.StrictModel):
         """Namespaced Oracle WMS tap settings (simple scalars only)."""
 
         base_url: Annotated[str, m.Field(description="Base Oracle WMS API URL")] = ""
