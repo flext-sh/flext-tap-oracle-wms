@@ -117,7 +117,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
             t.StrMapping,
             m.Field(description="Additional HTTP headers"),
         ] = m.Field(
-            default_factory=lambda: flext_core.u.empty(TypeForm(t.StrMapping))(),
+            default_factory=flext_core.u.empty(TypeForm(t.StrMapping)),
             validate_default=True,
         )
         log_level: Annotated[str, m.Field(description="Log level")] = "INFO"
