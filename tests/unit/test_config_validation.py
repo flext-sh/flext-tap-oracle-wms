@@ -139,10 +139,10 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
         namespace = settings.TapOracleWms
         tm.that(namespace.page_size, eq=50)
         # column_mappings is a JSON-encoded string per ADR-005 simple-scalar rule
-        decoded_mappings = t.json_dict_adapter().validate_json(
+        tm.that(
             namespace.column_mappings,
+            eq='{"inventory": {"old_col": "new_col"}}',
         )
-        tm.that(decoded_mappings, eq={"inventory": {"old_col": "new_col"}})
         tm.that(namespace.ignored_columns, eq=["internal_id"])
 
     @staticmethod
