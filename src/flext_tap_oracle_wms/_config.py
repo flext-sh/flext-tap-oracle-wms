@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from typing import Annotated, Self
 
-from flext_core import m, t
-from flext_meltano import FlextMeltanoConfig
+from flext_core import t
+from flext_meltano import FlextMeltanoConfig, m
 
 
 class FlextTapOracleWmsConfig(FlextMeltanoConfig):
