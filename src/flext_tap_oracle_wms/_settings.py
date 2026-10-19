@@ -13,6 +13,7 @@ from __future__ import annotations
 import re
 from typing import Annotated
 
+import flext_core
 from flext_core import FlextSettings, m, t
 from typing_extensions import TypeForm
 
@@ -115,7 +116,10 @@ class FlextTapOracleWmsSettings(FlextSettings):
         additional_headers: Annotated[
             t.StrMapping,
             m.Field(description="Additional HTTP headers"),
-        ] = m.Field(default_factory=m.empty(TypeForm(t.StrMapping)))
+        ] = m.Field(
+            default_factory=lambda: flext_core.u.empty(TypeForm(t.StrMapping))(),
+            validate_default=True,
+        )
         log_level: Annotated[str, m.Field(description="Log level")] = "INFO"
         enable_request_logging: Annotated[
             bool,
