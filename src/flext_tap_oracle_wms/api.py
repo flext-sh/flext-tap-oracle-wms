@@ -17,7 +17,7 @@ from flext_meltano.services.consumer_bases.tap_service_base import (
 )
 from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapAdapter
 
-from flext_tap_oracle_wms import p, t, u
+from flext_tap_oracle_wms import m, p, t, u
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
@@ -26,7 +26,7 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
 
     tap_name: Annotated[
         t.NonEmptyStr,
-        u.Field(description="Canonical Singer tap identifier."),
+        m.Field(description="Canonical Singer tap identifier."),
     ] = "tap-oracle-wms"
 
     @override
