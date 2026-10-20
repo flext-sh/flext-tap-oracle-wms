@@ -24,7 +24,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     name = "flext-tap-oracle-wms"
     config_jsonschema: ClassVar[t.JsonDict] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
-        "properties": u.normalize_to_json_value({
+        "properties": {
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
             "username": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
             "password": {
@@ -34,10 +34,8 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             "api_version": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "default": "v1"},
             "page_size": {"type": c.TapOracleWms.SCHEMA_TYPE_INTEGER, "default": 100},
             "verify_ssl": {"type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN, "default": True},
-        }),
-        "required": u.normalize_to_json_value(
-            list(c.TapOracleWms.REQUIRED_CONFIG_FIELDS),
-        ),
+        },
+        "required": [*c.TapOracleWms.REQUIRED_CONFIG_FIELDS],
     }
 
     _wms_client: FlextOracleWmsUtilities.OracleWms.Client | None = None

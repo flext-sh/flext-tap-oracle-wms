@@ -62,13 +62,13 @@ class FlextTapOracleWmsSettings(FlextSettings):
             m.Field(ge=1, description="Schema discovery sample size"),
         ] = 100
         include_entities: Annotated[
-            list[str],
+            t.StrSequence,
             m.Field(description="Entities to include"),
-        ] = m.Field(default_factory=list[str])
+        ] = ()
         exclude_entities: Annotated[
-            list[str],
+            t.StrSequence,
             m.Field(description="Entities to exclude"),
-        ] = m.Field(default_factory=list[str])
+        ] = ()
         start_date: Annotated[
             str | None,
             m.Field(description="Incremental extraction start date"),
@@ -82,9 +82,9 @@ class FlextTapOracleWmsSettings(FlextSettings):
             m.Field(description="Column rename mappings per stream (JSON)"),
         ] = "{}"
         ignored_columns: Annotated[
-            list[str],
+            t.StrSequence,
             m.Field(description="Columns to ignore"),
-        ] = m.Field(default_factory=list[str])
+        ] = ()
         enable_parallel_extraction: Annotated[
             bool,
             m.Field(description="Enable parallel stream extraction"),
@@ -136,7 +136,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
 
         @m.field_validator("include_entities", "exclude_entities")
         @classmethod
-        def _check_no_duplicates(cls, v: list[str]) -> list[str]:
+        def _check_no_duplicates(cls, v: t.StrSequence) -> t.StrSequence:
             if len(v) != len(set(v)):
                 msg = "Entity list contains duplicates"
                 raise ValueError(msg)
