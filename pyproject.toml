@@ -320,14 +320,10 @@ variance-mismatch = "error"
 [tool.pyright]
 exclude = [
   "**/*.bak",
-  "**/*.bak/**",
   "**/*.egg-info/**",
   "**/*.orig",
-  "**/*.orig/**",
   "**/*.rej",
-  "**/*.rej/**",
   "**/*.swp",
-  "**/*.swp/**",
   "**/.*",
   "**/.agents-sync-home/**",
   "**/.agents/**",
@@ -390,8 +386,8 @@ exclude = [
   ".venv",
   "vendor",
 ]
-include = ["conftest.py", "examples", "src", "tests"]
 extraPaths = ["src", "."]
+include = ["conftest.py", "examples", "src", "tests"]
 pythonPlatform = "Linux"
 pythonVersion = "3.13"
 reportCallIssue = "error"
@@ -409,21 +405,22 @@ reportUnusedFunction = "error"
 reportUnusedImport = "error"
 reportUnusedVariable = "error"
 typeCheckingMode = "strict"
+useLibraryCodeForTypes = true
 
 [[tool.pyright.executionEnvironments]]
-root = "examples"
 extraPaths = [".", "src"]
 reportPrivateUsage = "error"
+root = "examples"
 
 [[tool.pyright.executionEnvironments]]
-root = "src"
 extraPaths = ["src"]
 reportPrivateUsage = "error"
+root = "src"
 
 [[tool.pyright.executionEnvironments]]
-root = "tests"
 extraPaths = [".", "src"]
 reportPrivateUsage = "error"
+root = "tests"
 
 [tool.pytest.ini_options]
 addopts = [
