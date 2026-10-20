@@ -187,7 +187,7 @@ def test_entity_discovery(mock_wms_client):
     """Test entity discovery with mocked client."""
     discovery = EntityDiscovery(mock_wms_client)
     result = discovery.discover_entities()
-    assert result.success
+    tm.ok(result.success)
     assert "item" in result.data
 ```
 

@@ -508,8 +508,8 @@ def test_stream_extraction(mock_wms_client):
     ):
         stream = FlextTapOracleWmsStream(tap=mock_tap, name="item")
         records = list(stream.get_records(None))
-        assert len(records) == 2
-        assert records[0]["id"] == "1"
+        tm.that(len(records), eq=2)
+        tm.that(records[0]["id"], eq="1")
 ```
 
 ## Security Architecture
