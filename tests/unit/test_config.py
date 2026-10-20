@@ -84,9 +84,9 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpersMixin):
         tm.that(namespace.api_version, eq="v11")
         tm.that(namespace.timeout, eq=60)
         tm.that(namespace.page_size, eq=500)
-        tm.that(namespace.verify_ssl, eq=False)
+        tm.fail(namespace.verify_ssl)
         tm.that(namespace.include_entities, eq=["inventory", "orders"])
-        tm.that(namespace.enable_rate_limiting, eq=False)
+        tm.fail(namespace.enable_rate_limiting)
         tm.that(namespace.log_level, eq="DEBUG")
         tm.that(namespace.max_parallel_streams, eq=5)
 

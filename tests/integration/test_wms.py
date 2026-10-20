@@ -61,7 +61,7 @@ class TestsFlextTapOracleWmsWms:
         init_result = tap.initialize()
         tm.ok(init_result)
         streams = tap.discover_streams()
-        tm.that(bool(streams), eq=True)
+        tm.ok(bool(streams))
         for stream in streams:
             tm.that(stream.name, none=False)
 
@@ -72,7 +72,7 @@ class TestsFlextTapOracleWmsWms:
         init_result = tap.initialize()
         tm.ok(init_result)
         streams = tap.discover_streams()
-        tm.that(bool(streams), eq=True)
+        tm.ok(bool(streams))
         for stream in streams:
             records = list(
                 islice(stream.get_records(context=None), _RECORD_SAMPLE_LIMIT),

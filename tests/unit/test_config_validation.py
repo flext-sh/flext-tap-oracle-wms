@@ -159,9 +159,9 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
             },
         })
         namespace = settings.TapOracleWms
-        tm.that(namespace.enable_parallel_extraction, eq=True)
+        tm.ok(namespace.enable_parallel_extraction)
         tm.that(namespace.max_parallel_streams, eq=6)
-        tm.that(namespace.enable_rate_limiting, eq=True)
+        tm.ok(namespace.enable_rate_limiting)
 
     @staticmethod
     def test_ssl_config() -> None:
@@ -175,7 +175,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
                 "ssl_cert_path": "/path/to/cert.pem",
             },
         })
-        tm.that(settings.TapOracleWms.verify_ssl, eq=False)
+        tm.fail(settings.TapOracleWms.verify_ssl)
         tm.that(settings.TapOracleWms.ssl_cert_path, eq="/path/to/cert.pem")
 
     @staticmethod
@@ -190,7 +190,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
                 "max_requests_per_minute": 120,
             },
         })
-        tm.that(settings.TapOracleWms.enable_rate_limiting, eq=True)
+        tm.ok(settings.TapOracleWms.enable_rate_limiting)
         tm.that(settings.TapOracleWms.max_requests_per_minute, eq=120)
 
     def test_password_is_secret(self) -> None:

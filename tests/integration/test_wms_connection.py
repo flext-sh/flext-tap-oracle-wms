@@ -42,7 +42,7 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
         tm.that(value["base_url"], is_=str)
         tm.that(value["api_version"], is_=str)
         tm.that(value["page_size"], is_=int)
-        tm.that("password" not in value and "username" not in value, eq=True)
+        tm.ok("password" not in value and "username" not in value)
 
     @staticmethod
     def test_catalog_discovery(real_tap_instance: FlextTapOracleWms) -> None:
