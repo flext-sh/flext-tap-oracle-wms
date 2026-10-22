@@ -71,11 +71,13 @@ codegen = [
 ]
 
 [tool.uv]
-constraint-dependencies = ["mypy<2.4.0"]
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
 link-mode = "copy"
+override-dependencies = [
+  "rope @ git+https://github.com/marlon-costa-dc/rope.git@2bf3ad55a32cc117f5321e1467695eba540be97b",
+  "flext-tap-oracle-wms",
+]
 package = false
-override-dependencies = ["flext-tap-oracle-wms"]
 
 [tool.uv.sources.flext-tap-oracle-wms]
 path = "../../.."
