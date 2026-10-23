@@ -7,19 +7,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
 
 import psutil
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import tm
+from tests import t, tm
 from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
-
-if TYPE_CHECKING:
-    from tests import t
-
 
 _MAX_DISCOVERY_SECONDS = 10.0
 _PAGINATION_SAMPLE_LIMIT = 99
@@ -70,7 +65,7 @@ class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpersM
         result = tap.discovercatalog_typed()
         discovery_time = time.time() - start_time
         tm.ok(result)
-        assert discovery_time < _MAX_DISCOVERY_SECONDS
+        tm.that(discovery_time, lt=_MAX_DISCOVERY_SECONDS)
 
     @staticmethod
     @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
@@ -128,7 +123,7 @@ class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpersM
                     break
             final_memory = process.memory_info().rss / 1024 / 1024
             memory_increase = final_memory - initial_memory
-            assert memory_increase < _MAX_MEMORY_INCREASE_MB
+            tm.that(memory_increase, lt=_MAX_MEMORY_INCREASE_MB)
 
     """Test rate limiting impact on performance."""
 

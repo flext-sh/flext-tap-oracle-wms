@@ -19,8 +19,7 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWms
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-    from tests import t
-
+from tests import t
 
 _ORACLE_WMS_REQUIRED_VARS = (
     "FLEXT_TAP_ORACLE_WMS_BASE_URL",
@@ -77,7 +76,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
 
 
 @pytest.fixture
-def real_config(oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
+def real_config(*, oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
     """Real configuration resolved from the canonical FLEXT_TAP_ORACLE_WMS_* env.
 
     The settings model declares ``env_prefix="FLEXT_TAP_ORACLE_WMS_"``, so
@@ -131,6 +130,7 @@ def tap_instance(
 
 @pytest.fixture
 def real_tap_instance(
+    *,
     real_config: FlextTapOracleWmsSettings,
     oracle_wms_available: bool,
 ) -> FlextTapOracleWms:

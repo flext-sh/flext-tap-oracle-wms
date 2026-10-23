@@ -43,8 +43,7 @@ class TestsFlextTapOracleWmsWms:
         tap = FlextTapOracleWms.from_settings(real_config)
         result = tap.validate_configuration()
         tm.ok(result)
-        value = result.value
-        assert isinstance(value, Mapping)
+        value = tm.instance(result.value, Mapping)
         tm.that(set(value), eq={"base_url", "api_version", "page_size"})
 
     @staticmethod

@@ -425,14 +425,14 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """
         return __version__
 
-    def validate_configuration(self) -> p.Result[t.JsonValue]:
+    def validate_configuration(self) -> p.Result[t.JsonMapping]:
         """Expose non-secret validated configuration fields.
 
         Returns:
-            The resulting ``p.Result[t.JsonValue]``.
+            The resulting ``p.Result[t.JsonMapping]``.
 
         """
-        return r[t.JsonValue].ok({
+        return r[t.JsonMapping].ok({
             "base_url": self.flext_config.TapOracleWms.base_url,
             "api_version": self.flext_config.TapOracleWms.api_version,
             "page_size": self.flext_config.TapOracleWms.page_size,

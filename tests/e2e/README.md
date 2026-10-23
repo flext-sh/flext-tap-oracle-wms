@@ -139,12 +139,12 @@ def test_singer_message_compliance():
     messages = parse_singer_output(result.stdout)
 
     # Validate message types and structure
-    tm.that(any(msg.type, eq="SCHEMA" for msg in messages))
-    tm.that(any(msg.type, eq="RECORD" for msg in messages))
-    tm.that(any(msg.type, eq="STATE" for msg in messages))
+    tm.that(any(msg.type == "SCHEMA" for msg in messages))
+    tm.that(any(msg.type == "RECORD" for msg in messages))
+    tm.that(any(msg.type == "STATE" for msg in messages))
 
     # Validate message content
-    for schema_msg in filter(lambda m: p.type == "SCHEMA", messages):
+    for schema_msg in filter(lambda msg: msg.type == "SCHEMA", messages):
         validate_json_schema(schema_msg.schema)
 ```
 
