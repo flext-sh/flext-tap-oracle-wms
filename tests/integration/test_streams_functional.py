@@ -70,8 +70,9 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin
         """Test stream authentication with real credentials."""
         stream = self._first_stream(real_tap_instance)
         headers = stream.http_headers
-        auth_header = headers.get("Authorization") or headers.get("authorization")
-        tm.not_none(auth_header)
+        auth_header = tm.not_none(
+            headers.get("Authorization") or headers.get("authorization"),
+        )
         assert auth_header.startswith("Basic "), f"Expected Basic auth: {auth_header}"
         logger.info("Authentication configured correctly")
 
