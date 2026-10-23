@@ -12,10 +12,7 @@ from __future__ import annotations
 
 from typing import Annotated, override
 
-from flext_meltano.services.consumer_bases.tap_service_base import (
-    FlextMeltanoTapServiceBase,
-)
-from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapAdapter
+from flext_meltano import FlextMeltanoSingerTapAdapter, FlextMeltanoTapServiceBase
 
 from flext_tap_oracle_wms import m, p, t, u
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
