@@ -1,12 +1,13 @@
 # AGENTS.md — flext-tap-oracle-wms
 
-> **Parent workspace law** lives in [`../AGENTS.md`](../AGENTS.md) — read it first.
-> Universal engineering core: `~/.agents/UNIVERSAL_CORE.md`. Composition: global
-> skills + parent/root `AGENTS.md` + this scope delta. Do not re-embed universal law.
->
-> **Standalone / independent mode:** when `../AGENTS.md` does not resolve, pin the
-> parent raw `AGENTS.md` URL to the same branch/release as this package (never
-> `main`): <https://raw.githubusercontent.com/flext-sh/flext/0.12.0-dev/AGENTS.md>
+Read the branch-matched [FLEXT root](../AGENTS.md) and its local flext-law through
+that root's authority entry point. In standalone mode resolve the same branch or
+release; a coincidental parent instruction file does not establish FLEXT authority.
+This file adds only this package's domain delta. Command routing, architecture
+and universal execution stay with their parent owners.
+
+Embedded AI Hub or Beads generated blocks are retired delivery material, not
+active local rules. Their withdrawal remains the publisher's responsibility.
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-BEGIN -->
 
@@ -18,41 +19,10 @@
 Singer **tap** (extractor) for Oracle WMS. Thin driver over `flext-meltano` (ADR-006),
 delegating WMS access to `flext-oracle-wms`.
 
-## Structure
-
-```text
-src/flext_tap_oracle_wms/
-├── api.py            # FlextTapOracleWmsService(FlextMeltanoTapServiceBase)
-├── tap.py            # FlextTapOracleWms(m.Meltano.SingerTapBase), backed by FlextOracleWmsUtilities
-├── streams.py        # FlextTapOracleWmsStreams.WmsStream
-├── __main__.py
-├── constants.py typings.py protocols.py models.py utilities.py   # AUTO-GENERATED facets
-```
-
-## Code Map
-
-| Symbol                               | Kind  | Location     | Role                         |
-| ------------------------------------ | ----- | ------------ | ---------------------------- |
-| `FlextTapOracleWmsService`           | class | `api.py`     | `FlextMeltanoTapServiceBase` |
-| `FlextTapOracleWms`                  | class | `tap.py`     | `m.Meltano.SingerTapBase`    |
-| `FlextTapOracleWmsStreams.WmsStream` | class | `streams.py` | stream impl                  |
-
 ## Conventions (specific to this package)
 
 - Config is exposed through the Singer `self.config` contract; WMS settings remain
   namespaced.
-- Config/settings canonical pattern: ADR-012.
-- Codemod governance (ast-grep + make mod): ADR-014.
-
-## Commands
-
-Run from the workspace root (selector-free; the root dispatcher routes to every
-member — `PROJECT=` is not a root Make variable):
-
-```bash
-make check
-make test
-```
 
 <!-- AIHUB-AGENTS-SCOPE-LOCAL-END -->
 
