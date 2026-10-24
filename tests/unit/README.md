@@ -180,7 +180,7 @@ def test_component_with_mock(mock_wms_client):
     component = ComponentUnderTest(mock_wms_client)
     result = component.perform_operation()
 
-    assert result.success
+    tm.ok(result.success)
     mock_wms_client.get_entities.assert_called_once()
 ```
 
@@ -326,7 +326,7 @@ def mock_flext_wms_client():
         # Standard responses
         client.authenticate.return_value = True
         client.get_entities.return_value = ["item", "inventory", "order"]
-        client.get_data.return_value = iter([{"id": "1", "name": "test"}])
+        client.get_data.return_value = iter([{"id": c.ParserBooleanToken.ONE, "name": "test"}])
 
         yield client
 
@@ -355,7 +355,7 @@ from __future__ import annotations
 
 def assert_flext_result_success(result):
     """Assert r indicates success."""
-    assert result.success, f"Expected success, got error: {result.error_message}"
+    tm.ok(result.success), f"Expected success, got error: {result.error_message}"
     assert result.data is not None, "Expected result data"
 
 

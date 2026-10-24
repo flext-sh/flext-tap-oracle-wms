@@ -13,6 +13,7 @@ from __future__ import annotations
 import re
 from typing import Annotated
 
+import flext_core
 from flext_core import FlextSettings, m, t
 from typing_extensions import TypeForm
 
@@ -31,7 +32,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
         validate_assignment=True,
     )
 
-    class TapOracleWmsSettings(m.BaseModel):
+    class TapOracleWmsSettings(m.StrictModel):
         """Namespaced Oracle WMS tap settings (simple scalars only)."""
 
         base_url: Annotated[str, m.Field(description="Base Oracle WMS API URL")] = ""
@@ -61,13 +62,13 @@ class FlextTapOracleWmsSettings(FlextSettings):
             m.Field(ge=1, description="Schema discovery sample size"),
         ] = 100
         include_entities: Annotated[
-            list[str],
+            t.StrSequence,
             m.Field(description="Entities to include"),
-        ] = m.Field(default_factory=list[str])
+        ] = ()
         exclude_entities: Annotated[
-            list[str],
+            t.StrSequence,
             m.Field(description="Entities to exclude"),
-        ] = m.Field(default_factory=list[str])
+        ] = ()
         start_date: Annotated[
             str | None,
             m.Field(description="Incremental extraction start date"),
@@ -81,9 +82,9 @@ class FlextTapOracleWmsSettings(FlextSettings):
             m.Field(description="Column rename mappings per stream (JSON)"),
         ] = "{}"
         ignored_columns: Annotated[
-            list[str],
+            t.StrSequence,
             m.Field(description="Columns to ignore"),
-        ] = m.Field(default_factory=list[str])
+        ] = ()
         enable_parallel_extraction: Annotated[
             bool,
             m.Field(description="Enable parallel stream extraction"),
@@ -115,7 +116,10 @@ class FlextTapOracleWmsSettings(FlextSettings):
         additional_headers: Annotated[
             t.StrMapping,
             m.Field(description="Additional HTTP headers"),
-        ] = m.Field(default_factory=m.empty(TypeForm(t.StrMapping)))
+        ] = m.Field(
+            default_factory=flext_core.u.empty(TypeForm(t.StrMapping)),
+            validate_default=True,
+        )
         log_level: Annotated[str, m.Field(description="Log level")] = "INFO"
         enable_request_logging: Annotated[
             bool,
@@ -132,7 +136,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
 
         @m.field_validator("include_entities", "exclude_entities")
         @classmethod
-        def _check_no_duplicates(cls, v: list[str]) -> list[str]:
+        def _check_no_duplicates(cls, v: t.StrSequence) -> t.StrSequence:
             if len(v) != len(set(v)):
                 msg = "Entity list contains duplicates"
                 raise ValueError(msg)

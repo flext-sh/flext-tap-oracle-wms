@@ -114,7 +114,7 @@ def test_auth_client_integration():
 
         # Test authenticated request flow
         response = client.get_entities()
-        assert response.status_code == 200
+        tm.that(response.status_code, eq=200)
 ```
 
 #### **Discovery ↔ Schema Integration**

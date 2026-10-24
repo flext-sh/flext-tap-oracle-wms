@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """FLEXT Tap Oracle WMS Utilities - Domain-specific utilities.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -6,12 +7,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-
 from flext_meltano import FlextMeltanoUtilities
 from flext_oracle_wms import FlextOracleWmsUtilities
 
-from flext_tap_oracle_wms import c, t
+from flext_tap_oracle_wms._utilities import FlextTapOracleWmsUtilitiesConversion
 
 
 class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities):
@@ -20,90 +19,10 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
     Inherits from u to avoid duplication.
     """
 
-    class TapOracleWms:
+    class TapOracleWms(FlextTapOracleWmsUtilitiesConversion):
         """Oracle WMS tap utilities namespace."""
 
-        class MappingConversion:
-            """Mapping and sequence conversion utilities for Singer protocol."""
-
-            @staticmethod
-            def as_map(
-                value: t.JsonMapping | t.JsonValue,
-                *,
-                normalizer: t.ScalarNormalizer | None = None,
-                map_adapter: t.ContainerValueMapAdapter | None = None,
-                error_cls: type[Exception] | None = None,
-            ) -> t.JsonMapping | None:
-                """Convert a NormalizedValue into a Mapping if possible.
-
-                Args:
-                    value: Value to convert.
-                    normalizer: Callable that normalizes JSON values.
-                    map_adapter: TypeAdapter for validating mappings.
-                    error_cls: Exception class to raise on validation failure.
-
-                Returns:
-                    Mapping with string keys, or None if not a mapping or when
-                    adapter validation fails and ``error_cls`` is None.
-
-                """
-                if not isinstance(value, Mapping):
-                    return None
-                if map_adapter is not None:
-                    try:
-                        validated_map = map_adapter.validate_python(value)
-                    except c.ValidationError as exc:
-                        if error_cls is not None:
-                            msg = f"Validation failed for mapping: {exc}"
-                            raise error_cls(msg) from exc
-                        return None
-                    if normalizer is not None:
-                        return {
-                            key: normalizer(item) for key, item in validated_map.items()
-                        }
-                    return t.json_dict_adapter().validate_python(validated_map)
-                if normalizer is not None:
-                    return {key: normalizer(item) for key, item in value.items()}
-                return t.json_dict_adapter().validate_python(value)
-
-            @staticmethod
-            def as_list(
-                value: t.JsonValue,
-                *,
-                normalizer: t.ScalarNormalizer | None = None,
-                list_adapter: t.ContainerValueListAdapter | None = None,
-                error_cls: type[Exception] | None = None,
-            ) -> t.JsonList | None:
-                """Convert a NormalizedValue into a Sequence if possible.
-
-                Args:
-                    value: Value to convert.
-                    normalizer: Callable that normalizes JSON values.
-                    list_adapter: TypeAdapter for validating lists.
-                    error_cls: Exception class to raise on validation failure.
-
-                Returns:
-                    Sequence of container values, or None if not a list or when
-                    adapter validation fails and ``error_cls`` is None.
-
-                """
-                if not isinstance(value, list):
-                    return None
-                if list_adapter is not None:
-                    try:
-                        validated_seq = list_adapter.validate_python(value)
-                    except c.ValidationError as exc:
-                        if error_cls is not None:
-                            msg = f"Validation failed for list: {exc}"
-                            raise error_cls(msg) from exc
-                        return None
-                    if normalizer is not None:
-                        return [normalizer(item) for item in validated_seq]
-                    return list(validated_seq)
-                if normalizer is not None:
-                    return [normalizer(str(item)) for item in value]
-                coerced_list: t.JsonValueList = [str(item) for item in value]
-                return coerced_list
+        MappingConversion = FlextTapOracleWmsUtilitiesConversion.MappingConversion
 
 
 u = FlextTapOracleWmsUtilities

@@ -69,8 +69,7 @@ class TestsFlextTapOracleWmsTap:
         """Validation method exposes non-secret effective settings values."""
         result = tap_instance.validate_configuration()
         tm.ok(result)
-        value = result.value
-        assert isinstance(value, dict)
+        value = tm.instance(result.value, dict)
         tm.that(value["base_url"], eq=tap_instance.flext_config.TapOracleWms.base_url)
         tm.that(value, lacks="password")
 
@@ -87,8 +86,7 @@ class TestsFlextTapOracleWmsTap:
         tap = FlextTapOracleWms.from_settings(bad_settings, catalog=sample_catalog)
         result = tap.validate_configuration()
         tm.ok(result)
-        value = result.value
-        assert isinstance(value, dict)
+        value = tm.instance(result.value, dict)
         tm.that(value["base_url"], eq=bad_settings.TapOracleWms.base_url)
         tm.that(value, lacks="username")
         tm.that(value, lacks="password")

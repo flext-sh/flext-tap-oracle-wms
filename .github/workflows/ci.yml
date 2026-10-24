@@ -23,6 +23,12 @@ name: CI
       - 0.12.0-dev
     types: [opened, synchronize, reopened, ready_for_review, edited]
   workflow_call:
+    inputs:
+      ref:
+        description: Exact candidate commit to validate instead of the caller event SHA.
+        required: false
+        type: string
+        default: ""
     secrets:
       CI_DEPENDENCIES_APP_ID:
         required: false
@@ -38,8 +44,11 @@ name: CI
 # End SECTION: triggers
 
 # Why: one active run per workflow and branch prevents obsolete CI from consuming runners.
+# The event and PR number keep pull_request runs out of the integration push
+# group: a PR event delivered after its merge resolves github.ref to the base
+# branch and, keyed by ref alone, cancelled the post-merge run.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ inputs.ref || (github.event_name == 'pull_request' && github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -65,6 +74,7 @@ jobs:
           submodules: false
           persist-credentials: false
           fetch-depth: 0
+          ref: ${{ inputs.ref || github.sha }}
       # Why: GitHub runners expose umask 002, so git checkout materializes
       # group-writable modes (0664) for tracked files. Canonical Mise
       # artifacts demand exact modes (0o644) and the conform gate fails loud
@@ -99,9 +109,9 @@ jobs:
             ~/.cache/uv
             ~/.local/share/mise
             !~/.local/share/mise/shims
-          key: ${{ runner.os }}-3.13-tools-${{ hashFiles('uv.lock', 'mise.lock', 'pyproject.toml') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ${{ runner.os }}-3.13-tools-${{ hashFiles('uv.lock', 'mise.lock', 'pyproject.toml', '.mise.toml') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            ${{ runner.os }}-3.13-tools-${{ hashFiles('uv.lock', 'mise.lock', 'pyproject.toml') }}-
+            ${{ runner.os }}-3.13-tools-${{ hashFiles('uv.lock', 'mise.lock', 'pyproject.toml', '.mise.toml') }}-
             ${{ runner.os }}-3.13-tools-
 
       # make setup is the frozen installer. It bootstraps the committed Mise
@@ -267,7 +277,7 @@ jobs:
           for report_root in .reports apps; do
             if [ -d "${report_root}" ]; then
               find "${report_root}" \
-                \( -path '*/junit.xml' -o -path '*/coverage.xml' -o -path '*/coverage.json' \) \
+                \( -path '*/junit.xml' -o -path '*/coverage.xml' -o -path '*/coverage.json' -o -path '*/audit-summary.json' -o -path '*/audit-report.md' -o -path '*/validate-summary.json' -o -path '*/validate-report.md' \) \
                 -type f -exec sh -eu -c '
                   for report_file do
                     printf "::group::%s\n" "${report_file}"
@@ -288,6 +298,10 @@ jobs:
             .reports/**/junit.xml
             .reports/**/coverage.xml
             .reports/**/coverage.json
+            .reports/**/audit-summary.json
+            .reports/**/audit-report.md
+            .reports/**/validate-summary.json
+            .reports/**/validate-report.md
             .reports/check/**/*.sarif
             .reports/check/**/*.md
             .reports/gates/**/original-receipt.json
@@ -328,7 +342,7 @@ jobs:
       # successes, so warm restores never discard new provisioning progress.
       - name: Save tool caches
         # Native cache action access mode remains authoritative before upload.
-        # Fork requests are restore-only; an interrupted run cannot publish.
+        # Only declared events may publish; fork requests remain restore-only.
         if: >-
           ${{ always() && !cancelled() && steps.tool-cache.outcome == 'success' && steps.tool-cache.outputs.cache-primary-key != '' && ((github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')) || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) }}
         uses: actions/cache/save@v6
@@ -370,6 +384,7 @@ jobs:
           fetch-depth: 0
           submodules: false
           persist-credentials: false
+          ref: ${{ inputs.ref || github.sha }}
       - name: Install the mise release pinned by mise.lock
         shell: bash
         run: |
@@ -449,5 +464,4 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: CI=Y make release-plan
   # End SECTION: release-plan job
-
 

@@ -139,12 +139,12 @@ def test_singer_message_compliance():
     messages = parse_singer_output(result.stdout)
 
     # Validate message types and structure
-    assert any(msg.type == "SCHEMA" for msg in messages)
-    assert any(msg.type == "RECORD" for msg in messages)
-    assert any(msg.type == "STATE" for msg in messages)
+    tm.that(any(msg.type == "SCHEMA" for msg in messages))
+    tm.that(any(msg.type == "RECORD" for msg in messages))
+    tm.that(any(msg.type == "STATE" for msg in messages))
 
     # Validate message content
-    for schema_msg in filter(lambda m: p.type == "SCHEMA", messages):
+    for schema_msg in filter(lambda msg: msg.type == "SCHEMA", messages):
         validate_json_schema(schema_msg.schema)
 ```
 
@@ -277,8 +277,8 @@ def test_cli_discovery_execution():
         ])
 
         # Validate command success
-        assert result.returncode == 0
-        assert result.stderr == ""
+        tm.that(result.returncode, eq=0)
+        tm.that(result.stderr, eq="")
 
         # Validate output format
         catalog = json.loads(result.stdout)
@@ -316,7 +316,7 @@ def validate_message_sequence(messages):
     msg_types = [msg.type for msg in messages]
 
     # Must start with SCHEMA messages
-    assert msg_types[0] == "SCHEMA"
+    tm.that(msg_types[0], eq="SCHEMA")
 
     # RECORD messages must follow corresponding SCHEMA
     schema_streams = set()
@@ -354,8 +354,8 @@ def test_e2e_performance_benchmarks():
         total_time = time.time() - start_time
 
         # Validate performance requirements
-        assert discovery.returncode == 0
-        assert extraction.returncode == 0
+        tm.that(discovery.returncode, eq=0)
+        tm.that(extraction.returncode, eq=0)
         assert total_time < 600  # 10 minutes max
 
         # Validate throughput
@@ -520,7 +520,7 @@ def test_business_user_daily_extraction():
     with e2e_business_environment():
         # 1. Discovery phase
         discovery = run_tap_command(["--config", "business_config.json", "--discover"])
-        assert discovery.returncode == 0
+        tm.that(discovery.returncode, eq=0)
 
         # 2. Extraction phase
         extraction = run_tap_command([
@@ -529,7 +529,7 @@ def test_business_user_daily_extraction():
             "--catalog",
             "business_catalog.json",
         ])
-        assert extraction.returncode == 0
+        tm.that(extraction.returncode, eq=0)
 
         # 3. Validate business data requirements
         records = parse_singer_records(extraction.stdout)

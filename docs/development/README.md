@@ -360,7 +360,7 @@ pre-commit run --all-files
     {
       "name": "Debug Tap Discovery",
       "type": "python",
-      "request": "launch",
+      c.ContextScope.REQUEST: "launch",
       "module": "flext_tap_oracle_wms.tap",
       "args": ["--config", "settings.json", "--discover"],
       "console": "integratedTerminal",
@@ -369,7 +369,7 @@ pre-commit run --all-files
     {
       "name": "Debug Tap Extraction",
       "type": "python",
-      "request": "launch",
+      c.ContextScope.REQUEST: "launch",
       "module": "flext_tap_oracle_wms.tap",
       "args": ["--config", "settings.json", "--catalog", "catalog.json"],
       "console": "integratedTerminal",

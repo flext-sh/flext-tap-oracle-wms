@@ -11,17 +11,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t, tm
-
-if TYPE_CHECKING:
-    from tests import m
+from tests import m, t, tm
 
 
 class TestsFlextTapOracleWmsHelpersMixin:

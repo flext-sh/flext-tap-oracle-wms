@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """Pydantic models used by Oracle WMS tap compatibility layers.
 
 Copyright (c) 2026 FLEXT Team. All rights reserved.
@@ -10,7 +11,7 @@ from __future__ import annotations
 from flext_meltano import FlextMeltanoModels
 from flext_oracle_wms import FlextOracleWmsModels
 
-from flext_tap_oracle_wms._models.base import FlextTapOracleWmsModelsBase
+from flext_tap_oracle_wms._models import FlextTapOracleWmsModelsBase
 
 
 class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):

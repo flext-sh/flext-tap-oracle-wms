@@ -12,12 +12,9 @@ from __future__ import annotations
 
 from typing import Annotated, override
 
-from flext_meltano.services.consumer_bases.tap_service_base import (
-    FlextMeltanoTapServiceBase,
-)
-from flext_meltano.services.singer_sdk import FlextMeltanoSingerTapAdapter
+from flext_meltano import FlextMeltanoSingerTapAdapter, FlextMeltanoTapServiceBase
 
-from flext_tap_oracle_wms import p, t, u
+from flext_tap_oracle_wms import m, p, t, u
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
@@ -26,7 +23,7 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
 
     tap_name: Annotated[
         t.NonEmptyStr,
-        u.Field(description="Canonical Singer tap identifier."),
+        m.Field(description="Canonical Singer tap identifier."),
     ] = "tap-oracle-wms"
 
     @override
@@ -50,7 +47,7 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         """
         raw_config: t.JsonDict | None = None
         if settings is not None:
-            raw_config = t.json_dict_adapter().validate_python(
+            raw_config = u.json_dict_adapter().validate_python(
                 settings.model_dump()
                 if isinstance(settings, p.HasModelDump)
                 else settings,

@@ -5,6 +5,8 @@
 # @flext-rendered-by: flext-infra 0.12.0
 [dependency-groups]
 dev = [
+  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
+  "mkdocstrings-python>=2.0.9",
   "actionlint-py>=1.7.12.24",
   "bandit>=1.9.4",
   "deptry",
@@ -21,7 +23,6 @@ dev = [
   "mkdocs-redirects>=1.2.3",
   "mkdocs-section-index>=0.3.12",
   "mkdocstrings>=1.0.6",
-  "mkdocstrings-python>=2.0.8",
   "msgpack-types",
   "mypy>=2.3.1",
   "platformdirs>=4.12.0",
@@ -70,11 +71,13 @@ codegen = [
 ]
 
 [tool.uv]
-constraint-dependencies = ["mypy<2.4.0"]
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
 link-mode = "copy"
+override-dependencies = [
+  "rope @ git+https://github.com/marlon-costa-dc/rope.git@2bf3ad55a32cc117f5321e1467695eba540be97b",
+  "flext-tap-oracle-wms",
+]
 package = false
-override-dependencies = ["flext-tap-oracle-wms"]
 
 [tool.uv.sources.flext-tap-oracle-wms]
 path = "../../.."

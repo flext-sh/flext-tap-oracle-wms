@@ -24,7 +24,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     name = "flext-tap-oracle-wms"
     config_jsonschema: ClassVar[t.JsonDict] = {
         "type": c.TapOracleWms.SCHEMA_TYPE_OBJECT,
-        "properties": u.normalize_to_json_value({
+        "properties": {
             "base_url": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
             "username": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING},
             "password": {
@@ -34,10 +34,8 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             "api_version": {"type": c.TapOracleWms.SCHEMA_TYPE_STRING, "default": "v1"},
             "page_size": {"type": c.TapOracleWms.SCHEMA_TYPE_INTEGER, "default": 100},
             "verify_ssl": {"type": c.TapOracleWms.SCHEMA_TYPE_BOOLEAN, "default": True},
-        }),
-        "required": u.normalize_to_json_value(
-            list(c.TapOracleWms.REQUIRED_CONFIG_FIELDS),
-        ),
+        },
+        "required": [*c.TapOracleWms.REQUIRED_CONFIG_FIELDS],
     }
 
     _wms_client: FlextOracleWmsUtilities.OracleWms.Client | None = None
@@ -85,7 +83,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         # NOTE (multi-agent): mro-rn88 — read the Singer tap config (self.config),
         # not an
         # undefined bare `config` (settings-fallout left a self-referential assignment).
-        return t.json_dict_adapter().validate_python(self.config)
+        return u.json_dict_adapter().validate_python(self.config)
 
     @property
     def catalog_dict_typed(self) -> t.MutableJsonMapping:
@@ -107,7 +105,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             msg = f"Invalid catalog_dict format: {exc}"
             raise e.ConfigurationError(msg) from exc
         return self._to_typed_catalog(
-            t.json_dict_adapter().validate_python(validated_catalog),
+            u.json_dict_adapter().validate_python(validated_catalog),
         )
 
     @staticmethod
@@ -168,7 +166,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 else ()
             ),
             metadata=(
-                t.json_dict_adapter().validate_python(metadata_map_raw)
+                u.json_dict_adapter().validate_python(metadata_map_raw)
                 if isinstance(metadata_map_raw, Mapping)
                 else {}
             ),
@@ -189,11 +187,11 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         """
         schema_raw: t.JsonValue = s_dict.get("schema", {})
-        stream_name = str(s_dict.get("stream", ""))
+        stream_name = str(s_dict.get(c.ProcessingMode.STREAM, ""))
         entry_result = u.Meltano.build_catalog_entry(
             stream_name=stream_name,
             schema=(
-                t.json_dict_adapter().validate_python(schema_raw)
+                u.json_dict_adapter().validate_python(schema_raw)
                 if isinstance(schema_raw, Mapping)
                 else {}
             ),
@@ -208,7 +206,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         updated: m.Meltano.SingerCatalogEntry = entry_value.model_copy(
             update={
                 "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
-                "stream": stream_name,
+                c.ProcessingMode.STREAM: stream_name,
                 "metadata": metadata_entries,
             },
         )
@@ -239,7 +237,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             exclude_none=True,
             mode="json",
         )
-        return t.json_dict_adapter().validate_python(dumped_catalog)
+        return u.json_dict_adapter().validate_python(dumped_catalog)
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:
@@ -427,14 +425,14 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """
         return __version__
 
-    def validate_configuration(self) -> p.Result[t.JsonValue]:
+    def validate_configuration(self) -> p.Result[t.JsonMapping]:
         """Expose non-secret validated configuration fields.
 
         Returns:
-            The resulting ``p.Result[t.JsonValue]``.
+            The resulting ``p.Result[t.JsonMapping]``.
 
         """
-        return r[t.JsonValue].ok({
+        return r[t.JsonMapping].ok({
             "base_url": self.flext_config.TapOracleWms.base_url,
             "api_version": self.flext_config.TapOracleWms.api_version,
             "page_size": self.flext_config.TapOracleWms.page_size,

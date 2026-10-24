@@ -43,8 +43,7 @@ class TestsFlextTapOracleWmsWms:
         tap = FlextTapOracleWms.from_settings(real_config)
         result = tap.validate_configuration()
         tm.ok(result)
-        value = result.value
-        assert isinstance(value, Mapping)
+        value = tm.instance(result.value, Mapping)
         tm.that(set(value), eq={"base_url", "api_version", "page_size"})
 
     @staticmethod
@@ -61,7 +60,7 @@ class TestsFlextTapOracleWmsWms:
         init_result = tap.initialize()
         tm.ok(init_result)
         streams = tap.discover_streams()
-        tm.that(bool(streams), eq=True)
+        tm.ok(bool(streams))
         for stream in streams:
             tm.that(stream.name, none=False)
 
@@ -72,7 +71,7 @@ class TestsFlextTapOracleWmsWms:
         init_result = tap.initialize()
         tm.ok(init_result)
         streams = tap.discover_streams()
-        tm.that(bool(streams), eq=True)
+        tm.ok(bool(streams))
         for stream in streams:
             records = list(
                 islice(stream.get_records(context=None), _RECORD_SAMPLE_LIMIT),

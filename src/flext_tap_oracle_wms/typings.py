@@ -10,31 +10,24 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TYPE_CHECKING
-
 from flext_meltano import FlextMeltanoTypes
 from flext_oracle_wms import FlextOracleWmsTypes
 
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms import m
+from flext_tap_oracle_wms._typings.base import FlextTapOracleWmsTypingsBase
 
 
 class FlextTapOracleWmsTypes(FlextMeltanoTypes, FlextOracleWmsTypes):
     """MRO facade composing Meltano + Oracle WMS type namespaces."""
 
-    type ScalarNormalizer = Callable[
-        [FlextOracleWmsTypes.JsonValue],
-        FlextOracleWmsTypes.JsonValue,
-    ]
-    type ContainerValueMapAdapter = m.TypeAdapter[FlextOracleWmsTypes.JsonMapping]
-    type ContainerValueListAdapter = m.TypeAdapter[FlextOracleWmsTypes.JsonList]
+    ScalarNormalizer = FlextTapOracleWmsTypingsBase.ScalarNormalizer
+    ContainerValueMapAdapter = FlextTapOracleWmsTypingsBase.ContainerValueMapAdapter
+    ContainerValueListAdapter = FlextTapOracleWmsTypingsBase.ContainerValueListAdapter
 
-    CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[FlextOracleWmsTypes.JsonMapping] = (
-        FlextOracleWmsTypes.json_mapping_adapter()
+    CONTAINER_VALUE_MAP_ADAPTER = (
+        FlextTapOracleWmsTypingsBase.CONTAINER_VALUE_MAP_ADAPTER
     )
-    CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[FlextOracleWmsTypes.JsonList] = (
-        FlextOracleWmsTypes.json_list_adapter()
+    CONTAINER_VALUE_LIST_ADAPTER = (
+        FlextTapOracleWmsTypingsBase.CONTAINER_VALUE_LIST_ADAPTER
     )
 
 

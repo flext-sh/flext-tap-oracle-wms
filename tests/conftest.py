@@ -11,15 +11,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from flext_tests import u
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from tests import c, t, u
 
 if TYPE_CHECKING:
     from collections.abc import Generator
-
-    from tests import t
 
 
 _ORACLE_WMS_REQUIRED_VARS = (
@@ -77,7 +75,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
 
 
 @pytest.fixture
-def real_config(oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
+def real_config(*, oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
     """Real configuration resolved from the canonical FLEXT_TAP_ORACLE_WMS_* env.
 
     The settings model declares ``env_prefix="FLEXT_TAP_ORACLE_WMS_"``, so
@@ -105,7 +103,7 @@ def sample_catalog() -> m.Meltano.SingerCatalog:
         "streams": [
             {
                 "tap_stream_id": "inventory",
-                "stream": "inventory",
+                c.ProcessingMode.STREAM: "inventory",
                 "schema": {"type": "object"},
                 "metadata": [],
                 "key_properties": ["id"],
@@ -131,6 +129,7 @@ def tap_instance(
 
 @pytest.fixture
 def real_tap_instance(
+    *,
     real_config: FlextTapOracleWmsSettings,
     oracle_wms_available: bool,
 ) -> FlextTapOracleWms:
