@@ -494,7 +494,7 @@ def mock_wms_client():
     client = Mock(spec=FlextOracleWmsClient)
     client.get_entities.return_value = ["item", "inventory", "order"]
     client.fetch_entity_data.return_value = [
-        {"id": "1", "name": "Test Item"},
+        {"id": c.ParserBooleanToken.ONE, "name": "Test Item"},
         {"id": "2", "name": "Another Item"},
     ]
     return client
@@ -509,7 +509,7 @@ def test_stream_extraction(mock_wms_client):
         stream = FlextTapOracleWmsStream(tap=mock_tap, name="item")
         records = list(stream.get_records(None))
         tm.that(len(records), eq=2)
-        tm.that(records[0]["id"], eq="1")
+        tm.that(records[0]["id"], eq=c.ParserBooleanToken.ONE)
 ```
 
 ## Security Architecture

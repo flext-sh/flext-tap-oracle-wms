@@ -17,13 +17,11 @@ from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from flext_cli import u as cli_u
-from flext_meltano import c as meltano_c
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import m, t, tm, u
+from tests import c, m, t, tm, u
 from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
 
 logger = u.fetch_logger(__name__)
@@ -62,8 +60,8 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
             tm.that(meta, has="replication-method")
             tm.that(
                 {
-                    meltano_c.Meltano.SingerReplicationMethod.INCREMENTAL.value,
-                    meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value,
+                    c.Meltano.SingerReplicationMethod.INCREMENTAL.value,
+                    c.Meltano.SingerReplicationMethod.FULL_TABLE.value,
                 },
                 has=meta["replication-method"],
             )
@@ -80,9 +78,9 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
         tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         catalog_payload = catalog.model_dump(mode="json")
-        catalog_json = cli_u.Cli.json_dumps(catalog_payload, indent=2).unwrap()
+        catalog_json = u.Cli.json_dumps(catalog_payload, indent=2).unwrap()
         tm.that(catalog_json, truth=True, msg="Catalog serialization failed")
-        deserialized = cli_u.Cli.json_loads(catalog_json).unwrap()
+        deserialized = u.Cli.json_loads(catalog_json).unwrap()
         tm.that(deserialized, eq=catalog_payload)
         if catalog.streams:
             stream = catalog.streams[0]
@@ -169,7 +167,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
             for meta in stream_config.metadata:
                 if meta.breadcrumb == () and (
                     meta.metadata.get("replication-method")
-                    == meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value
+                    == c.Meltano.SingerReplicationMethod.FULL_TABLE.value
                 ):
                     full_table_stream_config = stream_config
                     break
@@ -334,8 +332,8 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
             replication_method = table_metadata["replication-method"]
             tm.that(
                 {
-                    meltano_c.Meltano.SingerReplicationMethod.INCREMENTAL.value,
-                    meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value,
+                    c.Meltano.SingerReplicationMethod.INCREMENTAL.value,
+                    c.Meltano.SingerReplicationMethod.FULL_TABLE.value,
                 },
                 has=replication_method,
             )
@@ -414,8 +412,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
             if replication_method == "INCREMENTAL":
                 incremental += 1
             elif (
-                replication_method
-                == meltano_c.Meltano.SingerReplicationMethod.FULL_TABLE.value
+                replication_method == c.Meltano.SingerReplicationMethod.FULL_TABLE.value
             ):
                 full_table += 1
         schema = stream.schema_definition

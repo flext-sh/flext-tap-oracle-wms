@@ -187,7 +187,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
 
         """
         schema_raw: t.JsonValue = s_dict.get("schema", {})
-        stream_name = str(s_dict.get("stream", ""))
+        stream_name = str(s_dict.get(c.ProcessingMode.STREAM, ""))
         entry_result = u.Meltano.build_catalog_entry(
             stream_name=stream_name,
             schema=(
@@ -206,7 +206,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         updated: m.Meltano.SingerCatalogEntry = entry_value.model_copy(
             update={
                 "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
-                "stream": stream_name,
+                c.ProcessingMode.STREAM: stream_name,
                 "metadata": metadata_entries,
             },
         )

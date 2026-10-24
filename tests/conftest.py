@@ -11,15 +11,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from flext_tests import u
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from tests import c, t, u
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-from tests import t
 
 _ORACLE_WMS_REQUIRED_VARS = (
     "FLEXT_TAP_ORACLE_WMS_BASE_URL",
@@ -104,7 +103,7 @@ def sample_catalog() -> m.Meltano.SingerCatalog:
         "streams": [
             {
                 "tap_stream_id": "inventory",
-                "stream": "inventory",
+                c.ProcessingMode.STREAM: "inventory",
                 "schema": {"type": "object"},
                 "metadata": [],
                 "key_properties": ["id"],

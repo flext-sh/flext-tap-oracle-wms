@@ -326,7 +326,7 @@ def mock_flext_wms_client():
         # Standard responses
         client.authenticate.return_value = True
         client.get_entities.return_value = ["item", "inventory", "order"]
-        client.get_data.return_value = iter([{"id": "1", "name": "test"}])
+        client.get_data.return_value = iter([{"id": c.ParserBooleanToken.ONE, "name": "test"}])
 
         yield client
 

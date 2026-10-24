@@ -29,7 +29,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "test_user",
-                "password": "p" + "0" * 12,
+                "password": "p" + c.ParserBooleanToken.ZERO * 12,
             },
         })
         namespace = settings.TapOracleWms
@@ -195,8 +195,8 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
 
     def test_password_is_secret(self) -> None:
         """Test password field stores password value."""
-        settings = self._tap_settings({"password": "p" + "1" * 12})
-        tm.that(self._password_value(settings), eq="p" + "1" * 12)
+        settings = self._tap_settings({"password": "p" + c.ParserBooleanToken.ONE * 12})
+        tm.that(self._password_value(settings), eq="p" + c.ParserBooleanToken.ONE * 12)
 
 
 if __name__ == "__main__":

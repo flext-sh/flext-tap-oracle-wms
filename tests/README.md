@@ -255,7 +255,7 @@ def mock_flext_wms_client():
         client_instance.get_available_entities.return_value = ["item", "inventory"]
         client_instance.get_entity_metadata.return_value = Mock()
         client_instance.fetch_entity_data.return_value = iter([
-            {"id": "1", "name": "test"}
+            {"id": c.ParserBooleanToken.ONE, "name": "test"}
         ])
 
         yield client_instance
