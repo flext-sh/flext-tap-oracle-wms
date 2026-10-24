@@ -85,7 +85,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         # NOTE (multi-agent): mro-rn88 — read the Singer tap config (self.config),
         # not an
         # undefined bare `config` (settings-fallout left a self-referential assignment).
-        return t.json_dict_adapter().validate_python(self.config)
+        return u.json_dict_adapter().validate_python(self.config)
 
     @property
     def catalog_dict_typed(self) -> t.MutableJsonMapping:
@@ -107,7 +107,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             msg = f"Invalid catalog_dict format: {exc}"
             raise e.ConfigurationError(msg) from exc
         return self._to_typed_catalog(
-            t.json_dict_adapter().validate_python(validated_catalog),
+            u.json_dict_adapter().validate_python(validated_catalog),
         )
 
     @staticmethod
@@ -168,7 +168,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 else ()
             ),
             metadata=(
-                t.json_dict_adapter().validate_python(metadata_map_raw)
+                u.json_dict_adapter().validate_python(metadata_map_raw)
                 if isinstance(metadata_map_raw, Mapping)
                 else {}
             ),
@@ -193,7 +193,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         entry_result = u.Meltano.build_catalog_entry(
             stream_name=stream_name,
             schema=(
-                t.json_dict_adapter().validate_python(schema_raw)
+                u.json_dict_adapter().validate_python(schema_raw)
                 if isinstance(schema_raw, Mapping)
                 else {}
             ),
@@ -239,7 +239,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             exclude_none=True,
             mode="json",
         )
-        return t.json_dict_adapter().validate_python(dumped_catalog)
+        return u.json_dict_adapter().validate_python(dumped_catalog)
 
     @property
     def flext_config(self) -> FlextTapOracleWmsSettings:

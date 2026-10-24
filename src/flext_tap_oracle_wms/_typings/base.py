@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from flext_core import m
-from flext_oracle_wms import FlextOracleWmsTypes
+from flext_oracle_wms import FlextOracleWmsTypes, u
 
 
 class FlextTapOracleWmsTypingsBase:
@@ -23,10 +23,10 @@ class FlextTapOracleWmsTypingsBase:
     type ContainerValueListAdapter = m.TypeAdapter[FlextOracleWmsTypes.JsonList]
 
     CONTAINER_VALUE_MAP_ADAPTER: m.TypeAdapter[FlextOracleWmsTypes.JsonMapping] = (
-        FlextOracleWmsTypes.json_mapping_adapter()
+        u.json_mapping_adapter()
     )
     CONTAINER_VALUE_LIST_ADAPTER: m.TypeAdapter[FlextOracleWmsTypes.JsonList] = (
-        FlextOracleWmsTypes.json_list_adapter()
+        u.json_list_adapter()
     )
 
 

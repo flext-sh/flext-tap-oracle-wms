@@ -95,7 +95,7 @@ class FlextTapOracleWmsStreams:
                 return None
             if isinstance(schema, (PathLike, str)):
                 return cls._load_schema_document(Path(schema))
-            return t.json_dict_adapter().validate_python(dict(schema))
+            return u.json_dict_adapter().validate_python(dict(schema))
 
         @staticmethod
         def _load_schema_document(path: Path) -> t.JsonDict:
@@ -117,7 +117,7 @@ class FlextTapOracleWmsStreams:
                     or f"Failed to parse JSON schema document at {path}"
                 )
                 raise e.ValidationError(msg)
-            return t.json_dict_adapter().validate_python(loaded_result.value)
+            return u.json_dict_adapter().validate_python(loaded_result.value)
 
         def _config_map(self) -> t.JsonMapping:
             """Return the tap settings mapping when the tap exposes WMS settings.
@@ -427,7 +427,7 @@ class FlextTapOracleWmsStreams:
             """
             conv = u.TapOracleWms.MappingConversion
             for record in records:
-                record_dict = t.json_dict_adapter().validate_python({
+                record_dict = u.json_dict_adapter().validate_python({
                     key: self.normalize_scalar_value(value)
                     for key, value in record.items()
                 })
@@ -439,7 +439,7 @@ class FlextTapOracleWmsStreams:
                 )
                 if processed_map is None:
                     continue
-                json_row = t.json_dict_adapter().validate_python({
+                json_row = u.json_dict_adapter().validate_python({
                     k: self.normalize_scalar_value(v) for k, v in processed_map.items()
                 })
                 yield self.post_process(json_row, context)

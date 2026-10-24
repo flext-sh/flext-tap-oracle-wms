@@ -50,7 +50,7 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
         """
         raw_config: t.JsonDict | None = None
         if settings is not None:
-            raw_config = t.json_dict_adapter().validate_python(
+            raw_config = u.json_dict_adapter().validate_python(
                 settings.model_dump()
                 if isinstance(settings, p.HasModelDump)
                 else settings,

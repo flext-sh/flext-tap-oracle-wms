@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
+from flext_oracle_wms import u
+
 from flext_tap_oracle_wms import c, t
 
 
@@ -52,10 +54,10 @@ class FlextTapOracleWmsUtilitiesConversion:
                     return {
                         key: normalizer(item) for key, item in validated_map.items()
                     }
-                return t.json_dict_adapter().validate_python(validated_map)
+                return u.json_dict_adapter().validate_python(validated_map)
             if normalizer is not None:
                 return {key: normalizer(item) for key, item in value.items()}
-            return t.json_dict_adapter().validate_python(value)
+            return u.json_dict_adapter().validate_python(value)
 
         @staticmethod
         def as_list(
