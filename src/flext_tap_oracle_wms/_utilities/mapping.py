@@ -23,8 +23,8 @@ class FlextTapOracleWmsUtilitiesConversion:
         def as_map(
             value: t.JsonMapping | t.JsonValue,
             *,
-            normalizer: t.ScalarNormalizer | None = None,
-            map_adapter: t.ContainerValueMapAdapter | None = None,
+            normalizer: t.TapOracleWms.ScalarNormalizer | None = None,
+            map_adapter: t.TapOracleWms.ContainerValueMapAdapter | None = None,
             error_cls: type[Exception] | None = None,
         ) -> t.JsonMapping | None:
             """Convert a NormalizedValue into a Mapping if possible.
@@ -63,8 +63,8 @@ class FlextTapOracleWmsUtilitiesConversion:
         def as_list(
             value: t.JsonValue,
             *,
-            normalizer: t.ScalarNormalizer | None = None,
-            list_adapter: t.ContainerValueListAdapter | None = None,
+            normalizer: t.TapOracleWms.ScalarNormalizer | None = None,
+            list_adapter: t.TapOracleWms.ContainerValueListAdapter | None = None,
             error_cls: type[Exception] | None = None,
         ) -> t.JsonList | None:
             """Convert a NormalizedValue into a Sequence if possible.

@@ -69,8 +69,10 @@ class TestsFlextTapOracleWmsHelpersMixin:
             The resulting ``t.JsonMapping``.
 
         """
-        schema: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-            stream.schema_definition,
+        schema: t.JsonMapping = (
+            t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+                stream.schema_definition,
+            )
         )
         return schema
 

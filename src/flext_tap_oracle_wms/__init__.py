@@ -12,8 +12,6 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
-from flext_tap_oracle_wms.__version__ import __version__
-
 if TYPE_CHECKING:
     from flext_meltano import d, h, r, s, x
     from flext_oracle_wms import e
@@ -26,6 +24,7 @@ if TYPE_CHECKING:
         __license__,
         __title__,
         __url__,
+        __version__,
         __version_info__,
     )
     from flext_tap_oracle_wms._config import FlextTapOracleWmsConfig, config
@@ -115,3 +114,6 @@ install_lazy_exports(
     }),
     public_exports=__all__,
 )
+
+if not TYPE_CHECKING:
+    from flext_tap_oracle_wms.__version__ import __version__

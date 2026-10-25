@@ -98,8 +98,10 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """
         raw_catalog_dict: t.JsonMapping = getattr(super(), "catalog_dict", {})
         try:
-            validated_catalog = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
-                raw_catalog_dict,
+            validated_catalog = (
+                t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+                    raw_catalog_dict,
+                )
             )
         except c.ValidationError as exc:
             msg = f"Invalid catalog_dict format: {exc}"

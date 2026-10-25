@@ -20,19 +20,11 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "annotated-types>=0.8.0",
-  "beartype>=0.23.1",
-  "dependency-injector>=4.49.1",
-  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
-  "flext-meltano @ git+https://github.com/flext-sh/flext-meltano.git@0.12.0-dev",
-  "flext-oracle-wms @ git+https://github.com/flext-sh/flext-oracle-wms.git@0.12.0-dev",
-  "packaging>=26.3",
-  "pydantic>=2.14.1,<3",
-  "pydantic-settings>=2.15.0",
-  "pyyaml>=6.0.3",
-  "singer-sdk>=0.54.8",
-  "structlog>=26.1.0",
-  "typing-extensions>=4.16.0",
+    "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
+    "flext-meltano @ git+https://github.com/flext-sh/flext-meltano.git@0.12.0-dev",
+    "flext-oracle-wms @ git+https://github.com/flext-sh/flext-oracle-wms.git@0.12.0-dev",
+    "singer-sdk>=0.54.8",
+    "typing-extensions>=4.16.0",
 ]
 description = "FLEXT Tap Oracle WMS - Singer Tap for Oracle Warehouse Management System"
 keywords = [
@@ -461,18 +453,13 @@ addopts = [
   "--strict-markers",
   "--markdown-docs",
   "--durations=10",
-  "--flext-enforce-strict",
 ]
 asyncio_default_fixture_loop_scope = "function"
-filterwarnings = [
-  "error",
-  "module::flext_core._constants.enforcement.FlextMroViolation",
-  "once::pytest.PytestAssertRewriteWarning",
-]
+filterwarnings = ["error", "once::pytest.PytestAssertRewriteWarning"]
 flext_fixture_trees_root = "tests/fixtures"
 flext_make_ci_value = "Y"
 flext_make_ci_variable = "CI"
-flext_slow_timeout_seconds = "30"
+flext_slow_timeout_seconds = "25"
 markers = [
   "smoke: public-interface smoke tests",
   "unit: unit tests",
@@ -587,6 +574,7 @@ select = ["ALL"]
 unfixable = [
   "multi-value-repeated-key-literal",
   "multi-value-repeated-key-variable",
+  "non-pep695-type-alias",
   "p-print",
   "print",
   "pytest-duplicate-parametrize-test-cases",
@@ -612,6 +600,19 @@ msg = "Use cli.render_table from flext_cli."
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api.typer]
 msg = "Use cli.create_app_with_common_params / cli.register_command from flext_cli."
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+  "flext_core.FlextSettings",
+  "flext_core.m.BaseModel",
+  "flext_core.m.StrictModel",
+  "flext_meltano.FlextMeltanoConfig",
+  "flext_meltano.FlextMeltanoTapServiceBase",
+  "flext_tap_oracle_wms.FlextTapOracleWmsSettings",
+  "flext_tests.FlextTestsServiceBase",
+  "flext_tests.FlextTestsSettings",
+  "pydantic.BaseModel",
+]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
@@ -655,5 +656,40 @@ constraint-dependencies = [
 environments = ["sys_platform == 'linux'", "sys_platform == 'darwin'"]
 link-mode = "copy"
 override-dependencies = [
-  "rope @ git+https://github.com/marlon-costa-dc/rope.git@ff1c992a100ae983baa79188a6a970c2858734de",
+  "rope @ git+https://github.com/marlon-costa-dc/rope.git@8414232e12b6328ba812bf49fe465fde65774dfd",
+  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
+  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
+  "flext-meltano @ git+https://github.com/flext-sh/flext-meltano.git@0.12.0-dev",
+  "flext-oracle-wms @ git+https://github.com/flext-sh/flext-oracle-wms.git@0.12.0-dev",
+  "flext-tests @ git+https://github.com/flext-sh/flext-tests.git@0.12.0-dev",
 ]
+
+[[tool.uv.exclude-dependencies]]
+dependencies = ["flext-tap-oracle-wms"]
+
+[tool.uv.exclude-dependencies.package]
+name = "flext-core"
+
+[[tool.uv.exclude-dependencies]]
+dependencies = ["flext-tap-oracle-wms"]
+
+[tool.uv.exclude-dependencies.package]
+name = "flext-infra"
+
+[[tool.uv.exclude-dependencies]]
+dependencies = ["flext-tap-oracle-wms"]
+
+[tool.uv.exclude-dependencies.package]
+name = "flext-meltano"
+
+[[tool.uv.exclude-dependencies]]
+dependencies = ["flext-tap-oracle-wms"]
+
+[tool.uv.exclude-dependencies.package]
+name = "flext-oracle-wms"
+
+[[tool.uv.exclude-dependencies]]
+dependencies = ["flext-tap-oracle-wms"]
+
+[tool.uv.exclude-dependencies.package]
+name = "flext-tests"

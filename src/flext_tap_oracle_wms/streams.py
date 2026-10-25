@@ -202,7 +202,7 @@ class FlextTapOracleWmsStreams:
             list_value = conv.as_list(
                 value,
                 normalizer=FlextTapOracleWmsStreams.WmsStream.normalize_json_value,
-                list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
+                list_adapter=t.TapOracleWms.CONTAINER_VALUE_LIST_ADAPTER,
                 error_cls=e.ValidationError,
             )
             if list_value is not None:
@@ -210,7 +210,7 @@ class FlextTapOracleWmsStreams:
             map_value = conv.as_map(
                 value,
                 normalizer=FlextTapOracleWmsStreams.WmsStream.normalize_json_value,
-                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                map_adapter=t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER,
                 error_cls=e.ValidationError,
             )
             if map_value is not None:
@@ -313,7 +313,7 @@ class FlextTapOracleWmsStreams:
                 return
             column_mappings = conv.as_map(
                 mappings_raw,
-                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                map_adapter=t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER,
                 error_cls=e.ValidationError,
             )
             if column_mappings is None:
@@ -323,7 +323,7 @@ class FlextTapOracleWmsStreams:
                 return
             mapping = conv.as_map(
                 mapping_raw,
-                map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                map_adapter=t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER,
                 error_cls=e.ValidationError,
             )
             if mapping is None:
@@ -340,7 +340,7 @@ class FlextTapOracleWmsStreams:
                 return
             ignored_columns = u.TapOracleWms.MappingConversion.as_list(
                 ignored_raw,
-                list_adapter=t.CONTAINER_VALUE_LIST_ADAPTER,
+                list_adapter=t.TapOracleWms.CONTAINER_VALUE_LIST_ADAPTER,
                 error_cls=e.ValidationError,
             )
             if ignored_columns is None:
@@ -434,7 +434,7 @@ class FlextTapOracleWmsStreams:
                 processed_map = conv.as_map(
                     record_dict,
                     normalizer=self.normalize_json_value,
-                    map_adapter=t.CONTAINER_VALUE_MAP_ADAPTER,
+                    map_adapter=t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER,
                     error_cls=e.ValidationError,
                 )
                 if processed_map is None:

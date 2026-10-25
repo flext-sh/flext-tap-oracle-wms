@@ -7,6 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import TypeAlias
+
 from flext_meltano import FlextMeltanoUtilities
 from flext_oracle_wms import FlextOracleWmsUtilities
 
@@ -22,10 +24,11 @@ class FlextTapOracleWmsUtilities(FlextMeltanoUtilities, FlextOracleWmsUtilities)
     class TapOracleWms(FlextTapOracleWmsUtilitiesConversion):
         """Oracle WMS tap utilities namespace."""
 
-        MappingConversion = FlextTapOracleWmsUtilitiesConversion.MappingConversion
+        MappingConversion: TypeAlias = (
+            FlextTapOracleWmsUtilitiesConversion.MappingConversion
+        )
 
 
 u = FlextTapOracleWmsUtilities
 """Facade assignment for module-level utility access."""
-
 __all__: list[str] = ["FlextTapOracleWmsUtilities", "u"]

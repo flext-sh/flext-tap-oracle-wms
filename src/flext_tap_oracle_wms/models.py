@@ -27,5 +27,4 @@ class FlextTapOracleWmsModels(FlextMeltanoModels, FlextOracleWmsModels):
 
 
 m = FlextTapOracleWmsModels
-
 __all__: list[str] = ["FlextTapOracleWmsModels", "m"]

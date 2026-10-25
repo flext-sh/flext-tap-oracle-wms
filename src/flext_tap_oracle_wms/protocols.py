@@ -19,13 +19,8 @@ from flext_tap_oracle_wms._protocols import FlextTapOracleWmsProtocolsBase
 class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols):
     """Singer Oracle WMS tap protocols facade — composes Meltano + OracleWms."""
 
-    class TapOracleWms:
+    class TapOracleWms(FlextTapOracleWmsProtocolsBase):
         """Singer Tap Oracle WMS structural protocols (consumer surface)."""
-
-        TapWithWmsClient = FlextTapOracleWmsProtocolsBase.TapWithWmsClient
-        TapWithWmsClientSettings = (
-            FlextTapOracleWmsProtocolsBase.TapWithWmsClientSettings
-        )
 
 
 p = FlextTapOracleWmsProtocols
