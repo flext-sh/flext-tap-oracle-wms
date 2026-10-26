@@ -21,13 +21,13 @@
 - Keywords: `data-extraction`, `enterprise`, `etl`, `flext`, `singer`, `tap`, `typed`
 - Main facades: `FlextTapOracleWms`, `FlextTapOracleWmsConfig`,
   `FlextTapOracleWmsConstants`, `FlextTapOracleWmsModels`, `FlextTapOracleWmsProtocols`,
-  `FlextTapOracleWmsService`, `FlextTapOracleWmsSettings`, `FlextTapOracleWmsTypes` (+2
-  more)
+  `FlextTapOracleWmsService`, `FlextTapOracleWmsSettings`, `FlextTapOracleWmsStreams`
+  (+3 more)
 - Alias exports: `c`, `d`, `e`, `h`, `m`, `p`, `r`, `s`, `t`, `u`, `x`
 - Public symbol exports: `FlextTapOracleWms`, `FlextTapOracleWmsConfig`,
   `FlextTapOracleWmsConstants`, `FlextTapOracleWmsModels`, `FlextTapOracleWmsProtocols`,
-  `FlextTapOracleWmsService`, `FlextTapOracleWmsSettings`, `FlextTapOracleWmsTypes`,
-  `FlextTapOracleWmsUtilities`, `FlextTapOracleWmsVersion` (+4 more)
+  `FlextTapOracleWmsService`, `FlextTapOracleWmsSettings`, `FlextTapOracleWmsStreams`,
+  `FlextTapOracleWmsTypes`, `FlextTapOracleWmsUtilities` (+5 more)
 - Exported module shortcuts: _none_
 - Generated module pages: `9`
 

@@ -484,27 +484,27 @@ p.sort_stats('cumulative').print_stats(20)
 
 1. **Preparation Phase**:
 
-   - Document all current functionality
-   - Create comprehensive test suite
-   - Set up FLEXT integration foundation
+    - Document all current functionality
+    - Create comprehensive test suite
+    - Set up FLEXT integration foundation
 
 1. **Implementation Phase**:
 
-   - Implement simplified architecture
-   - Migrate functionality incrementally
-   - Validate each component thoroughly
+    - Implement simplified architecture
+    - Migrate functionality incrementally
+    - Validate each component thoroughly
 
 1. **Validation Phase**:
 
-   - Compare outputs between old and new
-   - Performance benchmarking
-   - Integration testing
+    - Compare outputs between old and new
+    - Performance benchmarking
+    - Integration testing
 
 1. **Deployment Phase**:
 
-   - Switch to new implementation
-   - Monitor production performance
-   - Address any issues quickly
+    - Switch to new implementation
+    - Monitor production performance
+    - Address any issues quickly
 
 ---
 

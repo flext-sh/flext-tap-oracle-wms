@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants, c
     from flext_tap_oracle_wms.models import FlextTapOracleWmsModels, m
     from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols, p
+    from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
     from flext_tap_oracle_wms.tap import FlextTapOracleWms
     from flext_tap_oracle_wms.typings import FlextTapOracleWmsTypes, t
     from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities, u
@@ -47,6 +48,7 @@ __all__: tuple[str, ...] = (
     "FlextTapOracleWmsProtocols",
     "FlextTapOracleWmsService",
     "FlextTapOracleWmsSettings",
+    "FlextTapOracleWmsStreams",
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
     "FlextTapOracleWmsVersion",
@@ -86,6 +88,7 @@ install_lazy_exports(
         "FlextTapOracleWmsProtocols": ".protocols",
         "FlextTapOracleWmsService": ".api",
         "FlextTapOracleWmsSettings": "._settings",
+        "FlextTapOracleWmsStreams": ".streams",
         "FlextTapOracleWmsTypes": ".typings",
         "FlextTapOracleWmsUtilities": ".utilities",
         "FlextTapOracleWmsVersion": ".__version__",

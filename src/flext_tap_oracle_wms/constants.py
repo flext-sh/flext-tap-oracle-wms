@@ -8,8 +8,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_meltano import FlextMeltanoConstants
-from flext_oracle_wms import FlextOracleWmsConstants
+from flext_meltano import c
+from flext_oracle_wms import c as flext_oracle_wms_c
 
 from flext_tap_oracle_wms._constants import (
     FlextTapOracleWmsConstantsBase,
@@ -18,8 +18,8 @@ from flext_tap_oracle_wms._constants import (
 
 
 class FlextTapOracleWmsConstants(
-    FlextMeltanoConstants,
-    FlextOracleWmsConstants,
+    c,
+    flext_oracle_wms_c,
     FlextTapOracleWmsConstantsValues,
 ):
     """Oracle WMS tap extraction-specific constants following flext-core patterns.

@@ -443,3 +443,6 @@ class FlextTapOracleWmsStreams:
                     k: self.normalize_scalar_value(v) for k, v in processed_map.items()
                 })
                 yield self.post_process(json_row, context)
+
+
+__all__ = ["FlextTapOracleWmsStreams"]

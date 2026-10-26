@@ -57,7 +57,7 @@ required validation.
   classes listed under Module Map above.
 - Public extensions exposed by this project: `FlextTapOracleWms`,
   `FlextTapOracleWmsConfig`, `FlextTapOracleWmsConstants`, `FlextTapOracleWmsModels`,
-  `FlextTapOracleWmsProtocols`, `FlextTapOracleWmsService` (+4 more).
+  `FlextTapOracleWmsProtocols`, `FlextTapOracleWmsService` (+5 more).
 - Library abstraction boundaries: see the project `AGENTS.md` and the referenced parent
   architecture rules.
 

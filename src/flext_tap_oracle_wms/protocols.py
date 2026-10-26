@@ -10,13 +10,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_meltano import FlextMeltanoProtocols
-from flext_oracle_wms import FlextOracleWmsProtocols
+from flext_meltano import p
+from flext_oracle_wms import p as flext_oracle_wms_p
 
 from flext_tap_oracle_wms._protocols import FlextTapOracleWmsProtocolsBase
 
 
-class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols):
+class FlextTapOracleWmsProtocols(p, flext_oracle_wms_p):
     """Singer Oracle WMS tap protocols facade — composes Meltano + OracleWms."""
 
     class TapOracleWms(FlextTapOracleWmsProtocolsBase):

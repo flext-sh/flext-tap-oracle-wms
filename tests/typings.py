@@ -31,7 +31,7 @@ class TestsFlextTapOracleWmsTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
     - Generic types accessed via Tests namespace
     """
 
-    class TapOracleWms:
+    class TapOracleWms(FlextTapOracleWmsTypes.TapOracleWms):
         """Tap Oracle WMS test types - domain-specific for Oracle WMS tap testing.
 
         Contains test types specific to Oracle WMS tap functionality including:
