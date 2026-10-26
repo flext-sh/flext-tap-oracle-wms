@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from flext_meltano import d, h, r, s, x
-    from flext_oracle_wms import e
+    from flext_meltano import cli, d, h, meltano, r, s, x
+    from flext_oracle_wms import api, e, oracle_wms, web
 
     from flext_tap_oracle_wms.__version__ import (
         FlextTapOracleWmsVersion,
@@ -60,13 +60,17 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
+    "api",
     "c",
+    "cli",
     "config",
     "d",
     "e",
     "h",
     "m",
     "main",
+    "meltano",
+    "oracle_wms",
     "p",
     "r",
     "s",
@@ -74,6 +78,7 @@ __all__: tuple[str, ...] = (
     "t",
     "tap_oracle_wms",
     "u",
+    "web",
     "x",
 )
 
@@ -99,13 +104,17 @@ install_lazy_exports(
         "__title__": ".__version__",
         "__url__": ".__version__",
         "__version_info__": ".__version__",
+        "api": "flext_oracle_wms",
         "c": ".constants",
+        "cli": "flext_meltano",
         "config": "._config",
         "d": "flext_meltano",
         "e": "flext_oracle_wms",
         "h": "flext_meltano",
         "m": ".models",
         "main": ".cli",
+        "meltano": "flext_meltano",
+        "oracle_wms": "flext_oracle_wms",
         "p": ".protocols",
         "r": "flext_meltano",
         "s": "flext_meltano",
@@ -113,6 +122,7 @@ install_lazy_exports(
         "t": ".typings",
         "tap_oracle_wms": ".api",
         "u": ".utilities",
+        "web": "flext_oracle_wms",
         "x": "flext_meltano",
     }),
     public_exports=__all__,
