@@ -12,6 +12,7 @@ sourced from code and docstrings.
 - [Codemod rules](codemod-rules.md)
 - [Configuration](configuration.md)
 - [Development](development.md)
+- [Engine](engine.md)
 - [Getting started](getting-started.md)
 - [Make commands](make-commands.md)
 - [Migration to v0.13.0](migration-to-v0.13.0.md)

@@ -18,8 +18,7 @@ from typing import Final
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import c, tm
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from tests import TestsFlextTapOracleWmsHelpersMixin, c, tm
 
 UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "tap-wms-unit-" + "3k7q"
 

@@ -162,6 +162,15 @@ pytest -k "discovery" tests/unit/
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from unittest.mock import Mock, patch
 import pytest
 
@@ -211,6 +220,15 @@ def test_config_validation_success(valid_config):
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_component_handles_network_error():
@@ -278,6 +296,15 @@ def test_config_validation_with_missing_url_raises_error():
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_complex_scenario():
@@ -352,6 +379,15 @@ def sample_wms_response():
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def assert_flext_result_success(result):
     """Assert r indicates success."""
@@ -398,6 +434,15 @@ def assert_flext_result_error(result, expected_error_type=None):
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 import pytest
 
 

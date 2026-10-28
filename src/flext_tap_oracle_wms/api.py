@@ -13,8 +13,7 @@ from typing import Annotated, override
 
 from flext_meltano import FlextMeltanoSingerTapAdapter, FlextMeltanoTapServiceBase
 
-from flext_tap_oracle_wms import m, p, t, u
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tap_oracle_wms import FlextTapOracleWms, m, p, t, u
 
 
 class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):

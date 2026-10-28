@@ -7,13 +7,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_meltano import u
+from flext_meltano import u as flext_meltano_u
 from flext_oracle_wms import u as flext_oracle_wms_u
 
 from flext_tap_oracle_wms._utilities import FlextTapOracleWmsUtilitiesConversion
 
 
-class FlextTapOracleWmsUtilities(u, flext_oracle_wms_u):
+class FlextTapOracleWmsUtilities(flext_meltano_u, flext_oracle_wms_u):
     """Domain-specific Oracle WMS tap utilities.
 
     Inherits from u to avoid duplication.

@@ -13,9 +13,18 @@ from typing import ClassVar, override
 
 from flext_oracle_wms import FlextOracleWmsSettings, FlextOracleWmsUtilities
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings, c, e, m, p, r, t, u
+from flext_tap_oracle_wms import (
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStreams,
+    c,
+    e,
+    m,
+    p,
+    r,
+    t,
+    u,
+)
 from flext_tap_oracle_wms.__version__ import __version__
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
 
 
 class FlextTapOracleWms(m.Meltano.SingerTapBase):
@@ -316,7 +325,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.failure:
             return r[m.Meltano.SingerCatalog].from_failure(discovery_result)
-        entities: t.StrSequence = list(discovery_result.value)
+        entities: Sequence[str] = list(discovery_result.value)
         streams: list[m.Meltano.SingerCatalogEntry] = []
         for entity in entities:
             entry_result = u.Meltano.build_catalog_entry(
@@ -350,11 +359,11 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         )
 
     @override
-    def discover_streams(self) -> t.SequenceOf[FlextTapOracleWmsStreams.WmsStream]:
+    def discover_streams(self) -> Sequence[FlextTapOracleWmsStreams.WmsStream]:
         """Build stream objects from the discovered catalog.
 
         Returns:
-            The resulting ``t.SequenceOf[FlextTapOracleWmsStreams.WmsStream]``.
+            The resulting ``Sequence[FlextTapOracleWmsStreams.WmsStream]``.
 
         Raises:
             e.ConfigurationError: If Catalog discovery failed.

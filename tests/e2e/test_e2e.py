@@ -13,16 +13,17 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import c, m, t, tm, u
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from flext_tap_oracle_wms import (
+    FlextTapOracleWms,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStreams,
+)
+from tests import TestsFlextTapOracleWmsHelpersMixin, c, m, t, tm, u
 
 logger = u.fetch_logger(__name__)
 
@@ -191,7 +192,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
 
     @staticmethod
     def _count_primary_keys(
-        metadata: t.SequenceOf[m.Meltano.SingerCatalogMetadata],
+        metadata: Sequence[m.Meltano.SingerCatalogMetadata],
     ) -> int:
         """Count automatic-inclusion leaf fields (Singer primary keys).
 

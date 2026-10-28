@@ -13,12 +13,11 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
-from tests import tm, u
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from flext_tap_oracle_wms import FlextTapOracleWmsStreams
+from tests import TestsFlextTapOracleWmsHelpersMixin, tm, u
 
 if TYPE_CHECKING:
-    from flext_tap_oracle_wms.tap import FlextTapOracleWms
+    from flext_tap_oracle_wms import FlextTapOracleWms
 
 logger = u.fetch_logger(__name__)
 

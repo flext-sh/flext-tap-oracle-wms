@@ -7,14 +7,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
+from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import c, t, u
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import c, m, u
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -146,7 +146,7 @@ def real_tap_instance(
 
 def pytest_collection_modifyitems(
     config: pytest.Config,
-    items: t.SequenceOf[pytest.Item],
+    items: Sequence[pytest.Item],
 ) -> None:
     """Declare connectivity by fixture dependency, never integration location."""
     _ = config

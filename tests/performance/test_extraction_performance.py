@@ -11,10 +11,8 @@ import time
 import psutil
 import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t, tm
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import TestsFlextTapOracleWmsHelpersMixin, t, tm
 
 _MAX_DISCOVERY_SECONDS = 10.0
 _PAGINATION_SAMPLE_LIMIT = 99

@@ -11,10 +11,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping, Sequence
 from typing import Annotated
 
 import flext_core
-from flext_core import FlextSettings, m, t
+from flext_core import FlextSettings, m
 from typing_extensions import TypeForm
 
 _ISO_DATE_RE = re.compile(
@@ -62,11 +63,11 @@ class FlextTapOracleWmsSettings(FlextSettings):
             m.Field(ge=1, description="Schema discovery sample size"),
         ] = 100
         include_entities: Annotated[
-            t.StrSequence,
+            Sequence[str],
             m.Field(description="Entities to include"),
         ] = ()
         exclude_entities: Annotated[
-            t.StrSequence,
+            Sequence[str],
             m.Field(description="Entities to exclude"),
         ] = ()
         start_date: Annotated[
@@ -82,7 +83,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
             m.Field(description="Column rename mappings per stream (JSON)"),
         ] = "{}"
         ignored_columns: Annotated[
-            t.StrSequence,
+            Sequence[str],
             m.Field(description="Columns to ignore"),
         ] = ()
         enable_parallel_extraction: Annotated[
@@ -114,10 +115,10 @@ class FlextTapOracleWmsSettings(FlextSettings):
             m.Field(description="Custom User-Agent header"),
         ] = None
         additional_headers: Annotated[
-            t.StrMapping,
+            Mapping[str, str],
             m.Field(description="Additional HTTP headers"),
         ] = m.Field(
-            default_factory=flext_core.u.empty(TypeForm(t.StrMapping)),
+            default_factory=flext_core.u.empty(TypeForm(Mapping[str, str])),
             validate_default=True,
         )
         log_level: Annotated[str, m.Field(description="Log level")] = "INFO"
@@ -136,7 +137,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
 
         @m.field_validator("include_entities", "exclude_entities")
         @classmethod
-        def _check_no_duplicates(cls, v: t.StrSequence) -> t.StrSequence:
+        def _check_no_duplicates(cls, v: Sequence[str]) -> Sequence[str]:
             if len(v) != len(set(v)):
                 msg = "Entity list contains duplicates"
                 raise ValueError(msg)

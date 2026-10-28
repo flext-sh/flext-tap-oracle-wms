@@ -11,11 +11,12 @@ from collections.abc import MutableSequence
 
 import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t, tm, u
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from flext_tap_oracle_wms import (
+    FlextTapOracleWms,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStreams,
+)
+from tests import TestsFlextTapOracleWmsHelpersMixin, t, tm, u
 
 logger = u.fetch_logger(__name__)
 

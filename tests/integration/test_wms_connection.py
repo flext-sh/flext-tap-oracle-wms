@@ -11,10 +11,8 @@ from __future__ import annotations
 
 import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t, tm
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import TestsFlextTapOracleWmsHelpersMixin, t, tm
 
 _PAGE_SAMPLE_LIMIT = 5
 _MIN_SAMPLE_RECORDS = 2

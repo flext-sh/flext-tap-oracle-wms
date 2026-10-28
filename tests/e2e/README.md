@@ -129,6 +129,15 @@ tap-oracle-wms --config invalid_config.json --discover
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_singer_message_compliance():
     """Test complete Singer message format compliance."""
@@ -153,6 +162,15 @@ def test_singer_message_compliance():
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_incremental_state_management():
     """Test incremental extraction with state management."""
@@ -175,6 +193,15 @@ def test_incremental_state_management():
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class E2EMockWMSEnvironment:
@@ -291,6 +318,15 @@ def test_cli_discovery_execution():
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def validate_singer_output(output_text):
     """Validate Singer-compliant output format."""
@@ -336,6 +372,15 @@ def validate_message_sequence(messages):
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_e2e_performance_benchmarks():
     """Test E2E performance meets requirements."""
@@ -368,6 +413,15 @@ def test_e2e_performance_benchmarks():
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_e2e_resource_usage():
@@ -403,6 +457,15 @@ def test_e2e_resource_usage():
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_e2e_network_failures():
     """Test E2E behavior during network failures."""
@@ -435,6 +498,15 @@ def test_e2e_network_failures():
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_e2e_configuration_errors():
@@ -512,6 +584,15 @@ def test_e2e_configuration_errors():
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_business_user_daily_extraction():

@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping, MutableMapping, Sequence
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, override
@@ -14,13 +15,13 @@ from typing import TYPE_CHECKING, override
 from flext_tap_oracle_wms import c, e, m, p, r, t, u
 
 if TYPE_CHECKING:
-    from flext_oracle_wms import FlextOracleWmsUtilities
-
     # The typed Singer schema input forms. ``t.Meltano.SingerSchema`` is a
     # runtime class-body alias the owner declares "for isinstance and schema
     # construction" — not for type position — so the SDK ``Schema`` object is
     # admitted here through the runtime ``isinstance`` branch below rather than
     # leaking the partially-unknown member type into this alias.
+    from flext_oracle_wms import FlextOracleWmsUtilities
+
     type SingerSchemaInput = str | PathLike[str] | t.JsonMapping | None
 
 
@@ -241,8 +242,8 @@ class FlextTapOracleWmsStreams:
         @override
         def get_records(
             self,
-            context: t.ScalarMapping | None,
-        ) -> t.IterableOf[t.JsonDict]:
+            context: Mapping[str, t.Scalar] | None,
+        ) -> Iterable[t.JsonDict]:
             """Yield the records from Oracle WMS (Singer SDK ``Stream`` hook).
 
             Args:
@@ -282,7 +283,7 @@ class FlextTapOracleWmsStreams:
         def post_process(
             self,
             row: t.JsonDict,
-            context: t.ScalarMapping | None = None,
+            context: Mapping[str, t.Scalar] | None = None,
         ) -> t.JsonDict:
             """Post-process one record before it is emitted.
 
@@ -352,8 +353,8 @@ class FlextTapOracleWmsStreams:
         def build_operation_kwargs(
             self,
             page: int,
-            context: t.ScalarMapping | None,
-        ) -> t.MutableScalarMapping:
+            context: Mapping[str, t.Scalar] | None,
+        ) -> MutableMapping[str, t.Scalar]:
             """Build kwargs for the WMS operation call.
 
             Args:
@@ -361,10 +362,10 @@ class FlextTapOracleWmsStreams:
                 context: Partition context providing the replication start, or None.
 
             Returns:
-                The resulting ``t.MutableScalarMapping``.
+                The resulting ``MutableMapping[str, t.Scalar]``.
 
             """
-            result_kwargs: t.MutableScalarMapping = {}
+            result_kwargs: MutableMapping[str, t.Scalar] = {}
             result_kwargs["page"] = page
             result_kwargs["limit"] = self._page_size
             if self.stream_replication_key:
@@ -380,18 +381,18 @@ class FlextTapOracleWmsStreams:
         def _fetch_page_data(
             self,
             page: int,
-            context: t.ScalarMapping | None,
-        ) -> p.Result[tuple[t.SequenceOf[t.JsonMapping], bool]]:
+            context: Mapping[str, t.Scalar] | None,
+        ) -> p.Result[tuple[Sequence[t.JsonMapping], bool]]:
             """Fetch data for a specific page.
 
             Returns:
-                The resulting ``p.Result[tuple[t.SequenceOf[t.JsonMapping], bool]]``.
+                The resulting ``p.Result[tuple[Sequence[t.JsonMapping], bool]]``.
 
             """
             kwargs = self.build_operation_kwargs(page, context)
             limit_raw = kwargs.get("limit")
             limit = u.to_int(limit_raw, default=self._page_size)
-            filters: t.MutableScalarMapping = {}
+            filters: MutableMapping[str, t.Scalar] = {}
             filter_raw = kwargs.get("filter")
             if isinstance(filter_raw, str) and self.stream_replication_key:
                 filters[self.stream_replication_key] = filter_raw
@@ -401,24 +402,24 @@ class FlextTapOracleWmsStreams:
                 filters=filters or None,
             )
             if result.failure:
-                return r[tuple[t.SequenceOf[t.JsonMapping], bool]].fail(
+                return r[tuple[Sequence[t.JsonMapping], bool]].fail(
                     f"Failed to get records for {self.name}: {result.error}",
                 )
-            normalized: t.SequenceOf[t.JsonMapping] = [
+            normalized: Sequence[t.JsonMapping] = [
                 {key: self.normalize_json_value(value) for key, value in record.items()}
                 for record in result.value
             ]
             has_more = len(normalized) == self._page_size
-            return r[tuple[t.SequenceOf[t.JsonMapping], bool]].ok((
+            return r[tuple[Sequence[t.JsonMapping], bool]].ok((
                 normalized,
                 has_more,
             ))
 
         def _process_page_records(
             self,
-            records: t.SequenceOf[t.JsonMapping],
-            context: t.ScalarMapping | None,
-        ) -> t.IterableOf[t.JsonDict]:
+            records: Sequence[t.JsonMapping],
+            context: Mapping[str, t.Scalar] | None,
+        ) -> Iterable[t.JsonDict]:
             """Process and yield records from a page.
 
             Yields:
