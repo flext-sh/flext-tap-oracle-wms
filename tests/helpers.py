@@ -41,7 +41,7 @@ class TestsFlextTapOracleWmsHelpersMixin:
         ImportError,
     )
 
-    _TAP_CONNECTION_ERROR_KEYWORDS: ClassVar[t.VariadicTuple[str]] = (
+    _TAP_CONNECTION_ERROR_KEYWORDS: ClassVar[tuple[str, ...]] = (
         "authentication",
         "authorization",
         "credentials",
