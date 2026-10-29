@@ -231,7 +231,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
     def _assess_stream_quality(
         cls,
         stream_config: m.Meltano.SingerCatalogEntry,
-        quality_report: t.IntDict,
+        quality_report: dict[str, int],
     ) -> None:
         """Fold one stream's schema/metadata quality into the report."""
         schema = stream_config.schema_definition
