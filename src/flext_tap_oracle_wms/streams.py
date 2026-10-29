@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     # construction" — not for type position — so the SDK ``Schema`` object is
     # admitted here through the runtime ``isinstance`` branch below rather than
     # leaking the partially-unknown member type into this alias.
+
     from flext_oracle_wms import FlextOracleWmsUtilities
 
     type SingerSchemaInput = str | PathLike[str] | t.JsonMapping | None

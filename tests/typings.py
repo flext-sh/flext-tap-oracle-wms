@@ -50,7 +50,7 @@ class TestsFlextTapOracleWmsTypes(FlextTestsTypes, FlextTapOracleWmsTypes):
         type TestOracleWmsScenario = FlextTestsTypes.JsonMapping
         type TestOracleWmsValidationResult = Mapping[
             str,
-            bool | str | FlextTestsTypes.Sequence[str],
+            bool | str | Sequence[str],
         ]
         type TestOracleWmsApiResult = FlextTestsTypes.JsonMapping
 
