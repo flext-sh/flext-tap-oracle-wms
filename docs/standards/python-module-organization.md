@@ -148,6 +148,15 @@ following Singer SDK patterns and FLEXT ecosystem standards.
 
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_core import t
 from flext_tap_oracle_wms import FlextTapOracleWms, WMSConfig, __version__
 
@@ -184,6 +193,15 @@ FLEXT ecosystem integration for configuration, logging, and error handling.
 """
 
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from singer_sdk import Tap
 
@@ -247,7 +265,7 @@ from flext_tap_oracle_wms import FlextTapOracleWms
 settings = {
     "base_url": "https://wms.example.com",
     "auth_method": "basic",
-    "username": "user",
+    "username": c.ContextScope.USER,
     # ... other settings
 }
 
@@ -266,6 +284,15 @@ pagination, error handling, and schema management.
 """
 
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from collections.abc import Iterator
 
@@ -363,6 +390,15 @@ validation, and FLEXT ecosystem integration.
 
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from pydantic import Field, validator
 
 from flext_core import FlextSettings, t
@@ -456,6 +492,15 @@ using FLEXT ecosystem patterns and error handling.
 """
 
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_cli import u
 from flext_core import t
@@ -563,6 +608,15 @@ WMS library without reimplementing authentication logic.
 
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_oracle_wms import FlextOracleWmsClient
 from flext_tap_oracle_wms import WMSConfig
 
@@ -660,6 +714,15 @@ WMSDiscoveryError  # Specific error (descriptive)
 ```{.python .notest}
 # Action-oriented naming
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_core import t
 def discover_streams() -> list[Stream]:           # Singer SDK pattern
 def discover_entities() -> p.Result[t.StringList]: # FLEXT pattern
@@ -703,6 +766,15 @@ External Libraries (singer-sdk, pydantic)
 
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 # FLEXT ecosystem imports
 
@@ -735,6 +807,15 @@ from flext_tap_oracle_wms import *
 ```python
 # Standard Singer tap structure
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from collections.abc import Iterator
 
@@ -769,6 +850,15 @@ class FlextTapOracleWmsStream(RESTStream):
 # Configuration using FlextSettings
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_core import t
 
 
@@ -799,6 +889,15 @@ self.logger.info("Starting extraction", entity=entity_name)
 ```python
 # Application Layer - orchestrates business logic
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class FlextTapOracleWms:
@@ -929,6 +1028,15 @@ tests/
 # Test organization follows module responsibility
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_tap_discover_streams():
     """Test main tap stream discovery functionality."""
@@ -972,6 +1080,15 @@ make security             # Bandit + pip-audit
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_core import t
 
 
@@ -1006,6 +1123,15 @@ def discover_entities(self) -> p.Result[t.StringList]:
 ```text
 # ✅ Use FLEXT patterns consistently
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -1028,6 +1154,15 @@ custom_logger = logging.getLogger()          # Use u.fetch_logger()
 ```text
 # ✅ Use ecosystem libraries
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 from flext_meltano import Tap, Stream
 

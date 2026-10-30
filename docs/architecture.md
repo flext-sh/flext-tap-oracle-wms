@@ -192,6 +192,15 @@ graph TB
 # Domain Layer (core business logic)
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_core import t
 
 
@@ -229,6 +238,15 @@ class WMSAuthenticator:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from singer_sdk import Stream, Tap
 
 
@@ -261,6 +279,15 @@ class FlextTapOracleWmsStream(RESTStream):
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from pydantic import Field, validator
 
@@ -344,6 +371,15 @@ sequenceDiagram
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 class WMSPaginator:
     """Simplified pagination for Oracle WMS HATEOAS."""
@@ -360,6 +396,15 @@ class WMSPaginator:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from functools import lru_cache
 
@@ -379,6 +424,15 @@ class WMSCache:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_oracle_wms import FlextOracleWmsClient
 
@@ -406,6 +460,15 @@ class WMSConnectionManager:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_core import e
 
 
@@ -429,6 +492,15 @@ class WMSSchemaError(WMSTapError):
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 import time
 
@@ -480,6 +552,15 @@ tests/
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from unittest.mock import Mock, patch
 
 import pytest
@@ -494,7 +575,7 @@ def mock_wms_client():
     client = Mock(spec=FlextOracleWmsClient)
     client.get_entities.return_value = ["item", "inventory", "order"]
     client.fetch_entity_data.return_value = [
-        {"id": "1", "name": "Test Item"},
+        {"id": c.ParserBooleanToken.ONE, "name": "Test Item"},
         {"id": "2", "name": "Another Item"},
     ]
     return client
@@ -508,8 +589,8 @@ def test_stream_extraction(mock_wms_client):
     ):
         stream = FlextTapOracleWmsStream(tap=mock_tap, name="item")
         records = list(stream.get_records(None))
-        assert len(records) == 2
-        assert records[0]["id"] == "1"
+        tm.that(len(records), eq=2)
+        tm.that(records[0]["id"], eq=c.ParserBooleanToken.ONE)
 ```
 
 ## Security Architecture
@@ -518,6 +599,15 @@ def test_stream_extraction(mock_wms_client):
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_oracle_wms import WMSAuthenticator
 
@@ -542,6 +632,15 @@ class TapAuthentication:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from pydantic import SecretStr
 
 
@@ -551,7 +650,7 @@ class SecureWMSConfig(dict):
     password: SecretStr | None = None
     oauth_client_secret: SecretStr | None = None
 
-    def get_credentials(self) -> t.StrDict:
+    def get_credentials(self) -> dict[str, str]:
         """Get credentials with secret values."""
         creds = {}
         if self.password:

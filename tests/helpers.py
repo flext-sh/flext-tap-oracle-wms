@@ -11,17 +11,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 
 import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t, tm
-
-if TYPE_CHECKING:
-    from tests import m
+from flext_tap_oracle_wms import (
+    FlextTapOracleWms,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStreams,
+)
+from tests import m, t, tm, u
 
 
 class TestsFlextTapOracleWmsHelpersMixin:
@@ -42,7 +41,7 @@ class TestsFlextTapOracleWmsHelpersMixin:
         ImportError,
     )
 
-    _TAP_CONNECTION_ERROR_KEYWORDS: ClassVar[t.VariadicTuple[str]] = (
+    _TAP_CONNECTION_ERROR_KEYWORDS: ClassVar[tuple[str, ...]] = (
         "authentication",
         "authorization",
         "credentials",
@@ -72,7 +71,7 @@ class TestsFlextTapOracleWmsHelpersMixin:
             The resulting ``t.JsonMapping``.
 
         """
-        schema: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+        schema: t.JsonMapping = u.json_mapping_adapter().validate_python(
             stream.schema_definition,
         )
         return schema
@@ -144,3 +143,6 @@ class TestsFlextTapOracleWmsHelpersMixin:
             if isinstance(password, t.SecretStr)
             else password
         )
+
+
+__all__ = ["TestsFlextTapOracleWmsHelpersMixin"]

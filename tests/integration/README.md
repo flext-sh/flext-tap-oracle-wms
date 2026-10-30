@@ -84,6 +84,15 @@ WMS API dependencies **Scope**:
 # Planned integration test pattern
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_tap_stream_integration():
     """Test tap and stream components working together."""
@@ -105,6 +114,15 @@ def test_tap_stream_integration():
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_auth_client_integration():
     """Test authentication integration with client requests."""
@@ -114,13 +132,22 @@ def test_auth_client_integration():
 
         # Test authenticated request flow
         response = client.get_entities()
-        assert response.status_code == 200
+        tm.that(response.status_code, eq=200)
 ```
 
 #### **Discovery ↔ Schema Integration**
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_discovery_schema_integration():
@@ -143,6 +170,15 @@ def test_discovery_schema_integration():
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_config_validation_chain():
@@ -170,6 +206,15 @@ def test_config_validation_chain():
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_etl_integration_flow():
@@ -202,6 +247,15 @@ def test_etl_integration_flow():
 ```python
 # Planned mock server implementation
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class MockWMSServer:
@@ -357,6 +411,15 @@ def integration_config():
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_data_integration_flow(mock_wms_server, integration_config):
     """Test complete data integration workflow."""
@@ -390,6 +453,15 @@ def test_data_integration_flow(mock_wms_server, integration_config):
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_high_volume_integration():
     """Test integration with high-volume data extraction."""
@@ -408,6 +480,15 @@ def test_high_volume_integration():
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_concurrent_stream_integration():
@@ -434,6 +515,15 @@ def test_concurrent_stream_integration():
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_network_failure_integration():

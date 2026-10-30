@@ -1,3 +1,4 @@
+# AUTO-GENERATED FILE — Regenerate with: make gen
 """Singer Oracle WMS tap protocols for FLEXT ecosystem.
 
 Only ``TapOracleWms.TapWithWmsClient`` and ``TapOracleWms.TapWithWmsClientSettings``
@@ -9,34 +10,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from flext_meltano import p as flext_meltano_p
+from flext_oracle_wms import p as flext_oracle_wms_p
 
-from flext_meltano import FlextMeltanoProtocols
-from flext_oracle_wms import FlextOracleWmsProtocols
-
-if TYPE_CHECKING:
-    from flext_oracle_wms import u as _oracle_wms_u
-
-    from flext_tap_oracle_wms import t
+from flext_tap_oracle_wms._protocols import FlextTapOracleWmsProtocolsBase
 
 
-class FlextTapOracleWmsProtocols(FlextMeltanoProtocols, FlextOracleWmsProtocols):
+class FlextTapOracleWmsProtocols(flext_meltano_p, flext_oracle_wms_p):
     """Singer Oracle WMS tap protocols facade — composes Meltano + OracleWms."""
 
-    class TapOracleWms:
+    class TapOracleWms(FlextTapOracleWmsProtocolsBase):
         """Singer Tap Oracle WMS structural protocols (consumer surface)."""
-
-        @runtime_checkable
-        class TapWithWmsClient(Protocol):
-            """Protocol for tap instances that provide ``wms_client``."""
-
-            wms_client: _oracle_wms_u.OracleWms.Client
-
-        @runtime_checkable
-        class TapWithWmsClientSettings(TapWithWmsClient, Protocol):
-            """Protocol for tap instances with WMS client and settings."""
-
-            settings: t.JsonMapping
 
 
 p = FlextTapOracleWmsProtocols

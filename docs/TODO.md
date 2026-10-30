@@ -280,15 +280,15 @@ OracleWmsConfigDict = dict
 
 1. **Reabilitar Testes Críticos**
 
-   - [ ] Restaurar testes de integração essenciais
-   - [ ] Criar mocks para dependências WMS externas
-   - [ ] Implementar testes E2E básicos funcionais
+    - [ ] Restaurar testes de integração essenciais
+    - [ ] Criar mocks para dependências WMS externas
+    - [ ] Implementar testes E2E básicos funcionais
 
 1. **Simplificação Imediata**
 
-   - [ ] Remover `client.py` - usar flext-oracle-wms diretamente
-   - [ ] Escolher um sistema de discovery e remover outros 2
-   - [ ] Consolidar configuração em uma única classe
+    - [ ] Remover `client.py` - usar flext-oracle-wms diretamente
+    - [ ] Escolher um sistema de discovery e remover outros 2
+    - [ ] Consolidar configuração em uma única classe
 
 ### FASE 2: REFATORAÇÃO ESTRUTURAL (3-4 semanas)
 
@@ -296,15 +296,15 @@ OracleWmsConfigDict = dict
 
 1. **Arquitetura Simplificada**
 
-   - [ ] Reduzir de 26 para 8 componentes máximo
-   - [ ] Implementar arquitetura Singer tap padrão
-   - [ ] Usar padrões flext-core consistentemente
+    - [ ] Reduzir de 26 para 8 componentes máximo
+    - [ ] Implementar arquitetura Singer tap padrão
+    - [ ] Usar padrões flext-core consistentemente
 
 1. **Consolidação de Código**
 
-   - [ ] Unificar sistemas de configuração
-   - [ ] Simplificar implementação de streams
-   - [ ] Extrair schemas hardcoded
+    - [ ] Unificar sistemas de configuração
+    - [ ] Simplificar implementação de streams
+    - [ ] Extrair schemas hardcoded
 
 ### FASE 3: OTIMIZAÇÃO (2-3 semanas)
 
@@ -312,15 +312,15 @@ OracleWmsConfigDict = dict
 
 1. **Qualidade e Performance**
 
-   - [ ] Implementar error handling consistente
-   - [ ] Otimizar performance de streams
-   - [ ] Melhorar logging e observabilidade
+    - [ ] Implementar error handling consistente
+    - [ ] Otimizar performance de streams
+    - [ ] Melhorar logging e observabilidade
 
 1. **Documentação e Manutenibilidade**
 
-   - [ ] Atualizar documentação arquitetural
-   - [ ] Criar guias de desenvolvimento
-   - [ ] Implementar métricas de qualidade
+    - [ ] Atualizar documentação arquitetural
+    - [ ] Criar guias de desenvolvimento
+    - [ ] Implementar métricas de qualidade
 
 ---
 

@@ -75,6 +75,15 @@ graph TB
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from pydantic import Field
 from singer_sdk import Stream
 
@@ -127,6 +136,15 @@ class FlextTapOracleWms:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from collections.abc import Iterator
 from datetime import datetime
 
@@ -159,6 +177,15 @@ class FlextTapOracleWmsStream:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_cli import u
 
@@ -201,6 +228,15 @@ class FlextTapOracleWmsStream:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_core import p, r
 from flext_oracle_wms import (
@@ -254,6 +290,15 @@ class WMSClientManager:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_core import p, r, t
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
@@ -304,6 +349,15 @@ class EntityDiscovery:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from collections.abc import Iterator
 
@@ -386,6 +440,15 @@ constructor format. Supplying a catalog avoids live discovery during constructio
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
 from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
@@ -403,6 +466,15 @@ def configured_tap(
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 import time
 from collections.abc import Iterator
@@ -501,6 +573,15 @@ class FlextTapOracleWmsStream(Stream):
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_observability import HealthCheckResult, HealthStatus
 from flext_oracle_wms import FlextOracleWmsAuthenticationError

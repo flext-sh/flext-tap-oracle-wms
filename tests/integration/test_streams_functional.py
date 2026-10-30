@@ -13,12 +13,11 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
-from tests import tm, u
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from flext_tap_oracle_wms import FlextTapOracleWmsStreams
+from tests import TestsFlextTapOracleWmsHelpersMixin, tm, u
 
 if TYPE_CHECKING:
-    from flext_tap_oracle_wms.tap import FlextTapOracleWms
+    from flext_tap_oracle_wms import FlextTapOracleWms
 
 logger = u.fetch_logger(__name__)
 
@@ -35,7 +34,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin
         """Test stream creation with real Oracle WMS data."""
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
-        assert streams, "No streams discovered"
+        tm.that(streams, truth=True, msg="No streams discovered")
         stream_config = streams[0]
         stream_id = stream_config.tap_stream_id
         stream = FlextTapOracleWmsStreams.WmsStream(
@@ -44,22 +43,22 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin
             schema=self._schema(stream_config),
         )
         tm.that(stream.name, eq=stream_id)
-        assert stream.tap is real_tap_instance
+        tm.that(stream.tap is real_tap_instance)
         logger.info("✅ Stream created successfully: %s", stream_id)
 
     def test_wms_api_url_generation(self, real_tap_instance: FlextTapOracleWms) -> None:
         """Test URL generation for Oracle WMS API."""
         stream = self._first_stream(real_tap_instance)
         url_base = stream.url_base
-        assert url_base.startswith("https://"), f"URL must be HTTPS: {url_base}"
+        tm.that(url_base.startswith("https://"), msg=f"URL must be HTTPS: {url_base}")
         tm.that(url_base, has="invalid.wms.ocs.oraclecloud.com")
         tm.that(url_base, has="company_unknow")
         url_params = stream.build_operation_kwargs(page=1, context=None)
         tm.that(url_params, is_=dict)
         tm.that(url_params, has="limit")
         limit_value = url_params["limit"]
-        assert isinstance(limit_value, int)
-        assert limit_value > 0
+        tm.that(limit_value, is_=int)
+        tm.that(limit_value, gt=0)
         logger.info("URL generation working: %s", url_base)
         logger.info("✅ Parameters: %s", list(url_params.keys()))
 
@@ -70,9 +69,12 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin
         """Test stream authentication with real credentials."""
         stream = self._first_stream(real_tap_instance)
         headers = stream.http_headers
-        auth_header = headers.get("Authorization") or headers.get("authorization")
-        assert auth_header is not None
-        assert auth_header.startswith("Basic "), f"Expected Basic auth: {auth_header}"
+        auth_header = tm.not_none(
+            headers.get("Authorization") or headers.get("authorization"),
+        )
+        tm.that(
+            auth_header.startswith("Basic "), msg=f"Expected Basic auth: {auth_header}"
+        )
         logger.info("Authentication configured correctly")
 
     def test_http_headers_generation(
@@ -83,8 +85,8 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin
         stream = self._first_stream(real_tap_instance)
         headers = stream.http_headers
         tm.that(headers, is_=dict)
-        assert "Accept" in headers or "accept" in headers
-        assert "User-Agent" in headers or "user-agent" in headers
+        tm.that("Accept" in headers or "accept" in headers)
+        tm.that("User-Agent" in headers or "user-agent" in headers)
         wms_headers = [
             h
             for h in headers
@@ -116,7 +118,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin
         logger.info("✅ Incremental streams: %s", incremental_streams)
         logger.info("✅ Full table streams: %s", full_table_streams)
         total_streams = len(incremental_streams) + len(full_table_streams)
-        assert total_streams > 0, "No replication methods configured"
+        tm.that(total_streams, gt=0, msg="No replication methods configured")
 
     def test_timestamp_replication_key_detection(
         self,
@@ -160,8 +162,13 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin
         params = stream.build_operation_kwargs(page=1, context=None)
         tm.that(params, has="limit")
         page_size = params["limit"]
-        assert isinstance(page_size, int)
-        assert 1 <= page_size <= _ORACLE_WMS_MAX_LIMIT, f"Invalid limit: {page_size}"
+        tm.that(page_size, is_=int)
+        tm.that(
+            page_size,
+            gte=1,
+            lte=_ORACLE_WMS_MAX_LIMIT,
+            msg=f"Invalid limit: {page_size}",
+        )
         if "page_mode" in params:
             page_mode = params["page_mode"]
             tm.that({"sequenced", "offset"}, has=page_mode)
@@ -192,13 +199,19 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
         params = incremental_stream.build_operation_kwargs(page=1, context=context)
         kwargs_filter = params.get("filter")
-        assert kwargs_filter, f"No filter found in params: {list(params.keys())}"
-        assert ">=" in str(kwargs_filter) or ">" in str(kwargs_filter), (
-            f"No timestamp filters found in params: {list(params.keys())}"
+        tm.that(
+            kwargs_filter,
+            truth=True,
+            msg=f"No filter found in params: {list(params.keys())}",
+        )
+        tm.that(
+            ">=" in str(kwargs_filter) or ">" in str(kwargs_filter),
+            msg=(f"No timestamp filters found in params: {list(params.keys())}"),
         )
         filter_text = str(kwargs_filter)
         tm.that(filter_text, has="T")
-        assert "Z" in filter_text or "+" in filter_text, (
-            f"Invalid timestamp format - missing timezone: {filter_text}"
+        tm.that(
+            "Z" in filter_text or "+" in filter_text,
+            msg=(f"Invalid timestamp format - missing timezone: {filter_text}"),
         )
         logger.info("✅ Incremental filtering: %s", filter_text)

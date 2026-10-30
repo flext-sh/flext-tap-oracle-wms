@@ -128,7 +128,7 @@ from flext_tap_oracle_wms import FlextTapOracleWms
 settings = {
     "base_url": "https://wms.example.com",
     "auth_method": "basic",
-    "username": "user",
+    "username": c.ContextScope.USER,
     "password": "pass",
     "company_code": "COMPANY",
     "facility_code": "FACILITY",

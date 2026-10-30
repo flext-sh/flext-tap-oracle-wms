@@ -12,13 +12,28 @@ from typing import TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
 
-from flext_tap_oracle_wms.__version__ import __version__
-
 if TYPE_CHECKING:
-    from flext_meltano import d, h, r, s, x
-    from flext_oracle_wms import e
+    from flext_meltano import (
+        build_lazy_import_map,
+        cleanup_submodule_namespace,
+        cli,
+        core,
+        d,
+        h,
+        install_lazy_exports,
+        lazy,
+        lazy_getattr,
+        lazy_member,
+        meltano,
+        merge_lazy_imports,
+        normalize_lazy_imports,
+        r,
+        resolve_lazy_members,
+        s,
+        x,
+    )
+    from flext_oracle_wms import api, e, oracle_wms, web
 
-    from flext_tap_oracle_wms import _constants, _models
     from flext_tap_oracle_wms.__version__ import (
         FlextTapOracleWmsVersion,
         __author__,
@@ -27,6 +42,7 @@ if TYPE_CHECKING:
         __license__,
         __title__,
         __url__,
+        __version__,
         __version_info__,
     )
     from flext_tap_oracle_wms._config import FlextTapOracleWmsConfig, config
@@ -36,17 +52,21 @@ if TYPE_CHECKING:
     from flext_tap_oracle_wms.constants import FlextTapOracleWmsConstants, c
     from flext_tap_oracle_wms.models import FlextTapOracleWmsModels, m
     from flext_tap_oracle_wms.protocols import FlextTapOracleWmsProtocols, p
+    from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
+    from flext_tap_oracle_wms.tap import FlextTapOracleWms
     from flext_tap_oracle_wms.typings import FlextTapOracleWmsTypes, t
     from flext_tap_oracle_wms.utilities import FlextTapOracleWmsUtilities, u
 
 
 __all__: tuple[str, ...] = (
+    "FlextTapOracleWms",
     "FlextTapOracleWmsConfig",
     "FlextTapOracleWmsConstants",
     "FlextTapOracleWmsModels",
     "FlextTapOracleWmsProtocols",
     "FlextTapOracleWmsService",
     "FlextTapOracleWmsSettings",
+    "FlextTapOracleWmsStreams",
     "FlextTapOracleWmsTypes",
     "FlextTapOracleWmsUtilities",
     "FlextTapOracleWmsVersion",
@@ -58,22 +78,35 @@ __all__: tuple[str, ...] = (
     "__url__",
     "__version__",
     "__version_info__",
-    "_constants",
-    "_models",
+    "api",
+    "build_lazy_import_map",
     "c",
+    "cleanup_submodule_namespace",
+    "cli",
     "config",
+    "core",
     "d",
     "e",
     "h",
+    "install_lazy_exports",
+    "lazy",
+    "lazy_getattr",
+    "lazy_member",
     "m",
     "main",
+    "meltano",
+    "merge_lazy_imports",
+    "normalize_lazy_imports",
+    "oracle_wms",
     "p",
     "r",
+    "resolve_lazy_members",
     "s",
     "settings",
     "t",
     "tap_oracle_wms",
     "u",
+    "web",
     "x",
 )
 
@@ -81,12 +114,14 @@ install_lazy_exports(
     __name__,
     globals(),
     MappingProxyType({
+        "FlextTapOracleWms": ".tap",
         "FlextTapOracleWmsConfig": "._config",
         "FlextTapOracleWmsConstants": ".constants",
         "FlextTapOracleWmsModels": ".models",
         "FlextTapOracleWmsProtocols": ".protocols",
         "FlextTapOracleWmsService": ".api",
         "FlextTapOracleWmsSettings": "._settings",
+        "FlextTapOracleWmsStreams": ".streams",
         "FlextTapOracleWmsTypes": ".typings",
         "FlextTapOracleWmsUtilities": ".utilities",
         "FlextTapOracleWmsVersion": ".__version__",
@@ -97,23 +132,39 @@ install_lazy_exports(
         "__title__": ".__version__",
         "__url__": ".__version__",
         "__version_info__": ".__version__",
-        "_constants": "._constants",
-        "_models": "._models",
+        "api": "flext_oracle_wms",
+        "build_lazy_import_map": "flext_meltano",
         "c": ".constants",
+        "cleanup_submodule_namespace": "flext_meltano",
+        "cli": "flext_meltano",
         "config": "._config",
+        "core": "flext_meltano",
         "d": "flext_meltano",
         "e": "flext_oracle_wms",
         "h": "flext_meltano",
+        "install_lazy_exports": "flext_meltano",
+        "lazy": "flext_meltano",
+        "lazy_getattr": "flext_meltano",
+        "lazy_member": "flext_meltano",
         "m": ".models",
         "main": ".cli",
+        "meltano": "flext_meltano",
+        "merge_lazy_imports": "flext_meltano",
+        "normalize_lazy_imports": "flext_meltano",
+        "oracle_wms": "flext_oracle_wms",
         "p": ".protocols",
         "r": "flext_meltano",
+        "resolve_lazy_members": "flext_meltano",
         "s": "flext_meltano",
         "settings": "._settings",
         "t": ".typings",
         "tap_oracle_wms": ".api",
         "u": ".utilities",
+        "web": "flext_oracle_wms",
         "x": "flext_meltano",
     }),
     public_exports=__all__,
 )
+
+if not TYPE_CHECKING:
+    from flext_tap_oracle_wms.__version__ import __version__

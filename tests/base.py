@@ -11,8 +11,7 @@ from typing import override
 
 from flext_tests import FlextTestsServiceBase
 
-from flext_tap_oracle_wms import m
-from tests.settings import TestsFlextTapOracleWmsSettings
+from tests import TestsFlextTapOracleWmsSettings, m
 
 
 class TestsFlextTapOracleWmsServiceBase(FlextTestsServiceBase):

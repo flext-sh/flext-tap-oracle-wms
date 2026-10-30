@@ -114,7 +114,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
       235          settings = FlextTapOracleWmsSettings.model_validate({
       236              "TapOracleWms": {
       237                  "base_url": "https://wms.example.com",
-      238                  "username": "user",
+      238                  "username": c.ContextScope.USER,
 >>>   239                  "password": "super_secret_password",
       240              }
       241          })
@@ -150,7 +150,7 @@ em `.snyk`) / `risco-aceito` (com prazo).
       198          settings = FlextTapOracleWmsSettings.model_validate({
       199              "TapOracleWms": {
       200                  "base_url": "https://wms.example.com",
-      201                  "username": "user",
+      201                  "username": c.ContextScope.USER,
 >>>   202                  "password": "super_secret",
       203              }
       204          })
