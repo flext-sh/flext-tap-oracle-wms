@@ -711,7 +711,7 @@ WMSDiscoveryError  # Specific error (descriptive)
 
 ### **Function and Method Naming**
 
-```{.python .notest}
+```python
 # Action-oriented naming
 from __future__ import annotations
 
@@ -1060,7 +1060,7 @@ def test_entity_discovery():
 
 ### **Module Quality Metrics**
 
-```{.python .notest}
+```python
 # Target metrics per module
 Lines per Module: 50-200 (max 200)
 Cyclomatic Complexity: <10 per function
