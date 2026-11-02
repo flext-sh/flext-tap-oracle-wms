@@ -14,7 +14,7 @@ from __future__ import annotations
 from flext_meltano import t as flext_meltano_t
 from flext_oracle_wms import t as flext_oracle_wms_t
 
-from flext_tap_oracle_wms._typings import FlextTapOracleWmsTypingsBase
+from flext_tap_oracle_wms._typings.base import FlextTapOracleWmsTypingsBase
 
 
 class FlextTapOracleWmsTypes(flext_meltano_t, flext_oracle_wms_t):

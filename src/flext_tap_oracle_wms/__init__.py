@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
@@ -80,7 +79,7 @@ __all__: tuple[str, ...] = (
 install_lazy_exports(
     __name__,
     globals(),
-    MappingProxyType({
+    {
         "FlextTapOracleWms": ".tap",
         "FlextTapOracleWmsConfig": "._config",
         "FlextTapOracleWmsConstants": ".constants",
@@ -114,7 +113,7 @@ install_lazy_exports(
         "tap_oracle_wms": ".api",
         "u": ".utilities",
         "x": "flext_meltano",
-    }),
+    },
     public_exports=__all__,
 )
 

@@ -556,11 +556,7 @@ quote-style = "double"
 skip-magic-trailing-comma = false
 
 [tool.ruff.lint]
-extend-safe-fixes = [
-  "relative-imports",
-  "typing-only-first-party-import",
-  "camelcase-imported-as-lowercase",
-]
+extend-safe-fixes = ["relative-imports", "camelcase-imported-as-lowercase"]
 extend-select = ["missing-blank-line-after-last-section"]
 ignore = [
   "missing-trailing-comma",
@@ -619,9 +615,6 @@ combine-as-imports = true
 force-single-line = false
 known-first-party = ["flext_tap_oracle_wms"]
 split-on-trailing-comma = false
-
-[tool.ruff.lint.pep8-naming]
-ignore-names = ["Ldif"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

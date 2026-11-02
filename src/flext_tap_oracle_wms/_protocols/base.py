@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
+from flext_meltano import FlextMeltanoProtocols
+
 if TYPE_CHECKING:
     from flext_oracle_wms import u as _oracle_wms_u
 
@@ -30,6 +32,10 @@ class FlextTapOracleWmsProtocolsBase:
         """Protocol for tap instances with WMS client and settings."""
 
         settings: t.JsonMapping
+
+    @runtime_checkable
+    class TapOracleWmsNamespace(FlextMeltanoProtocols.Model, Protocol):
+        """Structural data contract projected from the owning model."""
 
 
 __all__: list[str] = [

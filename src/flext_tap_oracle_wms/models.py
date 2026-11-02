@@ -11,7 +11,7 @@ from __future__ import annotations
 from flext_meltano import m as flext_meltano_m
 from flext_oracle_wms import m as flext_oracle_wms_m
 
-from flext_tap_oracle_wms._models import FlextTapOracleWmsModelsBase
+from flext_tap_oracle_wms._models.base import FlextTapOracleWmsModelsBase
 
 
 class FlextTapOracleWmsModels(flext_meltano_m, flext_oracle_wms_m):
