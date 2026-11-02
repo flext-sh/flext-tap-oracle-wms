@@ -361,7 +361,7 @@ from collections.abc import (
 
 from collections.abc import Iterator
 
-from flext_core import m
+from flext_core import m, p
 from flext_meltano import Stream, Tap
 
 

@@ -23,7 +23,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStreams,
 )
-from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
+from tests import TestsFlextTapOracleWmsHelpers, c, p, t, tm, u
 
 logger = u.fetch_logger(__name__)
 

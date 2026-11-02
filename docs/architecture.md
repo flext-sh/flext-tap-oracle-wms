@@ -408,7 +408,7 @@ from collections.abc import (
 
 from functools import lru_cache
 
-from flext_core import m
+from flext_core import m, p
 
 
 class WMSCache:
