@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsStreams
-from tests import TestsFlextTapOracleWmsHelpersMixin, tm, u
+from tests import TestsFlextTapOracleWmsHelpers, tm, u
 
 if TYPE_CHECKING:
     from flext_tap_oracle_wms import FlextTapOracleWms
@@ -24,7 +24,7 @@ logger = u.fetch_logger(__name__)
 _ORACLE_WMS_MAX_LIMIT = 1250
 
 
-class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpersMixin):
+class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpers):
     """Test streams functionality."""
 
     def test_stream_creation_with_real_wms_data(

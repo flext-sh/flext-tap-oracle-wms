@@ -18,12 +18,12 @@ from typing import Final
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpersMixin, c, tm
+from tests import TestsFlextTapOracleWmsHelpers, c, tm
 
 UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "tap-wms-unit-" + "3k7q"
 
 
-class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpersMixin):
+class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
     """Test configuration class."""
 
     def test_minimal_config(self) -> None:

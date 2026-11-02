@@ -23,7 +23,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStreams,
 )
-from tests import TestsFlextTapOracleWmsHelpersMixin, c, m, t, tm, u
+from tests import TestsFlextTapOracleWmsHelpers, c, m, t, tm, u
 
 logger = u.fetch_logger(__name__)
 
@@ -33,7 +33,7 @@ _MIN_DISCOVERY_RATE = 0.1
 
 
 @pytest.mark.e2e
-class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpersMixin):
+class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
 
     def test_complete_discovery_to_catalog(

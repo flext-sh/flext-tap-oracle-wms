@@ -15,10 +15,10 @@ from __future__ import annotations
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpersMixin, c, t, tm
+from tests import TestsFlextTapOracleWmsHelpers, c, t, tm
 
 
-class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin):
+class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
     """Test configuration validation."""
 
     @staticmethod

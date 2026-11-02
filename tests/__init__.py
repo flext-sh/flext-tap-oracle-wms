@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from flext_tap_oracle_wms import config, main, settings, tap_oracle_wms
     from tests.base import TestsFlextTapOracleWmsServiceBase, s
     from tests.constants import TestsFlextTapOracleWmsConstants, c
-    from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+    from tests.helpers import TestsFlextTapOracleWmsHelpers
     from tests.models import TestsFlextTapOracleWmsModels, m
     from tests.protocols import TestsFlextTapOracleWmsProtocols, p
     from tests.settings import TestsFlextTapOracleWmsSettings
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 __all__: tuple[str, ...] = (
     "TestsFlextTapOracleWmsConstants",
-    "TestsFlextTapOracleWmsHelpersMixin",
+    "TestsFlextTapOracleWmsHelpers",
     "TestsFlextTapOracleWmsModels",
     "TestsFlextTapOracleWmsProtocols",
     "TestsFlextTapOracleWmsServiceBase",
@@ -63,7 +63,7 @@ install_lazy_exports(
     globals(),
     MappingProxyType({
         "TestsFlextTapOracleWmsConstants": ".constants",
-        "TestsFlextTapOracleWmsHelpersMixin": ".helpers",
+        "TestsFlextTapOracleWmsHelpers": ".helpers",
         "TestsFlextTapOracleWmsModels": ".models",
         "TestsFlextTapOracleWmsProtocols": ".protocols",
         "TestsFlextTapOracleWmsServiceBase": ".base",

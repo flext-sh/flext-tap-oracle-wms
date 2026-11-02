@@ -12,7 +12,7 @@ import psutil
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpersMixin, t, tm
+from tests import TestsFlextTapOracleWmsHelpers, t, tm
 
 _MAX_DISCOVERY_SECONDS = 10.0
 _PAGINATION_SAMPLE_LIMIT = 99
@@ -52,7 +52,7 @@ def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
 
 
 @pytest.mark.performance
-class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpersMixin):
+class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpers):
     """Test data extraction performance."""
 
     @staticmethod

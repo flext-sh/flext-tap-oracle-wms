@@ -12,13 +12,13 @@ from __future__ import annotations
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpersMixin, t, tm
+from tests import TestsFlextTapOracleWmsHelpers, t, tm
 
 _PAGE_SAMPLE_LIMIT = 5
 _MIN_SAMPLE_RECORDS = 2
 
 
-class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
+class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpers):
     """Test real Oracle WMS connection."""
 
     @staticmethod

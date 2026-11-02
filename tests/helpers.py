@@ -1,6 +1,6 @@
 """Shared tap-oracle-wms test helpers extracted from e2e/integration tests.
 
-Provides the ``TestsFlextTapOracleWmsHelpersMixin`` that centralises the
+Provides the ``TestsFlextTapOracleWmsHelpers`` that centralises the
 catalog-discovery and error-recovery patterns previously duplicated across
 ``test_e2e.py``, ``test_functional.py``, ``test_streams_functional.py``,
 and ``test_wms.py``.
@@ -23,7 +23,7 @@ from flext_tap_oracle_wms import (
 from tests import m, t, tm, u
 
 
-class TestsFlextTapOracleWmsHelpersMixin:
+class TestsFlextTapOracleWmsHelpers:
     """Shared helpers for Oracle WMS tap integration/e2e tests.
 
     Centralises the ``_catalog`` / ``_schema`` discovery helpers, the
@@ -145,4 +145,4 @@ class TestsFlextTapOracleWmsHelpersMixin:
         )
 
 
-__all__ = ["TestsFlextTapOracleWmsHelpersMixin"]
+__all__ = ["TestsFlextTapOracleWmsHelpers"]
