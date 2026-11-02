@@ -20,7 +20,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStreams,
 )
-from tests import m, t, tm, u
+from tests import p, t, tm, u
 
 
 class TestsFlextTapOracleWmsHelpers:
@@ -56,15 +56,15 @@ class TestsFlextTapOracleWmsHelpers:
     }
 
     @staticmethod
-    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
+    def _catalog(tap: FlextTapOracleWms) -> p.Meltano.SingerCatalog:
         """Return the typed discovered catalog used by runtime code."""
         result = tap.discovercatalog_typed()
         tm.ok(result)
-        catalog: m.Meltano.SingerCatalog = result.unwrap()
+        catalog: p.Meltano.SingerCatalog = result.unwrap()
         return catalog
 
     @staticmethod
-    def _schema(stream: m.Meltano.SingerCatalogEntry) -> t.JsonMapping:
+    def _schema(stream: p.Meltano.SingerCatalogEntry) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract.
 
         Returns:

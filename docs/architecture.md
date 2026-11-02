@@ -415,7 +415,7 @@ class WMSCache:
     """Simple LRU cache for WMS responses."""
 
     @lru_cache(maxsize=1000)
-    def get_entity_schema(self, entity_name: str) -> m.Dict:
+    def get_entity_schema(self, entity_name: str) -> p.Dict:
         """Cache entity schemas for discovery."""
         return self._fetch_schema(entity_name)
 ```

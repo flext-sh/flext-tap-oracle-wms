@@ -17,13 +17,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import tm
-
-if TYPE_CHECKING:
-    from tests import m
+from tests import p, tm
 
 
 class TestsFlextTapOracleWmsTap:
@@ -32,7 +27,7 @@ class TestsFlextTapOracleWmsTap:
     @staticmethod
     def test_tap_initialization_with_config(
         sample_config: FlextTapOracleWmsSettings,
-        sample_catalog: m.Meltano.SingerCatalog,
+        sample_catalog: p.Meltano.SingerCatalog,
     ) -> None:
         """Tap stores validated settings and builds from a typed catalog."""
         tap = FlextTapOracleWms.from_settings(sample_config, catalog=sample_catalog)
@@ -40,7 +35,7 @@ class TestsFlextTapOracleWmsTap:
 
     @staticmethod
     def test_tap_initialization_normalizes_settings(
-        sample_catalog: m.Meltano.SingerCatalog,
+        sample_catalog: p.Meltano.SingerCatalog,
     ) -> None:
         """Tap normalizes settings values from a typed settings model."""
         settings = FlextTapOracleWmsSettings.model_validate({
@@ -73,7 +68,7 @@ class TestsFlextTapOracleWmsTap:
         tm.that(value, lacks="password")
 
     @staticmethod
-    def test_error_handling(sample_catalog: m.Meltano.SingerCatalog) -> None:
+    def test_error_handling(sample_catalog: p.Meltano.SingerCatalog) -> None:
         """Non-secret fields are still exposed for an unreachable endpoint."""
         bad_settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {

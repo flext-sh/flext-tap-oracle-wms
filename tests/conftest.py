@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import c, m, u
+from tests import c, m, p, u
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -92,14 +92,14 @@ def real_config(*, oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
 
 
 @pytest.fixture
-def sample_catalog() -> m.Meltano.SingerCatalog:
+def sample_catalog() -> p.Meltano.SingerCatalog:
     """Build a real Singer catalog model so tap construction skips discovery.
 
     Returns:
         The resulting ``m.Meltano.SingerCatalog``.
 
     """
-    catalog: m.Meltano.SingerCatalog = m.Meltano.SingerCatalog.model_validate({
+    catalog: p.Meltano.SingerCatalog = m.Meltano.SingerCatalog.model_validate({
         "streams": [
             {
                 "tap_stream_id": "inventory",
@@ -116,7 +116,7 @@ def sample_catalog() -> m.Meltano.SingerCatalog:
 @pytest.fixture
 def tap_instance(
     sample_config: FlextTapOracleWmsSettings,
-    sample_catalog: m.Meltano.SingerCatalog,
+    sample_catalog: p.Meltano.SingerCatalog,
 ) -> FlextTapOracleWms:
     """Create a tap from typed settings + a typed catalog (no WMS discovery).
 

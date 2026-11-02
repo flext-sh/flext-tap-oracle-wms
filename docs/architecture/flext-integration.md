@@ -404,7 +404,7 @@ class FlextTapOracleWmsStream(Stream):
         self.logger = u.fetch_logger(__name__)
 
     @property
-    def schema(self) -> m.Dict:
+    def schema(self) -> p.Dict:
         """Stream schema from WMS metadata."""
         discovery = EntityDiscovery(self.tap.wms_client_manager.client)
         schema_result = discovery.generate_schema(self.name)
@@ -415,7 +415,7 @@ class FlextTapOracleWmsStream(Stream):
 
         return schema_result.value
 
-    def get_records(self, context) -> Iterator[m.Dict]:
+    def get_records(self, context) -> Iterator[p.Dict]:
         """Extract records using WMS client."""
         try:
             for record in self.tap.wms_client_manager.client.fetch_entity_data(
@@ -454,7 +454,7 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
 def configured_tap(
-    configuration: FlextTapOracleWmsSettings, catalog: m.Meltano.SingerCatalog
+    configuration: FlextTapOracleWmsSettings, catalog: p.Meltano.SingerCatalog
 ) -> FlextTapOracleWms:
     """Construct a tap through its typed public boundary."""
     return FlextTapOracleWms.from_settings(configuration, catalog=catalog)
@@ -481,7 +481,7 @@ from collections.abc import Iterator
 
 from singer_sdk import Stream
 
-from flext_core import m, u
+from flext_core import m, p, u
 from flext_meltano import Tap
 from flext_observability import FlextHealthCheck, FlextMetrics, FlextTracing
 
@@ -529,7 +529,7 @@ class FlextTapOracleWms(Tap):
 class FlextTapOracleWmsStream(Stream):
     """Stream with observability integration."""
 
-    def get_records(self, context) -> Iterator[m.Dict]:
+    def get_records(self, context) -> Iterator[p.Dict]:
         """Record extraction with comprehensive monitoring."""
         with self.tap.tracing.span(f"extract_{self.name}"):
             start_time = time.time()

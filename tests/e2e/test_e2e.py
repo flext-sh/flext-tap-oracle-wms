@@ -23,7 +23,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStreams,
 )
-from tests import TestsFlextTapOracleWmsHelpers, c, m, t, tm, u
+from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
 logger = u.fetch_logger(__name__)
 
@@ -121,7 +121,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
         tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
-        incremental_stream_config: m.Meltano.SingerCatalogEntry | None = None
+        incremental_stream_config: p.Meltano.SingerCatalogEntry | None = None
         for stream_config in streams:
             for meta in stream_config.metadata:
                 if meta.breadcrumb == () and (
@@ -163,7 +163,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
         tap_instance = FlextTapOracleWms.from_settings(real_config)
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
-        full_table_stream_config: m.Meltano.SingerCatalogEntry | None = None
+        full_table_stream_config: p.Meltano.SingerCatalogEntry | None = None
         for stream_config in streams:
             for meta in stream_config.metadata:
                 if meta.breadcrumb == () and (
@@ -192,7 +192,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
 
     @staticmethod
     def _count_primary_keys(
-        metadata: Sequence[m.Meltano.SingerCatalogMetadata],
+        metadata: Sequence[p.Meltano.SingerCatalogMetadata],
     ) -> int:
         """Count automatic-inclusion leaf fields (Singer primary keys).
 
@@ -230,7 +230,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
     @classmethod
     def _assess_stream_quality(
         cls,
-        stream_config: m.Meltano.SingerCatalogEntry,
+        stream_config: p.Meltano.SingerCatalogEntry,
         quality_report: dict[str, int],
     ) -> None:
         """Fold one stream's schema/metadata quality into the report."""
@@ -391,7 +391,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
 
     @staticmethod
     def _fold_stream_stats(
-        stream: m.Meltano.SingerCatalogEntry,
+        stream: p.Meltano.SingerCatalogEntry,
         incremental: int,
         full_table: int,
         valid_schemas: int,

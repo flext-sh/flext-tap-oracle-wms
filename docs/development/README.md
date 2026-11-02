@@ -275,7 +275,7 @@ from flext_tap_oracle_wms.tap import FlextTapOracleWms
 
 
 def create_configured_tap(
-    configuration: FlextTapOracleWmsSettings, catalog: m.Meltano.SingerCatalog
+    configuration: FlextTapOracleWmsSettings, catalog: p.Meltano.SingerCatalog
 ) -> FlextTapOracleWms:
     """Keep configuration and catalog validation at the public boundary."""
     return FlextTapOracleWms.from_settings(configuration, catalog=catalog)
@@ -303,7 +303,7 @@ from flext_core import TAnyDict, m
 
 
 def extract_records(
-    entity: str, settings: TAnyDict, filters: m.Dict | None = None
+    entity: str, settings: TAnyDict, filters: p.Dict | None = None
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety

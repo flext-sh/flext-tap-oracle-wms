@@ -57,7 +57,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         cls,
         settings: FlextTapOracleWmsSettings,
         *,
-        catalog: m.Meltano.SingerCatalog | None = None,
+        catalog: p.Meltano.SingerCatalog | None = None,
     ) -> FlextTapOracleWms:
         """Build a tap from typed settings (and an optional typed catalog).
 
@@ -138,15 +138,15 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @staticmethod
     def _metadata_entries(
         s_dict: t.JsonMapping,
-    ) -> MutableSequence[m.Meltano.SingerCatalogMetadata]:
+    ) -> MutableSequence[p.Meltano.SingerCatalogMetadata]:
         """Build the typed metadata entries declared by one raw stream mapping.
 
         Returns:
-            The resulting ``MutableSequence[m.Meltano.SingerCatalogMetadata]``.
+            The resulting ``MutableSequence[p.Meltano.SingerCatalogMetadata]``.
 
         """
         metadata_raw: t.JsonValue = s_dict.get("metadata", [])
-        metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata] = []
+        metadata_entries: MutableSequence[p.Meltano.SingerCatalogMetadata] = []
         if not (
             isinstance(metadata_raw, Sequence)
             and not isinstance(metadata_raw, c.STR_BYTES_TYPES)
@@ -159,7 +159,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         return metadata_entries
 
     @staticmethod
-    def _metadata_entry(raw_entry: t.JsonMapping) -> m.Meltano.SingerCatalogMetadata:
+    def _metadata_entry(raw_entry: t.JsonMapping) -> p.Meltano.SingerCatalogMetadata:
         """Convert one raw metadata entry into its typed model.
 
         Returns:
@@ -186,8 +186,8 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
     @staticmethod
     def _catalog_entry(
         s_dict: t.JsonMapping,
-        metadata_entries: MutableSequence[m.Meltano.SingerCatalogMetadata],
-    ) -> m.Meltano.SingerCatalogEntry:
+        metadata_entries: MutableSequence[p.Meltano.SingerCatalogMetadata],
+    ) -> p.Meltano.SingerCatalogEntry:
         """Build one typed catalog entry from a raw stream mapping.
 
         Returns:
@@ -213,8 +213,8 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 entry_result.error or f"Failed to build catalog entry for {stream_name}"
             )
             raise e.ConfigurationError(msg)
-        entry_value: m.Meltano.SingerCatalogEntry = entry_result.value
-        updated: m.Meltano.SingerCatalogEntry = entry_value.model_copy(
+        entry_value: p.Meltano.SingerCatalogEntry = entry_result.value
+        updated: p.Meltano.SingerCatalogEntry = entry_value.model_copy(
             update={
                 "tap_stream_id": str(s_dict.get("tap_stream_id", "")),
                 c.ProcessingMode.STREAM: stream_name,
@@ -231,7 +231,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
             The resulting ``t.MutableJsonMapping``.
 
         """
-        stream_entries: list[m.Meltano.SingerCatalogEntry] = []
+        stream_entries: list[p.Meltano.SingerCatalogEntry] = []
         for raw_stream in FlextTapOracleWms._streams_sequence(raw):
             if not isinstance(raw_stream, Mapping):
                 continue
@@ -315,18 +315,18 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
         """Return a default Singer JSON schema for discovered entities."""
         return {"type": c.TapOracleWms.SCHEMA_TYPE_OBJECT}
 
-    def discovercatalog_typed(self) -> p.Result[m.Meltano.SingerCatalog]:
+    def discovercatalog_typed(self) -> p.Result[p.Meltano.SingerCatalog]:
         """Discover source entities and convert them into Singer catalog streams.
 
         Returns:
-            The resulting ``p.Result[m.Meltano.SingerCatalog]``.
+            The resulting ``p.Result[p.Meltano.SingerCatalog]``.
 
         """
         discovery_result = self.wms_client.discover_entities()
         if discovery_result.failure:
-            return r[m.Meltano.SingerCatalog].from_failure(discovery_result)
+            return r[p.Meltano.SingerCatalog].from_failure(discovery_result)
         entities: Sequence[str] = list(discovery_result.value)
-        streams: list[m.Meltano.SingerCatalogEntry] = []
+        streams: list[p.Meltano.SingerCatalogEntry] = []
         for entity in entities:
             entry_result = u.Meltano.build_catalog_entry(
                 stream_name=entity,
@@ -334,7 +334,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                 key_properties=("id",),
             )
             if entry_result.failure:
-                return r[m.Meltano.SingerCatalog].from_failure(entry_result)
+                return r[p.Meltano.SingerCatalog].from_failure(entry_result)
             streams.append(
                 entry_result.value.model_copy(
                     update={
@@ -351,7 +351,7 @@ class FlextTapOracleWms(m.Meltano.SingerTapBase):
                     },
                 ),
             )
-        return r[m.Meltano.SingerCatalog].ok(
+        return r[p.Meltano.SingerCatalog].ok(
             m.Meltano.SingerCatalog(
                 type=c.Meltano.SingerMessageType.CATALOG,
                 streams=tuple(streams),
