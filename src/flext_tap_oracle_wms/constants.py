@@ -31,7 +31,6 @@ class FlextTapOracleWmsConstants(
     class TapOracleWms(
         FlextTapOracleWmsConstantsBase,
         FlextTapOracleWmsConstantsValues.TapOracleWms,
-        FlextTapOracleWmsConstantsValues,
     ):
         """Oracle WMS tap-specific constants."""
 
