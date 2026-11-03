@@ -11,8 +11,10 @@ from __future__ import annotations
 from flext_meltano import c as flext_meltano_c
 from flext_oracle_wms import c as flext_oracle_wms_c
 
-from flext_tap_oracle_wms._constants import FlextTapOracleWmsConstantsValues
-from flext_tap_oracle_wms._constants.base import FlextTapOracleWmsConstantsBase
+from flext_tap_oracle_wms._constants import (
+    FlextTapOracleWmsConstantsBase,
+    FlextTapOracleWmsConstantsValues,
+)
 
 
 class FlextTapOracleWmsConstants(

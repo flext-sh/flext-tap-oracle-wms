@@ -796,7 +796,7 @@ VERB_ARGUMENTS_gen :=
 VERB_DESCRIPTION_gen-scope := Run the focal generation surface (WHAT, MODULE for facades, SCOPE) through the same engine, lock and budget as gen.
 VERB_ARGUMENTS_gen-scope := WHAT MODULE SCOPE
 
-VERB_DESCRIPTION_mod := Check and fix one theme globally (LAWS=ENFORCE ids or RULES=rule ids, ADR-028 Decision 18 item 2); a run without a selection is refused.
+VERB_DESCRIPTION_mod := Refactor declared source structure through the shared pipeline and publish the complete coherent change; LAWS (ENFORCE ids) or RULES (rule ids) diagnose or repair one law (ADR-028 Decision 18 item 2).
 VERB_ARGUMENTS_mod := LAWS RULES
 
 VERB_DESCRIPTION_fix := Apply declared repairs to authored inputs through their canonical owners.
@@ -1290,7 +1290,7 @@ _builtin_build_artifacts:
 # make.pre_commit_check_gates, CI=N runs
 # make.check_gates_local, and an absent CI token runs every active gate.
 _builtin_check_all: _builtin_require_environment
-	@FLEXT_INFRA_PROFILE=1 FLEXT_INFRA_PROFILE_OUTPUT="$(PROJECT_ROOT)/.reports/check/route.pstats" timeout --signal=TERM --kill-after=5s 118s $(PROJECT_FLEXT_INFRA) workspace check --repository-root "$(if $(filter Y,$(CI)),$(PROJECT_ROOT),$(if $(filter primary,$(CHECK_PHASE)),$(RUNTIME_ROOT),$(PROJECT_ROOT)))"$(if $(CHECK_PHASE), --phase "$$CHECK_PHASE")
+	@$(if $(CHECK_PROFILE),FLEXT_INFRA_PROFILE=$(CHECK_PROFILE) ,)FLEXT_INFRA_PROFILE_OUTPUT="$(PROJECT_ROOT)/.reports/check/route.pstats" timeout --signal=TERM --kill-after=5s 118s $(PROJECT_FLEXT_INFRA) workspace check --repository-root "$(if $(filter Y,$(CI)),$(PROJECT_ROOT),$(if $(filter primary,$(CHECK_PHASE)),$(RUNTIME_ROOT),$(PROJECT_ROOT)))"$(if $(CHECK_PHASE), --phase "$$CHECK_PHASE")
 
 _builtin_tests_all: _builtin_require_environment
 	@$(PROJECT_FLEXT_INFRA) workspace tests --repository-root "$(PROJECT_ROOT)" --scope "$(GATE_SCOPE)"
@@ -1319,6 +1319,8 @@ _builtin_clean_generated: _builtin_require_interpreter
 GEN_BUDGET_SECONDS ?= 900
 GEN_KILL_RESERVE_SECONDS ?= 30
 GEN_PROFILE ?=
+# Check profiling is opt-in like generation (CHECK_PROFILE=1 make check).
+CHECK_PROFILE ?=
 
 _builtin_gen_all: _builtin_require_interpreter
 	@set -eu; \

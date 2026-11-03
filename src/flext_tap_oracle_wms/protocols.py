@@ -13,7 +13,7 @@ from __future__ import annotations
 from flext_meltano import p as flext_meltano_p
 from flext_oracle_wms import p as flext_oracle_wms_p
 
-from flext_tap_oracle_wms._protocols.base import FlextTapOracleWmsProtocolsBase
+from flext_tap_oracle_wms._protocols import FlextTapOracleWmsProtocolsBase
 
 
 class FlextTapOracleWmsProtocols(flext_meltano_p, flext_oracle_wms_p):
