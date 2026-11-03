@@ -34,7 +34,7 @@ class FlextTapOracleWmsProtocolsBase:
         settings: t.JsonMapping
 
     @runtime_checkable
-    class TapOracleWmsNamespace(FlextMeltanoProtocols.Model, Protocol):
+    class TapOracleWmsNamespace(FlextMeltanoProtocols.BaseModel, Protocol):
         """Structural data contract projected from the owning model."""
 
 
