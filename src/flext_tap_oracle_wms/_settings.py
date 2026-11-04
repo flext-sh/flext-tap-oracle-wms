@@ -14,7 +14,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Annotated
 
-from flext_core import FlextSettings, m, t
+from flext_core import FlextSettings, m, t, u
 
 _ISO_DATE_RE = re.compile(
     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$",
