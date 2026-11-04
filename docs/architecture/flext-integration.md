@@ -450,7 +450,7 @@ from collections.abc import (
 )
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tap_oracl_wms import FlextTapOracleWms
 
 
 def configured_tap(

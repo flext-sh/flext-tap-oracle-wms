@@ -14,7 +14,6 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Annotated
 
-import flext_core
 from flext_core import FlextSettings, m, t
 
 _ISO_DATE_RE = re.compile(
@@ -117,7 +116,7 @@ class FlextTapOracleWmsSettings(FlextSettings):
             Mapping[str, str],
             m.Field(description="Additional HTTP headers"),
         ] = m.Field(
-            default_factory=flext_core.u.empty(t.TypeForm(Mapping[str, str])),
+            default_factory=u.empty(t.TypeForm(Mapping[str, str])),
             validate_default=True,
         )
         log_level: Annotated[str, m.Field(description="Log level")] = "INFO"
