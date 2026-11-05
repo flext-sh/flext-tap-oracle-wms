@@ -13,15 +13,13 @@ from __future__ import annotations
 from collections.abc import Mapping
 from itertools import islice
 
-import pytest
-
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import tm
+from tests import c, tm, u
 
 _RECORD_SAMPLE_LIMIT = 2
 
 
-@pytest.mark.integration
+@c.Tests.MARK.integration
 class TestsFlextTapOracleWmsWms:
     """Test real Oracle WMS integration."""
 
@@ -80,4 +78,4 @@ class TestsFlextTapOracleWmsWms:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "-s", "-m", "integration"])
+    u.Tests.main([__file__, "-v", "-s", "-m", "integration"])

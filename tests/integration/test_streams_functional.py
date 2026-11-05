@@ -11,8 +11,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pytest
-
 from flext_tap_oracle_wms import FlextTapOracleWmsStreams
 from tests import TestsFlextTapOracleWmsHelpers, tm, u
 
@@ -152,7 +150,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpers):
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams discovered")
+            u.Tests.skip("No streams discovered")
         test_stream = streams[0]
         stream = FlextTapOracleWmsStreams.WmsStream(
             tap=real_tap_instance,
@@ -195,7 +193,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpers):
                 incremental_stream = stream
                 break
         if not incremental_stream:
-            pytest.skip("No incremental streams found")
+            u.Tests.skip("No incremental streams found")
         context = {"replication_key_value": "2024-01-01T00:00:00Z"}
         params = incremental_stream.build_operation_kwargs(page=1, context=context)
         kwargs_filter = params.get("filter")

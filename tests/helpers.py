@@ -89,7 +89,7 @@ class TestsFlextTapOracleWmsHelpers:
         catalog = self._catalog(tap)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams discovered")
+            u.Tests.skip("No streams discovered")
         stream_config = streams[0]
         return FlextTapOracleWmsStreams.WmsStream(
             tap=tap,

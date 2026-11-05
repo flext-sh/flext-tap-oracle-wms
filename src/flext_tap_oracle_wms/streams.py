@@ -12,13 +12,7 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, override
 
-from flext_tap_oracle_wms.constants import c
-from flext_tap_oracle_wms.exceptions import e
-from flext_tap_oracle_wms.models import m
-from flext_tap_oracle_wms.protocols import p
-from flext_tap_oracle_wms.result import r
-from flext_tap_oracle_wms.typings import t
-from flext_tap_oracle_wms.utilities import u
+from flext_tap_oracle_wms import c, e, m, p, r, t, u
 
 if TYPE_CHECKING:
     # The typed Singer schema input forms. ``t.Meltano.SingerSchema`` is a

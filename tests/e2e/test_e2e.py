@@ -16,8 +16,6 @@ import time
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 
-import pytest
-
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
@@ -32,7 +30,7 @@ _MIN_AVG_PROPERTIES = 3
 _MIN_DISCOVERY_RATE = 0.1
 
 
-@pytest.mark.e2e
+@c.Tests.MARK.e2e
 class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
     """Complete End-to-End tests with REAL Oracle WMS data extraction."""
 
@@ -97,7 +95,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
         catalog = self._catalog(tap_instance)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams available for extraction")
+            u.Tests.skip("No streams available for extraction")
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         logger.info("Testing extraction from: %s", stream_id)
@@ -132,7 +130,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
             if incremental_stream_config:
                 break
         if not incremental_stream_config:
-            pytest.skip("No incremental streams found")
+            u.Tests.skip("No incremental streams found")
         stream = FlextTapOracleWmsStreams.WmsStream(
             tap=tap_instance,
             name=incremental_stream_config.tap_stream_id,
@@ -175,7 +173,7 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
             if full_table_stream_config:
                 break
         if not full_table_stream_config:
-            pytest.skip("No full table streams found")
+            u.Tests.skip("No full table streams found")
         stream = FlextTapOracleWmsStreams.WmsStream(
             tap=tap_instance,
             name=full_table_stream_config.tap_stream_id,
