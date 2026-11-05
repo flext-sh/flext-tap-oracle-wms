@@ -9,10 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpers, t, tm
+from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
 _PAGE_SAMPLE_LIMIT = 5
 _MIN_SAMPLE_RECORDS = 2
@@ -73,7 +71,7 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpers):
     """Test real data extraction from Oracle WMS."""
 
     @staticmethod
-    @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
+    @c.Tests.MARK.parametrize("stream_name", ["inventory", "locations", "items"])
     def test_extract_stream_data(
         real_tap_instance: FlextTapOracleWms,
         stream_name: str,
@@ -83,7 +81,7 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpers):
         streams = real_tap_instance.discover_streams()
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
-            pytest.skip(f"Stream {stream_name} not available")
+            u.Tests.skip(f"Stream {stream_name} not available")
         records: list[t.JsonMapping] = []
         max_records = 5
         for i, record in enumerate(stream.get_records(context=None)):
@@ -99,7 +97,7 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpers):
         streams = real_tap_instance.discover_streams()
         inventory_stream = next((s for s in streams if s.name == "inventory"), None)
         if not inventory_stream:
-            pytest.skip("Inventory stream not available")
+            u.Tests.skip("Inventory stream not available")
         inventory_stream.page_size = 2
         records: list[t.JsonMapping] = []
         pages = 0
@@ -165,4 +163,4 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpers):
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "-s"])
+    u.Tests.main([__file__, "-v", "-s"])

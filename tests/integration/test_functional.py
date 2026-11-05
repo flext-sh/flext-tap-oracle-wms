@@ -9,14 +9,12 @@ from __future__ import annotations
 
 from collections.abc import MutableSequence
 
-import pytest
-
 from flext_tap_oracle_wms import (
     FlextTapOracleWms,
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStreams,
 )
-from tests import TestsFlextTapOracleWmsHelpers, t, tm, u
+from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
 logger = u.fetch_logger(__name__)
 
@@ -24,7 +22,7 @@ _MIN_CORE_STREAMS = 2
 _ORACLE_WMS_MAX_LIMIT = 1250
 
 
-@pytest.mark.functional
+@c.Tests.MARK.functional
 class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
@@ -60,7 +58,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
         tm.that(tap.settings.get("base_url"), eq=real_config.TapOracleWms.base_url)
         logger.info("✅ Tap initialized successfully with real settings")
 
-    @pytest.mark.discovery
+    @c.Tests.MARK.discovery
     def test_automatic_entity_discovery(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -118,7 +116,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
             logger.exception("❌ Entity discovery failed")
             raise
 
-    @pytest.mark.singer
+    @c.Tests.MARK.singer
     def test_valid_singer_schema_generation(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -160,7 +158,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
                 len(properties),
             )
 
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_real_data_extraction_sample(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -169,7 +167,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams available for extraction test")
+            u.Tests.skip("No streams available for extraction test")
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         logger.info("Testing extraction from stream: %s", stream_id)
@@ -195,7 +193,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
             logger.exception("❌ Stream creation failed for %s", stream_id)
             raise
 
-    @pytest.mark.singer
+    @c.Tests.MARK.singer
     def test_pagination_functionality(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -204,7 +202,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams available for pagination test")
+            u.Tests.skip("No streams available for pagination test")
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         stream = FlextTapOracleWmsStreams.WmsStream(
@@ -222,7 +220,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
         )
         logger.info("Pagination configured: page_size=%s", url_params["page_size"])
 
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_replication_key_detection(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -267,7 +265,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
             msg=("No replication methods detected"),
         )
 
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_filtering_and_ordering_parameters(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -276,7 +274,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams available for filtering test")
+            u.Tests.skip("No streams available for filtering test")
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         stream = FlextTapOracleWmsStreams.WmsStream(
@@ -295,7 +293,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
             logger.info("✅ Ordering configured: %s", ordering)
         logger.info("✅ URL parameters generated: %s", list(url_params.keys()))
 
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_error_handling_and_validation(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -308,7 +306,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
         logger.info("✅ Network error handled gracefully")
 
     @staticmethod
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_configuration_validation(
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
@@ -321,7 +319,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
         tm.that(namespace.verify_ssl, is_=bool)
         logger.info("✅ Configuration validated and types converted correctly")
 
-    @pytest.mark.singer
+    @c.Tests.MARK.singer
     def test_singer_protocol_compliance(
         self,
         real_tap_instance: FlextTapOracleWms,

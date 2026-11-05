@@ -12,8 +12,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
@@ -199,4 +197,4 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    u.Tests.main([__file__, "-v"])
