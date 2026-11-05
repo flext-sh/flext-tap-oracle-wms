@@ -15,10 +15,8 @@ from __future__ import annotations
 
 from typing import Final
 
-import pytest
-
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpers, c, tm
+from tests import TestsFlextTapOracleWmsHelpers, c, tm, u
 
 UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "tap-wms-unit-" + "3k7q"
 
@@ -100,7 +98,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
     @staticmethod
     def test_entity_list_validation() -> None:
         """Test entity list validation rejects duplicates at construction."""
-        with pytest.raises(c.ValidationError) as exc_info:
+        with u.Tests.raises(c.ValidationError) as exc_info:
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
@@ -118,14 +116,14 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
             "end_date": "2024-12-31T23:59:59Z",
         })
         tm.that(settings.TapOracleWms.start_date, eq="2024-01-01T00:00:00Z")
-        with pytest.raises(c.ValidationError) as exc_info:
+        with u.Tests.raises(c.ValidationError) as exc_info:
             self._tap_settings({"start_date": "01/01/2024"})
         tm.that(str(exc_info.value), has="Invalid date format")
 
     @staticmethod
     def test_numeric_validation() -> None:
         """Test numeric field validation."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
@@ -134,7 +132,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
                     "page_size": 0,
                 },
             })
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",

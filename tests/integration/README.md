@@ -532,7 +532,7 @@ def test_network_failure_integration():
         tap = FlextTapOracleWms(test_config)
 
         # Simulate network issues
-        with pytest.raises(NetworkError):
+        with u.Tests.raises(NetworkError):
             tap.discover_streams()
 
         # Test recovery mechanisms

@@ -15,7 +15,7 @@ from __future__ import annotations
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpers, c, t, tm
+from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
 
 class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
@@ -75,7 +75,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
     @staticmethod
     def test_duplicate_entities_rejected() -> None:
         """Test namespace validator rejects duplicate entity entries."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
@@ -97,7 +97,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
     @staticmethod
     def test_invalid_date_rejected() -> None:
         """Test namespace validator rejects non-ISO date values."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
