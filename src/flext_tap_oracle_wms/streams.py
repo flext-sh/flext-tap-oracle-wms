@@ -42,7 +42,7 @@ class FlextTapOracleWmsStreams:
         stream_replication_key: str | None = None
         url_base: str = ""
         # Singer SDK attributes exposed for type narrowing in tests/consumers
-        tap: p.Meltano.SingerTapBase
+        tap: m.Meltano.SingerTapBase
         http_headers: t.MutableStrMapping
         authenticator: None = None
 
@@ -51,7 +51,7 @@ class FlextTapOracleWmsStreams:
         # specialize it, so the LSP override marker does not apply here.
         def __init__(
             self,
-            tap: p.Meltano.SingerTapBase,
+            tap: m.Meltano.SingerTapBase,
             schema: SingerSchemaInput = None,
             name: str | None = None,
         ) -> None:
