@@ -261,12 +261,21 @@ catch construction failures as successful results.
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tap_oracl_wms import FlextTapOracleWms
 
 
 def create_configured_tap(
-    configuration: FlextTapOracleWmsSettings, catalog: m.Meltano.SingerCatalog
+    configuration: FlextTapOracleWmsSettings, catalog: p.Meltano.SingerCatalog
 ) -> FlextTapOracleWms:
     """Keep configuration and catalog validation at the public boundary."""
     return FlextTapOracleWms.from_settings(configuration, catalog=catalog)
@@ -279,13 +288,22 @@ def create_configured_tap(
 
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from collections.abc import Iterator
 
 from flext_core import TAnyDict, m
 
 
 def extract_records(
-    entity: str, settings: TAnyDict, filters: m.Dict | None = None
+    entity: str, settings: TAnyDict, filters: p.Dict | None = None
 ) -> Iterator[TAnyDict]:
     """Fully typed function signature."""
     # Implementation with type safety
@@ -295,6 +313,15 @@ def extract_records(
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 import logging
 
@@ -360,7 +387,7 @@ pre-commit run --all-files
     {
       "name": "Debug Tap Discovery",
       "type": "python",
-      "request": "launch",
+      c.ContextScope.REQUEST: "launch",
       "module": "flext_tap_oracle_wms.tap",
       "args": ["--config", "settings.json", "--discover"],
       "console": "integratedTerminal",
@@ -369,7 +396,7 @@ pre-commit run --all-files
     {
       "name": "Debug Tap Extraction",
       "type": "python",
-      "request": "launch",
+      c.ContextScope.REQUEST: "launch",
       "module": "flext_tap_oracle_wms.tap",
       "args": ["--config", "settings.json", "--catalog", "catalog.json"],
       "console": "integratedTerminal",
@@ -403,6 +430,15 @@ VALID_ENTITIES = [
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 def test_new_entity_extraction(mock_wms_client):
@@ -484,27 +520,27 @@ p.sort_stats('cumulative').print_stats(20)
 
 1. **Preparation Phase**:
 
-   - Document all current functionality
-   - Create comprehensive test suite
-   - Set up FLEXT integration foundation
+    - Document all current functionality
+    - Create comprehensive test suite
+    - Set up FLEXT integration foundation
 
 1. **Implementation Phase**:
 
-   - Implement simplified architecture
-   - Migrate functionality incrementally
-   - Validate each component thoroughly
+    - Implement simplified architecture
+    - Migrate functionality incrementally
+    - Validate each component thoroughly
 
 1. **Validation Phase**:
 
-   - Compare outputs between old and new
-   - Performance benchmarking
-   - Integration testing
+    - Compare outputs between old and new
+    - Performance benchmarking
+    - Integration testing
 
 1. **Deployment Phase**:
 
-   - Switch to new implementation
-   - Monitor production performance
-   - Address any issues quickly
+    - Switch to new implementation
+    - Monitor production performance
+    - Address any issues quickly
 
 ---
 

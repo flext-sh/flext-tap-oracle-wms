@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import os
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings, e
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from examples import e
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 
 
 def main() -> int:

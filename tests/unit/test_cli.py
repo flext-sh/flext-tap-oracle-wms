@@ -21,4 +21,4 @@ class TestsFlextTapOracleWmsCli:
     @staticmethod
     def test_main_is_callable_entry_point() -> None:
         """Main remains a callable project entry point."""
-        tm.that(callable(main), eq=True)
+        tm.ok(callable(main))

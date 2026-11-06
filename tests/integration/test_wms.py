@@ -13,16 +13,13 @@ from __future__ import annotations
 from collections.abc import Mapping
 from itertools import islice
 
-import pytest
-
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import tm
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import c, tm, u
 
 _RECORD_SAMPLE_LIMIT = 2
 
 
-@pytest.mark.integration
+@c.Tests.MARK.integration
 class TestsFlextTapOracleWmsWms:
     """Test real Oracle WMS integration."""
 
@@ -43,8 +40,7 @@ class TestsFlextTapOracleWmsWms:
         tap = FlextTapOracleWms.from_settings(real_config)
         result = tap.validate_configuration()
         tm.ok(result)
-        value = result.value
-        assert isinstance(value, Mapping)
+        value = tm.instance(result.value, Mapping)
         tm.that(set(value), eq={"base_url", "api_version", "page_size"})
 
     @staticmethod
@@ -61,7 +57,7 @@ class TestsFlextTapOracleWmsWms:
         init_result = tap.initialize()
         tm.ok(init_result)
         streams = tap.discover_streams()
-        tm.that(bool(streams), eq=True)
+        tm.ok(bool(streams))
         for stream in streams:
             tm.that(stream.name, none=False)
 
@@ -72,7 +68,7 @@ class TestsFlextTapOracleWmsWms:
         init_result = tap.initialize()
         tm.ok(init_result)
         streams = tap.discover_streams()
-        tm.that(bool(streams), eq=True)
+        tm.ok(bool(streams))
         for stream in streams:
             records = list(
                 islice(stream.get_records(context=None), _RECORD_SAMPLE_LIMIT),
@@ -82,4 +78,4 @@ class TestsFlextTapOracleWmsWms:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "-s", "-m", "integration"])
+    u.Tests.main([__file__, "-v", "-s", "-m", "integration"])

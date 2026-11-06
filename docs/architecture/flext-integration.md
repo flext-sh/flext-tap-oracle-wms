@@ -75,6 +75,15 @@ graph TB
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from pydantic import Field
 from singer_sdk import Stream
 
@@ -127,6 +136,15 @@ class FlextTapOracleWms:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from collections.abc import Iterator
 from datetime import datetime
 
@@ -159,6 +177,15 @@ class FlextTapOracleWmsStream:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_cli import u
 
@@ -201,6 +228,15 @@ class FlextTapOracleWmsStream:
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_core import p, r
 from flext_oracle_wms import (
@@ -254,6 +290,15 @@ class WMSClientManager:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_core import p, r, t
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 
@@ -305,9 +350,18 @@ class EntityDiscovery:
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from collections.abc import Iterator
 
-from flext_core import m
+from flext_core import m, p
 from flext_meltano import Stream, Tap
 
 
@@ -350,7 +404,7 @@ class FlextTapOracleWmsStream(Stream):
         self.logger = u.fetch_logger(__name__)
 
     @property
-    def schema(self) -> m.Dict:
+    def schema(self) -> p.Dict:
         """Stream schema from WMS metadata."""
         discovery = EntityDiscovery(self.tap.wms_client_manager.client)
         schema_result = discovery.generate_schema(self.name)
@@ -361,7 +415,7 @@ class FlextTapOracleWmsStream(Stream):
 
         return schema_result.value
 
-    def get_records(self, context) -> Iterator[m.Dict]:
+    def get_records(self, context) -> Iterator[p.Dict]:
         """Extract records using WMS client."""
         try:
             for record in self.tap.wms_client_manager.client.fetch_entity_data(
@@ -386,12 +440,21 @@ constructor format. Supplying a catalog avoids live discovery during constructio
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tap_oracl_wms import FlextTapOracleWms
 
 
 def configured_tap(
-    configuration: FlextTapOracleWmsSettings, catalog: m.Meltano.SingerCatalog
+    configuration: FlextTapOracleWmsSettings, catalog: p.Meltano.SingerCatalog
 ) -> FlextTapOracleWms:
     """Construct a tap through its typed public boundary."""
     return FlextTapOracleWms.from_settings(configuration, catalog=catalog)
@@ -404,12 +467,21 @@ def configured_tap(
 ```python
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 import time
 from collections.abc import Iterator
 
 from singer_sdk import Stream
 
-from flext_core import m, u
+from flext_core import m, p, u
 from flext_meltano import Tap
 from flext_observability import FlextHealthCheck, FlextMetrics, FlextTracing
 
@@ -457,7 +529,7 @@ class FlextTapOracleWms(Tap):
 class FlextTapOracleWmsStream(Stream):
     """Stream with observability integration."""
 
-    def get_records(self, context) -> Iterator[m.Dict]:
+    def get_records(self, context) -> Iterator[p.Dict]:
         """Record extraction with comprehensive monitoring."""
         with self.tap.tracing.span(f"extract_{self.name}"):
             start_time = time.time()
@@ -501,6 +573,15 @@ class FlextTapOracleWmsStream(Stream):
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_observability import HealthCheckResult, HealthStatus
 from flext_oracle_wms import FlextOracleWmsAuthenticationError

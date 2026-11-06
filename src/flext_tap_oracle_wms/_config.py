@@ -14,10 +14,8 @@ from __future__ import annotations
 
 from typing import Annotated, Self
 
-from flext_core import m, t
-from flext_meltano import FlextMeltanoConfig
-
-from flext_tap_oracle_wms._models.base import FlextTapOracleWmsModelsBase
+from flext_core import t
+from flext_meltano import FlextMeltanoConfig, m
 
 
 class FlextTapOracleWmsConfig(FlextMeltanoConfig):
@@ -43,7 +41,7 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
     # contract admits, mirroring ``FlextMeltanoConstantsSettings``; the
     # ``ban-broad-annotation`` dunder carve-out does not reach typed parameters,
     # so the directive below is a scoped admission of that tooling conflict.
-    def __eq__(self, other: object) -> bool:  # ast-grep-ignore: ban-broad-annotation
+    def __eq__(self, other: object) -> bool:
         """Identity equality per the frozen-config singleton contract.
 
         Returns:
@@ -62,13 +60,13 @@ class FlextTapOracleWmsConfig(FlextMeltanoConfig):
         return object.__hash__(self)
 
     TapOracleWms: Annotated[
-        FlextTapOracleWmsModelsBase.TapOracleWmsNamespace,
+        m.Meltano.MeltanoNamespace,
         m.Field(
             description=(
                 "Open namespace exposing ``config/*.yaml`` under ``TapOracleWms``."
             ),
         ),
-    ] = FlextTapOracleWmsModelsBase.TapOracleWmsNamespace()
+    ] = m.Meltano.MeltanoNamespace()
 
 
 config: FlextTapOracleWmsConfig = FlextTapOracleWmsConfig.fetch_global()

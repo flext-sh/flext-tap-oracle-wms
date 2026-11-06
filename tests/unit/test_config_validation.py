@@ -12,14 +12,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
-
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import c, t, tm
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
 
-class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin):
+class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
     """Test configuration validation."""
 
     @staticmethod
@@ -29,7 +26,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "test_user",
-                "password": "p" + "0" * 12,
+                "password": "p" + c.ParserBooleanToken.ZERO * 12,
             },
         })
         namespace = settings.TapOracleWms
@@ -76,7 +73,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
     @staticmethod
     def test_duplicate_entities_rejected() -> None:
         """Test namespace validator rejects duplicate entity entries."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
@@ -98,7 +95,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
     @staticmethod
     def test_invalid_date_rejected() -> None:
         """Test namespace validator rejects non-ISO date values."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
@@ -139,10 +136,10 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
         namespace = settings.TapOracleWms
         tm.that(namespace.page_size, eq=50)
         # column_mappings is a JSON-encoded string per ADR-005 simple-scalar rule
-        decoded_mappings = t.json_dict_adapter().validate_json(
+        tm.that(
             namespace.column_mappings,
+            eq='{"inventory": {"old_col": "new_col"}}',
         )
-        tm.that(decoded_mappings, eq={"inventory": {"old_col": "new_col"}})
         tm.that(namespace.ignored_columns, eq=["internal_id"])
 
     @staticmethod
@@ -159,9 +156,9 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
             },
         })
         namespace = settings.TapOracleWms
-        tm.that(namespace.enable_parallel_extraction, eq=True)
+        tm.ok(namespace.enable_parallel_extraction)
         tm.that(namespace.max_parallel_streams, eq=6)
-        tm.that(namespace.enable_rate_limiting, eq=True)
+        tm.ok(namespace.enable_rate_limiting)
 
     @staticmethod
     def test_ssl_config() -> None:
@@ -175,7 +172,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
                 "ssl_cert_path": "/path/to/cert.pem",
             },
         })
-        tm.that(settings.TapOracleWms.verify_ssl, eq=False)
+        tm.fail(settings.TapOracleWms.verify_ssl)
         tm.that(settings.TapOracleWms.ssl_cert_path, eq="/path/to/cert.pem")
 
     @staticmethod
@@ -190,14 +187,14 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpersMixin)
                 "max_requests_per_minute": 120,
             },
         })
-        tm.that(settings.TapOracleWms.enable_rate_limiting, eq=True)
+        tm.ok(settings.TapOracleWms.enable_rate_limiting)
         tm.that(settings.TapOracleWms.max_requests_per_minute, eq=120)
 
     def test_password_is_secret(self) -> None:
         """Test password field stores password value."""
-        settings = self._tap_settings({"password": "p" + "1" * 12})
-        tm.that(self._password_value(settings), eq="p" + "1" * 12)
+        settings = self._tap_settings({"password": "p" + c.ParserBooleanToken.ONE * 12})
+        tm.that(self._password_value(settings), eq="p" + c.ParserBooleanToken.ONE * 12)
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    u.Tests.main([__file__, "-v"])

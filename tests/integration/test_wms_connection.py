@@ -9,24 +9,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-import pytest
-
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import tm
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
-
-if TYPE_CHECKING:
-    from tests import t
-
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
 _PAGE_SAMPLE_LIMIT = 5
 _MIN_SAMPLE_RECORDS = 2
 
 
-class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
+class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpers):
     """Test real Oracle WMS connection."""
 
     @staticmethod
@@ -36,13 +26,12 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
         """Validation exposes exactly the non-secret configured fields."""
         result = real_tap_instance.validate_configuration()
         tm.ok(result)
-        value = result.value
-        assert isinstance(value, dict)
+        value = tm.instance(result.value, dict)
         tm.that(set(value), eq={"base_url", "api_version", "page_size"})
         tm.that(value["base_url"], is_=str)
         tm.that(value["api_version"], is_=str)
         tm.that(value["page_size"], is_=int)
-        tm.that("password" not in value and "username" not in value, eq=True)
+        tm.ok("password" not in value and "username" not in value)
 
     @staticmethod
     def test_catalog_discovery(real_tap_instance: FlextTapOracleWms) -> None:
@@ -52,19 +41,19 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
         catalog = result.value
         tm.that(getattr(catalog, "type", None), eq="CATALOG")
         catalog_streams = getattr(catalog, "streams", [])
-        assert catalog_streams
+        tm.that(catalog_streams, truth=True)
         for stream in catalog_streams:
             tm.that(stream.tap_stream_id, is_=str)
-            assert stream.tap_stream_id
+            tm.that(stream.tap_stream_id, truth=True)
 
     @staticmethod
     def test_stream_discovery(real_tap_instance: FlextTapOracleWms) -> None:
         """Discovered streams expose non-empty names."""
         streams = real_tap_instance.discover_streams()
-        assert streams
+        tm.that(streams, truth=True)
         for stream in streams:
             tm.that(stream.name, is_=str)
-            assert stream.name
+            tm.that(stream.name, truth=True)
 
     @staticmethod
     def test_stream_schemas_validation(
@@ -73,16 +62,16 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
         """Test stream schemas."""
         streams = real_tap_instance.discover_streams()
         for stream in streams:
-            assert stream.name
+            tm.that(stream.name, truth=True)
             stream_schema = stream.schema
             if "properties" in stream_schema:
                 properties = stream_schema["properties"]
-                assert properties
+                tm.that(properties, truth=True)
 
     """Test real data extraction from Oracle WMS."""
 
     @staticmethod
-    @pytest.mark.parametrize("stream_name", ["inventory", "locations", "items"])
+    @c.Tests.MARK.parametrize("stream_name", ["inventory", "locations", "items"])
     def test_extract_stream_data(
         real_tap_instance: FlextTapOracleWms,
         stream_name: str,
@@ -92,7 +81,7 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
         streams = real_tap_instance.discover_streams()
         stream = next((s for s in streams if s.name == stream_name), None)
         if stream is None:
-            pytest.skip(f"Stream {stream_name} not available")
+            u.Tests.skip(f"Stream {stream_name} not available")
         records: list[t.JsonMapping] = []
         max_records = 5
         for i, record in enumerate(stream.get_records(context=None)):
@@ -108,7 +97,7 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
         streams = real_tap_instance.discover_streams()
         inventory_stream = next((s for s in streams if s.name == "inventory"), None)
         if not inventory_stream:
-            pytest.skip("Inventory stream not available")
+            u.Tests.skip("Inventory stream not available")
         inventory_stream.page_size = 2
         records: list[t.JsonMapping] = []
         pages = 0
@@ -118,7 +107,7 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
                 pages += 1
             if i >= _PAGE_SAMPLE_LIMIT:
                 break
-        assert len(records) > _MIN_SAMPLE_RECORDS
+        tm.that(len(records), gt=_MIN_SAMPLE_RECORDS)
 
     """Test entity filtering and selection."""
 
@@ -156,7 +145,7 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
         stream_names = {s.name for s in streams}
         tm.that(stream_names, lacks="orders")
         tm.that(stream_names, lacks="shipments")
-        assert stream_names
+        tm.that(stream_names, truth=True)
 
     """Test /sync integration with flext-oracle-wms."""
 
@@ -168,10 +157,10 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpersMixin):
         tm.ok(real_tap_instance.initialize())
         first_client = real_tap_instance.wms_client
         tm.that(first_client, none=False)
-        assert real_tap_instance.wms_client is first_client
+        tm.that(real_tap_instance.wms_client is first_client)
         result = real_tap_instance.discovercatalog_typed()
         tm.ok(result)
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "-s"])
+    u.Tests.main([__file__, "-v", "-s"])

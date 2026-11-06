@@ -13,14 +13,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import tm
-
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms import m
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import p, tm
 
 
 class TestsFlextTapOracleWmsTapInitialization:
@@ -28,7 +22,7 @@ class TestsFlextTapOracleWmsTapInitialization:
 
     @staticmethod
     def test_tap_initialization_uses_normalized_config(
-        sample_catalog: m.Meltano.SingerCatalog,
+        sample_catalog: p.Meltano.SingerCatalog,
     ) -> None:
         """Tap stores normalized settings values from settings serialization."""
         settings = FlextTapOracleWmsSettings.model_validate({

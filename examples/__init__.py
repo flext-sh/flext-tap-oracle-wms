@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from flext_core.lazy import install_lazy_exports
@@ -21,7 +20,20 @@ if TYPE_CHECKING:
     from examples.protocols import ExamplesFlextTapOracleWmsProtocols
     from examples.typings import ExamplesFlextTapOracleWmsTypes
     from examples.utilities import ExamplesFlextTapOracleWmsUtilities, u
-    from flext_tap_oracle_wms import c, d, h, m, p, r, t, x
+    from flext_tap_oracle_wms import (
+        c,
+        config,
+        d,
+        h,
+        m,
+        main,
+        p,
+        r,
+        settings,
+        t,
+        tap_oracle_wms,
+        x,
+    )
 
 
 __all__: tuple[str, ...] = (
@@ -31,14 +43,18 @@ __all__: tuple[str, ...] = (
     "ExamplesFlextTapOracleWmsTypes",
     "ExamplesFlextTapOracleWmsUtilities",
     "c",
+    "config",
     "d",
     "e",
     "h",
     "m",
+    "main",
     "p",
     "r",
     "s",
+    "settings",
     "t",
+    "tap_oracle_wms",
     "u",
     "x",
 )
@@ -46,23 +62,27 @@ __all__: tuple[str, ...] = (
 install_lazy_exports(
     __name__,
     globals(),
-    MappingProxyType({
+    {
         "ExamplesFlextTapOracleWmsConstants": ".constants",
         "ExamplesFlextTapOracleWmsModels": ".models",
         "ExamplesFlextTapOracleWmsProtocols": ".protocols",
         "ExamplesFlextTapOracleWmsTypes": ".typings",
         "ExamplesFlextTapOracleWmsUtilities": ".utilities",
         "c": "flext_tap_oracle_wms",
+        "config": "flext_tap_oracle_wms",
         "d": "flext_tap_oracle_wms",
         "e": "flext_oracle_wms",
         "h": "flext_tap_oracle_wms",
         "m": "flext_tap_oracle_wms",
+        "main": "flext_tap_oracle_wms",
         "p": "flext_tap_oracle_wms",
         "r": "flext_tap_oracle_wms",
         "s": "flext_meltano",
+        "settings": "flext_tap_oracle_wms",
         "t": "flext_tap_oracle_wms",
+        "tap_oracle_wms": "flext_tap_oracle_wms",
         "u": ".utilities",
         "x": "flext_tap_oracle_wms",
-    }),
+    },
     public_exports=__all__,
 )

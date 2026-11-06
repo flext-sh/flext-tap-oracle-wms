@@ -7,19 +7,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
 
 import psutil
-import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import tm
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
-
-if TYPE_CHECKING:
-    from tests import t
-
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
 _MAX_DISCOVERY_SECONDS = 10.0
 _PAGINATION_SAMPLE_LIMIT = 99
@@ -28,7 +20,7 @@ _LARGE_EXTRACTION_SAMPLE_LIMIT = 999
 _MAX_MEMORY_INCREASE_MB = 100
 
 
-@pytest.fixture
+@u.Tests.fixture
 def performance_config(
     real_config: FlextTapOracleWmsSettings,
 ) -> FlextTapOracleWmsSettings:
@@ -47,7 +39,7 @@ def performance_config(
     return FlextTapOracleWmsSettings.model_validate({"TapOracleWms": base})
 
 
-@pytest.fixture
+@u.Tests.fixture
 def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     """Create tap instance for performance testing.
 
@@ -58,8 +50,8 @@ def tap(performance_config: FlextTapOracleWmsSettings) -> FlextTapOracleWms:
     return FlextTapOracleWms.from_settings(performance_config)
 
 
-@pytest.mark.performance
-class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpersMixin):
+@c.Tests.MARK.performance
+class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpers):
     """Test data extraction performance."""
 
     @staticmethod
@@ -70,10 +62,10 @@ class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpersM
         result = tap.discovercatalog_typed()
         discovery_time = time.time() - start_time
         tm.ok(result)
-        assert discovery_time < _MAX_DISCOVERY_SECONDS
+        tm.that(discovery_time, lt=_MAX_DISCOVERY_SECONDS)
 
     @staticmethod
-    @pytest.mark.parametrize("page_size", [10, 50, 100, 200])
+    @c.Tests.MARK.parametrize("page_size", [10, 50, 100, 200])
     def test_pagination_performance(
         tap: FlextTapOracleWms,
         page_size: int,
@@ -84,7 +76,7 @@ class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpersM
         streams = tap.discover_streams()
         inventory_stream = next((s for s in streams if s.name == "inventory"), None)
         if not inventory_stream:
-            pytest.skip("Inventory stream not available")
+            u.Tests.skip("Inventory stream not available")
         inventory_stream.page_size = page_size
         start_time = time.time()
         records: list[t.JsonMapping] = []
@@ -128,7 +120,7 @@ class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpersM
                     break
             final_memory = process.memory_info().rss / 1024 / 1024
             memory_increase = final_memory - initial_memory
-            assert memory_increase < _MAX_MEMORY_INCREASE_MB
+            tm.that(memory_increase, lt=_MAX_MEMORY_INCREASE_MB)
 
     """Test rate limiting impact on performance."""
 
@@ -168,4 +160,4 @@ class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpersM
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "-s", "-m", "performance"])
+    u.Tests.main([__file__, "-v", "-s", "-m", "performance"])

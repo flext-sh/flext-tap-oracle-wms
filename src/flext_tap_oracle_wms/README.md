@@ -128,7 +128,7 @@ from flext_tap_oracle_wms import FlextTapOracleWms
 settings = {
     "base_url": "https://wms.example.com",
     "auth_method": "basic",
-    "username": "user",
+    "username": c.ContextScope.USER,
     "password": "pass",
     "company_code": "COMPANY",
     "facility_code": "FACILITY",
@@ -185,7 +185,7 @@ result = validator.validate_config(settings)
 
 ### **FLEXT Integration**
 
-- Use `flext_core.u.fetch_logger()` for logging
+- Use `u.fetch_logger()` for logging
 - Implement `r` patterns for error handling
 - Follow FLEXT configuration patterns
 - Integrate with FLEXT observability standards

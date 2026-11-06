@@ -9,13 +9,12 @@ from __future__ import annotations
 
 from collections.abc import MutableSequence
 
-import pytest
-
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t, tm, u
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from flext_tap_oracle_wms import (
+    FlextTapOracleWms,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStreams,
+)
+from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
 logger = u.fetch_logger(__name__)
 
@@ -23,8 +22,8 @@ _MIN_CORE_STREAMS = 2
 _ORACLE_WMS_MAX_LIMIT = 1250
 
 
-@pytest.mark.functional
-class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
+@c.Tests.MARK.functional
+class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
     """COMPREHENSIVE functional tests using REAL Oracle WMS data from .env."""
 
     _TAP_CONNECTION_ERROR_KEYWORDS = ("connection", "network", "timeout")
@@ -35,9 +34,15 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
     ) -> None:
         """CRITICAL: Verify real Oracle WMS environment is properly loaded."""
         namespace = real_config.TapOracleWms
-        assert namespace.base_url, "Missing required settings: base_url"
-        assert namespace.username, "Missing required settings: username"
-        assert namespace.password, "Missing required settings: password"
+        tm.that(
+            namespace.base_url, truth=True, msg="Missing required settings: base_url"
+        )
+        tm.that(
+            namespace.username, truth=True, msg="Missing required settings: username"
+        )
+        tm.that(
+            namespace.password, truth=True, msg="Missing required settings: password"
+        )
         base_url = namespace.base_url
         tm.that(base_url, has="invalid.wms.ocs.oraclecloud.com")
         tm.that(base_url, has="company_unknow")
@@ -53,7 +58,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
         tm.that(tap.settings.get("base_url"), eq=real_config.TapOracleWms.base_url)
         logger.info("✅ Tap initialized successfully with real settings")
 
-    @pytest.mark.discovery
+    @c.Tests.MARK.discovery
     def test_automatic_entity_discovery(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -64,7 +69,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
             catalog = self._catalog(real_tap_instance)
             tm.that(catalog, none=False)
             streams = catalog.streams
-            assert streams, "No streams discovered"
+            tm.that(streams, truth=True, msg="No streams discovered")
             entity_names = [stream.tap_stream_id for stream in streams]
             logger.info(
                 "✅ Discovered %s entities: %s",
@@ -76,22 +81,29 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
                 found_entities = [
                     name for name in entity_names if entity in name.lower()
                 ]
-                assert found_entities, (
-                    f"Essential entity '{entity}' not found in: {entity_names}"
+                tm.that(
+                    found_entities,
+                    truth=True,
+                    msg=(f"Essential entity '{entity}' not found in: {entity_names}"),
                 )
             core_wms_patterns = ["allocation", "company", "location"]
             found_core = 0
             for pattern in core_wms_patterns:
                 if any(pattern in name.lower() for name in entity_names):
                     found_core += 1
-            assert found_core >= _MIN_CORE_STREAMS, (
-                f"Not enough core WMS entities found. Got: {entity_names}"
+            tm.that(
+                found_core,
+                gte=_MIN_CORE_STREAMS,
+                msg=(f"Not enough core WMS entities found. Got: {entity_names}"),
             )
             for stream in streams:
                 properties_raw = stream.schema_definition.get("properties")
-                assert isinstance(properties_raw, dict)
-                properties: t.JsonMapping = properties_raw
-                assert properties, f"Stream {stream.tap_stream_id} has empty properties"
+                properties: t.JsonMapping = tm.instance(properties_raw, dict)
+                tm.that(
+                    properties,
+                    truth=True,
+                    msg=f"Stream {stream.tap_stream_id} has empty properties",
+                )
                 logger.info(
                     "✅ Stream %s has %d properties",
                     stream.tap_stream_id,
@@ -104,7 +116,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
             logger.exception("❌ Entity discovery failed")
             raise
 
-    @pytest.mark.singer
+    @c.Tests.MARK.singer
     def test_valid_singer_schema_generation(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -118,10 +130,9 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
             tm.that(schema["type"], eq="t.JsonValue")
             tm.that(schema, has="properties")
             properties_raw = schema["properties"]
-            assert isinstance(properties_raw, dict)
-            properties: t.JsonMapping = properties_raw
-            for prop_name, prop_def in properties.items():
-                assert isinstance(prop_def, dict)
+            properties: t.JsonMapping = tm.instance(properties_raw, dict)
+            for prop_name, prop_value in properties.items():
+                prop_def = tm.instance(prop_value, dict)
                 tm.that(prop_def, has="type")
                 prop_type = prop_def["type"]
                 valid_types: t.JsonList = [
@@ -136,16 +147,18 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
                     ["number", "null"],
                     ["boolean", "null"],
                 ]
-                assert prop_type in valid_types or (
-                    isinstance(prop_type, list) and "null" in prop_type
-                ), f"Invalid Singer type for {prop_name}: {prop_type}"
+                tm.that(
+                    prop_type in valid_types
+                    or (isinstance(prop_type, list) and "null" in prop_type),
+                    msg=f"Invalid Singer type for {prop_name}: {prop_type}",
+                )
             logger.info(
                 "✅ Valid Singer schema for %s with %d properties",
                 stream.tap_stream_id,
                 len(properties),
             )
 
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_real_data_extraction_sample(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -154,7 +167,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams available for extraction test")
+            u.Tests.skip("No streams available for extraction test")
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         logger.info("Testing extraction from stream: %s", stream_id)
@@ -170,7 +183,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
             logger.info("✅ Stream created successfully: %s", stream_id)
             url = stream.url_base
             tm.that(url, none=False)
-            assert url, "Stream URL is empty"
+            tm.that(url, truth=True, msg="Stream URL is empty")
             tm.that(url, has="invalid.wms.ocs.oraclecloud.com")
             logger.info("✅ Stream URL generated: %s", url)
 
@@ -180,7 +193,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
             logger.exception("❌ Stream creation failed for %s", stream_id)
             raise
 
-    @pytest.mark.singer
+    @c.Tests.MARK.singer
     def test_pagination_functionality(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -189,7 +202,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams available for pagination test")
+            u.Tests.skip("No streams available for pagination test")
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         stream = FlextTapOracleWmsStreams.WmsStream(
@@ -200,12 +213,14 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
         url_params = stream.build_operation_kwargs(page=1, context=None)
         tm.that(url_params, has="limit")
         limit_value = url_params["limit"]
-        assert isinstance(limit_value, int)
-        assert limit_value > 0, "limit must be positive"
-        assert limit_value <= _ORACLE_WMS_MAX_LIMIT, "limit exceeds Oracle WMS max"
+        tm.that(limit_value, is_=int)
+        tm.that(limit_value, gt=0, msg="limit must be positive")
+        tm.that(
+            limit_value, lte=_ORACLE_WMS_MAX_LIMIT, msg="limit exceeds Oracle WMS max"
+        )
         logger.info("Pagination configured: page_size=%s", url_params["page_size"])
 
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_replication_key_detection(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -244,11 +259,13 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
             len(streams_full_table),
             streams_full_table,
         )
-        assert streams_with_replication or streams_full_table, (
-            "No replication methods detected"
+        tm.that(
+            streams_with_replication or streams_full_table,
+            truth=True,
+            msg=("No replication methods detected"),
         )
 
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_filtering_and_ordering_parameters(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -257,7 +274,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
         catalog = self._catalog(real_tap_instance)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams available for filtering test")
+            u.Tests.skip("No streams available for filtering test")
         test_stream = streams[0]
         stream_id = test_stream.tap_stream_id
         stream = FlextTapOracleWmsStreams.WmsStream(
@@ -276,7 +293,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
             logger.info("✅ Ordering configured: %s", ordering)
         logger.info("✅ URL parameters generated: %s", list(url_params.keys()))
 
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_error_handling_and_validation(
         self,
         real_config: FlextTapOracleWmsSettings,
@@ -289,7 +306,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
         logger.info("✅ Network error handled gracefully")
 
     @staticmethod
-    @pytest.mark.functional
+    @c.Tests.MARK.functional
     def test_configuration_validation(
         real_config: FlextTapOracleWmsSettings,
     ) -> None:
@@ -302,7 +319,7 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
         tm.that(namespace.verify_ssl, is_=bool)
         logger.info("✅ Configuration validated and types converted correctly")
 
-    @pytest.mark.singer
+    @c.Tests.MARK.singer
     def test_singer_protocol_compliance(
         self,
         real_tap_instance: FlextTapOracleWms,
@@ -388,10 +405,10 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpersMixin):
         logger.info("  🎵 Singer compliant: %s", singer_compliant)
         if errors:
             logger.error("  ❌ Errors: %s", errors)
-        assert environment_loaded, "Environment not loaded"
-        assert tap_initialized, "Tap not initialized"
-        assert entities_discovered > 0, "No entities discovered"
-        assert schemas_generated > 0, "No schemas generated"
-        assert singer_compliant, "Not Singer compliant"
-        assert not errors, f"Errors found: {errors}"
+        tm.that(environment_loaded, msg="Environment not loaded")
+        tm.that(tap_initialized, msg="Tap not initialized")
+        tm.that(entities_discovered, gt=0, msg="No entities discovered")
+        tm.that(schemas_generated, gt=0, msg="No schemas generated")
+        tm.that(singer_compliant, msg="Not Singer compliant")
+        tm.that(errors, truth=False, msg=f"Errors found: {errors}")
         logger.info("🎉 ALL FUNCTIONALITY TESTS PASSED!")

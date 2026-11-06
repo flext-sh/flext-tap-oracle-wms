@@ -148,6 +148,15 @@ following Singer SDK patterns and FLEXT ecosystem standards.
 
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_core import t
 from flext_tap_oracle_wms import FlextTapOracleWms, WMSConfig, __version__
 
@@ -184,6 +193,15 @@ FLEXT ecosystem integration for configuration, logging, and error handling.
 """
 
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from singer_sdk import Tap
 
@@ -247,7 +265,7 @@ from flext_tap_oracle_wms import FlextTapOracleWms
 settings = {
     "base_url": "https://wms.example.com",
     "auth_method": "basic",
-    "username": "user",
+    "username": c.ContextScope.USER,
     # ... other settings
 }
 
@@ -266,6 +284,15 @@ pagination, error handling, and schema management.
 """
 
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from collections.abc import Iterator
 
@@ -301,7 +328,7 @@ class FlextTapOracleWmsStream(RESTStream):
         self._schema_generator = SchemaGenerator(tap.wms_client)
 
     @property
-    def schema(self) -> m.Dict:
+    def schema(self) -> p.Dict:
         """Get stream schema from WMS metadata."""
         schema_result = self._schema_generator.generate_schema(self.name)
         if schema_result.failure:
@@ -312,7 +339,7 @@ class FlextTapOracleWmsStream(RESTStream):
         """Get paginator for WMS HATEOAS pagination."""
         return WMSPaginator()
 
-    def get_url_params(self, context, next_page_token) -> m.Dict:
+    def get_url_params(self, context, next_page_token) -> p.Dict:
         """Build URL parameters for WMS API requests."""
         params = {
             "limit": min(self.settings.get("page_size", 1000), 1250),
@@ -362,6 +389,15 @@ validation, and FLEXT ecosystem integration.
 """
 
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from pydantic import Field, validator
 
@@ -457,6 +493,15 @@ using FLEXT ecosystem patterns and error handling.
 
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from flext_cli import u
 from flext_core import t
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
@@ -517,7 +562,7 @@ class SchemaGenerator:
         self.discovery = EntityDiscovery(wms_client)
         self.logger = u.fetch_logger(__name__)
 
-    def generate_schema(self, entity: str) -> p.Result[m.Dict]:
+    def generate_schema(self, entity: str) -> p.Result[p.Dict]:
         """Generate Singer schema for WMS entity."""
         metadata_result = self.discovery.get_entity_metadata(entity)
         if metadata_result.failure:
@@ -529,7 +574,7 @@ class SchemaGenerator:
         except Exception as e:
             return r[bool].fail(f"Schema generation error: {e}")
 
-    def _convert_metadata_to_schema(self, metadata) -> m.Dict:
+    def _convert_metadata_to_schema(self, metadata) -> p.Dict:
         """Convert WMS metadata to Singer JSON schema."""
         return {
             "type": "object",
@@ -538,7 +583,7 @@ class SchemaGenerator:
             },
         }
 
-    def _map_field_type(self, field) -> m.Dict:
+    def _map_field_type(self, field) -> p.Dict:
         """Map WMS field type to Singer type."""
         type_mapping = {
             "STRING": {"type": "string"},
@@ -562,6 +607,15 @@ WMS library without reimplementing authentication logic.
 """
 
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_oracle_wms import FlextOracleWmsClient
 from flext_tap_oracle_wms import WMSConfig
@@ -657,9 +711,18 @@ WMSDiscoveryError  # Specific error (descriptive)
 
 ### **Function and Method Naming**
 
-```{.python .notest}
+```python
 # Action-oriented naming
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_core import t
 def discover_streams() -> list[Stream]:           # Singer SDK pattern
 def discover_entities() -> p.Result[t.StringList]: # FLEXT pattern
@@ -670,7 +733,7 @@ def create_authenticated_client(settings) -> Client:    # Factory pattern
 @property
 def wms_client(self) -> FlextOracleWmsClient:     # Resource access
 @property
-def schema(self) -> m.Dict:               # Computed property
+def schema(self) -> p.Dict:               # Computed property
 ```
 
 **Pattern**: Verbs for actions, nouns for properties, clear business intent.
@@ -702,6 +765,15 @@ External Libraries (singer-sdk, pydantic)
 # External dependencies first
 
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 # FLEXT ecosystem imports
@@ -736,6 +808,15 @@ from flext_tap_oracle_wms import *
 # Standard Singer tap structure
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 from collections.abc import Iterator
 
 
@@ -756,7 +837,7 @@ class FlextTapOracleWmsStream(RESTStream):
     """Stream following Singer RESTStream pattern."""
 
     @property
-    def schema(self) -> m.Dict:  # Required property
+    def schema(self) -> p.Dict:  # Required property
         """JSON schema for stream records."""
 
     def get_records(self, context) -> Iterator:  # Required method
@@ -768,6 +849,15 @@ class FlextTapOracleWmsStream(RESTStream):
 ```python
 # Configuration using FlextSettings
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_core import t
 
@@ -799,6 +889,15 @@ self.logger.info("Starting extraction", entity=entity_name)
 ```python
 # Application Layer - orchestrates business logic
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 
 class FlextTapOracleWms:
@@ -929,6 +1028,15 @@ tests/
 # Test organization follows module responsibility
 from __future__ import annotations
 
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
+
 
 def test_tap_discover_streams():
     """Test main tap stream discovery functionality."""
@@ -952,7 +1060,7 @@ def test_entity_discovery():
 
 ### **Module Quality Metrics**
 
-```{.python .notest}
+```python
 # Target metrics per module
 Lines per Module: 50-200 (max 200)
 Cyclomatic Complexity: <10 per function
@@ -971,6 +1079,15 @@ make security             # Bandit + pip-audit
 
 ```python
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from flext_core import t
 
@@ -1006,6 +1123,15 @@ def discover_entities(self) -> p.Result[t.StringList]:
 ```text
 # ✅ Use FLEXT patterns consistently
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_cli import u
 from flext_core import FlextSettings
 
@@ -1028,6 +1154,15 @@ custom_logger = logging.getLogger()          # Use u.fetch_logger()
 ```text
 # ✅ Use ecosystem libraries
 from __future__ import annotations
+
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 from flext_oracle_wms import FlextOracleWmsClient, WMSEntityMetadata
 from flext_meltano import Tap, Stream
 

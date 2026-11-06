@@ -15,16 +15,13 @@ from __future__ import annotations
 
 from typing import Final
 
-import pytest
-
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import c, t, tm
-from tests.helpers import TestsFlextTapOracleWmsHelpersMixin
+from tests import TestsFlextTapOracleWmsHelpers, c, tm, u
 
 UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "tap-wms-unit-" + "3k7q"
 
 
-class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpersMixin):
+class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
     """Test configuration class."""
 
     def test_minimal_config(self) -> None:
@@ -84,9 +81,9 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpersMixin):
         tm.that(namespace.api_version, eq="v11")
         tm.that(namespace.timeout, eq=60)
         tm.that(namespace.page_size, eq=500)
-        tm.that(namespace.verify_ssl, eq=False)
+        tm.fail(namespace.verify_ssl)
         tm.that(namespace.include_entities, eq=["inventory", "orders"])
-        tm.that(namespace.enable_rate_limiting, eq=False)
+        tm.fail(namespace.enable_rate_limiting)
         tm.that(namespace.log_level, eq="DEBUG")
         tm.that(namespace.max_parallel_streams, eq=5)
 
@@ -101,7 +98,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpersMixin):
     @staticmethod
     def test_entity_list_validation() -> None:
         """Test entity list validation rejects duplicates at construction."""
-        with pytest.raises(c.ValidationError) as exc_info:
+        with u.Tests.raises(c.ValidationError) as exc_info:
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
@@ -119,14 +116,14 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpersMixin):
             "end_date": "2024-12-31T23:59:59Z",
         })
         tm.that(settings.TapOracleWms.start_date, eq="2024-01-01T00:00:00Z")
-        with pytest.raises(c.ValidationError) as exc_info:
+        with u.Tests.raises(c.ValidationError) as exc_info:
             self._tap_settings({"start_date": "01/01/2024"})
         tm.that(str(exc_info.value), has="Invalid date format")
 
     @staticmethod
     def test_numeric_validation() -> None:
         """Test numeric field validation."""
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
@@ -135,7 +132,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpersMixin):
                     "page_size": 0,
                 },
             })
-        with pytest.raises(c.ValidationError):
+        with u.Tests.raises(c.ValidationError):
             FlextTapOracleWmsSettings.model_validate({
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
@@ -186,14 +183,16 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpersMixin):
             ' "orders": {"customer_id": "cust_id"}}'
         )
         namespace.ignored_columns = ["internal_id"]
-        payload = namespace.model_dump(mode="json")
-        tm.that(payload["page_size"], eq=200)
-        tm.that(payload["start_date"], eq="2024-01-01T00:00:00Z")
-        decoded_mappings = t.json_dict_adapter().validate_json(
-            payload["column_mappings"],
+        tm.that(namespace.page_size, eq=200)
+        tm.that(namespace.start_date, eq="2024-01-01T00:00:00Z")
+        tm.that(
+            namespace.column_mappings,
+            eq=(
+                '{"inventory": {"old_name": "new_name"},'
+                ' "orders": {"customer_id": "cust_id"}}'
+            ),
         )
-        tm.that(decoded_mappings["inventory"], eq={"old_name": "new_name"})
-        tm.that(payload["ignored_columns"], eq=["internal_id"])
+        tm.that(namespace.ignored_columns, eq=["internal_id"])
 
     @staticmethod
     def test_config_mutability_with_assignment() -> None:

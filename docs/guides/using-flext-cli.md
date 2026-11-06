@@ -12,6 +12,8 @@
 - [Settings](#settings)
 - [Model-driven command](#model-driven-command)
 - [Testing a command](#testing-a-command)
+- [Managed process communication](#managed-process-communication)
+- [Guarded directory materialization](#guarded-directory-materialization)
 - [Good practices](#good-practices)
 - [Bad practices](#bad-practices)
 - [Related](#related)
@@ -47,13 +49,13 @@ Import the aliases used by each example from the public `flext_cli` package root
 
 ## Settings
 
-Import the existing settings class; do not redefine it:
+Import the existing settings class; without overrides, `fetch_global()` returns
+its shared per-class singleton:
 
 ```python
 from flext_cli import FlextCliSettings
 
 settings = FlextCliSettings.fetch_global()
-assert settings is FlextCliSettings.fetch_global()
 ```
 
 If you need a project-specific subclass, extend `FlextSettings` (or `FlextCliSettings`)
@@ -64,6 +66,8 @@ from flext_core import FlextSettings, m
 
 
 class FlextApiSettings(FlextSettings):
+    """API settings read from ``FLEXT_API_*`` environment variables."""
+
     model_config = m.SettingsConfigDict(env_prefix="FLEXT_API_", extra="ignore")
 ```
 
@@ -78,11 +82,19 @@ settings = FlextCliSettings.fetch_global()
 
 
 class GreetInput(m.BaseModel):
+    """Greeting command input."""
+
     name: str
     shout: bool = False
 
 
 def greet_handler(model: GreetInput) -> t.JsonValue:
+    """Build the greeting payload for one input model.
+
+    Returns:
+        A JSON payload carrying the greeting message.
+
+    """
     message = f"Hello, {model.name}!"
     if model.shout:
         message = message.upper()
@@ -90,7 +102,9 @@ def greet_handler(model: GreetInput) -> t.JsonValue:
 
 
 command = FlextCliCli.model_command(
-    model_cls=GreetInput, handler=greet_handler, settings=settings
+    model_cls=GreetInput,
+    handler=greet_handler,
+    settings=settings,
 )
 cli = FlextCliCli()
 app = cli.create_app_with_common_params(name="greeting", help_text="Greeting commands")
@@ -110,31 +124,71 @@ directly. This independent example constructs and invokes a real model-backed co
 handlers return their value but do not automatically print it.
 
 ```python
-from flext_cli import FlextCliCli, m
+from tests import c, m, tm
+
+from flext_cli import FlextCliCli
 
 
 class GreetInput(m.BaseModel):
+    """Greeting command input."""
+
     name: str
 
 
 def greet_handler(model: GreetInput) -> str:
+    """Return the greeting for one input model."""
     return f"Hello, {model.name}!"
 
 
 def test_greet_command() -> None:
+    """The registered greeting command exits successfully."""
     cli = FlextCliCli()
     app = cli.create_app_with_common_params(
-        name="greeting", help_text="Greeting commands"
+        name="greeting",
+        help_text="Greeting commands",
     )
     command = cli.model_command(model_cls=GreetInput, handler=greet_handler)
     cli.register_command(
-        app, name="greet", help_text="Build a greeting", command=command
+        app,
+        name="greet",
+        help_text="Build a greeting",
+        command=command,
     )
     invocation = cli.invoke_app(app, args=["greet", "--name", "Ada"])
-    assert invocation.success
-    assert invocation.value.exit_code == 0
+    tm.ok(invocation.success)
+    tm.that(invocation.value.exit_code, eq=c.Cli.EXIT_CODE_SUCCESS)
     assert greet_handler(GreetInput(name="Ada")) == "Hello, Ada!"
 ```
+
+## Managed process communication
+
+The existing `u.Cli.process_start` owner returns `p.Cli.ManagedProcess`; it remains
+responsible for spawning, captured streams and child lifecycle. Its
+`stdin_write(data, timeout=...)` contract sends the complete byte message without
+closing stdin or starting another process. The default deadline comes from Core's
+`c.DEFAULT_TIMEOUT_SECONDS`; a consumer may supply its remaining operation budget.
+An absent input stream, an exited child, an invalid deadline or incomplete delivery
+returns a failure before dependent work. Native I/O failures retain their original
+exception and the number of bytes already sent. `stdout_read_until` reads the reply
+on that same handle, and the caller still owns termination and reaping.
+
+This communication contract supports the AI Hub JSONC document session: one SDK
+parse retains its tree while Python composes the declared changes, then the same
+child applies the complete batch. It does not authorize another process runner,
+parser, hidden retry or unverified success. Qualification requires real request/reply
+and failure evidence; this contract alone is not runtime proof.
+
+## Guarded directory materialization
+
+Directory creation consumes the original `m.Cli.AtomicDirectoryChainPlan`; it never
+re-elects a parent after an effect. The native creator retains successful creation
+receipts in the caller's optional progress collection and leaves those directories
+in place if a later native operation fails. Its original exception retains those
+receipts as causal evidence. The existing `atomic_create_directory_chain_guarded`
+Result boundary also exposes the created receipts in structured failure data.
+Neither path restores a prior image or compensates published directories. Consumers
+use the retained state to diagnose and plan forward, rather than copying the chain
+algorithm into their own application.
 
 ## Good practices
 
@@ -154,14 +208,17 @@ from flext_cli import m
 
 
 class GreetInput(m.BaseModel):
+    """Greeting command input."""
+
     name: str
 
 
 def greet_handler(model: GreetInput) -> str:
+    """Return the greeting for one input model."""
     return f"Hello, {model.name}!"
 
 
-assert greet_handler(GreetInput(name="Ada")) == "Hello, Ada!"
+greeting = greet_handler(GreetInput(name="Ada"))  # "Hello, Ada!"
 ```
 
 ## Related

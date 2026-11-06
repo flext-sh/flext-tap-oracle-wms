@@ -1,6 +1,6 @@
 """Shared tap-oracle-wms test helpers extracted from e2e/integration tests.
 
-Provides the ``TestsFlextTapOracleWmsHelpersMixin`` that centralises the
+Provides the ``TestsFlextTapOracleWmsHelpers`` that centralises the
 catalog-discovery and error-recovery patterns previously duplicated across
 ``test_e2e.py``, ``test_functional.py``, ``test_streams_functional.py``,
 and ``test_wms.py``.
@@ -11,20 +11,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 
 import pytest
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.streams import FlextTapOracleWmsStreams
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import t, tm
+from flext_tap_oracle_wms import (
+    FlextTapOracleWms,
+    FlextTapOracleWmsSettings,
+    FlextTapOracleWmsStreams,
+)
+from tests import p, t, tm, u
 
-if TYPE_CHECKING:
-    from tests import m
 
-
-class TestsFlextTapOracleWmsHelpersMixin:
+class TestsFlextTapOracleWmsHelpers:
     """Shared helpers for Oracle WMS tap integration/e2e tests.
 
     Centralises the ``_catalog`` / ``_schema`` discovery helpers, the
@@ -42,7 +41,7 @@ class TestsFlextTapOracleWmsHelpersMixin:
         ImportError,
     )
 
-    _TAP_CONNECTION_ERROR_KEYWORDS: ClassVar[t.VariadicTuple[str]] = (
+    _TAP_CONNECTION_ERROR_KEYWORDS: ClassVar[tuple[str, ...]] = (
         "authentication",
         "authorization",
         "credentials",
@@ -57,22 +56,22 @@ class TestsFlextTapOracleWmsHelpersMixin:
     }
 
     @staticmethod
-    def _catalog(tap: FlextTapOracleWms) -> m.Meltano.SingerCatalog:
+    def _catalog(tap: FlextTapOracleWms) -> p.Meltano.SingerCatalog:
         """Return the typed discovered catalog used by runtime code."""
         result = tap.discovercatalog_typed()
         tm.ok(result)
-        catalog: m.Meltano.SingerCatalog = result.unwrap()
+        catalog: p.Meltano.SingerCatalog = result.unwrap()
         return catalog
 
     @staticmethod
-    def _schema(stream: m.Meltano.SingerCatalogEntry) -> t.JsonMapping:
+    def _schema(stream: p.Meltano.SingerCatalogEntry) -> t.JsonMapping:
         """Normalize model schema payload to the runtime stream contract.
 
         Returns:
             The resulting ``t.JsonMapping``.
 
         """
-        schema: t.JsonMapping = t.CONTAINER_VALUE_MAP_ADAPTER.validate_python(
+        schema: t.JsonMapping = u.json_mapping_adapter().validate_python(
             stream.schema_definition,
         )
         return schema
@@ -90,7 +89,7 @@ class TestsFlextTapOracleWmsHelpersMixin:
         catalog = self._catalog(tap)
         streams = catalog.streams
         if not streams:
-            pytest.skip("No streams discovered")
+            u.Tests.skip("No streams discovered")
         stream_config = streams[0]
         return FlextTapOracleWmsStreams.WmsStream(
             tap=tap,
@@ -144,3 +143,6 @@ class TestsFlextTapOracleWmsHelpersMixin:
             if isinstance(password, t.SecretStr)
             else password
         )
+
+
+__all__ = ["TestsFlextTapOracleWmsHelpers"]

@@ -7,19 +7,17 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
+from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from flext_tests import u
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings, m
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import c, m, p, u
 
 if TYPE_CHECKING:
     from collections.abc import Generator
-
-    from tests import t
 
 
 _ORACLE_WMS_REQUIRED_VARS = (
@@ -77,7 +75,7 @@ def sample_config() -> FlextTapOracleWmsSettings:
 
 
 @pytest.fixture
-def real_config(oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
+def real_config(*, oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
     """Real configuration resolved from the canonical FLEXT_TAP_ORACLE_WMS_* env.
 
     The settings model declares ``env_prefix="FLEXT_TAP_ORACLE_WMS_"``, so
@@ -94,18 +92,18 @@ def real_config(oracle_wms_available: bool) -> FlextTapOracleWmsSettings:
 
 
 @pytest.fixture
-def sample_catalog() -> m.Meltano.SingerCatalog:
+def sample_catalog() -> p.Meltano.SingerCatalog:
     """Build a real Singer catalog model so tap construction skips discovery.
 
     Returns:
         The resulting ``m.Meltano.SingerCatalog``.
 
     """
-    catalog: m.Meltano.SingerCatalog = m.Meltano.SingerCatalog.model_validate({
+    catalog: p.Meltano.SingerCatalog = m.Meltano.SingerCatalog.model_validate({
         "streams": [
             {
                 "tap_stream_id": "inventory",
-                "stream": "inventory",
+                c.ProcessingMode.STREAM: "inventory",
                 "schema": {"type": "object"},
                 "metadata": [],
                 "key_properties": ["id"],
@@ -118,7 +116,7 @@ def sample_catalog() -> m.Meltano.SingerCatalog:
 @pytest.fixture
 def tap_instance(
     sample_config: FlextTapOracleWmsSettings,
-    sample_catalog: m.Meltano.SingerCatalog,
+    sample_catalog: p.Meltano.SingerCatalog,
 ) -> FlextTapOracleWms:
     """Create a tap from typed settings + a typed catalog (no WMS discovery).
 
@@ -131,6 +129,7 @@ def tap_instance(
 
 @pytest.fixture
 def real_tap_instance(
+    *,
     real_config: FlextTapOracleWmsSettings,
     oracle_wms_available: bool,
 ) -> FlextTapOracleWms:
@@ -147,7 +146,7 @@ def real_tap_instance(
 
 def pytest_collection_modifyitems(
     config: pytest.Config,
-    items: t.SequenceOf[pytest.Item],
+    items: Sequence[pytest.Item],
 ) -> None:
     """Declare connectivity by fixture dependency, never integration location."""
     _ = config

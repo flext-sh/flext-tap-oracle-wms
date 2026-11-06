@@ -17,14 +17,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from flext_tap_oracle_wms.tap import FlextTapOracleWms
-from tests import tm
-
-if TYPE_CHECKING:
-    from flext_tap_oracle_wms import m
+from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
+from tests import p, tm
 
 
 class TestsFlextTapOracleWmsTap:
@@ -33,7 +27,7 @@ class TestsFlextTapOracleWmsTap:
     @staticmethod
     def test_tap_initialization_with_config(
         sample_config: FlextTapOracleWmsSettings,
-        sample_catalog: m.Meltano.SingerCatalog,
+        sample_catalog: p.Meltano.SingerCatalog,
     ) -> None:
         """Tap stores validated settings and builds from a typed catalog."""
         tap = FlextTapOracleWms.from_settings(sample_config, catalog=sample_catalog)
@@ -41,7 +35,7 @@ class TestsFlextTapOracleWmsTap:
 
     @staticmethod
     def test_tap_initialization_normalizes_settings(
-        sample_catalog: m.Meltano.SingerCatalog,
+        sample_catalog: p.Meltano.SingerCatalog,
     ) -> None:
         """Tap normalizes settings values from a typed settings model."""
         settings = FlextTapOracleWmsSettings.model_validate({
@@ -69,13 +63,12 @@ class TestsFlextTapOracleWmsTap:
         """Validation method exposes non-secret effective settings values."""
         result = tap_instance.validate_configuration()
         tm.ok(result)
-        value = result.value
-        assert isinstance(value, dict)
+        value = tm.instance(result.value, dict)
         tm.that(value["base_url"], eq=tap_instance.flext_config.TapOracleWms.base_url)
         tm.that(value, lacks="password")
 
     @staticmethod
-    def test_error_handling(sample_catalog: m.Meltano.SingerCatalog) -> None:
+    def test_error_handling(sample_catalog: p.Meltano.SingerCatalog) -> None:
         """Non-secret fields are still exposed for an unreachable endpoint."""
         bad_settings = FlextTapOracleWmsSettings.model_validate({
             "TapOracleWms": {
@@ -87,8 +80,7 @@ class TestsFlextTapOracleWmsTap:
         tap = FlextTapOracleWms.from_settings(bad_settings, catalog=sample_catalog)
         result = tap.validate_configuration()
         tm.ok(result)
-        value = result.value
-        assert isinstance(value, dict)
+        value = tm.instance(result.value, dict)
         tm.that(value["base_url"], eq=bad_settings.TapOracleWms.base_url)
         tm.that(value, lacks="username")
         tm.that(value, lacks="password")

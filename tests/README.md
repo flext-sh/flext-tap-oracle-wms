@@ -187,7 +187,7 @@ def test_entity_discovery(mock_wms_client):
     """Test entity discovery with mocked client."""
     discovery = EntityDiscovery(mock_wms_client)
     result = discovery.discover_entities()
-    assert result.success
+    tm.ok(result.success)
     assert "item" in result.data
 ```
 
@@ -255,7 +255,7 @@ def mock_flext_wms_client():
         client_instance.get_available_entities.return_value = ["item", "inventory"]
         client_instance.get_entity_metadata.return_value = Mock()
         client_instance.fetch_entity_data.return_value = iter([
-            {"id": "1", "name": "test"}
+            {"id": c.ParserBooleanToken.ONE, "name": "test"}
         ])
 
         yield client_instance
