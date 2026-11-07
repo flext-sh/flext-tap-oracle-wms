@@ -210,7 +210,7 @@ tests/unit/test_discovery.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup
 
 #### Working Test Structure
 
-```
+```text
 tests/
 ├── unit/                           # Unit tests (mostly working)
 │   ├── test_auth_comprehensive.py
@@ -228,7 +228,7 @@ tests/
 
 ### Target Test Architecture
 
-```
+```text
 tests/
 ├── unit/                          # Unit tests (100% coverage)
 │   ├── test_tap.py               # Main tap functionality

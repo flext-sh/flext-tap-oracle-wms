@@ -54,7 +54,7 @@
 
 **Arquivos Problemáticos**:
 
-```
+```text
 src/flext_tap_oracle_wms/tap.py                 - Classe tap principal inchada
 src/flext_tap_oracle_wms/streams.py             - Stream super-complexa
 src/flext_tap_oracle_wms/config_mapper.py       - Camada de mapeamento desnecessária
@@ -80,7 +80,7 @@ src/flext_tap_oracle_wms/entity_discovery.py    - Terceiro sistema de discovery
 
 **Testes Desabilitados**:
 
-```
+```text
 tests/conftest.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup
 tests/e2e/test_wms_e2e.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup
 tests/integration/test_simple_integration.py.DISABLED_USES_FORBIDDEN_SAMPLES.backup

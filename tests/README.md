@@ -61,7 +61,7 @@ dependencies
 
 ## Test Structure
 
-```
+```text
 tests/
 ├── unit/                           # Unit tests (mostly working)
 │   ├── test_auth_comprehensive.py      # Authentication testing
@@ -219,7 +219,7 @@ workflows
 
 ### Required Test Data Structure
 
-```
+```text
 tests/
 ├── fixtures/
 │   ├── wms_responses/

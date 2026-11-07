@@ -284,7 +284,7 @@ class MockWMSServer:
 
 ### **Test Data Fixtures**
 
-```
+```text
 tests/fixtures/integration/
 ├── wms_responses/
 │   ├── entities_list.json          # Available entities

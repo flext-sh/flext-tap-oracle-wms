@@ -231,7 +231,7 @@ class E2EMockWMSEnvironment:
 
 ### **Test Data Management**
 
-```
+```text
 tests/fixtures/e2e/
 ├── datasets/
 │   ├── small_dataset/              # Quick E2E validation
