@@ -60,7 +60,7 @@ analysis of the current implementation and target architecture after refactoring
 
 ### Current Component Structure
 
-```
+```text
 src/flext_tap_oracle_wms/
 ├── tap.py                      # Main tap implementation (over-complex)
 ├── streams.py                  # Stream definitions (over-engineered)
@@ -99,7 +99,7 @@ src/flext_tap_oracle_wms/
 
 ### Simplified Component Structure
 
-```
+```text
 src/flext_tap_oracle_wms/
 ├── tap.py                      # Main tap class (Singer SDK compliant)
 ├── streams.py                  # Stream definitions (simplified)
