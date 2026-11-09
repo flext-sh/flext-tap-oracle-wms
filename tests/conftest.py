@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import c, m, p, u
+from tests import c, m, p
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -31,11 +31,10 @@ _ORACLE_WMS_REQUIRED_VARS = (
 def oracle_wms_environment() -> None:
     """Load only an explicitly configured, reachable local test environment."""
     env_file = Path(__file__).parent.parent / ".env"
-    u.Tests.skip_if_no_external_environment(
-        _ORACLE_WMS_REQUIRED_VARS,
-        env_file,
-        url_var=_ORACLE_WMS_REQUIRED_VARS[0],
-    )
+    if env_file.is_file():
+        from dotenv import load_dotenv
+
+        load_dotenv(env_file)
 
 
 @pytest.fixture(scope="session")
