@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+from dotenv import load_dotenv
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 from tests import c, m, p
@@ -32,8 +33,6 @@ def oracle_wms_environment() -> None:
     """Load only an explicitly configured, reachable local test environment."""
     env_file = Path(__file__).parent.parent / ".env"
     if env_file.is_file():
-        from dotenv import load_dotenv
-
         load_dotenv(env_file)
 
 
