@@ -231,32 +231,32 @@ url = "https://github.com/microsoft/waza/releases/download/v0.39.1/waza-windows-
 url_api = "https://api.github.com/repos/microsoft/waza/releases/assets/679305622"
 
 [[tools."github:qltysh/qlty"]]
-version = "0.662.0"
+version = "0.665.0"
 backend = "github:qltysh/qlty"
 specifiers = ["latest"]
 
 [tools."github:qltysh/qlty"."platforms.linux-x64"]
-checksum = "sha256:4cb4a4afe5c043897dac9a5135b2da599fc9cd6cd0e30040316b4856ce6a676f"
-url = "https://github.com/qltysh/qlty/releases/download/v0.662.0/qlty-x86_64-unknown-linux-gnu.tar.xz"
-url_api = "https://api.github.com/repos/qltysh/qlty/releases/assets/667506629"
+checksum = "sha256:027ba63ba8c27a01a7882c44af9e5e9688f582786d99a832cf40573b02a3bcfe"
+url = "https://github.com/qltysh/qlty/releases/download/v0.665.0/qlty-x86_64-unknown-linux-gnu.tar.xz"
+url_api = "https://api.github.com/repos/qltysh/qlty/releases/assets/690059822"
 provenance = "github-attestations"
 
 [tools."github:qltysh/qlty"."platforms.linux-x64-musl"]
-checksum = "sha256:49eb3539abe3d78f77a57f0e78b0d638cd76d880ddd807be9a1a7bad396fd1a7"
-url = "https://github.com/qltysh/qlty/releases/download/v0.662.0/qlty-x86_64-unknown-linux-musl.tar.xz"
-url_api = "https://api.github.com/repos/qltysh/qlty/releases/assets/667506652"
+checksum = "sha256:43b3a2bbff73a0d317bf204bb910c5039f4aea998340c86d389ab8db4a39fe04"
+url = "https://github.com/qltysh/qlty/releases/download/v0.665.0/qlty-x86_64-unknown-linux-musl.tar.xz"
+url_api = "https://api.github.com/repos/qltysh/qlty/releases/assets/690059832"
 provenance = "github-attestations"
 
 [tools."github:qltysh/qlty"."platforms.macos-arm64"]
-checksum = "sha256:1477593c6c768454394e955eb830fe1e01662b3feffae534939811885d92e4ca"
-url = "https://github.com/qltysh/qlty/releases/download/v0.662.0/qlty-aarch64-apple-darwin.tar.xz"
-url_api = "https://api.github.com/repos/qltysh/qlty/releases/assets/667506542"
+checksum = "sha256:5016c299c40c1d6dbe10f104cc8dd1d396ff80def6e6f466b7345e0001c487fb"
+url = "https://github.com/qltysh/qlty/releases/download/v0.665.0/qlty-aarch64-apple-darwin.tar.xz"
+url_api = "https://api.github.com/repos/qltysh/qlty/releases/assets/690059751"
 provenance = "github-attestations"
 
 [tools."github:qltysh/qlty"."platforms.windows-x64"]
-checksum = "sha256:4b51e3242db75c1afe6a54aa0b9d03452d822e630b49d2fce4b8146755071860"
-url = "https://github.com/qltysh/qlty/releases/download/v0.662.0/qlty-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/qltysh/qlty/releases/assets/667506606"
+checksum = "sha256:29f9dc7d4212b17bc2a3c6c6677831a0a9f35ed98e1cc6581d01c86dc25fc2ca"
+url = "https://github.com/qltysh/qlty/releases/download/v0.665.0/qlty-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/qltysh/qlty/releases/assets/690059806"
 provenance = "github-attestations"
 
 [[tools.gitleaks]]
