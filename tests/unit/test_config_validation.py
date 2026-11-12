@@ -49,7 +49,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
                 "page_size": 500,
             },
         })
@@ -62,7 +62,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
                 "include_entities": ["inventory", "locations"],
                 "exclude_entities": ["orders"],
             },
@@ -78,7 +78,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
                     "username": "user",
-                    "password": "pass",
+                    "password": c.TapOracleWms.Tests.CREDENTIAL,
                     "exclude_entities": ["orders", "orders"],
                 },
             })
@@ -100,7 +100,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
                     "username": "user",
-                    "password": "pass",
+                    "password": c.TapOracleWms.Tests.CREDENTIAL,
                     "end_date": "31/12/2024",
                 },
             })
@@ -112,7 +112,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
             },
         })
         data = settings.TapOracleWms.model_dump()
@@ -127,7 +127,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
                 "page_size": 50,
                 "column_mappings": '{"inventory": {"old_col": "new_col"}}',
                 "ignored_columns": ["internal_id"],
@@ -149,7 +149,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
                 "enable_parallel_extraction": True,
                 "max_parallel_streams": 6,
                 "enable_rate_limiting": True,
@@ -167,7 +167,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
                 "verify_ssl": False,
                 "ssl_cert_path": "/path/to/cert.pem",
             },
@@ -182,7 +182,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
                 "enable_rate_limiting": True,
                 "max_requests_per_minute": 120,
             },

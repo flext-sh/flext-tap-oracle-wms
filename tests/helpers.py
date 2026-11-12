@@ -20,7 +20,7 @@ from flext_tap_oracle_wms import (
     FlextTapOracleWmsSettings,
     FlextTapOracleWmsStreams,
 )
-from tests import p, t, tm, u
+from tests import c, p, t, tm, u
 
 
 class TestsFlextTapOracleWmsHelpers:
@@ -52,7 +52,7 @@ class TestsFlextTapOracleWmsHelpers:
     _TAP_BASE_SETTINGS: ClassVar[t.JsonMapping] = {
         "base_url": "https://wms.example.com",
         "username": "user",
-        "password": "pass",
+        "password": c.TapOracleWms.Tests.CREDENTIAL,
     }
 
     @staticmethod

@@ -13,12 +13,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Final
-
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
 from tests import TestsFlextTapOracleWmsHelpers, c, tm, u
-
-UNIT_TEST_CREDENTIAL_TOKEN: Final[str] = "tap-wms-unit-" + "3k7q"
 
 
 class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
@@ -28,12 +24,12 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
         """Test creating settings with minimal fields."""
         settings = self._tap_settings({
             "username": "test_user",
-            "password": UNIT_TEST_CREDENTIAL_TOKEN,
+            "password": c.TapOracleWms.Tests.CREDENTIAL,
         })
         namespace = settings.TapOracleWms
         tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
         tm.that(namespace.username, eq="test_user")
-        tm.that(self._password_value(settings), eq=UNIT_TEST_CREDENTIAL_TOKEN)
+        tm.that(self._password_value(settings), eq=c.TapOracleWms.Tests.CREDENTIAL)
         defaults = type(namespace)()
         tm.that(namespace.api_version, eq=defaults.api_version)
         tm.that(namespace.timeout, eq=defaults.timeout)
@@ -48,7 +44,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://prod.wms.example.com",
                 "username": "prod_user",
-                "password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-prod",
+                "password": f"{c.TapOracleWms.Tests.CREDENTIAL}-prod",
                 "api_version": "v11",
                 "timeout": 60,
                 "max_retries": 5,
@@ -103,7 +99,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
                     "username": "user",
-                    "password": "pass",
+                    "password": c.TapOracleWms.Tests.CREDENTIAL,
                     "include_entities": ["inventory", "orders", "inventory"],
                 },
             })
@@ -128,7 +124,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
                     "username": "user",
-                    "password": "pass",
+                    "password": c.TapOracleWms.Tests.CREDENTIAL,
                     "page_size": 0,
                 },
             })
@@ -137,7 +133,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
                     "username": "user",
-                    "password": "pass",
+                    "password": c.TapOracleWms.Tests.CREDENTIAL,
                     "timeout": 400,
                 },
             })
@@ -149,7 +145,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
                 "api_version": "v11",
                 "timeout": 45,
                 "user_agent": "TestAgent/1.0",
@@ -171,7 +167,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
                 "page_size": 200,
                 "start_date": "2024-01-01T00:00:00Z",
             },
@@ -201,7 +197,7 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": "pass",
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
             },
         })
         settings.TapOracleWms.base_url = "https://new.example.com"
@@ -209,7 +205,6 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
 
     def test_password_hiding(self) -> None:
         """Test password field is stored (str | t.SecretStr union)."""
-        settings = self._tap_settings({
-            "password": f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide",
-        })
-        tm.that(self._password_value(settings), eq=f"{UNIT_TEST_CREDENTIAL_TOKEN}-hide")
+        hidden_value = f"{c.TapOracleWms.Tests.CREDENTIAL}-hide"
+        settings = self._tap_settings({"password": hidden_value})
+        tm.that(self._password_value(settings), eq=hidden_value)
