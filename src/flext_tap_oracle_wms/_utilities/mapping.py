@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from flext_tap_oracle_wms import c, t, u
+from flext_meltano import u
+
+from flext_tap_oracle_wms import c, t
 
 
 class FlextTapOracleWmsUtilitiesConversion:
