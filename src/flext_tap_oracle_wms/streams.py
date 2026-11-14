@@ -196,10 +196,8 @@ class FlextTapOracleWmsStreams:
                 The resulting ``t.JsonValue``.
 
             """
-            if isinstance(value, c.PRIMITIVES_TYPES):
+            if value is None or isinstance(value, c.PRIMITIVES_TYPES):
                 return value
-            if value is None:
-                return None
             conv = u.TapOracleWms.MappingConversion
             list_value = conv.as_list(
                 value,
@@ -215,30 +213,7 @@ class FlextTapOracleWmsStreams:
                 map_adapter=t.TapOracleWms.CONTAINER_VALUE_MAP_ADAPTER,
                 error_cls=e.ValidationError,
             )
-            if map_value is not None:
-                return str(dict(map_value))
-            if isinstance(value, m.BaseModel | Path):
-                return str(value)
-            return str(value)
-
-        @staticmethod
-        def normalize_scalar_value(value: t.JsonValue) -> t.JsonValue:
-            """Normalize scalar values that may include non-JSON runtime scalars.
-
-            Args:
-                value: Runtime value to normalize into a JSON-safe scalar.
-
-            Returns:
-                The resulting ``t.JsonValue``.
-
-            """
-            if isinstance(value, c.PRIMITIVES_TYPES):
-                return value
-            if value is None:
-                return None
-            if isinstance(value, (list, dict)):
-                return FlextTapOracleWmsStreams.WmsStream.normalize_json_value(value)
-            return str(value)
+            return str(value if map_value is None else dict(map_value))
 
         @override
         def get_records(
@@ -430,7 +405,7 @@ class FlextTapOracleWmsStreams:
             conv = u.TapOracleWms.MappingConversion
             for record in records:
                 record_dict = u.json_dict_adapter().validate_python({
-                    key: self.normalize_scalar_value(value)
+                    key: self.normalize_json_value(value)
                     for key, value in record.items()
                 })
                 processed_map = conv.as_map(
@@ -442,7 +417,7 @@ class FlextTapOracleWmsStreams:
                 if processed_map is None:
                     continue
                 json_row = u.json_dict_adapter().validate_python({
-                    k: self.normalize_scalar_value(v) for k, v in processed_map.items()
+                    k: self.normalize_json_value(v) for k, v in processed_map.items()
                 })
                 yield self.post_process(json_row, context)
 
