@@ -174,7 +174,6 @@ integration patterns.
 ### Project Documentation
 
 - **[../index.md](../index.md)** - Complete documentation overview
-- **[../TODO.md](../TODO.md)** - Critical issues and refactoring plan
 
 ### FLEXT Ecosystem
 

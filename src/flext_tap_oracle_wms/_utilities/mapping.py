@@ -42,22 +42,18 @@ class FlextTapOracleWmsUtilitiesConversion:
             """
             if not isinstance(value, Mapping):
                 return None
+            source: t.JsonMapping = value
             if map_adapter is not None:
                 try:
-                    validated_map = map_adapter.validate_python(value)
+                    source = map_adapter.validate_python(value)
                 except c.ValidationError as exc:
-                    if error_cls is not None:
-                        msg = f"Validation failed for mapping: {exc}"
-                        raise error_cls(msg) from exc
-                    return None
-                if normalizer is not None:
-                    return {
-                        key: normalizer(item) for key, item in validated_map.items()
-                    }
-                return u.json_dict_adapter().validate_python(validated_map)
-            if normalizer is not None:
-                return {key: normalizer(item) for key, item in value.items()}
-            return u.json_dict_adapter().validate_python(value)
+                    if error_cls is None:
+                        return None
+                    msg = f"Validation failed for mapping: {exc}"
+                    raise error_cls(msg) from exc
+            if normalizer is None:
+                return u.json_dict_adapter().validate_python(source)
+            return {key: normalizer(item) for key, item in source.items()}
 
         @staticmethod
         def as_list(
@@ -82,21 +78,18 @@ class FlextTapOracleWmsUtilitiesConversion:
             """
             if not isinstance(value, list):
                 return None
+            items: t.JsonList = [str(item) for item in value]
             if list_adapter is not None:
                 try:
-                    validated_seq = list_adapter.validate_python(value)
+                    items = list(list_adapter.validate_python(value))
                 except c.ValidationError as exc:
-                    if error_cls is not None:
-                        msg = f"Validation failed for list: {exc}"
-                        raise error_cls(msg) from exc
-                    return None
-                if normalizer is not None:
-                    return [normalizer(item) for item in validated_seq]
-                return list(validated_seq)
-            if normalizer is not None:
-                return [normalizer(str(item)) for item in value]
-            coerced_list: t.JsonValueList = [str(item) for item in value]
-            return coerced_list
+                    if error_cls is None:
+                        return None
+                    msg = f"Validation failed for list: {exc}"
+                    raise error_cls(msg) from exc
+            if normalizer is None:
+                return items
+            return [normalizer(item) for item in items]
 
 
 __all__: list[str] = ["FlextTapOracleWmsUtilitiesConversion"]

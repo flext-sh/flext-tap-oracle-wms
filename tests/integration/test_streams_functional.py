@@ -165,7 +165,7 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpers):
             page_size,
             gte=1,
             lte=_ORACLE_WMS_MAX_LIMIT,
-            msg=f"Invalid limit: {page_size}",
+            msg=f"Invalid limit: {page_size!r}",
         )
         if "page_mode" in params:
             page_mode = params["page_mode"]
@@ -180,33 +180,10 @@ class TestsFlextTapOracleWmsStreamsFunctional(TestsFlextTapOracleWmsHelpers):
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test incremental filtering with timestamps."""
-        catalog = self._catalog(real_tap_instance)
-        streams = catalog.streams
-        incremental_stream = None
-        for stream_config in streams:
-            stream = FlextTapOracleWmsStreams.WmsStream(
-                tap=real_tap_instance,
-                name=stream_config.tap_stream_id,
-                schema=self._schema(stream_config),
-            )
-            if stream.replication_method == "INCREMENTAL" and stream.replication_key:
-                incremental_stream = stream
-                break
-        if not incremental_stream:
-            u.Tests.skip("No incremental streams found")
-        context = {"replication_key_value": "2024-01-01T00:00:00Z"}
-        params = incremental_stream.build_operation_kwargs(page=1, context=context)
-        kwargs_filter = params.get("filter")
-        tm.that(
-            kwargs_filter,
-            truth=True,
-            msg=f"No filter found in params: {list(params.keys())}",
+        filter_text = self._incremental_filter(
+            real_tap_instance,
+            "2024-01-01T00:00:00Z",
         )
-        tm.that(
-            ">=" in str(kwargs_filter) or ">" in str(kwargs_filter),
-            msg=(f"No timestamp filters found in params: {list(params.keys())}"),
-        )
-        filter_text = str(kwargs_filter)
         tm.that(filter_text, has="T")
         tm.that(
             "Z" in filter_text or "+" in filter_text,

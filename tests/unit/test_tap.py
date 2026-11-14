@@ -42,12 +42,14 @@ class TestsFlextTapOracleWmsTap:
             "TapOracleWms": {
                 "base_url": "https://test.wms.example.com",
                 "username": "test_user",
-                "password": "p" + "4" * 12,
+                "password": c.TapOracleWms.Tests.CREDENTIAL,
             },
         })
         tap = FlextTapOracleWms.from_settings(settings, catalog=sample_catalog)
         tm.that(tap.flext_config.TapOracleWms.base_url, has="test.wms.example.com")
         tm.that(tap.flext_config.TapOracleWms.username, eq="test_user")
+        tm.that(str(tap.settings["base_url"]), has="test.wms.example.com")
+        tm.that(tap.settings["username"], eq="test_user")
 
     @staticmethod
     def test_execute_with_message_unsupported(
