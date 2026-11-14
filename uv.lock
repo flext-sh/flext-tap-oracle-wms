@@ -522,7 +522,7 @@ wheels = [
 [[package]]
 name = "flext-api"
 version = "0.12.0"
-source = { git = "https://github.com/flext-sh/flext-api.git?rev=0.12.0-dev#426d4a737d21df6fb32b3de13b720aea205ccf1f" }
+source = { git = "https://github.com/flext-sh/flext-api.git?rev=0.12.0-dev#b5829095849fb76e1c71f5c15ab9dd442aa19b03" }
 dependencies = [
     { name = "flext-cli" },
     { name = "flext-core" },
@@ -571,7 +571,7 @@ dependencies = [
 [[package]]
 name = "flext-infra"
 version = "0.12.1"
-source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#38ce7afb045f76e8c994a00f86e4f61e10cb01de" }
+source = { git = "https://github.com/flext-sh/flext-infra.git?rev=0.12.0-dev#7464cfd528949f5518d494064aa2598aa3ae02dc" }
 dependencies = [
     { name = "defusedxml" },
     { name = "flext-cli" },
@@ -2380,20 +2380,20 @@ wheels = [
 
 [[package]]
 name = "sqlalchemy"
-version = "2.0.56"
+version = "2.0.57"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "greenlet", marker = "platform_machine == 'AMD64' or platform_machine == 'WIN32' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'ppc64le' or platform_machine == 'win32' or platform_machine == 'x86_64'" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/99/9e/3b21b886aba51f2c65ca0783b133be5be5c000f0aa24584bd3c81d313135/sqlalchemy-2.0.56.tar.gz", hash = "sha256:7c03600b91cca726ea4f5a5ef2049d650ae35f9df9999214b9a1bbf15169da76", size = 10017922, upload-time = "2026-11-03T20:25:53.21Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/df/7611a37edc4cfa118c364a7f5dec4889ad0e9f84638a789bbf864c5f7a63/sqlalchemy-2.0.57.tar.gz", hash = "sha256:892e0edd06b8ca2a8a3f9107611047914fd82ccd03735efd706d12aa4da1b773", size = 10018207, upload-time = "2026-11-04T00:58:47.151Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/a6/3cb7e4ca5a4b0a9669e1d37ced024e850bbb9007401471b68b7404538955/sqlalchemy-2.0.56-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:a595a7635e111914f0ea8c9edd353acecc4c087b7eba977ffa1034866f2383dc", size = 2193783, upload-time = "2026-11-03T21:04:25.961Z" },
-    { url = "https://files.pythonhosted.org/packages/10/b0/a03b3c22842eba78e2889788af79deabff317172f99aa52181517ca60c11/sqlalchemy-2.0.56-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:603990c401df59d5dc7f56b580d35857b4f9a85a8071f47dd8553a08fe364215", size = 3411395, upload-time = "2026-11-03T21:13:57.963Z" },
-    { url = "https://files.pythonhosted.org/packages/d1/7a/9032bdef2c0b06c00f129c321daf5d3f039740cdaf1106f8871b4be5a96a/sqlalchemy-2.0.56-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b24fd5e07911cc20f49ba2d02385f2a301e989840f49c991f34b48635df2ac44", size = 3429699, upload-time = "2026-11-03T21:20:30.047Z" },
-    { url = "https://files.pythonhosted.org/packages/b9/ea/284ab9868126476735eb8f03ab43982c982810121e9f3c04b34fbf4dcdd4/sqlalchemy-2.0.56-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:93977afcf48331e3b4e9455321e7ef7e3f6ea449f491782378824fe4dd2b85ad", size = 3360829, upload-time = "2026-11-03T21:13:59.506Z" },
-    { url = "https://files.pythonhosted.org/packages/e9/52/15d4064dded54f44e1ab5b77053b04eb975ce2e350db58eddbf2f9d99744/sqlalchemy-2.0.56-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:a453807f8ae3ad80cab88b435b9648aeb46305bea0a1f07e7c509d9bae51f9fa", size = 3396008, upload-time = "2026-11-03T21:20:31.893Z" },
-    { url = "https://files.pythonhosted.org/packages/55/57/84abc853f0dba43c00c94e60a6b567c53efca96e31d066b364e15c785d40/sqlalchemy-2.0.56-py3-none-any.whl", hash = "sha256:554acc1c53b1a1f3e0fe39b103c03330aa79c484abfcc715b0c73971a1b117fe", size = 1967626, upload-time = "2026-11-03T21:04:50.111Z" },
+    { url = "https://files.pythonhosted.org/packages/1d/4d/54e52c349e7a88d5c97cd04d78bd6cf3f4ac5e92b14bd0af9bde8a0d8b66/sqlalchemy-2.0.57-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:88837e22b43cf5e22070deb68c5cc77916dd2a231d8b9dc91ac8e5afb96a2c4f", size = 2193783, upload-time = "2026-11-04T01:05:17.978Z" },
+    { url = "https://files.pythonhosted.org/packages/70/3e/76130164a383b7d4d3bb096cb44cfcccfe626cc5b3d5686d8fa7bdae7881/sqlalchemy-2.0.57-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:351b703ee93952f38f2e51e0781e1d4618602850252e68344b9dd28dccc2bd08", size = 3411394, upload-time = "2026-11-04T01:55:57.974Z" },
+    { url = "https://files.pythonhosted.org/packages/67/7e/3d824c3051d89c42c453825435f9a9923ecb74ccfff5e22a3738d7e921c5/sqlalchemy-2.0.57-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:bc60f5a5f1ec190dcb1f5a9b9cf8f64d13f640ee429ee09fc0939ae9acaa6cc6", size = 3429699, upload-time = "2026-11-04T01:14:06.442Z" },
+    { url = "https://files.pythonhosted.org/packages/8e/84/cc3c4c7162db679a85ee71a468d2d12efbd39cd38fd6ed5fbb391969d8a6/sqlalchemy-2.0.57-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:8c2233997b87eed1f6664b047c6ff95a8a667ac46c053b29ed104d4df6210c1e", size = 3360826, upload-time = "2026-11-04T01:55:59.715Z" },
+    { url = "https://files.pythonhosted.org/packages/80/53/de3fb4d74ba8a597b3a2088a700eacba09b7048091ea18c009b6abad0c2b/sqlalchemy-2.0.57-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:9815b64911596a3bf106b8ef4671a98b461e78cb668b4fa16a52caf44a3011d0", size = 3396007, upload-time = "2026-11-04T01:14:08.623Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/0e/ed54ed17987f65115360b124ab943d955c04906fd589411627805afe7b57/sqlalchemy-2.0.57-py3-none-any.whl", hash = "sha256:e31639a78045134a39e14f287b647fd9537cdd71978ea9c11bf7d905d70e473d", size = 1967625, upload-time = "2026-11-04T00:59:28.703Z" },
 ]
 
 [[package]]
@@ -2797,7 +2797,7 @@ wheels = [
 
 [[package]]
 name = "virtualenv"
-version = "21.15.3"
+version = "21.15.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "distlib" },
@@ -2806,9 +2806,9 @@ dependencies = [
     { name = "platformdirs" },
     { name = "python-discovery" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/13/f3/08c61662e52a519eabd535148c7545705bab3e7954f1219d49083cdedbf0/virtualenv-21.15.3.tar.gz", hash = "sha256:cb83a84cedda6509c93ea5b381c3b5ecec666f7b500d34566503f5bfdc87f498", size = 5521856, upload-time = "2026-11-03T18:01:12.684Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c3/29/766593bdf0631aed6833e0f36f9495e0aad6325ce52754977beb895a4d83/virtualenv-21.15.4.tar.gz", hash = "sha256:105b395ce731f1cd086378037c9e20fadbb2aef98836d19b6d5767f622d21de1", size = 5640989, upload-time = "2026-11-04T01:29:34.982Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f6/44/1442f2981600feca16e2138bb200454411ccf56498a69f6c1e546c411b13/virtualenv-21.15.3-py3-none-any.whl", hash = "sha256:bac00a8f34f90c81e0dd933e5a848173a36b04d737a828c5496443a6fb0ea0d4", size = 5559927, upload-time = "2026-11-03T18:01:09.88Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/92/6789235837302508926b5a58d3f3aa098d3c294e381baed5d4cb202a6e6e/virtualenv-21.15.4-py3-none-any.whl", hash = "sha256:a66dfba5f608b3a1778d86ddf6a63a611f394934bb2cffd13ae6962b98b9798f", size = 5680750, upload-time = "2026-11-04T01:29:32.4Z" },
 ]
 
 [[package]]
