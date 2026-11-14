@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
+from tests import TestsFlextTapOracleWmsHelpers, c, tm, u
 
 _PAGE_SAMPLE_LIMIT = 5
 _MIN_SAMPLE_RECORDS = 2
@@ -70,43 +70,25 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpers):
 
     """Test real data extraction from Oracle WMS."""
 
-    @staticmethod
     @c.Tests.MARK.parametrize("stream_name", ["inventory", "locations", "items"])
     def test_extract_stream_data(
+        self,
         real_tap_instance: FlextTapOracleWms,
         stream_name: str,
     ) -> None:
         """Test extracting data from specific streams."""
         tm.ok(real_tap_instance.initialize())
-        streams = real_tap_instance.discover_streams()
-        stream = next((s for s in streams if s.name == stream_name), None)
-        if stream is None:
-            u.Tests.skip(f"Stream {stream_name} not available")
-        records: list[t.JsonMapping] = []
-        max_records = 5
-        for i, record in enumerate(stream.get_records(context=None)):
-            records.append(record)
-            if i >= max_records:
-                break
+        stream = self._named_stream(real_tap_instance, stream_name)
+        self._sample_records(stream, _PAGE_SAMPLE_LIMIT + 1)
 
-    @staticmethod
     def test_pagination_functionality(
+        self,
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
         """Test pagination functionality."""
-        streams = real_tap_instance.discover_streams()
-        inventory_stream = next((s for s in streams if s.name == "inventory"), None)
-        if not inventory_stream:
-            u.Tests.skip("Inventory stream not available")
+        inventory_stream = self._named_stream(real_tap_instance, "inventory")
         inventory_stream.page_size = 2
-        records: list[t.JsonMapping] = []
-        pages = 0
-        for i, record in enumerate(inventory_stream.get_records(context=None)):
-            records.append(record)
-            if i > 0 and i % 2 == 0:
-                pages += 1
-            if i >= _PAGE_SAMPLE_LIMIT:
-                break
+        records = self._sample_records(inventory_stream, _PAGE_SAMPLE_LIMIT + 1)
         tm.that(len(records), gt=_MIN_SAMPLE_RECORDS)
 
     """Test entity filtering and selection."""

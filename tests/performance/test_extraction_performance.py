@@ -64,27 +64,18 @@ class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpers)
         tm.ok(result)
         tm.that(discovery_time, lt=_MAX_DISCOVERY_SECONDS)
 
-    @staticmethod
     @c.Tests.MARK.parametrize("page_size", [10, 50, 100, 200])
     def test_pagination_performance(
+        self,
         tap: FlextTapOracleWms,
         page_size: int,
     ) -> None:
         """Benchmark different page sizes."""
         tap.initialize()
         tap.flext_config.TapOracleWms.page_size = page_size
-        streams = tap.discover_streams()
-        inventory_stream = next((s for s in streams if s.name == "inventory"), None)
-        if not inventory_stream:
-            u.Tests.skip("Inventory stream not available")
+        inventory_stream = self._named_stream(tap, "inventory")
         inventory_stream.page_size = page_size
-        start_time = time.time()
-        records: list[t.JsonMapping] = []
-        for i, record in enumerate(inventory_stream.get_records(context=None)):
-            records.append(record)
-            if i >= _PAGINATION_SAMPLE_LIMIT:
-                break
-        _ = time.time() - start_time
+        self._sample_records(inventory_stream, _PAGINATION_SAMPLE_LIMIT + 1)
 
     @staticmethod
     def test_concurrent_streams_extraction(tap: FlextTapOracleWms) -> None:

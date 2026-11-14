@@ -91,18 +91,11 @@ class TestsFlextTapOracleWmsConfig(TestsFlextTapOracleWmsHelpers):
         config_bare = self._tap_settings({"base_url": "wms.example.com"})
         tm.that(config_bare.TapOracleWms.base_url, eq="wms.example.com")
 
-    @staticmethod
-    def test_entity_list_validation() -> None:
+    @c.Tests.MARK.parametrize("field", ["include_entities", "exclude_entities"])
+    def test_entity_list_validation(self, field: str) -> None:
         """Test entity list validation rejects duplicates at construction."""
         with u.Tests.raises(c.ValidationError) as exc_info:
-            FlextTapOracleWmsSettings.model_validate({
-                "TapOracleWms": {
-                    "base_url": "https://wms.example.com",
-                    "username": "user",
-                    "password": c.TapOracleWms.Tests.CREDENTIAL,
-                    "include_entities": ["inventory", "orders", "inventory"],
-                },
-            })
+            self._tap_settings({field: ["inventory", "orders", "inventory"]})
         tm.that(str(exc_info.value), has="contains duplicates")
 
     def test_date_validation(self) -> None:

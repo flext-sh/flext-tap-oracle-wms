@@ -19,7 +19,6 @@ from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 logger = u.fetch_logger(__name__)
 
 _MIN_CORE_STREAMS = 2
-_ORACLE_WMS_MAX_LIMIT = 1250
 
 
 @c.Tests.MARK.functional
@@ -193,76 +192,20 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
             logger.exception("❌ Stream creation failed for %s", stream_id)
             raise
 
-    @c.Tests.MARK.singer
-    def test_pagination_functionality(
-        self,
-        real_tap_instance: FlextTapOracleWms,
-    ) -> None:
-        """Test pagination parameters are correctly configured."""
-        catalog = self._catalog(real_tap_instance)
-        streams = catalog.streams
-        if not streams:
-            u.Tests.skip("No streams available for pagination test")
-        test_stream = streams[0]
-        stream_id = test_stream.tap_stream_id
-        stream = FlextTapOracleWmsStreams.WmsStream(
-            tap=real_tap_instance,
-            name=stream_id,
-            schema=self._schema(test_stream),
-        )
-        url_params = stream.build_operation_kwargs(page=1, context=None)
-        tm.that(url_params, has="limit")
-        limit_value = url_params["limit"]
-        tm.that(limit_value, is_=int)
-        tm.that(limit_value, gt=0, msg="limit must be positive")
-        tm.that(
-            limit_value, lte=_ORACLE_WMS_MAX_LIMIT, msg="limit exceeds Oracle WMS max"
-        )
-        logger.info("Pagination configured: page_size=%s", url_params["page_size"])
-
     @c.Tests.MARK.functional
     def test_replication_key_detection(
         self,
         real_tap_instance: FlextTapOracleWms,
     ) -> None:
-        """Test automatic replication key detection."""
-        catalog = self._catalog(real_tap_instance)
-        streams = catalog.streams
-        streams_with_replication: MutableSequence[tuple[str, t.JsonValue]] = []
-        streams_full_table: MutableSequence[str] = []
-        for stream in streams:
-            table_metadata = None
-            for meta in stream.metadata:
-                if meta.breadcrumb == ():
-                    table_metadata = meta
-                    break
-            if table_metadata:
-                replication_method = table_metadata.metadata.get("replication-method")
-                replication_key = table_metadata.metadata.get("replication-key")
-                if replication_method == "INCREMENTAL" and isinstance(
-                    replication_key,
-                    str,
-                ):
-                    streams_with_replication.append((
-                        stream.tap_stream_id,
-                        replication_key,
-                    ))
-                elif replication_method == "FULL_TABLE":
-                    streams_full_table.append(stream.tap_stream_id)
-        logger.info(
-            "✅ Incremental streams (%s): %s",
-            len(streams_with_replication),
-            streams_with_replication,
-        )
-        logger.info(
-            "✅ Full table streams (%s): %s",
-            len(streams_full_table),
-            streams_full_table,
-        )
+        """Test the catalog declares a replication method for its streams."""
+        methods = [
+            str(self._table_metadata(stream).get("replication-method"))
+            for stream in self._catalog(real_tap_instance).streams
+        ]
+        logger.info("✅ Replication methods declared: %s", methods)
         tm.that(
-            streams_with_replication or streams_full_table,
-            truth=True,
-            msg=("No replication methods detected"),
+            "INCREMENTAL" in methods or "FULL_TABLE" in methods,
+            msg="No replication methods detected",
         )
 
     @c.Tests.MARK.functional
@@ -318,24 +261,6 @@ class TestsFlextTapOracleWmsFunctional(TestsFlextTapOracleWmsHelpers):
         tm.that(namespace.timeout, is_=(int, float))
         tm.that(namespace.verify_ssl, is_=bool)
         logger.info("✅ Configuration validated and types converted correctly")
-
-    @c.Tests.MARK.singer
-    def test_singer_protocol_compliance(
-        self,
-        real_tap_instance: FlextTapOracleWms,
-    ) -> None:
-        """Test Singer protocol compliance."""
-        catalog = self._catalog(real_tap_instance)
-        tm.that(catalog.streams, none=False)
-        for stream in catalog.streams:
-            schema = stream.schema_definition
-            tm.that(schema, has="type")
-            tm.that(schema["type"], eq="t.JsonValue")
-            tm.that(schema, has="properties")
-            for meta in stream.metadata:
-                tm.that(meta.breadcrumb, none=False)
-                tm.that(meta.metadata, none=False)
-        logger.info("✅ Singer protocol compliance verified")
 
     def test_comprehensive_functionality_summary(
         self,

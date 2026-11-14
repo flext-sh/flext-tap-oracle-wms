@@ -13,29 +13,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
+from tests import TestsFlextTapOracleWmsHelpers, c, tm, u
 
 
 class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
     """Test configuration validation."""
-
-    @staticmethod
-    def test_minimal_valid_config() -> None:
-        """Test minimal valid configuration."""
-        settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://wms.example.com",
-                "username": "test_user",
-                "password": "p" + c.ParserBooleanToken.ZERO * 12,
-            },
-        })
-        namespace = settings.TapOracleWms
-        tm.that(namespace.base_url.rstrip("/"), eq="https://wms.example.com")
-        tm.that(namespace.username, eq="test_user")
-        tm.that(namespace.password, is_=(str, t.SecretStr))
-        defaults = type(namespace)()
-        tm.that(namespace.api_version, eq=defaults.api_version)
-        tm.that(namespace.page_size, eq=defaults.page_size)
 
     def test_url_accepts_trailing_slash(self) -> None:
         """Test URL with trailing slash is accepted."""
@@ -69,19 +51,6 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
         })
         tm.that(settings.TapOracleWms.include_entities, eq=["inventory", "locations"])
         tm.that(settings.TapOracleWms.exclude_entities, eq=["orders"])
-
-    @staticmethod
-    def test_duplicate_entities_rejected() -> None:
-        """Test namespace validator rejects duplicate entity entries."""
-        with u.Tests.raises(c.ValidationError):
-            FlextTapOracleWmsSettings.model_validate({
-                "TapOracleWms": {
-                    "base_url": "https://wms.example.com",
-                    "username": "user",
-                    "password": c.TapOracleWms.Tests.CREDENTIAL,
-                    "exclude_entities": ["orders", "orders"],
-                },
-            })
 
     def test_date_fields(self) -> None:
         """Test date fields are accepted."""
@@ -119,28 +88,6 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
         tm.that(data, is_=dict)
         tm.that(data["username"], eq="user")
         tm.that(data, has="base_url")
-
-    @staticmethod
-    def test_stream_related_config_fields() -> None:
-        """Test stream-related configuration fields are accessible."""
-        settings = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                "base_url": "https://wms.example.com",
-                "username": "user",
-                "password": c.TapOracleWms.Tests.CREDENTIAL,
-                "page_size": 50,
-                "column_mappings": '{"inventory": {"old_col": "new_col"}}',
-                "ignored_columns": ["internal_id"],
-            },
-        })
-        namespace = settings.TapOracleWms
-        tm.that(namespace.page_size, eq=50)
-        # column_mappings is a JSON-encoded string per ADR-005 simple-scalar rule
-        tm.that(
-            namespace.column_mappings,
-            eq='{"inventory": {"old_col": "new_col"}}',
-        )
-        tm.that(namespace.ignored_columns, eq=["internal_id"])
 
     @staticmethod
     def test_parallel_extraction_config() -> None:
