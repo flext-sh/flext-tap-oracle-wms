@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import ClassVar
 
 from flext_oracle_wms import t, u
 
@@ -21,8 +22,12 @@ class FlextTapOracleWmsTypingsBase:
     type ContainerValueMapAdapter = t.TypeAdapter[t.JsonMapping]
     type ContainerValueListAdapter = t.TypeAdapter[t.JsonList]
 
-    CONTAINER_VALUE_MAP_ADAPTER: t.TypeAdapter[t.JsonMapping] = u.json_mapping_adapter()
-    CONTAINER_VALUE_LIST_ADAPTER: t.TypeAdapter[t.JsonList] = u.json_list_adapter()
+    CONTAINER_VALUE_MAP_ADAPTER: ClassVar[t.TypeAdapter[t.JsonMapping]] = (
+        u.json_mapping_adapter()
+    )
+    CONTAINER_VALUE_LIST_ADAPTER: ClassVar[t.TypeAdapter[t.JsonList]] = (
+        u.json_list_adapter()
+    )
 
 
 __all__: list[str] = [
