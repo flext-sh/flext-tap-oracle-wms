@@ -68,8 +68,6 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpers):
                 properties = stream_schema["properties"]
                 tm.that(properties, truth=True)
 
-    """Test real data extraction from Oracle WMS."""
-
     @c.Tests.MARK.parametrize("stream_name", ["inventory", "locations", "items"])
     def test_extract_stream_data(
         self,
@@ -90,8 +88,6 @@ class TestsFlextTapOracleWmsWmsConnection(TestsFlextTapOracleWmsHelpers):
         inventory_stream.page_size = 2
         records = self._sample_records(inventory_stream, _PAGE_SAMPLE_LIMIT + 1)
         tm.that(len(records), gt=_MIN_SAMPLE_RECORDS)
-
-    """Test entity filtering and selection."""
 
     @staticmethod
     def test_entity_inclusion_filter(
