@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 
 class FlextTapOracleWmsConstantsValues:
@@ -21,16 +21,16 @@ class FlextTapOracleWmsConstantsValues:
     class TapOracleWms:
         """Oracle WMS tap scalar constants."""
 
-        REQUIRED_CONFIG_FIELDS: Final[frozenset[str]] = frozenset({
+        REQUIRED_CONFIG_FIELDS: ClassVar[frozenset[str]] = frozenset({
             "base_url",
             "username",
             "password",
         })
-        SCHEMA_TYPE_STRING: Final[str] = "string"
-        SCHEMA_TYPE_OBJECT: Final[str] = "object"
-        SCHEMA_TYPE_BOOLEAN: Final[str] = "boolean"
-        SCHEMA_TYPE_INTEGER: Final[str] = "integer"
-        SCHEMA_FIELD_IS_SECRET: Final[bool] = True
+        SCHEMA_TYPE_STRING: ClassVar[str] = "string"
+        SCHEMA_TYPE_OBJECT: ClassVar[str] = "object"
+        SCHEMA_TYPE_BOOLEAN: ClassVar[str] = "boolean"
+        SCHEMA_TYPE_INTEGER: ClassVar[str] = "integer"
+        SCHEMA_FIELD_IS_SECRET: ClassVar[bool] = True
 
 
 __all__: list[str] = ["FlextTapOracleWmsConstantsValues"]
