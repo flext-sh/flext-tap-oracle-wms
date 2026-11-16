@@ -8,7 +8,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Final
+import os
+from typing import ClassVar
 
 from flext_tests import FlextTestsConstants
 
@@ -21,11 +22,13 @@ class TestsFlextTapOracleWmsConstants(FlextTestsConstants, FlextTapOracleWmsCons
     class TapOracleWms(FlextTapOracleWmsConstants.TapOracleWms):
         """Tap Oracle WMS domain constants extended with test declarations."""
 
-        class Tests:
+        class Tests(FlextTestsConstants.Tests):
             """Internal tests declarations for test-only objects."""
 
-            CREDENTIAL_PREFIX: Final[str] = "tap-oracle-wms-test"
-            CREDENTIAL: Final[str] = f"{CREDENTIAL_PREFIX}-credential"
+            CREDENTIAL: ClassVar[str] = os.getenv(
+                "FLEXT_TAP_ORACLE_WMS_CREDENTIAL",
+                "tap-oracle-wms-test",
+            )
             "Fixed deterministic credential shared by the tap settings tests."
 
 
