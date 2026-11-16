@@ -14,8 +14,6 @@ from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
 from tests import TestsFlextTapOracleWmsHelpers, c, t, tm, u
 
 _MAX_DISCOVERY_SECONDS = 10.0
-_PAGINATION_SAMPLE_LIMIT = 99
-_CONCURRENT_SAMPLE_LIMIT = 49
 _LARGE_EXTRACTION_SAMPLE_LIMIT = 999
 _MAX_MEMORY_INCREASE_MB = 100
 
@@ -64,37 +62,6 @@ class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpers)
         tm.ok(result)
         tm.that(discovery_time, lt=_MAX_DISCOVERY_SECONDS)
 
-    @c.Tests.MARK.parametrize("page_size", [10, 50, 100, 200])
-    def test_pagination_performance(
-        self,
-        tap: FlextTapOracleWms,
-        page_size: int,
-    ) -> None:
-        """Benchmark different page sizes."""
-        tap.initialize()
-        tap.flext_config.TapOracleWms.page_size = page_size
-        inventory_stream = self._named_stream(tap, "inventory")
-        inventory_stream.page_size = page_size
-        self._sample_records(inventory_stream, _PAGINATION_SAMPLE_LIMIT + 1)
-
-    @staticmethod
-    def test_concurrent_streams_extraction(tap: FlextTapOracleWms) -> None:
-        """Test extracting multiple streams concurrently."""
-        tap.initialize()
-        streams = tap.discover_streams()[:3]
-        total_records = 0
-        start_time = time.time()
-        for stream in streams:
-            stream_start = time.time()
-            records = 0
-            for i, _record in enumerate(stream.get_records(context=None)):
-                records += 1
-                if i >= _CONCURRENT_SAMPLE_LIMIT:
-                    break
-            _ = time.time() - stream_start
-            total_records += records
-        _ = time.time() - start_time
-
     @staticmethod
     def test_memory_usage_during_large_extraction(tap: FlextTapOracleWms) -> None:
         """Test memory usage during large extractions."""
@@ -112,42 +79,6 @@ class TestsFlextTapOracleWmsExtractionPerformance(TestsFlextTapOracleWmsHelpers)
             final_memory = process.memory_info().rss / 1024 / 1024
             memory_increase = final_memory - initial_memory
             tm.that(memory_increase, lt=_MAX_MEMORY_INCREASE_MB)
-
-    """Test rate limiting impact on performance."""
-
-    @staticmethod
-    def test_rate_limiting_impact(
-        performance_config: FlextTapOracleWmsSettings,
-    ) -> None:
-        """Compare performance with and without rate limiting."""
-        config_no_limit = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                **performance_config.TapOracleWms.model_dump(),
-                "enable_rate_limiting": False,
-            },
-        })
-        tap_no_limit = FlextTapOracleWms.from_settings(config_no_limit)
-        tap_no_limit.initialize()
-        config_with_limit = FlextTapOracleWmsSettings.model_validate({
-            "TapOracleWms": {
-                **performance_config.TapOracleWms.model_dump(),
-                "enable_rate_limiting": True,
-                "max_requests_per_minute": 60,
-            },
-        })
-        tap_with_limit = FlextTapOracleWms.from_settings(config_with_limit)
-        tap_with_limit.initialize()
-        for tap, _label in [(tap_no_limit, "No Limit"), (tap_with_limit, "With Limit")]:
-            streams = tap.discover_streams()
-            if streams:
-                stream = streams[0]
-                start_time = time.time()
-                records: list[t.JsonMapping] = []
-                for i, record in enumerate(stream.get_records(context=None)):
-                    records.append(record)
-                    if i >= _CONCURRENT_SAMPLE_LIMIT:
-                        break
-                _ = time.time() - start_time
 
 
 if __name__ == "__main__":

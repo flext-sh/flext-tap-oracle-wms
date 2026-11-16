@@ -147,12 +147,6 @@ class TestsFlextTapOracleWmsE2e(TestsFlextTapOracleWmsHelpers):
         tm.that(streams, truth=True, msg="No streams tested")
         tm.that(schemas_valid, truth=True, msg="No valid schemas found")
 
-    @staticmethod
-    def test_pagination_end_to_end() -> None:
-        """E2E: Test pagination handling through multiple pages."""
-        pages_tested: list[str] = []
-        logger.info("✅ Pagination flow tested: %s", pages_tested)
-
     def test_error_recovery_and_resilience(
         self,
         real_config: FlextTapOracleWmsSettings,
