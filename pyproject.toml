@@ -20,9 +20,9 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "flext-core @ git+https://github.com/flext-sh/flext-core.git@0.12.0-dev",
-  "flext-meltano @ git+https://github.com/flext-sh/flext-meltano.git@0.12.0-dev",
-  "flext-oracle-wms @ git+https://github.com/flext-sh/flext-oracle-wms.git@0.12.0-dev",
+  "flext-core",
+  "flext-meltano",
+  "flext-oracle-wms",
   "singer-sdk>=0.54.8",
   "typing-extensions>=4.16.0",
 ]
@@ -62,15 +62,15 @@ Homepage = "https://github.com/flext-sh/flext"
 
 [dependency-groups]
 dev = [
-  "properdocs>=1.6.7",                                                        # flext: derived member environment
+  "properdocs>=1.6.7",                                # flext: derived member environment
   "types-networkx",
-  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
+  "flext-infra",
   "mkdocstrings-python>=2.0.9",
   "actionlint-py>=1.7.12.24",
   "bandit>=1.9.4",
   "deptry",
   "editables>=0.6",
-  "flext-tests @ git+https://github.com/flext-sh/flext-tests.git@0.12.0-dev",
+  "flext-tests",
   "hypothesis",
   "mkdocs-autorefs",
   "mkdocs-exclude>=1.0.2",
@@ -122,9 +122,7 @@ dev = [
   "vulture>=2.16",
   "yamlfix>=1.19.1",
 ]
-codegen = [
-  "flext-infra @ git+https://github.com/flext-sh/flext-infra.git@0.12.0-dev",
-]
+codegen = ["flext-infra"]
 
 [tool.flext.docs]
 package_name = "flext_tap_oracle_wms"
@@ -713,5 +711,3 @@ file = "src/**"
 
 [tool.uv.exclude-newer-package]
 soupsieve = false
-
-[tool.uv.sources]
