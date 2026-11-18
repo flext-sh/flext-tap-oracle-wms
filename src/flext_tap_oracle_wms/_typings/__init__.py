@@ -22,13 +22,5 @@ install_lazy_exports(
     globals(),
     {"FlextTapOracleWmsTypingsBase": ".base"},
     public_exports=__all__,
-    deferred_members={
-        "FlextTapOracleWmsTypingsBase": (
-            "ScalarNormalizer",
-            "ContainerValueMapAdapter",
-            "ContainerValueListAdapter",
-            "CONTAINER_VALUE_MAP_ADAPTER",
-            "CONTAINER_VALUE_LIST_ADAPTER",
-        ),
-    },
+    deferred_members=("FlextTapOracleWmsTypingsBase",),
 )

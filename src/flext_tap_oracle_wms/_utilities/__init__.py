@@ -24,7 +24,5 @@ install_lazy_exports(
     globals(),
     {"FlextTapOracleWmsUtilitiesConversion": ".mapping"},
     public_exports=__all__,
-    deferred_members={
-        "FlextTapOracleWmsUtilitiesConversion": ("MappingConversion",),
-    },
+    deferred_members=("FlextTapOracleWmsUtilitiesConversion",),
 )
