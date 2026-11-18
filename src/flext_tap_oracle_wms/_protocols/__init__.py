@@ -22,11 +22,5 @@ install_lazy_exports(
     globals(),
     {"FlextTapOracleWmsProtocolsBase": ".base"},
     public_exports=__all__,
-    deferred_members={
-        "FlextTapOracleWmsProtocolsBase": (
-            "TapWithWmsClient",
-            "TapWithWmsClientSettings",
-            "TapOracleWmsNamespace",
-        ),
-    },
+    deferred_members=("FlextTapOracleWmsProtocolsBase",),
 )

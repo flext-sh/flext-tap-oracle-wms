@@ -29,7 +29,5 @@ install_lazy_exports(
         "FlextTapOracleWmsConstantsValues": ".values",
     },
     public_exports=__all__,
-    deferred_members={
-        "FlextTapOracleWmsConstantsValues": ("TapOracleWms",),
-    },
+    deferred_members=("FlextTapOracleWmsConstantsValues",),
 )

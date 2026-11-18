@@ -22,7 +22,5 @@ install_lazy_exports(
     globals(),
     {"FlextTapOracleWmsModelsBase": ".base"},
     public_exports=__all__,
-    deferred_members={
-        "FlextTapOracleWmsModelsBase": ("TapOracleWmsNamespace",),
-    },
+    deferred_members=("FlextTapOracleWmsModelsBase",),
 )
