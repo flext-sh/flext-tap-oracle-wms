@@ -13,23 +13,20 @@ from typing import ClassVar
 
 from flext_tests import FlextTestsConstants
 
-from flext_tap_oracle_wms import FlextTapOracleWmsConstants
+from tests import FlextTapOracleWmsConstants
 
 
 class TestsFlextTapOracleWmsConstants(FlextTestsConstants, FlextTapOracleWmsConstants):
     """Test constants for flext-tap-oracle-wms."""
 
-    class TapOracleWms(FlextTapOracleWmsConstants.TapOracleWms):
-        """Tap Oracle WMS domain constants extended with test declarations."""
+    class Tests(FlextTestsConstants.Tests):
+        """Internal tests declarations for test-only objects."""
 
-        class Tests(FlextTestsConstants.Tests):
-            """Internal tests declarations for test-only objects."""
-
-            CREDENTIAL: ClassVar[str] = os.getenv(
-                "FLEXT_TAP_ORACLE_WMS_CREDENTIAL",
-                "tap-oracle-wms-test",
-            )
-            "Fixed deterministic credential shared by the tap settings tests."
+        CREDENTIAL: ClassVar[str] = os.getenv(
+            "FLEXT_TAP_ORACLE_WMS_CREDENTIAL",
+            "tap-oracle-wms-test",
+        )
+        "Fixed deterministic credential shared by the tap settings tests."
 
 
 c = TestsFlextTapOracleWmsConstants

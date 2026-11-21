@@ -17,8 +17,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms import FlextTapOracleWms, FlextTapOracleWmsSettings
-from tests import c, p, tm
+from tests import FlextTapOracleWms, FlextTapOracleWmsSettings, c, p, tm
 
 
 class TestsFlextTapOracleWmsTap:
@@ -42,7 +41,7 @@ class TestsFlextTapOracleWmsTap:
             "TapOracleWms": {
                 "base_url": "https://test.wms.example.com",
                 "username": "test_user",
-                "password": c.TapOracleWms.Tests.CREDENTIAL,
+                "password": c.Tests.CREDENTIAL,
             },
         })
         tap = FlextTapOracleWms.from_settings(settings, catalog=sample_catalog)
@@ -76,7 +75,7 @@ class TestsFlextTapOracleWmsTap:
             "TapOracleWms": {
                 "base_url": "https://invalid.example.com",
                 "username": "invalid",
-                "password": c.TapOracleWms.Tests.CREDENTIAL,
+                "password": c.Tests.CREDENTIAL,
             },
         })
         tap = FlextTapOracleWms.from_settings(bad_settings, catalog=sample_catalog)

@@ -12,8 +12,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_tap_oracle_wms import FlextTapOracleWmsSettings
-from tests import TestsFlextTapOracleWmsHelpers, c, tm, u
+from tests import FlextTapOracleWmsSettings, TestsFlextTapOracleWmsHelpers, c, tm, u
 
 
 class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
@@ -31,7 +30,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": c.TapOracleWms.Tests.CREDENTIAL,
+                "password": c.Tests.CREDENTIAL,
                 "page_size": 500,
             },
         })
@@ -44,7 +43,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": c.TapOracleWms.Tests.CREDENTIAL,
+                "password": c.Tests.CREDENTIAL,
                 "include_entities": ["inventory", "locations"],
                 "exclude_entities": ["orders"],
             },
@@ -69,7 +68,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
                 "TapOracleWms": {
                     "base_url": "https://wms.example.com",
                     "username": "user",
-                    "password": c.TapOracleWms.Tests.CREDENTIAL,
+                    "password": c.Tests.CREDENTIAL,
                     "end_date": "31/12/2024",
                 },
             })
@@ -81,7 +80,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": c.TapOracleWms.Tests.CREDENTIAL,
+                "password": c.Tests.CREDENTIAL,
             },
         })
         data = settings.TapOracleWms.model_dump()
@@ -96,7 +95,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": c.TapOracleWms.Tests.CREDENTIAL,
+                "password": c.Tests.CREDENTIAL,
                 "enable_parallel_extraction": True,
                 "max_parallel_streams": 6,
                 "enable_rate_limiting": True,
@@ -114,7 +113,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": c.TapOracleWms.Tests.CREDENTIAL,
+                "password": c.Tests.CREDENTIAL,
                 "verify_ssl": False,
                 "ssl_cert_path": "/path/to/cert.pem",
             },
@@ -129,7 +128,7 @@ class TestsFlextTapOracleWmsConfigValidation(TestsFlextTapOracleWmsHelpers):
             "TapOracleWms": {
                 "base_url": "https://wms.example.com",
                 "username": "user",
-                "password": c.TapOracleWms.Tests.CREDENTIAL,
+                "password": c.Tests.CREDENTIAL,
                 "enable_rate_limiting": True,
                 "max_requests_per_minute": 120,
             },
