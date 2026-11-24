@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from flext_tests import FlextTestsModels
 
-from flext_tap_oracle_wms import FlextTapOracleWmsModels
+from tests import FlextTapOracleWmsModels
 
 
 class TestsFlextTapOracleWmsModels(FlextTestsModels, FlextTapOracleWmsModels):
@@ -26,11 +26,8 @@ class TestsFlextTapOracleWmsModels(FlextTestsModels, FlextTapOracleWmsModels):
     - TestsFlextTapOracleWmsModels.TapOracleWms.* (Tap Oracle WMS domain models)
     """
 
-    class TapOracleWms(FlextTapOracleWmsModels.TapOracleWms):
-        """TapOracleWms domain models extending project models."""
-
-        class Tests:
-            """Internal tests declarations."""
+    class Tests(FlextTestsModels.Tests):
+        """Internal tests declarations."""
 
 
 m = TestsFlextTapOracleWmsModels
