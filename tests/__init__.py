@@ -12,13 +12,6 @@ from typing import TYPE_CHECKING
 from flext_core.lazy import install_lazy_exports
 
 if TYPE_CHECKING:
-    from examples import (
-        ExamplesFlextTapOracleWmsConstants,
-        ExamplesFlextTapOracleWmsModels,
-        ExamplesFlextTapOracleWmsProtocols,
-        ExamplesFlextTapOracleWmsTypes,
-        ExamplesFlextTapOracleWmsUtilities,
-    )
     from flext_oracle_wms import e
     from flext_tests import api, d, h, r, td, tf, tk, tm, x
 
@@ -50,11 +43,6 @@ if TYPE_CHECKING:
 
 
 __all__: tuple[str, ...] = (
-    "ExamplesFlextTapOracleWmsConstants",
-    "ExamplesFlextTapOracleWmsModels",
-    "ExamplesFlextTapOracleWmsProtocols",
-    "ExamplesFlextTapOracleWmsTypes",
-    "ExamplesFlextTapOracleWmsUtilities",
     "FlextTapOracleWms",
     "FlextTapOracleWmsConfig",
     "FlextTapOracleWmsConstants",
@@ -100,11 +88,6 @@ install_lazy_exports(
     __name__,
     globals(),
     {
-        "ExamplesFlextTapOracleWmsConstants": "examples",
-        "ExamplesFlextTapOracleWmsModels": "examples",
-        "ExamplesFlextTapOracleWmsProtocols": "examples",
-        "ExamplesFlextTapOracleWmsTypes": "examples",
-        "ExamplesFlextTapOracleWmsUtilities": "examples",
         "FlextTapOracleWms": "flext_tap_oracle_wms",
         "FlextTapOracleWmsConfig": "flext_tap_oracle_wms",
         "FlextTapOracleWmsConstants": "flext_tap_oracle_wms",
