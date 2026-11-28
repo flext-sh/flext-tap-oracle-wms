@@ -56,5 +56,6 @@ class FlextTapOracleWmsService(FlextMeltanoTapServiceBase):
 
 
 tap_oracle_wms: FlextTapOracleWmsService = FlextTapOracleWmsService.fetch_global()
+"""Shared service for creating Oracle WMS Singer tap instances."""
 
 __all__: list[str] = ["FlextTapOracleWmsService", "tap_oracle_wms"]
